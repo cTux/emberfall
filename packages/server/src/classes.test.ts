@@ -99,18 +99,19 @@ test("class records migrate legacy progress, save independently, and survive res
   }
 });
 
-test("druid roots prefer one unrooted target, refresh without delaying ticks, and expire", () => {
+test("druid roots target two enemies, prefer unrooted targets, refresh without delaying ticks, and expire", () => {
   const s = scene(),
     p = { ...hero(), classId: "druid" as const };
   s.enemies = [enemy(1, 2420), enemy(2, 2480), enemy(3, 2540)];
   fireClassAttack(s, p, 10000);
   assert.deepEqual(
     s.enemies.map((e) => e.debuffs?.[0]?.kind),
-    ["roots", undefined, undefined],
+    ["roots", "roots", undefined],
   );
   fireClassAttack(s, p, 10700);
-  assert.equal(s.enemies[1].debuffs![0].kind, "roots");
-  assert.equal(s.enemies[2].debuffs, undefined);
+  assert.equal(s.enemies[0].debuffs![0].expiresAt, 15700);
+  assert.equal(s.enemies[1].debuffs![0].expiresAt, 15000);
+  assert.equal(s.enemies[2].debuffs![0].kind, "roots");
   fireClassAttack(s, p, 11400);
   assert.equal(s.enemies[2].debuffs![0].kind, "roots");
   fireClassAttack(s, p, 12100);
@@ -118,12 +119,12 @@ test("druid roots prefer one unrooted target, refresh without delaying ticks, an
   tickDebuffs(s, [p], 13000);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [94, 96, 98],
+    [94, 94, 96],
   );
   tickDebuffs(s, [p], 17100);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [86, 90, 90],
+    [86, 86, 90],
   );
   assert(s.enemies.every((e) => e.debuffs?.length === 0));
   assert.equal(s.playerShots, undefined);
