@@ -124,7 +124,7 @@ The underlying position always reconciles. Only the drawing offset has a two-uni
 
 Older direction-only clients retain a 250 ms held-input timeout; a connection cannot switch input modes mid-session. Timed commands cannot accelerate simulation by sending a burst, and duplicate sequence numbers are ignored.
 
-Portal voting lives inside the draggable portal window, with a compact control to reopen it. Prompts project each source's world coordinates through the camera, rather than sitting at the screen edge. Portal bodies and their fading blue motes draw before characters. At scene completion each player's nearby portal stays fixed where it spawned.
+Portal voting lives inside the draggable portal window, with a compact control to reopen it. Prompts project each source's world coordinates through the camera, rather than sitting at the screen edge. Village and return portals have an animated blue pixel-ripple interior, a pale blue rim, and outward-drifting square motes. Bloom adds a soft blue glow; the surface remains visible with bloom disabled. Portal bodies and their fading blue motes draw before characters. At scene completion each player's nearby portal stays fixed where it spawned.
 
 Enemy/player hits briefly draw a red sprite outline, including a short silhouette on killing blows. Local damage also flashes the screen red. A persistent Vignette toggle controls edge darkening in both village and forest. Fog and flying ambient particles use world coordinates and seamless world-sized repetition; camera movement only changes which portion is visible.
 
