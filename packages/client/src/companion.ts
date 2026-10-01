@@ -1,7 +1,7 @@
 import { PLAYER_ATTACK_DURATION, PLAYER_ATTACK_RANGE } from "@emberfall/common";
 import type { Bear } from "@emberfall/common";
 import { movementFacing } from "./facing";
-import { drawPlayerHealth, drawNameBadge } from "./effects";
+import { drawPlayerHealth } from "./effects";
 
 const image = new Image();
 image.src = "/assets/bear.png";
@@ -35,16 +35,16 @@ export function drawCompanion(
       56,
     );
   ctx.globalAlpha = 1;
-  drawNameBadge(
+  drawPlayerHealth(
     ctx,
     x,
-    y - 58,
+    y - 54,
+    bear.hitpoints,
+    bear.maxHitpoints,
     dead
       ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s`
       : bear.name,
-    false,
   );
-  drawPlayerHealth(ctx, x, y - 39, bear.hitpoints, bear.maxHitpoints);
   const age = now - (bear.attackAt ?? -Infinity);
   if (!dead && !bear.returning && age >= 0 && age < PLAYER_ATTACK_DURATION) {
     ctx.translate(x, y);

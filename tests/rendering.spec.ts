@@ -26,13 +26,13 @@ test("walking keeps direction, advances frames, and fits the full nickname", asy
     });
     prototype.fillRect = new Proxy(prototype.fillRect, {
       apply(target, context, args) {
-        if (args[3] === 18) boxes.set(context, args[2]);
+        if (args[3] === 14) boxes.set(context, args[2]);
         return Reflect.apply(target, context, args);
       },
     });
     prototype.fillText = new Proxy(prototype.fillText, {
       apply(target, context, args) {
-        if (context.font === "12px system-ui")
+        if (context.font === "8px system-ui")
           window.renderCapture.label = {
             text: args[0],
             textWidth: context.measureText(args[0]).width,
@@ -50,7 +50,7 @@ test("walking keeps direction, advances frames, and fits the full nickname", asy
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.renderCapture.label?.text)).toBe(name);
   const label = await page.evaluate(() => window.renderCapture.label!);
-  expect(label.boxWidth).toBe(Math.ceil(label.textWidth) + 12);
+  expect(label.boxWidth).toBe(Math.max(40, Math.ceil(label.textWidth) + 12));
   for (const [key, column] of [
     ["d", 48],
     ["w", 16],

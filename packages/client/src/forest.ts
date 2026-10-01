@@ -227,7 +227,7 @@ export function forestRenderer(
     for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++)
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
         ctx.drawImage(ground, col * 320, row * 320);
-    drawBloodPuddles(ctx, world?.scene, prefs.bloodPuddles, near, {
+    drawBloodPuddles(ctx, world?.scene, serverTime, prefs.bloodPuddles, near, {
       x: cameraX,
       y: cameraY,
       width,
@@ -553,8 +553,7 @@ function drawPlayerDetails(
   ctx.fillRect(belt - 3, y + 1, 7, 11);
   ctx.fillStyle = "#ffe2a0";
   ctx.fillRect(belt - 1, y + 3, 4, 7);
-  drawNameplate(ctx, p.name, x, y - 51);
-  drawPlayerHealth(ctx, x, y - 32, p.hitpoints, p.maxHitpoints);
+  drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
   const age = now - (p.attackAt ?? 0);
   const attacking = age >= 0 && age < PLAYER_ATTACK_DURATION;
   const weapon = weaponImages[p.classId ?? "warrior"];

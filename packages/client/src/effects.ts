@@ -177,11 +177,28 @@ export function drawPlayerHealth(
   y: number,
   hp: number,
   max: number,
+  name: string,
+  color = "#ffffff",
 ) {
   ctx.save();
+  ctx.font = "8px system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const width = Math.max(40, Math.ceil(ctx.measureText(name).width) + 12);
   ctx.fillStyle = "#101817";
-  ctx.fillRect(x - 20, y, 40, 4);
+  ctx.fillRect(x - width / 2, y, width, 14);
   ctx.fillStyle = "#86d9a2";
-  ctx.fillRect(x - 19, y + 1, 38 * Math.max(0, Math.min(1, hp / Math.max(1, max))), 2);
+  ctx.fillRect(
+    x - width / 2 + 1,
+    y + 1,
+    (width - 2) * Math.max(0, Math.min(1, hp / Math.max(1, max))),
+    12,
+  );
+  ctx.strokeStyle = "#101817";
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.strokeText(name, x, y + 7);
+  ctx.fillStyle = color;
+  ctx.fillText(name, x, y + 7);
   ctx.restore();
 }

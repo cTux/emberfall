@@ -2,11 +2,12 @@ import { statusImages } from "./combat-assets";
 import type { SceneState, LootDrop, Enemy, DamageEvent } from "@emberfall/common";
 
 export function bloodPuddleRenderer() {
-  const puddles = new Map<number, Pick<DamageEvent, "id" | "x" | "y">>();
+  const puddles = new Map<number, Pick<DamageEvent, "id" | "x" | "y" | "at">>();
   let sceneId: string | undefined;
   return (
     ctx: CanvasRenderingContext2D,
     scene: SceneState | undefined,
+    now: number,
     enabled: boolean,
     near: (x: number, y: number) => { x: number; y: number },
     view: { x: number; y: number; width: number; height: number },
@@ -16,13 +17,19 @@ export function bloodPuddleRenderer() {
       sceneId = scene?.id;
     }
     for (const hit of scene?.damage ?? [])
-      if (hit.killed && hit.target.startsWith("enemy:") && !puddles.has(hit.id))
-        puddles.set(hit.id, { id: hit.id, x: hit.x, y: hit.y });
+      if (
+        hit.killed &&
+        hit.target.startsWith("enemy:") &&
+        now - hit.at < 30000 &&
+        !puddles.has(hit.id)
+      )
+        puddles.set(hit.id, { id: hit.id, x: hit.x, y: hit.y, at: hit.at });
+    for (const puddle of puddles.values()) if (now - puddle.at >= 30000) puddles.delete(puddle.id);
     if (!enabled) return;
     ctx.save();
-    ctx.globalAlpha = 0.5;
     ctx.fillStyle = "#8c1728";
     for (const puddle of puddles.values()) {
+      ctx.globalAlpha = 0.5 * (1 - Math.max(0, now - puddle.at) / 30000);
       const p = near(puddle.x, puddle.y + 15);
       if (
         p.x < view.x - 40 ||
@@ -37,7 +44,7 @@ export function bloodPuddleRenderer() {
         seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
         return seed / 4294967296;
       };
-      // One fill keeps overlapping splash shapes at 50% opacity.
+      // One fill keeps overlapping splash shapes at the same fading opacity.
       ctx.beginPath();
       for (let i = 0; i < 24; i++) {
         const angle = (i / 24) * Math.PI * 2 + puddle.id;
@@ -208,13 +215,13 @@ export function drawDebuffs(
   ctx.lineWidth = 2;
   ctx.imageSmoothingEnabled = false;
   debuffs.forEach((debuff, index) => {
-    const px = x + (index - (debuffs.length - 1) / 2) * 18 - 8;
+    const px = x + (index - (debuffs.length - 1) / 2) * 14 - 6;
     const image = statusImages[debuff.kind];
-    if (image.naturalWidth) ctx.drawImage(image, px, y - 16, 16, 16);
+    if (image.naturalWidth) ctx.drawImage(image, px, y - 12, 12, 12);
     ctx.strokeStyle = "#101817";
-    ctx.strokeText(String(debuff.stacks), px + 15, y - 1);
+    ctx.strokeText(String(debuff.stacks), px + 11, y - 1);
     ctx.fillStyle = "#ffffff";
-    ctx.fillText(String(debuff.stacks), px + 15, y - 1);
+    ctx.fillText(String(debuff.stacks), px + 11, y - 1);
   });
   ctx.restore();
 }
