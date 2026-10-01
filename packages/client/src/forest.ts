@@ -1,5 +1,6 @@
 import { characterImages } from "./characters";
 import { drawCompanion } from "./companion";
+import { crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
 import { drawLootAndBlood, drawClassProjectiles, drawDebuffs } from "./combat-effects";
@@ -44,36 +45,40 @@ export function drawPortal(
     ctx.shadowBlur = 20;
     ctx.shadowColor = "#53c9ff";
   }
-  const glow = ctx.createRadialGradient(0, -30, 2, 0, -30, 40);
-  glow.addColorStop(0, "#b3efff");
-  glow.addColorStop(0.5, "#197bd4");
-  glow.addColorStop(1, "#18408b30");
-  ctx.fillStyle = glow;
+  ctx.fillStyle = "#101e68";
   ctx.beginPath();
   ctx.ellipse(0, -30, 25, 38, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = "#69d9ff";
-  ctx.stroke();
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 3; i++) {
-    ctx.beginPath();
-    ctx.ellipse(
-      0,
-      -30,
-      10 + i * 5,
-      17 + i * 6,
-      Math.sin(now / 900 + i) * 0.35,
-      now / 650 + i * 2,
-      now / 650 + i * 2 + 2,
-    );
-    ctx.stroke();
+  ctx.save();
+  ctx.clip();
+  ctx.shadowBlur = 0;
+  const colors = ["#101e68", "#182c86", "#2042a6", "#285ac5", "#347fe0", "#52b4f5", "#8cddff"];
+  const time = now / 1600;
+  for (let py = -68; py < 8; py += 3) {
+    for (let px = -25; px < 25; px += 3) {
+      const u = px / 12,
+        v = (py + 30) / 12;
+      const ripple = Math.sin(u * 2 + Math.sin(v * 1.7 - time) * 2 + Math.sin(u + v + time * 0.6));
+      const brightness = (ripple + Math.sin(v * 2 - time + Math.sin(u + time))) / 2;
+      ctx.fillStyle = colors[Math.floor(((brightness + 1) / 2) * (colors.length - 1))];
+      ctx.fillRect(px, py, 3, 3);
+    }
   }
+  ctx.restore();
+  ctx.strokeStyle = "#8cddff";
+  ctx.lineWidth = 2;
+  ctx.stroke();
   for (let i = 0; i < 24; i++) {
     const age = ((now + i * 137) % 1800) / 1800,
       angle = i * 2.399963;
-    ctx.globalAlpha = (1 - age) * 0.8;
-    ctx.fillStyle = "#78dfff";
-    ctx.fillRect(Math.cos(angle) * (24 + age * 30), -25 + Math.sin(angle) * 28 - age * 55, 2, 2);
+    ctx.globalAlpha = Math.sin(age * Math.PI) * 0.8;
+    ctx.fillStyle = i % 3 === 0 ? "#b3efff" : "#52b4f5";
+    ctx.fillRect(
+      Math.round(Math.cos(angle) * (18 + age * 28)),
+      Math.round(-30 + Math.sin(angle) * 28 - age * 35),
+      2,
+      2,
+    );
   }
   ctx.restore();
   drawNameBadge(ctx, x, y - 60, name, active);
@@ -359,15 +364,33 @@ export function forestRenderer(
         height,
       });
     const layers = [
-      ...trees.map((t) => ({ y: t.y, tree: t, actor: null, bear: null })),
-      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a, bear: null })),
+      ...trees.map((t) => ({ y: t.y, tree: t, actor: null, bear: null, critter: null })),
+      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a, bear: null, critter: null })),
       ...players.flatMap((p) =>
         p.bear
-          ? [{ y: near(p.bear.x, p.bear.y).y + 15, tree: null, actor: null, bear: p.bear }]
+          ? [
+              {
+                y: near(p.bear.x, p.bear.y).y + 15,
+                tree: null,
+                actor: null,
+                bear: p.bear,
+                critter: null,
+              },
+            ]
           : [],
       ),
+      ...crittersAt("forest", world ? serverTime : now, {
+        x: cameraX,
+        y: cameraY,
+        width,
+        height,
+      }).map((critter) => ({ y: critter.y, tree: null, actor: null, bear: null, critter })),
     ].sort((a, b) => a.y - b.y);
     for (const layer of layers) {
+      if (layer.critter) {
+        drawCritter(ctx, layer.critter);
+        continue;
+      }
       if (layer.bear) {
         const point = near(layer.bear.x, layer.bear.y);
         drawCompanion(ctx, layer.bear, point.x, point.y, serverTime);

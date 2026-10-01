@@ -1,5 +1,6 @@
 import { characterImages } from "./characters";
 import { drawCompanion } from "./companion";
+import { crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
@@ -414,13 +415,37 @@ export function Arena({
         interaction.current?.id === "portal",
       );
       const layers = [
-        ...scenery.map((object) => ({ y: object.y, object, player: null, bear: null })),
-        ...players.map((player) => ({ y: player.y + 15, object: null, player, bear: null })),
+        ...scenery.map((object) => ({
+          y: object.y,
+          object,
+          player: null,
+          bear: null,
+          critter: null,
+        })),
+        ...players.map((player) => ({
+          y: player.y + 15,
+          object: null,
+          player,
+          bear: null,
+          critter: null,
+        })),
         ...players.flatMap((p) =>
-          p.bear ? [{ y: p.bear.y + 15, object: null, player: null, bear: p.bear }] : [],
+          p.bear
+            ? [{ y: p.bear.y + 15, object: null, player: null, bear: p.bear, critter: null }]
+            : [],
         ),
+        ...crittersAt("village", view.serverNow ?? now, {
+          x: cameraX,
+          y: cameraY,
+          width: viewWidth,
+          height: viewHeight,
+        }).map((critter) => ({ y: critter.y, object: null, player: null, bear: null, critter })),
       ].sort((a, b) => a.y - b.y);
       for (const layer of layers) {
+        if (layer.critter) {
+          drawCritter(ctx, layer.critter);
+          continue;
+        }
         if (layer.bear) {
           drawCompanion(ctx, layer.bear, layer.bear.x, layer.bear.y, view?.serverNow ?? now);
           continue;
