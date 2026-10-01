@@ -542,14 +542,15 @@ export function Arena({
         ctx.fillRect(beltX - 2, pos.y + 3, 5, 7);
         ctx.fillStyle = "#ffe2a0";
         ctx.fillRect(beltX, pos.y + 4, 2, 5);
-        ctx.font = "12px system-ui";
-        ctx.textAlign = "center";
-        const nameWidth = Math.ceil(ctx.measureText(player.name).width) + 12;
-        ctx.fillStyle = "#101817cc";
-        ctx.fillRect(pos.x - nameWidth / 2, pos.y - 51, nameWidth, 18);
-        ctx.fillStyle = colors[player.color];
-        ctx.fillText(player.name, pos.x, pos.y - 38);
-        drawPlayerHealth(ctx, pos.x, pos.y - 32, player.hitpoints, player.maxHitpoints);
+        drawPlayerHealth(
+          ctx,
+          pos.x,
+          pos.y - 46,
+          player.hitpoints,
+          player.maxHitpoints,
+          player.name,
+          colors[player.color],
+        );
       }
       if (quality.current.lighting) {
         ctx.save();

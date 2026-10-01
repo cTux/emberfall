@@ -108,7 +108,9 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
       endsAt: 120000,
       sequence: 10,
       nextSpawn: 99999,
-      damage: [],
+      damage: [
+        { id: 99, x: 2370, y: 1340, amount: 10, at: 10000, target: "enemy:99", killed: true },
+      ],
       portals: [],
       enemies: [
         {
@@ -204,6 +206,21 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     };
     (window as unknown as { assetCapture: typeof capture }).assetCapture = capture;
     const proto = CanvasRenderingContext2D.prototype;
+    const bars = new WeakMap<CanvasRenderingContext2D, { x: number; y: number; width: number }>();
+    proto.fillRect = new Proxy(proto.fillRect, {
+      apply(target, ctx, args) {
+        if (ctx.fillStyle === "#101817" && args[3] === 14)
+          bars.set(ctx, { x: args[0], y: args[1], width: args[2] });
+        return Reflect.apply(target, ctx, args);
+      },
+    });
+    proto.fill = new Proxy(proto.fill, {
+      apply(target, ctx, args) {
+        if (ctx.fillStyle === "#8c1728")
+          document.body.setAttribute("data-blood-alpha", String(ctx.globalAlpha));
+        return Reflect.apply(target, ctx, args);
+      },
+    });
     proto.stroke = new Proxy(proto.stroke, {
       apply(target, ctx, args) {
         if (ctx.strokeStyle === "#96d66b") capture.rootLines++;
@@ -236,6 +253,11 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     });
     proto.fillText = new Proxy(proto.fillText, {
       apply(target, ctx, args) {
+        if (["Mage", "Bear"].includes(args[0])) {
+          const bar = bars.get(ctx);
+          if (bar && args[1] === bar.x + bar.width / 2 && args[2] === bar.y + 7)
+            document.body.setAttribute(`data-name-${args[0].toLowerCase()}`, ctx.font);
+        }
         if (ctx.font === "bold 8px system-ui")
           document.body.setAttribute(`data-debuff-${args[0]}`, String(ctx.fillStyle));
         return Reflect.apply(target, ctx, args);
@@ -268,15 +290,29 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
   );
   const row = capture.icons.slice(-4);
   expect(row.map((icon) => icon.kind)).toEqual(["bleed", "poison", "burn", "roots"]);
-  expect(row.every((icon) => icon.width === 16 && icon.height === 16 && icon.y === row[0].y)).toBe(
+  expect(row.every((icon) => icon.width === 12 && icon.height === 12 && icon.y === row[0].y)).toBe(
     true,
   );
-  expect(row.slice(1).every((icon, index) => icon.x - row[index].x === 18)).toBe(true);
+  expect(row.slice(1).every((icon, index) => icon.x - row[index].x === 14)).toBe(true);
+  for (const name of ["mage", "bear"])
+    await expect(page.locator("body")).toHaveAttribute(`data-name-${name}`, "8px system-ui");
+  await expect
+    .poll(async () => Number(await page.locator("body").getAttribute("data-blood-alpha")))
+    .toBeCloseTo(0.5, 1);
   expect(capture.rootLines).toBe(0);
   await page.screenshot({ path: "test-results/class-combat.png" });
-  world.serverNow = 15000;
-  sendState();
+  world.scene!.damage = [];
+  world.serverNow = 25000;
+  // Fill the snapshot buffer to advance its confirmed clock without a real 15-second wait.
+  for (let i = 0; i < 20; i++) {
+    world.serverNow++;
+    sendState();
+    await page.waitForTimeout(30);
+  }
   await page.waitForTimeout(4500);
+  await expect
+    .poll(async () => Number(await page.locator("body").getAttribute("data-blood-alpha")))
+    .toBeCloseTo(0.25, 1);
   await page.evaluate(() => {
     (window as unknown as { assetCapture: { icons: unknown[] } }).assetCapture.icons = [];
   });
@@ -286,4 +322,18 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
       () => (window as unknown as { assetCapture: { icons: unknown[] } }).assetCapture.icons.length,
     ),
   ).toBe(0);
+  world.serverNow = 40000;
+  // An expired event must not recreate a removed puddle.
+  world.scene!.damage = [
+    { id: 99, x: 2370, y: 1340, amount: 10, at: 10000, target: "enemy:99", killed: true },
+  ];
+  for (let i = 0; i < 20; i++) {
+    world.serverNow++;
+    sendState();
+    await page.waitForTimeout(30);
+  }
+  await page.waitForTimeout(4500);
+  await page.locator("body").evaluate((body) => body.removeAttribute("data-blood-alpha"));
+  await page.waitForTimeout(150);
+  await expect(page.locator("body")).not.toHaveAttribute("data-blood-alpha");
 });
