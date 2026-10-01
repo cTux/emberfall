@@ -171,6 +171,14 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
       attackAngle: 0,
     },
   });
+  world.players.push({
+    ...world.players[0],
+    id: "w",
+    name: "Warrior",
+    classId: "warrior",
+    x: 2420,
+    y: 1190,
+  });
   world.scene!.enemies[0].kind = "boss";
   world.scene!.enemies[0].debuffs!.push({
     kind: "roots",
@@ -179,16 +187,29 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     expiresAt: 14000,
     ownerId: "d",
   });
-  await page.routeWebSocket("**/ws", (socket) =>
+  let sendState = () => {};
+  await page.routeWebSocket("**/ws", (socket) => {
+    sendState = () => socket.send(JSON.stringify({ type: "state", world }));
     socket.onMessage((raw) => {
       if (JSON.parse(String(raw)).type === "create")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
-    }),
-  );
+    });
+  });
   await page.addInitScript(() => {
+    const capture = {
+      icons: [] as { kind: string; x: number; y: number; width: number; height: number }[],
+      rootLines: 0,
+    };
+    (window as unknown as { assetCapture: typeof capture }).assetCapture = capture;
     const proto = CanvasRenderingContext2D.prototype;
+    proto.stroke = new Proxy(proto.stroke, {
+      apply(target, ctx, args) {
+        if (ctx.strokeStyle === "#96d66b") capture.rootLines++;
+        return Reflect.apply(target, ctx, args);
+      },
+    });
     proto.drawImage = new Proxy(proto.drawImage, {
       apply(target, ctx, args) {
         if (
@@ -199,6 +220,17 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
             `data-${args[0].src.split("/").at(-1)!.replace(".png", "")}`,
             "drawn",
           );
+        if (args[0] instanceof HTMLImageElement && args[0].src.includes("/assets/weapons/"))
+          document.body.setAttribute(
+            `data-weapon-${args[0].src.split("/").at(-1)!.replace(".png", "")}`,
+            "drawn",
+          );
+        if (args[0] instanceof HTMLImageElement && args[0].src.includes("/assets/status/")) {
+          const kind = args[0].src.split("/").at(-1)!.replace(".svg", "");
+          document.body.setAttribute(`data-icon-${kind}`, "drawn");
+          capture.icons.push({ kind, x: args[1], y: args[2], width: args[3], height: args[4] });
+          if (capture.icons.length > 100) capture.icons.splice(0, 4);
+        }
         return Reflect.apply(target, ctx, args);
       },
     });
@@ -217,9 +249,41 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
   await expect(page.locator("body")).toHaveAttribute("data-ranger-attack", "drawn");
   await expect(page.locator("body")).toHaveAttribute("data-druid-attack", "drawn");
   await expect(page.locator("body")).toHaveAttribute("data-bear", "drawn");
-  await expect(page.locator("body")).toHaveAttribute("data-debuff-3", "#ff6575");
-  await expect(page.locator("body")).toHaveAttribute("data-debuff-4", "#9deb65");
-  await expect(page.locator("body")).toHaveAttribute("data-debuff-5", "#ffb74e");
-  await expect(page.locator("body")).toHaveAttribute("data-debuff-R", "#9deb65");
+  for (const kind of ["bleed", "poison", "burn", "roots"])
+    await expect(page.locator("body")).toHaveAttribute(`data-icon-${kind}`, "drawn");
+  for (const id of ["warrior", "ranger", "mage", "druid"])
+    await expect(page.locator("body")).toHaveAttribute(`data-weapon-${id}`, "drawn");
+  for (const stacks of ["1", "3", "4", "5"])
+    await expect(page.locator("body")).toHaveAttribute(`data-debuff-${stacks}`, "#ffffff");
+  const capture = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          assetCapture: {
+            icons: { kind: string; x: number; y: number; width: number; height: number }[];
+            rootLines: number;
+          };
+        }
+      ).assetCapture,
+  );
+  const row = capture.icons.slice(-4);
+  expect(row.map((icon) => icon.kind)).toEqual(["bleed", "poison", "burn", "roots"]);
+  expect(row.every((icon) => icon.width === 16 && icon.height === 16 && icon.y === row[0].y)).toBe(
+    true,
+  );
+  expect(row.slice(1).every((icon, index) => icon.x - row[index].x === 18)).toBe(true);
+  expect(capture.rootLines).toBe(0);
   await page.screenshot({ path: "test-results/class-combat.png" });
+  world.serverNow = 15000;
+  sendState();
+  await page.waitForTimeout(4500);
+  await page.evaluate(() => {
+    (window as unknown as { assetCapture: { icons: unknown[] } }).assetCapture.icons = [];
+  });
+  await page.waitForTimeout(150);
+  expect(
+    await page.evaluate(
+      () => (window as unknown as { assetCapture: { icons: unknown[] } }).assetCapture.icons.length,
+    ),
+  ).toBe(0);
 });

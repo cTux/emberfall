@@ -95,6 +95,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         ".js": "text/javascript",
         ".css": "text/css",
         ".png": "image/png",
+        ".svg": "image/svg+xml",
         ".mp3": "audio/mpeg",
         ".wav": "audio/wav",
         ".ttf": "font/ttf",

@@ -68,6 +68,10 @@ The socket test covers world discovery, password rejection, joining, movement va
 
 ## Assets
 
+Class weapons use the free CC0 [496 RPG icons by Henrique Lazarini (7Soul1)](https://opengameart.org/content/496-pixel-art-icons-for-medievalfantasy-rpg): sword, bow, gold mage staff and green druid staff. [Game-icons.net](https://game-icons.net/) provides bleeding, poison, burning and plant-roots symbols under CC BY 3.0, credited in the Codex and `public/assets/status/CREDITS.txt`. These clear silhouettes remain readable in the compact nameplate row; the weapons retain the game's pixel-art style.
+
+Active enemy debuffs appear as centered 16-unit icons with a 2-unit gap above the health bar, with only outlined stack counts in their lower-right corners. Roots use the same row instead of drawing vines at the feet. Expired effects disappear and an empty row takes no space. Weapons appear on living characters and animate with their existing attacks; wardrobe choices show weapon and ability icons. Combat rules and network state are unchanged. Existing browser coverage checks all class assets, icon placement, expiry and stacks.
+
 Selected original sprites are copied from the adjacent `ninja-adventure-gallery/src/assets` directory into `packages/client/public/assets`. The original gallery is unchanged. Ninja Adventure by Pixel-boy and AAA is CC0; the original license and credits accompany the copies. [Asset source](https://pixel-boy.itch.io/ninja-adventure-asset-pack).
 
 ## Viewport, party and obstacles

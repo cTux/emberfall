@@ -1,4 +1,5 @@
 import { classSprite } from "./characters";
+import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { Codex } from "./Codex";
 import { ENEMY_HP, CLASS_IDS, CLASS_LABELS } from "@emberfall/common";
 import { useEffect, useRef, useState } from "react";
@@ -805,6 +806,7 @@ function App() {
                         style={{ backgroundImage: `url(${classSprite(id)})` }}
                         aria-hidden="true"
                       />
+                      <img className="combat-icon weapon-icon" src={weaponSrc(id)} alt="" />
                       <span>
                         <strong>
                           {CLASS_LABELS[id]}
@@ -815,6 +817,7 @@ function App() {
                           {stats?.maxHitpoints ?? 100} · MP {stats?.maxManapoints ?? 50}
                         </small>
                         <small>
+                          <img className="combat-icon" src={statusSrc(classAbility[id])} alt="" />{" "}
                           {id === "warrior"
                             ? "Slashing sword · Bleeding"
                             : id === "ranger"
