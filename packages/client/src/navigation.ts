@@ -56,7 +56,7 @@ export function drawNavigation(ctx: CanvasRenderingContext2D, world: WorldState,
     ctx.stroke();
     ctx.fill();
     ctx.restore();
-    ctx.font = "bold 11px system-ui";
+    ctx.font = 'bold 11px "Pixelify Sans", sans-serif';
     ctx.textAlign = "center";
     const label = target.name.length > 20 ? target.name.slice(0, 19) + "…" : target.name;
     const box = ctx.measureText(label).width + 12;

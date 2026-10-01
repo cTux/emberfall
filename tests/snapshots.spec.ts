@@ -19,7 +19,8 @@ test("a one-pixel server correction is visually ignored without walking animatio
     (window as unknown as { correctionCapture: typeof capture }).correctionCapture = capture;
     const text = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (value, x, y) {
-      if (value === "Smooth" && this.font === "12px system-ui") capture.positions.push(x);
+      if (value === "Smooth" && this.font === '8px "Pixelify Sans", sans-serif')
+        capture.positions.push(x);
       text.call(this, value, x, y);
     };
     const draw = CanvasRenderingContext2D.prototype.drawImage;
@@ -93,7 +94,7 @@ test("local movement is instant during delayed snapshots and reconciles after de
     (window as unknown as { heroX: number }).heroX = 0;
     const original = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (text, x, y, maxWidth) {
-      if (text === "Buffered" && this.font === "12px system-ui")
+      if (text === "Buffered" && this.font === '8px "Pixelify Sans", sans-serif')
         (window as unknown as { heroX: number }).heroX = x;
       if (maxWidth === undefined) original.call(this, text, x, y);
       else original.call(this, text, x, y, maxWidth);

@@ -258,7 +258,7 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
           if (bar && args[1] === bar.x + bar.width / 2 && args[2] === bar.y + 7)
             document.body.setAttribute(`data-name-${args[0].toLowerCase()}`, ctx.font);
         }
-        if (ctx.font === "bold 8px system-ui")
+        if (ctx.font === 'bold 8px "Pixelify Sans", sans-serif')
           document.body.setAttribute(`data-debuff-${args[0]}`, String(ctx.fillStyle));
         return Reflect.apply(target, ctx, args);
       },
@@ -295,7 +295,10 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
   );
   expect(row.slice(1).every((icon, index) => icon.x - row[index].x === 14)).toBe(true);
   for (const name of ["mage", "bear"])
-    await expect(page.locator("body")).toHaveAttribute(`data-name-${name}`, "8px system-ui");
+    await expect(page.locator("body")).toHaveAttribute(
+      `data-name-${name}`,
+      '8px "Pixelify Sans", sans-serif',
+    );
   await expect
     .poll(async () => Number(await page.locator("body").getAttribute("data-blood-alpha")))
     .toBeCloseTo(0.5, 1);

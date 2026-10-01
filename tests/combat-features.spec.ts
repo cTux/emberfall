@@ -158,7 +158,7 @@ test("warnings, enemy silhouettes, graphics controls and scene music work togeth
     });
     prototype.fillText = new Proxy(prototype.fillText, {
       apply(target, context, args) {
-        if (args[0] === "Hunter" && context.font === "12px system-ui")
+        if (args[0] === "Hunter" && context.font === '8px "Pixelify Sans", sans-serif')
           capture.frames.push(performance.now());
         return Reflect.apply(target, context, args);
       },
