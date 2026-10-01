@@ -39,6 +39,11 @@ export const clientMessage = z.discriminatedUnion("type", [
     password,
     characterToken,
   }),
+  z.object({
+    type: z.literal("resume"),
+    worldId: z.string().uuid(),
+    characterToken: characterToken.unwrap(),
+  }),
   z.object({ type: z.literal("leave") }),
   z.object({ type: z.literal("selectClass"), classId: classSchema }),
   z.object({

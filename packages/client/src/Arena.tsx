@@ -67,7 +67,8 @@ export function Arena({
     prefs.current = preferences;
   }, [world, send, graphics, preferences]);
   useEffect(() => {
-    const ctx = canvas.current!.getContext("2d", { alpha: false })!;
+    const element = canvas.current!;
+    const ctx = element.getContext("2d", { alpha: false })!;
     const knight = characterImages.warrior.walk;
     const nature = new Image();
     nature.src = "/assets/nature.png";
@@ -244,8 +245,8 @@ export function Arena({
       frameCount = 0;
     const resize = () => {
       const ratio = Math.min(devicePixelRatio * quality.current.resolution * resolutionScale, 3);
-      canvas.current!.width = Math.round(innerWidth * ratio);
-      canvas.current!.height = Math.round(innerHeight * ratio);
+      element.width = Math.round(innerWidth * ratio);
+      element.height = Math.round(innerHeight * ratio);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -292,7 +293,7 @@ export function Arena({
         paintBackground();
         resize();
       }
-      const el = canvas.current!;
+      const el = element;
       const scale = Math.max(el.width / ARENA.width, el.height / ARENA.height);
       if (latest.current) snapshots.push(latest.current, now);
       if (document.querySelector("dialog[open]")) keys.clear();
@@ -567,6 +568,7 @@ export function Arena({
     }
     frame = requestAnimationFrame(draw);
     return () => {
+      nature.onload = houses.onload = null;
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener("resize", resize);

@@ -73,10 +73,15 @@ function App() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [retry, setRetry] = useState(0);
+  const previousWorld = useRef<string | null>(null);
+  const failedConnections = useRef(0);
   useEffect(() => {
     const url =
       import.meta.env.VITE_SERVER_URL ||
       `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`;
+    setStatus(previousWorld.current ? "Reconnecting" : "Connecting");
+    let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    let resuming = false;
     const ws = new WebSocket(url);
     socket.current = ws;
     let joinedId = "";
@@ -94,7 +99,19 @@ function App() {
     };
     const pingTimer = setInterval(ping, 2000);
     ws.onopen = () => {
-      setStatus("Connected");
+      failedConnections.current = 0;
+      setError("");
+      resuming = !!previousWorld.current && !!characterToken.current;
+      if (resuming) {
+        setPending(true);
+        ws.send(
+          JSON.stringify({
+            type: "resume",
+            worldId: previousWorld.current,
+            characterToken: characterToken.current,
+          }),
+        );
+      } else setStatus("Connected");
       ping();
     };
     ws.onmessage = (event) => {
@@ -105,6 +122,9 @@ function App() {
       }
       if (message.type === "worlds") setWorlds(message.worlds);
       if (message.type === "joined") {
+        previousWorld.current = message.world.id;
+        resuming = false;
+        setStatus("Connected");
         setMenu(null);
         joinedId = message.playerId;
         previousScene = undefined;
@@ -136,6 +156,7 @@ function App() {
         setWorld(message.world);
       }
       if (message.type === "left") {
+        previousWorld.current = null;
         setMenu(null);
         setBrowserOpen(true);
         setWorld(null);
@@ -144,6 +165,15 @@ function App() {
         setTab("browse");
       }
       if (message.type === "error") {
+        if (resuming) {
+          resuming = false;
+          previousWorld.current = null;
+          setStatus("Connected");
+          setWorld(null);
+          setPlayerId("");
+          setMenu(null);
+          setBrowserOpen(true);
+        }
         setError(message.message);
         setPending(false);
       }
@@ -151,21 +181,26 @@ function App() {
     ws.onclose = () => {
       clearInterval(pingTimer);
       setLatency(null);
-      setStatus("Disconnected");
-      setWorld(null);
+      setStatus("Reconnecting");
       setWorlds([]);
       setPending(false);
-      setError("Connection lost. Reconnect to find or create a world.");
+      setError("Connection lost. Reconnecting automatically…");
+      reconnectTimer = setTimeout(
+        () => setRetry((value) => value + 1),
+        failedConnections.current++ === 0 ? 0 : 1000,
+      );
     };
-    ws.onerror = () => setError("Cannot reach the world server.");
+    ws.onerror = () => setError("Cannot reach the world server. Retrying automatically…");
     return () => {
       clearInterval(pingTimer);
-      ws.onclose = null;
+      clearTimeout(reconnectTimer);
+      ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null;
       ws.close();
     };
   }, [retry]);
   const send = (message: ClientMessage) => {
-    if (socket.current?.readyState === WebSocket.OPEN) socket.current.send(JSON.stringify(message));
+    if (status === "Connected" && socket.current?.readyState === WebSocket.OPEN)
+      socket.current.send(JSON.stringify(message));
   };
   const act = (message: ClientMessage) => {
     if (status !== "Connected") return;
@@ -225,7 +260,8 @@ function App() {
     <main>
       <section className={`stage ${world ? "in-world" : ""}`} inert={!!menu}>
         <Arena
-          world={world}
+          key={`${playerId}:${retry}`}
+          world={status === "Connected" ? world : null}
           playerId={playerId}
           send={send}
           graphics={graphics}
@@ -535,17 +571,6 @@ function App() {
         {error && (
           <div className="notice" role="alert">
             {error}
-            {status === "Disconnected" && (
-              <button
-                onClick={() => {
-                  setStatus("Connecting");
-                  setError("");
-                  setRetry((r) => r + 1);
-                }}
-              >
-                Reconnect
-              </button>
-            )}
             <button className="dismiss" aria-label="Dismiss message" onClick={() => setError("")}>
               ×
             </button>
