@@ -3,7 +3,12 @@ import { drawCompanion } from "./companion";
 import { crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
-import { drawLootAndBlood, drawClassProjectiles, drawDebuffs } from "./combat-effects";
+import {
+  bloodPuddleRenderer,
+  drawLootAndBlood,
+  drawClassProjectiles,
+  drawDebuffs,
+} from "./combat-effects";
 import { PLAYER_ATTACK_RANGE, PLAYER_ATTACK_DURATION } from "@emberfall/common";
 import { movementFacing } from "./facing";
 import { drawDanger, drawPlayerRange } from "./danger";
@@ -166,6 +171,7 @@ export function forestRenderer(
   }
   const lanternTexture = document.createElement("canvas");
   const positions = new Map<string, { x: number; y: number; facing: number }>();
+  const drawBloodPuddles = bloodPuddleRenderer();
   let lastScene: string | undefined;
   const masks = new Map<string, HTMLCanvasElement>();
   const outlines = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
@@ -216,6 +222,12 @@ export function forestRenderer(
     for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++)
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
         ctx.drawImage(ground, col * 320, row * 320);
+    drawBloodPuddles(ctx, world?.scene, prefs.bloodPuddles, near, {
+      x: cameraX,
+      y: cameraY,
+      width,
+      height,
+    });
     const trees = forestTrees(cx, cy, Math.max(width, height) / 2 + 150).filter(
       (t) =>
         t.x > cameraX - 100 &&

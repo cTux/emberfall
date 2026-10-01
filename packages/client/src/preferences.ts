@@ -1,4 +1,5 @@
 export interface Preferences {
+  bloodPuddles: boolean;
   damageNumbers: boolean;
   fps: boolean;
   latency: boolean;
@@ -9,6 +10,7 @@ export interface Preferences {
 }
 export function loadPreferences(): Preferences {
   const result = {
+    bloodPuddles: true,
     damageNumbers: true,
     fps: true,
     latency: true,
@@ -19,7 +21,14 @@ export function loadPreferences(): Preferences {
   };
   try {
     const saved = JSON.parse(localStorage.getItem("emberfall.preferences") ?? "{}");
-    for (const key of ["damageNumbers", "fps", "latency", "sound", "music"] as const)
+    for (const key of [
+      "bloodPuddles",
+      "damageNumbers",
+      "fps",
+      "latency",
+      "sound",
+      "music",
+    ] as const)
       if (typeof saved?.[key] === "boolean") result[key] = saved[key];
     if (typeof saved?.musicVolume === "number" && Number.isFinite(saved.musicVolume))
       result.musicVolume = Math.max(0, Math.min(1, saved.musicVolume));

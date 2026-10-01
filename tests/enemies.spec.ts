@@ -72,6 +72,39 @@ test("elite and boss render yellow and orange proportional health bars and a bos
     });
   });
   await page.addInitScript(() => {
+    let puddles = 0;
+    let edges = 0;
+    const begin = CanvasRenderingContext2D.prototype.beginPath;
+    CanvasRenderingContext2D.prototype.beginPath = function () {
+      edges = 0;
+      begin.call(this);
+    };
+    const line = CanvasRenderingContext2D.prototype.lineTo;
+    CanvasRenderingContext2D.prototype.lineTo = function (x, y) {
+      edges++;
+      line.call(this, x, y);
+    };
+    const transform = CanvasRenderingContext2D.prototype.setTransform;
+    CanvasRenderingContext2D.prototype.setTransform = new Proxy(transform, {
+      apply(target, ctx, args) {
+        if (ctx.canvas === document.querySelector("canvas")) {
+          document.body.dataset.bloodPuddles = String(puddles);
+          puddles = 0;
+        }
+        return Reflect.apply(target, ctx, args);
+      },
+    });
+    const fill = CanvasRenderingContext2D.prototype.fill;
+    CanvasRenderingContext2D.prototype.fill = new Proxy(fill, {
+      apply(target, ctx, args) {
+        if (ctx.fillStyle === "#8c1728") {
+          puddles++;
+          document.body.dataset.bloodEdges = String(edges);
+          document.body.dataset.bloodOpacity = String(ctx.globalAlpha);
+        }
+        return Reflect.apply(target, ctx, args);
+      },
+    });
     const bars: Record<string, number> = {};
     (window as unknown as { enemyBars: typeof bars }).enemyBars = bars;
     const images = CanvasRenderingContext2D.prototype.drawImage;
@@ -128,6 +161,20 @@ test("elite and boss render yellow and orange proportional health bars and a bos
   await expect(page.locator("body")).toHaveAttribute("data-boss-name", "The Hollow Warden");
   for (const archetype of ["skeleton", "runner", "brute", "caster"])
     await expect(page.locator("body")).toHaveAttribute(`data-death-${archetype}`, "yes");
+  await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "4");
+  await expect(page.locator("body")).toHaveAttribute("data-blood-opacity", "0.5");
+  await expect(page.locator("body")).toHaveAttribute("data-blood-edges", "23");
+  // Puddles survive expiry of the server's short-lived damage events.
+  world.scene!.damage = [];
+  world.serverNow = 12000;
+  update();
+  await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "4");
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByLabel("Blood puddles", { exact: true }).uncheck();
+  await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "0");
+  await page.getByLabel("Blood puddles", { exact: true }).check();
+  await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "4");
+  await page.getByRole("button", { name: "Close menu" }).click();
   await expect(page.locator("body")).toHaveAttribute("data-player-health-width", "19");
   await expect(page.locator("body")).toHaveAttribute("data-ally-arrow", "yes");
   await page.screenshot({ path: "test-results/elite-boss-bars.png" });
@@ -149,4 +196,12 @@ test("elite and boss render yellow and orange proportional health bars and a bos
   await expect(
     page.getByText("Scene complete · Return portal open", { exact: true }),
   ).toBeVisible();
+  world.scene!.id = "next-run";
+  update();
+  await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "0");
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByLabel("Blood puddles", { exact: true }).uncheck();
+  await page.reload();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await expect(page.getByLabel("Blood puddles", { exact: true })).not.toBeChecked();
 });
