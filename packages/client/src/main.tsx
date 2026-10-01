@@ -617,6 +617,16 @@ function App() {
                   <label className="checkbox">
                     <input
                       type="checkbox"
+                      checked={preferences.bloodPuddles}
+                      onChange={(e) =>
+                        setPreferences((p) => ({ ...p, bloodPuddles: e.target.checked }))
+                      }
+                    />
+                    Blood puddles
+                  </label>
+                  <label className="checkbox">
+                    <input
+                      type="checkbox"
                       checked={preferences.damageNumbers}
                       onChange={(e) =>
                         setPreferences((p) => ({ ...p, damageNumbers: e.target.checked }))
