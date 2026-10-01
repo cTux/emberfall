@@ -12,6 +12,7 @@ import {
   nearbyInteraction,
   WARDROBE,
   clientMessage,
+  tickCompanion,
 } from "@emberfall/common";
 import {
   hitEnemy,
@@ -20,6 +21,7 @@ import {
   tickPlayerShots,
 } from "../../common/src/class-combat.ts";
 import type { Player, SceneState, Enemy } from "@emberfall/common";
+import { moveEnemies } from "../../common/src/enemies.ts";
 const hero = (): Player => ({
   ...freshProgress(),
   id: "p",
@@ -81,6 +83,11 @@ test("class records migrate legacy progress, save independently, and survive res
     assert.equal(restored.classes.ranger.experience, 17);
     assert.equal(restored.classes.warrior.experience, 234);
     assert.deepEqual(restored.classes.warrior.talents, { strength: 2 });
+    assert.equal(restored.classes.druid.maxHitpoints, 100);
+    store.selectClass(old.id, player, "druid");
+    player.experience = 42;
+    store.save(old.id, player.name, player);
+    assert.equal(store.load(created.token).classes.druid.experience, 42);
     store.selectClass(old.id, player, "warrior");
     assert.equal(player.level, 4);
     assert.equal(player.experience, 234);
@@ -88,6 +95,153 @@ test("class records migrate legacy progress, save independently, and survive res
     store.close();
     rmSync(directory, { recursive: true });
   }
+});
+
+test("druid roots prefer two unrooted targets, refresh without delaying ticks, and expire", () => {
+  const s = scene(),
+    p = { ...hero(), classId: "druid" as const };
+  s.enemies = [enemy(1, 2420), enemy(2, 2480), enemy(3, 2540)];
+  fireClassAttack(s, p, 10000);
+  assert.deepEqual(
+    s.enemies.map((e) => e.debuffs?.[0]?.kind),
+    ["roots", "roots", undefined],
+  );
+  fireClassAttack(s, p, 10700);
+  assert.equal(s.enemies[2].debuffs![0].kind, "roots");
+  assert.equal(s.enemies[0].debuffs![0].nextTick, 11000);
+  tickDebuffs(s, [p], 11000);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [98, 98, 100],
+  );
+  tickDebuffs(s, [p], 15700);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [90, 90, 90],
+  );
+  assert(s.enemies.every((e) => e.debuffs?.length === 0));
+  assert.equal(s.playerShots, undefined);
+});
+
+test("roots immobilize ordinary enemies but leave bosses mobile, and root kills complete the boss", () => {
+  const s = scene(),
+    p = { ...hero(), classId: "druid" as const, attackAt: 10000 };
+  const normal = enemy(1),
+    boss = { ...enemy(2, 2300, 2), kind: "boss" as const };
+  s.enemies = [normal, boss];
+  s.bossId = boss.id;
+  fireClassAttack(s, p, 10000);
+  moveEnemies([normal], [p], 0.1, 10100);
+  assert.equal(normal.x, 2480);
+  moveEnemies([boss], [p], 0.1, 10100);
+  assert(boss.x > 2300);
+  p.x = 2000;
+  stepCombat(s, [p], 11000, 0);
+  assert.equal(s.phase, "ended");
+  assert.equal(p.experience, 1);
+  assert(s.drops?.length);
+});
+
+test("bear swipes once per enemy per cycle for two damage, leashes, returns and resumes", () => {
+  const s = scene(),
+    p: Player = { ...hero(), classId: "druid" };
+  s.enemies = [enemy(1, 2440), enemy(2, 2460)];
+  tickCompanion(p, s, 10000, 0);
+  const bear = p.bear!;
+  assert.equal(bear.name, "Bear");
+  assert.equal(bear.maxHitpoints, 150);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [98, 98],
+  );
+  tickCompanion(p, s, 10050, 0);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [98, 98],
+  );
+  tickCompanion(p, s, 10700, 0);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [96, 96],
+  );
+  bear.x = p.x + 120;
+  tickCompanion(p, s, 11400, 0.05);
+  assert(bear.returning);
+  assert.equal(bear.attackAt, undefined);
+  assert(bear.x < p.x + 120);
+  bear.x = p.x + 60;
+  tickCompanion(p, s, 11450, 0);
+  assert(bear.returning);
+  bear.x = p.x + 19;
+  tickCompanion(p, s, 11500, 0);
+  assert(!bear.returning);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [94, 94],
+  );
+});
+
+test("enemies damage Bear; death resurrects exactly five seconds later at its owner", () => {
+  const s = scene(),
+    p: Player = { ...hero(), classId: "druid", attackAt: 10000 };
+  tickCompanion(p, s, 10000, 0);
+  const bear = p.bear!;
+  bear.x = 2460;
+  bear.hitpoints = 10;
+  const e = enemy(1, 2460);
+  e.attack = { startedAt: 9000, endsAt: 10000, x: 2460, y: 1280, radius: 40, ranged: false };
+  s.enemies = [e];
+  stepCombat(s, [p], 10000, 0);
+  assert.equal(bear.hitpoints, 0);
+  assert.equal(p.hitpoints, 100);
+  assert.equal(bear.resurrectAt, 15000);
+  p.maxHitpoints = 120;
+  tickCompanion(p, s, 14999, 0);
+  assert.equal(bear.hitpoints, 0);
+  tickCompanion(p, s, 15000, 0);
+  assert.equal(bear.hitpoints, 180);
+  assert.equal(bear.x, p.x);
+  assert.equal(bear.resurrectAt, undefined);
+  const hitpoints = bear.hitpoints;
+  s.projectiles = [{ id: 50, x: bear.x, y: bear.y, vx: 0, vy: 0, expiresAt: 20000 }];
+  p.x -= 80;
+  p.attackAt = 15000;
+  stepCombat(s, [p], 15100, 0);
+  assert.equal(bear.hitpoints, hitpoints - 10);
+});
+
+test("bear wraps its leash and follows in the village; other classes remove companions", () => {
+  const p: Player = { ...hero(), classId: "druid", x: 5 };
+  tickCompanion(p, scene(), 10000, 0);
+  p.bear!.x = FOREST.width - 40;
+  tickCompanion(p, scene(), 10050, 0);
+  assert(!p.bear!.returning);
+  p.scene = undefined;
+  p.x = 480;
+  p.y = 360;
+  p.bear!.x = 550;
+  p.bear!.y = 360;
+  tickCompanion(p, undefined, 10100, 0.05);
+  assert(p.bear!.x < 550);
+  p.classId = "mage";
+  tickCompanion(p, undefined, 10150, 0);
+  assert.equal(p.bear, undefined);
+});
+
+test("Druid casts roots without melee damage, with zero or one target", () => {
+  const s = scene(),
+    p: Player = { ...hero(), classId: "druid" };
+  tickCompanion(p, s, 10000, 0);
+  p.bear!.hitpoints = 0;
+  p.bear!.resurrectAt = 20000;
+  s.enemies = [enemy(1, 2440)];
+  stepCombat(s, [p], 10000, 0);
+  assert.equal(s.enemies[0].hitpoints, 100);
+  assert.equal(s.enemies[0].debuffs?.length, 1);
+  stepCombat(s, [p], 10050, 0);
+  assert.equal(s.enemies[0].debuffs![0].expiresAt, 15000);
+  s.enemies = [];
+  assert.doesNotThrow(() => fireClassAttack(s, p, 10700));
 });
 
 test("class selection schema and wardrobe interaction reject invalid classes and dead players", () => {

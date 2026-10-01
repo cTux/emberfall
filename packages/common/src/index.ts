@@ -6,10 +6,15 @@ export { ENEMY_HP, ENEMY_STATS, enemyMaxHealth, spawnArchetype } from "./enemies
 import type { SceneState } from "./scene.ts";
 
 export const MAX_PLAYERS = 8;
-export const CLASS_IDS = ["warrior", "ranger", "mage"] as const;
+export const CLASS_IDS = ["warrior", "ranger", "mage", "druid"] as const;
 export const classSchema = z.enum(CLASS_IDS);
 export type ClassId = z.infer<typeof classSchema>;
-export const CLASS_LABELS = { warrior: "Warrior", ranger: "Ranger", mage: "Mage" } as const;
+export const CLASS_LABELS = {
+  warrior: "Warrior",
+  ranger: "Ranger",
+  mage: "Mage",
+  druid: "Druid",
+} as const;
 const name = z.string().trim().min(1).max(24);
 const password = z.string().max(64);
 const characterToken = z
@@ -65,6 +70,7 @@ export const clientMessage = z.discriminatedUnion("type", [
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export interface Player extends CharacterProgress {
+  bear?: Bear;
   classId?: ClassId;
   classes?: Record<ClassId, CharacterProgress>;
   id: string;
@@ -81,6 +87,19 @@ export interface Player extends CharacterProgress {
   inputX?: number;
   inputY?: number;
   inputAt?: number;
+}
+export interface Bear {
+  id: string;
+  name: "Bear";
+  x: number;
+  y: number;
+  hitpoints: number;
+  maxHitpoints: number;
+  attackAt?: number;
+  attackAngle?: number;
+  hurtAt?: number;
+  resurrectAt?: number;
+  returning: boolean;
 }
 export interface WorldSummary {
   id: string;

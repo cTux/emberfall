@@ -100,6 +100,7 @@ export class CharacterStore {
       talents: next.talents ?? {},
       attackAt: undefined,
       attackAngle: undefined,
+      bear: undefined,
     };
     this.save(id, player.name, updated);
     Object.assign(player, updated);

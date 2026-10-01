@@ -809,7 +809,9 @@ function App() {
                             ? "Slashing sword · Bleeding"
                             : id === "ranger"
                               ? "Piercing arrows · Poison"
-                              : "Twin fireballs · Burning"}
+                              : id === "mage"
+                                ? "Twin fireballs · Burning"
+                                : "Twin roots · Bear companion"}
                         </small>
                       </span>
                     </button>

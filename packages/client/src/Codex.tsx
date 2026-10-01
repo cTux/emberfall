@@ -84,8 +84,15 @@ const chapters = [
       <>
         <p>
           Visit the wardrobe opposite the blue portal in the village and press E. Choose Warrior,
-          Ranger, or Mage before the departure countdown begins. Each uses a different character and
-          weapon.
+          Ranger, Mage, or Druid before the departure countdown begins. Each uses a different
+          character and weapon.
+        </p>
+        <p>
+          Druid roots two enemies, preferring unrooted targets. Roots last five seconds, stop
+          ordinary enemies moving, and deal 2 damage each second. Bosses show roots and take damage
+          but keep moving. Bear has 1.5 times your maximum HP, swipes with claws for 2 damage, and
+          revives five seconds after death. It chases the nearest enemy, returns when more than 100
+          units away from you, and resumes hunting once back at your side.
         </p>
         <p>
           Level, experience, health, mana, and playtime are saved separately for each class under

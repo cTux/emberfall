@@ -1,4 +1,5 @@
 import { characterImages } from "./characters";
+import { drawCompanion } from "./companion";
 import { drawNavigation } from "./navigation";
 import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
@@ -302,7 +303,9 @@ export function Arena({
       let localSwing = false;
       if (view && local) {
         localSwing = localMovement.animateAttack(local, view, now);
-        view.players = view.players.map((player) => (player.id === playerId ? local : player));
+        view.players = view.players.map((player) =>
+          player.id === playerId ? { ...local, bear: player.bear } : player,
+        );
       }
       audio.update(
         local?.scene === "forest" && view?.scene?.phase === "active"
@@ -410,10 +413,17 @@ export function Arena({
         interaction.current?.id === "portal",
       );
       const layers = [
-        ...scenery.map((object) => ({ y: object.y, object, player: null })),
-        ...players.map((player) => ({ y: player.y + 15, object: null, player })),
+        ...scenery.map((object) => ({ y: object.y, object, player: null, bear: null })),
+        ...players.map((player) => ({ y: player.y + 15, object: null, player, bear: null })),
+        ...players.flatMap((p) =>
+          p.bear ? [{ y: p.bear.y + 15, object: null, player: null, bear: p.bear }] : [],
+        ),
       ].sort((a, b) => a.y - b.y);
       for (const layer of layers) {
+        if (layer.bear) {
+          drawCompanion(ctx, layer.bear, layer.bear.x, layer.bear.y, view?.serverNow ?? now);
+          continue;
+        }
         if (layer.object) {
           const object = layer.object;
           ctx.drawImage(

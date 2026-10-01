@@ -18,3 +18,5 @@ Itchio Page: https://pixel-boy.itch.io/
 Pack Page: https://pixel-boy.itch.io/ninja-adventure-asset-pack
 
 Class sprites: ranger uses Actor/Character/Hunter/SeparateAnim/{Walk,Attack}.png; mage uses NinjaMageOrange; warrior attack uses Knight. Copies are unmodified, under the same CC0 license.
+
+Druid uses Actor/Character/Shaman/SeparateAnim/{Walk,Attack}.png; Bear uses Actor/Monster/Bear/SpriteSheet.png. Copies are unmodified, under the same CC0 license.

@@ -1,3 +1,4 @@
+import { CLASS_IDS } from "@emberfall/common";
 import type { ClassId } from "@emberfall/common";
 export const classSprite = (id: ClassId = "warrior") =>
   `/assets/${id === "warrior" ? "knight" : id}.png`;
@@ -7,7 +8,7 @@ const load = (src: string) => {
   return image;
 };
 export const characterImages = Object.fromEntries(
-  (["warrior", "ranger", "mage"] as const).map((id) => [
+  CLASS_IDS.map((id) => [
     id,
     {
       walk: load(classSprite(id)),

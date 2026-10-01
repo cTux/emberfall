@@ -66,7 +66,7 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
         hitEnemy(
           scene,
           enemy,
-          debuff.stacks,
+          debuff.kind === "roots" ? 2 : debuff.stacks,
           players.find((p) => p.id === debuff.ownerId),
           now,
         );
@@ -77,11 +77,37 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
   }
 }
 
-export function fireClassAttack(scene: SceneState, player: Player) {
+export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
+  const rooted = (enemy: Enemy) =>
+    enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now) ? 1 : 0;
   const targets = scene.enemies
     .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= 1000)
-    .sort((a, b) => forestDistance(a, player) - forestDistance(b, player))
-    .slice(0, player.classId === "mage" ? 2 : 1);
+    .sort(
+      (a, b) =>
+        (player.classId === "druid" ? rooted(a) - rooted(b) : 0) ||
+        forestDistance(a, player) - forestDistance(b, player),
+    )
+    .slice(0, player.classId === "mage" || player.classId === "druid" ? 2 : 1);
+  if (player.classId === "druid") {
+    for (const target of targets) {
+      target.debuffs ??= [];
+      const roots = target.debuffs.find((d) => d.kind === "roots" && d.expiresAt > now);
+      if (roots) {
+        roots.expiresAt = now + 5000;
+        roots.ownerId = player.id;
+      } else {
+        target.debuffs = target.debuffs.filter((d) => d.kind !== "roots");
+        target.debuffs.push({
+          kind: "roots",
+          stacks: 1,
+          expiresAt: now + 5000,
+          nextTick: now + 1000,
+          ownerId: player.id,
+        });
+      }
+    }
+    return;
+  }
   scene.playerShots ??= [];
   for (const target of targets) {
     scene.playerShots.push({

@@ -1,4 +1,5 @@
 import { characterImages } from "./characters";
+import { drawCompanion } from "./companion";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
 import { drawLootAndBlood, drawClassProjectiles, drawDebuffs } from "./combat-effects";
@@ -357,10 +358,20 @@ export function forestRenderer(
         height,
       });
     const layers = [
-      ...trees.map((t) => ({ y: t.y, tree: t, actor: null })),
-      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a })),
+      ...trees.map((t) => ({ y: t.y, tree: t, actor: null, bear: null })),
+      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a, bear: null })),
+      ...players.flatMap((p) =>
+        p.bear
+          ? [{ y: near(p.bear.x, p.bear.y).y + 15, tree: null, actor: null, bear: p.bear }]
+          : [],
+      ),
     ].sort((a, b) => a.y - b.y);
     for (const layer of layers) {
+      if (layer.bear) {
+        const point = near(layer.bear.x, layer.bear.y);
+        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime);
+        continue;
+      }
       if (layer.tree) {
         const t = layer.tree;
         if (treeMask) ctx.drawImage(tree, t.x - t.size / 2, t.y - t.size, t.size, t.size);
@@ -503,7 +514,7 @@ function drawPlayerDetails(
   drawPlayerHealth(ctx, x, y - 32, p.hitpoints, p.maxHitpoints);
   const age = now - (p.attackAt ?? 0);
   if (age >= 0 && age < PLAYER_ATTACK_DURATION && p.hitpoints > 0) {
-    if (p.classId === "ranger" || p.classId === "mage") {
+    if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(p.attackAngle ?? 0);
@@ -524,7 +535,7 @@ function drawPlayerDetails(
       } else {
         ctx.fillStyle = "#815636";
         ctx.fillRect(8, -3, 28, 5);
-        ctx.fillStyle = "#ffce70";
+        ctx.fillStyle = p.classId === "druid" ? "#9deb65" : "#ffce70";
         ctx.beginPath();
         ctx.arc(36, 0, 5 + pull * 5, 0, Math.PI * 2);
         ctx.fill();
