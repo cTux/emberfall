@@ -1,5 +1,6 @@
 import { characterImages } from "./characters";
 import { drawCompanion } from "./companion";
+import { crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
 import { drawLootAndBlood, drawClassProjectiles, drawDebuffs } from "./combat-effects";
@@ -359,15 +360,33 @@ export function forestRenderer(
         height,
       });
     const layers = [
-      ...trees.map((t) => ({ y: t.y, tree: t, actor: null, bear: null })),
-      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a, bear: null })),
+      ...trees.map((t) => ({ y: t.y, tree: t, actor: null, bear: null, critter: null })),
+      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a, bear: null, critter: null })),
       ...players.flatMap((p) =>
         p.bear
-          ? [{ y: near(p.bear.x, p.bear.y).y + 15, tree: null, actor: null, bear: p.bear }]
+          ? [
+              {
+                y: near(p.bear.x, p.bear.y).y + 15,
+                tree: null,
+                actor: null,
+                bear: p.bear,
+                critter: null,
+              },
+            ]
           : [],
       ),
+      ...crittersAt("forest", world ? serverTime : now, {
+        x: cameraX,
+        y: cameraY,
+        width,
+        height,
+      }).map((critter) => ({ y: critter.y, tree: null, actor: null, bear: null, critter })),
     ].sort((a, b) => a.y - b.y);
     for (const layer of layers) {
+      if (layer.critter) {
+        drawCritter(ctx, layer.critter);
+        continue;
+      }
       if (layer.bear) {
         const point = near(layer.bear.x, layer.bear.y);
         drawCompanion(ctx, layer.bear, point.x, point.y, serverTime);
