@@ -87,7 +87,7 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
         (player.classId === "druid" ? rooted(a) - rooted(b) : 0) ||
         forestDistance(a, player) - forestDistance(b, player),
     )
-    .slice(0, player.classId === "mage" || player.classId === "druid" ? 2 : 1);
+    .slice(0, player.classId === "mage" ? 2 : 1);
   if (player.classId === "druid") {
     for (const target of targets) {
       target.debuffs ??= [];

@@ -97,27 +97,31 @@ test("class records migrate legacy progress, save independently, and survive res
   }
 });
 
-test("druid roots prefer two unrooted targets, refresh without delaying ticks, and expire", () => {
+test("druid roots prefer one unrooted target, refresh without delaying ticks, and expire", () => {
   const s = scene(),
     p = { ...hero(), classId: "druid" as const };
   s.enemies = [enemy(1, 2420), enemy(2, 2480), enemy(3, 2540)];
   fireClassAttack(s, p, 10000);
   assert.deepEqual(
     s.enemies.map((e) => e.debuffs?.[0]?.kind),
-    ["roots", "roots", undefined],
+    ["roots", undefined, undefined],
   );
   fireClassAttack(s, p, 10700);
+  assert.equal(s.enemies[1].debuffs![0].kind, "roots");
+  assert.equal(s.enemies[2].debuffs, undefined);
+  fireClassAttack(s, p, 11400);
   assert.equal(s.enemies[2].debuffs![0].kind, "roots");
+  fireClassAttack(s, p, 12100);
   assert.equal(s.enemies[0].debuffs![0].nextTick, 11000);
-  tickDebuffs(s, [p], 11000);
+  tickDebuffs(s, [p], 13000);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [98, 98, 100],
+    [94, 96, 98],
   );
-  tickDebuffs(s, [p], 15700);
+  tickDebuffs(s, [p], 17100);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [90, 90, 90],
+    [86, 90, 90],
   );
   assert(s.enemies.every((e) => e.debuffs?.length === 0));
   assert.equal(s.playerShots, undefined);
@@ -130,6 +134,7 @@ test("roots immobilize ordinary enemies but leave bosses mobile, and root kills 
     boss = { ...enemy(2, 2300, 2), kind: "boss" as const };
   s.enemies = [normal, boss];
   s.bossId = boss.id;
+  fireClassAttack(s, p, 10000);
   fireClassAttack(s, p, 10000);
   moveEnemies([normal], [p], 0.1, 10100);
   assert.equal(normal.x, 2480);
@@ -164,11 +169,11 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
     s.enemies.map((e) => e.hitpoints),
     [96, 96],
   );
-  bear.x = p.x + 120;
+  bear.x = p.x + 220;
   tickCompanion(p, s, 11400, 0.05);
   assert(bear.returning);
   assert.equal(bear.attackAt, undefined);
-  assert(bear.x < p.x + 120);
+  assert(bear.x < p.x + 220);
   bear.x = p.x + 60;
   tickCompanion(p, s, 11450, 0);
   assert(bear.returning);
@@ -179,6 +184,42 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
     s.enemies.map((e) => e.hitpoints),
     [94, 94],
   );
+});
+
+test("bear only targets and chases inside the owner's 200-unit radius, including wrapped edges", () => {
+  const s = scene(),
+    p: Player = { ...hero(), classId: "druid" };
+  const e = enemy(1, p.x + 201);
+  s.enemies = [e];
+  tickCompanion(p, s, 10000, 0.05);
+  const bear = p.bear!;
+  assert.equal(bear.x, p.x);
+  assert.equal(bear.attackAt, undefined);
+  e.x = p.x + 200;
+  tickCompanion(p, s, 10050, 0.05);
+  assert(bear.x > p.x);
+  assert.equal(bear.attackAt, 10050);
+  bear.x = p.x + 40;
+  const chasedX = bear.x;
+  e.x = p.x + 201;
+  tickCompanion(p, s, 10100, 0.05);
+  assert(bear.x < chasedX);
+  assert.equal(bear.attackAt, undefined);
+  bear.x = p.x + 200;
+  tickCompanion(p, s, 10150, 0);
+  assert(!bear.returning);
+  bear.x = p.x + 201;
+  tickCompanion(p, s, 10200, 0);
+  assert(bear.returning);
+  p.x = 5;
+  bear.x = 5;
+  bear.returning = false;
+  e.x = FOREST.width - 196;
+  tickCompanion(p, s, 10250, 0);
+  assert.equal(bear.attackAt, undefined);
+  e.x = FOREST.width - 195;
+  tickCompanion(p, s, 10300, 0);
+  assert.equal(bear.attackAt, 10300);
 });
 
 test("enemies damage Bear; death resurrects exactly five seconds later at its owner", () => {

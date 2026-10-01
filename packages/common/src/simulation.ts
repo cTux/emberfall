@@ -119,12 +119,12 @@ export function tickCompanion(
   const distance = forest
     ? forestDistance(bear, player)
     : Math.hypot(bear.x - player.x, bear.y - player.y);
-  if (distance > 100) bear.returning = true;
+  if (distance > 200) bear.returning = true;
   if (bear.returning && distance <= 20) bear.returning = false;
   const target =
     forest && scene?.phase === "active" && !bear.returning
       ? scene.enemies
-          .filter((e) => e.hitpoints > 0)
+          .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= 200)
           .reduce<Enemy | undefined>(
             (best, e) => (!best || forestDistance(bear, e) < forestDistance(bear, best) ? e : best),
             undefined,
@@ -161,7 +161,7 @@ export function tickCompanion(
       bear.y = next.y - 15;
     }
   }
-  if (forestDistance(bear, player) > 100 && forest) bear.returning = true;
+  if (forestDistance(bear, player) > 200 && forest) bear.returning = true;
   if (!target || bear.returning || !scene) {
     bear.attackAt = undefined;
     return;
