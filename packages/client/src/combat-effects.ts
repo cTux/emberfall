@@ -209,7 +209,7 @@ export function drawDebuffs(
 ) {
   const debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now) ?? [];
   ctx.save();
-  ctx.font = "bold 8px system-ui";
+  ctx.font = 'bold 8px "Pixelify Sans", sans-serif';
   ctx.textAlign = "right";
   ctx.lineJoin = "round";
   ctx.lineWidth = 2;

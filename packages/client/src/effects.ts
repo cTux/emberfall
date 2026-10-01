@@ -126,7 +126,7 @@ export function drawNameBadge(
   active: boolean,
 ) {
   ctx.save();
-  ctx.font = "9px system-ui";
+  ctx.font = '9px "Pixelify Sans", sans-serif';
   ctx.textAlign = "center";
   const label = active ? `(E) ${name}` : name;
   const width = ctx.measureText(label).width + 12;
@@ -181,7 +181,7 @@ export function drawPlayerHealth(
   color = "#ffffff",
 ) {
   ctx.save();
-  ctx.font = "8px system-ui";
+  ctx.font = '8px "Pixelify Sans", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   const width = Math.max(40, Math.ceil(ctx.measureText(name).width) + 12);

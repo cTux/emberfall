@@ -1,5 +1,13 @@
+@font-face {
+  font-family: "Pixelify Sans";
+  src: url("/assets/fonts/PixelifySans.ttf") format("truetype");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  font-family: Inter, "Segoe UI", sans-serif;
+  font-family: "Pixelify Sans", sans-serif;
   color: #e4e5d9;
   background: #101817;
   font-synthesis: none;
@@ -193,9 +201,8 @@ body {
 }
 
 .menu h2 {
-  font:
-    24px Georgia,
-    serif;
+  font-size: 24px;
+  font-weight: 600;
   margin: 0 0 20px;
 }
 
@@ -233,7 +240,10 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea,
+kbd {
   font: inherit;
 }
 
@@ -281,7 +291,6 @@ canvas {
 }
 
 .eyebrow {
-  font-family: "Segoe UI", sans-serif;
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 2px;
@@ -307,7 +316,6 @@ canvas {
 }
 
 h1 {
-  font-family: Georgia, serif;
   font-weight: 400;
   font-size: 28px;
   line-height: 1.12;
@@ -576,9 +584,8 @@ kbd {
 
 .window-title h2 {
   margin: 0 0 20px;
-  font:
-    24px Georgia,
-    serif;
+  font-size: 24px;
+  font-weight: 600;
 }
 
 .window-title .close-menu {
@@ -635,7 +642,7 @@ kbd {
   top: 5px;
   left: 14px;
   width: min(264px, calc(100vw - 28px));
-  font: 11px monospace;
+  font-size: 11px;
   color: #c7d3cc;
   background: #0b1516dc;
   border: 1px solid #8daba52e;
@@ -744,7 +751,8 @@ select {
   display: grid;
   place-items: center;
   color: #fff5e7;
-  font: bold 11px monospace;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 @media (width <= 900px) {
@@ -765,9 +773,9 @@ select {
   transform: translateX(-50%);
   pointer-events: none;
   color: #ffdf95;
-  font:
-    900 clamp(72px, 12vw, 128px) / 1 Georgia,
-    serif;
+  font-size: clamp(72px, 12vw, 128px);
+  font-weight: 700;
+  line-height: 1;
   text-shadow:
     0 3px 8px #000,
     0 0 24px #ffbd4266;
@@ -851,9 +859,8 @@ select {
 }
 
 .codex-book h3 {
-  font:
-    28px Georgia,
-    serif;
+  font-size: 28px;
+  font-weight: 600;
   margin: 14px 0 20px;
 }
 
@@ -922,9 +929,8 @@ select {
   left: 0;
   right: 0;
   text-align: center;
-  font:
-    13px Georgia,
-    serif;
+  font-size: 13px;
+  font-weight: 600;
   color: #816744;
 }
 

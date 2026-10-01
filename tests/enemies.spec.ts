@@ -124,11 +124,11 @@ test("elite and boss render yellow and orange proportional health bars and a bos
     });
     const text = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (value, x, y) {
-      if (value === "The Hollow Warden" && this.font === "12px system-ui")
+      if (value === "The Hollow Warden" && this.font === 'bold 18px "Pixelify Sans", sans-serif')
         document.body.dataset.bossName = value;
-      if (this.font === "bold 11px system-ui" && value === "Far ally")
+      if (this.font === 'bold 11px "Pixelify Sans", sans-serif' && value === "Far ally")
         document.body.dataset.allyArrow = "yes";
-      if (this.font === "bold 11px system-ui" && value === "The Hollow Warden")
+      if (this.font === 'bold 11px "Pixelify Sans", sans-serif' && value === "The Hollow Warden")
         document.body.dataset.bossArrow = "yes";
       text.call(this, value, x, y);
     };

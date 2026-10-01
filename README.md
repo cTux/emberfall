@@ -169,3 +169,5 @@ Each Druid has a permanent companion named Bear in village and forest, with its 
 Trees covering the local player's sprite fade to 15% opacity (85% transparent) in village and forest, then return to full opacity once the player moves clear or in front. Only the covering tree sprite fades; its collision and shadows remain unchanged.
 
 Settings → Graphics includes **Waving grass and trees**, independent of grass density. Enabled by default and in Balanced/High, disabled in Low; the choice persists across reloads. Both areas use gentle, staggered foliage sway with fixed roots. Disabling it immediately restores static sprites. The shared Canvas 2D sprite draw applies a time-based horizontal shear without changing collisions, sorting, tree fading, or cached shadows. Browser checks cover movement in both areas, fixed roots, live toggling, presets, and persistence.
+
+All interface and Canvas labels use the bundled Pixelify Sans variable font (weights 400–700), distributed under the SIL Open Font License in `public/assets/fonts/OFL.txt`. [Font source](https://github.com/google/fonts/tree/main/ofl/pixelifysans).
