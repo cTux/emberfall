@@ -978,6 +978,18 @@ select {
   color: #b8c9b7;
 }
 
+.combat-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  image-rendering: pixelated;
+}
+
+.weapon-icon {
+  width: 34px;
+  height: 34px;
+}
+
 .class-choice[aria-pressed="true"] {
   border-color: #e8c282;
   background: #3b3b27;

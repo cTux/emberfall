@@ -1,4 +1,4 @@
-import { ENEMY_STATS } from "@emberfall/common";
+import { statusImages } from "./combat-assets";
 import type { SceneState, LootDrop, Enemy } from "@emberfall/common";
 
 const lootSprites = new Map<LootDrop["kind"], HTMLCanvasElement>();
@@ -140,41 +140,19 @@ export function drawDebuffs(
 ) {
   const debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now) ?? [];
   ctx.save();
-  if (debuffs.some((d) => d.kind === "roots")) {
-    ctx.strokeStyle = "#96d66b";
-    ctx.lineWidth = 3;
-    const feet = y + 11 + (ENEMY_STATS[enemy.archetype ?? "skeleton"].size * 45) / 48;
-    for (let i = -1; i <= 1; i++) {
-      ctx.beginPath();
-      ctx.moveTo(x + i * 14, feet + 5);
-      ctx.lineTo(x + i * 10 - 5, feet - 6);
-      ctx.lineTo(x + i * 8 + 4, feet - 18);
-      ctx.stroke();
-    }
-  }
   ctx.font = "bold 8px system-ui";
-  ctx.textAlign = "center";
+  ctx.textAlign = "right";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 2;
+  ctx.imageSmoothingEnabled = false;
   debuffs.forEach((debuff, index) => {
-    const px = x + (index - (debuffs.length - 1) / 2) * 25;
-    ctx.fillStyle = "#101817ee";
-    ctx.fillRect(px - 11, y - 13, 23, 13);
-    ctx.fillStyle =
-      debuff.kind === "bleed"
-        ? "#ff6575"
-        : debuff.kind === "poison" || debuff.kind === "roots"
-          ? "#9deb65"
-          : "#ffb74e";
-    ctx.beginPath();
-    if (debuff.kind === "poison") ctx.arc(px - 5, y - 6, 3, 0, Math.PI * 2);
-    else {
-      ctx.moveTo(px - 5, y - 12);
-      ctx.lineTo(px - 9, y - 4);
-      ctx.lineTo(px - 5, y - 2);
-      ctx.lineTo(px - 1, y - 4);
-      ctx.closePath();
-    }
-    ctx.fill();
-    ctx.fillText(debuff.kind === "roots" ? "R" : String(debuff.stacks), px + 5, y - 3);
+    const px = x + (index - (debuffs.length - 1) / 2) * 18 - 8;
+    const image = statusImages[debuff.kind];
+    if (image.naturalWidth) ctx.drawImage(image, px, y - 16, 16, 16);
+    ctx.strokeStyle = "#101817";
+    ctx.strokeText(String(debuff.stacks), px + 15, y - 1);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(String(debuff.stacks), px + 15, y - 1);
   });
   ctx.restore();
 }

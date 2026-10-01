@@ -1,4 +1,5 @@
 import { characterImages } from "./characters";
+import { weaponImages } from "./combat-assets";
 import { drawCompanion } from "./companion";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
@@ -438,7 +439,7 @@ export function forestRenderer(
             ctx,
             a.enemy.name ?? "The Hollow Warden",
             a.x,
-            top - (a.enemy.debuffs?.length ? 50 : 32),
+            top - (a.enemy.debuffs?.some((d) => d.expiresAt > serverTime) ? 50 : 32),
           );
         ctx.fillStyle = "#102020";
         ctx.fillRect(a.x - 17, top - 8, 34, 5);
@@ -516,34 +517,25 @@ function drawPlayerDetails(
   drawNameplate(ctx, p.name, x, y - 51);
   drawPlayerHealth(ctx, x, y - 32, p.hitpoints, p.maxHitpoints);
   const age = now - (p.attackAt ?? 0);
+  const attacking = age >= 0 && age < PLAYER_ATTACK_DURATION;
+  const weapon = weaponImages[p.classId ?? "warrior"];
+  if (p.hitpoints > 0 && weapon.naturalWidth) {
+    const slash = attacking && (p.classId ?? "warrior") === "warrior";
+    const angle = slash
+      ? (p.attackAngle ?? 0) - Math.PI / 2 + (age / PLAYER_ATTACK_DURATION) * Math.PI
+      : (p.attackAngle ?? (facing === 2 ? Math.PI : 0));
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.translate(slash ? PLAYER_ATTACK_RANGE / 2 : 23, -2);
+    ctx.rotate((Math.PI * 3) / 4);
+    ctx.imageSmoothingEnabled = false;
+    const size = slash ? 58 : 32;
+    ctx.drawImage(weapon, -size / 2, -size / 2, size, size);
+    ctx.restore();
+  }
   if (age >= 0 && age < PLAYER_ATTACK_DURATION && p.hitpoints > 0) {
     if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(p.attackAngle ?? 0);
-      const pull = Math.sin((age / PLAYER_ATTACK_DURATION) * Math.PI);
-      if (p.classId === "ranger") {
-        ctx.strokeStyle = "#caa46a";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(15, 0, 15, -1.2, 1.2);
-        ctx.stroke();
-        ctx.strokeStyle = "#e8ebcf";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(20, -14);
-        ctx.lineTo(17 - pull * 8, 0);
-        ctx.lineTo(20, 14);
-        ctx.stroke();
-      } else {
-        ctx.fillStyle = "#815636";
-        ctx.fillRect(8, -3, 28, 5);
-        ctx.fillStyle = p.classId === "druid" ? "#9deb65" : "#ffce70";
-        ctx.beginPath();
-        ctx.arc(36, 0, 5 + pull * 5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
       return;
     }
     const progress = age / PLAYER_ATTACK_DURATION,
@@ -566,17 +558,6 @@ function drawPlayerDetails(
       ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);
     }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#e5f3fa";
-    ctx.beginPath();
-    ctx.moveTo(18, -3);
-    ctx.lineTo(PLAYER_ATTACK_RANGE, 0);
-    ctx.lineTo(18, 4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#b29256";
-    ctx.fillRect(16, -8, 4, 16);
-    ctx.fillStyle = "#604a32";
-    ctx.fillRect(7, -2, 10, 4);
     ctx.restore();
   }
 }
