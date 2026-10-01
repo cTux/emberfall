@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { statusSrc } from "./combat-assets";
 
 const chapters = [
   {
@@ -20,8 +21,9 @@ const chapters = [
       <>
         {" "}
         <p>
-          Worlds disappear when everyone leaves. Your character is saved on the server and linked to
-          this browser. A portal creates a Forest / Easy scene on the server. Vote inside the portal
+          New Permanent World is always open to everyone, with room for eight players. Other worlds
+          disappear when everyone leaves. Your character is saved on the server and linked to this
+          browser. A portal creates a Forest / Easy scene on the server. Vote inside the portal
           window. Everyone must be ready. Retract your vote to cancel the five-second countdown.
         </p>{" "}
       </>
@@ -44,6 +46,13 @@ const chapters = [
           modifiers also apply to elites. Red areas warn of spawns and enemy attacks. Dodge filled
           circles and red projectiles.
         </p>{" "}
+        <p>
+          <img className="combat-icon" src={statusSrc("bleed")} alt="Bleeding" /> Bleeding ·{" "}
+          <img className="combat-icon" src={statusSrc("poison")} alt="Poison" /> Poison ·{" "}
+          <img className="combat-icon" src={statusSrc("burn")} alt="Burning" /> Burning ·{" "}
+          <img className="combat-icon" src={statusSrc("roots")} alt="Roots" /> Roots. Compact icons
+          above enemy health bars show stacks; roots have no ground decoration.
+        </p>
       </>
     ),
   },
@@ -117,6 +126,19 @@ const chapters = [
           Art: Pixel-boy & AAA ↗
         </a>
         <p>Music by TimberwolfGames. Audio credits and licenses are included with the game.</p>
+        <p>
+          Weapons:{" "}
+          <a href="https://opengameart.org/content/496-pixel-art-icons-for-medievalfantasy-rpg">
+            Henrique Lazarini (7Soul1)
+          </a>
+          , CC0.
+        </p>
+        <p>
+          Status and spell icons:{" "}
+          <a href="https://game-icons.net/">Lorc and Delapouite / Game-icons.net</a>,{" "}
+          <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>. Colors adapted for
+          Emberfall.
+        </p>
       </>
     ),
   },

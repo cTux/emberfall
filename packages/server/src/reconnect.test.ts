@@ -67,7 +67,10 @@ test("resume authenticates retained sessions, rejects live takeover, expires and
     observer.send(resume);
     const expired = await observer.wait("error");
     assert(expired.type === "error" && expired.message.includes("no longer available"));
-    await observer.wait("worlds", (m) => m.type === "worlds" && m.worlds.length === 0);
+    await observer.wait(
+      "worlds",
+      (m) => m.type === "worlds" && !m.worlds.some((w) => w.id === joined.world.id),
+    );
   } finally {
     await app.close();
     for (const ws of clients) ws.terminate();

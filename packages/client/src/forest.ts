@@ -1,9 +1,15 @@
 import { characterImages } from "./characters";
+import { weaponImages } from "./combat-assets";
 import { drawCompanion } from "./companion";
 import { crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
-import { drawLootAndBlood, drawClassProjectiles, drawDebuffs } from "./combat-effects";
+import {
+  bloodPuddleRenderer,
+  drawLootAndBlood,
+  drawClassProjectiles,
+  drawDebuffs,
+} from "./combat-effects";
 import { PLAYER_ATTACK_RANGE, PLAYER_ATTACK_DURATION } from "@emberfall/common";
 import { movementFacing } from "./facing";
 import { drawDanger, drawPlayerRange } from "./danger";
@@ -23,6 +29,7 @@ import {
   drawDamageFlash,
   drawAtmosphere,
   treeOpacity,
+  drawVegetation,
 } from "./effects";
 
 export function drawPortal(
@@ -150,6 +157,8 @@ export function forestRenderer(
   const tree = document.createElement("canvas");
   tree.width = tree.height = 32;
   let treeMask: HTMLCanvasElement | undefined;
+  const grass = document.createElement("canvas");
+  grass.width = grass.height = 16;
   const ground = document.createElement("canvas");
   ground.width = ground.height = 320;
   const g = ground.getContext("2d")!;
@@ -166,6 +175,7 @@ export function forestRenderer(
   }
   const lanternTexture = document.createElement("canvas");
   const positions = new Map<string, { x: number; y: number; facing: number }>();
+  const drawBloodPuddles = bloodPuddleRenderer();
   let lastScene: string | undefined;
   const masks = new Map<string, HTMLCanvasElement>();
   const outlines = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
@@ -197,6 +207,7 @@ export function forestRenderer(
     if (nature.naturalWidth && !treeMask) {
       tree.getContext("2d")!.drawImage(nature, 32, 0, 32, 32, 0, 0, 32, 32);
       treeMask = makeMask(tree);
+      grass.getContext("2d")!.drawImage(nature, 64, 160, 16, 16, 0, 0, 16, 16);
     }
     const scale = Math.max(ctx.canvas.width / 960, ctx.canvas.height / 640),
       width = ctx.canvas.width / scale,
@@ -216,6 +227,12 @@ export function forestRenderer(
     for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++)
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
         ctx.drawImage(ground, col * 320, row * 320);
+    drawBloodPuddles(ctx, world?.scene, prefs.bloodPuddles, near, {
+      x: cameraX,
+      y: cameraY,
+      width,
+      height,
+    });
     const trees = forestTrees(cx, cy, Math.max(width, height) / 2 + 150).filter(
       (t) =>
         t.x > cameraX - 100 &&
@@ -236,16 +253,15 @@ export function forestRenderer(
     if (quality.grass && nature.naturalWidth)
       for (const t of trees)
         for (let i = 0; i < 5; i++)
-          ctx.drawImage(
-            nature,
-            64,
-            160,
+          drawVegetation(
+            ctx,
+            grass,
+            t.x - 57 + ((i * 41) % 120),
+            t.y - 64 + ((i * 67) % 145),
             16,
             16,
-            t.x - 65 + ((i * 41) % 120),
-            t.y - 80 + ((i * 67) % 145),
-            16,
-            16,
+            now,
+            quality.wavingVegetation,
           );
     const players = world?.players.filter((p) => p.scene === "forest") ?? [];
     const actors = [
@@ -399,7 +415,8 @@ export function forestRenderer(
       if (layer.tree) {
         const t = layer.tree;
         ctx.globalAlpha = treeOpacity({ ...t, width: t.size, height: t.size }, me);
-        if (treeMask) ctx.drawImage(tree, t.x - t.size / 2, t.y - t.size, t.size, t.size);
+        if (treeMask)
+          drawVegetation(ctx, tree, t.x, t.y, t.size, t.size, now, quality.wavingVegetation);
         ctx.globalAlpha = 1;
         continue;
       }
@@ -461,7 +478,7 @@ export function forestRenderer(
             ctx,
             a.enemy.name ?? "The Hollow Warden",
             a.x,
-            top - (a.enemy.debuffs?.length ? 50 : 32),
+            top - (a.enemy.debuffs?.some((d) => d.expiresAt > serverTime) ? 50 : 32),
           );
         ctx.fillStyle = "#102020";
         ctx.fillRect(a.x - 17, top - 8, 34, 5);
@@ -539,34 +556,25 @@ function drawPlayerDetails(
   drawNameplate(ctx, p.name, x, y - 51);
   drawPlayerHealth(ctx, x, y - 32, p.hitpoints, p.maxHitpoints);
   const age = now - (p.attackAt ?? 0);
+  const attacking = age >= 0 && age < PLAYER_ATTACK_DURATION;
+  const weapon = weaponImages[p.classId ?? "warrior"];
+  if (p.hitpoints > 0 && weapon.naturalWidth) {
+    const slash = attacking && (p.classId ?? "warrior") === "warrior";
+    const angle = slash
+      ? (p.attackAngle ?? 0) - Math.PI / 2 + (age / PLAYER_ATTACK_DURATION) * Math.PI
+      : (p.attackAngle ?? (facing === 2 ? Math.PI : 0));
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.translate(slash ? PLAYER_ATTACK_RANGE / 2 : 23, -2);
+    ctx.rotate((Math.PI * 3) / 4);
+    ctx.imageSmoothingEnabled = false;
+    const size = slash ? 58 : 32;
+    ctx.drawImage(weapon, -size / 2, -size / 2, size, size);
+    ctx.restore();
+  }
   if (age >= 0 && age < PLAYER_ATTACK_DURATION && p.hitpoints > 0) {
     if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(p.attackAngle ?? 0);
-      const pull = Math.sin((age / PLAYER_ATTACK_DURATION) * Math.PI);
-      if (p.classId === "ranger") {
-        ctx.strokeStyle = "#caa46a";
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(15, 0, 15, -1.2, 1.2);
-        ctx.stroke();
-        ctx.strokeStyle = "#e8ebcf";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(20, -14);
-        ctx.lineTo(17 - pull * 8, 0);
-        ctx.lineTo(20, 14);
-        ctx.stroke();
-      } else {
-        ctx.fillStyle = "#815636";
-        ctx.fillRect(8, -3, 28, 5);
-        ctx.fillStyle = p.classId === "druid" ? "#9deb65" : "#ffce70";
-        ctx.beginPath();
-        ctx.arc(36, 0, 5 + pull * 5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
       return;
     }
     const progress = age / PLAYER_ATTACK_DURATION,
@@ -589,17 +597,6 @@ function drawPlayerDetails(
       ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);
     }
     ctx.globalAlpha = 1;
-    ctx.fillStyle = "#e5f3fa";
-    ctx.beginPath();
-    ctx.moveTo(18, -3);
-    ctx.lineTo(PLAYER_ATTACK_RANGE, 0);
-    ctx.lineTo(18, 4);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = "#b29256";
-    ctx.fillRect(16, -8, 4, 16);
-    ctx.fillStyle = "#604a32";
-    ctx.fillRect(7, -2, 10, 4);
     ctx.restore();
   }
 }

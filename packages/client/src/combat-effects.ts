@@ -1,5 +1,67 @@
-import { ENEMY_STATS } from "@emberfall/common";
-import type { SceneState, LootDrop, Enemy } from "@emberfall/common";
+import { statusImages } from "./combat-assets";
+import type { SceneState, LootDrop, Enemy, DamageEvent } from "@emberfall/common";
+
+export function bloodPuddleRenderer() {
+  const puddles = new Map<number, Pick<DamageEvent, "id" | "x" | "y">>();
+  let sceneId: string | undefined;
+  return (
+    ctx: CanvasRenderingContext2D,
+    scene: SceneState | undefined,
+    enabled: boolean,
+    near: (x: number, y: number) => { x: number; y: number },
+    view: { x: number; y: number; width: number; height: number },
+  ) => {
+    if (scene?.id !== sceneId) {
+      puddles.clear();
+      sceneId = scene?.id;
+    }
+    for (const hit of scene?.damage ?? [])
+      if (hit.killed && hit.target.startsWith("enemy:") && !puddles.has(hit.id))
+        puddles.set(hit.id, { id: hit.id, x: hit.x, y: hit.y });
+    if (!enabled) return;
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = "#8c1728";
+    for (const puddle of puddles.values()) {
+      const p = near(puddle.x, puddle.y + 15);
+      if (
+        p.x < view.x - 40 ||
+        p.x > view.x + view.width + 40 ||
+        p.y < view.y - 20 ||
+        p.y > view.y + view.height + 20
+      )
+        continue;
+      // Seed each stain so its uneven outline and droplets stay fixed between frames.
+      let seed = puddle.id;
+      const random = () => {
+        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+      // One fill keeps overlapping splash shapes at 50% opacity.
+      ctx.beginPath();
+      for (let i = 0; i < 24; i++) {
+        const angle = (i / 24) * Math.PI * 2 + puddle.id;
+        const radius = 9 + random() * 19;
+        const x = p.x + Math.cos(angle) * radius;
+        const y = p.y + Math.sin(angle) * radius * 0.55;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      for (let i = 0; i < 10; i++) {
+        const angle = random() * Math.PI * 2;
+        const distance = 24 + random() * 13;
+        const radius = 1 + random() * 2.5;
+        const x = p.x + Math.cos(angle) * distance;
+        const y = p.y + Math.sin(angle) * distance * 0.55;
+        ctx.moveTo(x + radius, y);
+        ctx.ellipse(x, y, radius, radius * 0.55, 0, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    }
+    ctx.restore();
+  };
+}
 
 const lootSprites = new Map<LootDrop["kind"], HTMLCanvasElement>();
 function lootSprite(kind: LootDrop["kind"]) {
@@ -140,41 +202,19 @@ export function drawDebuffs(
 ) {
   const debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now) ?? [];
   ctx.save();
-  if (debuffs.some((d) => d.kind === "roots")) {
-    ctx.strokeStyle = "#96d66b";
-    ctx.lineWidth = 3;
-    const feet = y + 11 + (ENEMY_STATS[enemy.archetype ?? "skeleton"].size * 45) / 48;
-    for (let i = -1; i <= 1; i++) {
-      ctx.beginPath();
-      ctx.moveTo(x + i * 14, feet + 5);
-      ctx.lineTo(x + i * 10 - 5, feet - 6);
-      ctx.lineTo(x + i * 8 + 4, feet - 18);
-      ctx.stroke();
-    }
-  }
   ctx.font = "bold 8px system-ui";
-  ctx.textAlign = "center";
+  ctx.textAlign = "right";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = 2;
+  ctx.imageSmoothingEnabled = false;
   debuffs.forEach((debuff, index) => {
-    const px = x + (index - (debuffs.length - 1) / 2) * 25;
-    ctx.fillStyle = "#101817ee";
-    ctx.fillRect(px - 11, y - 13, 23, 13);
-    ctx.fillStyle =
-      debuff.kind === "bleed"
-        ? "#ff6575"
-        : debuff.kind === "poison" || debuff.kind === "roots"
-          ? "#9deb65"
-          : "#ffb74e";
-    ctx.beginPath();
-    if (debuff.kind === "poison") ctx.arc(px - 5, y - 6, 3, 0, Math.PI * 2);
-    else {
-      ctx.moveTo(px - 5, y - 12);
-      ctx.lineTo(px - 9, y - 4);
-      ctx.lineTo(px - 5, y - 2);
-      ctx.lineTo(px - 1, y - 4);
-      ctx.closePath();
-    }
-    ctx.fill();
-    ctx.fillText(debuff.kind === "roots" ? "R" : String(debuff.stacks), px + 5, y - 3);
+    const px = x + (index - (debuffs.length - 1) / 2) * 18 - 8;
+    const image = statusImages[debuff.kind];
+    if (image.naturalWidth) ctx.drawImage(image, px, y - 16, 16, 16);
+    ctx.strokeStyle = "#101817";
+    ctx.strokeText(String(debuff.stacks), px + 15, y - 1);
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(String(debuff.stacks), px + 15, y - 1);
   });
   ctx.restore();
 }

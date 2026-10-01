@@ -1,0 +1,15 @@
+Game-icons.net free icon collection
+License: Creative Commons Attribution 3.0 Unported
+https://creativecommons.org/licenses/by/3.0/
+Colors adapted for Emberfall; SVG paths unchanged. Rendered at compact size.
+
+bleed.svg: Bleeding wound by Lorc
+https://game-icons.net/1x1/lorc/bleeding-wound.html
+poison.svg: Poison bottle by Lorc
+https://game-icons.net/1x1/lorc/poison-bottle.html
+burn.svg: Burning dot by Lorc
+https://game-icons.net/1x1/lorc/burning-dot.html
+roots.svg: Plant roots by Delapouite
+https://game-icons.net/1x1/delapouite/plant-roots.html
+
+The collection also contains buff and other spell icons for future implemented abilities.
