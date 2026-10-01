@@ -1,0 +1,35 @@
+{
+  "name": "emberfall",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm https:setup && turbo dev",
+    "build": "turbo build",
+    "start": "pnpm https:setup && pnpm --filter @emberfall/server start",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint . && stylelint \"packages/client/src/**/*.scss\"",
+    "fmt": "oxfmt .",
+    "fmt:check": "oxfmt --check .",
+    "test": "node --test packages/server/src/*.test.ts",
+    "test:browser": "playwright test",
+    "https:setup": "pwsh -NoProfile -File scripts/setup-https.ps1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@types/ws": "^8.18.2",
+    "oxfmt": "^0.61.0",
+    "oxlint": "^1.86.0",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "turbo": "^2.10.8",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": "24.x",
+    "pnpm": "11.x"
+  },
+  "packageManager": "pnpm@11.7.0"
+}
