@@ -130,13 +130,75 @@ export function tickCompanion(
             undefined,
           )
       : undefined;
-  const destination = target ?? player;
+  let destination: { x: number; y: number; hitpoints: number } = target ?? player;
   const heading = Math.atan2(
     forest ? wrappedDelta(destination.y, bear.y, FOREST.height) : destination.y - bear.y,
     forest ? wrappedDelta(destination.x, bear.x, FOREST.width) : destination.x - bear.x,
   );
   bear.attackAngle = heading;
-  if (target || distance > 20) {
+  if (target) {
+    // Keep claws in range while staying outside ordinary melee reach.
+    const spacing = PLAYER_ATTACK_RANGE - 8;
+    destination = {
+      x: wrap(target.x - Math.cos(heading) * spacing, FOREST.width),
+      y: wrap(target.y - Math.sin(heading) * spacing, FOREST.height),
+      hitpoints: 1,
+    };
+  }
+  const danger =
+    forest && scene?.phase === "active"
+      ? scene.enemies.find(
+          (e) =>
+            e.hitpoints > 0 &&
+            e.attack &&
+            e.attack.endsAt >= now &&
+            forestDistance(bear, e.attack) < e.attack.radius + 12,
+        )?.attack
+      : undefined;
+  if (danger) {
+    const away =
+      forestDistance(bear, danger) < 1
+        ? heading + Math.PI
+        : Math.atan2(
+            wrappedDelta(bear.y, danger.y, FOREST.height),
+            wrappedDelta(bear.x, danger.x, FOREST.width),
+          );
+    destination = {
+      x: wrap(danger.x + Math.cos(away) * (danger.radius + 16), FOREST.width),
+      y: wrap(danger.y + Math.sin(away) * (danger.radius + 16), FOREST.height),
+      hitpoints: 1,
+    };
+  }
+  if (forest && scene?.phase === "active") {
+    const shot = scene.projectiles?.find((s) => {
+      const dx = wrappedDelta(bear.x, s.x, FOREST.width),
+        dy = wrappedDelta(bear.y, s.y, FOREST.height);
+      const speedSquared = s.vx * s.vx + s.vy * s.vy;
+      if (s.expiresAt <= now || speedSquared === 0) return false;
+      const time = (dx * s.vx + dy * s.vy) / speedSquared;
+      return (
+        time >= 0 &&
+        time <= Math.min(0.35, (s.expiresAt - now) / 1000) &&
+        Math.hypot(dx - s.vx * time, dy - s.vy * time) < 30
+      );
+    });
+    if (shot) {
+      const speed = Math.hypot(shot.vx, shot.vy);
+      const side =
+        wrappedDelta(bear.x, shot.x, FOREST.width) * -shot.vy +
+          wrappedDelta(bear.y, shot.y, FOREST.height) * shot.vx >=
+        0
+          ? 1
+          : -1;
+      destination = {
+        x: wrap(bear.x - (shot.vy / speed) * 40 * side, FOREST.width),
+        y: wrap(bear.y + (shot.vx / speed) * 40 * side, FOREST.height),
+        hitpoints: 1,
+      };
+    }
+  }
+  if (destination !== player || distance > 20) {
+    const speed = ARENA.speed * 1.3;
     if (forest) {
       const body: Enemy = {
         id: 1,
@@ -146,11 +208,11 @@ export function tickCompanion(
         angle: heading,
         archetype: "runner",
       };
-      moveEnemies([body], [destination], dt * 2.5, now);
+      moveEnemies([body], [destination], (dt * speed) / ENEMY_STATS.runner.speed, now);
       bear.x = body.x;
       bear.y = body.y;
     } else {
-      const travel = Math.min(Math.max(0, distance - 20), 260 * Math.max(0, dt));
+      const travel = Math.min(Math.max(0, distance - 20), speed * Math.max(0, dt));
       const next = moveActor(
         { x: bear.x, y: bear.y + 15 },
         Math.cos(heading) * travel,
@@ -161,6 +223,7 @@ export function tickCompanion(
       bear.y = next.y - 15;
     }
   }
+  if (target) bear.attackAngle = nearestEnemyAngle(bear, [target], heading);
   if (forestDistance(bear, player) > 200 && forest) bear.returning = true;
   if (!target || bear.returning || !scene) {
     bear.attackAt = undefined;

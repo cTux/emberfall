@@ -14,6 +14,7 @@ import {
   drawVignette,
   drawNameBadge,
   drawAtmosphere,
+  treeOpacity,
 } from "./effects";
 import type { Interaction } from "./effects";
 import { ARENA, PATHS, LOBBY_PORTAL, TICK_MS, nearbyInteraction } from "@emberfall/common";
@@ -426,6 +427,7 @@ export function Arena({
         }
         if (layer.object) {
           const object = layer.object;
+          ctx.globalAlpha = object.id.startsWith("tree:") ? treeOpacity(object, local) : 1;
           ctx.drawImage(
             object.sprite,
             object.x - object.width / 2,
@@ -433,6 +435,7 @@ export function Arena({
             object.width,
             object.height,
           );
+          ctx.globalAlpha = 1;
           if (object.name)
             drawNameBadge(
               ctx,

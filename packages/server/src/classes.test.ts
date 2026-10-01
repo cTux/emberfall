@@ -9,10 +9,12 @@ import {
   enemyMaxHealth,
   stepCombat,
   FOREST,
+  ARENA,
   nearbyInteraction,
   WARDROBE,
   clientMessage,
   tickCompanion,
+  forestDistance,
 } from "@emberfall/common";
 import {
   hitEnemy,
@@ -220,6 +222,87 @@ test("bear only targets and chases inside the owner's 200-unit radius, including
   e.x = FOREST.width - 195;
   tickCompanion(p, s, 10300, 0);
   assert.equal(bear.attackAt, 10300);
+});
+
+test("Bear stops in claw range, backs away from close enemies, and preserves spacing across seams", () => {
+  const s = scene(),
+    p: Player = { ...hero(), classId: "druid", x: 2300 };
+  const e = enemy(1, 2480);
+  s.enemies = [e];
+  tickCompanion(p, s, 10000, 1);
+  const bear = p.bear!;
+  assert.equal(forestDistance(bear, e), 80);
+  assert.equal(e.hitpoints, 98);
+  const stoppedX = bear.x;
+  tickCompanion(p, s, 10050, 0.05);
+  assert.equal(bear.x, stoppedX);
+  e.x = bear.x + 20;
+  tickCompanion(p, s, 10100, 0.3);
+  assert.equal(forestDistance(bear, e), 80);
+  assert(bear.x < stoppedX);
+  p.x = 5;
+  bear.x = FOREST.width - 20;
+  e.x = 25;
+  tickCompanion(p, s, 10700, 0.25);
+  assert.equal(forestDistance(bear, e), 80);
+  assert.equal(e.hitpoints, 96);
+});
+
+test("Bear moves at 1.3 times player speed in forest and village", () => {
+  for (const forest of [true, false]) {
+    const p: Player = {
+      ...hero(),
+      classId: "druid",
+      scene: forest ? "forest" : undefined,
+      x: forest ? 2400 : 480,
+      y: forest ? 1280 : 360,
+    };
+    tickCompanion(p, undefined, 10000, 0);
+    p.bear!.x -= 100;
+    const start = { x: p.bear!.x, y: p.bear!.y };
+    tickCompanion(p, undefined, 10050, 0.05);
+    assert(
+      Math.abs(Math.hypot(p.bear!.x - start.x, p.bear!.y - start.y) - ARENA.speed * 1.3 * 0.05) <
+        1e-6,
+    );
+  }
+});
+
+test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", () => {
+  const s = scene(),
+    p: Player = { ...hero(), classId: "druid" };
+  tickCompanion(p, s, 10000, 0);
+  const bear = p.bear!,
+    e = enemy(1, 2460);
+  s.enemies = [e];
+  e.attack = { startedAt: 10000, endsAt: 10500, x: bear.x, y: bear.y, radius: 40, ranged: false };
+  tickCompanion(p, s, 10050, 0.25);
+  assert(forestDistance(bear, e.attack) > e.attack.radius);
+  e.attack = undefined;
+  bear.x = p.x;
+  bear.y = p.y;
+  s.projectiles = [{ id: 2, x: bear.x - 40, y: bear.y, vx: 210, vy: 0, expiresAt: 12000 }];
+  tickCompanion(p, s, 10100, 0.05);
+  assert(bear.y > p.y);
+  p.x = 2320;
+  p.attackAt = 1e6;
+  for (let i = 1; i <= 8; i++) stepCombat(s, [p], 10100 + i * 50, 0.05);
+  assert.equal(bear.hitpoints, 150);
+  assert(s.projectiles.some((shot) => shot.x > 2400));
+});
+
+test("Bear kites melee enemies while continuing to damage them", () => {
+  for (const archetype of ["skeleton", "runner", "brute"] as const) {
+    const s = scene(),
+      p: Player = { ...hero(), classId: "druid", x: 2300, attackAt: 1e6 };
+    const e = { ...enemy(1, 2480, 1000), archetype };
+    s.enemies = [e];
+    tickCompanion(p, s, 10000, 1);
+    for (let i = 1; i <= 40; i++) stepCombat(s, [p], 10000 + i * 50, 0.05);
+    assert.equal(p.bear!.hitpoints, 150, archetype);
+    assert(e.hitpoints < 998, archetype);
+    assert(forestDistance(p.bear!, e) > 65, archetype);
+  }
 });
 
 test("enemies damage Bear; death resurrects exactly five seconds later at its owner", () => {

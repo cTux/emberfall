@@ -21,6 +21,7 @@ import {
   hitOutline,
   drawDamageFlash,
   drawAtmosphere,
+  treeOpacity,
 } from "./effects";
 
 export function drawPortal(
@@ -374,7 +375,9 @@ export function forestRenderer(
       }
       if (layer.tree) {
         const t = layer.tree;
+        ctx.globalAlpha = treeOpacity({ ...t, width: t.size, height: t.size }, me);
         if (treeMask) ctx.drawImage(tree, t.x - t.size / 2, t.y - t.size, t.size, t.size);
+        ctx.globalAlpha = 1;
         continue;
       }
       const a = layer.actor!;
