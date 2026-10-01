@@ -478,7 +478,7 @@ export function forestRenderer(
             ctx,
             a.enemy.name ?? "The Hollow Warden",
             a.x,
-            top - (a.enemy.debuffs?.some((d) => d.expiresAt > serverTime) ? 50 : 32),
+            top - (a.enemy.debuffs?.some((d) => d.expiresAt > serverTime) ? 58 : 40),
           );
         ctx.fillStyle = "#102020";
         ctx.fillRect(a.x - 17, top - 8, 34, 5);
@@ -601,11 +601,11 @@ function drawPlayerDetails(
 }
 
 function drawNameplate(ctx: CanvasRenderingContext2D, name: string, x: number, y: number) {
-  ctx.font = "12px system-ui";
+  ctx.font = "bold 18px system-ui";
   ctx.textAlign = "center";
-  const width = Math.ceil(ctx.measureText(name).width) + 12;
+  const width = Math.ceil(ctx.measureText(name).width) + 16;
   ctx.fillStyle = "#101817cc";
-  ctx.fillRect(x - width / 2, y, width, 18);
-  ctx.fillStyle = "#e8d09c";
-  ctx.fillText(name, x, y + 13);
+  ctx.fillRect(x - width / 2, y, width, 26);
+  ctx.fillStyle = "#c084fc";
+  ctx.fillText(name, x, y + 19);
 }
