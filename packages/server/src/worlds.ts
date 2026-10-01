@@ -58,7 +58,14 @@ interface Session {
 export function createGameServer(staticRoot?: string, savePath = ":memory:", tls?: ServerOptions) {
   const characters = new CharacterStore(savePath);
   // ponytail: worlds live in one process; add room sharding when measured load requires it.
-  const worlds = new Map<string, World>();
+  const permanentWorld: World = {
+    id: randomUUID(),
+    name: "New Permanent World",
+    hostId: "",
+    salt: "",
+    players: new Map(),
+  };
+  const worlds = new Map<string, World>([[permanentWorld.id, permanentWorld]]);
   const sessions = new Map<WebSocket, Session>();
   let hashing = 0;
   const handler: RequestListener = async (req, res) => {
@@ -156,8 +163,11 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       world.players.delete(session.id);
       reconcileVote(world, Date.now());
       cleanupScene(world);
-      if (!world.players.size) worlds.delete(world.id);
-      else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
+      if (!world.players.size) {
+        if (world !== permanentWorld) worlds.delete(world.id);
+        world.hostId = "";
+        world.scene = undefined;
+      } else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
     }
     session.worldId = undefined;
     session.inputs = [];
@@ -433,6 +443,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           classes: character.classes,
           hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
         });
+        if (!world.hostId) world.hostId = session.id;
         reconcileVote(world, Date.now());
         send(ws, {
           type: "joined",

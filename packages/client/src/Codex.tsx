@@ -20,8 +20,9 @@ const chapters = [
       <>
         {" "}
         <p>
-          Worlds disappear when everyone leaves. Your character is saved on the server and linked to
-          this browser. A portal creates a Forest / Easy scene on the server. Vote inside the portal
+          New Permanent World is always open to everyone, with room for eight players. Other worlds
+          disappear when everyone leaves. Your character is saved on the server and linked to this
+          browser. A portal creates a Forest / Easy scene on the server. Vote inside the portal
           window. Everyone must be ready. Retract your vote to cancel the five-second countdown.
         </p>{" "}
       </>

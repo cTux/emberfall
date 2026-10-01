@@ -163,11 +163,19 @@ test("world lifecycle, passwords, movement, capacity and isolation over real soc
   try {
     const host = await connect();
     const guest = await connect();
+    const initial = await guest.wait((m) => m.type === "worlds");
+    assert(initial.type === "worlds");
+    assert.equal(initial.worlds.length, 1);
+    const permanent = initial.worlds[0];
+    assert.equal(permanent.name, "New Permanent World");
+    assert.equal(permanent.locked, false);
+    assert.equal(permanent.players, 0);
+    assert.equal(permanent.capacity, 8);
     host.send({ type: "create", name: "Test grove", playerName: "Host", password: "secret" });
     const joined = await host.wait((m) => m.type === "joined");
     assert(joined.type === "joined");
     const id = joined.world.id;
-    const listing = await guest.wait((m) => m.type === "worlds" && m.worlds.length === 1);
+    const listing = await guest.wait((m) => m.type === "worlds" && m.worlds.length === 2);
     assert(!JSON.stringify(listing).includes("secret"));
     guest.send({ type: "join", worldId: id, playerName: "Guest", password: "wrong" });
     const error = await guest.wait((m) => m.type === "error");
@@ -209,12 +217,49 @@ test("world lifecycle, passwords, movement, capacity and isolation over real soc
     await excess.wait((m) => m.type === "worlds" && !m.worlds.some((w) => w.id === id));
     excess.send({ type: "leave" });
     await excess.wait((m) => m.type === "left");
-    await excess.wait((m) => m.type === "worlds" && m.worlds.length === 0);
+    await excess.wait(
+      (m) => m.type === "worlds" && m.worlds.length === 1 && m.worlds[0].id === permanent.id,
+    );
     excess.send({ type: "create", name: " ", playerName: "Extra", password: "" });
     await excess.wait((m) => m.type === "error");
     excess.send({ type: "join", worldId: id, playerName: "Extra", password: "secret" });
     const closed = await excess.wait((m) => m.type === "error");
     assert(closed.type === "error" && closed.message.includes("closed"));
+    const first = await connect();
+    const second = await connect();
+    first.send({ type: "join", worldId: permanent.id, playerName: "First", password: "" });
+    const firstJoin = await first.wait((m) => m.type === "joined");
+    assert(firstJoin.type === "joined");
+    assert.equal(firstJoin.world.hostId, firstJoin.playerId);
+    second.send({ type: "join", worldId: permanent.id, playerName: "Second", password: "" });
+    const secondJoin = await second.wait((m) => m.type === "joined");
+    assert(secondJoin.type === "joined");
+    assert.equal(secondJoin.world.players.length, 2);
+    second.messages.length = 0;
+    first.ws.close();
+    await second.wait(
+      (m) =>
+        m.type === "state" &&
+        m.world.hostId === secondJoin.playerId &&
+        m.world.players.length === 1,
+    );
+    second.send({ type: "leave" });
+    await second.wait((m) => m.type === "left");
+    await second.wait(
+      (m) => m.type === "worlds" && m.worlds.some((w) => w.id === permanent.id && w.players === 0),
+    );
+    second.send({ type: "join", worldId: permanent.id, playerName: "Returning", password: "" });
+    const rejoined = await second.wait((m) => m.type === "joined");
+    assert(rejoined.type === "joined");
+    assert.equal(rejoined.world.id, permanent.id);
+    assert.equal(rejoined.world.hostId, rejoined.playerId);
+    assert.equal(rejoined.world.players.length, 1);
+    assert.equal(rejoined.world.scene, undefined);
+    excess.messages.length = 0;
+    second.ws.close();
+    await excess.wait(
+      (m) => m.type === "worlds" && m.worlds.some((w) => w.id === permanent.id && w.players === 0),
+    );
   } finally {
     for (const ws of clients) ws.terminate();
     await app.close();
