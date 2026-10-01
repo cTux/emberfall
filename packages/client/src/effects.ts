@@ -1,6 +1,18 @@
 import { nearbyInteraction } from "@emberfall/common";
 import type { WorldState } from "@emberfall/common";
 
+export function treeOpacity(
+  tree: { x: number; y: number; width: number; height: number },
+  player: { x: number; y: number } | undefined,
+) {
+  return player &&
+    player.y + 15 < tree.y &&
+    Math.abs(player.x - tree.x) < tree.width / 2 + 24 &&
+    player.y + 18 > tree.y - tree.height
+    ? 0.15
+    : 1;
+}
+
 export function drawParticles(
   ctx: CanvasRenderingContext2D,
   x: number,

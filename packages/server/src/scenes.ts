@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { FOREST_PORTAL, nearbyInteraction, stepCombat } from "@emberfall/common";
+import { FOREST_PORTAL, nearbyInteraction, stepCombat, tickCompanion } from "@emberfall/common";
 import type { Player, SceneState, ClientMessage } from "@emberfall/common";
 
 export interface Scene extends SceneState {
@@ -19,6 +19,11 @@ export function returnToLobby(player: Player) {
   player.manapoints = player.maxManapoints;
   player.attackAt = undefined;
   player.attackAngle = undefined;
+  if (player.bear) {
+    player.bear.x = player.x;
+    player.bear.y = player.y;
+    player.bear.returning = false;
+  }
 }
 export function sceneAction(
   world: SceneWorld,
@@ -92,6 +97,8 @@ export function reconcileVote(world: SceneWorld, now: number) {
   }
 }
 export function tickScene(world: SceneWorld, now: number, dt: number) {
+  for (const player of world.players.values())
+    if (!player.scene) tickCompanion(player, undefined, now, dt);
   reconcileVote(world, now);
   const scene = world.scene;
   if (!scene) return;
@@ -107,6 +114,11 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
       player.y = FOREST_PORTAL.y;
       player.hitpoints = player.maxHitpoints;
       player.attackAt = now - 700;
+      if (player.bear) {
+        player.bear.x = player.x;
+        player.bear.y = player.y;
+        player.bear.returning = false;
+      }
     }
   }
   if (scene.phase !== "active" && scene.phase !== "ended") return;

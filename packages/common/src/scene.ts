@@ -67,7 +67,7 @@ export function nearbyInteraction(
   );
   return building ? { id: building.id, name: building.name, x: building.x, y: building.y } : null;
 }
-export type DebuffKind = "bleed" | "poison" | "burn";
+export type DebuffKind = "bleed" | "poison" | "burn" | "roots";
 export interface Debuff {
   kind: DebuffKind;
   stacks: number;

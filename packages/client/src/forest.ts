@@ -1,4 +1,6 @@
 import { characterImages } from "./characters";
+import { drawCompanion } from "./companion";
+import { crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
 import { drawLootAndBlood, drawClassProjectiles, drawDebuffs } from "./combat-effects";
@@ -20,6 +22,7 @@ import {
   hitOutline,
   drawDamageFlash,
   drawAtmosphere,
+  treeOpacity,
 } from "./effects";
 
 export function drawPortal(
@@ -357,13 +360,43 @@ export function forestRenderer(
         height,
       });
     const layers = [
-      ...trees.map((t) => ({ y: t.y, tree: t, actor: null })),
-      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a })),
+      ...trees.map((t) => ({ y: t.y, tree: t, actor: null, bear: null, critter: null })),
+      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a, bear: null, critter: null })),
+      ...players.flatMap((p) =>
+        p.bear
+          ? [
+              {
+                y: near(p.bear.x, p.bear.y).y + 15,
+                tree: null,
+                actor: null,
+                bear: p.bear,
+                critter: null,
+              },
+            ]
+          : [],
+      ),
+      ...crittersAt("forest", world ? serverTime : now, {
+        x: cameraX,
+        y: cameraY,
+        width,
+        height,
+      }).map((critter) => ({ y: critter.y, tree: null, actor: null, bear: null, critter })),
     ].sort((a, b) => a.y - b.y);
     for (const layer of layers) {
+      if (layer.critter) {
+        drawCritter(ctx, layer.critter);
+        continue;
+      }
+      if (layer.bear) {
+        const point = near(layer.bear.x, layer.bear.y);
+        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime);
+        continue;
+      }
       if (layer.tree) {
         const t = layer.tree;
+        ctx.globalAlpha = treeOpacity({ ...t, width: t.size, height: t.size }, me);
         if (treeMask) ctx.drawImage(tree, t.x - t.size / 2, t.y - t.size, t.size, t.size);
+        ctx.globalAlpha = 1;
         continue;
       }
       const a = layer.actor!;
@@ -503,7 +536,7 @@ function drawPlayerDetails(
   drawPlayerHealth(ctx, x, y - 32, p.hitpoints, p.maxHitpoints);
   const age = now - (p.attackAt ?? 0);
   if (age >= 0 && age < PLAYER_ATTACK_DURATION && p.hitpoints > 0) {
-    if (p.classId === "ranger" || p.classId === "mage") {
+    if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(p.attackAngle ?? 0);
@@ -524,7 +557,7 @@ function drawPlayerDetails(
       } else {
         ctx.fillStyle = "#815636";
         ctx.fillRect(8, -3, 28, 5);
-        ctx.fillStyle = "#ffce70";
+        ctx.fillStyle = p.classId === "druid" ? "#9deb65" : "#ffce70";
         ctx.beginPath();
         ctx.arc(36, 0, 5 + pull * 5, 0, Math.PI * 2);
         ctx.fill();

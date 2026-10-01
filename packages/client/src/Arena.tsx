@@ -1,4 +1,6 @@
 import { characterImages } from "./characters";
+import { drawCompanion } from "./companion";
+import { crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
@@ -13,6 +15,7 @@ import {
   drawVignette,
   drawNameBadge,
   drawAtmosphere,
+  treeOpacity,
 } from "./effects";
 import type { Interaction } from "./effects";
 import { ARENA, PATHS, LOBBY_PORTAL, TICK_MS, nearbyInteraction } from "@emberfall/common";
@@ -67,7 +70,8 @@ export function Arena({
     prefs.current = preferences;
   }, [world, send, graphics, preferences]);
   useEffect(() => {
-    const ctx = canvas.current!.getContext("2d", { alpha: false })!;
+    const element = canvas.current!;
+    const ctx = element.getContext("2d", { alpha: false })!;
     const knight = characterImages.warrior.walk;
     const nature = new Image();
     nature.src = "/assets/nature.png";
@@ -244,8 +248,8 @@ export function Arena({
       frameCount = 0;
     const resize = () => {
       const ratio = Math.min(devicePixelRatio * quality.current.resolution * resolutionScale, 3);
-      canvas.current!.width = Math.round(innerWidth * ratio);
-      canvas.current!.height = Math.round(innerHeight * ratio);
+      element.width = Math.round(innerWidth * ratio);
+      element.height = Math.round(innerHeight * ratio);
     };
     resize();
     window.addEventListener("resize", resize);
@@ -292,7 +296,7 @@ export function Arena({
         paintBackground();
         resize();
       }
-      const el = canvas.current!;
+      const el = element;
       const scale = Math.max(el.width / ARENA.width, el.height / ARENA.height);
       if (latest.current) snapshots.push(latest.current, now);
       if (document.querySelector("dialog[open]")) keys.clear();
@@ -301,7 +305,9 @@ export function Arena({
       let localSwing = false;
       if (view && local) {
         localSwing = localMovement.animateAttack(local, view, now);
-        view.players = view.players.map((player) => (player.id === playerId ? local : player));
+        view.players = view.players.map((player) =>
+          player.id === playerId ? { ...local, bear: player.bear } : player,
+        );
       }
       audio.update(
         local?.scene === "forest" && view?.scene?.phase === "active"
@@ -409,12 +415,44 @@ export function Arena({
         interaction.current?.id === "portal",
       );
       const layers = [
-        ...scenery.map((object) => ({ y: object.y, object, player: null })),
-        ...players.map((player) => ({ y: player.y + 15, object: null, player })),
+        ...scenery.map((object) => ({
+          y: object.y,
+          object,
+          player: null,
+          bear: null,
+          critter: null,
+        })),
+        ...players.map((player) => ({
+          y: player.y + 15,
+          object: null,
+          player,
+          bear: null,
+          critter: null,
+        })),
+        ...players.flatMap((p) =>
+          p.bear
+            ? [{ y: p.bear.y + 15, object: null, player: null, bear: p.bear, critter: null }]
+            : [],
+        ),
+        ...crittersAt("village", view.serverNow ?? now, {
+          x: cameraX,
+          y: cameraY,
+          width: viewWidth,
+          height: viewHeight,
+        }).map((critter) => ({ y: critter.y, object: null, player: null, bear: null, critter })),
       ].sort((a, b) => a.y - b.y);
       for (const layer of layers) {
+        if (layer.critter) {
+          drawCritter(ctx, layer.critter);
+          continue;
+        }
+        if (layer.bear) {
+          drawCompanion(ctx, layer.bear, layer.bear.x, layer.bear.y, view?.serverNow ?? now);
+          continue;
+        }
         if (layer.object) {
           const object = layer.object;
+          ctx.globalAlpha = object.id.startsWith("tree:") ? treeOpacity(object, local) : 1;
           ctx.drawImage(
             object.sprite,
             object.x - object.width / 2,
@@ -422,6 +460,7 @@ export function Arena({
             object.width,
             object.height,
           );
+          ctx.globalAlpha = 1;
           if (object.name)
             drawNameBadge(
               ctx,
@@ -567,6 +606,7 @@ export function Arena({
     }
     frame = requestAnimationFrame(draw);
     return () => {
+      nature.onload = houses.onload = null;
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener("resize", resize);

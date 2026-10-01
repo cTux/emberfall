@@ -77,6 +77,7 @@ export class SnapshotBuffer {
       // Corrections with no movement intent must not trigger a walking animation.
       return {
         ...a,
+        bear: a.bear ? { ...a.bear } : undefined,
         x: point.x,
         y: point.y,
         inputX: b.inputX ? point.dx : 0,
@@ -128,6 +129,13 @@ export class SnapshotBuffer {
         shot.x = wrap(shot.x + wrappedDelta(b.x, shot.x, FOREST.width) * alpha, FOREST.width);
         shot.y = wrap(shot.y + wrappedDelta(b.y, shot.y, FOREST.height) * alpha, FOREST.height);
       }
+    }
+    for (const player of players) {
+      const next = newer.players.find((p) => p.id === player.id)?.bear;
+      if (!player.bear || !next || player.bear.hitpoints <= 0 || next.hitpoints <= 0) continue;
+      const point = interpolate(player.bear, next, player.scene === "forest", 8);
+      player.bear.x = point.x;
+      player.bear.y = point.y;
     }
     return { ...older, players, scene, serverNow: this.clock };
   }

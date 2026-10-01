@@ -53,6 +53,7 @@ interface Session {
   actions: number;
   actionAt: number;
   characterId?: string;
+  reconnectUntil?: number;
 }
 
 export function createGameServer(staticRoot?: string, savePath = ":memory:", tls?: ServerOptions) {
@@ -187,7 +188,21 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
     ws.on("pong", () => {
       session.alive = true;
     });
-    ws.on("close", () => {
+    ws.on("close", (code) => {
+      if (session.worldId && code !== 1000 && code !== 1001 && code !== 1005 && code !== 1008) {
+        session.reconnectUntil = Date.now() + 30_000;
+        session.inputs = [];
+        session.x = session.y = 0;
+        session.inputAt = 0;
+        const player = worlds.get(session.worldId)?.players.get(session.id);
+        try {
+          if (player && session.characterId)
+            characters.save(session.characterId, player.name, player);
+        } catch (error) {
+          console.error("Character save failed on disconnect; autosave will retry:", error);
+        }
+        return;
+      }
       try {
         leave(session);
       } catch (error) {
@@ -333,8 +348,37 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         const active = () =>
           existingCharacter &&
           [...sessions.values()].some((s) => s.worldId && s.characterId === existingCharacter.id);
-        if (active()) {
+        if (message.type !== "resume" && active()) {
           error("This character is already playing in another tab. Leave that world first.");
+          return;
+        }
+        if (message.type === "resume") {
+          const retained = [...sessions.entries()].find(
+            ([oldWs, old]) =>
+              oldWs.readyState === WebSocket.CLOSED &&
+              old.characterId === existingCharacter?.id &&
+              old.worldId === message.worldId &&
+              (old.reconnectUntil ?? 0) > now,
+          );
+          const world = worlds.get(message.worldId);
+          if (!retained || !world) {
+            error("Your previous session is no longer available. Join or create a world again.");
+            return;
+          }
+          const [oldWs, old] = retained;
+          session.id = old.id;
+          session.worldId = old.worldId;
+          session.characterId = old.characterId;
+          const player = world.players.get(session.id)!;
+          player.inputSeq = player.inputElapsed = undefined;
+          player.inputX = player.inputY = 0;
+          sessions.delete(oldWs);
+          send(ws, {
+            type: "joined",
+            playerId: session.id,
+            world: state(world),
+            characterToken: message.characterToken,
+          });
           return;
         }
         let world: World;
@@ -511,6 +555,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
   }, 10);
   const heartbeat = setInterval(() => {
     for (const [ws, session] of sessions) {
+      if (ws.readyState !== WebSocket.OPEN) continue;
       if (!session.alive) {
         ws.terminate();
         continue;
@@ -532,7 +577,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       try {
         characters.save(session.characterId, player.name, player);
         send(ws, { type: "saved", savedAt: Date.now() });
-        if (ws.readyState === WebSocket.CLOSED) {
+        if (ws.readyState === WebSocket.CLOSED && (session.reconnectUntil ?? 0) <= Date.now()) {
           leave(session);
           sessions.delete(ws);
           broadcastList();

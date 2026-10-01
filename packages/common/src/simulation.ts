@@ -9,14 +9,14 @@ import {
   wrap,
 } from "./scene.ts";
 import { ARENA, moveActor } from "./world.ts";
-import type { Player } from "./index.ts";
+import type { Player, Bear } from "./index.ts";
 import type { SceneState, Enemy } from "./scene.ts";
 
 export const TICK_MS = 50;
 export const PLAYER_ATTACK_RANGE = 88;
 export const PLAYER_ATTACK_INTERVAL = 700;
 export const PLAYER_ATTACK_DURATION = 260;
-const swordHits = new WeakMap<Player, { sceneId: string; at: number; enemies: Set<number> }>();
+const swordHits = new WeakMap<object, { sceneId: string; at: number; enemies: Set<number> }>();
 
 /** Frame-rate independent aim smoothing, always taking the shortest turn across ±pi. */
 export function smoothAttackAngle(current: number | undefined, target: number, dt: number) {
@@ -46,7 +46,7 @@ export function nearestEnemyAngle(
     : fallback;
 }
 
-export function swordOverlapsEnemy(player: Player, enemy: Enemy) {
+export function swordOverlapsEnemy(player: Pick<Player, "x" | "y" | "attackAngle">, enemy: Enemy) {
   const dx = wrappedDelta(enemy.x, player.x, FOREST.width),
     dy = wrappedDelta(enemy.y, player.y, FOREST.height);
   const angle = player.attackAngle ?? 0;
@@ -58,6 +58,180 @@ export function swordOverlapsEnemy(player: Player, enemy: Enemy) {
       ? Math.max(0, Math.hypot(dx, dy) - PLAYER_ATTACK_RANGE)
       : Math.hypot(forward, Math.max(0, Math.abs(sideways) - PLAYER_ATTACK_RANGE));
   return distance <= ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 1e-6;
+}
+
+function slash(
+  scene: SceneState,
+  actor: Player | Bear,
+  owner: Player,
+  now: number,
+  amount: number,
+) {
+  let swing = swordHits.get(actor);
+  if (!swing || swing.at !== actor.attackAt || swing.sceneId !== scene.id) {
+    swing = { sceneId: scene.id, at: actor.attackAt!, enemies: new Set() };
+    swordHits.set(actor, swing);
+  }
+  for (const enemy of scene.enemies) {
+    if (enemy.hitpoints <= 0 || swing.enemies.has(enemy.id) || !swordOverlapsEnemy(actor, enemy))
+      continue;
+    swing.enemies.add(enemy.id);
+    hitEnemy(scene, enemy, amount, owner, now, amount === 5 ? "bleed" : undefined);
+  }
+}
+
+export function tickCompanion(
+  player: Player,
+  scene: SceneState | undefined,
+  now: number,
+  dt: number,
+) {
+  if (player.classId !== "druid") {
+    player.bear = undefined;
+    return;
+  }
+  const bear = (player.bear ??= {
+    id: `bear:${player.id}`,
+    name: "Bear",
+    x: player.x,
+    y: player.y,
+    hitpoints: player.maxHitpoints * 1.5,
+    maxHitpoints: player.maxHitpoints * 1.5,
+    returning: false,
+  });
+  const max = player.maxHitpoints * 1.5;
+  if (bear.hitpoints > 0)
+    bear.hitpoints = Math.min(max, bear.hitpoints + Math.max(0, max - bear.maxHitpoints));
+  bear.maxHitpoints = max;
+  if (bear.hitpoints <= 0) {
+    bear.resurrectAt ??= now + 5000;
+    if (now < bear.resurrectAt) return;
+    bear.hitpoints = max;
+    bear.x = player.x;
+    bear.y = player.y;
+    bear.resurrectAt = undefined;
+    bear.hurtAt = undefined;
+    bear.attackAt = undefined;
+    bear.returning = false;
+  }
+  if (player.hitpoints <= 0) return;
+  const forest = player.scene === "forest";
+  const distance = forest
+    ? forestDistance(bear, player)
+    : Math.hypot(bear.x - player.x, bear.y - player.y);
+  if (distance > 200) bear.returning = true;
+  if (bear.returning && distance <= 20) bear.returning = false;
+  const target =
+    forest && scene?.phase === "active" && !bear.returning
+      ? scene.enemies
+          .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= 200)
+          .reduce<Enemy | undefined>(
+            (best, e) => (!best || forestDistance(bear, e) < forestDistance(bear, best) ? e : best),
+            undefined,
+          )
+      : undefined;
+  let destination: { x: number; y: number; hitpoints: number } = target ?? player;
+  const heading = Math.atan2(
+    forest ? wrappedDelta(destination.y, bear.y, FOREST.height) : destination.y - bear.y,
+    forest ? wrappedDelta(destination.x, bear.x, FOREST.width) : destination.x - bear.x,
+  );
+  bear.attackAngle = heading;
+  if (target) {
+    // Keep claws in range while staying outside ordinary melee reach.
+    const spacing = PLAYER_ATTACK_RANGE - 8;
+    destination = {
+      x: wrap(target.x - Math.cos(heading) * spacing, FOREST.width),
+      y: wrap(target.y - Math.sin(heading) * spacing, FOREST.height),
+      hitpoints: 1,
+    };
+  }
+  const danger =
+    forest && scene?.phase === "active"
+      ? scene.enemies.find(
+          (e) =>
+            e.hitpoints > 0 &&
+            e.attack &&
+            e.attack.endsAt >= now &&
+            forestDistance(bear, e.attack) < e.attack.radius + 12,
+        )?.attack
+      : undefined;
+  if (danger) {
+    const away =
+      forestDistance(bear, danger) < 1
+        ? heading + Math.PI
+        : Math.atan2(
+            wrappedDelta(bear.y, danger.y, FOREST.height),
+            wrappedDelta(bear.x, danger.x, FOREST.width),
+          );
+    destination = {
+      x: wrap(danger.x + Math.cos(away) * (danger.radius + 16), FOREST.width),
+      y: wrap(danger.y + Math.sin(away) * (danger.radius + 16), FOREST.height),
+      hitpoints: 1,
+    };
+  }
+  if (forest && scene?.phase === "active") {
+    const shot = scene.projectiles?.find((s) => {
+      const dx = wrappedDelta(bear.x, s.x, FOREST.width),
+        dy = wrappedDelta(bear.y, s.y, FOREST.height);
+      const speedSquared = s.vx * s.vx + s.vy * s.vy;
+      if (s.expiresAt <= now || speedSquared === 0) return false;
+      const time = (dx * s.vx + dy * s.vy) / speedSquared;
+      return (
+        time >= 0 &&
+        time <= Math.min(0.35, (s.expiresAt - now) / 1000) &&
+        Math.hypot(dx - s.vx * time, dy - s.vy * time) < 30
+      );
+    });
+    if (shot) {
+      const speed = Math.hypot(shot.vx, shot.vy);
+      const side =
+        wrappedDelta(bear.x, shot.x, FOREST.width) * -shot.vy +
+          wrappedDelta(bear.y, shot.y, FOREST.height) * shot.vx >=
+        0
+          ? 1
+          : -1;
+      destination = {
+        x: wrap(bear.x - (shot.vy / speed) * 40 * side, FOREST.width),
+        y: wrap(bear.y + (shot.vx / speed) * 40 * side, FOREST.height),
+        hitpoints: 1,
+      };
+    }
+  }
+  if (destination !== player || distance > 20) {
+    const speed = ARENA.speed * 1.3;
+    if (forest) {
+      const body: Enemy = {
+        id: 1,
+        x: bear.x,
+        y: bear.y,
+        hitpoints: bear.hitpoints,
+        angle: heading,
+        archetype: "runner",
+      };
+      moveEnemies([body], [destination], (dt * speed) / ENEMY_STATS.runner.speed, now);
+      bear.x = body.x;
+      bear.y = body.y;
+    } else {
+      const travel = Math.min(Math.max(0, distance - 20), speed * Math.max(0, dt));
+      const next = moveActor(
+        { x: bear.x, y: bear.y + 15 },
+        Math.cos(heading) * travel,
+        Math.sin(heading) * travel,
+        12,
+      );
+      bear.x = next.x;
+      bear.y = next.y - 15;
+    }
+  }
+  if (target) bear.attackAngle = nearestEnemyAngle(bear, [target], heading);
+  if (forestDistance(bear, player) > 200 && forest) bear.returning = true;
+  if (!target || bear.returning || !scene) {
+    bear.attackAt = undefined;
+    return;
+  }
+  if (bear.attackAt === undefined || now - bear.attackAt >= PLAYER_ATTACK_INTERVAL)
+    bear.attackAt = now;
+  if (now - bear.attackAt < PLAYER_ATTACK_DURATION) slash(scene, bear, player, now, 2);
 }
 
 export function movePlayer(player: Player, x: number, y: number, dt: number) {
@@ -100,6 +274,8 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     );
     return distance - travel > 22;
   });
+  for (const player of players.filter((p) => p.scene === "forest"))
+    tickCompanion(player, scene, now, dt);
   if (scene.phase !== "active") return;
   scene.spawns ??= [];
   scene.projectiles ??= [];
@@ -183,29 +359,25 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
       swing = { sceneId: scene.id, at: player.attackAt, enemies: new Set() };
       swordHits.set(player, swing);
     }
-    if (player.classId === "ranger" || player.classId === "mage") {
-      if (freshSwing) fireClassAttack(scene, player);
+    if (player.classId === "ranger" || player.classId === "mage" || player.classId === "druid") {
+      if (freshSwing) fireClassAttack(scene, player, now);
       continue;
     }
-    for (const enemy of scene.enemies) {
-      if (
-        enemy.hitpoints <= 0 ||
-        swing!.enemies.has(enemy.id) ||
-        !swordOverlapsEnemy(player, enemy)
-      )
-        continue;
-      swing!.enemies.add(enemy.id);
-      hitEnemy(scene, enemy, 5, player, now, "bleed");
-    }
+    slash(scene, player, player, now, 5);
     scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
   }
   tickPlayerShots(scene, players, now, dt);
   scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
-  moveEnemies(scene.enemies, alive, dt);
-  const hurt = (target: Player, damage = 10) => {
+  const combatants = [
+    ...alive,
+    ...alive.flatMap((p) => (p.bear && p.bear.hitpoints > 0 ? [p.bear] : [])),
+  ];
+  moveEnemies(scene.enemies, combatants, dt, now);
+  const hurt = (target: Player | Bear, damage = 10) => {
     if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < 1000) return;
     target.hitpoints = Math.max(0, target.hitpoints - damage);
     target.hurtAt = now;
+    if ("returning" in target && target.hitpoints === 0) target.resurrectAt = now + 5000;
     scene.damage.push({
       id: ++scene.sequence,
       x: target.x,
@@ -217,9 +389,9 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
   };
   for (const enemy of scene.enemies) {
     const stats = ENEMY_STATS[enemy.archetype ?? "skeleton"];
-    const target = alive
+    const target = combatants
       .filter((p) => p.hitpoints > 0)
-      .reduce<Player | undefined>(
+      .reduce<Player | Bear | undefined>(
         (best, p) => (!best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best),
         undefined,
       );
@@ -245,7 +417,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
             expiresAt: now + 2500,
           });
       } else {
-        for (const player of alive)
+        for (const player of combatants)
           if (forestDistance(player, attack) <= attack.radius) hurt(player);
       }
     } else if (
@@ -276,7 +448,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
         )
       )
         return false;
-      const hit = alive.find((p) => p.hitpoints > 0 && forestDistance(p, shot) <= 17);
+      const hit = combatants.find((p) => p.hitpoints > 0 && forestDistance(p, shot) <= 17);
       if (hit) {
         hurt(hit);
         return false;

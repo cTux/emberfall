@@ -7,7 +7,6 @@ import {
   wrappedDelta,
 } from "./scene.ts";
 import type { Enemy } from "./scene.ts";
-import type { Player } from "./index.ts";
 
 export const ENEMY_HP = { normal: 10, elite: 50, boss: 200 } as const;
 export const ENEMY_STATS = {
@@ -35,7 +34,12 @@ export function enemyMaxHealth(enemy: Pick<Enemy, "kind" | "archetype" | "maxHit
 }
 
 /** Local tree detours and solid crowd bodies, used by the authoritative server. */
-export function moveEnemies(enemies: Enemy[], players: Player[], dt: number) {
+export function moveEnemies(
+  enemies: Enemy[],
+  players: { x: number; y: number; hitpoints: number }[],
+  dt: number,
+  now = 0,
+) {
   const cells = new Map<number, Set<Enemy>>();
   const key = (x: number, y: number) =>
     wrap(Math.floor(x / 40), 120) + wrap(Math.floor(y / 40), 64) * 120;
@@ -45,11 +49,15 @@ export function moveEnemies(enemies: Enemy[], players: Player[], dt: number) {
     cells.get(cell)!.add(enemy);
   }
   for (const enemy of enemies) {
-    if (enemy.attack) continue;
+    if (
+      enemy.attack ||
+      (enemy.kind !== "boss" && enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now))
+    )
+      continue;
     const stats = ENEMY_STATS[enemy.archetype ?? "skeleton"];
     const target = players
       .filter((p) => p.hitpoints > 0)
-      .reduce<Player | undefined>(
+      .reduce<(typeof players)[number] | undefined>(
         (best, p) => (!best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best),
         undefined,
       );
