@@ -340,7 +340,7 @@ export function forestRenderer(
       })
       .filter((a) => Math.abs(a.x - cx) < width / 2 + 80 && Math.abs(a.y - cy) < height / 2 + 80);
     if (quality.shadows) for (const caster of casters) castShadow(ctx, caster);
-    if (quality.ambientOcclusion) {
+    if (!quality.shadows) {
       ctx.fillStyle = "#07120955";
       for (const t of trees) {
         ctx.beginPath();

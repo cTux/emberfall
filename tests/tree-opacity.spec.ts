@@ -66,9 +66,28 @@ for (const forest of [false, true]) {
       ({ left, top }) => {
         const samples = { tree: [] as number[], grass: [] as number[] };
         const grassSamples = new Map<string, number[]>();
+        let roundShadows = 0;
+        const ellipse = CanvasRenderingContext2D.prototype.ellipse;
+        CanvasRenderingContext2D.prototype.ellipse = new Proxy(ellipse, {
+          apply(target, ctx: CanvasRenderingContext2D, args) {
+            if (ctx.canvas.hasAttribute("aria-label") && args[2] === 23 && args[3] === 8) {
+              document.body.dataset.roundTreeShadows = String(++roundShadows);
+            }
+            return Reflect.apply(target, ctx, args);
+          },
+        });
         const draw = CanvasRenderingContext2D.prototype.drawImage;
         CanvasRenderingContext2D.prototype.drawImage = new Proxy(draw, {
           apply(target, ctx: CanvasRenderingContext2D, args) {
+            if (
+              ctx.canvas.hasAttribute("aria-label") &&
+              args.length === 3 &&
+              args[0] instanceof HTMLCanvasElement &&
+              args[0].width === 320
+            ) {
+              roundShadows = 0;
+              document.body.dataset.roundTreeShadows = "0";
+            }
             if (
               ctx.canvas.hasAttribute("aria-label") &&
               args.length === 5 &&
@@ -148,5 +167,16 @@ for (const forest of [false, true]) {
     await expect
       .poll(() => page.locator("body").getAttribute("data-grass-sway").then(Number))
       .not.toBe(0);
+    if (forest) {
+      await expect(page.locator("body")).toHaveAttribute("data-round-tree-shadows", "0");
+      await page.getByRole("button", { name: "Low", exact: true }).click();
+      await expect
+        .poll(() => page.locator("body").getAttribute("data-round-tree-shadows").then(Number))
+        .toBeGreaterThan(0);
+      for (const preset of ["Balanced", "High"]) {
+        await page.getByRole("button", { name: preset, exact: true }).click();
+        await expect(page.locator("body")).toHaveAttribute("data-round-tree-shadows", "0");
+      }
+    }
   });
 }
