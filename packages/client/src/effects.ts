@@ -1,6 +1,30 @@
 import { nearbyInteraction } from "@emberfall/common";
 import type { WorldState } from "@emberfall/common";
 
+export function drawVegetation(
+  ctx: CanvasRenderingContext2D,
+  sprite: HTMLCanvasElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  now: number,
+  waving: boolean,
+) {
+  if (waving) {
+    const phase = x * 0.013 + y * 0.017;
+    const sway =
+      (Math.sin(now / 1600 + phase) + Math.sin(now / 2700 + phase * 1.7) * 0.3) *
+      (width / height) *
+      (sprite.width === 16 ? 0.07 : 0.018);
+    ctx.save();
+    // Shear around the base: roots stay fixed while foliage catches the breeze.
+    ctx.transform(1, 0, sway, 1, -sway * y, 0);
+    ctx.drawImage(sprite, x - width / 2, y - height, width, height);
+    ctx.restore();
+  } else ctx.drawImage(sprite, x - width / 2, y - height, width, height);
+}
+
 export function treeOpacity(
   tree: { x: number; y: number; width: number; height: number },
   player: { x: number; y: number } | undefined,

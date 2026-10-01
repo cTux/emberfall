@@ -16,6 +16,7 @@ import {
   drawNameBadge,
   drawAtmosphere,
   treeOpacity,
+  drawVegetation,
 } from "./effects";
 import type { Interaction } from "./effects";
 import { ARENA, PATHS, LOBBY_PORTAL, TICK_MS, nearbyInteraction } from "@emberfall/common";
@@ -453,13 +454,26 @@ export function Arena({
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = object.id.startsWith("tree:") ? treeOpacity(object, local) : 1;
-          ctx.drawImage(
-            object.sprite,
-            object.x - object.width / 2,
-            object.y - object.height,
-            object.width,
-            object.height,
-          );
+          const vegetation = object.id.startsWith("tree:") || object.id.startsWith("grass:");
+          if (vegetation)
+            drawVegetation(
+              ctx,
+              object.sprite,
+              object.x,
+              object.y,
+              object.width,
+              object.height,
+              now,
+              quality.current.wavingVegetation,
+            );
+          else
+            ctx.drawImage(
+              object.sprite,
+              object.x - object.width / 2,
+              object.y - object.height,
+              object.width,
+              object.height,
+            );
           ctx.globalAlpha = 1;
           if (object.name)
             drawNameBadge(

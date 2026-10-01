@@ -14,6 +14,7 @@ test("graphics presets change rendering, individual controls persist, and charac
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
   await page.getByRole("button", { name: "Low", exact: true }).click();
   await expect(page.getByLabel("Soft shadows")).not.toBeChecked();
+  await expect(page.getByLabel("Waving grass and trees")).not.toBeChecked();
   await page.getByRole("button", { name: "Close menu" }).click();
   await page.screenshot({ path: "test-results/graphics-low.png" });
   const lowWidth = await page.locator("canvas").evaluate((el) => (el as HTMLCanvasElement).width);
@@ -23,6 +24,7 @@ test("graphics presets change rendering, individual controls persist, and charac
     "Ambient occlusion (2D)",
     "Soft shadows",
     "Dense grass clusters",
+    "Waving grass and trees",
     "Character motion blur",
     "Dynamic lighting",
     "Bloom",
@@ -37,6 +39,7 @@ test("graphics presets change rendering, individual controls persist, and charac
   await page.screenshot({ path: "test-results/graphics-high.png" });
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByLabel("Character motion blur").uncheck();
+  await page.getByLabel("Waving grass and trees").uncheck();
   await page.getByRole("button", { name: "Close menu" }).click();
   await page.getByRole("button", { name: "Leave world" }).click();
   await page.getByRole("button", { name: "Leave", exact: true }).click();
@@ -45,6 +48,7 @@ test("graphics presets change rendering, individual controls persist, and charac
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
   await expect(page.getByLabel("Character motion blur")).not.toBeChecked();
+  await expect(page.getByLabel("Waving grass and trees")).not.toBeChecked();
   await expect(page.getByLabel("Dense grass clusters")).toBeChecked();
   await expect(page.getByLabel("Render resolution")).toHaveValue("1.5");
   await page.getByRole("button", { name: "Close menu" }).click();

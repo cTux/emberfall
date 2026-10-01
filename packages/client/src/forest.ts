@@ -28,6 +28,7 @@ import {
   drawDamageFlash,
   drawAtmosphere,
   treeOpacity,
+  drawVegetation,
 } from "./effects";
 
 export function drawPortal(
@@ -155,6 +156,8 @@ export function forestRenderer(
   const tree = document.createElement("canvas");
   tree.width = tree.height = 32;
   let treeMask: HTMLCanvasElement | undefined;
+  const grass = document.createElement("canvas");
+  grass.width = grass.height = 16;
   const ground = document.createElement("canvas");
   ground.width = ground.height = 320;
   const g = ground.getContext("2d")!;
@@ -203,6 +206,7 @@ export function forestRenderer(
     if (nature.naturalWidth && !treeMask) {
       tree.getContext("2d")!.drawImage(nature, 32, 0, 32, 32, 0, 0, 32, 32);
       treeMask = makeMask(tree);
+      grass.getContext("2d")!.drawImage(nature, 64, 160, 16, 16, 0, 0, 16, 16);
     }
     const scale = Math.max(ctx.canvas.width / 960, ctx.canvas.height / 640),
       width = ctx.canvas.width / scale,
@@ -248,16 +252,15 @@ export function forestRenderer(
     if (quality.grass && nature.naturalWidth)
       for (const t of trees)
         for (let i = 0; i < 5; i++)
-          ctx.drawImage(
-            nature,
-            64,
-            160,
+          drawVegetation(
+            ctx,
+            grass,
+            t.x - 57 + ((i * 41) % 120),
+            t.y - 64 + ((i * 67) % 145),
             16,
             16,
-            t.x - 65 + ((i * 41) % 120),
-            t.y - 80 + ((i * 67) % 145),
-            16,
-            16,
+            now,
+            quality.wavingVegetation,
           );
     const players = world?.players.filter((p) => p.scene === "forest") ?? [];
     const actors = [
@@ -411,7 +414,8 @@ export function forestRenderer(
       if (layer.tree) {
         const t = layer.tree;
         ctx.globalAlpha = treeOpacity({ ...t, width: t.size, height: t.size }, me);
-        if (treeMask) ctx.drawImage(tree, t.x - t.size / 2, t.y - t.size, t.size, t.size);
+        if (treeMask)
+          drawVegetation(ctx, tree, t.x, t.y, t.size, t.size, now, quality.wavingVegetation);
         ctx.globalAlpha = 1;
         continue;
       }
