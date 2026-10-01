@@ -1,3 +1,4 @@
+import { ENEMY_STATS } from "@emberfall/common";
 import type { SceneState, LootDrop, Enemy } from "@emberfall/common";
 
 const lootSprites = new Map<LootDrop["kind"], HTMLCanvasElement>();
@@ -139,6 +140,18 @@ export function drawDebuffs(
 ) {
   const debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now) ?? [];
   ctx.save();
+  if (debuffs.some((d) => d.kind === "roots")) {
+    ctx.strokeStyle = "#96d66b";
+    ctx.lineWidth = 3;
+    const feet = y + 11 + (ENEMY_STATS[enemy.archetype ?? "skeleton"].size * 45) / 48;
+    for (let i = -1; i <= 1; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x + i * 14, feet + 5);
+      ctx.lineTo(x + i * 10 - 5, feet - 6);
+      ctx.lineTo(x + i * 8 + 4, feet - 18);
+      ctx.stroke();
+    }
+  }
   ctx.font = "bold 8px system-ui";
   ctx.textAlign = "center";
   debuffs.forEach((debuff, index) => {
@@ -146,7 +159,11 @@ export function drawDebuffs(
     ctx.fillStyle = "#101817ee";
     ctx.fillRect(px - 11, y - 13, 23, 13);
     ctx.fillStyle =
-      debuff.kind === "bleed" ? "#ff6575" : debuff.kind === "poison" ? "#9deb65" : "#ffb74e";
+      debuff.kind === "bleed"
+        ? "#ff6575"
+        : debuff.kind === "poison" || debuff.kind === "roots"
+          ? "#9deb65"
+          : "#ffb74e";
     ctx.beginPath();
     if (debuff.kind === "poison") ctx.arc(px - 5, y - 6, 3, 0, Math.PI * 2);
     else {
@@ -157,7 +174,7 @@ export function drawDebuffs(
       ctx.closePath();
     }
     ctx.fill();
-    ctx.fillText(String(debuff.stacks), px + 5, y - 3);
+    ctx.fillText(debuff.kind === "roots" ? "R" : String(debuff.stacks), px + 5, y - 3);
   });
   ctx.restore();
 }
