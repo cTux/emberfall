@@ -131,7 +131,9 @@ canvas {
   position: relative;
   grid-column: 1;
   width: min(264px, calc(100vw - 80px));
-  pointer-events: none;
+  cursor: move;
+  touch-action: none;
+  z-index: 1;
 }
 
 .performance-stats svg {
@@ -143,10 +145,16 @@ canvas {
   grid-column: 1;
   width: 235px;
   padding: 8px;
+  cursor: move;
+  touch-action: none;
+  z-index: 1;
+}
+
+.performance-stats > aside,
+.dps-meter {
   background: #101c17d9;
   border: 1px solid #8daba52e;
   border-radius: 4px;
-  pointer-events: none;
 }
 
 .dps-meter small {

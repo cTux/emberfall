@@ -25,3 +25,5 @@ export {
   type PerformanceMonitorProps,
   type PerformanceSample,
 } from "./components/PerformanceMonitor";
+
+export { useDraggable, PanelPositionContext, type PanelPosition } from "./useDraggable";

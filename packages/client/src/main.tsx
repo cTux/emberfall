@@ -8,6 +8,7 @@ import type { ClientMessage, ServerMessage, WorldState, WorldSummary } from "@em
 import type { Interaction } from "./effects";
 import {
   GameUiProvider,
+  PanelPositionContext,
   GameWindow,
   WorldList,
   ChapterTabs,
@@ -30,6 +31,7 @@ import { loadPreferences } from "./preferences";
 import { Arena } from "./Arena";
 import { loadGraphics } from "./graphics";
 import "./style.scss";
+import { panelPositions } from "./panel-positions";
 
 function App() {
   const socket = useRef<WebSocket | null>(null);
@@ -770,6 +772,8 @@ function App() {
 }
 createRoot(document.getElementById("root")!).render(
   <GameUiProvider>
-    <App />
+    <PanelPositionContext value={panelPositions}>
+      <App />
+    </PanelPositionContext>
   </GameUiProvider>,
 );

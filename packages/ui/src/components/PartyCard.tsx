@@ -29,11 +29,7 @@ export function PartyCard({
   away,
 }: PartyCardProps) {
   return (
-    <PartyCardStyled
-      as="article"
-      aria-label={`${name}${away ? ", in another dimension" : ""}`}
-      sx={{ opacity: away ? 0.4 : 1 }}
-    >
+    <PartyCardStyled as="article" aria-label={`${name}${away ? ", in another dimension" : ""}`}>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
         {portrait && typeof portrait !== "string" ? (
           portrait

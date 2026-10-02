@@ -10,8 +10,9 @@ import {
 
 export const PartyCardStyled = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.background.paper, 0.15),
-  borderColor: alpha(theme.palette.divider, 0.15),
+  backgroundColor: "transparent",
+  border: 0,
+  boxShadow: "none",
 }));
 
 export const BossHealthStyled = styled(Paper)(({ theme }) => ({
@@ -29,12 +30,14 @@ export const PortalVoteStyled = styled(Paper)(({ theme }) => ({
 
 export const StatusMeterStyled = styled(Box)({ position: "relative" });
 
-export const StatusMeterProgressStyled = styled(LinearProgress)(({ theme }) => ({
+export const StatusMeterProgressStyled = styled(LinearProgress)(({ theme, color = "primary" }) => ({
   height: theme.spacing(3),
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.action.selected,
-  // Keep overlaid text readable over both the filled and empty portions.
-  [`& .${linearProgressClasses.bar}`]: { opacity: 0.4 },
+  backgroundColor: theme.palette.background.paper,
+  // Solid muted fills keep parchment text readable without showing the scene through.
+  [`& .${linearProgressClasses.bar}`]: {
+    backgroundColor: `color-mix(in srgb, ${color === "inherit" ? "currentColor" : theme.palette[color].main} 40%, ${theme.palette.background.paper})`,
+  },
 }));
 
 export const StatusMeterTextStyled = styled(Stack, {
