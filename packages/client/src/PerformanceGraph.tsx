@@ -40,9 +40,12 @@ export function PerformanceGraph({
   const fpsMax = Math.max(60, Math.ceil(Math.max(...samples.map((s) => s.fps ?? 0)) / 60) * 60);
   const latencyMax = Math.max(
     100,
-    Math.ceil(Math.max(...samples.map((s) => s.latency ?? 0)) / 100) * 100,
+    Math.ceil(
+      Math.max(...samples.flatMap((s) => [s.latency ?? 0, s.inputDelay ?? 0, s.snapshotAge ?? 0])) /
+        100,
+    ) * 100,
   );
-  const path = (key: "fps" | "latency", max: number) => {
+  const path = (key: "fps" | "latency" | keyof Timing, max: number) => {
     let penDown = false;
     return samples
       .map((sample) => {
@@ -83,7 +86,7 @@ export function PerformanceGraph({
               className="performance-latency"
               aria-label="Server latency"
             >
-              Ping 0–{latencyMax} ms
+              Network 0–{latencyMax} ms
             </text>
             <path
               data-series="latency"
@@ -91,12 +94,28 @@ export function PerformanceGraph({
               className="performance-latency"
               d={path("latency", latencyMax)}
             />
-            <text x="8" y="102" aria-label="Input acknowledgement delay">
-              Input ack: {current?.inputDelay == null ? "—" : Math.round(current.inputDelay)} ms
+            <path
+              data-series="inputDelay"
+              data-value={current?.inputDelay ?? undefined}
+              aria-label="Input acknowledgement delay"
+              className="performance-input-delay"
+              d={path("inputDelay", latencyMax)}
+            />
+            <path
+              data-series="snapshotAge"
+              data-value={current?.snapshotAge ?? undefined}
+              aria-label="Snapshot age since receipt"
+              className="performance-snapshot-age"
+              d={path("snapshotAge", latencyMax)}
+            />
+            <text x="8" y="102" className="performance-input-delay">
+              Input ack
             </text>
-            <text x="8" y="115" aria-label="Snapshot age since receipt">
-              Snapshot age (local):{" "}
-              {current?.snapshotAge == null ? "—" : Math.round(current.snapshotAge)} ms
+            <text x="256" y="102" textAnchor="end" className="performance-latency">
+              Ping
+            </text>
+            <text x="8" y="115" className="performance-snapshot-age">
+              Snapshot age (local)
             </text>
           </>
         )}

@@ -526,14 +526,6 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         if (session.timed) {
           let budget = TICK_MS;
           player.inputX = player.inputY = 0;
-          // Discard stale intent, acknowledging it without granting extra movement time.
-          let queued = session.inputs.reduce((ms, c) => ms + c.durationMs! - (c.elapsed ?? 0), 0);
-          while (queued > 2 * TICK_MS && session.inputs.length) {
-            const skipped = session.inputs.shift()!;
-            queued -= skipped.durationMs! - (skipped.elapsed ?? 0);
-            player.inputSeq = skipped.seq;
-            player.inputElapsed = skipped.durationMs;
-          }
           while (budget > 0.0001 && session.inputs.length) {
             const command = session.inputs[0];
             const epoch = player.scene === "forest" ? world!.scene?.id : "lobby";

@@ -189,9 +189,6 @@ export class LocalMovement {
     player.attackAngle = this.attackAngle;
     return started;
   }
-  get attackTime() {
-    return this.attackAt;
-  }
   inputDelay(now: number) {
     return this.pending.length
       ? Math.max(this.acknowledgedDelay ?? 0, now - this.pending[0].sentAt)
