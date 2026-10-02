@@ -97,6 +97,28 @@ test("forest prediction wraps and resets on area changes without predicting dama
   assert.equal(movement.render(world(), 100)!.x, 420);
 });
 
+test("stale movement stops walking animation and fresh acknowledgements restore it", () => {
+  const initial = world({ ...hero, scene: "forest", x: 2400, y: 1280 });
+  initial.scene = { id: "forest", phase: "active", enemies: [] } as unknown as NonNullable<
+    WorldState["scene"]
+  >;
+  const movement = new LocalMovement("p", () => {});
+  movement.render(initial, 0);
+  movement.input(1, 0, 0);
+  for (let now = 50; now <= 1000; now += 50) movement.render(initial, now);
+  const stopped = movement.render(initial, 1001)!;
+  assert.equal(stopped.inputX, 0);
+  assert.equal(stopped.inputY, 0);
+  assert.equal(movement.render(initial, 2000)!.x, stopped.x);
+  const fresh = world(
+    { ...initial.players[0], x: stopped.x, inputSeq: 20, inputElapsed: 50 },
+    11000,
+  );
+  fresh.scene = initial.scene;
+  assert(movement.render(fresh, 2000)!.inputX! > 0);
+  assert(movement.render(fresh, 2050)!.x > stopped.x);
+});
+
 test("diagonal facing keeps its current axis despite floating-point noise and follows real direction changes", () => {
   for (const start of [1, 2]) {
     let facing = start;

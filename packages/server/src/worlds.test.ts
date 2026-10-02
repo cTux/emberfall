@@ -308,6 +308,26 @@ test("timed inputs acknowledge partial steps, reject stale areas and cannot acce
       ws.send(JSON.stringify({ type: "move", seq, epoch: "lobby", x: 1, y: 0, durationMs: 50 }));
     await wait(() => samples.some((p) => p.inputSeq === 13));
     for (let i = 1; i < samples.length; i++) assert(samples[i].x - samples[i - 1].x <= 9.001);
+    const cast = {
+      type: "cast",
+      id: 1,
+      epoch: "expired",
+      classId: "warrior",
+      autoTarget: false,
+      aimX: 600,
+      aimY: 340,
+    };
+    ws.send(JSON.stringify(cast));
+    await wait(() => samples.some((p) => p.castSeq === 1));
+    assert.equal(
+      samples.at(-1)!.attackId,
+      undefined,
+      "stale-area requests are acknowledged but never cast",
+    );
+    ws.send(JSON.stringify({ ...cast, epoch: "lobby" }));
+    await new Promise((r) => setTimeout(r, 100));
+    assert.equal(samples.at(-1)!.castSeq, 1);
+    assert.equal(samples.at(-1)!.attackId, undefined, "duplicate request IDs cannot be replayed");
   } finally {
     ws.terminate();
     await app.close();

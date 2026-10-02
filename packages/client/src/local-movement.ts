@@ -22,7 +22,8 @@ type Move = Extract<ClientMessage, { type: "move" }> & {
   sentAt: number;
 };
 const TOLERANCE = 2,
-  SNAP_DISTANCE = 20;
+  SNAP_DISTANCE = 20,
+  PREDICTION_LIMIT_MS = 1000;
 
 /** Replay only movement the server has not consumed; offsets affect drawing, never gameplay. */
 export class LocalMovement {
@@ -38,6 +39,10 @@ export class LocalMovement {
   private offset = { x: 0, y: 0 };
   private drawnAt = 0;
   private attackAt = -Infinity;
+  private attackId?: number;
+  private castSeq = 0;
+  private requestAt = -Infinity;
+  private casts = new Map<number, number>();
   private shots: PlayerShot[] = [];
   private shotCastAt = -Infinity;
   private shotsAt = 0;
@@ -57,7 +62,11 @@ export class LocalMovement {
     this.at = now;
     if (this.base) {
       const queued = this.pending.reduce((n, p) => n + p.durationMs, 0);
-      this.unsent += Math.min(Math.max(0, elapsed), 100, Math.max(0, 1000 - queued - this.unsent));
+      this.unsent += Math.min(
+        Math.max(0, elapsed),
+        100,
+        Math.max(0, PREDICTION_LIMIT_MS - queued - this.unsent),
+      );
       while (this.unsent >= 50) this.flush(50);
     }
   }
@@ -118,6 +127,10 @@ export class LocalMovement {
       this.source = world;
       this.sourceAt = now;
       this.attackAt = -Infinity;
+      this.attackId = undefined;
+      this.castSeq = Math.max(this.castSeq, authoritative.castSeq ?? 0);
+      this.casts.clear();
+      this.requestAt = -Infinity;
       this.shots = [];
       this.shotCastAt = -Infinity;
       this.shotsAt = now;
@@ -129,6 +142,22 @@ export class LocalMovement {
       this.source = world;
       this.sourceAt = now;
       this.base = { ...authoritative };
+      const shots =
+        authoritative.scene === "forest" ? world.scene?.playerShots : world.training?.playerShots;
+      for (const id of this.casts.keys()) {
+        if (
+          id <= (authoritative.castSeq ?? 0) &&
+          id !== authoritative.attackId &&
+          !shots?.some((s) => s.ownerId === this.id && s.castId === id)
+        ) {
+          this.casts.delete(id);
+          this.shots = this.shots.filter((s) => s.castId !== id);
+          if (this.attackId === id) {
+            this.attackId = authoritative.attackId;
+            this.attackAt = authoritative.attackAt ?? -Infinity;
+          }
+        }
+      }
       const acknowledged = this.pending.find((p) => p.seq === authoritative.inputSeq);
       if (acknowledged) this.acknowledgedDelay = Math.max(0, now - acknowledged.sentAt);
       this.pending = this.pending.filter(
@@ -165,7 +194,7 @@ export class LocalMovement {
     };
     this.offset = this.difference(displayed, predicted);
     const probe = { ...predicted };
-    movePlayer(probe, this.x, this.y, 1 / 60);
+    if (now - this.sourceAt <= PREDICTION_LIMIT_MS) movePlayer(probe, this.x, this.y, 1 / 60);
     const motion = this.difference(probe, predicted);
     return { ...predicted, ...displayed, inputX: motion.x, inputY: motion.y };
   }
@@ -174,10 +203,13 @@ export class LocalMovement {
     if (
       player.hitpoints <= 0 ||
       scene?.phase !== "active" ||
+      scene.pausedAt !== undefined ||
+      now - this.sourceAt > PREDICTION_LIMIT_MS ||
       (!player.scene && !inTrainingZone(player))
     ) {
       player.attackAt = undefined;
       this.attackAt = -Infinity;
+      this.aimAt = undefined;
       return false;
     }
     // Aim follows the selected control mode independently of the cast cooldown.
@@ -188,22 +220,56 @@ export class LocalMovement {
     );
     this.aimAt = now;
     const serverNow = (this.source?.serverNow ?? 0) + now - this.sourceAt;
-    const origin =
-      player.autoAttack === false
-        ? Math.max(this.base?.attackAt ?? -Infinity, this.attackAt)
-        : (this.base?.attackAt ??
-          (Number.isFinite(this.attackAt) ? this.attackAt : (this.source?.serverNow ?? 0)));
-    const cycle =
-      player.autoAttack === false
-        ? player.attacking && serverNow - origin >= PLAYER_ATTACK_INTERVAL
-          ? serverNow
-          : origin
-        : origin +
-          Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) *
-            PLAYER_ATTACK_INTERVAL;
-    const started = cycle !== this.attackAt;
-    this.attackAt = cycle;
-    player.attackAt = Number.isFinite(cycle) ? now - (serverNow - cycle) : undefined;
+    let started = false;
+    if (player.autoAttack === false) {
+      if (!Number.isFinite(this.attackAt)) {
+        this.attackAt = this.base?.attackAt ?? -Infinity;
+        this.attackId = this.base?.attackId;
+      }
+      const confirmedAt =
+        this.base?.attackAt === undefined
+          ? -Infinity
+          : ((this.base.attackId !== undefined ? this.casts.get(this.base.attackId) : undefined) ??
+            now - (serverNow - this.base.attackAt));
+      const origin = Math.max(confirmedAt, this.requestAt);
+      if (player.attacking && now - origin >= PLAYER_ATTACK_INTERVAL) {
+        this.attackAt = serverNow;
+        this.requestAt = now;
+        this.attackId = ++this.castSeq;
+        this.casts.set(this.attackId, now);
+        // Keep completed IDs briefly so delayed confirmation cannot replay an expired visual.
+        if (this.casts.size > 32) this.casts.delete(this.casts.keys().next().value!);
+        this.send({
+          type: "cast",
+          id: this.attackId,
+          epoch: this.epoch,
+          classId: player.classId ?? "warrior",
+          autoTarget: player.autoTarget !== false,
+          aimX: player.aimX ?? player.x,
+          aimY: player.aimY ?? player.y,
+        });
+        started = true;
+      }
+    } else {
+      const origin =
+        this.base?.attackAt ??
+        (Number.isFinite(this.attackAt) ? this.attackAt : (this.source?.serverNow ?? 0));
+      const cycle =
+        origin +
+        Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) *
+          PLAYER_ATTACK_INTERVAL;
+      started = cycle !== this.attackAt;
+      this.attackAt = cycle;
+      this.attackId = undefined;
+    }
+    const cycle = this.attackAt;
+    player.attackId = this.attackId;
+    player.attackAt =
+      this.attackId !== undefined && this.casts.has(this.attackId)
+        ? this.casts.get(this.attackId)
+        : Number.isFinite(cycle)
+          ? now - (serverNow - cycle)
+          : undefined;
     player.attackAngle = this.attackAngle;
     return started;
   }
@@ -221,16 +287,24 @@ export class LocalMovement {
       scene.phase !== "active" ||
       scene.pausedAt !== undefined ||
       (player.classId !== "mage" && player.classId !== "ranger") ||
-      now - this.sourceAt > 1000
+      now - this.sourceAt > PREDICTION_LIMIT_MS
     ) {
       this.shots = [];
     } else {
       // Confirm targets and retire completed/rejected casts without replaying delayed spawns.
       const matched = new Set<number>();
       this.shots = this.shots.filter((shot) => {
-        if ((this.source?.serverNow ?? 0) >= shot.castAt!) {
+        const acknowledged =
+          shot.castId !== undefined
+            ? (this.base?.castSeq ?? 0) >= shot.castId &&
+              (this.source?.serverNow ?? 0) >= (this.base?.attackAt ?? 0)
+            : (this.source?.serverNow ?? 0) >= shot.castAt!;
+        if (acknowledged) {
           const candidates = confirmed?.playerShots?.filter(
-            (s) => s.ownerId === player.id && s.castAt === shot.castAt && !matched.has(s.id),
+            (s) =>
+              s.ownerId === player.id &&
+              (shot.castId !== undefined ? s.castId === shot.castId : s.castAt === shot.castAt) &&
+              !matched.has(s.id),
           );
           const serverShot =
             candidates?.find((s) => s.targetId === shot.targetId) ?? candidates?.[0];
@@ -253,7 +327,11 @@ export class LocalMovement {
       // A target absent from our snapshots cannot be predicted. Launch that server cast here too.
       const missed =
         confirmed?.playerShots?.filter(
-          (s) => s.ownerId === player.id && s.castAt !== undefined && s.castAt > this.shotCastAt,
+          (s) =>
+            s.ownerId === player.id &&
+            s.castAt !== undefined &&
+            s.castAt > this.shotCastAt &&
+            (s.castId === undefined || !this.casts.has(s.castId)),
         ) ?? [];
       for (const shot of missed)
         this.shots.push({ ...shot, x: player.x, y: player.y, hitIds: [...shot.hitIds] });

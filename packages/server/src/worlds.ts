@@ -12,6 +12,7 @@ import {
   clientMessage,
   nearbyInteraction,
   movePlayer,
+  requestPlayerCast,
   TICK_MS,
 } from "@emberfall/common";
 import type { ChatMessage, Player, ServerMessage, WorldState, SceneState } from "@emberfall/common";
@@ -275,6 +276,18 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         }
         return;
       }
+      if (message.type === "cast") {
+        const world = worlds.get(session.worldId ?? "");
+        const player = world?.players.get(session.id);
+        if (player)
+          requestPlayerCast(
+            player.scene === "forest" ? world!.scene : world!.training,
+            player,
+            message,
+            now,
+          );
+        return;
+      }
       if (message.type === "move") {
         if (session.worldId) {
           if (message.seq !== undefined) {
@@ -421,6 +434,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           session.id = old.id;
           session.worldId = old.worldId;
           session.characterId = old.characterId;
+          session.chatAt = old.chatAt;
           const player = world.players.get(session.id)!;
           player.inputSeq = player.inputElapsed = undefined;
           player.inputX = player.inputY = 0;
@@ -563,6 +577,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         const world = worlds.get(session.worldId ?? "");
         const player = world?.players.get(session.id);
         if (!player) continue;
+        if (player.chat && wallTime - (session.chatAt ?? 0) >= 10_000) player.chat = undefined;
         if (session.timed) {
           let budget = TICK_MS;
           player.inputX = player.inputY = 0;

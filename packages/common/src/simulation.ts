@@ -16,7 +16,7 @@ import {
   hasLivingScenePlayers,
 } from "./scene.ts";
 import { ARENA, moveActor, inTrainingZone } from "./world.ts";
-import type { Player, Bear } from "./index.ts";
+import type { Player, Bear, ClientMessage } from "./index.ts";
 import type { SceneState, Enemy } from "./scene.ts";
 
 export const TICK_MS = 50;
@@ -24,6 +24,8 @@ export const PLAYER_ATTACK_RANGE = defaultSpellRange({ classId: "warrior" });
 export const PLAYER_ATTACK_INTERVAL = 700;
 export const PLAYER_ATTACK_DURATION = 260;
 const swordHits = new WeakMap<object, { sceneId: string; at: number; enemies: Set<number> }>();
+type CastRequest = Extract<ClientMessage, { type: "cast" }>;
+const castInputs = new WeakMap<Player, CastRequest>();
 const companionDecisions = new WeakMap<
   Bear,
   {
@@ -588,6 +590,36 @@ export function playerAimAngle(player: Player, enemies: Enemy[]) {
     : nearestEnemyAngle(player, enemies, player.attackAngle);
 }
 
+/** Acknowledge every new request, including rejection; client IDs never bypass server cooldowns. */
+export function requestPlayerCast(
+  scene: SceneState | undefined,
+  player: Player,
+  request: CastRequest,
+  now: number,
+) {
+  if (request.id <= (player.castSeq ?? 0)) return false;
+  player.castSeq = request.id;
+  if (
+    !scene ||
+    scene.phase !== "active" ||
+    scene.pausedAt !== undefined ||
+    player.hitpoints <= 0 ||
+    request.classId !== (player.classId ?? "warrior") ||
+    request.epoch !== (player.scene === "forest" ? scene.id : "lobby") ||
+    (!player.scene && !inTrainingZone(player)) ||
+    (player.attackAt !== undefined && now - player.attackAt < PLAYER_ATTACK_INTERVAL)
+  )
+    return false;
+  player.autoAttack = false;
+  player.autoTarget = request.autoTarget;
+  player.aimX = request.aimX;
+  player.aimY = request.aimY;
+  player.attackAt = now;
+  player.attackId = request.id;
+  castInputs.set(player, request);
+  return true;
+}
+
 export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number, dt: number) {
   for (const player of alive) {
     if (scene.training && !inTrainingZone(player)) {
@@ -599,16 +631,14 @@ export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number
       playerAimAngle(player, scene.enemies),
       dt,
     );
-    const attacking =
-      player.autoAttack !== false || (player.attacking && now - (player.combatInputAt ?? 0) <= 250);
+    const attacking = player.autoAttack !== false;
     if (
       attacking &&
       (player.attackAt === undefined || now - player.attackAt >= PLAYER_ATTACK_INTERVAL)
-    )
-      player.attackAt =
-        player.autoAttack === false
-          ? now
-          : now - ((now - (player.attackAt ?? now)) % PLAYER_ATTACK_INTERVAL);
+    ) {
+      player.attackAt = now - ((now - (player.attackAt ?? now)) % PLAYER_ATTACK_INTERVAL);
+      player.attackId = undefined;
+    }
     if (player.attackAt === undefined) continue;
     const age = now - player.attackAt;
     if (age < 0 || age >= PLAYER_ATTACK_DURATION) continue;
@@ -619,7 +649,22 @@ export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number
       swordHits.set(player, swing);
     }
     if (player.classId === "ranger" || player.classId === "mage" || player.classId === "druid") {
-      if (freshSwing) fireClassAttack(scene, player, now);
+      if (freshSwing) {
+        const request = castInputs.get(player);
+        fireClassAttack(
+          scene,
+          request && request.id === player.attackId
+            ? {
+                ...player,
+                autoTarget: request.autoTarget,
+                aimX: request.aimX,
+                aimY: request.aimY,
+              }
+            : player,
+          now,
+        );
+        castInputs.delete(player);
+      }
       continue;
     }
     slash(scene, player, player, now, 5);
