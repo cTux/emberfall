@@ -10,6 +10,67 @@ const renderer = stripTypeScriptTypes(
 const lighting = stripTypeScriptTypes(
   readFileSync("packages/client/src/lighting.ts", "utf8"),
 ).replaceAll("export ", "");
+const effectsSource = readFileSync("packages/client/src/effects.ts", "utf8");
+const vegetation = stripTypeScriptTypes(
+  effectsSource.slice(
+    effectsSource.indexOf("export function vegetationSway"),
+    effectsSource.indexOf("export function treeOpacity"),
+  ),
+).replaceAll("export ", "");
+
+test("portals share tree sway, keep their base fixed, and honor the waving toggle", async ({
+  page,
+}) => {
+  await page.setContent('<canvas width="360" height="180"></canvas>');
+  await page.addScriptTag({
+    content: `function drawNameBadge() {}\n${vegetation}\n${lighting}\n${renderer}`,
+  });
+  const samples = await page.evaluate(() => {
+    const ctx = document.querySelector("canvas")!.getContext("2d")!;
+    const draw = Reflect.get(window, "drawPortal");
+    const drawTree = Reflect.get(window, "drawVegetation");
+    const tree = document.createElement("canvas");
+    tree.width = tree.height = 32;
+    const samples: { portal: number; tree: number; root: number; restored: boolean }[] = [];
+    let portalSway = 0,
+      root = 0,
+      treeSway = 0;
+    const ellipse = ctx.ellipse.bind(ctx);
+    ctx.ellipse = (...args) => {
+      if (args[2] === 25 && args[3] === 38) {
+        const matrix = ctx.getTransform();
+        portalSway = matrix.c;
+        root = matrix.c * 8 + matrix.e;
+      }
+      ellipse(...args);
+    };
+    ctx.drawImage = () => {
+      treeSway = ctx.getTransform().c;
+    };
+    for (const [time, waving] of [
+      [0, true],
+      [1600, true],
+      [1600, false],
+    ] as const) {
+      draw(ctx, 180, 120, time, false, "", false, false, waving);
+      drawTree(ctx, tree, 180, 128, 50, 76, time, waving);
+      samples.push({
+        portal: portalSway,
+        tree: treeSway,
+        root,
+        restored: ctx.getTransform().isIdentity,
+      });
+    }
+    return samples;
+  });
+  expect(samples[0].portal).not.toBe(samples[1].portal);
+  expect(samples[2].portal).toBe(0);
+  for (const sample of samples) {
+    expect(sample.portal).toBeCloseTo(sample.tree, 10);
+    expect(sample.root).toBeCloseTo(180, 10);
+    expect(sample.restored).toBe(true);
+  }
+});
 
 test("blue portal ripples animate, stay inside the oval, and render without bloom", async ({
   page,
@@ -26,7 +87,7 @@ test("blue portal ripples animate, stay inside the oval, and render without bloo
       [180, 1600, false],
       [300, 1600, true],
     ] as const) {
-      draw(ctx, x, 120, time, Boolean(bloom), "", false, false);
+      draw(ctx, x, 120, time, Boolean(bloom), "", false, false, false);
       interiors.push(Array.from(ctx.getImageData(x - 15, 65, 30, 40).data));
     }
     return {
@@ -58,11 +119,11 @@ test("portal shadows follow Low, Balanced and High presets and the shadow toggle
     const draw = Reflect.get(window, "drawPortal");
     const samples = Object.values(presets).map((quality, i) => {
       const x = 70 + i * 160;
-      draw(ctx, x, 100, 1600, quality.bloom, "", false, quality.shadows);
+      draw(ctx, x, 100, 1600, quality.bloom, "", false, quality.shadows, false);
       const shadow = Array.from(ctx.getImageData(x + 30, 138, 1, 1).data);
       const contact = Array.from(ctx.getImageData(x - 28, 101, 1, 1).data);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      draw(ctx, x, 100, 1600, quality.bloom, "", false, false);
+      draw(ctx, x, 100, 1600, quality.bloom, "", false, false, false);
       const disabled = Array.from(ctx.getImageData(x + 30, 138, 1, 1).data);
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       return {
@@ -73,7 +134,7 @@ test("portal shadows follow Low, Balanced and High presets and the shadow toggle
       };
     });
     Object.values(presets).forEach((quality, i) =>
-      draw(ctx, 70 + i * 160, 100, 1600, quality.bloom, "", false, quality.shadows),
+      draw(ctx, 70 + i * 160, 100, 1600, quality.bloom, "", false, quality.shadows, false),
     );
     return samples;
   }, GRAPHICS_PRESETS);

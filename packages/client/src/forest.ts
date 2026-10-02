@@ -30,6 +30,7 @@ import {
   drawAtmosphere,
   treeOpacity,
   drawVegetation,
+  vegetationSway,
 } from "./effects";
 
 const portalSilhouette = document.createElement("canvas");
@@ -50,6 +51,7 @@ export function drawPortal(
   name: string,
   active: boolean,
   shadows: boolean,
+  waving: boolean,
 ) {
   if (shadows)
     castShadow(ctx, { id: "portal", x, y: y + 8, width: 50, height: 76, mask: portalMask });
@@ -61,6 +63,11 @@ export function drawPortal(
     ctx.beginPath();
     ctx.ellipse(0, 1, 31, 12, 0, 0, Math.PI * 2);
     ctx.fill();
+  }
+  ctx.save();
+  if (waving) {
+    const sway = vegetationSway(x, y + 8, 50, 76, now);
+    ctx.transform(1, 0, sway, 1, -sway * 8, 0);
   }
   if (bloom) {
     ctx.shadowBlur = 20;
@@ -101,6 +108,7 @@ export function drawPortal(
       2,
     );
   }
+  ctx.restore();
   ctx.restore();
   drawNameBadge(ctx, x, y - 60, name, active);
 }
@@ -374,6 +382,7 @@ export function forestRenderer(
           "Return to village",
           interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
           quality.shadows,
+          quality.wavingVegetation,
         );
       }
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near);
