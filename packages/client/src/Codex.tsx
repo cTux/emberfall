@@ -12,10 +12,11 @@ const chapters = [
         <p>
           Move with WASD or arrow keys. F toggles auto-attack; G toggles auto-target. Both start
           enabled. With auto-attack off, hold LMB to cast on cooldown. With auto-target off, aim
-          with the cursor; roots and fireballs prefer nearby cursor targets. A transparent circle
-          shows spell range when the cursor is beyond it. Press E near a building or blue portal to
-          interact. Trees, buildings and torch posts block movement. Escape opens a leave
-          confirmation; Escape inside a window closes it. Drag window titles to move them.
+          with the cursor; spells fly straight up to 1000 units and hit enemies in their path.
+          Auto-target selects only the nearest enemy. A transparent circle shows spell range when
+          the cursor is beyond it. Press E near a building or blue portal to interact. Trees,
+          buildings and torch posts block movement. Escape opens a leave confirmation; Escape inside
+          a window closes it. Drag window titles to move them.
         </p>{" "}
       </>
     ),
@@ -107,7 +108,7 @@ const chapters = [
           character and weapon.
         </p>
         <p>
-          Druid roots up to two enemies within 250 units, preferring unrooted targets. Roots last
+          Druid roots the nearest enemy within 250 units when auto-target is enabled. Roots last
           five seconds, stop ordinary enemies moving, and deal 2 damage each second. Bosses show
           roots and take damage but keep moving. Boar has 1.5 times your maximum HP, strikes with
           tusks for 2 damage, and revives five seconds after death. It chases the nearest enemy

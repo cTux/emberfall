@@ -97,7 +97,9 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
   }
 }
 
-export function defaultSpellRange(player: Pick<Player, "classId">) {
+export function defaultSpellRange(player: Pick<Player, "classId" | "autoTarget">) {
+  if (player.autoTarget === false && (player.classId === "mage" || player.classId === "druid"))
+    return 1000;
   return player.classId === "mage" || player.classId === "druid"
     ? 250
     : player.classId === "ranger"
@@ -105,53 +107,46 @@ export function defaultSpellRange(player: Pick<Player, "classId">) {
       : 88;
 }
 
+function applyRoots(target: Enemy, ownerId: string, now: number) {
+  target.debuffs ??= [];
+  const roots = target.debuffs.find((d) => d.kind === "roots" && d.expiresAt > now);
+  if (roots) {
+    roots.expiresAt = now + 5000;
+    roots.ownerId = ownerId;
+  } else {
+    target.debuffs = target.debuffs.filter((d) => d.kind !== "roots");
+    target.debuffs.push({
+      kind: "roots",
+      stacks: 1,
+      expiresAt: now + 5000,
+      nextTick: now + 1000,
+      ownerId,
+    });
+  }
+}
+
 export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
   const range = defaultSpellRange(player);
-  const manual =
-    player.autoTarget === false && player.aimX !== undefined && player.aimY !== undefined;
-  const aim = manual ? { x: player.aimX!, y: player.aimY! } : player;
-  const rooted = (enemy: Enemy) =>
-    enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now) ? 1 : 0;
-  const targets = scene.enemies
+  const manual = player.autoTarget === false;
+  const aim = { x: player.aimX ?? player.x, y: player.aimY ?? player.y };
+  const targets = (manual ? [] : scene.enemies)
     .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= range)
-    .sort(
-      (a, b) =>
-        (!manual && player.classId === "druid" ? rooted(a) - rooted(b) : 0) ||
-        forestDistance(a, aim) - forestDistance(b, aim),
-    )
-    .slice(0, player.classId === "mage" || player.classId === "druid" ? 2 : 1);
-  if (player.classId === "druid") {
-    for (const target of targets) {
-      target.debuffs ??= [];
-      const roots = target.debuffs.find((d) => d.kind === "roots" && d.expiresAt > now);
-      if (roots) {
-        roots.expiresAt = now + 5000;
-        roots.ownerId = player.id;
-      } else {
-        target.debuffs = target.debuffs.filter((d) => d.kind !== "roots");
-        target.debuffs.push({
-          kind: "roots",
-          stacks: 1,
-          expiresAt: now + 5000,
-          nextTick: now + 1000,
-          ownerId: player.id,
-        });
-      }
-    }
+    .sort((a, b) => forestDistance(a, player) - forestDistance(b, player))
+    .slice(0, 1);
+  if (player.classId === "druid" && !manual) {
+    for (const target of targets) applyRoots(target, player.id, now);
     return;
   }
   scene.playerShots ??= [];
-  const shotTargets: (Enemy | undefined)[] =
-    manual && player.classId === "ranger" ? [undefined] : targets;
-  if (manual && player.classId === "mage" && !shotTargets.length) shotTargets.push(undefined);
+  const shotTargets: (Enemy | undefined)[] = manual ? [undefined] : targets;
   for (const target of shotTargets) {
-    const destination = manual && player.classId === "ranger" ? aim : (target ?? aim);
+    const destination = target ?? aim;
     scene.playerShots.push({
       id: ++scene.sequence,
       ownerId: player.id,
       castAt: player.attackAt ?? now,
       castId: player.attackId,
-      kind: player.classId === "mage" ? "fireball" : "arrow",
+      kind: player.classId === "mage" ? "fireball" : player.classId === "druid" ? "roots" : "arrow",
       x: player.x,
       y: player.y,
       angle: Math.atan2(
@@ -182,7 +177,7 @@ export function advancePlayerShot(
   const distance = Math.min(shot.remaining, Math.max(0, dt) * (shot.kind === "arrow" ? 600 : 380));
   const steps = Math.max(1, Math.ceil(distance / 6));
   for (let i = 0; i < steps; i++) {
-    if (shot.kind === "fireball")
+    if (shot.kind === "fireball" && shot.targetId !== undefined)
       shot.angle = Math.atan2(
         wrappedDelta(shot.targetY!, shot.y, FOREST.height),
         wrappedDelta(shot.targetX!, shot.x, FOREST.width),
@@ -191,8 +186,20 @@ export function advancePlayerShot(
     shot.y = wrap(shot.y + (Math.sin(shot.angle) * distance) / steps, FOREST.height);
     shot.remaining -= distance / steps;
     onStep?.();
+    if (shot.kind !== "arrow") {
+      const hit = enemies.find(
+        (enemy) =>
+          enemy.hitpoints > 0 &&
+          forestDistance(shot, enemy) <= ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 4,
+      );
+      if (hit) {
+        shot.hitIds.push(hit.id);
+        return true;
+      }
+    }
     if (
       shot.kind === "fireball" &&
+      shot.targetId !== undefined &&
       forestDistance(shot, { x: shot.targetX!, y: shot.targetY! }) <= 12
     ) {
       shot.x = shot.targetX!;
@@ -228,6 +235,11 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
       }
     });
     if (impacted) {
+      if (shot.kind === "roots") {
+        const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds[0]);
+        if (target) applyRoots(target, owner.id, now);
+        return false;
+      }
       scene.explosions!.push({ id: ++scene.sequence, x: shot.x, y: shot.y, at: now });
       for (const enemy of scene.enemies)
         if (forestDistance(shot, enemy) <= 100) hitEnemy(scene, enemy, 2, owner, now, "burn");

@@ -237,7 +237,7 @@ export function Arena({
       if (scene?.phase !== "active" || (!player.scene && !inTrainingZone(player))) return;
       const x = inputCamera.x + pointer.x * inputCamera.width;
       const y = inputCamera.y + pointer.y * inputCamera.height;
-      const range = defaultSpellRange(player);
+      const range = defaultSpellRange({ ...player, autoTarget: false });
       if (Math.hypot(x - player.x, y - player.y - 15) <= range) return;
       const scale = element.width / inputCamera.width;
       ctx.save();

@@ -685,7 +685,7 @@ function App() {
                           : id === "ranger"
                             ? "Piercing arrows · Poison"
                             : id === "mage"
-                              ? "Twin fireballs · Burning"
+                              ? "Fireball · Burning"
                               : "Roots · Boar companion"
                       }
                       details={

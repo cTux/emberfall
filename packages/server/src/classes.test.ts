@@ -99,34 +99,22 @@ test("class records migrate legacy progress, save independently, and survive res
   }
 });
 
-test("druid roots target two enemies, prefer unrooted targets, refresh without delaying ticks, and expire", () => {
+test("druid roots only the nearest enemy and refreshes without delaying ticks", () => {
   const s = scene(),
     p = { ...hero(), classId: "druid" as const };
-  s.enemies = [enemy(1, 2420), enemy(2, 2480), enemy(3, 2540)];
+  s.enemies = [enemy(2, 2480), enemy(1, 2420), enemy(3, 2540)];
   fireClassAttack(s, p, 10000);
-  assert.deepEqual(
-    s.enemies.map((e) => e.debuffs?.[0]?.kind),
-    ["roots", "roots", undefined],
-  );
+  assert.equal(s.enemies[0].debuffs, undefined);
+  assert.equal(s.enemies[1].debuffs?.[0].kind, "roots");
   fireClassAttack(s, p, 10700);
-  assert.equal(s.enemies[0].debuffs![0].expiresAt, 15700);
-  assert.equal(s.enemies[1].debuffs![0].expiresAt, 15000);
-  assert.equal(s.enemies[2].debuffs![0].kind, "roots");
-  fireClassAttack(s, p, 11400);
-  assert.equal(s.enemies[2].debuffs![0].kind, "roots");
-  fireClassAttack(s, p, 12100);
-  assert.equal(s.enemies[0].debuffs![0].nextTick, 11000);
+  assert.equal(s.enemies[1].debuffs![0].expiresAt, 15700);
+  assert.equal(s.enemies[1].debuffs![0].nextTick, 11000);
+  assert.equal(s.enemies[2].debuffs, undefined);
   tickDebuffs(s, [p], 13000);
-  assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
-    [94, 94, 96],
-  );
+  assert.equal(s.enemies[1].hitpoints, 94);
   tickDebuffs(s, [p], 17100);
-  assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
-    [86, 86, 90],
-  );
-  assert(s.enemies.every((e) => e.debuffs?.length === 0));
+  assert.equal(s.enemies[1].hitpoints, 90);
+  assert.equal(s.enemies[1].debuffs?.length, 0);
   assert.equal(s.playerShots, undefined);
 });
 
@@ -138,7 +126,7 @@ test("roots immobilize ordinary enemies but leave bosses mobile, and root kills 
   s.enemies = [normal, boss];
   s.bossId = boss.id;
   fireClassAttack(s, p, 10000);
-  fireClassAttack(s, p, 10000);
+  fireClassAttack(s, { ...p, x: boss.x }, 10000);
   moveEnemies([normal], [p], 0.1, 10100);
   assert.equal(normal.x, 2480);
   moveEnemies([boss], [p], 0.1, 10100);
@@ -507,7 +495,7 @@ test("mage fireballs target and travel up to 250 units, including wrapped edges"
   fireClassAttack(s, p);
   assert.deepEqual(
     s.playerShots!.map((shot) => shot.targetId),
-    [3, 1],
+    [3],
   );
   assert(s.playerShots!.every((shot) => shot.remaining === 250));
   s.enemies.forEach((e) => {
@@ -528,7 +516,7 @@ test("mage fireballs target and travel up to 250 units, including wrapped edges"
   assert.equal(s.playerShots[0].remaining, 1000);
 });
 
-test("mage fires at two different targets; explosions deal two damage inside 100 units", (t) => {
+test("mage fires only at the nearest target; explosions deal two damage inside 100 units", (t) => {
   t.mock.method(Math, "random", () => 0.5);
   const s = scene(),
     p = { ...hero(), classId: "mage" as const };
@@ -536,12 +524,12 @@ test("mage fires at two different targets; explosions deal two damage inside 100
   fireClassAttack(s, p);
   assert.deepEqual(
     s.playerShots!.map((shot) => shot.targetId),
-    [1, 2],
+    [1],
   );
   for (let i = 1; i <= 10; i++) tickPlayerShots(s, [p], i * 50, 0.05);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [96, 96, 100],
+    [98, 98, 100],
   );
   assert.equal(s.playerShots!.length, 0);
   s.enemies = [enemy(4)];
@@ -702,52 +690,57 @@ test("manual cast eligibility rejects stale areas/classes, death and inactive co
   }
 });
 
-test("manual targeting prefers cursor targets for roots and fireballs and directs arrows", async () => {
-  const { playerAimAngle } = await import("@emberfall/common");
-  const player: Player = { ...hero(), autoTarget: false, aimX: 2600, aimY: 1280 };
-  const arena = scene();
-  arena.enemies = [enemy(1, 2420), enemy(2, 2580), enemy(3, 2600), enemy(4, 2700)];
-  arena.enemies[2].debuffs = [
-    { kind: "roots", stacks: 1, expiresAt: 5000, nextTick: 2000, ownerId: "p" },
-  ];
-  player.classId = "druid";
-  fireClassAttack(arena, player, 1000);
-  assert.equal(arena.enemies[0].debuffs, undefined);
-  assert.equal(arena.enemies[1].debuffs?.[0].kind, "roots");
-  assert.equal(arena.enemies[2].debuffs?.[0].expiresAt, 6000);
-  assert.equal(arena.enemies[3].debuffs, undefined);
-  player.classId = "mage";
-  fireClassAttack(arena, player, 1000);
-  assert.deepEqual(
-    arena.playerShots?.map((shot) => shot.targetId),
-    [3, 2],
-  );
-  player.classId = "ranger";
-  player.aimX = 2400;
-  player.aimY = 1500;
-  assert.equal(playerAimAngle(player, arena.enemies), Math.PI / 2);
-  fireClassAttack(arena, player, 1000);
-  assert.equal(arena.playerShots?.at(-1)?.angle, Math.PI / 2);
-  assert.equal(arena.playerShots?.at(-1)?.targetId, undefined);
-  arena.enemies = [];
-  player.classId = "mage";
-  fireClassAttack(arena, player, 1000);
-  assert.equal(arena.playerShots?.at(-1)?.targetY, 1500);
-  player.x = FOREST.width - 10;
-  player.aimX = 10;
-  player.aimY = player.y;
-  assert.equal(playerAimAngle(player, []), 0);
-  assert.equal(
-    clientMessage.safeParse({
-      type: "combatInput",
-      autoAttack: false,
-      autoTarget: false,
-      attacking: true,
-      aimX: Infinity,
-      aimY: 0,
-    }).success,
-    false,
-  );
+test("untargeted spells follow cast aim past the cursor and expire after 1000px", async () => {
+  const { advancePlayerShot, playerAimAngle } = await import("@emberfall/common");
+  for (const classId of ["mage", "ranger", "druid"] as const) {
+    for (const autoAttack of [false, true]) {
+      const player: Player = {
+        ...hero(),
+        classId,
+        autoAttack,
+        autoTarget: false,
+        aimX: 2400,
+        aimY: 1300,
+      };
+      const arena = scene();
+      arena.enemies = [enemy(1, 2420), enemy(2, 2580)];
+      fireClassAttack(arena, player, 1000);
+      assert.equal(arena.playerShots?.length, 1);
+      const shot = arena.playerShots![0];
+      assert.equal(shot.targetId, undefined);
+      assert.equal(shot.angle, Math.PI / 2);
+      assert.equal(shot.remaining, 1000);
+      assert(arena.enemies.every((e) => e.debuffs === undefined));
+      player.aimX = 2600;
+      player.aimY = 1280;
+      assert.equal(advancePlayerShot(shot, arena.enemies, 1), false);
+      assert.equal(shot.x, player.x);
+      assert(shot.y > 1300, "continues beyond cursor without turning");
+      tickPlayerShots(arena, [player], 4000, 10);
+      assert.equal(arena.playerShots!.length, 0);
+      assert(Math.abs(shot.y - (player.y + 1000)) < 0.001);
+      assert.equal(arena.explosions?.length, 0);
+      assert(arena.enemies.every((e) => e.hitpoints === 100 && e.debuffs === undefined));
+    }
+    const player: Player = { ...hero(), classId, autoTarget: false, aimX: 2600, aimY: 1280 };
+    const arena = scene();
+    arena.enemies = [enemy(1, 2480)];
+    fireClassAttack(arena, player, 1000);
+    tickPlayerShots(arena, [player], 1500, 0.5);
+    if (classId === "druid") {
+      assert.equal(arena.enemies[0].debuffs?.[0].kind, "roots");
+      assert.equal(arena.playerShots!.length, 0);
+    } else assert(arena.enemies[0].hitpoints < 100);
+    player.x = FOREST.width - 10;
+    player.aimX = 10;
+    assert.equal(playerAimAngle(player, []), 0);
+    arena.enemies = [];
+    arena.playerShots = [];
+    fireClassAttack(arena, player, 2000);
+    const shot = arena.playerShots![0];
+    advancePlayerShot(shot, [], 10);
+    assert(Math.abs(shot.x - 990) < 0.001, "range is distance travelled across wrapped edges");
+  }
 });
 
 test("manual client prediction casts on hold, preserves release cooldown, and tracks cursor", async () => {
