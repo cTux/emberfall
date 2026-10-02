@@ -590,7 +590,7 @@ export function playerAimAngle(player: Player, enemies: Enemy[]) {
     : nearestEnemyAngle(player, enemies, player.attackAngle);
 }
 
-/** Acknowledge every new request, including rejection; client IDs never bypass server cooldowns. */
+/** Buffer slightly early requests for their due time; client IDs never bypass server cooldowns. */
 export function requestPlayerCast(
   scene: SceneState | undefined,
   player: Player,
@@ -607,14 +607,14 @@ export function requestPlayerCast(
     request.classId !== (player.classId ?? "warrior") ||
     request.epoch !== (player.scene === "forest" ? scene.id : "lobby") ||
     (!player.scene && !inTrainingZone(player)) ||
-    (player.attackAt !== undefined && now - player.attackAt < PLAYER_ATTACK_INTERVAL)
+    (player.attackAt !== undefined && now - player.attackAt < PLAYER_ATTACK_INTERVAL - 2 * TICK_MS)
   )
     return false;
   player.autoAttack = false;
   player.autoTarget = request.autoTarget;
   player.aimX = request.aimX;
   player.aimY = request.aimY;
-  player.attackAt = now;
+  player.attackAt = Math.max(now, (player.attackAt ?? -Infinity) + PLAYER_ATTACK_INTERVAL);
   player.attackId = request.id;
   castInputs.set(player, request);
   return true;

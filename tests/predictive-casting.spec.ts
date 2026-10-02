@@ -168,7 +168,7 @@ test("manual LMB casts confirm after latency without another slash or a held-inp
       enemies: [{ id: 1, x: 2600, y: 1280, hitpoints: 100, angle: 0 }],
     },
   };
-  const requests: { id: number; aimX: number }[] = [];
+  const requests: { id: number; aimX: number; aimY: number }[] = [];
   let confirmed = false;
   await page.routeWebSocket("**/ws", (socket) => {
     socket.onMessage((raw) => {
@@ -212,6 +212,7 @@ test("manual LMB casts confirm after latency without another slash or a held-inp
   await expect.poll(() => requests.length).toBe(1);
   await page.mouse.up();
   expect(requests[0].aimX).toBeGreaterThan(2400);
+  expect(requests[0].aimY).toBeCloseTo(1280, 5);
   await expect.poll(() => confirmed).toBe(true);
   await page.waitForTimeout(800);
   expect(requests.length).toBe(1);

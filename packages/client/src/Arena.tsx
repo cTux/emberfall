@@ -240,7 +240,7 @@ export function Arena({
       const x = inputCamera.x + pointer.x * inputCamera.width;
       const y = inputCamera.y + pointer.y * inputCamera.height;
       const range = defaultSpellRange({ ...player, autoTarget: false });
-      if (Math.hypot(x - player.x, y - player.y - 15) <= range) return;
+      if (Math.hypot(x - player.x, y - player.y) <= range) return;
       const scale = element.width / inputCamera.width;
       ctx.save();
       ctx.setTransform(scale, 0, 0, scale, -inputCamera.x * scale, -inputCamera.y * scale);
@@ -248,7 +248,7 @@ export function Arena({
       ctx.strokeStyle = "rgba(82, 237, 135, 0.45)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.arc(player.x, player.y + 15, range, 0, Math.PI * 2);
+      ctx.arc(player.x, player.y, range, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
       ctx.restore();
@@ -385,7 +385,7 @@ export function Arena({
           height,
         };
         const aimX = inputCamera.x + (pointer?.x ?? 0.5) * width;
-        const aimY = inputCamera.y + (pointer?.y ?? 0.5) * height - 15;
+        const aimY = inputCamera.y + (pointer?.y ?? 0.5) * height;
         combat = {
           type: "combatInput",
           autoAttack: prefs.current.autoAttack,
