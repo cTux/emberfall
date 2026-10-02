@@ -7,6 +7,7 @@ The author permits commercial and non-commercial use; attribution is optional.
 Unmodified copies from Pixel Art Lantern Pack.zip:
 lamp-post.png: Bonus Content - Lamp Posts and Chains/Lamp Posts - Bronze/Lamp Post 1 TALL.png
 lantern.png: Lanterns - Smaller Versions/Lantern 1/Bronze/Orange Light/Lantern 1 Small - Bronze and Orange_000.png
+lantern-animation.png: Lanterns - Smaller Versions/Lantern 1/Bronze/Lantern 1 Small - Bronze and Orange.png
 
-The game scales and combines these images into a static village lamp.
+The game scales and combines these images into a village lamp, using the original 38-frame lantern animation and warm rising embers.
 The original pack readme is included as KARSIORI-README.txt.
