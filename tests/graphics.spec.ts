@@ -1,5 +1,28 @@
 import { test, expect } from "@playwright/test";
 
+test("legacy reflection settings are ignored and dropped when graphics are saved", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      "emberfall.graphics",
+      JSON.stringify({ reflections: true, shadows: false }),
+    );
+  });
+  await page.goto("/");
+  await expect(page.locator('canvas[aria-label="Forest preview"]')).toBeVisible();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("tab", { name: "Graphics", exact: true }).click();
+  await expect(page.getByLabel("Reflections (2D)", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("Soft shadows")).not.toBeChecked();
+  for (const preset of ["Low", "Balanced", "High"]) {
+    await page.getByRole("button", { name: preset, exact: true }).click();
+    expect(
+      await page.evaluate(() => JSON.parse(localStorage.getItem("emberfall.graphics")!)),
+    ).not.toHaveProperty("reflections");
+  }
+});
+
 test("settings keep compact dimensions across tabs and scroll options internally", async ({
   page,
 }) => {
@@ -50,7 +73,6 @@ test("graphics presets change rendering, individual controls persist, and charac
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
   await page.getByRole("button", { name: "Low", exact: true }).click();
   await expect(page.getByLabel("Soft shadows")).not.toBeChecked();
-  await expect(page.getByLabel("Reflections (2D)", { exact: true })).not.toBeChecked();
   await expect(page.getByLabel("Waving grass and trees")).not.toBeChecked();
   await page.getByRole("button", { name: /^Close / }).click();
   await page.screenshot({ path: "test-results/graphics-low.png" });
@@ -60,7 +82,6 @@ test("graphics presets change rendering, individual controls persist, and charac
   for (const label of [
     "Ambient occlusion (2D)",
     "Soft shadows",
-    "Reflections (2D)",
     "Dense grass clusters",
     "Waving grass and trees",
     "Character motion blur",
@@ -77,7 +98,6 @@ test("graphics presets change rendering, individual controls persist, and charac
   await page.screenshot({ path: "test-results/graphics-high.png" });
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByLabel("Character motion blur").uncheck();
-  await page.getByLabel("Reflections (2D)", { exact: true }).uncheck();
   await page.getByLabel("Waving grass and trees").uncheck();
   await page.getByRole("button", { name: /^Close / }).click();
   await page.getByRole("button", { name: "Leave world" }).click();
@@ -87,7 +107,6 @@ test("graphics presets change rendering, individual controls persist, and charac
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
   await expect(page.getByLabel("Character motion blur")).not.toBeChecked();
-  await expect(page.getByLabel("Reflections (2D)", { exact: true })).not.toBeChecked();
   await expect(page.getByLabel("Waving grass and trees")).not.toBeChecked();
   await expect(page.getByLabel("Dense grass clusters")).toBeChecked();
   await expect(page.getByRole("combobox", { name: "Render resolution" })).toHaveText(
