@@ -124,9 +124,11 @@ test("manual confirmations with latency preserve flight and swing, correct aim a
       assert.equal(before.players[0].hitpoints, source.players[0].hitpoints);
       assert.equal(
         frame(movement, complete, 710, controls).started,
-        true,
-        "confirmation latency cannot lengthen the local 700ms cooldown",
+        false,
+        "held casts wait for the authoritative cooldown rather than the predicted launch",
       );
+      assert.equal(frame(movement, complete, 749 + delay, controls).started, false);
+      assert.equal(frame(movement, complete, 750 + delay, controls).started, true);
       assert.equal(requests.length, 2);
       assert.equal(requests[1].id, requests[0].id + 1);
     }

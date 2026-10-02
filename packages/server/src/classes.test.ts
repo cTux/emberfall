@@ -605,6 +605,50 @@ test("manual cast requests acknowledge acceptance, cooldown rejection and duplic
   assert.equal(player.attackAt, 2400);
 });
 
+test("slightly early held casts wait for cooldown and retain aim without duplicate launches", async () => {
+  const { requestPlayerCast, tickPlayerCombat } = await import("@emberfall/common");
+  for (const classId of ["mage", "ranger", "druid"] as const) {
+    const player: Player = { ...hero(), classId, autoAttack: false, autoTarget: false };
+    const arena = scene();
+    const cast = (id: number, now: number) =>
+      requestPlayerCast(
+        arena,
+        player,
+        {
+          type: "cast",
+          id,
+          epoch: arena.id,
+          classId,
+          autoTarget: false,
+          aimX: player.x + 200,
+          aimY: player.y,
+        },
+        now,
+      );
+    assert(cast(1, 1000));
+    tickPlayerCombat(arena, [player], 1000, 0);
+    assert.equal(cast(2, 1599), false, "requests beyond the buffer are rejected");
+    assert(cast(3, 1600));
+    assert.equal(player.attackAt, 1700, "the server still enforces the full cooldown");
+    assert.equal(cast(4, 1650), false, "another request cannot replace the buffered cast");
+    player.aimY = player.y + 200;
+    tickPlayerCombat(arena, [player], 1699, 0);
+    assert.equal(arena.playerShots!.length, 1);
+    tickPlayerCombat(arena, [player], 1700, 0);
+    assert.equal(arena.playerShots!.length, 2);
+    assert.equal(arena.playerShots![1].castId, 3);
+    assert.equal(arena.playerShots![1].angle, 0, "buffered casts retain request aim");
+    tickPlayerCombat(arena, [player], 1750, 0);
+    assert.equal(arena.playerShots!.length, 2, "buffered casts fire once");
+    for (let id = 5; id < 15; id++) {
+      assert(cast(id, player.attackAt! + 650));
+      tickPlayerCombat(arena, [player], player.attackAt!, 0);
+      assert.equal(arena.playerShots!.at(-1)!.castId, id);
+    }
+    assert.equal(player.attackAt, 8700, "repeated early arrivals never shorten cooldown");
+  }
+});
+
 test("accepted manual projectiles use request aim even if the cursor moves before the combat tick", async () => {
   const { requestPlayerCast, tickPlayerCombat } = await import("@emberfall/common");
   const player = { ...hero(), classId: "ranger" as const, autoAttack: false, autoTarget: false };

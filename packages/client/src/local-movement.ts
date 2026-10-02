@@ -227,10 +227,7 @@ export class LocalMovement {
         this.attackId = this.base?.attackId;
       }
       const confirmedAt =
-        this.base?.attackAt === undefined
-          ? -Infinity
-          : ((this.base.attackId !== undefined ? this.casts.get(this.base.attackId) : undefined) ??
-            now - (serverNow - this.base.attackAt));
+        this.base?.attackAt === undefined ? -Infinity : now - (serverNow - this.base.attackAt);
       const origin = Math.max(confirmedAt, this.requestAt);
       if (player.attacking && now - origin >= PLAYER_ATTACK_INTERVAL) {
         this.attackAt = serverNow;
