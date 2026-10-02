@@ -20,6 +20,8 @@ export function returnToLobby(player: Player) {
   player.attackAt = undefined;
   player.attackAngle = undefined;
   if (player.bear) {
+    player.bear.hitpoints = player.bear.maxHitpoints;
+    player.bear.resurrectAt = undefined;
     player.bear.x = player.x;
     player.bear.y = player.y;
     player.bear.returning = false;
