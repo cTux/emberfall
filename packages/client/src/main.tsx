@@ -1,7 +1,7 @@
 import { classSprite } from "./characters";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { Codex } from "./Codex";
-import { ENEMY_HP, CLASS_IDS, CLASS_LABELS, hasLivingScenePlayers } from "@emberfall/common";
+import { enemyMaxHealth, CLASS_IDS, CLASS_LABELS, hasLivingScenePlayers } from "@emberfall/common";
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { ClientMessage, ServerMessage, WorldState, WorldSummary } from "@emberfall/common";
@@ -520,7 +520,7 @@ function App() {
             <BossHealth
               name={boss.name ?? "The Hollow Warden"}
               health={boss.hitpoints}
-              maxHealth={ENEMY_HP.boss}
+              maxHealth={enemyMaxHealth(boss)}
             />
           </Box>
         )}
