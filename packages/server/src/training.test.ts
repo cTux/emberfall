@@ -159,7 +159,7 @@ test("roots include exactly 250 units, exclude farther targets, and work across 
   fireClassAttack(s, p, 10000);
   assert.deepEqual(
     s.enemies.map((e) => e.debuffs?.[0]?.kind),
-    ["roots", undefined, "roots"],
+    [undefined, undefined, "roots"],
   );
   p.x = 5;
   s.enemies = [{ id: 4, x: FOREST.width - 245, y: p.y, angle: 0, hitpoints: 100 }];

@@ -71,7 +71,7 @@ function frame(
 
 test("manual confirmations with latency preserve flight and swing, correct aim and never replay completed casts", () => {
   for (const delay of [100, 150, 300]) {
-    for (const classId of ["mage", "ranger"] as const) {
+    for (const classId of ["mage", "ranger", "druid"] as const) {
       const source = fixture(classId),
         before = structuredClone(source);
       source.players[0].attackAt = undefined;
@@ -103,7 +103,7 @@ test("manual confirmations with latency preserve flight and swing, correct aim a
       assert.equal(confirmed.player.attackAt, cast.player.attackAt);
       assert.equal(confirmed.scene.playerShots!.length, 1);
       assert(confirmed.scene.playerShots![0].x > flight.scene.playerShots![0].x);
-      if (classId === "mage") assert.equal(confirmed.scene.playerShots![0].targetId, 3);
+      assert.equal(confirmed.scene.playerShots![0].targetId, undefined);
       assert.equal(requests.length, 1);
       assert.equal(confirmed.player.hitpoints, source.players[0].hitpoints);
       assert(confirmed.scene.enemies.every((e) => e.hitpoints === 100));
@@ -226,7 +226,7 @@ test("moving casts launch at the displayed player before a reply, with no predic
     movement.input(1, 0, 0);
     const cast = frame(movement, source, 100);
     assert(cast.player.x > source.players[0].x);
-    assert.equal(cast.scene.playerShots!.length, 2);
+    assert.equal(cast.scene.playerShots!.length, 1);
     assert(cast.scene.playerShots!.every((s) => s.x === cast.player.x && s.y === cast.player.y));
     assert(cast.scene.playerShots!.every((s) => s.castAt === 10100));
     const flight = frame(movement, source, 150);
@@ -254,7 +254,7 @@ test("confirmation preserves launch trajectory, suppresses duplicates and retire
   });
   const result = frame(movement, confirmed, 150);
   const local = result.scene.playerShots!.filter((s) => s.ownerId === "p");
-  assert.equal(local.length, 2);
+  assert.equal(local.length, 1);
   assert(
     local.every((s) => s.x > cast.player.x),
     "confirmation cannot snap shots back to the server origin",
@@ -298,7 +298,7 @@ test("prediction wraps, expires and clears on death, class/area changes and stal
     const current = fixture(),
       m = new LocalMovement("p", () => {});
     frame(m, current, 0);
-    assert.equal(frame(m, current, 100).scene.playerShots!.length, 2);
+    assert.equal(frame(m, current, 100).scene.playerShots!.length, 1);
     const next = structuredClone(current);
     next.serverNow = 10050;
     if (change === "death") next.players[0].hitpoints = 0;
@@ -319,7 +319,7 @@ test("training snapshots are detached before local projectile rendering", () => 
   const player = movement.render(source, 100)!;
   const view = snapshots.render(100)!;
   movement.animateProjectiles(player, view, 100, movement.animateAttack(player, view, 100));
-  assert.equal(view.training!.playerShots!.length, 2);
+  assert.equal(view.training!.playerShots!.length, 1);
   assert.deepEqual(source, before);
 });
 
@@ -335,9 +335,9 @@ test("a server cast with a previously unseen target still launches at the displa
   reply.players[0].attackAt = 10100;
   fireClassAttack(reply.scene!, reply.players[0]);
   const result = frame(movement, reply, 150);
-  assert.equal(result.scene.playerShots!.length, 2);
+  assert.equal(result.scene.playerShots!.length, 1);
   assert(result.scene.playerShots!.every((s) => s.x === result.player.x));
-  assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 2);
+  assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 1);
   for (let now = 250; now <= 650; now += 50) frame(movement, reply, now);
   assert.equal(frame(movement, reply, 650).scene.playerShots!.length, 0);
 });

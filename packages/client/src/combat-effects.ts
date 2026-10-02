@@ -169,15 +169,15 @@ export function drawClassProjectiles(
       ctx.closePath();
       ctx.fill();
     } else {
-      ctx.fillStyle = "#ef722977";
+      ctx.fillStyle = shot.kind === "roots" ? "#56bc7277" : "#ef722977";
       ctx.beginPath();
       ctx.ellipse(-8, 0, 20, 7, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#ff9d36";
+      ctx.fillStyle = shot.kind === "roots" ? "#79db87" : "#ff9d36";
       ctx.beginPath();
       ctx.arc(0, 0, 8, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = "#fff1a6";
+      ctx.fillStyle = shot.kind === "roots" ? "#d5ffd0" : "#fff1a6";
       ctx.beginPath();
       ctx.arc(2, -1, 4, 0, Math.PI * 2);
       ctx.fill();
