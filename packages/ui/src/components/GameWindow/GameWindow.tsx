@@ -1,7 +1,8 @@
-import { useId, useRef, useState, type ReactNode, type PointerEvent } from "react";
+import { useId, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogTitle, IconButton, Paper, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
+import { useDraggable } from "../../useDraggable";
 import { WindowTitleStyled } from "./styles";
 
 export interface GameWindowProps {
@@ -11,9 +12,10 @@ export interface GameWindowProps {
   open?: boolean;
   modal?: boolean;
   height?: number;
+  positionKey?: string;
 }
 
-/** Focus trapping and Escape come from MUI; drag offsets remain local presentation state. */
+/** Focus trapping and Escape come from MUI; the host can persist drag positions. */
 export function GameWindow({
   title,
   children,
@@ -21,42 +23,18 @@ export function GameWindow({
   open = true,
   modal = true,
   height,
+  positionKey = `window.${title}`,
 }: GameWindowProps) {
   const id = useId();
-  const drag = useRef<{ x: number; y: number } | null>(null);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const move = (event: PointerEvent<HTMLElement>) => {
-    if (!drag.current) return;
-    const box = event.currentTarget.parentElement!.getBoundingClientRect();
-    const dx = Math.max(
-      -box.left,
-      Math.min(window.innerWidth - box.right, event.clientX - drag.current.x),
-    );
-    const dy = Math.max(
-      -box.top,
-      Math.min(window.innerHeight - box.bottom, event.clientY - drag.current.y),
-    );
-    setOffset((previous) => ({ x: previous.x + dx, y: previous.y + dy }));
-    drag.current = { x: event.clientX, y: event.clientY };
-  };
+  const {
+    ref: dragRef,
+    style: dragStyle,
+    handleProps: dragHandle,
+  } = useDraggable(positionKey, open);
   if (!open) return null;
   const content = (
     <>
-      <WindowTitleStyled
-        onPointerDown={(event) => {
-          if (event.button !== 0) return;
-          if ((event.target as HTMLElement).closest("button")) return;
-          drag.current = { x: event.clientX, y: event.clientY };
-          event.currentTarget.setPointerCapture(event.pointerId);
-        }}
-        onPointerMove={move}
-        onPointerUp={() => {
-          drag.current = null;
-        }}
-        onPointerCancel={() => {
-          drag.current = null;
-        }}
-      >
+      <WindowTitleStyled {...dragHandle}>
         {modal ? (
           <DialogTitle id={id}>{title}</DialogTitle>
         ) : (
@@ -78,7 +56,8 @@ export function GameWindow({
       aria-labelledby={id}
       slotProps={{
         paper: {
-          style: { transform: `translate(${offset.x}px, ${offset.y}px)` },
+          ref: dragRef,
+          style: dragStyle,
           sx: {
             width: 400,
             maxWidth: "calc(100vw - 32px)",
@@ -95,7 +74,8 @@ export function GameWindow({
     <Paper
       component="section"
       aria-labelledby={id}
-      style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
+      ref={dragRef}
+      style={dragStyle}
       sx={{
         display: "flex",
         flexDirection: "column",

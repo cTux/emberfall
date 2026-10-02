@@ -2,6 +2,7 @@ import { characterImages } from "./characters";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
+import { useDraggable } from "@emberfall/ui";
 import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
 import { LocalMovement } from "./local-movement";
@@ -66,6 +67,11 @@ export function Arena({
   interaction: RefObject<Interaction | null>;
   onHitpoints: (hp: Record<string, number>) => void;
 }) {
+  const {
+    ref: dpsRef,
+    style: dpsStyle,
+    handleProps: dpsHandle,
+  } = useDraggable("panel.dps", !!world);
   const canvas = useRef<HTMLCanvasElement>(null);
   const latest = useRef(world);
   const sender = useRef(send);
@@ -794,6 +800,9 @@ export function Arena({
       {world && (
         <aside
           className="dps-meter"
+          ref={dpsRef}
+          style={dpsStyle}
+          {...dpsHandle}
           aria-label="Damage per second"
           title="Your damage over the last 5 seconds, including ailments and your companion"
         >
