@@ -233,7 +233,7 @@ test("attack rotation takes the short path and is consistent at server and displ
   assert.equal(smoothAttackAngle(0.5, 1.2, 0), 0.5);
 });
 
-test("kills drop experience and 10-percent coins; shared pickups grant nothing and expire", (t) => {
+test("kills drop experience and 10-percent coins; experience pickups reward players and expire", (t) => {
   let roll = 0.099;
   t.mock.method(Math, "random", () => roll);
   const player = { ...hero, scene: "forest" as const, x: 2400, y: 1280 };
@@ -262,7 +262,7 @@ test("kills drop experience and 10-percent coins; shared pickups grant nothing a
   assert.equal(scene.drops!.length, 2, "initial hop is visible before pickup");
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.drops!.length, 0);
-  assert.equal(player.experience, experience, "collection grants no extra experience");
+  assert.equal(player.experience, experience + 1, "collection grants one extra experience");
   roll = 0.1;
   scene.enemies = [{ id: 2, x: 2480, y: 1280, hitpoints: 5, angle: 0 }];
   stepCombat(scene, [player], 10700, 0);
@@ -283,7 +283,7 @@ test("edge indicators stay inset, point toward offscreen targets, and hide onscr
   assert(corner.angle < -Math.PI / 2);
 });
 
-test("loot flies toward the nearest living forest player across the seam without rewards", () => {
+test("loot attracts across the seam and rewards every living scene player exactly once", () => {
   const scene: SceneState = {
     id: "magnet",
     type: "Forest",
@@ -305,14 +305,42 @@ test("loot flies toward the nearest living forest player across the seam without
   const player = { ...hero, scene: "forest" as const, x: 10, y: 500 };
   const dead = { ...player, id: "dead", x: FOREST.width - 70, hitpoints: 0 };
   const lobby = { ...hero, id: "lobby", x: FOREST.width - 70, y: 500 };
-  stepCombat(scene, [dead, lobby, player], 400, 0.05);
+  const teammate = { ...player, id: "teammate", x: 2000, y: 1000, experience: 7 };
+  const nearby = { ...player, id: "nearby", x: 11 };
+  const players = [dead, lobby, player, teammate, nearby];
+  stepCombat(scene, players, 400, 0.05);
   assert.equal(scene.drops![0].x, FOREST.width - 66);
   assert.equal(scene.drops![1].x, FOREST.width - 66);
-  for (let i = 0; i < 10; i++) stepCombat(scene, [player], 450 + i * 50, 0.05);
+  for (let i = 0; i < 10; i++) stepCombat(scene, players, 450 + i * 50, 0.05);
   assert.equal(scene.drops!.length, 0);
-  assert.equal(player.experience, hero.experience);
-  scene.drops = [{ id: 3, kind: "gold", x: 500, y: 500, at: 0 }];
-  stepCombat(scene, [player], 1000, 0.05);
+  assert.deepEqual(
+    players.map((p) => p.experience),
+    [0, 0, 1, 8, 1],
+  );
+  scene.drops = [{ id: 4, kind: "experience", x: player.x, y: player.y, at: 700 }];
+  stepCombat(scene, players, 999, 0);
+  assert.deepEqual(
+    players.map((p) => p.experience),
+    [0, 0, 1, 8, 1],
+    "hop grants no XP",
+  );
+  stepCombat(scene, players, 1000, 0);
+  stepCombat(scene, players, 1050, 0);
+  assert.equal(scene.drops.length, 0);
+  assert.deepEqual(
+    players.map((p) => p.experience),
+    [0, 0, 2, 9, 2],
+  );
+  scene.drops = [{ id: 5, kind: "experience", x: player.x, y: player.y, at: 0 }];
+  stepCombat(scene, players, 60000, 0);
+  assert.equal(scene.drops.length, 0);
+  assert.deepEqual(
+    players.map((p) => p.experience),
+    [0, 0, 2, 9, 2],
+    "expiry grants no XP",
+  );
+  scene.drops = [{ id: 6, kind: "gold", x: 500, y: 500, at: 60000 }];
+  stepCombat(scene, players, 60050, 0.05);
   assert.equal(scene.drops[0].x, 500, "distant drops stay put");
 });
 
