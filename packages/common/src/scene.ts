@@ -36,7 +36,10 @@ export function moveForestActor(
   dx: number,
   dy: number,
   radius: number,
+  collide = true,
 ) {
+  if (!collide)
+    return { x: wrap(position.x + dx, FOREST.width), y: wrap(position.y + dy, FOREST.height) };
   let { x, y } = position;
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
   for (let i = 0; i < steps; i++) {

@@ -139,7 +139,13 @@ export function moveActor(
   dx: number,
   dy: number,
   radius: number,
+  collide = true,
 ) {
+  if (!collide)
+    return {
+      x: Math.max(radius, Math.min(ARENA.width - radius, position.x + dx)),
+      y: Math.max(radius, Math.min(ARENA.height - radius, position.y + dy)),
+    };
   let { x, y } = position;
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
   // ponytail: scan this small fixed grove; index obstacles spatially when maps grow.
