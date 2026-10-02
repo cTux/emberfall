@@ -846,17 +846,6 @@ export function Arena({
         }
         ctx.restore();
       }
-      for (let i = 0; i < TORCH_LIGHTS.length; i++) {
-        const light = TORCH_LIGHTS[i];
-        ctx.save();
-        if (quality.current.bloom) {
-          ctx.shadowColor = "#ffbb55";
-          ctx.shadowBlur = 13;
-        }
-        ctx.fillStyle = "#f8ca73";
-        ctx.fillRect(light.x - 2, light.y - 58 + Math.sin(now / 140 + i) * 2, 4, 9);
-        ctx.restore();
-      }
       if (quality.current.particles)
         drawParticles(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
       if (quality.current.fog) drawFog(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
