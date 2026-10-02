@@ -29,7 +29,7 @@ import {
   hitOutline,
   drawDamageFlash,
   drawAtmosphere,
-  treeOpacity,
+  obstacleOpacity,
   drawVegetation,
   vegetationSway,
 } from "./effects";
@@ -487,7 +487,7 @@ export function forestRenderer(
       }
       if (layer.tree) {
         const t = layer.tree;
-        ctx.globalAlpha = treeOpacity({ ...t, width: t.size, height: t.size }, me);
+        ctx.globalAlpha = obstacleOpacity({ ...t, width: t.size, height: t.size }, me);
         if (treeMask)
           drawVegetation(ctx, tree, t.x, t.y, t.size, t.size, now, quality.wavingVegetation);
         ctx.globalAlpha = 1;
