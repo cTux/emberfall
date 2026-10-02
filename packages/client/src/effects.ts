@@ -179,26 +179,31 @@ export function drawPlayerHealth(
   max: number,
   name: string,
   color = "#ffffff",
+  boss = false,
 ) {
   ctx.save();
   ctx.font = '8px "Pixelify Sans", sans-serif';
   ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  const width = Math.max(40, Math.ceil(ctx.measureText(name).width) + 12);
+  ctx.textBaseline = "alphabetic";
+  const metrics = ctx.measureText(name);
+  const width = Math.max(boss ? 64 : 40, Math.ceil(metrics.width) + 12);
+  const height = boss ? 9 : 7;
   ctx.fillStyle = "#101817";
-  ctx.fillRect(x - width / 2, y, width, 7);
-  ctx.fillStyle = "#86d9a2";
+  ctx.fillRect(x - width / 2, y, width, height);
+  ctx.fillStyle = boss ? "#c084fc" : "#86d9a2";
   ctx.fillRect(
     x - width / 2 + 1,
     y + 1,
     (width - 2) * Math.max(0, Math.min(1, hp / Math.max(1, max))),
-    5,
+    height - 2,
   );
   ctx.strokeStyle = "#101817";
   ctx.lineWidth = 2;
   ctx.lineJoin = "round";
-  ctx.strokeText(name, x, y + 13);
+  const nameY = y + height + metrics.actualBoundingBoxAscent;
+  ctx.strokeText(name, x, nameY);
   ctx.fillStyle = color;
-  ctx.fillText(name, x, y + 13);
+  ctx.fillText(name, x, nameY);
   ctx.restore();
+  return width;
 }

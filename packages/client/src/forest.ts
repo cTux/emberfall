@@ -472,19 +472,25 @@ export function forestRenderer(
       ctx.drawImage(a.image, a.facing * 16, a.row * 16, 16, 16, left, top, a.size, a.size);
       ctx.globalAlpha = 1;
       if (a.enemy) {
-        drawDebuffs(ctx, a.enemy, a.x, top - 11, serverTime);
-        if (a.enemy.kind === "boss")
-          drawNameplate(
+        if (a.enemy.kind === "boss") {
+          const width = drawPlayerHealth(
             ctx,
-            a.enemy.name ?? "The Hollow Warden",
             a.x,
-            top - (a.enemy.debuffs?.some((d) => d.expiresAt > serverTime) ? 58 : 40),
+            top - 10,
+            a.enemy.hitpoints,
+            enemyMaxHealth(a.enemy),
+            a.enemy.name ?? "The Hollow Warden",
+            "#ffffff",
+            true,
           );
-        ctx.fillStyle = "#102020";
-        ctx.fillRect(a.x - 17, top - 8, 34, 5);
-        ctx.fillStyle =
-          a.enemy.kind === "boss" ? "#ff9638" : a.enemy.kind === "elite" ? "#f4d447" : "#df7765";
-        ctx.fillRect(a.x - 16, top - 7, (32 * a.enemy.hitpoints) / enemyMaxHealth(a.enemy), 3);
+          drawDebuffs(ctx, a.enemy, a.x - width / 2, top - 10, serverTime);
+        } else {
+          ctx.fillStyle = "#102020";
+          ctx.fillRect(a.x - 17, top - 8, 34, 5);
+          ctx.fillStyle = a.enemy.kind === "elite" ? "#f4d447" : "#df7765";
+          ctx.fillRect(a.x - 16, top - 7, (32 * a.enemy.hitpoints) / enemyMaxHealth(a.enemy), 3);
+          drawDebuffs(ctx, a.enemy, a.x - 17, top - 8, serverTime);
+        }
       }
       if (a.player)
         drawPlayerDetails(
@@ -598,14 +604,4 @@ function drawPlayerDetails(
     ctx.globalAlpha = 1;
     ctx.restore();
   }
-}
-
-function drawNameplate(ctx: CanvasRenderingContext2D, name: string, x: number, y: number) {
-  ctx.font = 'bold 18px "Pixelify Sans", sans-serif';
-  ctx.textAlign = "center";
-  const width = Math.ceil(ctx.measureText(name).width) + 16;
-  ctx.fillStyle = "#101817cc";
-  ctx.fillRect(x - width / 2, y, width, 26);
-  ctx.fillStyle = "#c084fc";
-  ctx.fillText(name, x, y + 19);
 }

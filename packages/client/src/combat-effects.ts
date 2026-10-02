@@ -215,7 +215,7 @@ export function drawDebuffs(
   ctx.lineWidth = 2;
   ctx.imageSmoothingEnabled = false;
   debuffs.forEach((debuff, index) => {
-    const px = x + (index - (debuffs.length - 1) / 2) * 14 - 6;
+    const px = x + index * 14;
     const image = statusImages[debuff.kind];
     if (image.naturalWidth) ctx.drawImage(image, px, y - 12, 12, 12);
     ctx.strokeStyle = "#101817";
