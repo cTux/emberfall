@@ -3,6 +3,30 @@ import type { WorldState } from "../packages/common/src/index";
 import { nearbyInteraction } from "../packages/common/src/index";
 
 test("wardrobe selects and restores classes through the server", async ({ page }) => {
+  await page.addInitScript(() => {
+    const sprites = new WeakSet<HTMLCanvasElement>();
+    const draw = CanvasRenderingContext2D.prototype.drawImage;
+    CanvasRenderingContext2D.prototype.drawImage = new Proxy(draw, {
+      apply(target, context, args) {
+        if (args[0] instanceof HTMLImageElement && args[0].src.endsWith("/wardrobe.png"))
+          sprites.add(context.canvas);
+        if (
+          sprites.has(args[0]) &&
+          context.canvas.getAttribute("aria-label")?.startsWith("Shared village")
+        )
+          document.body.dataset.wardrobeSprite = JSON.stringify({
+            size: args.slice(-2),
+            smoothing: context.imageSmoothingEnabled,
+          });
+        return Reflect.apply(target, context, args);
+      },
+    });
+  });
+  // A cold, delayed image must repaint the scenery and its shadow mask.
+  await page.route("**/assets/wardrobe.png", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.continue();
+  });
   let current: WorldState | undefined;
   page.on("websocket", (socket) =>
     socket.on("framereceived", ({ payload }) => {
@@ -14,6 +38,11 @@ test("wardrobe selects and restores classes through the server", async ({ page }
   await page.getByRole("tab", { name: "Create a world" }).click();
   await page.getByRole("button", { name: "Light the ember" }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
+  await expect(page.locator("body")).toHaveAttribute(
+    "data-wardrobe-sprite",
+    '{"size":[48,60],"smoothing":false}',
+  );
+  await page.screenshot({ path: "test-results/wardrobe-village.png" });
   await page.locator("canvas[aria-label^='Shared village']").click();
   await expect
     .poll(async () => {
