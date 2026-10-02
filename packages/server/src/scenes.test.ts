@@ -29,6 +29,54 @@ const hero = (id: string): Player => ({
   playtimeSeconds: 0,
 });
 
+test("system chat announces scene transitions and deaths exactly once", () => {
+  const a = hero("a"),
+    b = hero("b");
+  const world: SceneWorld = {
+    players: new Map([
+      [a.id, a],
+      [b.id, b],
+    ]),
+  };
+  sceneAction(world, a, { type: "createScene", scene: "Forest", difficulty: "Easy" }, 0);
+  for (const player of [a, b]) sceneAction(world, player, { type: "ready", ready: true }, 0);
+  tickScene(world, 5000, 0);
+  assert.deepEqual(
+    world.chat?.map((m) => m.text),
+    [
+      "a joined the scene. Everyone became stronger.",
+      "b joined the scene. Everyone became stronger.",
+    ],
+  );
+  const scene = world.scene!;
+  scene.nextSpawn = Infinity;
+  scene.enemies = [];
+  scene.spawns = [];
+  a.hitpoints = 1;
+  scene.projectiles = [{ id: 99, x: a.x, y: a.y, vx: 0, vy: 0, expiresAt: 9000 }];
+  tickScene(world, 6000, 0.05);
+  assert.equal(a.hitpoints, 0);
+  assert.equal(world.chat?.at(-1)?.text, "a died.");
+  tickScene(world, 6050, 0.05);
+  assert.equal(world.chat?.filter((m) => m.text === "a died.").length, 1);
+  sceneAction(world, a, { type: "returnLobby" }, 6100);
+  assert.equal(world.chat?.at(-1)?.text, "a left the scene. Everyone became weaker.");
+  a.x = LOBBY_PORTAL.x;
+  a.y = LOBBY_PORTAL.y - 15;
+  sceneAction(world, a, { type: "joinScene" }, 6200);
+  assert.equal(world.chat?.at(-1)?.text, "a joined the scene. Everyone became stronger.");
+  sceneAction(world, a, { type: "leaveScene" }, 6300);
+  assert.equal(world.chat?.at(-1)?.text, "a left the scene. Everyone became weaker.");
+  assert.throws(() => sceneAction(world, a, { type: "leaveScene" }, 6400));
+  assert.equal(world.chat?.length, 6);
+  b.hitpoints = 0;
+  a.x = LOBBY_PORTAL.x;
+  a.y = LOBBY_PORTAL.y - 15;
+  sceneAction(world, a, { type: "createScene", scene: "Forest", difficulty: "Easy" }, 6500);
+  assert.equal(world.chat?.at(-1)?.text, "b left the scene. Everyone became weaker.");
+  assert(world.chat?.every((m) => m.name === "System" && m.playerId === ""));
+});
+
 test("empty and dead scenes freeze combat deadlines, resume on entry, and can regenerate", () => {
   const a = hero("a"),
     b = hero("b");

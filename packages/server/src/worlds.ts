@@ -9,7 +9,6 @@ import { resolve, extname, sep } from "node:path";
 import { WebSocketServer, WebSocket } from "ws";
 import {
   MAX_PLAYERS,
-  CHAT_LIMIT,
   clientMessage,
   nearbyInteraction,
   movePlayer,
@@ -20,6 +19,7 @@ import type { ChatMessage, Player, ServerMessage, WorldState, SceneState } from 
 import { CharacterStore } from "./characters.ts";
 import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from "./scenes.ts";
 import type { Scene } from "./scenes.ts";
+import { addChat } from "./chat.ts";
 
 const derive = promisify(scrypt);
 interface World {
@@ -169,6 +169,10 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
     if (world) {
       const player = world.players.get(session.id);
       if (player && session.characterId) characters.save(session.characterId, player.name, player);
+      if (player) {
+        if (!session.reconnectUntil) addChat(world, `${player.name} disconnected.`);
+        if (player.scene) addChat(world, `${player.name} left the scene. Everyone became weaker.`);
+      }
       world.players.delete(session.id);
       reconcileVote(world, Date.now());
       cleanupScene(world);
@@ -214,6 +218,8 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         session.x = session.y = 0;
         session.inputAt = 0;
         const player = worlds.get(session.worldId)?.players.get(session.id);
+        const world = worlds.get(session.worldId);
+        if (world && player) addChat(world, `${player.name} disconnected.`);
         if (player?.attacking) player.attacking = false;
         try {
           if (player && session.characterId)
@@ -326,15 +332,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         }
         session.chatAt = now;
         player.chat = message.text;
-        world.chat = [
-          ...(world.chat ?? []),
-          {
-            id: randomUUID(),
-            playerId: player.id,
-            name: player.name,
-            text: message.text,
-          },
-        ].slice(-CHAT_LIMIT);
+        addChat(world, message.text, player);
         const update: ServerMessage = { type: "state", world: state(world, now) };
         for (const [peer, member] of sessions) if (member.worldId === world.id) send(peer, update);
         return;
@@ -441,6 +439,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           player.inputSeq = player.inputElapsed = undefined;
           player.inputX = player.inputY = 0;
           sessions.delete(oldWs);
+          addChat(world, `${player.name} joined.`);
           send(ws, {
             type: "joined",
             playerId: session.id,
@@ -546,6 +545,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
         });
         if (!world.hostId) world.hostId = session.id;
+        addChat(world, `${message.playerName} joined.`);
         reconcileVote(world, Date.now());
         send(ws, {
           type: "joined",

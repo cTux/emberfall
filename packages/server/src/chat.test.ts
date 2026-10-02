@@ -32,6 +32,7 @@ test("chat validates text, identifies senders, retains ten messages and isolates
     });
     await once(ws, "open");
     return {
+      ws,
       send: (message: unknown) => ws.send(JSON.stringify(message)),
       messages,
       get world() {
@@ -52,13 +53,18 @@ test("chat validates text, identifies senders, retains ten messages and isolates
     await wait(() => !!alice.world && !!outsider.world);
     bob.send({ type: "join", worldId: alice.world!.id, playerName: "Bob", password: "" });
     await wait(() => !!bob.world);
+    await wait(() => alice.world?.chat?.at(-1)?.text === "Bob joined.");
     for (const text of ["   ", "x".repeat(201), "line\nbreak", "hidden\u202econtrol"])
       alice.send({ type: "chat", text });
     await wait(() => alice.messages.filter((m) => m.type === "error").length === 4);
-    assert.equal(alice.world!.chat!.length, 0);
+    assert.deepEqual(
+      alice.world!.chat!.map((m) => m.text),
+      ["Alice joined.", "Bob joined."],
+    );
+    assert(alice.world!.chat!.every((m) => m.name === "System" && m.playerId === ""));
     alice.send({ type: "chat", text: "  First message  ", playerId: "fake", name: "Fake" });
     await wait(() => bob.world?.chat?.at(-1)?.text === "First message");
-    const first = bob.world!.chat![0];
+    const first = bob.world!.chat!.at(-1)!;
     assert.equal(first.name, "Alice");
     assert.equal(first.playerId, alice.world!.players.find((p) => p.name === "Alice")!.id);
     alice.send({ type: "chat", text: "Too fast" });
@@ -75,7 +81,10 @@ test("chat validates text, identifies senders, retains ten messages and isolates
     assert.deepEqual(alice.world!.chat, bob.world!.chat);
     assert.equal(alice.world!.players.find((p) => p.name === "Bob")!.chat, "Message 10");
     assert.equal(alice.world!.players.find((p) => p.name === "Alice")!.chat, "First message");
-    assert.deepEqual(outsider.world!.chat, []);
+    assert.deepEqual(
+      outsider.world!.chat!.map((m) => m.text),
+      ["Eve joined."],
+    );
     // Alice's older bubble expires first; Bob's latest message gets a fresh ten seconds.
     await new Promise((resolve) => setTimeout(resolve, 5000));
     await wait(() => alice.world!.players.find((p) => p.name === "Alice")!.chat === undefined);
@@ -83,6 +92,28 @@ test("chat validates text, identifies senders, retains ten messages and isolates
     await new Promise((resolve) => setTimeout(resolve, 5100));
     await wait(() => bob.world!.players.find((p) => p.name === "Bob")!.chat === undefined);
     assert.equal(bob.world!.chat!.at(-1)!.text, "Message 10");
+    const joined = bob.messages.find((m) => m.type === "joined");
+    assert(joined?.type === "joined");
+    bob.ws.terminate();
+    await wait(() => alice.world?.chat?.at(-1)?.text === "Bob disconnected.");
+    assert(
+      alice.world!.players.some((p) => p.name === "Bob"),
+      "interruption retains membership",
+    );
+    const resumed = await connect();
+    resumed.send({
+      type: "resume",
+      worldId: joined.world.id,
+      characterToken: joined.characterToken,
+    });
+    await wait(() => resumed.world?.chat?.at(-1)?.text === "Bob joined.");
+    assert.equal(resumed.world!.players.find((p) => p.name === "Bob")!.id, joined.playerId);
+    assert.equal(alice.world!.chat!.filter((m) => m.text === "Bob disconnected.").length, 1);
+    resumed.ws.close(1000);
+    await wait(() => alice.world?.players.length === 1);
+    assert.equal(alice.world!.chat!.at(-1)?.text, "Bob disconnected.");
+    assert.equal(alice.world!.chat!.filter((m) => m.text === "Bob disconnected.").length, 2);
+    assert.equal(alice.world!.players.find((p) => p.name === "Alice")!.chat, undefined);
   } finally {
     sockets.forEach((ws) => ws.terminate());
     await app.close();
