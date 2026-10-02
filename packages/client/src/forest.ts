@@ -611,7 +611,7 @@ export function forestRenderer(
         ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
         ctx.textAlign = "center";
         ctx.fillStyle = hit.target.startsWith("enemy:") ? "#fff0b1" : "#ff8b81";
-        ctx.fillText(String(hit.amount), p.x, p.y - 45 - age / 30);
+        ctx.fillText(String(Math.round(hit.amount)), p.x, p.y - 45 - age / 30);
         ctx.globalAlpha = 1;
       }
     drawDamageFlash(ctx, world, playerId);
