@@ -8,7 +8,7 @@ import {
   onPath,
 } from "../packages/common/src/index";
 
-test("plain dirt paths have continuous corners and reach the sprite doorways", async ({ page }) => {
+test("curved dirt paths are continuous and reach the sprite doorways", async ({ page }) => {
   await page.addInitScript(() => {
     const draw = CanvasRenderingContext2D.prototype.drawImage;
     CanvasRenderingContext2D.prototype.drawImage = new Proxy(draw, {
@@ -80,8 +80,9 @@ test("plain dirt paths have continuous corners and reach the sprite doorways", a
         expect(covered(x, y), `No dirt hole at ${x},${y}`).toBe(true);
     }
   }
-  expect(covered(204, 570), "The outside of the storehouse bend is rounded").toBe(false);
-  expect(covered(240, 534), "The inside of the storehouse bend has no gap").toBe(true);
+  expect(covered(480, 475), "The curved southern route stays connected").toBe(true);
+  expect(covered(400, 550), "The storehouse route bends toward its entrance").toBe(true);
+  expect(covered(480, 550), "The old right-angle southern junction is grass again").toBe(false);
   const queue = [[240, 177]];
   const connected = new Set(["240,177"]);
   for (let i = 0; i < queue.length; i++) {
