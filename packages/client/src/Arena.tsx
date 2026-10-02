@@ -1,5 +1,5 @@
 import { drawVillagePaths } from "./paths";
-import { drawReflection } from "./reflections";
+import { drawReflection, drawPuddles, puddlePath } from "./reflections";
 import { characterImages } from "./characters";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
@@ -54,6 +54,15 @@ const colors = [
   "#a4cf7b",
   "#ddd",
 ];
+const villageWater = puddlePath([
+  [318, 267, 48, 17],
+  [602, 269, 64, 22],
+  [477, 396, 73, 25],
+  [260, 538, 57, 20],
+  [679, 535, 68, 24],
+  [386, 590, 42, 14],
+  [770, 322, 38, 18],
+]);
 export function Arena({
   world,
   playerId,
@@ -493,6 +502,7 @@ export function Arena({
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(background, 0, 0);
+      drawPuddles(ctx, villageWater);
       for (const zone of TRAINING_ZONES) {
         ctx.fillStyle = "#aa8b4930";
         ctx.strokeStyle = "#c9a56380";
