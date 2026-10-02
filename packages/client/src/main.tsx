@@ -835,7 +835,7 @@ function App() {
                               ? "Piercing arrows · Poison"
                               : id === "mage"
                                 ? "Twin fireballs · Burning"
-                                : "Roots · Bear companion"}
+                                : "Roots · Boar companion"}
                         </small>
                       </span>
                     </button>
