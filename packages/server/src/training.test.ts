@@ -1,0 +1,137 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  tickTraining,
+  tickPlayerCombat,
+  FOREST,
+  TRAINING_ZONES,
+  inTrainingZone,
+} from "@emberfall/common";
+import { LocalMovement } from "../../client/src/local-movement.ts";
+import { hitEnemy, fireClassAttack, damagePerSecond } from "../../common/src/class-combat.ts";
+import { freshProgress } from "./characters.ts";
+import type { Player } from "@emberfall/common";
+
+const hero = (): Player => ({
+  ...freshProgress(),
+  id: "p",
+  name: "Hero",
+  color: 0,
+  x: 125,
+  y: 355,
+});
+
+test("training has one and six stationary, harmless targets and regenerates every second", () => {
+  const p = hero();
+  let s = tickTraining(undefined, [], 10000, 0);
+  const positions = s.enemies.map(({ x, y }) => ({ x, y }));
+  assert.equal(s.enemies.length, 7);
+  assert.equal(s.enemies.filter((e) => e.x === TRAINING_ZONES[0].x).length, 1);
+  assert.deepEqual(
+    s.enemies.slice(1).map((e) => e.y),
+    [315, 355, 355, 395, 395, 395],
+  );
+  assert(s.enemies.every((e) => e.hitpoints === 1e9 && e.maxHitpoints === 1e9));
+  assert(s.enemies.every((e) => e.archetype === "skeleton"));
+  tickPlayerCombat(s, [p], 10000, 0);
+  assert.equal(s.enemies[0].hitpoints, 1e9 - 5);
+  hitEnemy(s, s.enemies[1], 1e9 + 50, p, 10000);
+  assert.equal(p.experience, 0);
+  assert.equal(s.drops, undefined);
+  s = tickTraining(s, [], 10999, 0.05);
+  assert.equal(s.enemies[0].hitpoints, 1e9 - 5);
+  s = tickTraining(s, [], 11000, 0.05);
+  assert(s.enemies.every((e) => e.hitpoints === 1e9 && !e.attack));
+  assert.deepEqual(
+    s.enemies.map(({ x, y }) => ({ x, y })),
+    positions,
+  );
+  assert.equal(p.hitpoints, p.maxHitpoints);
+  assert.equal(s.projectiles, undefined);
+});
+
+test("training area boundaries gate server attacks, Bear hunting, and client swing prediction", () => {
+  for (const zone of TRAINING_ZONES) {
+    assert(inTrainingZone({ x: zone.x + zone.radius, y: zone.y - 15 }));
+    assert(!inTrainingZone({ x: zone.x + zone.radius + 0.01, y: zone.y - 15 }));
+    assert(inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 - 0.01 }));
+    assert(!inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 + 0.01 }));
+  }
+  for (const classId of ["warrior", "ranger", "mage", "druid"] as const) {
+    const p = { ...hero(), classId, x: 300, y: 340 };
+    const s = tickTraining(undefined, [p], 10000, 0.05);
+    assert.equal(p.attackAt, undefined);
+    assert.equal(p.bear?.attackAt, undefined);
+    assert.equal(s.playerShots?.length ?? 0, 0);
+    assert.equal(s.damage.length, 0);
+    const movement = new LocalMovement(p.id, () => {});
+    const world = {
+      id: "test",
+      name: "test",
+      hostId: p.id,
+      players: [p],
+      training: s,
+      serverNow: 10000,
+    };
+    movement.render(world, 0);
+    assert.equal(movement.animateAttack(p, world, 0), false);
+    p.x = 175;
+    tickTraining(s, [p], 10050, 0.05);
+    assert.equal(p.attackAt, 10050);
+    assert(movement.animateAttack(p, world, 50));
+    p.x = 300;
+    tickTraining(s, [p], 10100, 0.05);
+    assert.equal(p.attackAt, undefined);
+    assert.equal(p.bear?.attackAt, undefined);
+    assert.equal(movement.animateAttack(p, world, 100), false);
+    assert.equal(p.attackAt, undefined);
+  }
+});
+
+test("all lobby classes damage dummies, Bear contributes, and forest players cannot attack them", () => {
+  for (const classId of ["warrior", "ranger", "mage", "druid"] as const) {
+    const p = { ...hero(), classId, x: 175 };
+    const s = tickTraining(undefined, [p], 10000, 0.05);
+    for (let now = 10050; now < 11000; now += 50) tickTraining(s, [p], now, 0.05);
+    assert(s.enemies[0].hitpoints < 1e9, classId);
+    assert(p.dps! > 0, classId);
+    if (classId === "druid") assert(p.bear?.attackAt !== undefined);
+  }
+  const p = { ...hero(), scene: "forest" as const };
+  const s = tickTraining(undefined, [p], 10000, 0.05);
+  assert(s.enemies.every((e) => e.hitpoints === 1e9));
+});
+
+test("DPS counts actual damage once, attributes ailments and Bear, and expires after five seconds", () => {
+  const p = hero(),
+    other = { ...hero(), id: "other" };
+  const s = tickTraining(undefined, [], 10000, 0);
+  s.enemies[0].hitpoints = 3;
+  hitEnemy(s, s.enemies[0], 5, p, 10000);
+  hitEnemy(s, s.enemies[0], 5, p, 10000);
+  assert.equal(damagePerSecond(p, 10000), 0.6);
+  assert.equal(damagePerSecond(other, 10000), 0);
+  assert.equal(damagePerSecond(p, 14999), 0.6);
+  assert.equal(damagePerSecond(p, 15000), 0);
+});
+
+test("roots include exactly 250 units, exclude farther targets, and work across forest edges", () => {
+  const p = { ...hero(), classId: "druid" as const };
+  const s = tickTraining(undefined, [], 10000, 0);
+  s.enemies = [250, 250.01, 249].map((distance, id) => ({
+    id,
+    x: p.x + distance,
+    y: p.y,
+    angle: 0,
+    hitpoints: 100,
+  }));
+  fireClassAttack(s, p, 10000);
+  assert.deepEqual(
+    s.enemies.map((e) => e.debuffs?.[0]?.kind),
+    ["roots", undefined, "roots"],
+  );
+  p.x = 5;
+  s.enemies = [{ id: 4, x: FOREST.width - 245, y: p.y, angle: 0, hitpoints: 100 }];
+  fireClassAttack(s, p, 10000);
+  assert.equal(s.enemies[0].debuffs?.[0]?.kind, "roots");
+});

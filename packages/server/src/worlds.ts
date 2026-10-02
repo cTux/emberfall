@@ -14,7 +14,7 @@ import {
   movePlayer,
   TICK_MS,
 } from "@emberfall/common";
-import type { Player, ServerMessage, WorldState } from "@emberfall/common";
+import type { Player, ServerMessage, WorldState, SceneState } from "@emberfall/common";
 import { CharacterStore } from "./characters.ts";
 import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from "./scenes.ts";
 import type { Scene } from "./scenes.ts";
@@ -28,6 +28,7 @@ interface World {
   hash?: Buffer;
   players: Map<string, Player>;
   scene?: Scene;
+  training?: SceneState;
 }
 interface Session {
   id: string;
@@ -141,6 +142,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
     hostId: world.hostId,
     players: [...world.players.values()],
     scene: sceneState(world.scene),
+    training: world.training,
     serverNow: now,
   });
   const list = () => ({

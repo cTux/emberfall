@@ -9,7 +9,7 @@ import {
   wrap,
   hasLivingScenePlayers,
 } from "./scene.ts";
-import { ARENA, moveActor } from "./world.ts";
+import { ARENA, moveActor, inTrainingZone } from "./world.ts";
 import type { Player, Bear } from "./index.ts";
 import type { SceneState, Enemy } from "./scene.ts";
 
@@ -151,7 +151,7 @@ export function tickCompanion(
     decision.forest !== forest
   ) {
     const target =
-      forest && scene?.phase === "active" && !bear.returning
+      (forest || scene?.training) && scene?.phase === "active" && !bear.returning
         ? scene.enemies
             .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= 200)
             .reduce<Enemy | undefined>(
@@ -451,31 +451,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     return false;
   });
   tickDebuffs(scene, players, now);
-  for (const player of alive) {
-    player.attackAngle = smoothAttackAngle(
-      player.attackAngle,
-      nearestEnemyAngle(player, scene.enemies, player.attackAngle),
-      dt,
-    );
-    if (player.attackAt === undefined || now - player.attackAt >= PLAYER_ATTACK_INTERVAL)
-      player.attackAt = now - ((now - (player.attackAt ?? now)) % PLAYER_ATTACK_INTERVAL);
-    const age = now - player.attackAt;
-    if (age < 0 || age >= PLAYER_ATTACK_DURATION) continue;
-    let swing = swordHits.get(player);
-    const freshSwing = !swing || swing.at !== player.attackAt || swing.sceneId !== scene.id;
-    if (freshSwing) {
-      swing = { sceneId: scene.id, at: player.attackAt, enemies: new Set() };
-      swordHits.set(player, swing);
-    }
-    if (player.classId === "ranger" || player.classId === "mage" || player.classId === "druid") {
-      if (freshSwing) fireClassAttack(scene, player, now);
-      continue;
-    }
-    slash(scene, player, player, now, 5);
-    scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
-  }
-  tickPlayerShots(scene, players, now, dt);
-  scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
+  tickPlayerCombat(scene, alive, now, dt);
   const combatants = [
     ...alive,
     ...alive.flatMap((p) => (p.bear && p.bear.hitpoints > 0 ? [p.bear] : [])),
@@ -578,4 +554,36 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
       .filter((p) => p.scene === "forest")
       .map((p) => ({ x: p.x, y: p.y + 15 }));
   }
+}
+
+export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number, dt: number) {
+  for (const player of alive) {
+    if (scene.training && !inTrainingZone(player)) {
+      player.attackAt = undefined;
+      continue;
+    }
+    player.attackAngle = smoothAttackAngle(
+      player.attackAngle,
+      nearestEnemyAngle(player, scene.enemies, player.attackAngle),
+      dt,
+    );
+    if (player.attackAt === undefined || now - player.attackAt >= PLAYER_ATTACK_INTERVAL)
+      player.attackAt = now - ((now - (player.attackAt ?? now)) % PLAYER_ATTACK_INTERVAL);
+    const age = now - player.attackAt;
+    if (age < 0 || age >= PLAYER_ATTACK_DURATION) continue;
+    let swing = swordHits.get(player);
+    const freshSwing = !swing || swing.at !== player.attackAt || swing.sceneId !== scene.id;
+    if (freshSwing) {
+      swing = { sceneId: scene.id, at: player.attackAt, enemies: new Set() };
+      swordHits.set(player, swing);
+    }
+    if (player.classId === "ranger" || player.classId === "mage" || player.classId === "druid") {
+      if (freshSwing) fireClassAttack(scene, player, now);
+      continue;
+    }
+    slash(scene, player, player, now, 5);
+    if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
+  }
+  tickPlayerShots(scene, alive, now, dt);
+  if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
 }

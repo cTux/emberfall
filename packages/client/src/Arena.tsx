@@ -20,14 +20,22 @@ import {
   drawVegetation,
 } from "./effects";
 import type { Interaction } from "./effects";
-import { ARENA, PATHS, LOBBY_PORTAL, TICK_MS, nearbyInteraction } from "@emberfall/common";
+import {
+  ARENA,
+  PATHS,
+  LOBBY_PORTAL,
+  TICK_MS,
+  nearbyInteraction,
+  TRAINING_ZONES,
+} from "@emberfall/common";
 import type { ClientMessage, WorldState } from "@emberfall/common";
 import type { GraphicsSettings } from "./graphics";
 import { castShadow, makeMask } from "./lighting";
 import type { Caster, Light } from "./lighting";
 import { villageSprites, TORCH_LIGHTS, lightTexture } from "./village";
 import type { Scenery } from "./village";
-import { forestRenderer, drawFog, drawPortal } from "./forest";
+import { forestRenderer, drawFog, drawPortal, drawPlayerDetails } from "./forest";
+import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from "./combat-effects";
 import type { Preferences } from "./preferences";
 
 const colors = [
@@ -408,6 +416,34 @@ export function Arena({
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(background, 0, 0);
+      for (const zone of TRAINING_ZONES) {
+        ctx.fillStyle = "#aa8b4930";
+        ctx.strokeStyle = "#c9a56380";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(zone.x, zone.y, zone.radius, zone.radius * 0.85, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      const training = view.training;
+      const serverTime = view.serverNow ?? now;
+      if (training) {
+        for (const dummy of training.enemies) {
+          if (skeleton.naturalWidth)
+            ctx.drawImage(skeleton, 0, 0, 16, 16, dummy.x - 24, dummy.y - 30, 48, 48);
+          ctx.fillStyle = "#152018";
+          ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
+          ctx.fillStyle = "#df7765";
+          ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
+          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
+        }
+        drawLootAndBlood(ctx, training, serverTime, (x, y) => ({ x, y }), {
+          x: cameraX,
+          y: cameraY,
+          width: viewWidth,
+          height: viewHeight,
+        });
+      }
       const players = view?.players.filter((p) => !p.scene) ?? [];
       const liveIds = new Set(players.map((p) => p.id));
       for (const id of positions.keys()) if (!liveIds.has(id)) positions.delete(id);
@@ -635,6 +671,31 @@ export function Arena({
           player.name,
           colors[player.color],
         );
+        drawPlayerDetails(
+          ctx,
+          player,
+          pos.x,
+          pos.y,
+          pos.facing,
+          player.id === playerId ? now : serverTime,
+          quality.current.bloom,
+          false,
+        );
+      }
+      if (training) {
+        drawClassProjectiles(ctx, training, serverTime, (x, y) => ({ x, y }));
+        if (prefs.current.damageNumbers)
+          for (const hit of training.damage) {
+            const age = serverTime - hit.at;
+            if (age < 0 || age > 750) continue;
+            ctx.save();
+            ctx.globalAlpha = 1 - age / 800;
+            ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#fff0b1";
+            ctx.fillText(String(hit.amount), hit.x, hit.y - 45 - age / 30);
+            ctx.restore();
+          }
       }
       if (quality.current.lighting) {
         ctx.save();
@@ -739,6 +800,18 @@ export function Arena({
         showFps={preferences.fps}
         showLatency={preferences.latency}
       />
+      {world && (
+        <aside
+          className="dps-meter"
+          aria-label="Damage per second"
+          title="Your damage over the last 5 seconds, including ailments and your companion"
+        >
+          <strong>
+            {(world.players.find((player) => player.id === playerId)?.dps ?? 0).toFixed(1)} DPS
+          </strong>
+          <small>Last 5 seconds</small>
+        </aside>
+      )}
     </>
   );
 }

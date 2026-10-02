@@ -708,9 +708,35 @@ kbd {
   color: #a3b6ab30;
 }
 
-.stage:has(.performance-stats:not([hidden])) .party {
+.dps-meter {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 235px;
+  padding: 8px;
+  background: #101c17d9;
+  border: 1px solid #8daba52e;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.dps-meter small {
+  float: right;
+  color: #a7c4bc;
+}
+
+.stage:has(.dps-meter) .party {
+  top: 58px;
+  max-height: calc(100dvh - 72px);
+}
+
+.stage:has(.performance-stats:not([hidden])) .dps-meter {
   top: 134px;
-  max-height: calc(100dvh - 148px);
+}
+
+.stage:has(.performance-stats:not([hidden])):has(.dps-meter) .party {
+  top: 178px;
+  max-height: calc(100dvh - 192px);
 }
 
 select {

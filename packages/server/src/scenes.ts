@@ -3,7 +3,7 @@ import {
   FOREST_PORTAL,
   nearbyInteraction,
   stepCombat,
-  tickCompanion,
+  tickTraining,
   hasLivingScenePlayers,
 } from "@emberfall/common";
 import type { Player, SceneState, ClientMessage } from "@emberfall/common";
@@ -16,6 +16,7 @@ export interface Scene extends SceneState {
 export interface SceneWorld {
   players: Map<string, Player>;
   scene?: Scene;
+  training?: SceneState;
 }
 export function returnToLobby(player: Player) {
   player.scene = undefined;
@@ -136,8 +137,7 @@ export function reconcileVote(world: SceneWorld, now: number) {
   }
 }
 export function tickScene(world: SceneWorld, now: number, dt: number) {
-  for (const player of world.players.values())
-    if (!player.scene) tickCompanion(player, undefined, now, dt);
+  world.training = tickTraining(world.training, [...world.players.values()], now, dt);
   reconcileVote(world, now);
   const scene = world.scene;
   if (!scene) return;
