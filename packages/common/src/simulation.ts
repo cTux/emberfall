@@ -17,6 +17,17 @@ export const PLAYER_ATTACK_RANGE = 88;
 export const PLAYER_ATTACK_INTERVAL = 700;
 export const PLAYER_ATTACK_DURATION = 260;
 const swordHits = new WeakMap<object, { sceneId: string; at: number; enemies: Set<number> }>();
+const companionDecisions = new WeakMap<
+  Bear,
+  {
+    at: number;
+    scene: SceneState | undefined;
+    forest: boolean;
+    target: Enemy | undefined;
+    following: boolean;
+    destination: { x: number; y: number; hitpoints: number };
+  }
+>();
 
 /** Frame-rate independent aim smoothing, always taking the shortest turn across ±pi. */
 export function smoothAttackAngle(current: number | undefined, target: number, dt: number) {
@@ -99,11 +110,13 @@ export function tickCompanion(
     maxHitpoints: player.maxHitpoints * 1.5,
     returning: false,
   });
+  bear.moving = false;
   const max = player.maxHitpoints * 1.5;
   if (bear.hitpoints > 0)
     bear.hitpoints = Math.min(max, bear.hitpoints + Math.max(0, max - bear.maxHitpoints));
   bear.maxHitpoints = max;
   if (bear.hitpoints <= 0) {
+    companionDecisions.delete(bear);
     bear.resurrectAt ??= now + 5000;
     if (now < bear.resurrectAt) return;
     bear.hitpoints = max;
@@ -119,85 +132,132 @@ export function tickCompanion(
   const distance = forest
     ? forestDistance(bear, player)
     : Math.hypot(bear.x - player.x, bear.y - player.y);
+  if (distance > 500) {
+    bear.x = player.x;
+    bear.y = player.y;
+    bear.returning = false;
+    bear.attackAt = undefined;
+    companionDecisions.delete(bear);
+    return;
+  }
   if (distance > 200) bear.returning = true;
   if (bear.returning && distance <= 20) bear.returning = false;
+  let decision = companionDecisions.get(bear);
+  if (
+    !decision ||
+    now - decision.at >= 1000 ||
+    decision.scene !== scene ||
+    decision.forest !== forest
+  ) {
+    const target =
+      forest && scene?.phase === "active" && !bear.returning
+        ? scene.enemies
+            .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= 200)
+            .reduce<Enemy | undefined>(
+              (best, e) =>
+                !best || forestDistance(bear, e) < forestDistance(bear, best) ? e : best,
+              undefined,
+            )
+        : undefined;
+    let destination: { x: number; y: number; hitpoints: number } = target ?? player;
+    const heading = Math.atan2(
+      forest ? wrappedDelta(destination.y, bear.y, FOREST.height) : destination.y - bear.y,
+      forest ? wrappedDelta(destination.x, bear.x, FOREST.width) : destination.x - bear.x,
+    );
+    bear.attackAngle = heading;
+    if (target) {
+      // Keep claws in range while staying outside ordinary melee reach.
+      const spacing = PLAYER_ATTACK_RANGE - 8;
+      destination = {
+        x: wrap(target.x - Math.cos(heading) * spacing, FOREST.width),
+        y: wrap(target.y - Math.sin(heading) * spacing, FOREST.height),
+        hitpoints: 1,
+      };
+    }
+    const danger =
+      forest && scene?.phase === "active"
+        ? scene.enemies.find(
+            (e) =>
+              e.hitpoints > 0 &&
+              e.attack &&
+              e.attack.endsAt >= now &&
+              forestDistance(bear, e.attack) < e.attack.radius + 12,
+          )?.attack
+        : undefined;
+    if (danger) {
+      const away =
+        forestDistance(bear, danger) < 1
+          ? heading + Math.PI
+          : Math.atan2(
+              wrappedDelta(bear.y, danger.y, FOREST.height),
+              wrappedDelta(bear.x, danger.x, FOREST.width),
+            );
+      destination = {
+        x: wrap(danger.x + Math.cos(away) * (danger.radius + 16), FOREST.width),
+        y: wrap(danger.y + Math.sin(away) * (danger.radius + 16), FOREST.height),
+        hitpoints: 1,
+      };
+    }
+    if (forest && scene?.phase === "active") {
+      const shot = scene.projectiles?.find((s) => {
+        const dx = wrappedDelta(bear.x, s.x, FOREST.width),
+          dy = wrappedDelta(bear.y, s.y, FOREST.height);
+        const speedSquared = s.vx * s.vx + s.vy * s.vy;
+        if (s.expiresAt <= now || speedSquared === 0) return false;
+        const time = (dx * s.vx + dy * s.vy) / speedSquared;
+        return (
+          time >= 0 &&
+          time <= Math.min(0.35, (s.expiresAt - now) / 1000) &&
+          Math.hypot(dx - s.vx * time, dy - s.vy * time) < 30
+        );
+      });
+      if (shot) {
+        const speed = Math.hypot(shot.vx, shot.vy);
+        const side =
+          wrappedDelta(bear.x, shot.x, FOREST.width) * -shot.vy +
+            wrappedDelta(bear.y, shot.y, FOREST.height) * shot.vx >=
+          0
+            ? 1
+            : -1;
+        destination = {
+          x: wrap(bear.x - (shot.vy / speed) * 40 * side, FOREST.width),
+          y: wrap(bear.y + (shot.vx / speed) * 40 * side, FOREST.height),
+          hitpoints: 1,
+        };
+      }
+    }
+    decision = {
+      at: now,
+      scene,
+      forest,
+      target,
+      following: destination === player,
+      destination: { ...destination },
+    };
+    companionDecisions.set(bear, decision);
+  }
   const target =
-    forest && scene?.phase === "active" && !bear.returning
-      ? scene.enemies
-          .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= 200)
-          .reduce<Enemy | undefined>(
-            (best, e) => (!best || forestDistance(bear, e) < forestDistance(bear, best) ? e : best),
-            undefined,
-          )
+    decision.target &&
+    decision.target.hitpoints > 0 &&
+    scene?.phase === "active" &&
+    scene.enemies.includes(decision.target) &&
+    forestDistance(decision.target, player) <= 200
+      ? decision.target
       : undefined;
-  let destination: { x: number; y: number; hitpoints: number } = target ?? player;
+  const destination =
+    bear.returning || decision.following || (decision.target && !target)
+      ? player
+      : decision.destination;
   const heading = Math.atan2(
     forest ? wrappedDelta(destination.y, bear.y, FOREST.height) : destination.y - bear.y,
     forest ? wrappedDelta(destination.x, bear.x, FOREST.width) : destination.x - bear.x,
   );
-  bear.attackAngle = heading;
-  if (target) {
-    // Keep claws in range while staying outside ordinary melee reach.
-    const spacing = PLAYER_ATTACK_RANGE - 8;
-    destination = {
-      x: wrap(target.x - Math.cos(heading) * spacing, FOREST.width),
-      y: wrap(target.y - Math.sin(heading) * spacing, FOREST.height),
-      hitpoints: 1,
-    };
-  }
-  const danger =
-    forest && scene?.phase === "active"
-      ? scene.enemies.find(
-          (e) =>
-            e.hitpoints > 0 &&
-            e.attack &&
-            e.attack.endsAt >= now &&
-            forestDistance(bear, e.attack) < e.attack.radius + 12,
-        )?.attack
-      : undefined;
-  if (danger) {
-    const away =
-      forestDistance(bear, danger) < 1
-        ? heading + Math.PI
-        : Math.atan2(
-            wrappedDelta(bear.y, danger.y, FOREST.height),
-            wrappedDelta(bear.x, danger.x, FOREST.width),
-          );
-    destination = {
-      x: wrap(danger.x + Math.cos(away) * (danger.radius + 16), FOREST.width),
-      y: wrap(danger.y + Math.sin(away) * (danger.radius + 16), FOREST.height),
-      hitpoints: 1,
-    };
-  }
-  if (forest && scene?.phase === "active") {
-    const shot = scene.projectiles?.find((s) => {
-      const dx = wrappedDelta(bear.x, s.x, FOREST.width),
-        dy = wrappedDelta(bear.y, s.y, FOREST.height);
-      const speedSquared = s.vx * s.vx + s.vy * s.vy;
-      if (s.expiresAt <= now || speedSquared === 0) return false;
-      const time = (dx * s.vx + dy * s.vy) / speedSquared;
-      return (
-        time >= 0 &&
-        time <= Math.min(0.35, (s.expiresAt - now) / 1000) &&
-        Math.hypot(dx - s.vx * time, dy - s.vy * time) < 30
-      );
-    });
-    if (shot) {
-      const speed = Math.hypot(shot.vx, shot.vy);
-      const side =
-        wrappedDelta(bear.x, shot.x, FOREST.width) * -shot.vy +
-          wrappedDelta(bear.y, shot.y, FOREST.height) * shot.vx >=
-        0
-          ? 1
-          : -1;
-      destination = {
-        x: wrap(bear.x - (shot.vy / speed) * 40 * side, FOREST.width),
-        y: wrap(bear.y + (shot.vx / speed) * 40 * side, FOREST.height),
-        hitpoints: 1,
-      };
-    }
-  }
-  if (destination !== player || distance > 20) {
+  const startX = bear.x,
+    startY = bear.y;
+  const destinationDistance = forest
+    ? forestDistance(bear, destination)
+    : Math.hypot(destination.x - bear.x, destination.y - bear.y);
+  if (destination !== player || destinationDistance > 20) {
     const speed = ARENA.speed * 1.3;
     if (forest) {
       const body: Enemy = {
@@ -212,7 +272,7 @@ export function tickCompanion(
       bear.x = body.x;
       bear.y = body.y;
     } else {
-      const travel = Math.min(Math.max(0, distance - 20), speed * Math.max(0, dt));
+      const travel = Math.min(Math.max(0, destinationDistance - 20), speed * Math.max(0, dt));
       const next = moveActor(
         { x: bear.x, y: bear.y + 15 },
         Math.cos(heading) * travel,
@@ -223,6 +283,8 @@ export function tickCompanion(
       bear.y = next.y - 15;
     }
   }
+  bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > 0.001;
+  if (bear.moving) bear.attackAngle = heading;
   if (target) bear.attackAngle = nearestEnemyAngle(bear, [target], heading);
   if (forestDistance(bear, player) > 200 && forest) bear.returning = true;
   if (!target || bear.returning || !scene) {

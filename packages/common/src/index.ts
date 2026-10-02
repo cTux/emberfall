@@ -100,6 +100,7 @@ export interface Bear {
   hurtAt?: number;
   resurrectAt?: number;
   returning: boolean;
+  moving?: boolean;
 }
 export interface WorldSummary {
   id: string;

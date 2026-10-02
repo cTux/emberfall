@@ -229,6 +229,10 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     });
     proto.drawImage = new Proxy(proto.drawImage, {
       apply(target, ctx, args) {
+        if (args[0] instanceof HTMLImageElement && args[0].src.endsWith("bear.png")) {
+          document.body.setAttribute("data-bear-row", String(args[2]));
+          if (args[2] > 0) document.body.setAttribute("data-bear-walk", "animated");
+        }
         if (
           args[0] instanceof HTMLImageElement &&
           (args[0].src.includes("-attack.png") || args[0].src.endsWith("bear.png"))
@@ -255,7 +259,11 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
       apply(target, ctx, args) {
         if (["Mage", "Bear"].includes(args[0])) {
           const bar = bars.get(ctx);
-          if (bar && args[1] === bar.x + bar.width / 2 && args[2] === bar.y + 13)
+          if (
+            bar &&
+            args[1] === bar.x + bar.width / 2 &&
+            args[2] === bar.y + 7 + ctx.measureText(args[0]).actualBoundingBoxAscent
+          )
             document.body.setAttribute(`data-name-${args[0].toLowerCase()}`, ctx.font);
         }
         if (ctx.font === 'bold 8px "Pixelify Sans", sans-serif')
@@ -304,6 +312,18 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     .toBeCloseTo(0.5, 1);
   expect(capture.rootLines).toBe(0);
   await page.screenshot({ path: "test-results/class-combat.png" });
+  await expect(page.locator("body")).toHaveAttribute("data-bear-row", "0");
+  await expect(page.locator("body")).not.toHaveAttribute("data-bear-walk");
+  for (let i = 0; i < 20; i++) {
+    world.serverNow! += 50;
+    world.players[2].bear!.x += 4;
+    world.players[2].bear!.moving = true;
+    sendState();
+    await page.waitForTimeout(30);
+  }
+  await expect(page.locator("body")).toHaveAttribute("data-bear-walk", "animated");
+  await page.waitForTimeout(300);
+  await expect(page.locator("body")).toHaveAttribute("data-bear-row", "0");
   world.scene!.damage = [];
   world.serverNow = 25000;
   // Fill the snapshot buffer to advance its confirmed clock without a real 15-second wait.
