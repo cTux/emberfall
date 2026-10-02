@@ -44,6 +44,8 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
     await other.getByRole("textbox", { name: "Your adventurer name" }).fill("Bob");
     await other.getByRole("button", { name: /Join Chat browser test/ }).click();
     await expect(other.getByRole("button", { name: "Leave world" })).toBeVisible();
+    await expect(page.getByRole("log")).toContainText("System: Bob joined.");
+    await expect(other.getByRole("log")).toContainText("System: Alice joined.");
     const input = page.getByRole("textbox", { name: "Chat message" });
     const chat = page.getByRole("complementary", { name: "World chat", exact: true });
     await page.mouse.move(900, 600);
@@ -89,6 +91,12 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
     await page.getByRole("button", { name: "I'm ready" }).click();
     await other.getByRole("button", { name: "I'm ready" }).click();
     await expect(page.getByLabel("Forest combat scene.")).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole("log")).toContainText(
+      "Alice joined the scene. Everyone became stronger.",
+    );
+    await expect(other.getByRole("log")).toContainText(
+      "Bob joined the scene. Everyone became stronger.",
+    );
     await page.evaluate(() => {
       (window as typeof window & { chatDrawn?: string }).chatDrawn = undefined;
     });
@@ -98,6 +106,9 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
     await other.keyboard.press("Escape");
     await other.getByRole("button", { name: "Leave", exact: true }).click();
     await expect(other.getByLabel("Shared village. Move with WASD or arrow keys.")).toBeVisible();
+    await expect(page.getByRole("log")).toContainText(
+      "Bob left the scene. Everyone became weaker.",
+    );
     await chat.hover();
     await input.fill("Hello party from forest");
     await input.press("Enter");
@@ -106,6 +117,11 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
       .poll(() => page.evaluate(() => (window as typeof window & { chatDrawn?: string }).chatDrawn))
       .toBe("Hello party from forest");
     await page.screenshot({ path: "test-results/chat-forest.png" });
+    await page.close();
+    await expect(other.getByRole("log")).toContainText("Alice disconnected.");
+    await expect(other.getByRole("log")).toContainText(
+      "Alice left the scene. Everyone became weaker.",
+    );
   } finally {
     await otherContext.close();
   }

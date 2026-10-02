@@ -6,7 +6,8 @@ import {
   tickTraining,
   hasLivingScenePlayers,
 } from "@emberfall/common";
-import type { Player, SceneState, ClientMessage } from "@emberfall/common";
+import type { Player, SceneState, ClientMessage, ChatMessage } from "@emberfall/common";
+import { addChat } from "./chat.ts";
 
 export interface Scene extends SceneState {
   nextSpawn: number;
@@ -14,11 +15,13 @@ export interface Scene extends SceneState {
   electorate: string;
 }
 export interface SceneWorld {
+  chat?: ChatMessage[];
   players: Map<string, Player>;
   scene?: Scene;
   training?: SceneState;
 }
-export function returnToLobby(player: Player) {
+export function returnToLobby(world: SceneWorld, player: Player) {
+  if (player.scene) addChat(world, `${player.name} left the scene. Everyone became weaker.`);
   player.scene = undefined;
   player.x = 480;
   player.y = 360;
@@ -52,7 +55,7 @@ export function sceneAction(
           "A scene already exists. All living players must leave before regenerating it.",
         );
       for (const participant of world.players.values())
-        if (participant.scene === "forest") returnToLobby(participant);
+        if (participant.scene === "forest") returnToLobby(world, participant);
     }
     world.scene = {
       id: randomUUID(),
@@ -76,7 +79,7 @@ export function sceneAction(
       throw new Error(
         "This scene is not open for joining. Create a new one after everyone returns.",
       );
-    enterScene(player, now);
+    enterScene(world, player, now);
   } else if (message.type === "ready") {
     const scene = world.scene;
     if (!scene || !["voting", "countdown"].includes(scene.phase) || player.scene)
@@ -93,7 +96,7 @@ export function sceneAction(
           "return")
     )
       throw new Error("Use the return portal after the scene ends.");
-    returnToLobby(player);
+    returnToLobby(world, player);
     cleanupScene(world);
   }
 }
@@ -105,7 +108,8 @@ export function cleanupScene(world: SceneWorld) {
   )
     world.scene = undefined;
 }
-function enterScene(player: Player, now: number, offset = 0) {
+function enterScene(world: SceneWorld, player: Player, now: number, offset = 0) {
+  addChat(world, `${player.name} joined the scene. Everyone became stronger.`);
   player.scene = "forest";
   player.x = FOREST_PORTAL.x + offset;
   player.y = FOREST_PORTAL.y;
@@ -148,11 +152,13 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     scene.nextSpawn = now;
     let index = 0;
     for (const player of world.players.values()) {
-      enterScene(player, now, (index++ - world.players.size / 2) * 30);
+      enterScene(world, player, now, (index++ - world.players.size / 2) * 30);
     }
   }
   if (scene.phase !== "active" && scene.phase !== "ended") return;
+  const living = [...world.players.values()].filter((player) => player.hitpoints > 0);
   stepCombat(scene, [...world.players.values()], now, dt);
+  for (const player of living) if (player.hitpoints <= 0) addChat(world, `${player.name} died.`);
   cleanupScene(world);
 }
 export function sceneState(scene?: Scene): SceneState | undefined {

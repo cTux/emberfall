@@ -92,6 +92,8 @@ A server-generated 256-bit bearer key in browser localStorage identifies the cha
 
 The chat panel shows the latest 10 messages in the current world, shared across village and forest players. Hover over the panel to reveal the input; click the input to focus it, then press Enter or Send. Hover never takes keyboard focus. The input stays visible while focused; Escape releases it and movement keys do not move the player while typing. Touch devices show the input without hover.
 
+The server adds `System` messages when a player joins or disconnects, dies, enters a scene (everyone became stronger), or leaves a scene (everyone became weaker). Countdown departures announce each player, and scene regeneration announces any returned players. Interrupted connections announce disconnection immediately and joining on successful resume; scene membership remains unchanged during the recovery window, so a scene departure is announced only if recovery expires. System messages share the 10-message limit and world isolation, use an empty player ID, and never replace player speech bubbles or consume a player's chat cooldown. Death is announced once per living-to-dead transition; dead players remain scene members until they leave.
+
 Each player displays only their latest message in a wrapped speech bubble above their head in both scenes, until they send another message or leave the world. The server validates trimmed, nonempty text up to 200 characters, rejects control characters, identifies the sender from their session, and allows one message per 500 ms. Messages and bubbles travel in existing world snapshots, are isolated by world, survive reconnects and scene changes, and reset when the world empties. Chat is not saved with character progress.
 
 ## Graphics
