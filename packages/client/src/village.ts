@@ -93,6 +93,54 @@ export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
   owner: `torch:${i}`,
 }));
 
+export function drawTorchFire(
+  ctx: CanvasRenderingContext2D,
+  lantern: HTMLImageElement,
+  x: number,
+  y: number,
+  now: number,
+  particles: boolean,
+  bloom: boolean,
+) {
+  ctx.save();
+  ctx.translate(x, y - 60);
+  if (lantern.naturalWidth) {
+    // Original sheet: 38 frames, seven 24x34 cells per row.
+    const frame = Math.floor((now + x * 13 + y * 7) / 80) % 38;
+    ctx.drawImage(
+      lantern,
+      (frame % 7) * 24,
+      Math.floor(frame / 7) * 34,
+      24,
+      34,
+      -7.5,
+      0,
+      15,
+      21.25,
+    );
+  }
+  if (particles) {
+    const opacity = ctx.globalAlpha;
+    if (bloom) {
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = "#ff8b32";
+    }
+    for (let i = 0; i < 12; i++) {
+      const age = ((now + x * 13 + y * 7 + i * 137) % 1800) / 1800;
+      const angle = i * 2.399963;
+      ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.8;
+      ctx.fillStyle = ["#ffe6a3", "#ffac42", "#f45b28"][i % 3];
+      ctx.fillRect(
+        Math.round(Math.cos(angle) * (3 + age * 10)),
+        Math.round(10 + Math.sin(angle) * 4 - age * 30),
+        2,
+        2,
+      );
+    }
+  }
+  ctx.restore();
+}
+
 /** Light contribution with silhouette occlusion. The canvas bounds limit shadow reach. */
 export function lightTexture(
   light: Light,

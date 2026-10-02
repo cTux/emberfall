@@ -37,7 +37,7 @@ import type { ClientMessage, WorldState } from "@emberfall/common";
 import type { GraphicsSettings } from "./graphics";
 import { castShadow, makeMask } from "./lighting";
 import type { Caster, Light } from "./lighting";
-import { villageSprites, TORCH_LIGHTS, lightTexture } from "./village";
+import { villageSprites, TORCH_LIGHTS, lightTexture, drawTorchFire } from "./village";
 import type { Scenery } from "./village";
 import { forestRenderer, drawFog, drawPortal, drawPlayerDetails } from "./forest";
 import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from "./combat-effects";
@@ -109,6 +109,8 @@ export function Arena({
     lampPost.src = "/assets/lanterns/lamp-post.png";
     const lantern = new Image();
     lantern.src = "/assets/lanterns/lantern.png";
+    const animatedLantern = new Image();
+    animatedLantern.src = "/assets/lanterns/lantern-animation.png";
     const skeleton = new Image();
     skeleton.src = "/assets/skeleton.png";
     const drawForest = forestRenderer(nature, knight, skeleton);
@@ -667,6 +669,16 @@ export function Arena({
               object.y - object.height,
               object.width,
               object.height,
+            );
+          if (object.id.startsWith("torch:"))
+            drawTorchFire(
+              ctx,
+              animatedLantern,
+              object.x,
+              object.y,
+              now,
+              quality.current.particles,
+              quality.current.bloom,
             );
           ctx.globalAlpha = 1;
           if (object.name)
