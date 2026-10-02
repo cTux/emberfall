@@ -316,6 +316,7 @@ export function movePlayer(player: Player, x: number, y: number, dt: number) {
     (x / length) * ARENA.speed * dt,
     (y / length) * ARENA.speed * dt,
     12,
+    false,
   );
   player.x = next.x;
   player.y = player.scene === "forest" ? wrap(next.y - 15, FOREST.height) : next.y - 15;

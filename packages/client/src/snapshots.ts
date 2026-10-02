@@ -60,6 +60,7 @@ export class SnapshotBuffer {
       b: { x: number; y: number },
       forest: boolean,
       radius: number,
+      collide = true,
     ) => {
       const dx = forest ? wrappedDelta(b.x, a.x, FOREST.width) : b.x - a.x;
       const dy = forest ? wrappedDelta(b.y, a.y, FOREST.height) : b.y - a.y;
@@ -69,13 +70,14 @@ export class SnapshotBuffer {
         dx * alpha,
         dy * alpha,
         radius,
+        collide,
       );
       return { x: point.x, y: forest ? wrap(point.y - 15, FOREST.height) : point.y - 15, dx, dy };
     };
     const players = older.players.map((a) => {
       const b = newer.players.find((p) => p.id === a.id);
       if (!b || a.scene !== b.scene) return { ...a, inputX: 0, inputY: 0 };
-      const point = interpolate(a, b, a.scene === "forest", 12);
+      const point = interpolate(a, b, a.scene === "forest", 12, false);
       // Corrections with no movement intent must not trigger a walking animation.
       return {
         ...a,

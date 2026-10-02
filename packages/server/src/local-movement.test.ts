@@ -64,7 +64,7 @@ test("small visual errors stay still, accumulated error converges, large correct
   assert.equal(movement.render(world({ ...hero, x: 345, hitpoints: 0 }, 10250), 750)!.x, 345);
 });
 
-test("prediction uses obstacle collisions, stops animation when blocked and caps missing replies", () => {
+test("prediction passes through scenery and stops movement and animation on missing replies", () => {
   const start = { ...hero, x: 440, y: 380 };
   const initial = world(start);
   const movement = new LocalMovement("p", () => {});
@@ -76,7 +76,7 @@ test("prediction uses obstacle collisions, stops animation when blocked and caps
   movePlayer(expected, 0, 1, 1);
   assert(Math.abs(player.y - expected.y) < 6);
   assert.equal(player.inputY, 0);
-  assert(player.y < 420);
+  assert.equal(player.y, 560);
   const still = movement.render(initial, 3000)!;
   assert.equal(still.y, player.y);
 });

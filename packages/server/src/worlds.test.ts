@@ -55,7 +55,7 @@ test("latest input is coalesced, held between packets, timed out and rejected ac
   }
 });
 
-test("the server prevents a connected player from walking through a tree", async () => {
+test("the server allows a connected player to walk into a tree", async () => {
   const app = createGameServer();
   app.server.listen(0, "127.0.0.1");
   await once(app.server, "listening");
@@ -76,7 +76,7 @@ test("the server prevents a connected player from walking through a tree", async
     ws.send(
       JSON.stringify({
         type: "create",
-        name: "Collision check",
+        name: "Pass-through check",
         playerName: "Walker",
         password: "",
       }),
@@ -96,13 +96,12 @@ test("the server prevents a connected player from walking through a tree", async
     assert(player);
     assert(samples.length > 30);
     assert(Math.hypot(player.x - tree.x, player.y + 15 - (tree.y - 8)) < 38);
-    for (const sample of samples)
-      for (const obstacle of TREES) {
-        assert(
-          Math.hypot(sample.x - obstacle.x, sample.y + 15 - (obstacle.y - 8)) >=
-            12 + obstacle.radius,
-        );
-      }
+    assert(
+      samples.some(
+        (sample) => Math.hypot(sample.x - tree.x, sample.y + 15 - (tree.y - 8)) < tree.radius,
+      ),
+      "the server must allow the player inside the trunk",
+    );
   } finally {
     ws.terminate();
     await app.close();

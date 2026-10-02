@@ -187,6 +187,7 @@ export class LocalMovement {
       this.offset.x,
       this.offset.y,
       12,
+      false,
     );
     const displayed = {
       x: point.x,
