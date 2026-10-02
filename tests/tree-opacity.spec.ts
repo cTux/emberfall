@@ -138,7 +138,7 @@ for (const forest of [false, true]) {
     await page.goto("/");
     await page.getByRole("tab", { name: "Create a world" }).click();
     await page.getByRole("button", { name: "Light the ember" }).click();
-    await expect(page.locator("body")).toHaveAttribute("data-tree-opacity", "0.15");
+    await expect(page.locator("body")).toHaveAttribute("data-tree-opacity", "0.2");
     await expect
       .poll(() => page.locator("body").getAttribute("data-tree-sway-range").then(Number))
       .toBeGreaterThan(0.001);

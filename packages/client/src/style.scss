@@ -10,10 +10,14 @@ body {
   left: 16px;
   width: min(320px, calc(100vw - 96px));
   padding: 10px;
-  background: #101c17d9;
-  border: 1px solid #8daba52e;
+  border: 1px solid transparent;
   border-radius: 4px;
   color: #f4ecd6;
+}
+
+.chat:hover {
+  background: #101c17d9;
+  border-color: #8daba52e;
 }
 
 .chat-log {
@@ -21,6 +25,12 @@ body {
   overflow: auto;
   overflow-wrap: anywhere;
   font-size: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.chat:hover .chat-log {
+  scrollbar-color: auto;
 }
 
 .chat-input {

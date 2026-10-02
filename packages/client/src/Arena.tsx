@@ -18,7 +18,7 @@ import {
   drawVignette,
   drawNameBadge,
   drawAtmosphere,
-  treeOpacity,
+  obstacleOpacity,
   drawVegetation,
 } from "./effects";
 import type { Interaction } from "./effects";
@@ -641,7 +641,7 @@ export function Arena({
         }
         if (layer.object) {
           const object = layer.object;
-          ctx.globalAlpha = object.id.startsWith("tree:") ? treeOpacity(object, local) : 1;
+          ctx.globalAlpha = obstacleOpacity(object, local);
           const vegetation = object.id.startsWith("tree:") || object.id.startsWith("grass:");
           if (vegetation)
             drawVegetation(

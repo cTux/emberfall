@@ -1,5 +1,12 @@
 import { test, expect } from "@playwright/test";
 import type { WorldState } from "../packages/common/src/index";
+import { BUILDINGS, TORCHES, WARDROBE } from "../packages/common/src/index";
+
+const obstacles = [
+  ...BUILDINGS.map((b) => ({ ...b, width: b.sourceWidth * 2, height: 96 })),
+  { ...WARDROBE, width: 48, height: 60 },
+  ...TORCHES.map((t) => ({ ...t, width: 20, height: 60 })),
+];
 
 test("building nameplate replaces the tooltip in interaction range", async ({ page }) => {
   const world: WorldState = {
@@ -35,9 +42,21 @@ test("building nameplate replaces the tooltip in interaction range", async ({ pa
         );
     });
   });
-  await page.addInitScript(() => {
+  await page.addInitScript((objects) => {
     const backgrounds = new WeakMap<CanvasRenderingContext2D, string>();
     const prototype = CanvasRenderingContext2D.prototype;
+    const draw = prototype.drawImage;
+    prototype.drawImage = new Proxy(draw, {
+      apply(target, ctx: CanvasRenderingContext2D, args) {
+        if (ctx.canvas.hasAttribute("aria-label") && args.length === 5) {
+          const index = objects.findIndex(
+            (o) => args[1] === o.x - o.width / 2 && args[2] === o.y - o.height,
+          );
+          if (index >= 0) document.body.dataset[`obstacle${index}`] = String(ctx.globalAlpha);
+        }
+        return Reflect.apply(target, ctx, args);
+      },
+    });
     const rect = prototype.fillRect;
     prototype.fillRect = function (x, y, width, height) {
       if (height === 13) backgrounds.set(this, String(this.fillStyle));
@@ -55,7 +74,7 @@ test("building nameplate replaces the tooltip in interaction range", async ({ pa
       }
       text.call(this, value, x, y);
     };
-  });
+  }, obstacles);
   await page.goto("/");
   await page.getByRole("tab", { name: "Create a world" }).click();
   await page.getByRole("button", { name: "Light the ember" }).click();
@@ -88,4 +107,20 @@ test("building nameplate replaces the tooltip in interaction range", async ({ pa
   await page.screenshot({ path: "test-results/portal-nameplate.png" });
   await page.keyboard.press("e");
   await expect(page.getByRole("dialog")).toContainText("Forest portal");
+  await page.keyboard.press("Escape");
+  for (const [index, object] of obstacles.entries()) {
+    for (const behind of [true, false]) {
+      Object.assign(world.players[0], {
+        x: object.x,
+        y: behind ? object.y - object.height + 15 : object.y + 30,
+      });
+      world.serverNow = (world.serverNow ?? 0) + 200;
+      update();
+      await expect(page.locator("body")).toHaveAttribute(
+        `data-obstacle${index}`,
+        behind ? "0.2" : "1",
+      );
+      if (behind && index === 0) await page.screenshot({ path: "test-results/building-fade.png" });
+    }
+  }
 });
