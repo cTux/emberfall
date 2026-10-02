@@ -654,7 +654,8 @@ export function drawPlayerDetails(
     ctx.translate(x, y);
     ctx.rotate(angle);
     ctx.translate(slash ? PLAYER_ATTACK_RANGE / 2 : 23, -2);
-    ctx.rotate((Math.PI * 3) / 4);
+    // The bow faces down-left in its source sprite; swords and staffs face up-left.
+    ctx.rotate(((p.classId === "ranger" ? -3 : 3) * Math.PI) / 4);
     ctx.imageSmoothingEnabled = false;
     const size = slash ? 58 : 32;
     ctx.drawImage(weapon, -size / 2, -size / 2, size, size);

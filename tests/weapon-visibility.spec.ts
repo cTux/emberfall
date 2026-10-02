@@ -45,13 +45,18 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
     });
   });
   await page.addInitScript(() => {
-    const capture = { weapons: 0, players: 0 };
+    const capture = { weapons: 0, players: 0, bowAngle: 0 };
     (window as unknown as { weaponCapture: typeof capture }).weaponCapture = capture;
     const prototype = CanvasRenderingContext2D.prototype;
     prototype.drawImage = new Proxy(prototype.drawImage, {
       apply(target, context, args) {
         if (args[0] instanceof HTMLImageElement) {
           if (args[0].src.includes("/assets/weapons/")) capture.weapons++;
+          if (args[0].src.endsWith("/assets/weapons/ranger.png")) {
+            const transform = (context as CanvasRenderingContext2D).getTransform();
+            // The bow's outward direction in the source image is down-left (135 degrees).
+            capture.bowAngle = Math.atan2(transform.b, transform.a) + (3 * Math.PI) / 4;
+          }
           if (
             /\/assets\/(knight|warrior-attack|ranger|ranger-attack|mage|mage-attack|druid|druid-attack)\.png$/.test(
               args[0].src,
@@ -111,4 +116,27 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
     }
   }
   await page.screenshot({ path: "test-results/village-sheathed-weapons.png" });
+  // Use a remote ranger so local automatic aiming cannot replace the supplied angle.
+  world.players[0].classId = "warrior";
+  const ranger = { ...world.players[0], id: "ranger", classId: "ranger" as const };
+  world.players.push(ranger);
+  for (const scene of [undefined, "forest"] as const) {
+    ranger.scene = world.players[0].scene = scene;
+    ranger.x = world.players[0].x = scene ? 2400 : 140;
+    ranger.y = world.players[0].y = scene ? 1280 : 340;
+    for (const angle of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
+      ranger.attackAngle = angle;
+      sendState();
+      await expect
+        .poll(async () => {
+          const bowAngle = await page.evaluate(
+            () =>
+              (window as unknown as { weaponCapture: { bowAngle: number } }).weaponCapture.bowAngle,
+          );
+          return Math.atan2(Math.sin(bowAngle - angle), Math.cos(bowAngle - angle));
+        })
+        .toBeCloseTo(0, 5);
+    }
+    await page.screenshot({ path: `test-results/bow-aim-${scene ?? "training"}.png` });
+  }
 });
