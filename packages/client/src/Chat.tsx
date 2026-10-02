@@ -12,8 +12,33 @@ export function Chat({
   disabled: boolean;
 }) {
   const [text, setText] = useState("");
+  const input = useRef<HTMLInputElement>(null);
   const log = useRef<HTMLDivElement>(null);
   const latestId = messages.at(-1)?.id;
+  useEffect(() => {
+    const key = (event: KeyboardEvent) => {
+      if (
+        event.key !== "Enter" ||
+        event.repeat ||
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.altKey ||
+        event.metaKey ||
+        disabled ||
+        input.current?.closest("[inert]") ||
+        document.querySelector('[role="dialog"][aria-modal="true"]') ||
+        (event.target as HTMLElement)?.closest(
+          "input, textarea, select, button, a, [contenteditable=true]",
+        )
+      )
+        return;
+      event.preventDefault();
+      input.current?.closest<HTMLElement>(".chat")?.focus();
+      input.current?.focus();
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [disabled]);
   useEffect(() => {
     if (log.current) log.current.scrollTop = log.current.scrollHeight;
   }, [latestId]);
@@ -46,11 +71,18 @@ export function Chat({
           if (disabled || !text.trim()) return;
           send({ type: "chat", text: text.trim() });
           setText("");
+          if (
+            !event.currentTarget.closest(".chat")?.matches(":hover") &&
+            document.activeElement instanceof HTMLElement &&
+            event.currentTarget.contains(document.activeElement)
+          )
+            document.activeElement.blur();
         }}
       >
         <input
+          ref={input}
           aria-label="Chat message"
-          placeholder="Click to chat · Enter to send"
+          placeholder="Enter to chat · Enter to send"
           value={text}
           onChange={(event) => setText(event.target.value)}
           maxLength={CHAT_MAX_LENGTH}

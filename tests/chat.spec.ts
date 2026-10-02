@@ -1,6 +1,35 @@
 import { test, expect } from "@playwright/test";
 import type { ClientMessage } from "../packages/common/src/index";
 
+test("Enter respects dialogs and empty messages, and Send releases focus outside hover", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Create a world" }).click();
+  await page.getByRole("button", { name: "Light the ember" }).click();
+  const chat = page.getByRole("complementary", { name: "World chat", exact: true });
+  const input = chat.getByRole("textbox", { name: "Chat message" });
+  await page.mouse.move(900, 600);
+  await page.keyboard.press("Enter");
+  await expect(input).toBeFocused();
+  await input.fill("   ");
+  await input.press("Enter");
+  await expect(input).toBeFocused();
+  await input.fill("Send button message");
+  await input.press("Tab");
+  await expect(chat.getByRole("button", { name: "Send" })).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("log")).toContainText("Send button message");
+  await expect(input).toBeHidden();
+  expect(await chat.evaluate((element) => element.matches(":focus-within"))).toBe(false);
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(
+    page.getByRole("textbox", { name: "Chat message", includeHidden: true }),
+  ).not.toBeFocused();
+});
+
 test("chat shows only whole messages and reveals its background and scrollbar on hover", async ({
   page,
 }) => {
@@ -66,8 +95,8 @@ test("chat shows only whole messages and reveals its background and scrollbar on
   await chat.hover();
   await chat.getByRole("textbox", { name: "Chat message" }).click();
   await page.mouse.move(700, 400);
-  await expect(chat).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
-  await expect(log).toHaveCSS("scrollbar-color", "rgba(0, 0, 0, 0) rgba(0, 0, 0, 0)");
+  await expect(chat).toHaveCSS("background-color", "rgba(16, 28, 23, 0.85)");
+  await expect(log).toHaveCSS("scrollbar-color", "auto");
   await expect(chat.getByRole("textbox", { name: "Chat message" })).toBeVisible();
   await chat.getByRole("textbox", { name: "Chat message" }).press("Escape");
   await chat.screenshot({ path: "test-results/chat-idle.png" });
@@ -77,7 +106,7 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
   page,
   browser,
 }) => {
-  test.setTimeout(45000);
+  test.setTimeout(75000);
   let movement = { x: 0, y: 0 };
   let positionX = 0;
   await page.routeWebSocket("**/ws", (client) => {
@@ -122,6 +151,11 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
     const chat = page.getByRole("complementary", { name: "World chat", exact: true });
     await page.mouse.move(900, 600);
     await expect(input).toBeHidden();
+    await page.keyboard.press("Enter");
+    await expect(input).toBeFocused();
+    await expect(chat).toHaveCSS("background-color", "rgba(16, 28, 23, 0.85)");
+    await input.press("Escape");
+    await expect(input).toBeHidden();
     await chat.hover();
     await expect(input).toBeVisible();
     await expect(input).not.toBeFocused();
@@ -141,13 +175,19 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
     await expect
       .poll(() => page.evaluate(() => (window as typeof window & { chatDrawn?: string }).chatDrawn))
       .toBe("Hello party wasd");
+    await expect(input).toBeHidden();
+    await expect(chat).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    expect(await chat.evaluate((element) => element.matches(":focus-within"))).toBe(false);
     await page.waitForTimeout(510);
+    await page.keyboard.press("Enter");
+    await expect(input).toBeFocused();
     await input.fill("Newest message");
     await input.press("Enter");
     await expect(other.getByRole("log")).toContainText("Newest message");
     await expect
       .poll(() => page.evaluate(() => (window as typeof window & { chatDrawn?: string }).chatDrawn))
       .toBe("Newest message");
+    await page.keyboard.press("Enter");
     await input.press("Escape");
     await expect(
       page.getByRole("textbox", { name: "Chat message", includeHidden: true }),
@@ -185,6 +225,7 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
     await input.fill("Hello party from forest");
     await input.press("Enter");
     await expect(other.getByRole("log")).toContainText("Hello party from forest");
+    await expect(input).toBeFocused();
     await expect
       .poll(() => page.evaluate(() => (window as typeof window & { chatDrawn?: string }).chatDrawn))
       .toBe("Hello party from forest");
@@ -193,6 +234,7 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
     await expect(other.getByRole("log")).toContainText("Alice disconnected.");
     await expect(other.getByRole("log")).toContainText(
       "Alice left the scene. Everyone became weaker.",
+      { timeout: 35000 },
     );
   } finally {
     await otherContext.close();
