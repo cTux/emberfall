@@ -500,6 +500,34 @@ test("ranger arrows pierce every target once, wrap, and expire at 1000 units", (
   assert.equal(s.playerShots!.length, 0);
 });
 
+test("mage fireballs target and travel up to 250 units, including wrapped edges", () => {
+  const s = scene(),
+    p = { ...hero(), classId: "mage" as const };
+  s.enemies = [enemy(1, p.x + 250), enemy(2, p.x + 250.01), enemy(3, p.x + 249)];
+  fireClassAttack(s, p);
+  assert.deepEqual(
+    s.playerShots!.map((shot) => shot.targetId),
+    [3, 1],
+  );
+  assert(s.playerShots!.every((shot) => shot.remaining === 250));
+  s.enemies.forEach((e) => {
+    e.x = p.x + 500;
+  });
+  tickPlayerShots(s, [p], 1000, 1);
+  assert.equal(s.playerShots!.length, 0);
+  assert(s.enemies.every((e) => e.hitpoints === 100));
+  p.x = 5;
+  s.enemies = [enemy(4, FOREST.width - 245), enemy(5, FOREST.width - 245.01)];
+  fireClassAttack(s, p);
+  assert.deepEqual(
+    s.playerShots!.map((shot) => shot.targetId),
+    [4],
+  );
+  s.playerShots = [];
+  fireClassAttack(s, { ...p, classId: "ranger" });
+  assert.equal(s.playerShots[0].remaining, 1000);
+});
+
 test("mage fires at two different targets; explosions deal two damage inside 100 units", (t) => {
   t.mock.method(Math, "random", () => 0.5);
   const s = scene(),

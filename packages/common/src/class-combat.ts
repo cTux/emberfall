@@ -91,13 +91,11 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
 }
 
 export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
+  const range = player.classId === "mage" || player.classId === "druid" ? 250 : 1000;
   const rooted = (enemy: Enemy) =>
     enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now) ? 1 : 0;
   const targets = scene.enemies
-    .filter(
-      (e) =>
-        e.hitpoints > 0 && forestDistance(e, player) <= (player.classId === "druid" ? 250 : 1000),
-    )
+    .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= range)
     .sort(
       (a, b) =>
         (player.classId === "druid" ? rooted(a) - rooted(b) : 0) ||
@@ -138,7 +136,7 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
         wrappedDelta(target.y, player.y, FOREST.height),
         wrappedDelta(target.x, player.x, FOREST.width),
       ),
-      remaining: 1000,
+      remaining: range,
       hitIds: [],
       targetId: target.id,
       targetX: target.x,

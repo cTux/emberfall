@@ -40,14 +40,14 @@ const chapters = [
         <p>
           The forest wraps at every edge. Attacks are automatic. Warrior slashes for 5 damage;
           ranger arrows deal 5 damage and pierce all targets for 1000 units; mage fires at up to two
-          different enemies, each fireball exploding within 100 units for 2 damage. Each hit has a
-          10% chance to cause bleeding, poison, or burning respectively. Each stack deals 1 damage
-          per second for 5 seconds. Stacks have no limit and new stacks refresh the shared timer.
-          Icons above enemy health bars show active ailments and stacks. Skeletons have 10 HP. Each
-          spawn has a 10% chance to be a big, slow enemy with triple HP, and a 10% chance to be
-          ranged with 70% HP. Every tenth spawn is elite with five times normal HP; big and ranged
-          modifiers also apply to elites. Red areas warn of spawns and enemy attacks. Dodge filled
-          circles and red projectiles.
+          different enemies within 250 units, each fireball traveling up to 250 units and exploding
+          within 100 units for 2 damage. Each hit has a 10% chance to cause bleeding, poison, or
+          burning respectively. Each stack deals 1 damage per second for 5 seconds. Stacks have no
+          limit and new stacks refresh the shared timer. Icons above enemy health bars show active
+          ailments and stacks. Skeletons have 10 HP. Each spawn has a 10% chance to be a big, slow
+          enemy with triple HP, and a 10% chance to be ranged with 70% HP. Every tenth spawn is
+          elite with five times normal HP; big and ranged modifiers also apply to elites. Red areas
+          warn of spawns and enemy attacks. Dodge filled circles and red projectiles.
         </p>{" "}
         <p>
           <img className="combat-icon" src={statusSrc("bleed")} alt="Bleeding" /> Bleeding ·{" "}

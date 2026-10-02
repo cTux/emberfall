@@ -21,7 +21,8 @@ const hero = (): Player => ({
   y: 355,
 });
 
-test("training has one and six stationary, harmless targets and regenerates every second", () => {
+test("training has one and six stationary, harmless targets and regenerates every second", (t) => {
+  t.mock.method(Math, "random", () => 0.5);
   const p = hero();
   let s = tickTraining(undefined, [], 10000, 0);
   const positions = s.enemies.map(({ x, y }) => ({ x, y }));

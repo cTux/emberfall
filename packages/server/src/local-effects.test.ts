@@ -112,8 +112,8 @@ test("mage volleys reconcile by slot even if the server selected different targe
   const latest = world(),
     effects = new LocalEffects();
   latest.players[0].classId = "mage";
-  latest.scene!.enemies.push({ id: 2, x: 2700, y: 1280, hitpoints: 10, angle: 0 });
-  const player = { ...latest.players[0], x: 2750 };
+  latest.scene!.enemies.push({ id: 2, x: 2640, y: 1280, hitpoints: 10, angle: 0 });
+  const player = { ...latest.players[0], x: 2670 };
   let view = copy(latest);
   effects.render(view, latest, player, true, 10000, 0);
   assert.equal(view.scene!.playerShots!.length, 2);
