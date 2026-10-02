@@ -314,7 +314,11 @@ function App() {
           >
             <ul>
               {world.players.map((p) => (
-                <li className="party-member" key={p.id}>
+                <li
+                  className={`party-member${p.scene !== me?.scene ? " other-dimension" : ""}`}
+                  title={p.scene !== me?.scene ? "In another dimension" : undefined}
+                  key={p.id}
+                >
                   <span
                     className="portrait"
                     style={{ backgroundImage: `url(${classSprite(p.classId)})` }}
@@ -859,10 +863,19 @@ function App() {
                     </button>
                   </aside>
                 </>
+              ) : scene?.phase === "active" && !me?.scene && !scene.portals.length ? (
+                <>
+                  <p>Your party has a scene in progress. Join before the boss is defeated.</p>
+                  <button className="primary" onClick={() => send({ type: "joinScene" })}>
+                    Join scene
+                  </button>
+                </>
               ) : scene ? (
                 <p>
                   {["active", "ended"].includes(scene.phase)
-                    ? "Your party has a scene in progress. Everyone must return before creating another."
+                    ? scene.phase === "ended"
+                      ? "Scene complete. Everyone must return before creating a new one."
+                      : "You are already in this scene."
                     : "Scene created. Vote here when you are ready."}
                 </p>
               ) : (
