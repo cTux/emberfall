@@ -86,7 +86,7 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
         hitEnemy(
           scene,
           enemy,
-          debuff.kind === "roots" ? 2 : debuff.stacks,
+          debuff.kind === "roots" ? 3 : debuff.stacks,
           players.find((p) => p.id === debuff.ownerId),
           now,
         );

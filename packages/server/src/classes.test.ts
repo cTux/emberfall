@@ -111,9 +111,9 @@ test("druid roots only the nearest enemy and refreshes without delaying ticks", 
   assert.equal(s.enemies[1].debuffs![0].nextTick, 11000);
   assert.equal(s.enemies[2].debuffs, undefined);
   tickDebuffs(s, [p], 13000);
-  assert.equal(s.enemies[1].hitpoints, 94);
+  assert.equal(s.enemies[1].hitpoints, 91);
   tickDebuffs(s, [p], 17100);
-  assert.equal(s.enemies[1].hitpoints, 90);
+  assert.equal(s.enemies[1].hitpoints, 85);
   assert.equal(s.enemies[1].debuffs?.length, 0);
   assert.equal(s.playerShots, undefined);
 });

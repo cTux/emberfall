@@ -109,7 +109,7 @@ const chapters = [
         </p>
         <p>
           Druid roots the nearest enemy within 250 units when auto-target is enabled. Roots last
-          five seconds, stop ordinary enemies moving, and deal 2 damage each second. Bosses show
+          five seconds, stop ordinary enemies moving, and deal 3 damage each second. Bosses show
           roots and take damage but keep moving. Boar has 1.5 times your maximum HP, strikes with
           tusks for 2 damage, and revives five seconds after death. It chases the nearest enemy
           within 200 units of you, returns when more than 200 units away from you, and resumes
