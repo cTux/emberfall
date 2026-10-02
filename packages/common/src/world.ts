@@ -13,43 +13,52 @@ export const inTrainingZone = (player: { x: number; y: number }) =>
       ) <= 1,
   );
 export const BUILDINGS = [
-  { id: "inn", name: "Inn", x: 235, y: 225, sourceX: 0, sourceWidth: 64 },
-  { id: "hall", name: "Hall", x: 485, y: 170, sourceX: 192, sourceWidth: 64 },
-  { id: "workshop", name: "Workshop", x: 735, y: 235, sourceX: 304, sourceWidth: 64 },
-  { id: "storehouse", name: "Storehouse", x: 240, y: 510, sourceX: 128, sourceWidth: 64 },
-  { id: "lodge", name: "Lodge", x: 730, y: 510, sourceX: 256, sourceWidth: 48 },
+  { id: "inn", name: "Inn", x: 235, y: 225, doorX: 219, sourceX: 0, sourceWidth: 64 },
+  { id: "hall", name: "Hall", x: 485, y: 170, doorX: 469, sourceX: 192, sourceWidth: 64 },
+  { id: "workshop", name: "Workshop", x: 735, y: 235, doorX: 751, sourceX: 304, sourceWidth: 64 },
+  {
+    id: "storehouse",
+    name: "Storehouse",
+    x: 240,
+    y: 510,
+    doorX: 224,
+    sourceX: 128,
+    sourceWidth: 64,
+  },
+  { id: "lodge", name: "Lodge", x: 730, y: 510, doorX: 730, sourceX: 256, sourceWidth: 48 },
 ] as const;
 export const PATHS = [
   [
+    { x: WARDROBE.x, y: WARDROBE.y },
     { x: 350, y: 405 },
     { x: 480, y: 405 },
     { x: 480, y: 355 },
   ],
   [
-    { x: 235, y: 240 },
-    { x: 235, y: 280 },
+    { x: BUILDINGS[0].doorX, y: BUILDINGS[0].y },
+    { x: BUILDINGS[0].doorX, y: 280 },
     { x: 480, y: 280 },
     { x: 480, y: 355 },
   ],
   [
-    { x: 485, y: 185 },
-    { x: 485, y: 280 },
+    { x: BUILDINGS[1].doorX, y: BUILDINGS[1].y },
+    { x: BUILDINGS[1].doorX, y: 280 },
   ],
   [
-    { x: 735, y: 250 },
-    { x: 735, y: 280 },
+    { x: BUILDINGS[2].doorX, y: BUILDINGS[2].y },
+    { x: BUILDINGS[2].doorX, y: 280 },
     { x: 480, y: 280 },
   ],
   [
     { x: 480, y: 355 },
     { x: 480, y: 550 },
-    { x: 240, y: 550 },
-    { x: 240, y: 525 },
+    { x: BUILDINGS[3].doorX, y: 550 },
+    { x: BUILDINGS[3].doorX, y: BUILDINGS[3].y },
   ],
   [
     { x: 480, y: 550 },
-    { x: 730, y: 550 },
-    { x: 730, y: 525 },
+    { x: BUILDINGS[4].doorX, y: 550 },
+    { x: BUILDINGS[4].doorX, y: BUILDINGS[4].y },
   ],
 ] as const;
 export function onPath(x: number, y: number, margin = 28) {

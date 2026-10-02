@@ -1,6 +1,13 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { BUILDINGS, PATHS, TORCHES, moveActor } from "@emberfall/common";
+import {
+  BUILDINGS,
+  PATHS,
+  TORCHES,
+  WARDROBE,
+  moveActor,
+  nearbyInteraction,
+} from "@emberfall/common";
 import { shadowProjection, SUN } from "../../client/src/lighting.ts";
 
 test("distant sun is directional; nearby lights cast opposite shadows with bounded reach", () => {
@@ -22,9 +29,15 @@ test("distant sun is directional; nearby lights cast opposite shadows with bound
 
 test("village paths and door approaches are walkable while buildings and torch posts are solid", () => {
   for (const building of BUILDINGS) {
-    const result = moveActor({ x: building.x, y: building.y + 30 }, 0, -80, 12);
+    const result = moveActor({ x: building.doorX, y: building.y + 30 }, 0, -80, 12);
     assert(result.y >= building.y + 12);
     assert(result.y < building.y + 30);
+    assert.deepEqual(nearbyInteraction({ x: building.doorX, y: building.y + 30, hitpoints: 100 }), {
+      id: building.id,
+      name: building.name,
+      x: building.doorX,
+      y: building.y,
+    });
   }
   for (const torch of TORCHES) {
     const result = moveActor({ x: torch.x - 30, y: torch.y }, 60, 0, 12);
@@ -36,6 +49,17 @@ test("village paths and door approaches are walkable while buildings and torch p
         b = path[i + 1];
       for (let step = 0; step <= 20; step++) {
         const point = { x: a.x + ((b.x - a.x) * step) / 20, y: a.y + ((b.y - a.y) * step) / 20 };
+        // Dirt extends under each threshold, where the building itself remains solid.
+        if (
+          BUILDINGS.some(
+            (building) =>
+              Math.abs(point.x - building.doorX) < 24 &&
+              point.y <= building.y + 12 &&
+              point.y >= building.y - 24,
+          ) ||
+          Math.hypot(point.x - WARDROBE.x, point.y - WARDROBE.y) < 30
+        )
+          continue;
         const result = moveActor(point, 0, 1, 12);
         assert.equal(result.y, point.y + 1, `Blocked path at ${point.x},${point.y}`);
       }
