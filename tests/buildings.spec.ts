@@ -9,6 +9,14 @@ const obstacles = [
 ];
 
 test("building nameplate replaces the tooltip in interaction range", async ({ page }) => {
+  let releaseLampPost = () => {};
+  const lampPostReady = new Promise<void>((resolve) => {
+    releaseLampPost = resolve;
+  });
+  await page.route("**/assets/lanterns/lamp-post.png", async (route) => {
+    await lampPostReady;
+    await route.continue();
+  });
   const world: WorldState = {
     id: "fixture",
     name: "Village",
@@ -48,11 +56,22 @@ test("building nameplate replaces the tooltip in interaction range", async ({ pa
     const draw = prototype.drawImage;
     prototype.drawImage = new Proxy(draw, {
       apply(target, ctx: CanvasRenderingContext2D, args) {
+        if (args[0] instanceof HTMLImageElement && args[0].src.includes("/assets/lanterns/"))
+          document.body.dataset[args[0].src.endsWith("lamp-post.png") ? "lampPost" : "lantern"] =
+            "drawn";
         if (ctx.canvas.hasAttribute("aria-label") && args.length === 5) {
           const index = objects.findIndex(
             (o) => args[1] === o.x - o.width / 2 && args[2] === o.y - o.height,
           );
-          if (index >= 0) document.body.dataset[`obstacle${index}`] = String(ctx.globalAlpha);
+          if (index >= 0) {
+            document.body.dataset[`obstacle${index}`] = String(ctx.globalAlpha);
+            if (
+              args[0] instanceof HTMLCanvasElement &&
+              args[0].width === 32 &&
+              args[0].height === 96
+            )
+              document.body.dataset.lampSprite = "32x96";
+          }
         }
         return Reflect.apply(target, ctx, args);
       },
@@ -75,10 +94,16 @@ test("building nameplate replaces the tooltip in interaction range", async ({ pa
       text.call(this, value, x, y);
     };
   }, obstacles);
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await page.getByRole("tab", { name: "Create a world" }).click();
   await page.getByRole("button", { name: "Light the ember" }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator("body")).not.toHaveAttribute("data-lamp-post");
+  releaseLampPost();
+  await expect(page.locator("body")).toHaveAttribute("data-lamp-post", "drawn");
+  await expect(page.locator("body")).toHaveAttribute("data-lantern", "drawn");
+  await expect(page.locator("body")).toHaveAttribute("data-lamp-sprite", "32x96");
+  await page.screenshot({ path: "test-results/karsiori-lamp-posts.png" });
   await expect(page.locator("body")).toHaveAttribute("data-inn-label", "(E) Inn");
   await expect(page.locator("body")).toHaveAttribute("data-inn-background", "#786747");
   await expect(page.locator(".source-tooltip")).toBeHidden();

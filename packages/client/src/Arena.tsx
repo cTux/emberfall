@@ -105,6 +105,10 @@ export function Arena({
     houses.src = "/assets/houses.png";
     const wardrobe = new Image();
     wardrobe.src = "/assets/wardrobe.png";
+    const lampPost = new Image();
+    lampPost.src = "/assets/lanterns/lamp-post.png";
+    const lantern = new Image();
+    lantern.src = "/assets/lanterns/lantern.png";
     const skeleton = new Image();
     skeleton.src = "/assets/skeleton.png";
     const drawForest = forestRenderer(nature, knight, skeleton);
@@ -284,7 +288,7 @@ export function Arena({
         ctx.fillRect(random() * ARENA.width, random() * ARENA.height, 1 + random() * 3, 1);
       }
       drawVillagePaths(ctx, floor);
-      scenery = villageSprites(nature, houses, wardrobe, quality.current);
+      scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern, quality.current);
       for (const object of scenery) {
         if (quality.current.shadows) castShadow(ctx, object);
         if (quality.current.ambientOcclusion && !object.id.startsWith("grass")) {
@@ -309,6 +313,8 @@ export function Arena({
     houses.onload = paintBackground;
     floor.onload = paintBackground;
     wardrobe.onload = paintBackground;
+    lampPost.onload = paintBackground;
+    lantern.onload = paintBackground;
     let frame = 0;
     let previous = performance.now();
     let resolutionScale = 1,
@@ -837,7 +843,13 @@ export function Arena({
     }
     frame = requestAnimationFrame(draw);
     return () => {
-      nature.onload = houses.onload = floor.onload = wardrobe.onload = null;
+      nature.onload =
+        houses.onload =
+        floor.onload =
+        wardrobe.onload =
+        lampPost.onload =
+        lantern.onload =
+          null;
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener("resize", resize);

@@ -11,6 +11,8 @@ export function villageSprites(
   nature: HTMLImageElement,
   houses: HTMLImageElement,
   wardrobe: HTMLImageElement,
+  lampPost: HTMLImageElement,
+  lantern: HTMLImageElement,
   graphics: GraphicsSettings,
 ): Scenery[] {
   const objects: Scenery[] = [];
@@ -71,24 +73,16 @@ export function villageSprites(
     );
   if (wardrobe.naturalWidth)
     add("building:wardrobe", WARDROBE.x, WARDROBE.y, 48, 60, wardrobe, 0, 0, 64, 80, "Wardrobe");
-  const torch = document.createElement("canvas");
-  torch.width = 16;
-  torch.height = 48;
-  const ctx = torch.getContext("2d")!;
-  ctx.fillStyle = "#343735";
-  ctx.fillRect(2, 43, 12, 5);
-  ctx.fillStyle = "#7c7157";
-  ctx.fillRect(5, 12, 6, 32);
-  ctx.fillStyle = "#b29b69";
-  ctx.fillRect(6, 14, 2, 28);
-  ctx.fillStyle = "#302e26";
-  ctx.fillRect(2, 7, 12, 8);
-  ctx.fillRect(1, 6, 14, 2);
-  ctx.fillStyle = "#b77439";
-  ctx.fillRect(4, 2, 8, 7);
-  ctx.fillStyle = "#ffdb86";
-  ctx.fillRect(6, 0, 4, 8);
-  TORCHES.forEach((t, i) => add(`torch:${i}`, t.x, t.y, 20, 60, torch, 0, 0, 16, 48));
+  if (lampPost.naturalWidth && lantern.naturalWidth) {
+    const torch = document.createElement("canvas");
+    torch.width = 32;
+    torch.height = 96;
+    const ctx = torch.getContext("2d")!;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(lampPost, 10, 24, 12, 72);
+    ctx.drawImage(lantern, 4, 0, 24, 34);
+    TORCHES.forEach((t, i) => add(`torch:${i}`, t.x, t.y, 20, 60, torch, 0, 0, 32, 96));
+  }
   return objects.sort((a, b) => a.y - b.y);
 }
 export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
