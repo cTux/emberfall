@@ -357,7 +357,6 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     }
     scene.pausedAt = undefined;
   }
-  // Pickups are shared visual objects only: collecting them grants no reward yet.
   const collectors = players.filter((p) => p.scene === "forest" && p.hitpoints > 0);
   scene.drops = (scene.drops ?? []).filter((drop) => {
     if (now - drop.at >= 60000) return false;
@@ -372,8 +371,11 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
       }
     }
     if (!target) return true;
-    if (distance <= 22) return false;
     const travel = Math.min(distance, 280 * Math.max(0, dt));
+    if (distance <= 22 || distance - travel <= 22) {
+      if (drop.kind === "experience") for (const player of collectors) player.experience++;
+      return false;
+    }
     drop.x = wrap(
       drop.x + (wrappedDelta(target.x, drop.x, FOREST.width) * travel) / distance,
       FOREST.width,
@@ -382,7 +384,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
       drop.y + (wrappedDelta(target.y, drop.y, FOREST.height) * travel) / distance,
       FOREST.height,
     );
-    return distance - travel > 22;
+    return true;
   });
   for (const player of players.filter((p) => p.scene === "forest"))
     tickCompanion(player, scene, now, dt);
