@@ -1,0 +1,12 @@
+FREE Pixel Art Lantern Pack by Karsiori
+Source: https://karsiori.itch.io/free-pixel-art-lantern-pack
+License: Creative Commons Zero v1.0 Universal (CC0)
+License terms: https://creativecommons.org/publicdomain/zero/1.0/
+The author permits commercial and non-commercial use; attribution is optional.
+
+Unmodified copies from Pixel Art Lantern Pack.zip:
+lamp-post.png: Bonus Content - Lamp Posts and Chains/Lamp Posts - Bronze/Lamp Post 1 TALL.png
+lantern.png: Lanterns - Smaller Versions/Lantern 1/Bronze/Orange Light/Lantern 1 Small - Bronze and Orange_000.png
+
+The game scales and combines these images into a static village lamp.
+The original pack readme is included as KARSIORI-README.txt.

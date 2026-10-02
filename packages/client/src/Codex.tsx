@@ -138,6 +138,12 @@ const chapters = [
         </a>
         <p>Music by TimberwolfGames. Audio credits and licenses are included with the game.</p>
         <p>
+          Village lamp posts:{" "}
+          <a href="https://karsiori.itch.io/free-pixel-art-lantern-pack">Karsiori</a>,{" "}
+          <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>. Bronze post and
+          orange lantern from the FREE Pixel Art Lantern Pack.
+        </p>
+        <p>
           Wardrobe:{" "}
           <a href="https://opengameart.org/content/lpc-wooden-furniture">LPC Wooden Furniture</a> by
           bluecarrot16, Baŝto, Lanea Zimmerman (Sharm), William Thompson, Tuomo Untinen (Reemax),
