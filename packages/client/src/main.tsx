@@ -682,8 +682,9 @@ function App() {
                       details={
                         <Typography variant="caption">
                           <img className="combat-icon" src={statusSrc(classAbility[id])} alt="" />{" "}
-                          Level {stats?.level ?? 1} · XP {stats?.experience ?? 0} · HP{" "}
-                          {stats?.maxHitpoints ?? 100} · MP {stats?.maxManapoints ?? 50}
+                          Level {stats?.level ?? 1} · XP {Math.round(stats?.experience ?? 0)} · HP{" "}
+                          {Math.round(stats?.maxHitpoints ?? 100)} · MP{" "}
+                          {Math.round(stats?.maxManapoints ?? 50)}
                         </Typography>
                       }
                     />

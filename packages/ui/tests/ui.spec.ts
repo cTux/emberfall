@@ -80,6 +80,26 @@ test("meters expose clamped actual units", async ({ page }) => {
     "aria-valuenow",
     "0",
   );
+  const fractional = page.getByRole("progressbar", { name: "Fractional" });
+  await expect(fractional).toHaveAttribute("aria-valuenow", "75.6");
+  await expect(fractional).toHaveAttribute("aria-valuemax", "100.4");
+  await expect(fractional).toHaveAttribute("aria-valuetext", "76 / 100");
+  await expect(page.getByText("76 / 100", { exact: true })).toBeVisible();
+});
+
+test("performance and volume labels round without changing their underlying values", async ({
+  page,
+}) => {
+  await page.goto(story("components-game-patterns--performance"));
+  await expect(page.getByLabel("Frame rate", { exact: true })).toHaveText("60 FPS");
+  await expect(page.getByLabel("Server latency", { exact: true })).toHaveText("33 ms");
+  await page.goto(story("components-game-patterns--settings"));
+  const volume = page.getByRole("slider", { name: "Effects volume" });
+  await volume.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(volume).toHaveAttribute("aria-valuenow", "0.65");
+  await expect(volume).toHaveAttribute("aria-valuetext", "65%");
+  await expect(page.getByText("65%", { exact: true })).toBeVisible();
 });
 
 test("all stories render; desktop and narrow screens fit", async ({ page, request }, testInfo) => {

@@ -34,6 +34,8 @@ export function VolumeControl({ label, value, disabled, onChange }: VolumeContro
         step={0.05}
         disabled={disabled}
         valueLabelDisplay="auto"
+        valueLabelFormat={(volume) => `${Math.round(volume * 100)}%`}
+        getAriaValueText={(volume) => `${Math.round(volume * 100)}%`}
         onChange={(_, next) => onChange(next as number)}
       />
     </Stack>

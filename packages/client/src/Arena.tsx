@@ -791,7 +791,7 @@ export function Arena({
             ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
             ctx.textAlign = "center";
             ctx.fillStyle = "#fff0b1";
-            ctx.fillText(String(hit.amount), hit.x, hit.y - 45 - age / 30);
+            ctx.fillText(String(Math.round(hit.amount)), hit.x, hit.y - 45 - age / 30);
             ctx.restore();
           }
       }
@@ -913,7 +913,7 @@ export function Arena({
           title="Your damage over the last 5 seconds, including ailments and your companion"
         >
           <strong>
-            {(world.players.find((player) => player.id === playerId)?.dps ?? 0).toFixed(1)} DPS
+            {Math.round(world.players.find((player) => player.id === playerId)?.dps ?? 0)} DPS
           </strong>
           <small>Last 5 seconds</small>
         </aside>
