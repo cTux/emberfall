@@ -1,7 +1,7 @@
 import { characterImages } from "./characters";
 import { weaponImages } from "./combat-assets";
-import { drawCompanion } from "./companion";
-import { crittersAt, drawCritter } from "./critters";
+import { companionCaster, drawCompanion } from "./companion";
+import { critterCaster, crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
 import {
@@ -361,6 +361,28 @@ export function forestRenderer(
         return { ...actor, ...point, facing: pos.facing, row, image, size, moving, dx, dy };
       })
       .filter((a) => Math.abs(a.x - cx) < width / 2 + 80 && Math.abs(a.y - cy) < height / 2 + 80);
+    const critters = crittersAt("forest", world ? serverTime : now, {
+      x: cameraX,
+      y: cameraY,
+      width,
+      height,
+    });
+    for (const critter of critters) {
+      const caster = critterCaster(critter);
+      if (caster) casters.push(caster);
+    }
+    for (const player of players) {
+      if (!player.bear) continue;
+      const point = near(player.bear.x, player.bear.y);
+      const caster = companionCaster(
+        player.bear,
+        point.x,
+        point.y,
+        serverTime,
+        `bear:${player.id}`,
+      );
+      if (caster) casters.push(caster);
+    }
     if (quality.shadows) for (const caster of casters) castShadow(ctx, caster);
     if (!quality.shadows) {
       ctx.fillStyle = "#07120955";
@@ -427,12 +449,7 @@ export function forestRenderer(
             ]
           : [],
       ),
-      ...crittersAt("forest", world ? serverTime : now, {
-        x: cameraX,
-        y: cameraY,
-        width,
-        height,
-      }).map((critter) => ({
+      ...critters.map((critter) => ({
         y: critter.y,
         tree: null,
         actor: null,
@@ -459,12 +476,12 @@ export function forestRenderer(
         continue;
       }
       if (layer.critter) {
-        drawCritter(ctx, layer.critter);
+        drawCritter(ctx, layer.critter, quality.shadows);
         continue;
       }
       if (layer.bear) {
         const point = near(layer.bear.x, layer.bear.y);
-        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime);
+        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime, quality.shadows);
         continue;
       }
       if (layer.tree) {

@@ -1,4 +1,5 @@
 import { FOREST, forestTrees, wrap } from "@emberfall/common";
+import { spriteMask } from "./lighting.ts";
 
 const village = [
   { x: 280, y: 278, kind: "cat" },
@@ -58,23 +59,43 @@ export function crittersAt(
 }
 
 const images = new Map<string, HTMLImageElement>();
+function critterImage(kind: string) {
+  let image = images.get(kind);
+  if (!image) {
+    image = new Image();
+    image.src = `/assets/critter-${kind}.png`;
+    images.set(kind, image);
+  }
+  return image;
+}
+export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
+  const mask = spriteMask(critterImage(critter.kind), critter.frame, 0, critter.left);
+  return mask
+    ? {
+        id: `critter:${critter.kind}:${critter.x}:${critter.y}`,
+        x: critter.x,
+        y: critter.y,
+        width: 24,
+        height: 24,
+        mask,
+      }
+    : null;
+}
 export function drawCritter(
   ctx: CanvasRenderingContext2D,
   critter: ReturnType<typeof crittersAt>[number],
+  shadows = false,
 ) {
-  let image = images.get(critter.kind);
-  if (!image) {
-    image = new Image();
-    image.src = `/assets/critter-${critter.kind}.png`;
-    images.set(critter.kind, image);
-  }
+  const image = critterImage(critter.kind);
   if (!image.naturalWidth) return;
   ctx.save();
   ctx.translate(critter.x, critter.y);
-  ctx.fillStyle = "#06181050";
-  ctx.beginPath();
-  ctx.ellipse(0, -2, 8, 3, 0, 0, Math.PI * 2);
-  ctx.fill();
+  if (!shadows) {
+    ctx.fillStyle = "#06181050";
+    ctx.beginPath();
+    ctx.ellipse(0, -2, 8, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
   if (critter.left) ctx.scale(-1, 1);
   ctx.drawImage(image, critter.frame * 16, 0, 16, 16, -12, -24, 24, 24);
   ctx.restore();
