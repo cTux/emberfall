@@ -147,3 +147,120 @@ test("portal shadows follow Low, Balanced and High presets and the shadow toggle
   expect(samples.every((sample) => sample.restored)).toBe(true);
   await page.locator("canvas").screenshot({ path: "test-results/portal-quality-shadows.png" });
 });
+
+test("village and return portals sort players by their feet, including forest wrapping", async ({
+  page,
+}) => {
+  const { LOBBY_PORTAL, FOREST } = await import("../packages/common/src/index");
+  const world = {
+    id: "depth-fixture",
+    name: "Village",
+    hostId: "p",
+    serverNow: 10000,
+    players: [
+      {
+        id: "p",
+        name: "Depth visitor",
+        x: LOBBY_PORTAL.x,
+        y: LOBBY_PORTAL.y - 30,
+        color: 0,
+        hitpoints: 100,
+        maxHitpoints: 100,
+        manapoints: 50,
+        maxManapoints: 50,
+        level: 1,
+        experience: 0,
+        playtimeSeconds: 0,
+        attackAt: 0,
+      },
+    ],
+  } satisfies import("../packages/common/src/index").WorldState;
+  let update = () => {};
+  await page.routeWebSocket("**/ws", (socket) => {
+    update = () => socket.send(JSON.stringify({ type: "state", world }));
+    socket.onMessage((raw) => {
+      if (JSON.parse(String(raw)).type === "create")
+        socket.send(
+          JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
+        );
+    });
+  });
+  await page.addInitScript(() => {
+    const lastPlayer = new WeakMap<CanvasRenderingContext2D, boolean>();
+    const prototype = CanvasRenderingContext2D.prototype;
+    const transform = prototype.setTransform;
+    prototype.setTransform = new Proxy(transform, {
+      apply(target, context, args) {
+        if (context.canvas.getAttribute("aria-label")) lastPlayer.set(context, false);
+        return Reflect.apply(target, context, args);
+      },
+    });
+    prototype.drawImage = new Proxy(prototype.drawImage, {
+      apply(target, context, args) {
+        if (
+          context.canvas.getAttribute("aria-label") &&
+          args[0] instanceof HTMLImageElement &&
+          args[0].src.endsWith("/knight.png")
+        ) {
+          document.body.dataset.portalInFront = String(!lastPlayer.get(context));
+        }
+        return Reflect.apply(target, context, args);
+      },
+    });
+    const text = prototype.fillText;
+    prototype.fillText = function (value, x, y) {
+      if (this.canvas.getAttribute("aria-label")) {
+        if (value.endsWith("portal") || value.endsWith("Return to village"))
+          lastPlayer.set(this, true);
+        if (value === "Depth visitor")
+          document.body.dataset.playerInFront = String(lastPlayer.get(this));
+      }
+      text.call(this, value, x, y);
+    };
+  });
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Create a world" }).click();
+  await page.getByRole("button", { name: "Light the ember" }).click();
+  for (const [scene, portal] of [
+    [undefined, LOBBY_PORTAL],
+    ["forest", { x: 2400, y: 1280 }],
+    ["forest", { x: 2400, y: 5 }],
+  ] as const) {
+    Object.assign(world, {
+      scene: scene
+        ? {
+            id: "depth-forest",
+            type: "Forest",
+            difficulty: "Easy",
+            phase: "ended",
+            ready: [],
+            countdownAt: null,
+            endsAt: null,
+            enemies: [],
+            damage: [],
+            portals: [portal],
+            sequence: 0,
+            nextSpawn: 0,
+          }
+        : undefined,
+    });
+    for (const [offset, inFront] of [
+      [-30, false],
+      [0, true],
+      [-30, false],
+    ] as const) {
+      Object.assign(world.players[0], {
+        scene,
+        x: portal.x,
+        y: (portal.y + offset + FOREST.height) % FOREST.height,
+      });
+      world.serverNow += 50;
+      update();
+      await expect(page.locator("body")).toHaveAttribute("data-player-in-front", String(inFront));
+      await expect(page.locator("body")).toHaveAttribute("data-portal-in-front", String(!inFront));
+      await page.screenshot({
+        path: `test-results/portal-depth-${scene ?? "village"}-${portal.y}-${offset}.png`,
+      });
+    }
+  }
+});
