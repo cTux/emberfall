@@ -136,6 +136,7 @@ export class SnapshotBuffer {
       const point = interpolate(player.bear, next, player.scene === "forest", 8);
       player.bear.x = point.x;
       player.bear.y = point.y;
+      player.bear.moving = Math.hypot(point.dx, point.dy) > 0.001;
     }
     return { ...older, players, scene, serverNow: this.clock };
   }

@@ -183,6 +183,7 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
   bear.x = p.x + 19;
   tickCompanion(p, s, 11500, 0);
   assert(!bear.returning);
+  tickCompanion(p, s, 12400, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
     [94, 94],
@@ -199,30 +200,30 @@ test("bear only targets and chases inside the owner's 200-unit radius, including
   assert.equal(bear.x, p.x);
   assert.equal(bear.attackAt, undefined);
   e.x = p.x + 200;
-  tickCompanion(p, s, 10050, 0.05);
+  tickCompanion(p, s, 11000, 0.05);
   assert(bear.x > p.x);
-  assert.equal(bear.attackAt, 10050);
+  assert.equal(bear.attackAt, 11000);
   bear.x = p.x + 40;
   const chasedX = bear.x;
   e.x = p.x + 201;
-  tickCompanion(p, s, 10100, 0.05);
+  tickCompanion(p, s, 11050, 0.05);
   assert(bear.x < chasedX);
   assert.equal(bear.attackAt, undefined);
   bear.x = p.x + 200;
-  tickCompanion(p, s, 10150, 0);
+  tickCompanion(p, s, 11100, 0);
   assert(!bear.returning);
   bear.x = p.x + 201;
-  tickCompanion(p, s, 10200, 0);
+  tickCompanion(p, s, 11150, 0);
   assert(bear.returning);
   p.x = 5;
   bear.x = 5;
   bear.returning = false;
   e.x = FOREST.width - 196;
-  tickCompanion(p, s, 10250, 0);
+  tickCompanion(p, s, 12000, 0);
   assert.equal(bear.attackAt, undefined);
   e.x = FOREST.width - 195;
-  tickCompanion(p, s, 10300, 0);
-  assert.equal(bear.attackAt, 10300);
+  tickCompanion(p, s, 13000, 0);
+  assert.equal(bear.attackAt, 13000);
 });
 
 test("Bear stops in claw range, backs away from close enemies, and preserves spacing across seams", () => {
@@ -237,16 +238,20 @@ test("Bear stops in claw range, backs away from close enemies, and preserves spa
   const stoppedX = bear.x;
   tickCompanion(p, s, 10050, 0.05);
   assert.equal(bear.x, stoppedX);
+  assert.equal(bear.moving, false);
   e.x = bear.x + 20;
-  tickCompanion(p, s, 10100, 0.3);
+  tickCompanion(p, s, 10999, 0.05);
+  assert.equal(bear.x, stoppedX, "hold the destination until one second has elapsed");
+  tickCompanion(p, s, 11000, 0.3);
   assert.equal(forestDistance(bear, e), 80);
   assert(bear.x < stoppedX);
+  assert.equal(bear.moving, true);
   p.x = 5;
   bear.x = FOREST.width - 20;
   e.x = 25;
-  tickCompanion(p, s, 10700, 0.25);
+  tickCompanion(p, s, 12000, 0.25);
   assert.equal(forestDistance(bear, e), 80);
-  assert.equal(e.hitpoints, 96);
+  assert.equal(e.hitpoints, 94);
 });
 
 test("Bear moves at 1.3 times player speed in forest and village", () => {
@@ -276,23 +281,30 @@ test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", () =>
   const bear = p.bear!,
     e = enemy(1, 2460);
   s.enemies = [e];
-  e.attack = { startedAt: 10000, endsAt: 10500, x: bear.x, y: bear.y, radius: 40, ranged: false };
-  tickCompanion(p, s, 10050, 0.25);
+  e.attack = { startedAt: 11000, endsAt: 11500, x: bear.x, y: bear.y, radius: 40, ranged: false };
+  tickCompanion(p, s, 11000, 0.25);
   assert(forestDistance(bear, e.attack) > e.attack.radius);
   e.attack = undefined;
+  const safeX = bear.x;
+  tickCompanion(p, s, 11999, 0.05);
+  assert(
+    Math.abs(bear.x - safeX) < 1e-6,
+    "do not strafe back to the attack point between decisions",
+  );
+  assert.equal(bear.moving, false);
   bear.x = p.x;
   bear.y = p.y;
-  s.projectiles = [{ id: 2, x: bear.x - 40, y: bear.y, vx: 210, vy: 0, expiresAt: 12000 }];
-  tickCompanion(p, s, 10100, 0.05);
+  s.projectiles = [{ id: 2, x: bear.x - 40, y: bear.y, vx: 210, vy: 0, expiresAt: 14000 }];
+  tickCompanion(p, s, 12000, 0.05);
   assert(bear.y > p.y);
   p.x = 2320;
   p.attackAt = 1e6;
-  for (let i = 1; i <= 8; i++) stepCombat(s, [p], 10100 + i * 50, 0.05);
+  for (let i = 1; i <= 8; i++) stepCombat(s, [p], 12000 + i * 50, 0.05);
   assert.equal(bear.hitpoints, 150);
   assert(s.projectiles.some((shot) => shot.x > 2400));
 });
 
-test("Bear kites melee enemies while continuing to damage them", () => {
+test("Bear repositions on its reaction interval while continuing to damage melee enemies", () => {
   for (const archetype of ["skeleton", "runner", "brute"] as const) {
     const s = scene(),
       p: Player = { ...hero(), classId: "druid", x: 2300, attackAt: 1e6 };
@@ -300,10 +312,49 @@ test("Bear kites melee enemies while continuing to damage them", () => {
     s.enemies = [e];
     tickCompanion(p, s, 10000, 1);
     for (let i = 1; i <= 40; i++) stepCombat(s, [p], 10000 + i * 50, 0.05);
-    assert.equal(p.bear!.hitpoints, 150, archetype);
+    assert(p.bear!.hitpoints > 0, archetype);
     assert(e.hitpoints < 998, archetype);
-    assert(forestDistance(p.bear!, e) > 65, archetype);
+    tickCompanion(p, s, 13000, 0.5);
+    assert(Math.abs(forestDistance(p.bear!, e) - 80) < 1e-6, archetype);
   }
+});
+
+test("Bear teleports only beyond 500 pixels, using wrapped forest distance, without bypassing death", () => {
+  for (const forest of [true, false]) {
+    const p: Player = {
+      ...hero(),
+      classId: "druid",
+      scene: forest ? "forest" : undefined,
+      x: forest ? 2400 : 100,
+      y: forest ? 1280 : 360,
+    };
+    tickCompanion(p, undefined, 10000, 0);
+    const bear = p.bear!;
+    bear.x = p.x + 500;
+    tickCompanion(p, undefined, 10050, 0);
+    assert.equal(bear.x, p.x + 500);
+    bear.x++;
+    bear.attackAt = 10000;
+    tickCompanion(p, undefined, 10100, 0.05);
+    assert.equal(bear.x, p.x);
+    assert.equal(bear.y, p.y);
+    assert.equal(bear.moving, false);
+    assert.equal(bear.returning, false);
+    assert.equal(bear.attackAt, undefined);
+    bear.x += 501;
+    bear.hitpoints = 0;
+    tickCompanion(p, undefined, 10150, 0);
+    assert.equal(bear.x, p.x + 501);
+    assert.equal(bear.resurrectAt, 15150);
+  }
+  const p: Player = { ...hero(), classId: "druid", x: 5 };
+  tickCompanion(p, undefined, 10000, 0);
+  p.bear!.x = FOREST.width - 5;
+  tickCompanion(p, undefined, 10050, 0);
+  assert.equal(p.bear!.x, FOREST.width - 5, "nearby seam neighbors must not teleport");
+  p.bear!.x = FOREST.width - 496;
+  tickCompanion(p, undefined, 10100, 0);
+  assert.equal(p.bear!.x, p.x);
 });
 
 test("enemies damage Bear; death resurrects exactly five seconds later at its owner", () => {

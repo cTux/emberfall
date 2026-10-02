@@ -26,7 +26,7 @@ export function drawCompanion(
     ctx.drawImage(
       image,
       facing * 16,
-      (dead ? 0 : Math.floor(now / 120) % 4) * 16,
+      (dead || !bear.moving ? 0 : Math.floor(now / 120) % 4) * 16,
       16,
       16,
       x - 28,

@@ -44,6 +44,40 @@ test("confirmed movement interpolates, never extrapolates, and holds through pac
   buffer.push(snapshot(10050, 100), 3100);
   assert.equal(buffer.render(3100)!.players[0].x, 456, "stale packets must not rewind playback");
 });
+test("Bear animation follows confirmed movement, stops during packet gaps, and snaps teleports", () => {
+  const buffer = new SnapshotBuffer("p");
+  const base = snapshot(10000, 420);
+  base.players[0].bear = {
+    id: "bear:p",
+    name: "Bear",
+    x: 420,
+    y: 340,
+    hitpoints: 150,
+    maxHitpoints: 150,
+    returning: false,
+    moving: true,
+  };
+  buffer.push(base, 0);
+  assert.equal(buffer.render(0)!.players[0].bear!.moving, false);
+  for (let i = 1; i <= 4; i++) {
+    const next = structuredClone(base);
+    next.serverNow = 10000 + i * 50;
+    next.players[0].bear!.x += i * 9;
+    buffer.push(next, i * 50);
+    buffer.render(i * 50);
+  }
+  assert.equal(buffer.render(225)!.players[0].bear!.moving, true);
+  assert.equal(buffer.render(2000)!.players[0].bear!.moving, false);
+  const teleported = structuredClone(base);
+  teleported.serverNow = 10250;
+  teleported.players[0].bear!.x = 800;
+  buffer.push(teleported, 2050);
+  const bear = buffer.render(2075)!.players[0].bear!;
+  assert.equal(bear.x, 800);
+  assert.equal(bear.moving, false);
+  assert.equal(base.players[0].bear!.x, 420);
+});
+
 test("snapshot playback wraps edges, snaps area transfers, and does not predict damage", () => {
   const buffer = new SnapshotBuffer("p");
   const forest = snapshot(10000, FOREST.width - 4);
