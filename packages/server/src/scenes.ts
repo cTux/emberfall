@@ -52,6 +52,14 @@ export function sceneAction(
       portals: [],
       electorate: "",
     };
+  } else if (message.type === "joinScene") {
+    if (nearbyInteraction(player)?.id !== "portal")
+      throw new Error("Move closer to the village portal.");
+    if (world.scene?.phase !== "active" || world.scene.portals.length)
+      throw new Error(
+        "This scene is not open for joining. Create a new one after everyone returns.",
+      );
+    enterScene(player, now);
   } else if (message.type === "ready") {
     const scene = world.scene;
     if (!scene || !["voting", "countdown"].includes(scene.phase) || player.scene)
@@ -75,10 +83,23 @@ export function sceneAction(
 export function cleanupScene(world: SceneWorld) {
   if (
     world.scene &&
-    ["active", "ended"].includes(world.scene.phase) &&
+    world.scene.phase === "ended" &&
     ![...world.players.values()].some((p) => p.scene === "forest")
   )
     world.scene = undefined;
+}
+function enterScene(player: Player, now: number, offset = 0) {
+  player.scene = "forest";
+  player.x = FOREST_PORTAL.x + offset;
+  player.y = FOREST_PORTAL.y;
+  player.hitpoints = player.maxHitpoints;
+  player.attackAt = now - 700;
+  player.attackAngle = undefined;
+  if (player.bear) {
+    player.bear.x = player.x;
+    player.bear.y = player.y;
+    player.bear.returning = false;
+  }
 }
 export function reconcileVote(world: SceneWorld, now: number) {
   const scene = world.scene;
@@ -111,16 +132,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     scene.nextSpawn = now;
     let index = 0;
     for (const player of world.players.values()) {
-      player.scene = "forest";
-      player.x = FOREST_PORTAL.x + (index++ - world.players.size / 2) * 30;
-      player.y = FOREST_PORTAL.y;
-      player.hitpoints = player.maxHitpoints;
-      player.attackAt = now - 700;
-      if (player.bear) {
-        player.bear.x = player.x;
-        player.bear.y = player.y;
-        player.bear.returning = false;
-      }
+      enterScene(player, now, (index++ - world.players.size / 2) * 30);
     }
   }
   if (scene.phase !== "active" && scene.phase !== "ended") return;

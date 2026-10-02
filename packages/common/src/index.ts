@@ -57,6 +57,7 @@ export const clientMessage = z.discriminatedUnion("type", [
     difficulty: z.literal("Easy"),
   }),
   z.object({ type: z.literal("ready"), ready: z.boolean() }),
+  z.object({ type: z.literal("joinScene") }),
   z.object({ type: z.literal("returnLobby") }),
   z.object({ type: z.literal("leaveScene") }),
   z.object({

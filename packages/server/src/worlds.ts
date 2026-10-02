@@ -319,6 +319,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       }
       if (
         message.type === "createScene" ||
+        message.type === "joinScene" ||
         message.type === "ready" ||
         message.type === "returnLobby" ||
         message.type === "leaveScene"

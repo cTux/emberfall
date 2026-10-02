@@ -9,6 +9,7 @@ import {
   forestDistance,
   nearbyInteraction,
   CLASS_IDS,
+  FOREST_PORTAL,
 } from "@emberfall/common";
 import type { Player } from "@emberfall/common";
 import { sceneAction, tickScene, reconcileVote } from "./scenes.ts";
@@ -26,6 +27,45 @@ const hero = (id: string): Player => ({
   manapoints: 50,
   maxManapoints: 50,
   playtimeSeconds: 0,
+});
+
+test("players can join and rejoin an unfinished scene, but not after return portals open", () => {
+  const a = hero("a");
+  const world: SceneWorld = { players: new Map([[a.id, a]]) };
+  assert.throws(() => sceneAction(world, a, { type: "joinScene" }, 0));
+  sceneAction(world, a, { type: "createScene", scene: "Forest", difficulty: "Easy" }, 0);
+  assert.throws(() => sceneAction(world, a, { type: "joinScene" }, 0));
+  sceneAction(world, a, { type: "ready", ready: true }, 0);
+  assert.throws(() => sceneAction(world, a, { type: "joinScene" }, 1000));
+  tickScene(world, 5000, 0);
+  const scene = world.scene!;
+  const b = hero("late");
+  world.players.set(b.id, b);
+  b.x = 10;
+  assert.throws(() => sceneAction(world, b, { type: "joinScene" }, 6000));
+  b.x = LOBBY_PORTAL.x;
+  sceneAction(world, b, { type: "joinScene" }, 6000);
+  assert.equal(b.scene, "forest");
+  assert.equal(b.x, FOREST_PORTAL.x);
+  assert.equal(b.y, FOREST_PORTAL.y);
+  assert.equal(world.scene, scene);
+  assert.equal(scene.endsAt, 125000);
+  assert.throws(() => sceneAction(world, b, { type: "joinScene" }, 6001));
+  sceneAction(world, a, { type: "leaveScene" }, 7000);
+  sceneAction(world, b, { type: "leaveScene" }, 7000);
+  assert.equal(world.scene, scene, "unfinished scenes stay joinable when the village is occupied");
+  a.x = LOBBY_PORTAL.x;
+  a.y = LOBBY_PORTAL.y;
+  sceneAction(world, a, { type: "joinScene" }, 8000);
+  scene.phase = "ended";
+  scene.portals = [{ x: a.x, y: a.y }];
+  b.x = LOBBY_PORTAL.x;
+  b.y = LOBBY_PORTAL.y;
+  assert.throws(() => sceneAction(world, b, { type: "joinScene" }, 9000));
+  sceneAction(world, a, { type: "returnLobby" }, 9000);
+  assert.equal(world.scene, undefined);
+  sceneAction(world, b, { type: "createScene", scene: "Forest", difficulty: "Easy" }, 10000);
+  assert.notEqual((world as SceneWorld).scene?.id, scene.id);
 });
 
 test("every scene exit restores all classes and injured or dead companions to their maximum stats", () => {
@@ -75,7 +115,7 @@ test("every scene exit restores all classes and injured or dead companions to th
           assert.equal(player.bear.y, player.y);
         }
       }
-      assert.equal(world.scene, undefined);
+      assert.equal(world.scene, exit === "portal" ? undefined : scene);
       tickScene(world, 15002, 0);
       assert.equal(players.at(-1)!.bear!.hitpoints, 180);
     }
@@ -234,5 +274,5 @@ test("combat uses wrapped distances and warned melee damage respects its cooldow
   assert.equal(a.hitpoints, 80);
   sceneAction(world, a, { type: "leaveScene" }, 16800);
   assert.equal(a.scene, undefined);
-  assert.equal(world.scene, undefined);
+  assert.equal(world.scene, scene);
 });
