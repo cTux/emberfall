@@ -6,6 +6,13 @@ test("portal creates server scene; two players vote, retract, fight and individu
 }) => {
   test.setTimeout(45000);
   const errors: string[] = [];
+  let position: { x: number; y: number } | undefined;
+  page.on("websocket", (ws) => {
+    ws.on("framereceived", ({ payload }) => {
+      const m = JSON.parse(String(payload));
+      if (m.type === "state") position = m.world.players[0];
+    });
+  });
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
   await expect(page.getByLabel("Forest preview")).toBeVisible();
@@ -102,6 +109,8 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await page.keyboard.down("d");
   await page.waitForTimeout(390);
   await page.keyboard.up("d");
+  await page.waitForTimeout(150);
+  await expect.poll(() => position?.x ?? 0).toBeGreaterThan(500);
   await page.waitForTimeout(150);
   await page.keyboard.press("e");
   await page.getByRole("button", { name: "Join scene", exact: true }).click();
