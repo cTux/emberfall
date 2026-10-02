@@ -229,14 +229,18 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     });
     proto.drawImage = new Proxy(proto.drawImage, {
       apply(target, ctx, args) {
-        if (args[0] instanceof HTMLImageElement && args[0].src.endsWith("bear.png")) {
-          document.body.setAttribute("data-bear-row", String(args[2]));
-          if (args[2] > 0) document.body.setAttribute("data-bear-walk", "animated");
+        if (args[0] instanceof HTMLImageElement && args[0].src.endsWith("companion-boar.png")) {
+          document.body.setAttribute("data-bear-frame", String(args[1]));
+          document.body.setAttribute("data-bear-size", `${args[7]}x${args[8]}`);
+          document.body.setAttribute("data-bear-source", `${args[2]},${args[3]}x${args[4]}`);
+          document.body.setAttribute(
+            "data-bear-facing",
+            ctx.getTransform().a < 0 ? "left" : "right",
+          );
+          document.body.setAttribute("data-bear", "drawn");
+          if (args[1] > 0) document.body.setAttribute("data-bear-walk", "animated");
         }
-        if (
-          args[0] instanceof HTMLImageElement &&
-          (args[0].src.includes("-attack.png") || args[0].src.endsWith("bear.png"))
-        )
+        if (args[0] instanceof HTMLImageElement && args[0].src.includes("-attack.png"))
           document.body.setAttribute(
             `data-${args[0].src.split("/").at(-1)!.replace(".png", "")}`,
             "drawn",
@@ -257,7 +261,7 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     });
     proto.fillText = new Proxy(proto.fillText, {
       apply(target, ctx, args) {
-        if (["Mage", "Bear"].includes(args[0])) {
+        if (["Mage", "Boar"].includes(args[0])) {
           const bar = bars.get(ctx);
           if (
             bar &&
@@ -302,7 +306,7 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     true,
   );
   expect(row.slice(1).every((icon, index) => icon.x - row[index].x === 14)).toBe(true);
-  for (const name of ["mage", "bear"])
+  for (const name of ["mage", "boar"])
     await expect(page.locator("body")).toHaveAttribute(
       `data-name-${name}`,
       '8px "Alegreya Sans", sans-serif',
@@ -312,7 +316,10 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     .toBeCloseTo(0.5, 1);
   expect(capture.rootLines).toBe(0);
   await page.screenshot({ path: "test-results/class-combat.png" });
-  await expect(page.locator("body")).toHaveAttribute("data-bear-row", "0");
+  await expect(page.locator("body")).toHaveAttribute("data-bear-size", "42.5x40");
+  await expect(page.locator("body")).toHaveAttribute("data-bear-source", "0,17x16");
+  await expect(page.locator("body")).toHaveAttribute("data-bear-facing", "right");
+  await expect(page.locator("body")).toHaveAttribute("data-bear-frame", "0");
   await expect(page.locator("body")).not.toHaveAttribute("data-bear-walk");
   for (let i = 0; i < 20; i++) {
     world.serverNow! += 50;
@@ -323,7 +330,15 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
   }
   await expect(page.locator("body")).toHaveAttribute("data-bear-walk", "animated");
   await page.waitForTimeout(300);
-  await expect(page.locator("body")).toHaveAttribute("data-bear-row", "0");
+  await expect(page.locator("body")).toHaveAttribute("data-bear-frame", "0");
+  world.players[2].bear!.attackAngle = Math.PI;
+  for (let i = 0; i < 10; i++) {
+    world.serverNow! += 50;
+    sendState();
+    await page.waitForTimeout(30);
+  }
+  await expect(page.locator("body")).toHaveAttribute("data-bear-facing", "left");
+  await page.screenshot({ path: "test-results/boar-companion.png" });
   world.scene!.damage = [];
   world.serverNow = 25000;
   // Fill the snapshot buffer to advance its confirmed clock without a real 15-second wait.
