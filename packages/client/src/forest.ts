@@ -20,7 +20,7 @@ import type { Preferences } from "./preferences";
 import { makeMask, castShadow } from "./lighting";
 import type { Caster } from "./lighting";
 import { lightTexture } from "./village";
-import { drawReflection } from "./reflections";
+import { drawReflection, drawPuddles, puddlePath } from "./reflections";
 import {
   drawPlayerHealth,
   drawChatBubble,
@@ -44,6 +44,13 @@ portalContext.beginPath();
 portalContext.ellipse(25, 38, 25, 38, 0, 0, Math.PI * 2);
 portalContext.fill();
 const portalMask = makeMask(portalSilhouette);
+const forestWater = puddlePath([
+  [2110, 1100, 63, 24],
+  [2280, 1435, 83, 30],
+  [2585, 1190, 57, 19],
+  [2720, 1450, 72, 26],
+  [2380, 1285, 46, 17],
+]);
 
 export function drawPortal(
   ctx: CanvasRenderingContext2D,
@@ -254,6 +261,7 @@ export function forestRenderer(
     for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++)
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
         ctx.drawImage(ground, col * 320, row * 320);
+    drawPuddles(ctx, forestWater);
     drawBloodPuddles(ctx, world?.scene, serverTime, prefs.bloodPuddles, near, {
       x: cameraX,
       y: cameraY,
