@@ -209,7 +209,7 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     const bars = new WeakMap<CanvasRenderingContext2D, { x: number; y: number; width: number }>();
     proto.fillRect = new Proxy(proto.fillRect, {
       apply(target, ctx, args) {
-        if (ctx.fillStyle === "#101817" && args[3] === 14)
+        if (ctx.fillStyle === "#101817" && args[3] === 7)
           bars.set(ctx, { x: args[0], y: args[1], width: args[2] });
         return Reflect.apply(target, ctx, args);
       },
@@ -255,7 +255,7 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
       apply(target, ctx, args) {
         if (["Mage", "Bear"].includes(args[0])) {
           const bar = bars.get(ctx);
-          if (bar && args[1] === bar.x + bar.width / 2 && args[2] === bar.y + 7)
+          if (bar && args[1] === bar.x + bar.width / 2 && args[2] === bar.y + 13)
             document.body.setAttribute(`data-name-${args[0].toLowerCase()}`, ctx.font);
         }
         if (ctx.font === 'bold 8px "Pixelify Sans", sans-serif')

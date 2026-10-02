@@ -26,7 +26,7 @@ test("walking keeps direction, advances frames, and fits the full nickname", asy
     });
     prototype.fillRect = new Proxy(prototype.fillRect, {
       apply(target, context, args) {
-        if (args[3] === 14) boxes.set(context, args[2]);
+        if (context.fillStyle === "#101817" && args[3] === 7) boxes.set(context, args[2]);
         return Reflect.apply(target, context, args);
       },
     });
