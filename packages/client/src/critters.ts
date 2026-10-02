@@ -1,6 +1,5 @@
 import { FOREST, forestTrees, wrap } from "@emberfall/common";
 import { spriteMask } from "./lighting.ts";
-import { drawReflection } from "./reflections";
 
 const village = [
   { x: 280, y: 278, kind: "cat" },
@@ -86,22 +85,9 @@ export function drawCritter(
   ctx: CanvasRenderingContext2D,
   critter: ReturnType<typeof crittersAt>[number],
   shadows = false,
-  reflections = false,
 ) {
   const image = critterImage(critter.kind);
   if (!image.naturalWidth) return;
-  const caster = reflections ? critterCaster(critter) : null;
-  if (caster)
-    drawReflection(
-      ctx,
-      image,
-      critter.x,
-      caster.y,
-      24,
-      caster.height,
-      [critter.frame * 16, 0, 16, caster.height / 1.5],
-      critter.left,
-    );
   ctx.save();
   ctx.translate(critter.x, critter.y);
   if (!shadows) {
