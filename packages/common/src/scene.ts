@@ -127,6 +127,7 @@ export interface LootDrop {
   at: number;
 }
 export interface SceneState {
+  pausedAt?: number;
   playerShots?: PlayerShot[];
   explosions?: { id: number; x: number; y: number; at: number }[];
   drops?: LootDrop[];
@@ -146,4 +147,7 @@ export interface SceneState {
   endsAt: number | null;
   enemies: Enemy[];
   damage: DamageEvent[];
+}
+export function hasLivingScenePlayers(players: Iterable<{ scene?: string; hitpoints: number }>) {
+  return [...players].some((p) => p.scene === "forest" && p.hitpoints > 0);
 }

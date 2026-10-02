@@ -1,5 +1,11 @@
 import { randomUUID } from "node:crypto";
-import { FOREST_PORTAL, nearbyInteraction, stepCombat, tickCompanion } from "@emberfall/common";
+import {
+  FOREST_PORTAL,
+  nearbyInteraction,
+  stepCombat,
+  tickCompanion,
+  hasLivingScenePlayers,
+} from "@emberfall/common";
 import type { Player, SceneState, ClientMessage } from "@emberfall/common";
 
 export interface Scene extends SceneState {
@@ -36,7 +42,17 @@ export function sceneAction(
   if (message.type === "createScene") {
     if (nearbyInteraction(player)?.id !== "portal")
       throw new Error("Move closer to the village portal.");
-    if (world.scene) throw new Error("A scene already exists. Finish it before opening another.");
+    if (world.scene) {
+      if (
+        ["voting", "countdown"].includes(world.scene.phase) ||
+        hasLivingScenePlayers(world.players.values())
+      )
+        throw new Error(
+          "A scene already exists. All living players must leave before regenerating it.",
+        );
+      for (const participant of world.players.values())
+        if (participant.scene === "forest") returnToLobby(participant);
+    }
     world.scene = {
       id: randomUUID(),
       type: "Forest",
@@ -161,6 +177,7 @@ export function sceneState(scene?: Scene): SceneState | undefined {
     drops,
     playerShots,
     explosions,
+    pausedAt,
   } = scene;
   return {
     id,
@@ -182,5 +199,6 @@ export function sceneState(scene?: Scene): SceneState | undefined {
     drops,
     playerShots,
     explosions,
+    pausedAt,
   };
 }

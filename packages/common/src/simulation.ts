@@ -7,6 +7,7 @@ import {
   wrappedDelta,
   moveForestActor,
   wrap,
+  hasLivingScenePlayers,
 } from "./scene.ts";
 import { ARENA, moveActor } from "./world.ts";
 import type { Player, Bear } from "./index.ts";
@@ -309,6 +310,50 @@ export function movePlayer(player: Player, x: number, y: number, dt: number) {
   player.y = player.scene === "forest" ? wrap(next.y - 15, FOREST.height) : next.y - 15;
 }
 export function stepCombat(scene: SceneState, players: Player[], now: number, dt: number) {
+  if (!hasLivingScenePlayers(players)) {
+    scene.pausedAt ??= now;
+    return;
+  }
+  if (scene.pausedAt !== undefined) {
+    const delay = Math.max(0, now - scene.pausedAt);
+    // Keep every combat deadline's remaining duration when the scene resumes.
+    const keys = [
+      "at",
+      "endsAt",
+      "nextSpawn",
+      "warnedAt",
+      "spawnsAt",
+      "expiresAt",
+      "nextTick",
+      "startedAt",
+      "cooldownUntil",
+      "attackAt",
+      "hurtAt",
+      "resurrectAt",
+    ] as const;
+    const shift = (value: Partial<Record<(typeof keys)[number], number | null>>) => {
+      for (const key of keys) if (typeof value[key] === "number") value[key] += delay;
+    };
+    shift(scene);
+    for (const enemy of [...scene.enemies, ...(scene.spawns ?? [])]) {
+      shift(enemy);
+      if (enemy.attack) shift(enemy.attack);
+      for (const debuff of enemy.debuffs ?? []) shift(debuff);
+    }
+    for (const event of [
+      ...scene.damage,
+      ...(scene.drops ?? []),
+      ...(scene.projectiles ?? []),
+      ...(scene.explosions ?? []),
+    ])
+      shift(event);
+    for (const player of players.filter((p) => p.scene === "forest" && p.hitpoints <= 0)) {
+      // New arrivals already use the current server clock.
+      shift(player);
+      if (player.bear) shift(player.bear);
+    }
+    scene.pausedAt = undefined;
+  }
   // Pickups are shared visual objects only: collecting them grants no reward yet.
   const collectors = players.filter((p) => p.scene === "forest" && p.hitpoints > 0);
   scene.drops = (scene.drops ?? []).filter((drop) => {
