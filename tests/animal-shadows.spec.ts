@@ -73,7 +73,14 @@ for (const forest of [false, true]) {
     });
     await page.addInitScript(() => {
       const sources = new WeakMap<HTMLCanvasElement, string>();
+      const reflections = new WeakSet<HTMLCanvasElement>();
       const proto = CanvasRenderingContext2D.prototype;
+      proto.fillRect = new Proxy(proto.fillRect, {
+        apply(target, ctx: CanvasRenderingContext2D, args) {
+          if (ctx.globalCompositeOperation === "destination-in") reflections.add(ctx.canvas);
+          return Reflect.apply(target, ctx, args);
+        },
+      });
       proto.drawImage = new Proxy(proto.drawImage, {
         apply(target, ctx: CanvasRenderingContext2D, args) {
           const source =
@@ -83,6 +90,17 @@ for (const forest of [false, true]) {
                 ? sources.get(args[0])
                 : undefined;
           if (source) sources.set(ctx.canvas, source);
+          if (
+            args[0] instanceof HTMLCanvasElement &&
+            reflections.has(args[0]) &&
+            ctx.canvas.hasAttribute("aria-label")
+          ) {
+            document.body.dataset.reflections = "yes";
+            if (source?.endsWith("/companion-boar.png"))
+              document.body.dataset.bearReflection = "yes";
+            if (source && /\/critter-\w+\.png$/.test(source))
+              document.body.dataset.critterReflection = "yes";
+          }
           if (
             source &&
             /\/(companion-boar|critter-\w+)\.png$/.test(source) &&
@@ -123,6 +141,9 @@ for (const forest of [false, true]) {
           "critterlight",
           "bearOval",
           "critterOval",
+          "reflections",
+          "bearReflection",
+          "critterReflection",
         ])
           delete document.body.dataset[key];
       });
@@ -131,6 +152,7 @@ for (const forest of [false, true]) {
         await expect(page.locator("body")).toHaveAttribute("data-critter-oval", "yes");
         expect(await page.locator("body").getAttribute("data-bearsun")).toBeNull();
         expect(await page.locator("body").getAttribute("data-crittersun")).toBeNull();
+        expect(await page.locator("body").getAttribute("data-reflections")).toBeNull();
       } else {
         await expect(page.locator("body")).toHaveAttribute("data-bearsun", "yes");
         await expect(page.locator("body")).toHaveAttribute("data-crittersun", "yes");
@@ -138,10 +160,19 @@ for (const forest of [false, true]) {
         await expect(page.locator("body")).toHaveAttribute("data-critterlight", "yes");
         expect(await page.locator("body").getAttribute("data-bear-oval")).toBeNull();
         expect(await page.locator("body").getAttribute("data-critter-oval")).toBeNull();
+        await expect(page.locator("body")).toHaveAttribute("data-bear-reflection", "yes");
+        await expect(page.locator("body")).toHaveAttribute("data-critter-reflection", "yes");
       }
       await page.screenshot({
         path: `test-results/animals-${forest ? "forest" : "village"}-${preset}.png`,
       });
     }
+    await page.getByRole("button", { name: "Settings", exact: true }).click();
+    await page.getByLabel("Reflections (2D)", { exact: true }).uncheck();
+    await page.getByRole("button", { name: /^Close / }).click();
+    await page.waitForTimeout(100);
+    await page.evaluate(() => delete document.body.dataset.reflections);
+    await page.waitForTimeout(150);
+    expect(await page.locator("body").getAttribute("data-reflections")).toBeNull();
   });
 }

@@ -2,6 +2,7 @@ import { PLAYER_ATTACK_DURATION, PLAYER_ATTACK_RANGE } from "@emberfall/common";
 import type { Bear } from "@emberfall/common";
 import { drawPlayerHealth } from "./effects";
 import { spriteMask } from "./lighting";
+import { drawReflection } from "./reflections";
 
 const image = new Image();
 image.src = "/assets/companion-boar.png";
@@ -26,6 +27,7 @@ export function drawCompanion(
   y: number,
   now: number,
   shadows = false,
+  reflections = false,
 ) {
   ctx.save();
   if (!shadows) {
@@ -39,6 +41,8 @@ export function drawCompanion(
   const dead = bear.hitpoints <= 0;
   ctx.globalAlpha = dead ? 0.3 : 1;
   if (image.naturalWidth) {
+    if (reflections)
+      drawReflection(ctx, image, x, y + 18, 42.5, 40, [column * 17, 0, 17, 16], left);
     ctx.save();
     ctx.translate(x, y);
     if (left) ctx.scale(-1, 1);

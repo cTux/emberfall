@@ -110,6 +110,8 @@ Settings contains Low, Balanced and High (default) presets, plus persistent indi
 
 These are Canvas 2D effects: ambient occlusion shades ground contact, not depth-buffer SSAO; motion blur samples moving sprites and leaves text sharp. Static ground, shadows, grass and contact occlusion are cached and rebuilt only when settings or assets change. High is the default visual preset, not a measured claim of high-enemy-count performance. [Node SQLite API](https://nodejs.org/docs/latest-v24.x/api/sqlite.html).
 
+**Reflections (2D)** mirrors colored sprites below their feet with a compressed vertical scale and fading opacity across the forest preview, village (including training), and forest combat. Scenery, characters, enemies, critters, companions, and portal silhouettes share the same Canvas mirror pass; UI and health labels remain sharp. This stylized ground effect does not require water or change gameplay. Low disables it; Balanced and High enable it. The independent toggle applies immediately and persists across reloads; older saved settings inherit the enabled High default. Checks cover mirrored pixels and fading, both scene renderers, live toggling, presets, and persistence.
+
 ## Village and lighting
 
 The lobby is a five-building village with a connected path network and a central square. Buildings use the original Ninja Adventure house tileset. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors and services are intentionally not implemented yet.

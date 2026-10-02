@@ -1,6 +1,7 @@
 export interface GraphicsSettings {
   ambientOcclusion: boolean;
   shadows: boolean;
+  reflections: boolean;
   grass: boolean;
   wavingVegetation: boolean;
   motionBlur: boolean;
@@ -25,6 +26,7 @@ export const GRAPHICS_PRESETS: Record<"Low" | "Balanced" | "High", GraphicsSetti
     fog: false,
     ambientOcclusion: false,
     shadows: false,
+    reflections: false,
     grass: false,
     wavingVegetation: false,
     motionBlur: false,
@@ -42,6 +44,7 @@ export const GRAPHICS_PRESETS: Record<"Low" | "Balanced" | "High", GraphicsSetti
     fog: true,
     ambientOcclusion: true,
     shadows: true,
+    reflections: true,
     grass: false,
     wavingVegetation: true,
     motionBlur: false,
@@ -59,6 +62,7 @@ export const GRAPHICS_PRESETS: Record<"Low" | "Balanced" | "High", GraphicsSetti
     fog: true,
     ambientOcclusion: true,
     shadows: true,
+    reflections: true,
     grass: true,
     wavingVegetation: true,
     motionBlur: true,
@@ -79,6 +83,7 @@ export const GRAPHICS_LABELS: Record<
   fog: "Volumetric fog (2D)",
   ambientOcclusion: "Ambient occlusion (2D)",
   shadows: "Soft shadows",
+  reflections: "Reflections (2D)",
   grass: "Dense grass clusters",
   wavingVegetation: "Waving grass and trees",
   motionBlur: "Character motion blur",
