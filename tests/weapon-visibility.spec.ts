@@ -5,6 +5,7 @@ import type { WorldState } from "../packages/common/src/index";
 test("all classes sheath weapons outside combat and draw them in forest and training", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   const world: WorldState = {
     id: "fixture",
     name: "Weapon visibility",
@@ -116,6 +117,39 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
     }
   }
   await page.screenshot({ path: "test-results/village-sheathed-weapons.png" });
+  // Remote movement keeps automatic local aiming/input from replacing the supplied direction.
+  const traveler = { ...world.players[0], id: "traveler", x: 420 };
+  world.players.push(traveler);
+  for (const classId of CLASS_IDS) {
+    traveler.classId = classId;
+    for (const [inputX, inputY] of [
+      [0, -1],
+      [0, 1],
+      [-1, 0],
+      [1, 0],
+    ]) {
+      traveler.inputX = inputX;
+      traveler.inputY = inputY;
+      sendState();
+      await page.waitForTimeout(150);
+      // Remote walking uses displacement between timestamped snapshots, not just input intent.
+      traveler.x += inputX * 12;
+      traveler.y += inputY * 12;
+      world.serverNow! += 100;
+      sendState();
+      await page.waitForTimeout(300);
+      await page.evaluate(() => {
+        (window as unknown as { weaponCapture: { weapons: number } }).weaponCapture.weapons = 0;
+      });
+      await page.waitForTimeout(150);
+      const weapons = await page.evaluate(
+        () => (window as unknown as { weaponCapture: { weapons: number } }).weaponCapture.weapons,
+      );
+      expect(weapons > 0, `${classId} village direction ${inputX},${inputY}`).toBe(inputY === -1);
+      if (inputY === -1) await page.screenshot({ path: `test-results/back-weapon-${classId}.png` });
+    }
+  }
+  world.players.pop();
   // Use a remote ranger so local automatic aiming cannot replace the supplied angle.
   world.players[0].classId = "warrior";
   const ranger = { ...world.players[0], id: "ranger", classId: "ranger" as const };
