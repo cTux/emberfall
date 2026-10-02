@@ -67,11 +67,12 @@ export function spriteMask(
   row: number,
   flip = false,
   frameWidth = 16,
+  trimBottom = false,
 ) {
   if (!image.naturalWidth) return null;
   let masks = spriteMasks.get(image);
   if (!masks) spriteMasks.set(image, (masks = new Map()));
-  const key = `${column}:${row}:${flip}:${frameWidth}`;
+  const key = `${column}:${row}:${flip}:${frameWidth}:${trimBottom}`;
   if (!masks.has(key)) {
     const tile = document.createElement("canvas");
     tile.width = frameWidth;
@@ -82,7 +83,23 @@ export function spriteMask(
       ctx.scale(-1, 1);
     }
     ctx.drawImage(image, column * frameWidth, row * 16, frameWidth, 16, 0, 0, frameWidth, 16);
-    masks.set(key, makeMask(tile));
+    const mask = makeMask(tile);
+    if (trimBottom) {
+      const pixels = ctx.getImageData(0, 0, tile.width, tile.height).data;
+      let bottom = tile.height;
+      while (
+        bottom > 1 &&
+        !pixels
+          .slice((bottom - 1) * tile.width * 4, bottom * tile.width * 4)
+          .some((a, i) => i % 4 === 3 && a > 0)
+      )
+        bottom--;
+      const cropped = document.createElement("canvas");
+      cropped.width = tile.width;
+      cropped.height = bottom;
+      cropped.getContext("2d")!.drawImage(mask, 0, 0);
+      masks.set(key, cropped);
+    } else masks.set(key, mask);
   }
   return masks.get(key)!;
 }

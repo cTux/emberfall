@@ -69,14 +69,14 @@ function critterImage(kind: string) {
   return image;
 }
 export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
-  const mask = spriteMask(critterImage(critter.kind), critter.frame, 0, critter.left);
+  const mask = spriteMask(critterImage(critter.kind), critter.frame, 0, critter.left, 16, true);
   return mask
     ? {
         id: `critter:${critter.kind}:${critter.x}:${critter.y}`,
         x: critter.x,
-        y: critter.y,
+        y: critter.y - 24 + mask.height * 1.5,
         width: 24,
-        height: 24,
+        height: mask.height * 1.5,
         mask,
       }
     : null;
