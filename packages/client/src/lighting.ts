@@ -59,3 +59,30 @@ export function makeMask(sprite: HTMLCanvasElement) {
   ctx.fillRect(0, 0, mask.width, mask.height);
   return mask;
 }
+
+const spriteMasks = new WeakMap<HTMLImageElement, Map<string, HTMLCanvasElement>>();
+export function spriteMask(
+  image: HTMLImageElement,
+  column: number,
+  row: number,
+  flip = false,
+  frameWidth = 16,
+) {
+  if (!image.naturalWidth) return null;
+  let masks = spriteMasks.get(image);
+  if (!masks) spriteMasks.set(image, (masks = new Map()));
+  const key = `${column}:${row}:${flip}:${frameWidth}`;
+  if (!masks.has(key)) {
+    const tile = document.createElement("canvas");
+    tile.width = frameWidth;
+    tile.height = 16;
+    const ctx = tile.getContext("2d")!;
+    if (flip) {
+      ctx.translate(frameWidth, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(image, column * frameWidth, row * 16, frameWidth, 16, 0, 0, frameWidth, 16);
+    masks.set(key, makeMask(tile));
+  }
+  return masks.get(key)!;
+}

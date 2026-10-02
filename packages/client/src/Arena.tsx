@@ -1,6 +1,6 @@
 import { characterImages } from "./characters";
-import { drawCompanion } from "./companion";
-import { crittersAt, drawCritter } from "./critters";
+import { companionCaster, drawCompanion } from "./companion";
+import { critterCaster, crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
 import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
@@ -416,6 +416,28 @@ export function Arena({
             mask,
           });
       }
+      const critters = crittersAt("village", view.serverNow ?? now, {
+        x: cameraX,
+        y: cameraY,
+        width: viewWidth,
+        height: viewHeight,
+      });
+      for (const critter of critters) {
+        const caster = critterCaster(critter);
+        if (caster) dynamic.push(caster);
+      }
+      for (const player of players) {
+        if (!player.bear) continue;
+        const point = player.bear;
+        const caster = companionCaster(
+          player.bear,
+          point.x,
+          point.y,
+          view.serverNow ?? now,
+          `bear:${player.id}`,
+        );
+        if (caster) dynamic.push(caster);
+      }
       if (quality.current.shadows) for (const caster of dynamic) castShadow(ctx, caster);
       const layers = [
         {
@@ -456,12 +478,7 @@ export function Arena({
               ]
             : [],
         ),
-        ...crittersAt("village", view.serverNow ?? now, {
-          x: cameraX,
-          y: cameraY,
-          width: viewWidth,
-          height: viewHeight,
-        }).map((critter) => ({
+        ...critters.map((critter) => ({
           y: critter.y,
           object: null,
           player: null,
@@ -486,11 +503,18 @@ export function Arena({
           continue;
         }
         if (layer.critter) {
-          drawCritter(ctx, layer.critter);
+          drawCritter(ctx, layer.critter, quality.current.shadows);
           continue;
         }
         if (layer.bear) {
-          drawCompanion(ctx, layer.bear, layer.bear.x, layer.bear.y, view?.serverNow ?? now);
+          drawCompanion(
+            ctx,
+            layer.bear,
+            layer.bear.x,
+            layer.bear.y,
+            view?.serverNow ?? now,
+            quality.current.shadows,
+          );
           continue;
         }
         if (layer.object) {
