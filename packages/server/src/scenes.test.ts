@@ -8,6 +8,7 @@ import {
   moveForestActor,
   forestDistance,
   nearbyInteraction,
+  CLASS_IDS,
 } from "@emberfall/common";
 import type { Player } from "@emberfall/common";
 import { sceneAction, tickScene, reconcileVote } from "./scenes.ts";
@@ -25,6 +26,60 @@ const hero = (id: string): Player => ({
   manapoints: 50,
   maxManapoints: 50,
   playtimeSeconds: 0,
+});
+
+test("every scene exit restores all classes and injured or dead companions to their maximum stats", () => {
+  for (const exit of ["portal", "death", "leave"] as const) {
+    for (const bearHealth of [0, 7]) {
+      const players = CLASS_IDS.map((classId) => ({ ...hero(classId), classId }));
+      const world: SceneWorld = { players: new Map(players.map((p) => [p.id, p])) };
+      sceneAction(
+        world,
+        players[0],
+        { type: "createScene", scene: "Forest", difficulty: "Easy" },
+        10000,
+      );
+      for (const player of players)
+        sceneAction(world, player, { type: "ready", ready: true }, 10000);
+      tickScene(world, 15000, 0);
+      const scene = world.scene!;
+      if (exit === "portal") {
+        scene.phase = "ended";
+        scene.portals = players.map((p) => ({ x: p.x, y: p.y }));
+      }
+      for (const player of players) {
+        player.maxHitpoints = 120;
+        player.maxManapoints = 80;
+        player.hitpoints = exit === "death" ? 0 : 12;
+        player.manapoints = 0;
+        if (player.bear) {
+          player.bear.maxHitpoints = 180;
+          player.bear.hitpoints = bearHealth;
+          player.bear.resurrectAt = bearHealth === 0 ? 20000 : undefined;
+        }
+      }
+      for (const player of players) {
+        sceneAction(
+          world,
+          player,
+          { type: exit === "leave" ? "leaveScene" : "returnLobby" },
+          15001,
+        );
+        assert.equal(player.scene, undefined);
+        assert.equal(player.hitpoints, 120);
+        assert.equal(player.manapoints, 80);
+        if (player.bear) {
+          assert.equal(player.bear.hitpoints, 180);
+          assert.equal(player.bear.resurrectAt, undefined);
+          assert.equal(player.bear.x, player.x);
+          assert.equal(player.bear.y, player.y);
+        }
+      }
+      assert.equal(world.scene, undefined);
+      tickScene(world, 15002, 0);
+      assert.equal(players.at(-1)!.bear!.hitpoints, 180);
+    }
+  }
 });
 
 test("server scene lifecycle: proximity, unanimous votes, retract, membership changes, combat, death and boss-gated return", (t) => {
