@@ -76,6 +76,13 @@ test("chat validates text, identifies senders, retains ten messages and isolates
     assert.equal(alice.world!.players.find((p) => p.name === "Bob")!.chat, "Message 10");
     assert.equal(alice.world!.players.find((p) => p.name === "Alice")!.chat, "First message");
     assert.deepEqual(outsider.world!.chat, []);
+    // Alice's older bubble expires first; Bob's latest message gets a fresh ten seconds.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await wait(() => alice.world!.players.find((p) => p.name === "Alice")!.chat === undefined);
+    assert.equal(alice.world!.players.find((p) => p.name === "Bob")!.chat, "Message 10");
+    await new Promise((resolve) => setTimeout(resolve, 5100));
+    await wait(() => bob.world!.players.find((p) => p.name === "Bob")!.chat === undefined);
+    assert.equal(bob.world!.chat!.at(-1)!.text, "Message 10");
   } finally {
     sockets.forEach((ws) => ws.terminate());
     await app.close();
