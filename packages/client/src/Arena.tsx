@@ -425,6 +425,7 @@ export function Arena({
         quality.current.bloom,
         "Forest portal",
         interaction.current?.id === "portal",
+        quality.current.shadows,
       );
       const layers = [
         ...scenery.map((object) => ({
