@@ -19,7 +19,6 @@ export function Chat({
   }, [latestId]);
   return (
     <aside className="chat" aria-label="World chat" tabIndex={0}>
-      <strong>World chat</strong>
       <div className="chat-log" role="log" aria-label="Latest chat messages" ref={log}>
         {messages.map((message) => (
           <div key={message.id}>
