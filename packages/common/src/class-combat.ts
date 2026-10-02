@@ -1,6 +1,6 @@
 import { FOREST, forestDistance, wrappedDelta, wrap } from "./scene.ts";
 import { ENEMY_STATS } from "./enemies.ts";
-import type { DebuffKind, Enemy, SceneState } from "./scene.ts";
+import type { DebuffKind, Enemy, PlayerShot, SceneState } from "./scene.ts";
 import type { Player } from "./index.ts";
 
 const damageHistory = new WeakMap<Player, { at: number; amount: number }[]>();
@@ -127,6 +127,7 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
     scene.playerShots.push({
       id: ++scene.sequence,
       ownerId: player.id,
+      castAt: player.attackAt ?? now,
       kind: player.classId === "mage" ? "fireball" : "arrow",
       x: player.x,
       y: player.y,
@@ -143,6 +144,42 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
   }
 }
 
+/** Shared projectile motion; the callback lets the server check piercing hits at each substep. */
+export function advancePlayerShot(
+  shot: PlayerShot,
+  enemies: Enemy[],
+  dt: number,
+  onStep?: () => void,
+) {
+  const target = enemies.find((e) => e.id === shot.targetId && e.hitpoints > 0);
+  if (shot.kind === "fireball" && target) {
+    shot.targetX = target.x;
+    shot.targetY = target.y;
+  }
+  const distance = Math.min(shot.remaining, Math.max(0, dt) * (shot.kind === "arrow" ? 600 : 380));
+  const steps = Math.max(1, Math.ceil(distance / 6));
+  for (let i = 0; i < steps; i++) {
+    if (shot.kind === "fireball")
+      shot.angle = Math.atan2(
+        wrappedDelta(shot.targetY!, shot.y, FOREST.height),
+        wrappedDelta(shot.targetX!, shot.x, FOREST.width),
+      );
+    shot.x = wrap(shot.x + (Math.cos(shot.angle) * distance) / steps, FOREST.width);
+    shot.y = wrap(shot.y + (Math.sin(shot.angle) * distance) / steps, FOREST.height);
+    shot.remaining -= distance / steps;
+    onStep?.();
+    if (
+      shot.kind === "fireball" &&
+      forestDistance(shot, { x: shot.targetX!, y: shot.targetY! }) <= 12
+    ) {
+      shot.x = shot.targetX!;
+      shot.y = shot.targetY!;
+      return true;
+    }
+  }
+  return false;
+}
+
 export function tickPlayerShots(scene: SceneState, players: Player[], now: number, dt: number) {
   scene.explosions = (scene.explosions ?? []).filter((e) => now - e.at < 350);
   scene.playerShots = (scene.playerShots ?? []).filter((shot) => {
@@ -153,25 +190,7 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
         p.hitpoints > 0,
     );
     if (!owner) return false;
-    const target = scene.enemies.find((e) => e.id === shot.targetId && e.hitpoints > 0);
-    if (shot.kind === "fireball" && target) {
-      shot.targetX = target.x;
-      shot.targetY = target.y;
-    }
-    const distance = Math.min(
-      shot.remaining,
-      Math.max(0, dt) * (shot.kind === "arrow" ? 600 : 380),
-    );
-    const steps = Math.max(1, Math.ceil(distance / 6));
-    for (let i = 0; i < steps; i++) {
-      if (shot.kind === "fireball")
-        shot.angle = Math.atan2(
-          wrappedDelta(shot.targetY!, shot.y, FOREST.height),
-          wrappedDelta(shot.targetX!, shot.x, FOREST.width),
-        );
-      shot.x = wrap(shot.x + (Math.cos(shot.angle) * distance) / steps, FOREST.width);
-      shot.y = wrap(shot.y + (Math.sin(shot.angle) * distance) / steps, FOREST.height);
-      shot.remaining -= distance / steps;
+    const impacted = advancePlayerShot(shot, scene.enemies, dt, () => {
       if (shot.kind === "arrow") {
         for (const enemy of scene.enemies) {
           if (
@@ -183,14 +202,13 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
           shot.hitIds.push(enemy.id);
           hitEnemy(scene, enemy, 5, owner, now, "poison");
         }
-      } else if (forestDistance(shot, { x: shot.targetX!, y: shot.targetY! }) <= 12) {
-        shot.x = shot.targetX!;
-        shot.y = shot.targetY!;
-        scene.explosions!.push({ id: ++scene.sequence, x: shot.x, y: shot.y, at: now });
-        for (const enemy of scene.enemies)
-          if (forestDistance(shot, enemy) <= 100) hitEnemy(scene, enemy, 2, owner, now, "burn");
-        return false;
       }
+    });
+    if (impacted) {
+      scene.explosions!.push({ id: ++scene.sequence, x: shot.x, y: shot.y, at: now });
+      for (const enemy of scene.enemies)
+        if (forestDistance(shot, enemy) <= 100) hitEnemy(scene, enemy, 2, owner, now, "burn");
+      return false;
     }
     return shot.remaining > 0.001;
   });

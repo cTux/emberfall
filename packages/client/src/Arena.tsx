@@ -329,6 +329,7 @@ export function Arena({
       let localSwing = false;
       if (view && local) {
         localSwing = localMovement.animateAttack(local, view, now);
+        localMovement.animateProjectiles(local, view, now, localSwing);
         view.players = view.players.map((player) =>
           player.id === playerId ? { ...local, bear: player.bear } : player,
         );

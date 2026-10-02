@@ -13,6 +13,7 @@ export {
 export * from "./scene.ts";
 export * from "./simulation.ts";
 export * from "./training.ts";
+export { fireClassAttack, advancePlayerShot } from "./class-combat.ts";
 export { ENEMY_HP, ENEMY_STATS, enemyMaxHealth, spawnArchetype } from "./enemies.ts";
 import type { SceneState } from "./scene.ts";
 
