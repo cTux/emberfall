@@ -5,7 +5,6 @@ import { drawNavigation } from "./navigation";
 import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
 import { LocalMovement } from "./local-movement";
-import { LocalEffects } from "./local-effects";
 import { gameAudio } from "./audio";
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
@@ -121,7 +120,6 @@ export function Arena({
     };
     const snapshots = new SnapshotBuffer(playerId);
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
-    const localEffects = new LocalEffects();
     let previousHp = "";
     const keys = new Set<string>();
     const positions = new Map<string, { x: number; y: number; facing: number }>();
@@ -333,14 +331,6 @@ export function Arena({
         localSwing = localMovement.animateAttack(local, view, now);
         view.players = view.players.map((player) =>
           player.id === playerId ? { ...local, bear: player.bear } : player,
-        );
-        localEffects.render(
-          view,
-          latest.current!,
-          local,
-          localSwing,
-          localMovement.attackTime,
-          now,
         );
       }
       networkTiming.current = {

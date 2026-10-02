@@ -76,8 +76,6 @@ export interface Debuff {
   ownerId: string;
 }
 export interface PlayerShot {
-  attackAt?: number;
-  volleyIndex?: number;
   id: number;
   ownerId: string;
   kind: "arrow" | "fireball";
@@ -122,7 +120,6 @@ export interface DamageEvent {
   target: string;
 }
 export interface LootDrop {
-  collectorId?: string;
   id: number;
   kind: "experience" | "gold";
   x: number;

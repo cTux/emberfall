@@ -22,14 +22,23 @@ test("combined performance graph plots FPS and latency, preserves toggles and st
     fps = page.getByLabel("Frame rate", { exact: true });
   await expect(latency).toHaveText(/\d+ ms/);
   await expect(latency).toHaveText(/0–\d+ ms/);
-  await expect(latency).toContainText("Ping");
-  await expect(page.getByLabel("Input acknowledgement delay", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("Snapshot age since receipt", { exact: true })).toBeVisible();
+  await expect(latency).toContainText("Network");
+  await expect(page.getByLabel("Input acknowledgement delay", { exact: true })).toHaveCount(1);
+  await expect(page.getByLabel("Snapshot age since receipt", { exact: true })).toHaveCount(1);
   await expect
     .poll(async () =>
       Number(await page.locator('[data-series="latency"]').getAttribute("data-value")),
     )
     .toBeGreaterThanOrEqual(140);
+  await expect(page.locator(".performance-stats")).not.toContainText(
+    /Input ack:|Snapshot age \(local\):/,
+  );
+  await page.getByRole("tab", { name: "Create a world" }).click();
+  await page.getByRole("button", { name: "Light the ember" }).click();
+  for (const series of ["inputDelay", "snapshotAge"]) {
+    await expect(page.locator(`[data-series="${series}"]`)).toHaveAttribute("d", /L/);
+    await expect(page.locator(`[data-series="${series}"]`)).toHaveAttribute("data-value", /\d/);
+  }
   await expect(page.locator(".performance-values")).toHaveCount(0);
   const a = await fps.boundingBox(),
     b = await latency.boundingBox();
@@ -58,4 +67,45 @@ test("combined performance graph plots FPS and latency, preserves toggles and st
   await page.getByLabel("Latency graph", { exact: true }).uncheck();
   await page.getByRole("button", { name: "Close menu" }).click();
   await expect(page.locator(".performance-stats")).toBeHidden();
+});
+
+test("network lines grow during stale snapshots even when ping stays low", async ({ page }) => {
+  let blocked = false;
+  await page.routeWebSocket("**/ws", (client) => {
+    const server = client.connectToServer();
+    client.onMessage((message) => server.send(message));
+    server.onMessage((raw) => {
+      if (blocked && JSON.parse(String(raw)).type === "state") return;
+      client.send(raw);
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Create a world" }).click();
+  await page.getByRole("button", { name: "Light the ember" }).click();
+  const input = page.locator('[data-series="inputDelay"]');
+  const age = page.locator('[data-series="snapshotAge"]');
+  await expect(input).toHaveAttribute("data-value", /\d/);
+  blocked = true;
+  await page.keyboard.down("d");
+  await expect
+    .poll(async () => Number(await input.getAttribute("data-value")))
+    .toBeGreaterThan(800);
+  await page.keyboard.up("d");
+  await expect.poll(async () => Number(await age.getAttribute("data-value"))).toBeGreaterThan(800);
+  expect(
+    Number(await page.locator('[data-series="latency"]').getAttribute("data-value")),
+  ).toBeLessThan(100);
+  const max = Number(
+    (await page.getByLabel("Server latency", { exact: true }).textContent())?.match(/0.(\d+)/)?.[1],
+  );
+  expect(max).toBeGreaterThanOrEqual(Number(await age.getAttribute("data-value")));
+  for (const line of [input, age]) {
+    await expect(line).toHaveAttribute("d", /L/);
+    const ys = (await line.getAttribute("d"))!
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((point) => Number(point.split(",")[1]));
+    expect(ys.every((y) => y >= 20 && y <= 72)).toBe(true);
+  }
+  await page.screenshot({ path: "test-results/stale-network-graph.png" });
 });

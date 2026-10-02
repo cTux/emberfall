@@ -123,12 +123,10 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
     return;
   }
   scene.playerShots ??= [];
-  for (const [volleyIndex, target] of targets.entries()) {
+  for (const target of targets) {
     scene.playerShots.push({
       id: ++scene.sequence,
       ownerId: player.id,
-      attackAt: player.attackAt ?? now,
-      volleyIndex,
       kind: player.classId === "mage" ? "fireball" : "arrow",
       x: player.x,
       y: player.y,
