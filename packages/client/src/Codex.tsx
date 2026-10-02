@@ -134,11 +134,9 @@ const chapters = [
         </a>
         <p>Music by TimberwolfGames. Audio credits and licenses are included with the game.</p>
         <p>
-          Weapons:{" "}
-          <a href="https://opengameart.org/content/496-pixel-art-icons-for-medievalfantasy-rpg">
-            Henrique Lazarini (7Soul1)
-          </a>
-          , CC0.
+          Weapons: <a href="https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack">Kyrise</a>,{" "}
+          <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Unmodified sprites
+          from Kyrise's Free 16x16 RPG Icon Pack.
         </p>
         <p>
           Status and spell icons:{" "}
