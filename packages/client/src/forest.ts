@@ -20,6 +20,7 @@ import type { Preferences } from "./preferences";
 import { makeMask, castShadow } from "./lighting";
 import type { Caster } from "./lighting";
 import { lightTexture } from "./village";
+import { drawReflection } from "./reflections";
 import {
   drawPlayerHealth,
   drawChatBubble,
@@ -38,6 +39,7 @@ const portalSilhouette = document.createElement("canvas");
 portalSilhouette.width = 50;
 portalSilhouette.height = 76;
 const portalContext = portalSilhouette.getContext("2d")!;
+portalContext.fillStyle = "#347fe0";
 portalContext.beginPath();
 portalContext.ellipse(25, 38, 25, 38, 0, 0, Math.PI * 2);
 portalContext.fill();
@@ -53,7 +55,9 @@ export function drawPortal(
   active: boolean,
   shadows: boolean,
   waving: boolean,
+  reflections = false,
 ) {
+  if (reflections) drawReflection(ctx, portalSilhouette, x, y + 8, 50, 76);
   if (shadows)
     castShadow(ctx, { id: "portal", x, y: y + 8, width: 50, height: 76, mask: portalMask });
   ctx.save();
@@ -275,7 +279,16 @@ export function forestRenderer(
       : [];
     if (quality.grass && nature.naturalWidth)
       for (const t of trees)
-        for (let i = 0; i < 5; i++)
+        for (let i = 0; i < 5; i++) {
+          if (quality.reflections)
+            drawReflection(
+              ctx,
+              grass,
+              t.x - 57 + ((i * 41) % 120),
+              t.y - 64 + ((i * 67) % 145),
+              16,
+              16,
+            );
           drawVegetation(
             ctx,
             grass,
@@ -286,6 +299,7 @@ export function forestRenderer(
             now,
             quality.wavingVegetation,
           );
+        }
     const players = world?.players.filter((p) => p.scene === "forest") ?? [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
@@ -473,23 +487,34 @@ export function forestRenderer(
           interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
           quality.shadows,
           quality.wavingVegetation,
+          quality.reflections,
         );
         continue;
       }
       if (layer.critter) {
-        drawCritter(ctx, layer.critter, quality.shadows);
+        drawCritter(ctx, layer.critter, quality.shadows, quality.reflections);
         continue;
       }
       if (layer.bear) {
         const point = near(layer.bear.x, layer.bear.y);
-        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime, quality.shadows);
+        drawCompanion(
+          ctx,
+          layer.bear,
+          point.x,
+          point.y,
+          serverTime,
+          quality.shadows,
+          quality.reflections,
+        );
         continue;
       }
       if (layer.tree) {
         const t = layer.tree;
         ctx.globalAlpha = obstacleOpacity({ ...t, width: t.size, height: t.size }, me);
-        if (treeMask)
+        if (treeMask) {
+          if (quality.reflections) drawReflection(ctx, tree, t.x, t.y, t.size, t.size);
           drawVegetation(ctx, tree, t.x, t.y, t.size, t.size, now, quality.wavingVegetation);
+        }
         ctx.globalAlpha = 1;
         continue;
       }
@@ -498,6 +523,11 @@ export function forestRenderer(
       const hit = damageByTarget.get(a.id);
       if (a.enemy?.hitpoints === 0 && hit?.killed) {
         const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / 700));
+        if (quality.reflections) {
+          ctx.globalAlpha = 1 - progress;
+          drawReflection(ctx, a.image, a.x, a.y + 15, a.size, a.size, [a.facing * 16, 0, 16, 16]);
+          ctx.globalAlpha = 1;
+        }
         ctx.save();
         ctx.translate(a.x, a.y + 15);
         ctx.rotate(((a.facing === 2 ? -1 : 1) * progress * Math.PI) / 2);
@@ -527,6 +557,13 @@ export function forestRenderer(
         ctx.globalAlpha = 1;
       }
       ctx.globalAlpha = a.player?.hitpoints === 0 ? 0.35 : 1;
+      if (quality.reflections)
+        drawReflection(ctx, a.image, a.x, top + a.size, a.size, a.size, [
+          a.facing * 16,
+          a.row * 16,
+          16,
+          16,
+        ]);
       if (quality.motionBlur && a.moving) {
         ctx.globalAlpha = 0.13;
         ctx.drawImage(

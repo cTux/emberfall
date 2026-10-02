@@ -1,4 +1,5 @@
 import { drawVillagePaths } from "./paths";
+import { drawReflection } from "./reflections";
 import { characterImages } from "./characters";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
@@ -505,6 +506,8 @@ export function Arena({
       const serverTime = view.serverNow ?? now;
       if (training) {
         for (const dummy of training.enemies) {
+          if (quality.current.reflections && skeleton.naturalWidth)
+            drawReflection(ctx, skeleton, dummy.x, dummy.y + 18, 48, 48, [0, 0, 16, 16]);
           if (skeleton.naturalWidth)
             ctx.drawImage(skeleton, 0, 0, 16, 16, dummy.x - 24, dummy.y - 30, 48, 48);
           ctx.fillStyle = "#152018";
@@ -629,11 +632,12 @@ export function Arena({
             interaction.current?.id === "portal",
             quality.current.shadows,
             quality.current.wavingVegetation,
+            quality.current.reflections,
           );
           continue;
         }
         if (layer.critter) {
-          drawCritter(ctx, layer.critter, quality.current.shadows);
+          drawCritter(ctx, layer.critter, quality.current.shadows, quality.current.reflections);
           continue;
         }
         if (layer.bear) {
@@ -644,12 +648,15 @@ export function Arena({
             layer.bear.y,
             view?.serverNow ?? now,
             quality.current.shadows,
+            quality.current.reflections,
           );
           continue;
         }
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = obstacleOpacity(object, local);
+          if (quality.current.reflections)
+            drawReflection(ctx, object.sprite, object.x, object.y, object.width, object.height);
           const vegetation = object.id.startsWith("tree:") || object.id.startsWith("grass:");
           if (vegetation)
             drawVegetation(
@@ -710,6 +717,13 @@ export function Arena({
         ctx.ellipse(pos.x, pos.y + 15, 18, 8, 0, 0, Math.PI * 2);
         ctx.stroke();
         if (knight.complete && knight.naturalWidth) {
+          if (quality.current.reflections)
+            drawReflection(ctx, knight, pos.x, pos.y + 18, 48, 48, [
+              pos.facing * 16,
+              (moving ? Math.floor(now / 120) % 4 : 0) * 16,
+              16,
+              16,
+            ]);
           if (quality.current.motionBlur && moving) {
             // Sprite-only temporal samples keep HUD text and the world sharp.
             for (let sample = 3; sample > 0; sample--) {
