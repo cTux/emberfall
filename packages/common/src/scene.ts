@@ -80,7 +80,7 @@ export interface PlayerShot {
   castAt?: number;
   castId?: number;
   ownerId: string;
-  kind: "arrow" | "fireball";
+  kind: "arrow" | "fireball" | "roots";
   x: number;
   y: number;
   angle: number;

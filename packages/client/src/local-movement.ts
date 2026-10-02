@@ -286,7 +286,7 @@ export class LocalMovement {
       player.hitpoints <= 0 ||
       scene.phase !== "active" ||
       scene.pausedAt !== undefined ||
-      (player.classId !== "mage" && player.classId !== "ranger") ||
+      (player.classId !== "mage" && player.classId !== "ranger" && player.classId !== "druid") ||
       now - this.sourceAt > PREDICTION_LIMIT_MS
     ) {
       this.shots = [];
@@ -314,7 +314,7 @@ export class LocalMovement {
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
-          if (shot.kind === "arrow") shot.angle = serverShot.angle;
+          if (shot.targetId === undefined || shot.kind === "arrow") shot.angle = serverShot.angle;
         }
         return !advancePlayerShot(shot, scene.enemies, dt) && shot.remaining > 0.001;
       });
