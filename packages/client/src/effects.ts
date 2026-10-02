@@ -1,6 +1,37 @@
 import { nearbyInteraction } from "@emberfall/common";
 import type { WorldState } from "@emberfall/common";
 
+export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {
+  if (!text) return;
+  ctx.save();
+  ctx.font = '14px "Alegreya Sans", sans-serif';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  const lines = [""];
+  for (const character of text) {
+    if (ctx.measureText(lines.at(-1)! + character).width > 200) lines.push("");
+    lines[lines.length - 1] += character;
+  }
+  const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 20;
+  const height = lines.length * 17 + 12;
+  const bottom = y - 72;
+  ctx.fillStyle = "#101c17ed";
+  ctx.strokeStyle = "#a7c4bc";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(x - width / 2, bottom - height, width, height, 5);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x - 5, bottom);
+  ctx.lineTo(x, bottom + 6);
+  ctx.lineTo(x + 5, bottom);
+  ctx.fill();
+  ctx.fillStyle = "#f4ecd6";
+  lines.forEach((line, i) => ctx.fillText(line, x, bottom - height + 14 + i * 17));
+  ctx.restore();
+}
+
 export function vegetationSway(
   x: number,
   y: number,

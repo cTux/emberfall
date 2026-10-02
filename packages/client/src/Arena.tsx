@@ -12,6 +12,7 @@ import type { RefObject } from "react";
 import { SnapshotBuffer } from "./snapshots";
 import {
   drawPlayerHealth,
+  drawChatBubble,
   drawParticles,
   drawVignette,
   drawNameBadge,
@@ -142,7 +143,10 @@ export function Arena({
       height: ARENA.height,
     };
     const blocked = () =>
-      !!document.querySelector('[role="dialog"][aria-modal="true"]') || document.hidden;
+      !!document.querySelector('[role="dialog"][aria-modal="true"]') ||
+      document.hidden ||
+      document.activeElement instanceof HTMLInputElement ||
+      document.activeElement instanceof HTMLTextAreaElement;
     const pointerMove = (event: PointerEvent) => {
       const rect = element.getBoundingClientRect();
       pointer = {
@@ -861,6 +865,7 @@ export function Arena({
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawCursorRange(local);
       drawNavigation(ctx, view, playerId);
+      for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
       frame = requestAnimationFrame(draw);
     }
     frame = requestAnimationFrame(draw);

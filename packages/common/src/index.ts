@@ -19,6 +19,8 @@ import { FOREST } from "./scene.ts";
 import type { SceneState } from "./scene.ts";
 
 export const MAX_PLAYERS = 8;
+export const CHAT_LIMIT = 10;
+export const CHAT_MAX_LENGTH = 200;
 export const CLASS_IDS = ["warrior", "ranger", "mage", "druid"] as const;
 export const classSchema = z.enum(CLASS_IDS);
 export type ClassId = z.infer<typeof classSchema>;
@@ -48,6 +50,15 @@ export const progressSchema = z
   .refine((p) => p.hitpoints <= p.maxHitpoints && p.manapoints <= p.maxManapoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("chat"),
+    text: z
+      .string()
+      .trim()
+      .min(1)
+      .max(CHAT_MAX_LENGTH)
+      .regex(/^[^\p{Cc}\p{Cf}]*$/u),
+  }),
   z.object({ type: z.literal("ping"), id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER) }),
   z.object({ type: z.literal("create"), name, playerName: name, password, characterToken }),
   z.object({
@@ -92,6 +103,7 @@ export const clientMessage = z.discriminatedUnion("type", [
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export interface Player extends CharacterProgress {
+  chat?: string;
   dps?: number;
   bear?: Bear;
   classId?: ClassId;
@@ -139,6 +151,7 @@ export interface WorldSummary {
   capacity: number;
 }
 export interface WorldState {
+  chat?: ChatMessage[];
   training?: SceneState;
   id: string;
   name: string;
@@ -146,6 +159,12 @@ export interface WorldState {
   players: Player[];
   scene?: SceneState;
   serverNow?: number;
+}
+export interface ChatMessage {
+  id: string;
+  playerId: string;
+  name: string;
+  text: string;
 }
 export type ServerMessage =
   | { type: "pong"; id: number }

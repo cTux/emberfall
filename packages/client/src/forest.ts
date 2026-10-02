@@ -22,6 +22,7 @@ import type { Caster } from "./lighting";
 import { lightTexture } from "./village";
 import {
   drawPlayerHealth,
+  drawChatBubble,
   drawNameBadge,
   drawParticles,
   drawVignette,
@@ -616,6 +617,10 @@ export function forestRenderer(
       }
     drawDamageFlash(ctx, world, playerId);
     if (world) drawNavigation(ctx, world, playerId);
+    for (const player of players) {
+      const point = near(player.x, player.y);
+      drawChatBubble(ctx, point.x, point.y, player.chat);
+    }
   };
 }
 export function drawPlayerDetails(

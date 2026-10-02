@@ -3,6 +3,75 @@ body {
   overflow: hidden;
 }
 
+.chat {
+  position: absolute;
+  z-index: 2;
+  bottom: 16px;
+  left: 16px;
+  width: min(320px, calc(100vw - 96px));
+  padding: 10px;
+  background: #101c17d9;
+  border: 1px solid #8daba52e;
+  border-radius: 4px;
+  color: #f4ecd6;
+}
+
+.chat-log {
+  max-height: min(180px, 24dvh);
+  overflow: auto;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.chat-input {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  visibility: hidden;
+}
+
+.chat:hover .chat-input,
+.chat:focus-within .chat-input {
+  visibility: visible;
+}
+
+.chat-input input {
+  min-width: 0;
+  flex: 1;
+  padding: 6px;
+  font: inherit;
+  color: inherit;
+  background: #081310;
+  border: 1px solid #8daba5;
+  border-radius: 3px;
+  user-select: text;
+}
+
+.chat-input button {
+  font: inherit;
+  color: inherit;
+  background: #294137;
+  border: 1px solid #8daba5;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.chat-input button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.chat-input :focus-visible {
+  outline: 2px solid #efd086;
+  outline-offset: 2px;
+}
+
+@media (hover: none) {
+  .chat-input {
+    visibility: visible;
+  }
+}
+
 .stage {
   position: relative;
   width: 100vw;
