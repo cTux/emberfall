@@ -370,21 +370,6 @@ export function forestRenderer(
         ctx.fill();
       }
     }
-    if (world?.scene?.phase === "ended")
-      for (const portal of world.scene.portals) {
-        const point = near(portal.x, portal.y);
-        drawPortal(
-          ctx,
-          point.x,
-          point.y,
-          now,
-          quality.bloom,
-          "Return to village",
-          interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
-          quality.shadows,
-          quality.wavingVegetation,
-        );
-      }
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near);
     if (world?.scene?.phase === "active")
       for (const actor of rendered)
@@ -404,8 +389,30 @@ export function forestRenderer(
         height,
       });
     const layers = [
-      ...trees.map((t) => ({ y: t.y, tree: t, actor: null, bear: null, critter: null })),
-      ...rendered.map((a) => ({ y: a.y + 15, tree: null, actor: a, bear: null, critter: null })),
+      ...(world?.scene?.phase === "ended" ? world.scene.portals : []).map((portal) => ({
+        y: near(portal.x, portal.y).y + 8,
+        tree: null,
+        actor: null,
+        bear: null,
+        critter: null,
+        portal,
+      })),
+      ...trees.map((t) => ({
+        y: t.y,
+        tree: t,
+        actor: null,
+        bear: null,
+        critter: null,
+        portal: null,
+      })),
+      ...rendered.map((a) => ({
+        y: a.y + 15,
+        tree: null,
+        actor: a,
+        bear: null,
+        critter: null,
+        portal: null,
+      })),
       ...players.flatMap((p) =>
         p.bear
           ? [
@@ -415,6 +422,7 @@ export function forestRenderer(
                 actor: null,
                 bear: p.bear,
                 critter: null,
+                portal: null,
               },
             ]
           : [],
@@ -424,9 +432,32 @@ export function forestRenderer(
         y: cameraY,
         width,
         height,
-      }).map((critter) => ({ y: critter.y, tree: null, actor: null, bear: null, critter })),
+      }).map((critter) => ({
+        y: critter.y,
+        tree: null,
+        actor: null,
+        bear: null,
+        critter,
+        portal: null,
+      })),
     ].sort((a, b) => a.y - b.y);
     for (const layer of layers) {
+      if (layer.portal) {
+        const portal = layer.portal;
+        const point = near(portal.x, portal.y);
+        drawPortal(
+          ctx,
+          point.x,
+          point.y,
+          now,
+          quality.bloom,
+          "Return to village",
+          interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
+          quality.shadows,
+          quality.wavingVegetation,
+        );
+        continue;
+      }
       if (layer.critter) {
         drawCritter(ctx, layer.critter);
         continue;

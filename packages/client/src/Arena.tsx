@@ -417,24 +417,22 @@ export function Arena({
           });
       }
       if (quality.current.shadows) for (const caster of dynamic) castShadow(ctx, caster);
-      drawPortal(
-        ctx,
-        LOBBY_PORTAL.x,
-        LOBBY_PORTAL.y,
-        now,
-        quality.current.bloom,
-        "Forest portal",
-        interaction.current?.id === "portal",
-        quality.current.shadows,
-        quality.current.wavingVegetation,
-      );
       const layers = [
+        {
+          y: LOBBY_PORTAL.y + 8,
+          object: null,
+          player: null,
+          bear: null,
+          critter: null,
+          portal: LOBBY_PORTAL,
+        },
         ...scenery.map((object) => ({
           y: object.y,
           object,
           player: null,
           bear: null,
           critter: null,
+          portal: null,
         })),
         ...players.map((player) => ({
           y: player.y + 15,
@@ -442,10 +440,20 @@ export function Arena({
           player,
           bear: null,
           critter: null,
+          portal: null,
         })),
         ...players.flatMap((p) =>
           p.bear
-            ? [{ y: p.bear.y + 15, object: null, player: null, bear: p.bear, critter: null }]
+            ? [
+                {
+                  y: p.bear.y + 15,
+                  object: null,
+                  player: null,
+                  bear: p.bear,
+                  critter: null,
+                  portal: null,
+                },
+              ]
             : [],
         ),
         ...crittersAt("village", view.serverNow ?? now, {
@@ -453,9 +461,30 @@ export function Arena({
           y: cameraY,
           width: viewWidth,
           height: viewHeight,
-        }).map((critter) => ({ y: critter.y, object: null, player: null, bear: null, critter })),
+        }).map((critter) => ({
+          y: critter.y,
+          object: null,
+          player: null,
+          bear: null,
+          critter,
+          portal: null,
+        })),
       ].sort((a, b) => a.y - b.y);
       for (const layer of layers) {
+        if (layer.portal) {
+          drawPortal(
+            ctx,
+            LOBBY_PORTAL.x,
+            LOBBY_PORTAL.y,
+            now,
+            quality.current.bloom,
+            "Forest portal",
+            interaction.current?.id === "portal",
+            quality.current.shadows,
+            quality.current.wavingVegetation,
+          );
+          continue;
+        }
         if (layer.critter) {
           drawCritter(ctx, layer.critter);
           continue;
