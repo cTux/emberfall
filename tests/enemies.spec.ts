@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import type { WorldState } from "../packages/common/src/index";
 
-test("elite and boss render yellow and orange proportional health bars and a boss objective", async ({
+test("health bars touch names, debuffs align left, and boss bars are larger and purple", async ({
   page,
 }) => {
   const world: WorldState = {
@@ -42,7 +42,18 @@ test("elite and boss render yellow and orange proportional health bars and a bos
       damage: [],
       enemies: [
         { id: 1, kind: "elite", x: 2250, y: 1280, hitpoints: 25, angle: 0 },
-        { id: 2, kind: "boss", x: 2550, y: 1280, hitpoints: 100, angle: 0 },
+        {
+          id: 2,
+          kind: "boss",
+          x: 2550,
+          y: 1280,
+          hitpoints: 100,
+          angle: 0,
+          debuffs: [
+            { kind: "poison", stacks: 2, expiresAt: 100000, nextTick: 20000, ownerId: "p" },
+            { kind: "burn", stacks: 1, expiresAt: 100000, nextTick: 20000, ownerId: "p" },
+          ],
+        },
       ],
     },
   };
@@ -106,10 +117,18 @@ test("elite and boss render yellow and orange proportional health bars and a bos
       },
     });
     const bars: Record<string, number> = {};
+    let bar = { x: 0, y: 0, width: 0, height: 0 };
+    let bossBar = bar;
     (window as unknown as { enemyBars: typeof bars }).enemyBars = bars;
     const images = CanvasRenderingContext2D.prototype.drawImage;
     CanvasRenderingContext2D.prototype.drawImage = new Proxy(images, {
       apply(target, ctx, args) {
+        if (args[0] instanceof HTMLImageElement && args[0].src.includes("/status/")) {
+          const expectedX = bossBar.x + (args[0].src.includes("poison") ? 0 : 14);
+          document.body.dataset.debuffAligned = String(
+            args[1] === expectedX && args[2] + 12 === bossBar.y,
+          );
+        }
         if (
           args[0] instanceof HTMLImageElement &&
           ctx.globalAlpha > 0.45 &&
@@ -124,8 +143,16 @@ test("elite and boss render yellow and orange proportional health bars and a bos
     });
     const text = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (value, x, y) {
-      if (value === "The Hollow Warden" && this.font === 'bold 18px "Pixelify Sans", sans-serif')
+      if (value === "The Hollow Warden" && this.font === '8px "Pixelify Sans", sans-serif') {
         document.body.dataset.bossName = value;
+        document.body.dataset.bossNameTouching = String(
+          y - this.measureText(value).actualBoundingBoxAscent === bar.y + bar.height,
+        );
+      }
+      if (value === "Hunter" && this.font === '8px "Pixelify Sans", sans-serif')
+        document.body.dataset.playerNameTouching = String(
+          y - this.measureText(value).actualBoundingBoxAscent === bar.y + bar.height,
+        );
       if (this.font === 'bold 11px "Pixelify Sans", sans-serif' && value === "Far ally")
         document.body.dataset.allyArrow = "yes";
       if (this.font === 'bold 11px "Pixelify Sans", sans-serif' && value === "The Hollow Warden")
@@ -134,9 +161,14 @@ test("elite and boss render yellow and orange proportional health bars and a bos
     };
     const original = CanvasRenderingContext2D.prototype.fillRect;
     CanvasRenderingContext2D.prototype.fillRect = function (x, y, width, height) {
-      if (height === 3 && ["#f4d447", "#ff9638"].includes(String(this.fillStyle)))
+      if (this.fillStyle === "#101817") bar = { x, y, width, height };
+      if (height === 3 && this.fillStyle === "#f4d447") bars[String(this.fillStyle)] = width;
+      if (height === 7 && this.fillStyle === "#c084fc") {
         bars[String(this.fillStyle)] = width;
-      if (height === 2 && this.fillStyle === "#86d9a2")
+        bossBar = bar;
+        document.body.dataset.bossBarLarger = String(bar.width > 40 && bar.height > 7);
+      }
+      if (height === 5 && this.fillStyle === "#86d9a2")
         document.body.dataset.playerHealthWidth = String(width);
       original.call(this, x, y, width, height);
     };
@@ -157,12 +189,24 @@ test("elite and boss render yellow and orange proportional health bars and a bos
     .poll(() =>
       page.evaluate(() => (window as unknown as { enemyBars: Record<string, number> }).enemyBars),
     )
-    .toEqual({ "#f4d447": 16, "#ff9638": 16 });
+    .toEqual({ "#f4d447": 16, "#c084fc": 40 });
   await expect(page.locator("body")).toHaveAttribute("data-boss-name", "The Hollow Warden");
+  for (const attribute of [
+    "boss-name-touching",
+    "player-name-touching",
+    "boss-bar-larger",
+    "debuff-aligned",
+  ])
+    await expect(page.locator("body")).toHaveAttribute(`data-${attribute}`, "true");
+  await expect(health).toHaveCSS("border-top-color", "rgb(192, 132, 252)");
+  await expect(health.locator("span")).toHaveCSS(
+    "background-image",
+    "linear-gradient(rgb(192, 132, 252), rgb(139, 69, 207))",
+  );
   for (const archetype of ["skeleton", "runner", "brute", "caster"])
     await expect(page.locator("body")).toHaveAttribute(`data-death-${archetype}`, "yes");
   await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "4");
-  await expect(page.locator("body")).toHaveAttribute("data-blood-opacity", "0.5");
+  expect(Number(await page.locator("body").getAttribute("data-blood-opacity"))).toBeCloseTo(0.5, 1);
   await expect(page.locator("body")).toHaveAttribute("data-blood-edges", "23");
   // Puddles survive expiry of the server's short-lived damage events.
   world.scene!.damage = [];
@@ -175,7 +219,7 @@ test("elite and boss render yellow and orange proportional health bars and a bos
   await page.getByLabel("Blood puddles", { exact: true }).check();
   await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "4");
   await page.getByRole("button", { name: "Close menu" }).click();
-  await expect(page.locator("body")).toHaveAttribute("data-player-health-width", "19");
+  await expect(page.locator("body")).toHaveAttribute("data-player-health-width", "19.5");
   await expect(page.locator("body")).toHaveAttribute("data-ally-arrow", "yes");
   await page.screenshot({ path: "test-results/elite-boss-bars.png" });
   world.scene!.enemies[1].x = 4000;

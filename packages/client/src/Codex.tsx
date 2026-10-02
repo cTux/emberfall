@@ -62,7 +62,7 @@ const chapters = [
       <>
         {" "}
         <p>
-          When time runs out, a boss with 200 HP and an orange health bar arrives. Enemies keep
+          When time runs out, a boss with 200 HP and a purple health bar arrives. Enemies keep
           spawning until it falls. Defeat it to clear the remaining enemies and open blue return
           portals near every player. Death lets you return immediately while your party continues.
           Returning restores health and mana. Players joining during a run wait in the village. A

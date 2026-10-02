@@ -733,15 +733,15 @@ select {
   position: relative;
   height: 20px;
   overflow: hidden;
-  background: #201513ed;
-  border: 1px solid #ffc879;
+  background: #241334ed;
+  border: 1px solid #c084fc;
   box-shadow: 0 2px 8px #0009;
 }
 
 .boss-health span {
   display: block;
   height: 100%;
-  background: linear-gradient(#ffc064, #d87824);
+  background: linear-gradient(#c084fc, #8b45cf);
   transition: width 100ms linear;
 }
 
