@@ -29,6 +29,7 @@ import { faGlobe } from "@fortawesome/free-solid-svg-icons/faGlobe";
 import { Settings } from "./Settings";
 import { loadPreferences } from "./preferences";
 import { Arena } from "./Arena";
+import { Chat } from "./Chat";
 import { loadGraphics } from "./graphics";
 import "./style.scss";
 import { panelPositions } from "./panel-positions";
@@ -366,6 +367,14 @@ function App() {
             }
           />
         </Box>
+        {world && (
+          <Chat
+            key={world.id}
+            messages={world.chat ?? []}
+            send={send}
+            disabled={status !== "Connected"}
+          />
+        )}
         {world ? (
           <Stack
             component="aside"

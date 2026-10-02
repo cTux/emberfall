@@ -88,6 +88,12 @@ The server uses Node 24's built-in SQLite database at `packages/server/data/char
 
 A server-generated 256-bit bearer key in browser localStorage identifies the character; only its SHA-256 hash is stored in the database. Nicknames are not credentials. Clearing browser site data loses access to that character; there is no account recovery or cross-device login yet. Duplicate active sessions for the same character are rejected. The browser cannot write levels, XP, or stats. Failed loads do not silently reset characters; failed saves are reported and retried. Forest kills add 1 XP each; playtime also progresses. Dead characters revive on rejoining a village. Every return from a scene (return portal, death window, or leaving early) restores the returning player to maximum health and mana and their companion to maximum health immediately, clearing any pending companion resurrection. Bear has no mana stat.
 
+## World chat
+
+The chat panel shows the latest 10 messages in the current world, shared across village and forest players. Hover over the panel to reveal the input; click the input to focus it, then press Enter or Send. Hover never takes keyboard focus. The input stays visible while focused; Escape releases it and movement keys do not move the player while typing. Touch devices show the input without hover.
+
+Each player displays only their latest message in a wrapped speech bubble above their head in both scenes, until they send another message or leave the world. The server validates trimmed, nonempty text up to 200 characters, rejects control characters, identifies the sender from their session, and allows one message per 500 ms. Messages and bubbles travel in existing world snapshots, are isolated by world, survive reconnects and scene changes, and reset when the world empties. Chat is not saved with character progress.
+
 ## Graphics
 
 Settings contains Low, Balanced and High (default) presets, plus persistent individual toggles. High enables soft projected tree shadows, 2D contact ambient occlusion, dense grass clusters, sprite-only motion blur, flickering campfire/player lighting, bloom, and ambient particles. Resolution options are 75%, native and 150% supersampling, with backing pixel density capped at 3x. Changes apply immediately and do not change server simulation or collision geometry.

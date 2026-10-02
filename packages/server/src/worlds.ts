@@ -9,18 +9,20 @@ import { resolve, extname, sep } from "node:path";
 import { WebSocketServer, WebSocket } from "ws";
 import {
   MAX_PLAYERS,
+  CHAT_LIMIT,
   clientMessage,
   nearbyInteraction,
   movePlayer,
   TICK_MS,
 } from "@emberfall/common";
-import type { Player, ServerMessage, WorldState, SceneState } from "@emberfall/common";
+import type { ChatMessage, Player, ServerMessage, WorldState, SceneState } from "@emberfall/common";
 import { CharacterStore } from "./characters.ts";
 import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from "./scenes.ts";
 import type { Scene } from "./scenes.ts";
 
 const derive = promisify(scrypt);
 interface World {
+  chat?: ChatMessage[];
   id: string;
   name: string;
   hostId: string;
@@ -31,6 +33,7 @@ interface World {
   training?: SceneState;
 }
 interface Session {
+  chatAt?: number;
   id: string;
   worldId?: string;
   x: number;
@@ -141,6 +144,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
     name: world.name,
     hostId: world.hostId,
     players: [...world.players.values()],
+    chat: world.chat ?? [],
     scene: sceneState(world.scene),
     training: world.training,
     serverNow: now,
@@ -171,6 +175,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         if (world !== permanentWorld) worlds.delete(world.id);
         world.hostId = "";
         world.scene = undefined;
+        world.chat = [];
       } else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
     }
     session.worldId = undefined;
@@ -293,6 +298,32 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       }
       if (session.busy) {
         error("Please wait for your previous request.");
+        return;
+      }
+      if (message.type === "chat") {
+        const world = worlds.get(session.worldId ?? "");
+        const player = world?.players.get(session.id);
+        if (!world || !player) {
+          error("Join a world first.");
+          return;
+        }
+        if (now - (session.chatAt ?? 0) < 500) {
+          error("Please wait a moment before sending another chat message.");
+          return;
+        }
+        session.chatAt = now;
+        player.chat = message.text;
+        world.chat = [
+          ...(world.chat ?? []),
+          {
+            id: randomUUID(),
+            playerId: player.id,
+            name: player.name,
+            text: message.text,
+          },
+        ].slice(-CHAT_LIMIT);
+        const update: ServerMessage = { type: "state", world: state(world, now) };
+        for (const [peer, member] of sessions) if (member.worldId === world.id) send(peer, update);
         return;
       }
       if (message.type === "leave") {
