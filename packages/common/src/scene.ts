@@ -63,9 +63,11 @@ export function nearbyInteraction(
   if (Math.hypot(player.x - WARDROBE.x, player.y + 15 - WARDROBE.y) < 55)
     return { id: "wardrobe", name: "Wardrobe", ...WARDROBE };
   const building = BUILDINGS.find(
-    (b) => Math.hypot(player.x - b.x, player.y + 15 - (b.y + 24)) < INTERACTION_RADIUS,
+    (b) => Math.hypot(player.x - b.doorX, player.y + 15 - (b.y + 24)) < INTERACTION_RADIUS,
   );
-  return building ? { id: building.id, name: building.name, x: building.x, y: building.y } : null;
+  return building
+    ? { id: building.id, name: building.name, x: building.doorX, y: building.y }
+    : null;
 }
 export type DebuffKind = "bleed" | "poison" | "burn" | "roots";
 export interface Debuff {
