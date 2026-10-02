@@ -273,7 +273,10 @@ export function tickCompanion(
       bear.x = body.x;
       bear.y = body.y;
     } else {
-      const travel = Math.min(Math.max(0, destinationDistance - 20), speed * Math.max(0, dt));
+      const travel = Math.min(
+        Math.max(0, destinationDistance - (destination === player ? 20 : 0)),
+        speed * Math.max(0, dt),
+      );
       const next = moveActor(
         { x: bear.x, y: bear.y + 15 },
         Math.cos(heading) * travel,
