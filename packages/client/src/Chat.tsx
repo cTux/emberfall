@@ -17,6 +17,19 @@ export function Chat({
   useEffect(() => {
     if (log.current) log.current.scrollTop = log.current.scrollHeight;
   }, [latestId]);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          (entry.target as HTMLElement).style.visibility =
+            entry.intersectionRatio < 1 ? "hidden" : "";
+        }
+      },
+      { root: log.current, threshold: 1 },
+    );
+    for (const message of log.current?.children ?? []) observer.observe(message);
+    return () => observer.disconnect();
+  }, [latestId]);
   return (
     <aside className="chat" aria-label="World chat" tabIndex={0}>
       <div className="chat-log" role="log" aria-label="Latest chat messages" ref={log}>
