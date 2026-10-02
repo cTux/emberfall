@@ -1,5 +1,17 @@
 export const ARENA = { width: 960, height: 640, speed: 180 } as const;
 export const WARDROBE = { x: 350, y: 365 };
+export const TRAINING_ZONES = [
+  { x: 140, y: 355, radius: 135 },
+  { x: 820, y: 355, radius: 135 },
+] as const;
+export const inTrainingZone = (player: { x: number; y: number }) =>
+  TRAINING_ZONES.some(
+    (zone) =>
+      Math.hypot(
+        (player.x - zone.x) / zone.radius,
+        (player.y + 15 - zone.y) / (zone.radius * 0.85),
+      ) <= 1,
+  );
 export const BUILDINGS = [
   { id: "inn", name: "Inn", x: 235, y: 225, sourceX: 0, sourceWidth: 64 },
   { id: "hall", name: "Hall", x: 485, y: 170, sourceX: 192, sourceWidth: 64 },
@@ -80,6 +92,8 @@ const random = () => {
 for (let i = 0; i < 110; i++) {
   const x = 35 + random() * 890;
   const y = 55 + random() * 555;
+  if (TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.radius + 35))
+    continue;
   if (Math.hypot((x - 480) / 190, (y - 355) / 110) < 1 || onPath(x, y, 55)) continue;
   if (BUILDINGS.some((b) => Math.abs(x - b.x) < 100 && y > b.y - 130 && y < b.y + 65)) continue;
   if (TORCHES.some((t) => Math.hypot(t.x - x, t.y - y) < 45)) continue;

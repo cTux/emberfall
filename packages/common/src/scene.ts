@@ -130,6 +130,7 @@ export interface LootDrop {
   at: number;
 }
 export interface SceneState {
+  training?: boolean;
   pausedAt?: number;
   playerShots?: PlayerShot[];
   explosions?: { id: number; x: number; y: number; at: number }[];

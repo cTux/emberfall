@@ -100,13 +100,13 @@ const chapters = [
           character and weapon.
         </p>
         <p>
-          Druid roots up to two enemies, preferring unrooted targets. Roots last five seconds, stop
-          ordinary enemies moving, and deal 2 damage each second. Bosses show roots and take damage
-          but keep moving. Boar has 1.5 times your maximum HP, strikes with tusks for 2 damage, and
-          revives five seconds after death. It chases the nearest enemy within 200 units of you,
-          returns when more than 200 units away from you, and resumes hunting once back at your
-          side. Boar keeps an 80-unit gap for tusk attacks, backs away from close enemies, and tries
-          to dodge attack warnings and incoming projectiles.
+          Druid roots up to two enemies within 250 units, preferring unrooted targets. Roots last
+          five seconds, stop ordinary enemies moving, and deal 2 damage each second. Bosses show
+          roots and take damage but keep moving. Boar has 1.5 times your maximum HP, strikes with
+          tusks for 2 damage, and revives five seconds after death. It chases the nearest enemy
+          within 200 units of you, returns when more than 200 units away from you, and resumes
+          hunting once back at your side. Boar keeps an 80-unit gap for tusk attacks, backs away
+          from close enemies, and tries to dodge attack warnings and incoming projectiles.
         </p>
         <p>
           Level, experience, health, mana, and playtime are saved separately for each class under

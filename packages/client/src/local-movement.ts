@@ -1,4 +1,9 @@
-import { nearestEnemyAngle, smoothAttackAngle, PLAYER_ATTACK_INTERVAL } from "@emberfall/common";
+import {
+  nearestEnemyAngle,
+  smoothAttackAngle,
+  PLAYER_ATTACK_INTERVAL,
+  inTrainingZone,
+} from "@emberfall/common";
 import {
   FOREST,
   movePlayer,
@@ -156,12 +161,20 @@ export class LocalMovement {
     return { ...predicted, ...displayed, inputX: motion.x, inputY: motion.y };
   }
   animateAttack(player: Player, world: WorldState, now: number) {
-    if (player.scene !== "forest" || player.hitpoints <= 0 || world.scene?.phase !== "active")
+    const scene = player.scene === "forest" ? world.scene : world.training;
+    if (
+      player.hitpoints <= 0 ||
+      scene?.phase !== "active" ||
+      (!player.scene && !inTrainingZone(player))
+    ) {
+      player.attackAt = undefined;
+      this.attackAt = -Infinity;
       return false;
+    }
     // Aim follows the visible nearest target every frame, independently of the swing cooldown.
     this.attackAngle = smoothAttackAngle(
       this.attackAngle,
-      nearestEnemyAngle(player, world.scene.enemies, this.attackAngle),
+      nearestEnemyAngle(player, scene.enemies, this.attackAngle),
       this.aimAt === undefined ? 0 : (now - this.aimAt) / 1000,
     );
     this.aimAt = now;

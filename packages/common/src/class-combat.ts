@@ -3,6 +3,13 @@ import { ENEMY_STATS } from "./enemies.ts";
 import type { DebuffKind, Enemy, SceneState } from "./scene.ts";
 import type { Player } from "./index.ts";
 
+const damageHistory = new WeakMap<Player, { at: number; amount: number }[]>();
+export function damagePerSecond(player: Player, now: number) {
+  const recent = (damageHistory.get(player) ?? []).filter((hit) => now - hit.at < 5000);
+  damageHistory.set(player, recent);
+  return recent.reduce((sum, hit) => sum + hit.amount, 0) / 5;
+}
+
 export function hitEnemy(
   scene: SceneState,
   enemy: Enemy,
@@ -12,12 +19,18 @@ export function hitEnemy(
   ailment?: DebuffKind,
 ) {
   if (enemy.hitpoints <= 0) return;
+  const dealt = Math.min(enemy.hitpoints, amount);
   enemy.hitpoints = Math.max(0, enemy.hitpoints - amount);
+  if (owner) {
+    const history = damageHistory.get(owner) ?? [];
+    history.push({ at: now, amount: dealt });
+    damageHistory.set(owner, history);
+  }
   scene.damage.push({
     id: ++scene.sequence,
     x: enemy.x,
     y: enemy.y,
-    amount,
+    amount: dealt,
     at: now,
     target: `enemy:${enemy.id}`,
     killed: enemy.hitpoints === 0,
@@ -44,7 +57,7 @@ export function hitEnemy(
     debuff.expiresAt = now + 5000;
     debuff.ownerId = owner.id;
   }
-  if (enemy.hitpoints > 0) return;
+  if (enemy.hitpoints > 0 || scene.training) return;
   if (owner) owner.experience++;
   scene.drops ??= [];
   scene.drops.push({ id: ++scene.sequence, kind: "experience", x: enemy.x, y: enemy.y, at: now });
@@ -81,7 +94,10 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
   const rooted = (enemy: Enemy) =>
     enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now) ? 1 : 0;
   const targets = scene.enemies
-    .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= 1000)
+    .filter(
+      (e) =>
+        e.hitpoints > 0 && forestDistance(e, player) <= (player.classId === "druid" ? 250 : 1000),
+    )
     .sort(
       (a, b) =>
         (player.classId === "druid" ? rooted(a) - rooted(b) : 0) ||
@@ -135,7 +151,10 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
   scene.explosions = (scene.explosions ?? []).filter((e) => now - e.at < 350);
   scene.playerShots = (scene.playerShots ?? []).filter((shot) => {
     const owner = players.find(
-      (p) => p.id === shot.ownerId && p.scene === "forest" && p.hitpoints > 0,
+      (p) =>
+        p.id === shot.ownerId &&
+        (scene.training ? !p.scene : p.scene === "forest") &&
+        p.hitpoints > 0,
     );
     if (!owner) return false;
     const target = scene.enemies.find((e) => e.id === shot.targetId && e.hitpoints > 0);

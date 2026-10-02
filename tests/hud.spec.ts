@@ -28,6 +28,12 @@ test("nickname persists in a new session, viewport is full, party bars and contr
     await next.setViewportSize(viewport);
     await expect(next.locator("canvas")).toHaveCSS("width", `${viewport.width}px`);
     await expect(next.locator("canvas")).toHaveCSS("height", `${viewport.height}px`);
+    const graph = await next.locator(".performance-stats").boundingBox();
+    const dps = await next.getByLabel("Damage per second", { exact: true }).boundingBox();
+    const party = await next.locator(".party").boundingBox();
+    expect(dps!.y).toBeGreaterThanOrEqual(graph!.y + graph!.height);
+    expect(party!.y).toBeGreaterThanOrEqual(dps!.y + dps!.height);
+    await expect(next.getByLabel("Damage per second", { exact: true })).toContainText("0.0 DPS");
     const dot = await next.getByRole("status", { name: "World server online" }).boundingBox();
     expect(dot!.x).toBeGreaterThan(viewport.width - 40);
     expect(dot!.y).toBeGreaterThan(viewport.height - 40);

@@ -1,4 +1,4 @@
-import { WARDROBE, BUILDINGS, TORCHES, TREES, onPath } from "@emberfall/common";
+import { WARDROBE, BUILDINGS, TORCHES, TREES, onPath, TRAINING_ZONES } from "@emberfall/common";
 import { makeMask, castShadow } from "./lighting";
 import type { Caster, Light } from "./lighting";
 import type { GraphicsSettings } from "./graphics";
@@ -43,6 +43,7 @@ export function villageSprites(
       const x = random() * 960,
         y = random() * 640;
       if (
+        TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.radius) ||
         onPath(x, y, 38) ||
         BUILDINGS.some((b) => Math.abs(x - b.x) < 85 && y > b.y - 105 && y < b.y + 20)
       )

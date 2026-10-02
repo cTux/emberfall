@@ -1,7 +1,18 @@
 import { z } from "zod";
-export { ARENA, TREES, BUILDINGS, PATHS, TORCHES, onPath, moveActor } from "./world.ts";
+export {
+  ARENA,
+  TREES,
+  BUILDINGS,
+  PATHS,
+  TORCHES,
+  TRAINING_ZONES,
+  inTrainingZone,
+  onPath,
+  moveActor,
+} from "./world.ts";
 export * from "./scene.ts";
 export * from "./simulation.ts";
+export * from "./training.ts";
 export { ENEMY_HP, ENEMY_STATS, enemyMaxHealth, spawnArchetype } from "./enemies.ts";
 import type { SceneState } from "./scene.ts";
 
@@ -71,6 +82,7 @@ export const clientMessage = z.discriminatedUnion("type", [
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export interface Player extends CharacterProgress {
+  dps?: number;
   bear?: Bear;
   classId?: ClassId;
   classes?: Record<ClassId, CharacterProgress>;
@@ -111,6 +123,7 @@ export interface WorldSummary {
   capacity: number;
 }
 export interface WorldState {
+  training?: SceneState;
   id: string;
   name: string;
   hostId: string;
