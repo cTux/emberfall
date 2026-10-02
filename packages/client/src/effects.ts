@@ -1,6 +1,22 @@
 import { nearbyInteraction } from "@emberfall/common";
 import type { WorldState } from "@emberfall/common";
 
+export function vegetationSway(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  now: number,
+  grass = false,
+) {
+  const phase = x * 0.013 + y * 0.017;
+  return (
+    (Math.sin(now / 1600 + phase) + Math.sin(now / 2700 + phase * 1.7) * 0.3) *
+    (width / height) *
+    (grass ? 0.07 : 0.018)
+  );
+}
+
 export function drawVegetation(
   ctx: CanvasRenderingContext2D,
   sprite: HTMLCanvasElement,
@@ -12,11 +28,7 @@ export function drawVegetation(
   waving: boolean,
 ) {
   if (waving) {
-    const phase = x * 0.013 + y * 0.017;
-    const sway =
-      (Math.sin(now / 1600 + phase) + Math.sin(now / 2700 + phase * 1.7) * 0.3) *
-      (width / height) *
-      (sprite.width === 16 ? 0.07 : 0.018);
+    const sway = vegetationSway(x, y, width, height, now, sprite.width === 16);
     ctx.save();
     // Shear around the base: roots stay fixed while foliage catches the breeze.
     ctx.transform(1, 0, sway, 1, -sway * y, 0);

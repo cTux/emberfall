@@ -426,6 +426,7 @@ export function Arena({
         "Forest portal",
         interaction.current?.id === "portal",
         quality.current.shadows,
+        quality.current.wavingVegetation,
       );
       const layers = [
         ...scenery.map((object) => ({
