@@ -48,8 +48,10 @@ const chapters = [
           limit and new stacks refresh the shared timer. Icons above enemy health bars show active
           ailments and stacks. Skeletons have 10 HP. Each spawn has a 10% chance to be a big, slow
           enemy with triple HP, and a 10% chance to be ranged with 70% HP. Every tenth spawn is
-          elite with five times normal HP; big and ranged modifiers also apply to elites. Red areas
-          warn of spawns and enemy attacks. Dodge filled circles and red projectiles.
+          elite with five times normal HP; big and ranged modifiers also apply to elites. Each
+          additional player in the forest multiplies enemy HP by 1.75 and dropped XP by 1.2. Three
+          players mean 3.0625 times HP and 1.44 times dropped XP. Red areas warn of spawns and enemy
+          attacks. Dodge filled circles and red projectiles.
         </p>{" "}
         <p>
           <img className="combat-icon" src={statusSrc("bleed")} alt="Bleeding" /> Bleeding ·{" "}

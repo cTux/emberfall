@@ -37,7 +37,7 @@ export const progressSchema = z
   .object({
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),
     level: z.number().int().min(1).max(10000),
-    experience: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+    experience: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),
     hitpoints: z.number().finite().nonnegative(),
     maxHitpoints: z.number().finite().positive(),
     manapoints: z.number().finite().nonnegative(),
