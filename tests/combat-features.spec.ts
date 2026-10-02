@@ -158,7 +158,7 @@ test("warnings, enemy silhouettes, graphics controls and scene music work togeth
     });
     prototype.fillText = new Proxy(prototype.fillText, {
       apply(target, context, args) {
-        if (args[0] === "Hunter" && context.font === '8px "Pixelify Sans", sans-serif')
+        if (args[0] === "Hunter" && context.font === '8px "Alegreya Sans", sans-serif')
           capture.frames.push(performance.now());
         return Reflect.apply(target, context, args);
       },
@@ -194,8 +194,9 @@ test("warnings, enemy silhouettes, graphics controls and scene music work togeth
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
   for (const label of ["Adaptive resolution", "Sunlight shafts (2D)", "Cinematic color grading"])
     await page.getByLabel(label, { exact: true }).check();
-  await page.getByLabel("Frame rate limit").selectOption("60");
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("combobox", { name: "Frame rate limit" }).click();
+  await page.getByRole("option", { name: "60 FPS", exact: true }).click();
+  await page.getByRole("button", { name: /^Close / }).click();
   await page.getByRole("tab", { name: "Create a world" }).click();
   await page.getByRole("button", { name: "Light the ember" }).click();
   await expect.poll(() => playing("Trials.mp3")).toBe(true);

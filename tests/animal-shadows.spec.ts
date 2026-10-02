@@ -114,7 +114,7 @@ for (const forest of [false, true]) {
       await page.getByRole("button", { name: "Settings", exact: true }).click();
       await page.getByRole("tab", { name: "Graphics", exact: true }).click();
       await page.getByRole("button", { name: preset, exact: true }).click();
-      await page.getByRole("button", { name: "Close menu" }).click();
+      await page.getByRole("button", { name: /^Close / }).click();
       await page.evaluate(() => {
         for (const key of [
           "bearsun",

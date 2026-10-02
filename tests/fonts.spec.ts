@@ -38,14 +38,14 @@ test("the bundled Alegreya Sans font loads and is used throughout the interface"
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
-  await expect(page.locator("select").first()).toHaveCSS(
+  await expect(page.getByRole("combobox", { name: "Frame rate limit" })).toHaveCSS(
     "font-family",
     '"Alegreya Sans", sans-serif',
   );
   await page.screenshot({ path: "test-results/font-settings.png" });
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("button", { name: /^Close / }).click();
   await page.getByRole("button", { name: "Codex", exact: true }).click();
-  for (const selector of [".codex-book h3", ".codex-book p", ".codex-page-number"]) {
+  for (const selector of ['[role="dialog"] h3', '[role="tabpanel"] p']) {
     await expect(page.locator(selector).first()).toHaveCSS(
       "font-family",
       '"Alegreya Sans", sans-serif',

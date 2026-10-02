@@ -23,7 +23,7 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await expect(page.getByLabel("Forest preview")).toBeVisible();
   await expect(page.locator("body")).toHaveCSS("user-select", "none");
   await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByLabel("World name", { exact: true }).fill("Portal party");
+  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Portal party");
   await page.getByRole("button", { name: "Light the ember" }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   const context = await browser.newContext();
@@ -44,10 +44,10 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await page.keyboard.press("e");
   const dialog = page.getByRole("dialog", { name: "Forest portal" });
   await expect(dialog).toBeVisible();
-  await expect(page.getByLabel("Scene type")).toHaveValue("Forest");
-  await expect(page.getByLabel("Difficulty")).toHaveValue("Easy");
+  await expect(page.getByRole("combobox", { name: "Scene type" })).toHaveText("Forest");
+  await expect(page.getByRole("combobox", { name: "Difficulty" })).toHaveText("Easy");
   const before = await dialog.boundingBox();
-  const title = await dialog.locator(".window-title").boundingBox();
+  const title = await dialog.locator("h2").boundingBox();
   await page.mouse.move(title!.x + 35, title!.y + 15);
   await page.mouse.down();
   await page.mouse.move(title!.x + 135, title!.y + 65, { steps: 6 });
@@ -61,7 +61,7 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await expect(
     guest
       .getByRole("dialog", { name: "Forest portal" })
-      .getByRole("complementary", { name: "Departure vote" }),
+      .getByRole("region", { name: "Departure vote" }),
   ).toContainText("0/2 ready");
   await dialog.getByRole("button", { name: "I'm ready" }).click();
   await expect(dialog).toBeHidden();
@@ -86,8 +86,10 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await late.goto("/");
   await late.getByRole("button", { name: /Portal party/ }).click();
   await expect(late.getByLabel("Shared village. Move with WASD or arrow keys.")).toBeVisible();
-  await expect(late.locator(".party-member.other-dimension")).toHaveCount(2);
-  await expect(late.locator(".party-member.other-dimension").first()).toHaveCSS("opacity", "0.4");
+  await expect(late.locator('.party article[aria-label$="in another dimension"]')).toHaveCount(2);
+  await expect(
+    late.locator('.party article[aria-label$="in another dimension"]').first(),
+  ).toHaveCSS("opacity", "0.4");
   await late.keyboard.down("d");
   await late.waitForTimeout(350);
   await late.keyboard.up("d");
@@ -95,7 +97,7 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await late.keyboard.press("e");
   await late.getByRole("button", { name: "Join scene", exact: true }).click();
   await expect(late.getByLabel("Forest combat scene.")).toBeVisible();
-  await expect(late.locator(".party-member.other-dimension")).toHaveCount(0);
+  await expect(late.locator('.party article[aria-label$="in another dimension"]')).toHaveCount(0);
   await lateContext.close();
   await page.bringToFront();
   await page.waitForTimeout(6000);
@@ -107,9 +109,12 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await page.getByRole("button", { name: "Leave", exact: true }).click();
   await expect(page.getByLabel("Shared village. Move with WASD or arrow keys.")).toBeVisible();
   await expect(guest.getByLabel("Forest combat scene.")).toBeVisible();
-  await expect(page.locator(".party-member.other-dimension")).toHaveCount(1);
-  await expect(guest.locator(".party-member.other-dimension")).toHaveCount(1);
-  await expect(page.locator(".party-member:not(.other-dimension)")).toHaveCSS("opacity", "1");
+  await expect(page.locator('.party article[aria-label$="in another dimension"]')).toHaveCount(1);
+  await expect(guest.locator('.party article[aria-label$="in another dimension"]')).toHaveCount(1);
+  await expect(page.locator('.party article:not([aria-label$="in another dimension"])')).toHaveCSS(
+    "opacity",
+    "1",
+  );
   await page.getByLabel("Shared village. Move with WASD or arrow keys.").click();
   await page.keyboard.down("d");
   await page.waitForTimeout(390);
@@ -120,7 +125,7 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await page.keyboard.press("e");
   await page.getByRole("button", { name: "Join scene", exact: true }).click();
   await expect(page.getByLabel("Forest combat scene.")).toBeVisible();
-  await expect(page.locator(".party-member.other-dimension")).toHaveCount(0);
+  await expect(page.locator('.party article[aria-label$="in another dimension"]')).toHaveCount(0);
   for (const participant of [page, guest]) {
     await participant.keyboard.press("Escape");
     await participant.getByRole("button", { name: "Leave", exact: true }).click();
@@ -163,8 +168,9 @@ test("settings tabs, FPS, fog and Codex persist and all windows can close", asyn
   await page.getByLabel("Vignette", { exact: true }).uncheck();
   await page.getByRole("tab", { name: "Sound", exact: true }).click();
   await page.getByLabel("Sound effects", { exact: true }).check();
-  await page.getByLabel("Effects volume").fill("0.6");
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("slider", { name: "Effects volume" }).focus();
+  await page.keyboard.press("End");
+  await page.getByRole("button", { name: /^Close / }).click();
   await expect(page.getByLabel("Frame rate", { exact: true })).toContainText(/\d+ FPS/);
   await page.reload();
   await page.getByRole("button", { name: "Settings", exact: true }).click();
@@ -173,16 +179,17 @@ test("settings tabs, FPS, fog and Codex persist and all windows can close", asyn
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
   await expect(page.getByLabel("Volumetric fog (2D)", { exact: true })).not.toBeChecked();
   await expect(page.getByLabel("Vignette", { exact: true })).not.toBeChecked();
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("button", { name: /^Close / }).click();
   await page.getByRole("button", { name: "Codex", exact: true }).click();
   const codex = page.getByRole("dialog", { name: "Codex" });
   await expect(codex.getByRole("tabpanel")).toContainText("Move with WASD");
   await codex.getByRole("tab", { name: "Combat" }).click();
   await expect(codex.getByRole("tabpanel")).toContainText("Skeletons have 10 HP");
-  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowRight");
   await expect(codex.getByRole("tab", { name: "The Warden" })).toBeFocused();
+  await page.keyboard.press("Enter");
   await expect(codex.getByRole("tabpanel")).toContainText("200 HP");
-  await expect(codex.getByRole("tabpanel").locator("p")).toHaveCSS("color", "rgb(58, 44, 33)");
+  await expect(codex.getByRole("tabpanel").locator("p")).toHaveCSS("color", "rgb(184, 201, 183)");
   await page.screenshot({ path: "test-results/codex.png" });
   await page.setViewportSize({ width: 390, height: 844 });
   await codex.getByRole("tab", { name: "Combat" }).click();

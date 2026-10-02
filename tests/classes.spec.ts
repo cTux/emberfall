@@ -33,7 +33,10 @@ test("wardrobe selects and restores classes through the server", async ({ page }
     "aria-pressed",
     "true",
   );
-  await expect(page.locator(".party-member .portrait")).toHaveCSS("background-image", /ranger.png/);
+  await expect(page.locator(".party article .portrait")).toHaveCSS(
+    "background-image",
+    /ranger.png/,
+  );
   await wardrobe.getByRole("button", { name: /^Mage/ }).click();
   await expect(wardrobe.getByRole("button", { name: /^Mage/ })).toHaveAttribute(
     "aria-pressed",
@@ -44,14 +47,14 @@ test("wardrobe selects and restores classes through the server", async ({ page }
     "aria-pressed",
     "true",
   );
-  await expect(page.locator(".party-member .portrait")).toHaveCSS("background-image", /druid.png/);
+  await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
   await page.screenshot({ path: "test-results/wardrobe.png" });
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Leave world" }).click();
   await page.getByRole("button", { name: "Leave", exact: true }).click();
   await page.getByRole("tab", { name: "Create a world" }).click();
   await page.getByRole("button", { name: "Light the ember" }).click();
-  await expect(page.locator(".party-member .portrait")).toHaveCSS("background-image", /druid.png/);
+  await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
 });
 
 test("classes show distinct attacks, Bear, roots, projectiles, explosions and debuffs", async ({

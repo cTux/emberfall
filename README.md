@@ -36,6 +36,8 @@ For a temporary internet test, build and run `pnpm start`, reserve this PC's LAN
 
 - `packages/client`: Vite + React compact lobby, Canvas 2D forest, sprite rendering and instant local movement with authoritative reconciliation. The browser package can later be wrapped for native OS distribution; no desktop runtime is installed now.
 
+- `packages/ui`: shared Material UI theme and controlled game components, used by the client and previewed in Storybook (`pnpm --filter @emberfall/ui storybook`). The client owns server actions, settings persistence, clocks and performance sampling; the library owns presentation and dialog focus behavior.
+
 - `packages/server`: Node HTTP/WebSocket runtime, Vite SSR-targeted production bundle. Development uses Node's native TypeScript/watch support. Vite builds server code; it is not itself a multiplayer server framework.
 
 Worlds are public in the server directory, optionally password protected, and limited to 8 players (MVP assumption). The server creates an unlocked "New Permanent World" at startup, visible and joinable through the normal world browser without a password. It retains its identity when empty; its host label and scene reset on the last departure, and its next player receives the host label. Creation joins the creator. A host leaving transfers the host label to the next player. Leaving or closing a browser normally removes the player immediately; the final departure removes player-created worlds. An interrupted connection retains its player and world for 30 seconds, including position, portal vote and forest membership. The client retries immediately after a failed connection or interruption, then once per second after repeated connection failures, and authenticates with its existing character key to resume the same session without a password prompt. Movement input is cleared on interruption. The shared world continues running during recovery. Expired sessions are saved and removed by the next five-second autosave pass. Restarting the server resets temporary world state and recreates New Permanent World; if recovery is unavailable, the client shows an error and the world browser so the player can join or create a world with their saved character. There are no login accounts, private/unlisted worlds or ownership privileges.
@@ -76,7 +78,7 @@ Selected original sprites are copied from the adjacent `ninja-adventure-gallery/
 
 ## Viewport, party and obstacles
 
-The arena fills the viewport with an aspect-preserving camera that follows the local player when the map is cropped. Codex, settings and exit are compact controls; the bottom-right circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames persist in browser localStorage; when storage is blocked the session still works.
+The arena fills the viewport with an aspect-preserving camera that follows the local player when the map is cropped. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames persist in browser localStorage; when storage is blocked the session still works.
 
 Party cards show each character's name, level and HP/MP bars from server state. Initial values are level 1, 100/100 HP and 50/50 MP; forest combat deals damage and grants 1 XP per kill; level advancement is not implemented. Shared deterministic tree data drives both rendering and server collisions. Circular bodies slide around trunks with substeps to prevent tunneling; the shared `moveActor` function is actor-neutral and tested for player and enemy body sizes. Forest enemies use the same collision rules as players. Trees and players render in depth order.
 
@@ -158,7 +160,7 @@ Clicking I'm ready closes the portal dialog; the Portal vote button reopens it t
 
 Lobby buildings and portals show interaction availability directly in their existing nameplate: a lighter background and `(E) Building name` while in range. They no longer show a separate tooltip.
 
-Codex uses a parchment book layout with chapter tabs for controls, worlds and party, combat, the boss, character persistence, and credits. Tabs support arrow keys, Home, and End; the book remains draggable and closable.
+Codex uses the shared forest theme with chapter tabs for controls, worlds and party, combat, the boss, character persistence, and credits. Tabs support arrow keys, Home, and End; the book remains draggable and closable.
 
 Enemy deaths retain their own sprite and fall/fade over 0.7 seconds. Thin health bars sit beneath player names. Screen-edge arrows track living teammates in the same area, the boss, and return portals using wrapped forest distances. Experience shards and coins begin attracting after their initial hop, within 140 units of the nearest living forest player, at 280 units/second; experience collection rewards every living player in the scene.
 

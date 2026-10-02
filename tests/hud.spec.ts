@@ -13,12 +13,14 @@ test("nickname persists in a new session, viewport is full, party bars and contr
   await expect(next.getByLabel("Your adventurer name")).toHaveValue("Persistent hero");
   await next.getByRole("tab", { name: "Create a world" }).click();
   await next.getByRole("button", { name: "Light the ember" }).click();
-  await expect(
-    next.getByRole("progressbar", { name: "Persistent hero hitpoints" }),
-  ).toHaveAttribute("aria-valuenow", "100");
-  await expect(
-    next.getByRole("progressbar", { name: "Persistent hero manapoints" }),
-  ).toHaveAttribute("aria-valuemax", "50");
+  await expect(next.getByRole("progressbar", { name: "Persistent hero HP" })).toHaveAttribute(
+    "aria-valuenow",
+    "100",
+  );
+  await expect(next.getByRole("progressbar", { name: "Persistent hero MP" })).toHaveAttribute(
+    "aria-valuemax",
+    "50",
+  );
   await expect(next.getByText("Lv. 1")).toBeVisible();
   await expect(next.locator("header, footer")).toHaveCount(0);
   for (const viewport of [
@@ -35,8 +37,8 @@ test("nickname persists in a new session, viewport is full, party bars and contr
     expect(party!.y).toBeGreaterThanOrEqual(dps!.y + dps!.height);
     await expect(next.getByLabel("Damage per second", { exact: true })).toContainText("0.0 DPS");
     const dot = await next.getByRole("status", { name: "World server online" }).boundingBox();
-    expect(dot!.x).toBeGreaterThan(viewport.width - 40);
-    expect(dot!.y).toBeGreaterThan(viewport.height - 40);
+    expect(dot!.x + dot!.width).toBe(viewport.width - 16);
+    expect(dot!.y + dot!.height).toBe(viewport.height - 16);
     await next.screenshot({ path: `test-results/hud-${viewport.width}.png` });
   }
   await next.getByRole("button", { name: "Codex", exact: true }).click();
@@ -49,7 +51,7 @@ test("nickname persists in a new session, viewport is full, party bars and contr
   await next.getByRole("tab", { name: "Graphics", exact: true }).click();
   await next.getByLabel("Ambient particles").uncheck();
   await expect(next.getByLabel("Ambient particles")).not.toBeChecked();
-  await next.getByRole("button", { name: "Close menu" }).click();
+  await next.getByRole("button", { name: /^Close / }).click();
   await next.getByRole("button", { name: "Leave world" }).click();
   await next.getByRole("button", { name: "Leave", exact: true }).click();
   await expect(next.getByLabel("Your adventurer name")).toHaveValue("Persistent hero");

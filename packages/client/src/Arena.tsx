@@ -124,7 +124,7 @@ export function Arena({
     const keys = new Set<string>();
     const positions = new Map<string, { x: number; y: number; facing: number }>();
     const key = (event: KeyboardEvent, down: boolean) => {
-      if (document.querySelector("dialog[open]")) return;
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
         return;
       const value = event.code;
@@ -168,7 +168,7 @@ export function Arena({
     function sendMovement() {
       const current = latest.current;
       if (!current) return;
-      if (document.querySelector("dialog[open]")) keys.clear();
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) keys.clear();
       const { x, y } = movement();
       localMovement.input(x, y, performance.now());
     }
@@ -323,7 +323,7 @@ export function Arena({
       const el = element;
       const scale = Math.max(el.width / ARENA.width, el.height / ARENA.height);
       if (latest.current) snapshots.push(latest.current, now);
-      if (document.querySelector("dialog[open]")) keys.clear();
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) keys.clear();
       const view = latest.current ? snapshots.render(now) : null;
       const local = latest.current ? localMovement.render(latest.current, now) : undefined;
       let localSwing = false;

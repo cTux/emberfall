@@ -32,7 +32,7 @@ test("walking keeps direction, advances frames, and fits the full nickname", asy
     });
     prototype.fillText = new Proxy(prototype.fillText, {
       apply(target, context, args) {
-        if (context.font === '8px "Pixelify Sans", sans-serif')
+        if (context.font === '8px "Alegreya Sans", sans-serif')
           window.renderCapture.label = {
             text: args[0],
             textWidth: context.measureText(args[0]).width,

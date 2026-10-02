@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ChapterTabs } from "@emberfall/ui";
+import { Box } from "@mui/material";
 import { statusSrc } from "./combat-assets";
 
 const chapters = [
@@ -148,55 +150,20 @@ const chapters = [
 ];
 
 export function Codex() {
-  const [chapter, setChapter] = useState(0);
+  const [chapter, setChapter] = useState("Controls");
   return (
-    <div className="codex-book">
-      <aside className="codex-index">
-        <span className="codex-eyebrow">Emberfall · Field guide</span>
-        <h3>The Adventurer’s Codex</h3>
-        <p>A companion for the journey beyond the village.</p>
-        <div role="tablist" aria-label="Codex chapters" aria-orientation="vertical">
-          {chapters.map((entry, index) => (
-            <button
-              key={entry.title}
-              id={`codex-tab-${index}`}
-              role="tab"
-              aria-selected={chapter === index}
-              aria-controls="codex-page"
-              tabIndex={chapter === index ? 0 : -1}
-              onClick={() => setChapter(index)}
-              onKeyDown={(event) => {
-                let next = index;
-                if (event.key === "ArrowDown") next = (index + 1) % chapters.length;
-                else if (event.key === "ArrowUp")
-                  next = (index + chapters.length - 1) % chapters.length;
-                else if (event.key === "Home") next = 0;
-                else if (event.key === "End") next = chapters.length - 1;
-                else return;
-                event.preventDefault();
-                setChapter(next);
-                document.getElementById(`codex-tab-${next}`)?.focus();
-              }}
-            >
-              <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span> {entry.title}
-            </button>
-          ))}
-        </div>
-      </aside>
-      <article
-        id="codex-page"
-        className="codex-page"
-        role="tabpanel"
-        aria-labelledby={`codex-tab-${chapter}`}
-        tabIndex={0}
-      >
-        <span className="codex-eyebrow">Chapter {chapter + 1}</span>
-        <h3>{chapters[chapter].title}</h3>
-        {chapters[chapter].content}
-        <span className="codex-page-number" aria-hidden="true">
-          — {chapter + 1} —
-        </span>
-      </article>
-    </div>
+    <Box
+      sx={{
+        "& p": { typography: "body1", color: "text.secondary" },
+        "& a": { color: "primary.main" },
+      }}
+    >
+      <ChapterTabs
+        label="Codex chapters"
+        value={chapter}
+        onChange={setChapter}
+        chapters={chapters.map((entry) => ({ ...entry, id: entry.title }))}
+      />
+    </Box>
   );
 }

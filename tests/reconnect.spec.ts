@@ -29,11 +29,13 @@ test("failed connections retry automatically and interrupted lobby, vote and for
     });
   });
   await page.goto("/");
-  await expect(page.getByRole("status", { name: "World server online" })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "World server online", includeHidden: true }),
+  ).toBeVisible();
   expect(attempts).toBe(3);
   await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByLabel("World name", { exact: true }).fill("Recovery grove");
-  await page.getByLabel("Password optional").fill("secret");
+  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Recovery grove");
+  await page.getByLabel("Password (optional)").fill("secret");
   await page.getByRole("button", { name: "Light the ember" }).click();
   await expect(page.getByRole("complementary", { name: /Recovery grove/ })).toBeVisible();
   const id = joined!.playerId;
@@ -51,7 +53,9 @@ test("failed connections retry automatically and interrupted lobby, vote and for
     await expect.poll(() => joined?.playerId).toBe(id);
     expect(joined!.world.id).toBe(worldId);
     expect(joined!.world.players).toHaveLength(1);
-    await expect(page.getByRole("status", { name: "World server online" })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "World server online", includeHidden: true }),
+    ).toBeVisible();
     await expect(page.getByRole("alert")).toBeHidden();
   };
   await interrupt();
@@ -84,7 +88,9 @@ test("failed connections retry automatically and interrupted lobby, vote and for
   await page.evaluate(() =>
     (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(1000),
   );
-  await expect(page.getByRole("status", { name: "World server online" })).toBeVisible();
+  await expect(
+    page.getByRole("status", { name: "World server online", includeHidden: true }),
+  ).toBeVisible();
   await expect(page.getByRole("alert")).toContainText("previous session is no longer available");
   await expect(page.getByLabel("Your adventurer name")).toBeVisible();
   expect(errors).toEqual([]);
