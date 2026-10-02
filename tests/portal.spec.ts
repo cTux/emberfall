@@ -14,7 +14,7 @@ const effectsSource = readFileSync("packages/client/src/effects.ts", "utf8");
 const vegetation = stripTypeScriptTypes(
   effectsSource.slice(
     effectsSource.indexOf("export function vegetationSway"),
-    effectsSource.indexOf("export function treeOpacity"),
+    effectsSource.indexOf("export function obstacleOpacity"),
   ),
 ).replaceAll("export ", "");
 
