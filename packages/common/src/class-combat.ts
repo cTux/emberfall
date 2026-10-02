@@ -150,6 +150,7 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
       id: ++scene.sequence,
       ownerId: player.id,
       castAt: player.attackAt ?? now,
+      castId: player.attackId,
       kind: player.classId === "mage" ? "fireball" : "arrow",
       x: player.x,
       y: player.y,

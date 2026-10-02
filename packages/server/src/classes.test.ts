@@ -569,31 +569,137 @@ test("class attacks fire once per cycle and ranged classes never deal a melee sl
   }
 });
 
-test("manual combat gates casts, retains cooldown, and expires held input", async () => {
-  const { tickPlayerCombat, PLAYER_ATTACK_INTERVAL } = await import("@emberfall/common");
+test("manual cast requests acknowledge acceptance, cooldown rejection and duplicates without held-input repeats", async () => {
+  const { tickPlayerCombat, requestPlayerCast } = await import("@emberfall/common");
   const player = { ...hero(), classId: "ranger" as const, autoAttack: false };
   const arena = scene();
   arena.enemies = [enemy(1)];
   tickPlayerCombat(arena, [player], 1000, 0.05);
   assert.equal(player.attackAt, undefined);
   Object.assign(player, { attacking: true, combatInputAt: 1000 });
+  const cast = (id: number, now: number) =>
+    requestPlayerCast(
+      arena,
+      player,
+      {
+        type: "cast",
+        id,
+        classId: "ranger",
+        epoch: arena.id,
+        autoTarget: true,
+        aimX: player.x,
+        aimY: player.y,
+      },
+      now,
+    );
+  assert(cast(1, 1000));
   tickPlayerCombat(arena, [player], 1000, 0.05);
   assert.equal(player.attackAt, 1000);
   assert.equal(arena.playerShots?.length, 1);
+  assert.equal(arena.playerShots?.[0].castId, 1);
   player.attacking = false;
   tickPlayerCombat(arena, [player], 1300, 0.05);
   player.attacking = true;
   player.combatInputAt = 1400;
+  assert.equal(cast(2, 1400), false);
+  assert.equal(player.castSeq, 2);
+  assert.equal(player.attackId, 1);
   tickPlayerCombat(arena, [player], 1400, 0.05);
   assert.equal(player.attackAt, 1000);
-  player.combatInputAt = 1000 + PLAYER_ATTACK_INTERVAL;
+  assert(cast(3, 1700));
   tickPlayerCombat(arena, [player], 1700, 0.05);
   assert.equal(player.attackAt, 1700);
+  assert.equal(cast(3, 2400), false, "a duplicate ID cannot fire twice");
   tickPlayerCombat(arena, [player], 2400, 0.05);
   assert.equal(player.attackAt, 1700);
   player.autoAttack = true;
   tickPlayerCombat(arena, [player], 2400, 0.05);
   assert.equal(player.attackAt, 2400);
+});
+
+test("accepted manual projectiles use request aim even if the cursor moves before the combat tick", async () => {
+  const { requestPlayerCast, tickPlayerCombat } = await import("@emberfall/common");
+  const player = { ...hero(), classId: "ranger" as const, autoAttack: false, autoTarget: false };
+  const arena = scene();
+  assert(
+    requestPlayerCast(
+      arena,
+      player,
+      {
+        type: "cast",
+        id: 1,
+        epoch: arena.id,
+        classId: "ranger",
+        autoTarget: false,
+        aimX: 2600,
+        aimY: 1280,
+      },
+      1000,
+    ),
+  );
+  player.aimX = 2400;
+  player.aimY = 1500;
+  tickPlayerCombat(arena, [player], 1050, 0);
+  assert.equal(arena.playerShots![0].angle, 0);
+  assert.equal(arena.playerShots![0].castId, 1);
+  assert.equal(arena.playerShots![0].targetX, 2600);
+});
+
+test("manual cast eligibility rejects stale areas/classes, death and inactive combat", async () => {
+  const { requestPlayerCast } = await import("@emberfall/common");
+  for (const reason of [
+    "area",
+    "class",
+    "dead",
+    "paused",
+    "ended",
+    "outside",
+    "missing",
+  ] as const) {
+    const player: Player = { ...hero(), classId: "mage", autoAttack: false };
+    const arena = scene();
+    const request = {
+      type: "cast" as const,
+      id: 1,
+      classId: "mage" as const,
+      epoch: arena.id,
+      autoTarget: false,
+      aimX: 2600,
+      aimY: 1280,
+    };
+    if (reason === "area") request.epoch = "expired";
+    if (reason === "class") player.classId = "ranger";
+    if (reason === "dead") player.hitpoints = 0;
+    if (reason === "paused") arena.pausedAt = 1000;
+    if (reason === "ended") arena.phase = "ended";
+    if (reason === "outside") {
+      player.scene = undefined;
+      request.epoch = "lobby";
+    }
+    assert.equal(
+      requestPlayerCast(reason === "missing" ? undefined : arena, player, request, 1000),
+      false,
+      reason,
+    );
+    assert.equal(player.castSeq, 1, "rejected requests are acknowledged");
+    assert.equal(player.attackAt, undefined);
+    assert.equal(player.attackId, undefined);
+  }
+  for (const bad of [{ id: 0 }, { id: 1.5 }, { aimX: Infinity }, { classId: "unknown" }]) {
+    assert.equal(
+      clientMessage.safeParse({
+        type: "cast",
+        id: 1,
+        epoch: "lobby",
+        classId: "mage",
+        autoTarget: false,
+        aimX: 0,
+        aimY: 0,
+        ...bad,
+      }).success,
+      false,
+    );
+  }
 });
 
 test("manual targeting prefers cursor targets for roots and fireballs and directs arrows", async () => {

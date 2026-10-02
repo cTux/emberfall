@@ -81,6 +81,15 @@ export const clientMessage = z.discriminatedUnion("type", [
     aimX: z.number().finite().min(0).max(FOREST.width),
     aimY: z.number().finite().min(0).max(FOREST.height),
   }),
+  z.object({
+    type: z.literal("cast"),
+    id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+    epoch: z.string().min(1).max(64),
+    classId: classSchema,
+    autoTarget: z.boolean(),
+    aimX: z.number().finite().min(0).max(FOREST.width),
+    aimY: z.number().finite().min(0).max(FOREST.height),
+  }),
   z.object({ type: z.literal("leave") }),
   z.object({ type: z.literal("selectClass"), classId: classSchema }),
   z.object({
@@ -115,6 +124,9 @@ export interface Player extends CharacterProgress {
   color: number;
   scene?: "forest";
   attackAt?: number;
+  /** Last processed manual request and the request that started the current attack. */
+  castSeq?: number;
+  attackId?: number;
   attackAngle?: number;
   autoAttack?: boolean;
   autoTarget?: boolean;
