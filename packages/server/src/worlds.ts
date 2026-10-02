@@ -64,14 +64,28 @@ interface Session {
 export function createGameServer(staticRoot?: string, savePath = ":memory:", tls?: ServerOptions) {
   const characters = new CharacterStore(savePath);
   // ponytail: worlds live in one process; add room sharding when measured load requires it.
+  const restoredWorlds = characters.worlds();
   const permanentWorld: World = {
     id: randomUUID(),
     name: "New Permanent World",
     hostId: "",
     salt: "",
     players: new Map(),
+    ...restoredWorlds.find((world) => world.permanent),
   };
-  const worlds = new Map<string, World>([[permanentWorld.id, permanentWorld]]);
+  characters.saveWorld(permanentWorld, true);
+  const worlds = new Map<string, World>(
+    restoredWorlds.map((world) => [
+      world.id,
+      {
+        ...world,
+        hostId: "",
+        players: new Map(),
+      },
+    ]),
+  );
+  worlds.set(permanentWorld.id, permanentWorld);
+  let shuttingDown = false;
   const sessions = new Map<WebSocket, Session>();
   let hashing = 0;
   const handler: RequestListener = async (req, res) => {
@@ -99,6 +113,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         ".html": "text/html",
         ".js": "text/javascript",
         ".css": "text/css",
+        ".json": "application/json",
         ".png": "image/png",
         ".svg": "image/svg+xml",
         ".mp3": "audio/mpeg",
@@ -109,6 +124,12 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       res.writeHead(200, {
         "Content-Type": mime[extname(file)] ?? "application/octet-stream",
         "X-Content-Type-Options": "nosniff",
+        "Cache-Control":
+          pathname === "/version.json"
+            ? "no-store"
+            : /\/[\w-]+-[\w-]{8,}\.(js|css)$/.test(pathname)
+              ? "public, max-age=31536000, immutable"
+              : "no-cache",
       });
       res.end(req.method === "HEAD" ? undefined : content);
     } catch {
@@ -177,7 +198,10 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       reconcileVote(world, Date.now());
       cleanupScene(world);
       if (!world.players.size) {
-        if (world !== permanentWorld) worlds.delete(world.id);
+        if (world !== permanentWorld && !shuttingDown) {
+          characters.deleteWorld(world.id);
+          worlds.delete(world.id);
+        }
         world.hostId = "";
         world.scene = undefined;
         world.chat = [];
@@ -212,7 +236,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       session.alive = true;
     });
     ws.on("close", (code) => {
-      if (session.worldId && code !== 1000 && code !== 1001 && code !== 1005 && code !== 1008) {
+      if (session.worldId && !shuttingDown && code !== 1000 && code !== 1005 && code !== 1008) {
         session.reconnectUntil = Date.now() + 30_000;
         session.inputs = [];
         session.x = session.y = 0;
@@ -340,6 +364,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       if (message.type === "leave") {
         try {
           leave(session);
+          if (session.characterId) characters.forgetWorld(session.characterId);
         } catch {
           error("Save failed. Your character is still in this world; please retry.");
           return;
@@ -426,27 +451,34 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
               (old.reconnectUntil ?? 0) > now,
           );
           const world = worlds.get(message.worldId);
-          if (!retained || !world) {
+          if (
+            !world ||
+            !existingCharacter ||
+            (active() && !retained) ||
+            (!retained && !characters.canResume(existingCharacter.id, message.worldId))
+          ) {
             error("Your previous session is no longer available. Join or create a world again.");
             return;
           }
-          const [oldWs, old] = retained;
-          session.id = old.id;
-          session.worldId = old.worldId;
-          session.characterId = old.characterId;
-          session.chatAt = old.chatAt;
-          const player = world.players.get(session.id)!;
-          player.inputSeq = player.inputElapsed = undefined;
-          player.inputX = player.inputY = 0;
-          sessions.delete(oldWs);
-          addChat(world, `${player.name} joined.`);
-          send(ws, {
-            type: "joined",
-            playerId: session.id,
-            world: state(world),
-            characterToken: message.characterToken,
-          });
-          return;
+          if (retained) {
+            const [oldWs, old] = retained;
+            session.id = old.id;
+            session.worldId = old.worldId;
+            session.characterId = old.characterId;
+            session.chatAt = old.chatAt;
+            const player = world.players.get(session.id)!;
+            player.inputSeq = player.inputElapsed = undefined;
+            player.inputX = player.inputY = 0;
+            sessions.delete(oldWs);
+            addChat(world, `${player.name} joined.`);
+            send(ws, {
+              type: "joined",
+              playerId: session.id,
+              world: state(world),
+              characterToken: message.characterToken,
+            });
+            return;
+          }
         }
         let world: World;
         if (message.type === "create") {
@@ -479,6 +511,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           };
           worlds.set(world.id, world);
           createdWorld = world;
+          characters.saveWorld(world);
         } else {
           const existing = worlds.get(message.worldId);
           if (!existing) {
@@ -486,7 +519,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
             return;
           }
           world = existing;
-          if (world.hash) {
+          if (world.hash && message.type !== "resume") {
             hashing++;
             let hash: Buffer;
             try {
@@ -519,23 +552,27 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           : undefined;
         let token = message.characterToken;
         if (!character) {
-          const created = characters.create(message.playerName);
+          const created = characters.create(
+            message.type === "resume" ? existingCharacter!.name : message.playerName,
+          );
           character = created;
           token = created.token;
         }
-        characters.save(character.id, message.playerName, {
+        const playerName = message.type === "resume" ? existingCharacter!.name : message.playerName;
+        characters.save(character.id, playerName, {
           ...character.progress,
           classId: character.classId,
           classes: character.classes,
         });
         session.characterId = character.id;
+        characters.rememberWorld(character.id, world.id);
         session.worldId = world.id;
         const used = new Set([...world.players.values()].map((p) => p.color));
         let color = 0;
         while (used.has(color)) color++;
         world.players.set(session.id, {
           id: session.id,
-          name: message.playerName,
+          name: playerName,
           x: 420 + color * 22,
           y: 340,
           color,
@@ -545,7 +582,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
         });
         if (!world.hostId) world.hostId = session.id;
-        addChat(world, `${message.playerName} joined.`);
+        addChat(world, `${playerName} joined.`);
         reconcileVote(world, Date.now());
         send(ws, {
           type: "joined",
@@ -561,7 +598,10 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           "Unable to load or save your character. Check the server and retry; existing progress has not been reset.",
         );
       } finally {
-        if (createdWorld && !createdWorld.players.size) worlds.delete(createdWorld.id);
+        if (createdWorld && !createdWorld.players.size) {
+          characters.deleteWorld(createdWorld.id);
+          worlds.delete(createdWorld.id);
+        }
         session.busy = false;
       }
     });
@@ -661,6 +701,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
     }
   }, 5000);
   async function close() {
+    shuttingDown = true;
     clearInterval(tick);
     clearInterval(heartbeat);
     clearInterval(progressTick);

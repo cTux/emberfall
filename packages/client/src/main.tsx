@@ -66,10 +66,12 @@ function App() {
     }
   }, [preferences]);
   const [graphics, setGraphics] = useState(loadGraphics);
+  const previousWorld = useRef<string | null>(null);
   const characterToken = useRef<string | undefined>(undefined);
   useEffect(() => {
     try {
       characterToken.current = localStorage.getItem("emberfall.character") ?? undefined;
+      previousWorld.current = sessionStorage.getItem("emberfall.world");
     } catch {
       /* Keep the key in memory for this session. */
     }
@@ -96,7 +98,15 @@ function App() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   const [retry, setRetry] = useState(0);
-  const previousWorld = useRef<string | null>(null);
+  const rememberWorld = (id: string | null) => {
+    previousWorld.current = id;
+    try {
+      if (id) sessionStorage.setItem("emberfall.world", id);
+      else sessionStorage.removeItem("emberfall.world");
+    } catch {
+      /* Recovery within this page still works when storage is unavailable. */
+    }
+  };
   const failedConnections = useRef(0);
   useEffect(() => {
     const url =
@@ -104,6 +114,8 @@ function App() {
       `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`;
     setStatus(previousWorld.current ? "Reconnecting" : "Connecting");
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    const versionRequest = new AbortController();
+    let disposed = false;
     let resuming = false;
     const ws = new WebSocket(url);
     socket.current = ws;
@@ -121,7 +133,26 @@ function App() {
       ws.send(JSON.stringify({ type: "ping", id: probeId }));
     };
     const pingTimer = setInterval(ping, 2000);
-    ws.onopen = () => {
+    ws.onopen = async () => {
+      try {
+        const response = await fetch("/version.json", {
+          cache: "no-store",
+          signal: AbortSignal.any([versionRequest.signal, AbortSignal.timeout(3000)]),
+        });
+        if (!response.ok) throw new Error("Version check unavailable");
+        const { buildId } = await response.json();
+        if (typeof buildId !== "string" || !buildId) throw new Error("Invalid build ID");
+        if (disposed || ws.readyState !== WebSocket.OPEN) return;
+        if (buildId !== __BUILD_ID__) {
+          setStatus("Updating");
+          location.reload();
+          return;
+        }
+      } catch {
+        if (!disposed && ws.readyState === WebSocket.OPEN) ws.close(3001, "Retry version check");
+        return;
+      }
+      if (disposed || ws.readyState !== WebSocket.OPEN) return;
       failedConnections.current = 0;
       setError("");
       resuming = !!previousWorld.current && !!characterToken.current;
@@ -145,7 +176,7 @@ function App() {
       }
       if (message.type === "worlds") setWorlds(message.worlds);
       if (message.type === "joined") {
-        previousWorld.current = message.world.id;
+        rememberWorld(message.world.id);
         resuming = false;
         setStatus("Connected");
         setMenu(null);
@@ -179,7 +210,7 @@ function App() {
         setWorld(message.world);
       }
       if (message.type === "left") {
-        previousWorld.current = null;
+        rememberWorld(null);
         setMenu(null);
         setBrowserOpen(true);
         setWorld(null);
@@ -190,7 +221,7 @@ function App() {
       if (message.type === "error") {
         if (resuming) {
           resuming = false;
-          previousWorld.current = null;
+          rememberWorld(null);
           setStatus("Connected");
           setWorld(null);
           setPlayerId("");
@@ -215,6 +246,8 @@ function App() {
     };
     ws.onerror = () => setError("Cannot reach the world server. Retrying automatically…");
     return () => {
+      disposed = true;
+      versionRequest.abort();
       clearInterval(pingTimer);
       clearTimeout(reconnectTimer);
       ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null;
