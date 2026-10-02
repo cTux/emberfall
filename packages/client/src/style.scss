@@ -15,7 +15,8 @@ body {
   color: #f4ecd6;
 }
 
-.chat:hover {
+.chat:hover,
+.chat:focus-within {
   background: #101c17d9;
   border-color: #8daba52e;
 }
@@ -29,7 +30,8 @@ body {
   scrollbar-color: transparent transparent;
 }
 
-.chat:hover .chat-log {
+.chat:hover .chat-log,
+.chat:focus-within .chat-log {
   scrollbar-color: auto;
 }
 
