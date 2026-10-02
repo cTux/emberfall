@@ -1,5 +1,5 @@
 import {
-  nearestEnemyAngle,
+  playerAimAngle,
   smoothAttackAngle,
   PLAYER_ATTACK_INTERVAL,
   inTrainingZone,
@@ -180,23 +180,30 @@ export class LocalMovement {
       this.attackAt = -Infinity;
       return false;
     }
-    // Aim follows the visible nearest target every frame, independently of the swing cooldown.
+    // Aim follows the selected control mode independently of the cast cooldown.
     this.attackAngle = smoothAttackAngle(
       this.attackAngle,
-      nearestEnemyAngle(player, scene.enemies, this.attackAngle),
+      playerAimAngle({ ...player, attackAngle: this.attackAngle }, scene.enemies),
       this.aimAt === undefined ? 0 : (now - this.aimAt) / 1000,
     );
     this.aimAt = now;
     const serverNow = (this.source?.serverNow ?? 0) + now - this.sourceAt;
     const origin =
-      this.base?.attackAt ??
-      (Number.isFinite(this.attackAt) ? this.attackAt : (this.source?.serverNow ?? 0));
+      player.autoAttack === false
+        ? Math.max(this.base?.attackAt ?? -Infinity, this.attackAt)
+        : (this.base?.attackAt ??
+          (Number.isFinite(this.attackAt) ? this.attackAt : (this.source?.serverNow ?? 0)));
     const cycle =
-      origin +
-      Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) * PLAYER_ATTACK_INTERVAL;
+      player.autoAttack === false
+        ? player.attacking && serverNow - origin >= PLAYER_ATTACK_INTERVAL
+          ? serverNow
+          : origin
+        : origin +
+          Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) *
+            PLAYER_ATTACK_INTERVAL;
     const started = cycle !== this.attackAt;
     this.attackAt = cycle;
-    player.attackAt = now - (serverNow - cycle);
+    player.attackAt = Number.isFinite(cycle) ? now - (serverNow - cycle) : undefined;
     player.attackAngle = this.attackAngle;
     return started;
   }

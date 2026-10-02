@@ -20,7 +20,15 @@ export function Settings({
   setGraphics: Dispatch<SetStateAction<GraphicsSettings>>;
 }) {
   const toggle = (
-    key: "bloodPuddles" | "damageNumbers" | "fps" | "latency" | "sound" | "music",
+    key:
+      | "autoAttack"
+      | "autoTarget"
+      | "bloodPuddles"
+      | "damageNumbers"
+      | "fps"
+      | "latency"
+      | "sound"
+      | "music",
     label: string,
   ) => (
     <SettingToggle
@@ -42,6 +50,8 @@ export function Settings({
           title: "Gameplay",
           content: (
             <Stack>
+              {toggle("autoAttack", "Auto-attack (F)")}
+              {toggle("autoTarget", "Auto-target (G)")}
               {toggle("bloodPuddles", "Blood puddles")}
               {toggle("damageNumbers", "Floating damage numbers")}
               {toggle("fps", "FPS graph")}

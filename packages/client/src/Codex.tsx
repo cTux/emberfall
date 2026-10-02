@@ -10,9 +10,12 @@ const chapters = [
       <>
         {" "}
         <p>
-          Move with WASD or arrow keys. Press E near a building or blue portal to interact. Trees,
-          buildings and torch posts block movement. Escape opens a leave confirmation; Escape inside
-          a window closes it. Drag window titles to move them.
+          Move with WASD or arrow keys. F toggles auto-attack; G toggles auto-target. Both start
+          enabled. With auto-attack off, hold LMB to cast on cooldown. With auto-target off, aim
+          with the cursor; roots and fireballs prefer nearby cursor targets. A transparent circle
+          shows spell range when the cursor is beyond it. Press E near a building or blue portal to
+          interact. Trees, buildings and torch posts block movement. Escape opens a leave
+          confirmation; Escape inside a window closes it. Drag window titles to move them.
         </p>{" "}
       </>
     ),

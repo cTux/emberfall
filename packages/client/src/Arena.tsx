@@ -22,6 +22,9 @@ import {
 import type { Interaction } from "./effects";
 import {
   ARENA,
+  FOREST,
+  wrap,
+  defaultSpellRange,
   PATHS,
   LOBBY_PORTAL,
   TICK_MS,
@@ -129,6 +132,39 @@ export function Arena({
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
     let previousHp = "";
     const keys = new Set<string>();
+    let pointer: { x: number; y: number } | undefined;
+    let held = false;
+    let combat: Extract<ClientMessage, { type: "combatInput" }> | undefined;
+    let inputCamera: { x: number; y: number; width: number; height: number } = {
+      x: 0,
+      y: 0,
+      width: ARENA.width,
+      height: ARENA.height,
+    };
+    const blocked = () =>
+      !!document.querySelector('[role="dialog"][aria-modal="true"]') || document.hidden;
+    const pointerMove = (event: PointerEvent) => {
+      const rect = element.getBoundingClientRect();
+      pointer = {
+        x: (event.clientX - rect.left) / rect.width,
+        y: (event.clientY - rect.top) / rect.height,
+      };
+    };
+    const pointerDown = (event: PointerEvent) => {
+      if (event.button !== 0 || blocked()) return;
+      pointerMove(event);
+      held = true;
+      sendMovement();
+    };
+    const pointerUp = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+      held = false;
+      sendMovement();
+    };
+    element.addEventListener("pointermove", pointerMove);
+    element.addEventListener("pointerdown", pointerDown);
+    window.addEventListener("pointerup", pointerUp);
+    window.addEventListener("pointercancel", pointerUp);
     const positions = new Map<string, { x: number; y: number; facing: number }>();
     const key = (event: KeyboardEvent, down: boolean) => {
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
@@ -158,6 +194,7 @@ export function Arena({
     const up = (event: KeyboardEvent) => key(event, false);
     const reset = () => {
       keys.clear();
+      held = false;
       sendMovement();
     };
     window.addEventListener("keydown", down);
@@ -175,11 +212,41 @@ export function Arena({
     function sendMovement() {
       const current = latest.current;
       if (!current) return;
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) keys.clear();
+      if (blocked()) {
+        keys.clear();
+        held = false;
+      }
+      if (combat)
+        sender.current({
+          ...combat,
+          autoAttack: prefs.current.autoAttack,
+          autoTarget: prefs.current.autoTarget,
+          attacking: held && !blocked(),
+        });
       const { x, y } = movement();
       localMovement.input(x, y, performance.now());
     }
     const input = setInterval(sendMovement, TICK_MS);
+    function drawCursorRange(player: import("@emberfall/common").Player | undefined) {
+      if (!player || prefs.current.autoTarget || !pointer || player.hitpoints <= 0) return;
+      const scene = player.scene === "forest" ? latest.current?.scene : latest.current?.training;
+      if (scene?.phase !== "active" || (!player.scene && !inTrainingZone(player))) return;
+      const x = inputCamera.x + pointer.x * inputCamera.width;
+      const y = inputCamera.y + pointer.y * inputCamera.height;
+      const range = defaultSpellRange(player);
+      if (Math.hypot(x - player.x, y - player.y - 15) <= range) return;
+      const scale = element.width / inputCamera.width;
+      ctx.save();
+      ctx.setTransform(scale, 0, 0, scale, -inputCamera.x * scale, -inputCamera.y * scale);
+      ctx.fillStyle = "rgba(82, 237, 135, 0.08)";
+      ctx.strokeStyle = "rgba(82, 237, 135, 0.45)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(player.x, player.y + 15, range, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    }
     const background = document.createElement("canvas");
     background.width = ARENA.width;
     background.height = ARENA.height;
@@ -335,6 +402,37 @@ export function Arena({
       const local = latest.current ? localMovement.render(latest.current, now) : undefined;
       let localSwing = false;
       if (view && local) {
+        const width = el.width / scale,
+          height = el.height / scale;
+        inputCamera = {
+          x:
+            local.scene === "forest"
+              ? local.x - width / 2
+              : Math.max(0, Math.min(ARENA.width - width, local.x - width / 2)),
+          y:
+            local.scene === "forest"
+              ? local.y - height / 2
+              : Math.max(0, Math.min(ARENA.height - height, local.y - height / 2)),
+          width,
+          height,
+        };
+        const aimX = inputCamera.x + (pointer?.x ?? 0.5) * width;
+        const aimY = inputCamera.y + (pointer?.y ?? 0.5) * height - 15;
+        combat = {
+          type: "combatInput",
+          autoAttack: prefs.current.autoAttack,
+          autoTarget: prefs.current.autoTarget,
+          attacking: held && !blocked(),
+          aimX:
+            local.scene === "forest"
+              ? wrap(aimX, FOREST.width)
+              : Math.max(0, Math.min(ARENA.width, aimX)),
+          aimY:
+            local.scene === "forest"
+              ? wrap(aimY, FOREST.height)
+              : Math.max(0, Math.min(ARENA.height, aimY)),
+        };
+        Object.assign(local, combat);
         localSwing = localMovement.animateAttack(local, view, now);
         localMovement.animateProjectiles(local, view, now, localSwing);
         view.players = view.players.map((player) =>
@@ -403,6 +501,7 @@ export function Arena({
           delta,
           interaction.current,
         );
+        drawCursorRange(local);
         frame = requestAnimationFrame(draw);
         return;
       }
@@ -760,6 +859,7 @@ export function Arena({
       if (quality.current.fog) drawFog(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
       drawAtmosphere(ctx, cameraX, cameraY, viewWidth, viewHeight, now, quality.current);
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
+      drawCursorRange(local);
       drawNavigation(ctx, view, playerId);
       frame = requestAnimationFrame(draw);
     }
@@ -769,6 +869,10 @@ export function Arena({
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener("resize", resize);
+      element.removeEventListener("pointermove", pointerMove);
+      element.removeEventListener("pointerdown", pointerDown);
+      window.removeEventListener("pointerup", pointerUp);
+      window.removeEventListener("pointercancel", pointerUp);
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", reset);

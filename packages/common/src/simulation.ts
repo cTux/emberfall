@@ -1,4 +1,10 @@
-import { hitEnemy, tickDebuffs, fireClassAttack, tickPlayerShots } from "./class-combat.ts";
+import {
+  hitEnemy,
+  tickDebuffs,
+  fireClassAttack,
+  tickPlayerShots,
+  defaultSpellRange,
+} from "./class-combat.ts";
 import { ENEMY_STATS, moveEnemies, spawnArchetype, enemyMaxHealth } from "./enemies.ts";
 import {
   FOREST,
@@ -14,7 +20,7 @@ import type { Player, Bear } from "./index.ts";
 import type { SceneState, Enemy } from "./scene.ts";
 
 export const TICK_MS = 50;
-export const PLAYER_ATTACK_RANGE = 88;
+export const PLAYER_ATTACK_RANGE = defaultSpellRange({ classId: "warrior" });
 export const PLAYER_ATTACK_INTERVAL = 700;
 export const PLAYER_ATTACK_DURATION = 260;
 const swordHits = new WeakMap<object, { sceneId: string; at: number; enemies: Set<number> }>();
@@ -573,6 +579,15 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
   }
 }
 
+export function playerAimAngle(player: Player, enemies: Enemy[]) {
+  return player.autoTarget === false && player.aimX !== undefined && player.aimY !== undefined
+    ? Math.atan2(
+        wrappedDelta(player.aimY, player.y, FOREST.height),
+        wrappedDelta(player.aimX, player.x, FOREST.width),
+      )
+    : nearestEnemyAngle(player, enemies, player.attackAngle);
+}
+
 export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number, dt: number) {
   for (const player of alive) {
     if (scene.training && !inTrainingZone(player)) {
@@ -581,11 +596,20 @@ export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number
     }
     player.attackAngle = smoothAttackAngle(
       player.attackAngle,
-      nearestEnemyAngle(player, scene.enemies, player.attackAngle),
+      playerAimAngle(player, scene.enemies),
       dt,
     );
-    if (player.attackAt === undefined || now - player.attackAt >= PLAYER_ATTACK_INTERVAL)
-      player.attackAt = now - ((now - (player.attackAt ?? now)) % PLAYER_ATTACK_INTERVAL);
+    const attacking =
+      player.autoAttack !== false || (player.attacking && now - (player.combatInputAt ?? 0) <= 250);
+    if (
+      attacking &&
+      (player.attackAt === undefined || now - player.attackAt >= PLAYER_ATTACK_INTERVAL)
+    )
+      player.attackAt =
+        player.autoAttack === false
+          ? now
+          : now - ((now - (player.attackAt ?? now)) % PLAYER_ATTACK_INTERVAL);
+    if (player.attackAt === undefined) continue;
     const age = now - player.attackAt;
     if (age < 0 || age >= PLAYER_ATTACK_DURATION) continue;
     let swing = swordHits.get(player);

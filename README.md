@@ -179,3 +179,9 @@ Trees covering the local player's sprite fade to 15% opacity (85% transparent) i
 Settings → Graphics includes **Waving grass and trees**, independent of grass density. Enabled by default and in Balanced/High, disabled in Low; the choice persists across reloads. Both areas use gentle, staggered foliage sway with fixed roots. Disabling it immediately restores static sprites. The shared Canvas 2D sprite draw applies a time-based horizontal shear without changing collisions, sorting, tree fading, or cached shadows. Browser checks cover movement in both areas, fixed roots, live toggling, presets, and persistence.
 
 All interface and Canvas labels use bundled Alegreya Sans (regular, medium, bold and italic), distributed under the SIL Open Font License in `public/assets/fonts/OFL.txt`. [Font source](https://github.com/google/fonts/tree/main/ofl/alegreyasans).
+
+### Combat controls
+
+Settings → Gameplay includes saved Auto-attack (F) and Auto-target (G) toggles, both enabled by default. Hotkeys ignore repeated presses, text entry, and open dialogs. With auto-attack disabled, holding LMB casts the class default spell once per 700 ms cooldown. Releasing, opening a dialog, hiding the tab, or losing focus stops requesting casts; an already-started swing finishes without resetting its cooldown. Training-area restrictions still apply.
+
+With auto-target disabled, melee aim and arrows follow the cursor; fireballs and roots prefer living enemies in cast range nearest the cursor. Cursor proximity takes priority over unrooted status. With no enemy available, a fireball travels toward the cursor. Beyond default spell range, a transparent circle marks warrior 88, ranger 1000, or mage/druid 250 units. Cursor projection follows the village and wrapped forest cameras. Validated combat input is separate from movement; the server owns cooldowns and expires held-LMB input after 250 ms without a heartbeat. Local presentation shares aim and target rules.
