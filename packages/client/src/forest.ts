@@ -225,7 +225,7 @@ export function forestRenderer(
       positions.clear();
       lastScene = world?.scene?.id;
     }
-    const serverTime = world?.serverNow ?? 0;
+    const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
     if (nature.naturalWidth && !treeMask) {
       tree.getContext("2d")!.drawImage(nature, 32, 0, 32, 32, 0, 0, 32, 32);
       treeMask = makeMask(tree);

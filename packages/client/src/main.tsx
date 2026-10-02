@@ -1,7 +1,7 @@
 import { classSprite } from "./characters";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { Codex } from "./Codex";
-import { ENEMY_HP, CLASS_IDS, CLASS_LABELS } from "@emberfall/common";
+import { ENEMY_HP, CLASS_IDS, CLASS_LABELS, hasLivingScenePlayers } from "@emberfall/common";
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { ClientMessage, ServerMessage, WorldState, WorldSummary } from "@emberfall/common";
@@ -256,7 +256,14 @@ function App() {
     1,
     Math.ceil(((scene?.countdownAt ?? 0) - (world?.serverNow ?? 0)) / 1000),
   );
-  const remaining = Math.max(0, Math.ceil(((scene?.endsAt ?? 0) - (world?.serverNow ?? 0)) / 1000));
+  const remaining = Math.max(
+    0,
+    Math.ceil(((scene?.endsAt ?? 0) - (scene?.pausedAt ?? world?.serverNow ?? 0)) / 1000),
+  );
+  const canRegenerate =
+    !!scene &&
+    ["active", "ended"].includes(scene.phase) &&
+    !hasLivingScenePlayers(world?.players ?? []);
   return (
     <main>
       <section className={`stage ${world ? "in-world" : ""}`} inert={!!menu}>
@@ -869,8 +876,20 @@ function App() {
                   <button className="primary" onClick={() => send({ type: "joinScene" })}>
                     Join scene
                   </button>
+                  {canRegenerate && (
+                    <>
+                      <p>No living players remain inside. The scene is paused.</p>
+                      <button
+                        onClick={() =>
+                          send({ type: "createScene", scene: "Forest", difficulty: "Easy" })
+                        }
+                      >
+                        Regenerate scene
+                      </button>
+                    </>
+                  )}
                 </>
-              ) : scene ? (
+              ) : scene && !canRegenerate ? (
                 <p>
                   {["active", "ended"].includes(scene.phase)
                     ? scene.phase === "ended"
@@ -898,7 +917,7 @@ function App() {
                     </select>
                   </label>
                   <div className="presets">
-                    <button type="submit">Create</button>
+                    <button type="submit">{canRegenerate ? "Regenerate scene" : "Create"}</button>
                     <button type="button" onClick={() => setMenu(null)}>
                       Cancel
                     </button>

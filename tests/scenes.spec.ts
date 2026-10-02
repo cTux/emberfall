@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import type { SceneState } from "../packages/common/src/scene.ts";
 
 test("portal creates server scene; two players vote, retract, fight and individually return", async ({
   page,
@@ -7,10 +8,14 @@ test("portal creates server scene; two players vote, retract, fight and individu
   test.setTimeout(45000);
   const errors: string[] = [];
   let position: { x: number; y: number } | undefined;
+  let scene: SceneState | undefined;
   page.on("websocket", (ws) => {
     ws.on("framereceived", ({ payload }) => {
       const m = JSON.parse(String(payload));
-      if (m.type === "state") position = m.world.players[0];
+      if (m.type === "state") {
+        position = m.world.players[0];
+        scene = m.world.scene;
+      }
     });
   });
   page.on("pageerror", (e) => errors.push(e.message));
@@ -116,6 +121,31 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await page.getByRole("button", { name: "Join scene", exact: true }).click();
   await expect(page.getByLabel("Forest combat scene.")).toBeVisible();
   await expect(page.locator(".party-member.other-dimension")).toHaveCount(0);
+  for (const participant of [page, guest]) {
+    await participant.keyboard.press("Escape");
+    await participant.getByRole("button", { name: "Leave", exact: true }).click();
+    await expect(
+      participant.getByLabel("Shared village. Move with WASD or arrow keys."),
+    ).toBeVisible();
+  }
+  await expect.poll(() => scene?.pausedAt).toBeDefined();
+  const frozen = structuredClone(scene!);
+  await page.waitForTimeout(1100);
+  expect(scene).toEqual(frozen);
+  await page.bringToFront();
+  await page.getByLabel("Shared village. Move with WASD or arrow keys.").click();
+  await page.keyboard.down("d");
+  await page.waitForTimeout(390);
+  await page.keyboard.up("d");
+  await page.waitForTimeout(150);
+  await expect.poll(() => position?.x ?? 0).toBeGreaterThan(500);
+  await page.keyboard.press("e");
+  await expect(dialog.getByRole("button", { name: "Join scene", exact: true })).toBeVisible();
+  await expect(dialog).toContainText("The scene is paused");
+  await dialog.getByRole("button", { name: "Regenerate scene", exact: true }).click();
+  await expect(dialog).toContainText("0/2 ready");
+  expect(scene?.id).not.toBe(frozen.id);
+  await expect(guest.getByRole("dialog", { name: "Forest portal" })).toContainText("0/2 ready");
   expect(errors).toEqual([]);
   await context.close();
 });
