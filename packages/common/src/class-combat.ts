@@ -60,7 +60,14 @@ export function hitEnemy(
   if (enemy.hitpoints > 0 || scene.training) return;
   if (owner) owner.experience++;
   scene.drops ??= [];
-  scene.drops.push({ id: ++scene.sequence, kind: "experience", x: enemy.x, y: enemy.y, at: now });
+  scene.drops.push({
+    id: ++scene.sequence,
+    kind: "experience",
+    amount: 1.2 ** Math.max(0, (scene.playerCount ?? 1) - 1),
+    x: enemy.x,
+    y: enemy.y,
+    at: now,
+  });
   if (Math.random() < 0.1)
     scene.drops.push({
       id: ++scene.sequence,

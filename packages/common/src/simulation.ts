@@ -313,6 +313,17 @@ export function movePlayer(player: Player, x: number, y: number, dt: number) {
   player.y = player.scene === "forest" ? wrap(next.y - 15, FOREST.height) : next.y - 15;
 }
 export function stepCombat(scene: SceneState, players: Player[], now: number, dt: number) {
+  const playerCount = players.filter((p) => p.scene === "forest").length;
+  const additionalPlayers = Math.max(0, playerCount - 1);
+  const healthScale = 1.75 ** additionalPlayers;
+  const healthRatio = healthScale / 1.75 ** Math.max(0, (scene.playerCount ?? 1) - 1);
+  if (healthRatio !== 1) {
+    for (const enemy of [...scene.enemies, ...(scene.spawns ?? [])]) {
+      enemy.maxHitpoints = enemyMaxHealth(enemy) * healthRatio;
+      enemy.hitpoints *= healthRatio;
+    }
+  }
+  scene.playerCount = playerCount;
   if (!hasLivingScenePlayers(players)) {
     scene.pausedAt ??= now;
     return;
@@ -373,7 +384,8 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     if (!target) return true;
     const travel = Math.min(distance, 280 * Math.max(0, dt));
     if (distance <= 22 || distance - travel <= 22) {
-      if (drop.kind === "experience") for (const player of collectors) player.experience++;
+      if (drop.kind === "experience")
+        for (const player of collectors) player.experience += drop.amount ?? 1;
       return false;
     }
     drop.x = wrap(
@@ -419,11 +431,12 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
       const kind = spawnBoss ? "boss" : scene.spawnCount % 10 === 0 ? "elite" : "normal";
       const id = ++scene.sequence;
       const archetype = spawnBoss ? "brute" : spawnArchetype(Math.random(), scene.spawnCount);
+      const hitpoints = enemyMaxHealth({ kind, archetype }) * healthScale;
       scene.spawns.push({
         id,
         ...position,
-        hitpoints: enemyMaxHealth({ kind, archetype }),
-        maxHitpoints: enemyMaxHealth({ kind, archetype }),
+        hitpoints,
+        maxHitpoints: hitpoints,
         kind,
         name: spawnBoss ? "The Hollow Warden" : undefined,
         archetype,

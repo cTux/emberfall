@@ -104,6 +104,7 @@ test("boss defeat puts fixed return portals within reach of all scattered player
   ];
   const scene: SceneState = {
     id: "run",
+    playerCount: players.length,
     type: "Forest" as const,
     difficulty: "Easy" as const,
     phase: "active" as const,

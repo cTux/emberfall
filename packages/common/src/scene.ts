@@ -121,6 +121,7 @@ export interface DamageEvent {
   target: string;
 }
 export interface LootDrop {
+  amount?: number;
   id: number;
   kind: "experience" | "gold";
   x: number;
@@ -128,6 +129,7 @@ export interface LootDrop {
   at: number;
 }
 export interface SceneState {
+  playerCount?: number;
   training?: boolean;
   pausedAt?: number;
   playerShots?: PlayerShot[];
