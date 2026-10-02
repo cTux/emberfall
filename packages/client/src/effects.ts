@@ -138,7 +138,7 @@ export function drawNameBadge(
   active: boolean,
 ) {
   ctx.save();
-  ctx.font = '9px "Pixelify Sans", sans-serif';
+  ctx.font = '9px "Alegreya Sans", sans-serif';
   ctx.textAlign = "center";
   const label = active ? `(E) ${name}` : name;
   const width = ctx.measureText(label).width + 12;
@@ -194,7 +194,7 @@ export function drawPlayerHealth(
   boss = false,
 ) {
   ctx.save();
-  ctx.font = '8px "Pixelify Sans", sans-serif';
+  ctx.font = '8px "Alegreya Sans", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   const metrics = ctx.measureText(name);

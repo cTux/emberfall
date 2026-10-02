@@ -1,13 +1,37 @@
 @font-face {
-  font-family: "Pixelify Sans";
-  src: url("/assets/fonts/PixelifySans.ttf") format("truetype");
-  font-weight: 400 700;
+  font-family: "Alegreya Sans";
+  src: url("/assets/fonts/AlegreyaSans-Regular.ttf") format("truetype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/assets/fonts/AlegreyaSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/assets/fonts/AlegreyaSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Alegreya Sans";
+  src: url("/assets/fonts/AlegreyaSans-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
 :root {
-  font-family: "Pixelify Sans", sans-serif;
+  font-family: "Alegreya Sans", sans-serif;
   color: #e4e5d9;
   background: #101817;
   font-synthesis: none;

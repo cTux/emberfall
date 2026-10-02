@@ -559,7 +559,7 @@ export function forestRenderer(
         if (age > 750) continue;
         const p = near(hit.x, hit.y);
         ctx.globalAlpha = 1 - age / 800;
-        ctx.font = 'bold 14px "Pixelify Sans", sans-serif';
+        ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
         ctx.textAlign = "center";
         ctx.fillStyle = hit.target.startsWith("enemy:") ? "#fff0b1" : "#ff8b81";
         ctx.fillText(String(hit.amount), p.x, p.y - 45 - age / 30);
