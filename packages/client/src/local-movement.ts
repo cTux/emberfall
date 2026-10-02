@@ -9,7 +9,11 @@ import {
 } from "@emberfall/common";
 import type { Player, WorldState, ClientMessage } from "@emberfall/common";
 
-type Move = Extract<ClientMessage, { type: "move" }> & { seq: number; durationMs: number };
+type Move = Extract<ClientMessage, { type: "move" }> & {
+  seq: number;
+  durationMs: number;
+  sentAt: number;
+};
 const TOLERANCE = 2,
   SNAP_DISTANCE = 20;
 
@@ -30,6 +34,7 @@ export class LocalMovement {
   private sourceAt = 0;
   private attackAngle?: number;
   private aimAt?: number;
+  private acknowledgedDelay: number | null = null;
   private id: string;
   private send: (message: ClientMessage) => void;
   constructor(id: string, send: (message: ClientMessage) => void) {
@@ -38,16 +43,13 @@ export class LocalMovement {
   }
 
   private advance(now: number) {
+    const elapsed = now - this.at;
+    this.at = now;
     if (this.base) {
       const queued = this.pending.reduce((n, p) => n + p.durationMs, 0);
-      this.unsent += Math.min(
-        Math.max(0, now - this.at),
-        100,
-        Math.max(0, 1000 - queued - this.unsent),
-      );
+      this.unsent += Math.min(Math.max(0, elapsed), 100, Math.max(0, 1000 - queued - this.unsent));
       while (this.unsent >= 50) this.flush(50);
     }
-    this.at = now;
   }
   private flush(duration = this.unsent) {
     if (duration <= 0.0001 || !this.base) return;
@@ -58,10 +60,12 @@ export class LocalMovement {
       x: this.x,
       y: this.y,
       durationMs: duration,
+      sentAt: this.at,
     };
     this.unsent -= duration;
     this.pending.push(command);
-    this.send(command);
+    const { sentAt: _, ...message } = command;
+    this.send(message);
   }
   input(x: number, y: number, now: number) {
     this.advance(now);
@@ -105,11 +109,14 @@ export class LocalMovement {
       this.attackAt = -Infinity;
       this.attackAngle = undefined;
       this.aimAt = undefined;
+      this.acknowledgedDelay = null;
     } else if (world !== this.source && (world.serverNow ?? 0) >= (this.source?.serverNow ?? 0)) {
       const before = this.predict();
       this.source = world;
       this.sourceAt = now;
       this.base = { ...authoritative };
+      const acknowledged = this.pending.find((p) => p.seq === authoritative.inputSeq);
+      if (acknowledged) this.acknowledgedDelay = Math.max(0, now - acknowledged.sentAt);
       this.pending = this.pending.filter(
         (p) =>
           p.seq > (authoritative.inputSeq ?? 0) ||
@@ -168,5 +175,13 @@ export class LocalMovement {
     player.attackAt = now - (serverNow - cycle);
     player.attackAngle = this.attackAngle;
     return started;
+  }
+  get attackTime() {
+    return this.attackAt;
+  }
+  inputDelay(now: number) {
+    return this.pending.length
+      ? Math.max(this.acknowledgedDelay ?? 0, now - this.pending[0].sentAt)
+      : this.acknowledgedDelay;
   }
 }

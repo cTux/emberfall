@@ -35,10 +35,16 @@ test("local input is instant and partial acknowledgements replay exactly the rem
   assert.equal(movement.render(initial, 10)!.x, 421.8);
   assert.equal(movement.render(initial, 100)!.x, 438);
   assert.equal(sent.length, 2);
+  assert.equal(movement.inputDelay(190), 90, "pending input age grows independently of ping");
   const partial = world({ ...hero, x: 424.5, inputSeq: 1, inputElapsed: 25 }, 10050);
   assert.equal(movement.render(partial, 100)!.x, 438);
   const confirmed = world({ ...hero, x: 438, inputSeq: 2, inputElapsed: 50 }, 10100);
   assert.equal(movement.render(confirmed, 100)!.x, 438);
+  assert.equal(
+    movement.inputDelay(100),
+    0,
+    "the latest consumed command records acknowledgement delay",
+  );
   movement.input(0, 0, 100);
   assert.equal(movement.render(confirmed, 110)!.x, 438);
   assert.equal(hero.x, 420, "source state stays immutable");

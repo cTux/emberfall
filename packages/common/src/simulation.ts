@@ -368,6 +368,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
         distance = next;
       }
     }
+    drop.collectorId = target?.id;
     if (!target) return true;
     if (distance <= 22) return false;
     const travel = Math.min(distance, 280 * Math.max(0, dt));

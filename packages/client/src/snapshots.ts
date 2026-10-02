@@ -15,6 +15,7 @@ export class SnapshotBuffer {
   private epoch = "";
   private clock = 0;
   private renderedAt = 0;
+  private receivedAt = 0;
   private playerId: string;
   constructor(playerId: string) {
     this.playerId = playerId;
@@ -32,6 +33,7 @@ export class SnapshotBuffer {
       this.epoch = epoch;
     } else if (time < (this.latest?.serverNow ?? 0)) return;
     this.latest = world;
+    this.receivedAt = now;
     // Replace duplicate timestamps rather than creating a zero-length interpolation segment.
     if (this.history.at(-1)?.serverNow === world.serverNow) this.history.pop();
     this.history.push(world);
@@ -139,5 +141,10 @@ export class SnapshotBuffer {
       player.bear.moving = Math.hypot(point.dx, point.dy) > 0.001;
     }
     return { ...older, players, scene, serverNow: this.clock };
+  }
+  age(now: number) {
+    return this.latest
+      ? Math.max(0, now - this.receivedAt) + Math.max(0, (this.latest.serverNow ?? 0) - this.clock)
+      : null;
   }
 }

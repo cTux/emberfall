@@ -22,6 +22,9 @@ test("combined performance graph plots FPS and latency, preserves toggles and st
     fps = page.getByLabel("Frame rate", { exact: true });
   await expect(latency).toHaveText(/\d+ ms/);
   await expect(latency).toHaveText(/0–\d+ ms/);
+  await expect(latency).toContainText("Ping");
+  await expect(page.getByLabel("Input acknowledgement delay", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Snapshot age since receipt", { exact: true })).toBeVisible();
   await expect
     .poll(async () =>
       Number(await page.locator('[data-series="latency"]').getAttribute("data-value")),

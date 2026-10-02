@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 
-type Sample = { at: number; fps: number | null; latency: number | null };
+type Timing = { inputDelay: number | null; snapshotAge: number | null };
+type Sample = Timing & { at: number; fps: number | null; latency: number | null };
 export function PerformanceGraph({
   frameRate,
   latency,
+  networkTiming,
   showFps,
   showLatency,
 }: {
   frameRate: RefObject<number | null>;
   latency: number | null;
+  networkTiming: RefObject<Timing>;
   showFps: boolean;
   showLatency: boolean;
 }) {
@@ -28,11 +31,11 @@ export function PerformanceGraph({
       const at = performance.now();
       setSamples((previous) => [
         ...(reset ? [] : previous.filter((sample) => at - sample.at < 30000).slice(-59)),
-        { at, fps: frameRate.current, latency: roundTrip.current },
+        { at, fps: frameRate.current, latency: roundTrip.current, ...networkTiming.current },
       ]);
     }, 500);
     return () => clearInterval(timer);
-  }, [visible, frameRate]);
+  }, [visible, frameRate, networkTiming]);
   const current = samples.at(-1);
   const fpsMax = Math.max(60, Math.ceil(Math.max(...samples.map((s) => s.fps ?? 0)) / 60) * 60);
   const latencyMax = Math.max(
@@ -57,7 +60,8 @@ export function PerformanceGraph({
   return (
     <div className="performance-stats" hidden={!visible} aria-label="Performance monitor">
       <svg
-        viewBox="0 0 264 90"
+        viewBox={showLatency ? "0 0 264 120" : "0 0 264 90"}
+        style={{ height: showLatency ? 120 : 90 }}
         role="img"
         aria-label="FPS and latency history over the last 30 seconds"
       >
@@ -79,7 +83,7 @@ export function PerformanceGraph({
               className="performance-latency"
               aria-label="Server latency"
             >
-              0–{latencyMax} ms
+              Ping 0–{latencyMax} ms
             </text>
             <path
               data-series="latency"
@@ -87,6 +91,13 @@ export function PerformanceGraph({
               className="performance-latency"
               d={path("latency", latencyMax)}
             />
+            <text x="8" y="102" aria-label="Input acknowledgement delay">
+              Input ack: {current?.inputDelay == null ? "—" : Math.round(current.inputDelay)} ms
+            </text>
+            <text x="8" y="115" aria-label="Snapshot age since receipt">
+              Snapshot age (local):{" "}
+              {current?.snapshotAge == null ? "—" : Math.round(current.snapshotAge)} ms
+            </text>
           </>
         )}
         <text x="8" y="85">
