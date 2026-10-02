@@ -13,6 +13,7 @@ import {
   clientMessage,
   nearbyInteraction,
   movePlayer,
+  requestPlayerCast,
   TICK_MS,
 } from "@emberfall/common";
 import type { ChatMessage, Player, ServerMessage, WorldState, SceneState } from "@emberfall/common";
@@ -267,6 +268,18 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           const { type: _, ...controls } = message;
           Object.assign(player, controls, { combatInputAt: now });
         }
+        return;
+      }
+      if (message.type === "cast") {
+        const world = worlds.get(session.worldId ?? "");
+        const player = world?.players.get(session.id);
+        if (player)
+          requestPlayerCast(
+            player.scene === "forest" ? world!.scene : world!.training,
+            player,
+            message,
+            now,
+          );
         return;
       }
       if (message.type === "move") {
