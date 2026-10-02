@@ -3,6 +3,8 @@ import {
   smoothAttackAngle,
   PLAYER_ATTACK_INTERVAL,
   inTrainingZone,
+  fireClassAttack,
+  advancePlayerShot,
 } from "@emberfall/common";
 import {
   FOREST,
@@ -12,7 +14,7 @@ import {
   wrap,
   wrappedDelta,
 } from "@emberfall/common";
-import type { Player, WorldState, ClientMessage } from "@emberfall/common";
+import type { Player, PlayerShot, WorldState, ClientMessage } from "@emberfall/common";
 
 type Move = Extract<ClientMessage, { type: "move" }> & {
   seq: number;
@@ -36,6 +38,9 @@ export class LocalMovement {
   private offset = { x: 0, y: 0 };
   private drawnAt = 0;
   private attackAt = -Infinity;
+  private shots: PlayerShot[] = [];
+  private shotCastAt = -Infinity;
+  private shotsAt = 0;
   private sourceAt = 0;
   private attackAngle?: number;
   private aimAt?: number;
@@ -102,6 +107,7 @@ export class LocalMovement {
       !this.base ||
       epoch !== this.epoch ||
       world.id !== this.source?.id ||
+      authoritative.classId !== this.base.classId ||
       authoritative.hitpoints <= 0 !== this.base.hitpoints <= 0
     ) {
       this.pending = [];
@@ -112,6 +118,9 @@ export class LocalMovement {
       this.source = world;
       this.sourceAt = now;
       this.attackAt = -Infinity;
+      this.shots = [];
+      this.shotCastAt = -Infinity;
+      this.shotsAt = now;
       this.attackAngle = undefined;
       this.aimAt = undefined;
       this.acknowledgedDelay = null;
@@ -179,7 +188,9 @@ export class LocalMovement {
     );
     this.aimAt = now;
     const serverNow = (this.source?.serverNow ?? 0) + now - this.sourceAt;
-    const origin = this.base?.attackAt ?? this.source?.serverNow ?? 0;
+    const origin =
+      this.base?.attackAt ??
+      (Number.isFinite(this.attackAt) ? this.attackAt : (this.source?.serverNow ?? 0));
     const cycle =
       origin +
       Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) * PLAYER_ATTACK_INTERVAL;
@@ -188,6 +199,64 @@ export class LocalMovement {
     player.attackAt = now - (serverNow - cycle);
     player.attackAngle = this.attackAngle;
     return started;
+  }
+  animateProjectiles(player: Player, world: WorldState, now: number, started: boolean) {
+    const scene = player.scene === "forest" ? world.scene : world.training;
+    const confirmed = player.scene === "forest" ? this.source?.scene : this.source?.training;
+    const dt = Math.min(100, Math.max(0, now - this.shotsAt)) / 1000;
+    this.shotsAt = now;
+    if (!scene) {
+      this.shots = [];
+      return;
+    }
+    if (
+      player.hitpoints <= 0 ||
+      scene.phase !== "active" ||
+      scene.pausedAt !== undefined ||
+      (player.classId !== "mage" && player.classId !== "ranger") ||
+      now - this.sourceAt > 1000
+    ) {
+      this.shots = [];
+    } else {
+      // Confirm targets and retire completed/rejected casts without replaying delayed spawns.
+      const matched = new Set<number>();
+      this.shots = this.shots.filter((shot) => {
+        if ((this.source?.serverNow ?? 0) >= shot.castAt!) {
+          const candidates = confirmed?.playerShots?.filter(
+            (s) => s.ownerId === player.id && s.castAt === shot.castAt && !matched.has(s.id),
+          );
+          const serverShot =
+            candidates?.find((s) => s.targetId === shot.targetId) ?? candidates?.[0];
+          if (!serverShot) return false;
+          matched.add(serverShot.id);
+          shot.id = serverShot.id;
+          shot.targetId = serverShot.targetId;
+          shot.targetX = serverShot.targetX;
+          shot.targetY = serverShot.targetY;
+          if (shot.kind === "arrow") shot.angle = serverShot.angle;
+        }
+        return !advancePlayerShot(shot, scene.enemies, dt) && shot.remaining > 0.001;
+      });
+      if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
+        const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
+        fireClassAttack(cast, { ...player, attackAt: this.attackAt });
+        this.shots.push(...cast.playerShots);
+        if (cast.playerShots.length) this.shotCastAt = this.attackAt;
+      }
+      // A target absent from our snapshots cannot be predicted. Launch that server cast here too.
+      const missed =
+        confirmed?.playerShots?.filter(
+          (s) => s.ownerId === player.id && s.castAt !== undefined && s.castAt > this.shotCastAt,
+        ) ?? [];
+      for (const shot of missed)
+        this.shots.push({ ...shot, x: player.x, y: player.y, hitIds: [...shot.hitIds] });
+      if (missed.length) this.shotCastAt = Math.max(...missed.map((s) => s.castAt!));
+    }
+    // Only replace our projectiles; other players retain snapshot interpolation.
+    scene.playerShots = [
+      ...(scene.playerShots ?? []).filter((s) => s.ownerId !== player.id),
+      ...this.shots.map((s) => ({ ...s })),
+    ];
   }
   inputDelay(now: number) {
     return this.pending.length

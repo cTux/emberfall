@@ -77,6 +77,7 @@ export interface Debuff {
 }
 export interface PlayerShot {
   id: number;
+  castAt?: number;
   ownerId: string;
   kind: "arrow" | "fireball";
   x: number;

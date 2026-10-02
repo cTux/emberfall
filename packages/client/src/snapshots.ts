@@ -140,7 +140,10 @@ export class SnapshotBuffer {
       player.bear.y = point.y;
       player.bear.moving = Math.hypot(point.dx, point.dy) > 0.001;
     }
-    return { ...older, players, scene, serverNow: this.clock };
+    const training = older.training
+      ? { ...older.training, playerShots: older.training.playerShots?.map((p) => ({ ...p })) }
+      : undefined;
+    return { ...older, players, scene, training, serverNow: this.clock };
   }
   age(now: number) {
     return this.latest
