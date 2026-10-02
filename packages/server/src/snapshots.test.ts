@@ -308,12 +308,14 @@ test("loot flies toward the nearest living forest player across the seam without
   stepCombat(scene, [dead, lobby, player], 400, 0.05);
   assert.equal(scene.drops![0].x, FOREST.width - 66);
   assert.equal(scene.drops![1].x, FOREST.width - 66);
+  assert.equal(scene.drops![0].collectorId, player.id);
   for (let i = 0; i < 10; i++) stepCombat(scene, [player], 450 + i * 50, 0.05);
   assert.equal(scene.drops!.length, 0);
   assert.equal(player.experience, hero.experience);
   scene.drops = [{ id: 3, kind: "gold", x: 500, y: 500, at: 0 }];
   stepCombat(scene, [player], 1000, 0.05);
   assert.equal(scene.drops[0].x, 500, "distant drops stay put");
+  assert.equal(scene.drops[0].collectorId, undefined);
 });
 
 test("fatal hits retain each enemy appearance for its death animation", () => {
