@@ -102,6 +102,36 @@ test("all lobby classes damage dummies, Bear contributes, and forest players can
   assert(s.enemies.every((e) => e.hitpoints === 1e9));
 });
 
+test("boar reaches a stationary dummy from every side and keeps landing tusk attacks", () => {
+  for (const [dx, dy] of [
+    [110, 0],
+    [-110, 0],
+    [0, 90],
+    [0, -110],
+    [78, 78],
+    [-78, -78],
+  ]) {
+    const p = {
+      ...hero(),
+      classId: "druid" as const,
+      x: TRAINING_ZONES[0].x + dx,
+      y: TRAINING_ZONES[0].y + dy,
+      attackAt: 1e6,
+    };
+    assert(inTrainingZone(p));
+    const s = tickTraining(undefined, [p], 10000, 0.05);
+    for (let now = 10050; now <= 12500; now += 50) tickTraining(s, [p], now, 0.05);
+    const bear = p.bear!,
+      dummy = s.enemies[0];
+    assert(Math.abs(Math.hypot(bear.x - dummy.x, bear.y - dummy.y) - 80) < 1e-6);
+    assert.equal(bear.moving, false);
+    assert(p.dps! >= 1.2, "at least three boar hits, with player roots disabled");
+    assert(s.damage.some((hit) => hit.amount === 2));
+    assert.equal(dummy.x, TRAINING_ZONES[0].x);
+    assert.equal(dummy.y, TRAINING_ZONES[0].y);
+  }
+});
+
 test("DPS counts actual damage once, attributes ailments and Bear, and expires after five seconds", () => {
   const p = hero(),
     other = { ...hero(), id: "other" };
