@@ -32,6 +32,15 @@ import {
   drawVegetation,
 } from "./effects";
 
+const portalSilhouette = document.createElement("canvas");
+portalSilhouette.width = 50;
+portalSilhouette.height = 76;
+const portalContext = portalSilhouette.getContext("2d")!;
+portalContext.beginPath();
+portalContext.ellipse(25, 38, 25, 38, 0, 0, Math.PI * 2);
+portalContext.fill();
+const portalMask = makeMask(portalSilhouette);
+
 export function drawPortal(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -40,14 +49,19 @@ export function drawPortal(
   bloom: boolean,
   name: string,
   active: boolean,
+  shadows: boolean,
 ) {
+  if (shadows)
+    castShadow(ctx, { id: "portal", x, y: y + 8, width: 50, height: 76, mask: portalMask });
   ctx.save();
   ctx.translate(x, y);
   ctx.lineWidth = 4;
-  ctx.fillStyle = "#162e4d";
-  ctx.beginPath();
-  ctx.ellipse(0, 1, 31, 12, 0, 0, Math.PI * 2);
-  ctx.fill();
+  if (!shadows) {
+    ctx.fillStyle = "#162e4d";
+    ctx.beginPath();
+    ctx.ellipse(0, 1, 31, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
   if (bloom) {
     ctx.shadowBlur = 20;
     ctx.shadowColor = "#53c9ff";
@@ -359,6 +373,7 @@ export function forestRenderer(
           quality.bloom,
           "Return to village",
           interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
+          quality.shadows,
         );
       }
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near);
