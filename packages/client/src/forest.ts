@@ -707,7 +707,7 @@ export function drawPlayerDetails(
     ctx.restore();
   } else if (!inCombat && facing === 1 && p.hitpoints > 0 && weapon.naturalWidth) {
     // The upward-facing sprite exposes the back, so keep the sheathed weapon on its torso.
-    ctx.drawImage(weapon, x - 16, y - 20, 32, 32);
+    ctx.drawImage(weapon, x - 16, y - 8, 32, 32);
   }
   if (attacking && p.hitpoints > 0) {
     if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
