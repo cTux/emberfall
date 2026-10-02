@@ -238,7 +238,7 @@ function App() {
         }
       }
       if (
-        event.key.toLowerCase() === "e" &&
+        event.code === "KeyE" &&
         !document.querySelector("dialog[open]") &&
         !(event.target instanceof HTMLInputElement) &&
         !(event.target instanceof HTMLSelectElement)
