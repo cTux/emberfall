@@ -115,8 +115,19 @@ export function Arena({
       if (document.querySelector("dialog[open]")) return;
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
         return;
-      const value = event.key.toLowerCase();
-      if (!["w", "a", "s", "d", "arrowup", "arrowleft", "arrowdown", "arrowright"].includes(value))
+      const value = event.code;
+      if (
+        ![
+          "KeyW",
+          "KeyA",
+          "KeyS",
+          "KeyD",
+          "ArrowUp",
+          "ArrowLeft",
+          "ArrowDown",
+          "ArrowRight",
+        ].includes(value)
+      )
         return;
       if (latest.current) event.preventDefault();
       const changed = keys.has(value) !== down;
@@ -136,11 +147,11 @@ export function Arena({
     document.addEventListener("visibilitychange", reset);
     const movement = () => ({
       x:
-        Number(keys.has("d") || keys.has("arrowright")) -
-        Number(keys.has("a") || keys.has("arrowleft")),
+        Number(keys.has("KeyD") || keys.has("ArrowRight")) -
+        Number(keys.has("KeyA") || keys.has("ArrowLeft")),
       y:
-        Number(keys.has("s") || keys.has("arrowdown")) -
-        Number(keys.has("w") || keys.has("arrowup")),
+        Number(keys.has("KeyS") || keys.has("ArrowDown")) -
+        Number(keys.has("KeyW") || keys.has("ArrowUp")),
     });
     function sendMovement() {
       const current = latest.current;

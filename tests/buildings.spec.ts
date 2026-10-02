@@ -63,7 +63,9 @@ test("building nameplate replaces the tooltip in interaction range", async ({ pa
   await expect(page.locator("body")).toHaveAttribute("data-inn-background", "#786747");
   await expect(page.locator(".source-tooltip")).toBeHidden();
   await page.screenshot({ path: "test-results/building-nameplate.png" });
-  await page.keyboard.press("e");
+  await page.evaluate(() =>
+    window.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyE", key: "у" })),
+  );
   await expect(page.getByRole("dialog")).toContainText("Inn services");
   await page.keyboard.press("Escape");
   Object.assign(world.players[0], { x: 480, y: 600 });
