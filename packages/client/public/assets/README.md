@@ -22,3 +22,5 @@ Class sprites: ranger uses Actor/Character/Hunter/SeparateAnim/{Walk,Attack}.png
 Druid uses Actor/Character/Shaman/SeparateAnim/{Walk,Attack}.png; its companion uses Actor/Animal/WildBoar/SpriteSheet.png (companion-boar.png), rendered at 2.5x scale for a smaller pet. Copies are unmodified, under the same CC0 license.
 
 Ambient critters use Actor/Animal/Cat/SpriteSheet.png, Chicken/SpriteSheetWhite.png, and Racoon/SpriteSheet.png. Copies are unmodified, under the same CC0 license.
+
+Village paths use Backgrounds/Tilesets/TilesetFloor.png (floor.png), unmodified under the same CC0 license. The dark grass/dirt autotile supplies centers, edges and corners at 2x scale.

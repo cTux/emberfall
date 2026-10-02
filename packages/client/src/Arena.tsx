@@ -1,3 +1,4 @@
+import { drawVillagePaths } from "./paths";
 import { characterImages } from "./characters";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
@@ -26,7 +27,6 @@ import {
   FOREST,
   wrap,
   defaultSpellRange,
-  PATHS,
   LOBBY_PORTAL,
   TICK_MS,
   nearbyInteraction,
@@ -99,6 +99,8 @@ export function Arena({
     const knight = characterImages.warrior.walk;
     const nature = new Image();
     nature.src = "/assets/nature.png";
+    const floor = new Image();
+    floor.src = "/assets/floor.png";
     const houses = new Image();
     houses.src = "/assets/houses.png";
     const skeleton = new Image();
@@ -279,46 +281,7 @@ export function Arena({
         ctx.fillStyle = random() > 0.5 ? "#80965c12" : "#142b2020";
         ctx.fillRect(random() * ARENA.width, random() * ARENA.height, 1 + random() * 3, 1);
       }
-      // Wide compacted-earth paths form one connected network between doorways.
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      for (const [width, color] of [
-        [42, "#293328"],
-        [36, "#6b6248"],
-        [28, "#827253"],
-      ] as const) {
-        ctx.lineWidth = width;
-        ctx.strokeStyle = color;
-        for (const path of PATHS) {
-          ctx.beginPath();
-          ctx.moveTo(path[0].x, path[0].y);
-          for (const point of path.slice(1)) ctx.lineTo(point.x, point.y);
-          ctx.stroke();
-        }
-      }
-      ctx.fillStyle = "#817457";
-      ctx.beginPath();
-      ctx.ellipse(480, 355, 105, 70, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "#b4a17a50";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.ellipse(480, 355, 92, 58, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      for (let i = 0; i < 260; i++) {
-        const path = PATHS[i % PATHS.length],
-          segment = i % (path.length - 1),
-          a = path[segment],
-          b = path[segment + 1],
-          t = random();
-        ctx.fillStyle = i % 2 ? "#aea07d45" : "#514b3540";
-        ctx.fillRect(
-          a.x + (b.x - a.x) * t + random() * 24 - 12,
-          a.y + (b.y - a.y) * t + random() * 24 - 12,
-          2 + random() * 3,
-          2,
-        );
-      }
+      drawVillagePaths(ctx, floor);
       scenery = villageSprites(nature, houses, quality.current);
       for (const object of scenery) {
         if (quality.current.shadows) castShadow(ctx, object);
@@ -342,6 +305,7 @@ export function Arena({
     paintBackground();
     nature.onload = paintBackground;
     houses.onload = paintBackground;
+    floor.onload = paintBackground;
     let frame = 0;
     let previous = performance.now();
     let resolutionScale = 1,
@@ -870,7 +834,7 @@ export function Arena({
     }
     frame = requestAnimationFrame(draw);
     return () => {
-      nature.onload = houses.onload = null;
+      nature.onload = houses.onload = floor.onload = null;
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener("resize", resize);
