@@ -46,13 +46,24 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
     });
   });
   await page.addInitScript(() => {
-    const capture = { weapons: 0, players: 0, bowAngle: 0 };
+    const capture = {
+      weapons: 0,
+      players: 0,
+      bowAngle: 0,
+      playerTops: {} as Record<number, number>,
+      weaponX: 0,
+      weaponTop: 0,
+    };
     (window as unknown as { weaponCapture: typeof capture }).weaponCapture = capture;
     const prototype = CanvasRenderingContext2D.prototype;
     prototype.drawImage = new Proxy(prototype.drawImage, {
       apply(target, context, args) {
         if (args[0] instanceof HTMLImageElement) {
-          if (args[0].src.includes("/assets/weapons/")) capture.weapons++;
+          if (args[0].src.includes("/assets/weapons/")) {
+            capture.weapons++;
+            capture.weaponX = args[1] + 16;
+            capture.weaponTop = args[2];
+          }
           if (args[0].src.endsWith("/assets/weapons/ranger.png")) {
             const transform = (context as CanvasRenderingContext2D).getTransform();
             // The bow's outward direction in the source image is down-left (135 degrees).
@@ -62,8 +73,10 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
             /\/assets\/(knight|warrior-attack|ranger|ranger-attack|mage|mage-attack|druid|druid-attack)\.png$/.test(
               args[0].src,
             )
-          )
+          ) {
             capture.players++;
+            capture.playerTops[args[5] + 24] = args[6];
+          }
         }
         return Reflect.apply(target, context, args);
       },
@@ -146,7 +159,22 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
         () => (window as unknown as { weaponCapture: { weapons: number } }).weaponCapture.weapons,
       );
       expect(weapons > 0, `${classId} village direction ${inputX},${inputY}`).toBe(inputY === -1);
-      if (inputY === -1) await page.screenshot({ path: `test-results/back-weapon-${classId}.png` });
+      if (inputY === -1) {
+        const offset = await page.evaluate(() => {
+          const capture = (
+            window as unknown as {
+              weaponCapture: {
+                playerTops: Record<number, number>;
+                weaponX: number;
+                weaponTop: number;
+              };
+            }
+          ).weaponCapture;
+          return capture.weaponTop - capture.playerTops[capture.weaponX];
+        });
+        expect(offset, `${classId}: sheathed weapon sits below the head`).toBe(22);
+        await page.screenshot({ path: `test-results/back-weapon-${classId}.png` });
+      }
     }
   }
   world.players.pop();
