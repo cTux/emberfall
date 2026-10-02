@@ -1,6 +1,6 @@
 # Emberfall UI
 
-A standalone, source-exported React component library and Storybook. Existing client, common and server packages are not migrated. Storybook is the review surface; its screen examples use local demo state and never connect to a game server.
+A source-exported React component library used by the game client and Storybook. Storybook is the review surface; its screen examples use local demo state and never connect to a game server.
 
 ## Run and verify
 
@@ -24,7 +24,7 @@ One dark forest theme: green-black surfaces, parchment text, warm ember primary 
 
 ## Reuse first
 
-When a consuming package is explicitly approved for migration, add `@emberfall/ui: workspace:*` and the MUI/React dependencies it imports. This task does not make that migration.
+The client depends on `@emberfall/ui: workspace:*` and the MUI/React dependencies it imports. It mounts `GameUiProvider` once, composes these components around its existing game state and server actions, and serves the bundled fonts at `/fonts`.
 
 ```tsx
 import { GameUiProvider, PartyCard } from "@emberfall/ui";
@@ -56,6 +56,8 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 
 ## Game components
 
+Windows are 400px wide with a maximum height of 480px, clamped to the viewport with a 16px margin. Settings uses a fixed 420px height across tabs. The title stays visible while window content scrolls internally. Compact typography, switches and tabs come from the shared theme.
+
 | Component          | Responsibility and inputs                                                                                                                                                                        |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | GameWindow         | Controlled `open`, `title`, `onClose`, children; `modal=false` for inline panels. Modal focus trap, Escape and focus restoration come from MUI. Pointer-drag the title; offsets are local state. |
@@ -66,7 +68,7 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 | SettingToggle      | Controlled label, checked/disabled and boolean `onChange`.                                                                                                                                       |
 | VolumeControl      | Controlled label, value in 0–1, disabled and numeric `onChange`. MUI supplies keyboard operation.                                                                                                |
 | ChapterTabs        | Typed chapter IDs/titles/content, controlled value/callback. Linked tab/panel IDs support multiple instances. Reuse for Codex, lobby and settings.                                               |
-| ConnectionStatus   | Connected, connecting, disconnected text and semantic color.                                                                                                                                     |
+| ConnectionStatus   | Colored connection circle with an accessible status label.                                                                                                                                       |
 | HudActions         | Typed labeled icon actions with callbacks and disabled state.                                                                                                                                    |
 | BossHealth         | Name and health/maxHealth; composes StatusMeter.                                                                                                                                                 |
 | InteractionPrompt  | Action and optional key text.                                                                                                                                                                    |
@@ -89,10 +91,10 @@ These rules follow the global `customize-material-ui` and `build-react-ui-compon
 
 ## Boundaries and acceptance
 
-- New work lives in `packages/ui`, plus the workspace lockfile for its dependencies.
+- Shared presentation lives in `packages/ui`; client compositions, persistence and server actions remain in `packages/client`.
 - Storybook previews each shared game pattern and all current screen needs without running the server.
 - Reusable components own presentation and controlled callbacks; the host retains game state and rules.
-- Existing packages retain their UI until a later migration is authorized.
+- The client uses the same components and theme as Storybook. Game rules and the server protocol are unchanged by UI integration.
 - `typecheck`, static build and browser checks must pass. Inspect desktop and narrow layouts before changing consumers.
 
 Sources: [MUI installation](https://mui.com/material-ui/getting-started/installation/), [MUI theming](https://mui.com/material-ui/customization/theming/), [Storybook React + Vite](https://storybook.js.org/docs/get-started/frameworks/react-vite/).

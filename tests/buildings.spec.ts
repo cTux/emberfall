@@ -45,11 +45,11 @@ test("building nameplate replaces the tooltip in interaction range", async ({ pa
     };
     const text = prototype.fillText;
     prototype.fillText = function (value, x, y) {
-      if (this.font === '9px "Pixelify Sans", sans-serif' && value.endsWith("Inn")) {
+      if (this.font === '9px "Alegreya Sans", sans-serif' && value.endsWith("Inn")) {
         document.body.dataset.innLabel = value;
         document.body.dataset.innBackground = backgrounds.get(this);
       }
-      if (this.font === '9px "Pixelify Sans", sans-serif' && value.endsWith("portal")) {
+      if (this.font === '9px "Alegreya Sans", sans-serif' && value.endsWith("portal")) {
         document.body.dataset.portalLabel = value;
         document.body.dataset.portalBackground = backgrounds.get(this);
       }

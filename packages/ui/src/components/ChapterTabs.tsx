@@ -10,9 +10,16 @@ export interface ChapterTabsProps {
   label: string;
   chapters: Chapter[];
   value: string;
+  showHeading?: boolean;
   onChange(id: string): void;
 }
-export function ChapterTabs({ label, chapters, value, onChange }: ChapterTabsProps) {
+export function ChapterTabs({
+  label,
+  chapters,
+  value,
+  showHeading = true,
+  onChange,
+}: ChapterTabsProps) {
   const id = useId();
   const active = chapters.find((chapter) => chapter.id === value);
   return (
@@ -43,9 +50,11 @@ export function ChapterTabs({ label, chapters, value, onChange }: ChapterTabsPro
         >
           {value === chapter.id && (
             <>
-              <Typography component="h3" variant="h3" gutterBottom>
-                {chapter.title}
-              </Typography>
+              {showHeading && (
+                <Typography component="h3" variant="h3" gutterBottom>
+                  {chapter.title}
+                </Typography>
+              )}
               {chapter.content}
             </>
           )}

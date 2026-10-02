@@ -1,4 +1,4 @@
-import { Chip, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { Box, Chip, IconButton, Stack, Tooltip, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { StatusMeter } from "./StatusMeter";
@@ -10,12 +10,22 @@ export function ConnectionStatus({
   status: "connected" | "connecting" | "disconnected";
 }) {
   return (
-    <Chip
+    <Box
+      component="span"
       role="status"
-      size="small"
-      variant="outlined"
-      color={status === "connected" ? "success" : status === "connecting" ? "warning" : "error"}
-      label={`Server ${status}`}
+      aria-label={status === "connected" ? "World server online" : `World server ${status}`}
+      sx={{
+        display: "block",
+        width: 10,
+        height: 10,
+        borderRadius: "50%",
+        bgcolor:
+          status === "connected"
+            ? "success.main"
+            : status === "connecting"
+              ? "warning.main"
+              : "error.main",
+      }}
     />
   );
 }

@@ -69,7 +69,7 @@ for (const className of ["Ranger", "Druid"]) {
     await page.getByRole("button", { name: "Settings", exact: true }).click();
     await page.getByLabel("FPS graph", { exact: true }).uncheck();
     await page.getByLabel("Latency graph", { exact: true }).uncheck();
-    await page.getByRole("button", { name: "Close menu" }).click();
+    await page.getByRole("button", { name: /^Close / }).click();
     const dps = await page.getByLabel("Damage per second", { exact: true }).boundingBox();
     const party = await page.locator(".party").boundingBox();
     expect(dps!.y).toBe(14);

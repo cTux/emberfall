@@ -45,7 +45,7 @@ export function WorldList({ worlds, selectedId, disabled, onJoin, onCreate }: Wo
             selected={world.id === selectedId}
             disabled={disabled || world.players >= world.capacity}
             onClick={() => onJoin(world)}
-            aria-label={`Join ${world.name}${world.locked ? ", password protected" : ""}${world.players >= world.capacity ? ", full" : ""}`}
+            aria-label={`Join ${world.name}${world.locked ? ", password protected" : ""}${world.players >= world.capacity ? ", full" : ""}, ${world.players}/${world.capacity}`}
           >
             <ListItemText
               primary={world.name}

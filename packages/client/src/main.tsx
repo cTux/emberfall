@@ -6,10 +6,29 @@ import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { ClientMessage, ServerMessage, WorldState, WorldSummary } from "@emberfall/common";
 import type { Interaction } from "./effects";
-import { GameWindow } from "./Window";
+import {
+  GameUiProvider,
+  GameWindow,
+  WorldList,
+  ChapterTabs,
+  PartyCard,
+  HudActions,
+  ConnectionStatus,
+  BossHealth,
+  SceneStatus,
+  ChoiceCard,
+  PortalVote,
+} from "@emberfall/ui";
+import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
+import { faBookOpen } from "@fortawesome/free-solid-svg-icons/faBookOpen";
+import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
+import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons/faRightFromBracket";
+import { faDoorOpen } from "@fortawesome/free-solid-svg-icons/faDoorOpen";
+import { faGlobe } from "@fortawesome/free-solid-svg-icons/faGlobe";
+import { Settings } from "./Settings";
 import { loadPreferences } from "./preferences";
 import { Arena } from "./Arena";
-import { GRAPHICS_PRESETS, GRAPHICS_LABELS, loadGraphics } from "./graphics";
+import { loadGraphics } from "./graphics";
 import "./style.scss";
 
 function App() {
@@ -32,7 +51,7 @@ function App() {
     "codex" | "settings" | "portal" | "building" | "wardrobe" | "exit" | null
   >(null);
   const [building, setBuilding] = useState("");
-  const [settingsTab, setSettingsTab] = useState<"gameplay" | "graphics" | "sound">("gameplay");
+  const [settingsTab, setSettingsTab] = useState("gameplay");
   const [browserOpen, setBrowserOpen] = useState(true);
   const [deathWindow, setDeathWindow] = useState(true);
   const [preferences, setPreferences] = useState(loadPreferences);
@@ -231,7 +250,7 @@ function App() {
     const key = (event: KeyboardEvent) => {
       if (event.repeat) return;
       if (event.key === "Escape") {
-        if (document.querySelector("dialog[open]")) return;
+        if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
         if (world) {
           event.preventDefault();
           setMenu("exit");
@@ -239,7 +258,7 @@ function App() {
       }
       if (
         event.code === "KeyE" &&
-        !document.querySelector("dialog[open]") &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]') &&
         !(event.target instanceof HTMLInputElement) &&
         !(event.target instanceof HTMLSelectElement)
       )
@@ -278,248 +297,212 @@ function App() {
           interaction={interaction}
           onHitpoints={setDisplayedHp}
         />
-        <nav className="controls" aria-label="Game controls">
-          {scene && ["voting", "countdown"].includes(scene.phase) && (
-            <button aria-label="Portal vote" title="Portal vote" onClick={() => setMenu("portal")}>
-              ◇
-            </button>
-          )}
-          <button aria-label="Codex" title="Codex" onClick={() => setMenu("codex")}>
-            ?
-          </button>
-          <button aria-label="Settings" title="Settings" onClick={() => setMenu("settings")}>
-            ⚙
-          </button>
-          {world && (
-            <button
-              aria-label="Leave world"
-              title="Exit world"
-              disabled={unavailable}
-              onClick={() => setMenu("exit")}
-            >
-              ↪
-            </button>
-          )}
-          {!world && !browserOpen && (
-            <button aria-label="World browser" onClick={() => setBrowserOpen(true)}>
-              ⌂
-            </button>
-          )}
-        </nav>
-        <span
-          role="status"
-          aria-label={
-            status === "Connected" ? "World server online" : `World server ${status.toLowerCase()}`
-          }
-          title={status === "Connected" ? "World server online" : status}
-          className={`connection ${status.toLowerCase()}`}
-        />
+        <Box className="controls">
+          <HudActions
+            actions={[
+              ...(scene && ["voting", "countdown"].includes(scene.phase)
+                ? [
+                    {
+                      id: "portal",
+                      label: "Portal vote",
+                      icon: faDoorOpen,
+                      onClick: () => setMenu("portal"),
+                    },
+                  ]
+                : []),
+              { id: "codex", label: "Codex", icon: faBookOpen, onClick: () => setMenu("codex") },
+              {
+                id: "settings",
+                label: "Settings",
+                icon: faGear,
+                onClick: () => setMenu("settings"),
+              },
+              ...(world
+                ? [
+                    {
+                      id: "leave",
+                      label: "Leave world",
+                      icon: faRightFromBracket,
+                      disabled: unavailable,
+                      onClick: () => setMenu("exit"),
+                    },
+                  ]
+                : []),
+              ...(!world && !browserOpen
+                ? [
+                    {
+                      id: "browser",
+                      label: "World browser",
+                      icon: faGlobe,
+                      onClick: () => setBrowserOpen(true),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        </Box>
+        <Box className="connection">
+          <ConnectionStatus
+            status={
+              status === "Connected"
+                ? "connected"
+                : status === "Connecting"
+                  ? "connecting"
+                  : "disconnected"
+            }
+          />
+        </Box>
         {world ? (
-          <aside
+          <Stack
+            component="aside"
             className="party"
+            spacing={1}
             aria-label={`${world.name}: ${world.players.length}/8 adventurers`}
           >
-            <ul>
-              {world.players.map((p) => (
-                <li
-                  className={`party-member${p.scene !== me?.scene ? " other-dimension" : ""}`}
-                  title={p.scene !== me?.scene ? "In another dimension" : undefined}
-                  key={p.id}
-                >
+            {world.players.map((p) => (
+              <PartyCard
+                key={p.id}
+                name={p.name}
+                level={p.level}
+                health={displayedHp[p.id] ?? p.hitpoints}
+                maxHealth={p.maxHitpoints}
+                mana={p.manapoints}
+                maxMana={p.maxManapoints}
+                portrait={
                   <span
                     className="portrait"
                     style={{ backgroundImage: `url(${classSprite(p.classId)})` }}
                     aria-hidden="true"
                   />
-                  <div className="member-info">
-                    <div className="member-name">
-                      <strong>
-                        {p.name}
-                        {p.id === playerId ? " (you)" : ""}
-                      </strong>
-                      <span>Lv. {p.level}</span>
-                      {p.id === world.hostId && (
-                        <span className="host" title="Host" aria-label="Host">
-                          ♔
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className="stat hp"
-                      role="progressbar"
-                      aria-label={`${p.name} hitpoints`}
-                      aria-valuenow={displayedHp[p.id] ?? p.hitpoints}
-                      aria-valuemin={0}
-                      aria-valuemax={p.maxHitpoints}
-                    >
-                      <span
-                        style={{
-                          width: `${(100 * (displayedHp[p.id] ?? p.hitpoints)) / p.maxHitpoints}%`,
-                        }}
-                      />
-                      <small>
-                        HP {displayedHp[p.id] ?? p.hitpoints}/{p.maxHitpoints}
-                      </small>
-                    </div>
-                    <div
-                      className="stat mp"
-                      role="progressbar"
-                      aria-label={`${p.name} manapoints`}
-                      aria-valuenow={p.manapoints}
-                      aria-valuemin={0}
-                      aria-valuemax={p.maxManapoints}
-                    >
-                      <span style={{ width: `${(100 * p.manapoints) / p.maxManapoints}%` }} />
-                      <small>
-                        MP {p.manapoints}/{p.maxManapoints}
-                      </small>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </aside>
-        ) : browserOpen ? (
-          <GameWindow title="Emberfall" modal={false} onClose={() => setBrowserOpen(false)}>
-            <label className="identity">
-              Your adventurer name
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={24}
-                required
-                placeholder="Your name"
-                autoComplete="nickname"
+                }
+                local={p.id === playerId}
+                host={p.id === world.hostId}
+                away={p.scene !== me?.scene}
               />
-            </label>
-            <div className="tabs" role="tablist" aria-label="World actions">
-              <button
-                role="tab"
-                aria-selected={tab === "browse"}
-                onClick={() => {
-                  setTab("browse");
-                  setError("");
-                }}
-              >
-                Join a world <span>{worlds.length}</span>
-              </button>
-              <button
-                role="tab"
-                aria-selected={tab === "create"}
-                onClick={() => {
-                  setTab("create");
-                  setError("");
-                }}
-              >
-                Create a world
-              </button>
-            </div>
-            {tab === "create" ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (name.trim())
-                    act({ type: "create", name: worldName, playerName: name, password });
-                }}
-              >
-                <label>
-                  World name
-                  <input
-                    required
-                    maxLength={24}
-                    value={worldName}
-                    onChange={(e) => setWorldName(e.target.value)}
-                  />
-                </label>
-                <label>
-                  Password <small>optional</small>
-                  <input
-                    type="password"
-                    maxLength={64}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Leave empty for an open world"
-                    autoComplete="new-password"
-                  />
-                </label>
-                <button
-                  className="primary"
-                  disabled={unavailable || !name.trim() || !worldName.trim()}
-                >
-                  {pending ? "Opening world…" : "Light the ember"} <span>↗</span>
-                </button>
-              </form>
-            ) : (
-              <div className="world-browser">
-                {!worlds.length ? (
-                  <div className="empty">
-                    <span>◇</span>
-                    <strong>The grove is quiet.</strong>
-                    <small>No open worlds yet. Be the first to light an ember.</small>
-                    <button className="text-button" onClick={() => setTab("create")}>
-                      Create the first world →
-                    </button>
-                  </div>
-                ) : (
-                  <div className="world-list">
-                    {worlds.map((w) => (
-                      <button
-                        key={w.id}
-                        className={`world-row ${selected?.id === w.id ? "selected" : ""}`}
-                        disabled={unavailable || w.players >= w.capacity || !name.trim()}
-                        onClick={() => {
-                          if (w.locked) {
-                            setSelected(w);
-                            setJoinPassword("");
-                            setError("");
-                          } else
-                            act({ type: "join", worldId: w.id, playerName: name, password: "" });
-                        }}
-                      >
-                        <span className="world-icon">{w.locked ? "▣" : "◇"}</span>
-                        <span>
-                          <strong>{w.name}</strong>
-                          <small>{w.locked ? "Password protected" : "Open to everyone"}</small>
-                        </span>
-                        <span className="count">
-                          {w.players}/{w.capacity} ↗
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {selected && (
-                  <form
-                    className="join-form"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      act({
-                        type: "join",
-                        worldId: selected.id,
-                        playerName: name,
-                        password: joinPassword,
-                      });
-                    }}
-                  >
-                    <label>
-                      Password for {selected.name}
-                      <input
-                        type="password"
-                        value={joinPassword}
-                        onChange={(e) => setJoinPassword(e.target.value)}
-                        maxLength={64}
-                        autoComplete="current-password"
-                      />
-                    </label>
-                    <button className="primary" disabled={unavailable || !name.trim()}>
-                      {pending ? "Joining…" : "Join world"} →
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-            <div className="lobby-note">◷ Worlds fade when the last adventurer leaves.</div>
-          </GameWindow>
+            ))}
+          </Stack>
+        ) : browserOpen ? (
+          <Box className="lobby">
+            <GameWindow title="Emberfall" modal={false} onClose={() => setBrowserOpen(false)}>
+              <Stack spacing={3}>
+                <TextField
+                  label="Your adventurer name"
+                  value={name}
+                  required
+                  autoComplete="nickname"
+                  onChange={(e) => setName(e.target.value)}
+                  slotProps={{ htmlInput: { maxLength: 24 } }}
+                />
+                <ChapterTabs
+                  label="World actions"
+                  value={tab}
+                  showHeading={false}
+                  onChange={(next) => {
+                    setTab(next === "create" ? "create" : "browse");
+                    setError("");
+                  }}
+                  chapters={[
+                    {
+                      id: "browse",
+                      title: "Join a world",
+                      content: (
+                        <Stack spacing={2}>
+                          <WorldList
+                            worlds={worlds}
+                            selectedId={selected?.id}
+                            disabled={unavailable || !name.trim()}
+                            onCreate={() => setTab("create")}
+                            onJoin={(w) => {
+                              if (w.locked) {
+                                setSelected(worlds.find((world) => world.id === w.id)!);
+                                setJoinPassword("");
+                                setError("");
+                              } else
+                                act({
+                                  type: "join",
+                                  worldId: w.id,
+                                  playerName: name,
+                                  password: "",
+                                });
+                            }}
+                          />
+                          {selected && (
+                            <Stack
+                              component="form"
+                              spacing={2}
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                act({
+                                  type: "join",
+                                  worldId: selected.id,
+                                  playerName: name,
+                                  password: joinPassword,
+                                });
+                              }}
+                            >
+                              <TextField
+                                label={`Password for ${selected.name}`}
+                                type="password"
+                                autoComplete="current-password"
+                                value={joinPassword}
+                                onChange={(e) => setJoinPassword(e.target.value)}
+                                slotProps={{ htmlInput: { maxLength: 64 } }}
+                              />
+                              <Button
+                                type="submit"
+                                variant="contained"
+                                disabled={unavailable || !name.trim()}
+                              >
+                                {pending ? "Joining…" : "Join world"}
+                              </Button>
+                            </Stack>
+                          )}
+                        </Stack>
+                      ),
+                    },
+                    {
+                      id: "create",
+                      title: "Create a world",
+                      content: (
+                        <Stack
+                          component="form"
+                          spacing={2}
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (name.trim())
+                              act({ type: "create", name: worldName, playerName: name, password });
+                          }}
+                        >
+                          <TextField
+                            label="World name"
+                            required
+                            value={worldName}
+                            onChange={(e) => setWorldName(e.target.value)}
+                            slotProps={{ htmlInput: { maxLength: 24 } }}
+                          />
+                          <TextField
+                            label="Password (optional)"
+                            type="password"
+                            autoComplete="new-password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            slotProps={{ htmlInput: { maxLength: 64 } }}
+                          />
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={unavailable || !name.trim() || !worldName.trim()}
+                          >
+                            {pending ? "Opening world…" : "Light the ember"}
+                          </Button>
+                        </Stack>
+                      ),
+                    },
+                  ]}
+                />
+              </Stack>
+            </GameWindow>
+          </Box>
         ) : null}
         {scene?.phase === "countdown" && (
           <div
@@ -531,68 +514,68 @@ function App() {
           </div>
         )}
         {boss && (
-          <aside className="boss-hud" aria-label="Boss health">
-            <strong>{boss.name ?? "The Hollow Warden"}</strong>
-            <div
-              className="boss-health"
-              role="progressbar"
-              aria-label={`${boss.name ?? "The Hollow Warden"} hitpoints`}
-              aria-valuemin={0}
-              aria-valuemax={ENEMY_HP.boss}
-              aria-valuenow={boss.hitpoints}
-            >
-              <span
-                style={{
-                  width: `${Math.min(100, Math.max(0, (boss.hitpoints / ENEMY_HP.boss) * 100))}%`,
-                }}
-              />
-              <small>
-                {boss.hitpoints} / {ENEMY_HP.boss} HP
-              </small>
-            </div>
-          </aside>
+          <Box className="boss-hud">
+            <BossHealth
+              name={boss.name ?? "The Hollow Warden"}
+              health={boss.hitpoints}
+              maxHealth={ENEMY_HP.boss}
+            />
+          </Box>
         )}
         {me?.scene === "forest" && !boss && (
-          <div className="scene-clock" role="status">
-            {scene?.phase === "ended"
-              ? "Scene complete · Return portal open"
-              : scene?.bossId !== undefined
-                ? "Defeat the boss"
-                : `Forest · ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`}
-          </div>
+          <Box className="scene-clock">
+            <SceneStatus
+              label={
+                scene?.phase === "ended"
+                  ? "Scene complete · Return portal open"
+                  : scene?.bossId !== undefined
+                    ? "Defeat the boss"
+                    : "Forest"
+              }
+              seconds={
+                scene?.phase === "ended" || scene?.bossId !== undefined ? undefined : remaining
+              }
+            />
+          </Box>
         )}
         {me?.scene === "forest" &&
           (displayedHp[playerId] ?? me.hitpoints) <= 0 &&
           (deathWindow ? (
-            <GameWindow
-              title="You have fallen"
-              modal={false}
-              className="death-panel"
-              onClose={() => setDeathWindow(false)}
-            >
-              <p>Your party can continue fighting.</p>
-              <button className="primary" onClick={() => send({ type: "returnLobby" })}>
-                Return to lobby
-              </button>
-            </GameWindow>
+            <Box className="death-panel">
+              <GameWindow
+                title="You have fallen"
+                modal={false}
+                onClose={() => setDeathWindow(false)}
+              >
+                <Stack spacing={2}>
+                  <Typography>Your party can continue fighting.</Typography>
+                  <Button
+                    variant="contained"
+                    disabled={unavailable}
+                    onClick={() => send({ type: "returnLobby" })}
+                  >
+                    Return to lobby
+                  </Button>
+                </Stack>
+              </GameWindow>
+            </Box>
           ) : (
-            <button className="interact" onClick={() => setDeathWindow(true)}>
+            <Button className="interact" onClick={() => setDeathWindow(true)}>
               You have fallen · Return options
-            </button>
+            </Button>
           ))}
-        {error && (
-          <div className="notice" role="alert">
-            {error}
-            <button className="dismiss" aria-label="Dismiss message" onClick={() => setError("")}>
-              ×
-            </button>
-          </div>
+        {error && !menu && (
+          <Box className="notice">
+            <Alert severity="error" onClose={() => setError("")}>
+              {error}
+            </Alert>
+          </Box>
         )}
       </section>
       {menu && (
         <GameWindow
           key={menu}
-          className={menu === "codex" ? "codex-window" : ""}
+          height={menu === "settings" ? 420 : undefined}
           title={
             menu === "codex"
               ? "Codex"
@@ -608,327 +591,185 @@ function App() {
           }
           onClose={() => setMenu(null)}
         >
-          {menu === "codex" ? (
-            <Codex />
-          ) : menu === "settings" ? (
-            <>
-              <div className="tabs" role="tablist" aria-label="Settings areas">
-                {(["gameplay", "graphics", "sound"] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    role="tab"
-                    aria-selected={settingsTab === tab}
-                    onClick={() => setSettingsTab(tab)}
+          <Stack spacing={2}>
+            {error && (
+              <Alert severity="error" onClose={() => setError("")}>
+                {error}
+              </Alert>
+            )}
+            {menu === "codex" ? (
+              <Codex />
+            ) : menu === "settings" ? (
+              <Settings
+                tab={settingsTab}
+                onTab={setSettingsTab}
+                preferences={preferences}
+                setPreferences={setPreferences}
+                graphics={graphics}
+                setGraphics={setGraphics}
+              />
+            ) : menu === "exit" ? (
+              <>
+                <Typography>
+                  {me?.scene === "forest"
+                    ? "Are you sure you want to leave the current game? Your party will continue."
+                    : "Are you sure you want to leave the lobby?"}
+                </Typography>
+                <Stack direction="row" spacing={1}>
+                  <Button variant="outlined" onClick={() => setMenu(null)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    disabled={unavailable}
+                    onClick={() => {
+                      if (me?.scene === "forest") send({ type: "leaveScene" });
+                      else act({ type: "leave" });
+                      setMenu(null);
+                    }}
                   >
-                    {tab[0].toUpperCase() + tab.slice(1)}
-                  </button>
-                ))}
-              </div>
-              {settingsTab === "gameplay" && (
-                <>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={preferences.bloodPuddles}
-                      onChange={(e) =>
-                        setPreferences((p) => ({ ...p, bloodPuddles: e.target.checked }))
-                      }
-                    />
-                    Blood puddles
-                  </label>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={preferences.damageNumbers}
-                      onChange={(e) =>
-                        setPreferences((p) => ({ ...p, damageNumbers: e.target.checked }))
-                      }
-                    />
-                    Floating damage numbers
-                  </label>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={preferences.fps}
-                      onChange={(e) => setPreferences((p) => ({ ...p, fps: e.target.checked }))}
-                    />
-                    FPS graph
-                  </label>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={preferences.latency}
-                      onChange={(e) => setPreferences((p) => ({ ...p, latency: e.target.checked }))}
-                    />
-                    Latency graph
-                  </label>
-                </>
-              )}
-              {settingsTab === "sound" && (
-                <>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={preferences.sound}
-                      onChange={(e) => setPreferences((p) => ({ ...p, sound: e.target.checked }))}
-                    />
-                    Sound effects
-                  </label>
-                  <label>
-                    Effects volume
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={preferences.volume}
-                      onChange={(e) =>
-                        setPreferences((p) => ({ ...p, volume: Number(e.target.value) }))
-                      }
-                    />
-                  </label>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={preferences.music}
-                      onChange={(e) => setPreferences((p) => ({ ...p, music: e.target.checked }))}
-                    />
-                    Music
-                  </label>
-                  <label>
-                    Music volume
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.05"
-                      value={preferences.musicVolume}
-                      onChange={(e) =>
-                        setPreferences((p) => ({ ...p, musicVolume: Number(e.target.value) }))
-                      }
-                    />
-                  </label>
-                  <p>
-                    Music: TimberwolfGames · Sound effects: Ninja Adventure.{" "}
-                    <a href="/audio/CREDITS.txt" target="_blank" rel="noreferrer">
-                      Audio credits
-                    </a>
-                  </p>
-                </>
-              )}
-              {settingsTab === "graphics" && (
-                <div className="graphics-settings">
-                  <div className="presets">
-                    {Object.entries(GRAPHICS_PRESETS).map(([preset, values]) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        aria-pressed={JSON.stringify(graphics) === JSON.stringify(values)}
-                        onClick={() => setGraphics({ ...values })}
-                      >
-                        {preset}
-                      </button>
-                    ))}
-                  </div>
-                  {Object.entries(GRAPHICS_LABELS).map(([key, label]) => (
-                    <label className="checkbox" key={key}>
-                      <input
-                        type="checkbox"
-                        checked={graphics[key as keyof typeof GRAPHICS_LABELS]}
-                        onChange={(e) =>
-                          setGraphics((previous) => ({ ...previous, [key]: e.target.checked }))
-                        }
-                      />
-                      {label}
-                    </label>
-                  ))}
-                  <label>
-                    Frame rate limit
-                    <select
-                      value={graphics.frameLimit}
-                      onChange={(e) =>
-                        setGraphics((p) => ({ ...p, frameLimit: Number(e.target.value) }))
-                      }
-                    >
-                      <option value={0}>Display refresh rate</option>
-                      {[30, 60, 120, 144].map((fps) => (
-                        <option key={fps} value={fps}>
-                          {fps} FPS
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Render resolution
-                    <select
-                      value={graphics.resolution}
-                      onChange={(e) =>
-                        setGraphics((previous) => ({
-                          ...previous,
-                          resolution: Number(e.target.value),
-                        }))
-                      }
-                    >
-                      <option value={0.75}>75% · Performance</option>
-                      <option value={1}>100% · Native</option>
-                      <option value={1.5}>150% · Supersampling</option>
-                    </select>
-                  </label>
-                </div>
-              )}
-            </>
-          ) : menu === "exit" ? (
-            <>
-              <p>
-                {me?.scene === "forest"
-                  ? "Are you sure you want to leave the current game? Your party will continue."
-                  : "Are you sure you want to leave the lobby?"}
-              </p>
-              <div className="presets">
-                <button onClick={() => setMenu(null)}>Cancel</button>
-                <button
-                  onClick={() => {
-                    if (me?.scene === "forest") send({ type: "leaveScene" });
-                    else act({ type: "leave" });
-                    setMenu(null);
-                  }}
-                >
-                  Leave
-                </button>
-              </div>
-            </>
-          ) : menu === "wardrobe" ? (
-            <>
-              <p>Choose your class. Each class keeps its own progress.</p>
-              <div className="class-choices">
+                    Leave
+                  </Button>
+                </Stack>
+              </>
+            ) : menu === "wardrobe" ? (
+              <>
+                <Typography>Choose your class. Each class keeps its own progress.</Typography>
                 {CLASS_IDS.map((id) => {
                   const selected = (me?.classId ?? "warrior") === id;
                   const stats = selected ? me : me?.classes?.[id];
                   return (
-                    <button
+                    <ChoiceCard
                       key={id}
-                      className="class-choice"
-                      aria-pressed={selected}
-                      disabled={selected || scene?.phase === "countdown"}
-                      onClick={() => send({ type: "selectClass", classId: id })}
-                    >
-                      <span
-                        className="portrait"
-                        style={{ backgroundImage: `url(${classSprite(id)})` }}
-                        aria-hidden="true"
-                      />
-                      <img className="combat-icon weapon-icon" src={weaponSrc(id)} alt="" />
-                      <span>
-                        <strong>
-                          {CLASS_LABELS[id]}
-                          {selected ? " · Selected" : ""}
-                        </strong>
-                        <small>
+                      title={CLASS_LABELS[id]}
+                      selected={selected}
+                      disabled={unavailable || selected || scene?.phase === "countdown"}
+                      onSelect={() => send({ type: "selectClass", classId: id })}
+                      icon={
+                        <Stack direction="row" spacing={1}>
+                          <span
+                            className="portrait"
+                            style={{ backgroundImage: `url(${classSprite(id)})` }}
+                            aria-hidden="true"
+                          />
+                          <img className="combat-icon weapon-icon" src={weaponSrc(id)} alt="" />
+                        </Stack>
+                      }
+                      description={
+                        id === "warrior"
+                          ? "Slashing sword · Bleeding"
+                          : id === "ranger"
+                            ? "Piercing arrows · Poison"
+                            : id === "mage"
+                              ? "Twin fireballs · Burning"
+                              : "Roots · Boar companion"
+                      }
+                      details={
+                        <Typography variant="caption">
+                          <img className="combat-icon" src={statusSrc(classAbility[id])} alt="" />{" "}
                           Level {stats?.level ?? 1} · XP {stats?.experience ?? 0} · HP{" "}
                           {stats?.maxHitpoints ?? 100} · MP {stats?.maxManapoints ?? 50}
-                        </small>
-                        <small>
-                          <img className="combat-icon" src={statusSrc(classAbility[id])} alt="" />{" "}
-                          {id === "warrior"
-                            ? "Slashing sword · Bleeding"
-                            : id === "ranger"
-                              ? "Piercing arrows · Poison"
-                              : id === "mage"
-                                ? "Twin fireballs · Burning"
-                                : "Roots · Boar companion"}
-                        </small>
-                      </span>
-                    </button>
+                        </Typography>
+                      }
+                    />
                   );
                 })}
-              </div>
-              <p className="fine-print">
-                Switch here before the departure countdown. Talents are coming later.
-              </p>
-            </>
-          ) : menu === "building" ? (
-            <p>{building} services are coming in a future update.</p>
-          ) : (
-            <>
-              {world && scene && ["voting", "countdown"].includes(scene.phase) ? (
-                <>
-                  <p>Scene created. Vote here when you are ready.</p>
-                  <aside className="portal-vote" aria-label="Departure vote">
-                    <strong>Forest · Easy</strong>
-                    <span>
-                      {scene.ready.length}/{world.players.length} ready
-                    </span>
-                    <button
-                      className="primary"
-                      onClick={() => {
+                <Typography variant="caption" color="text.secondary">
+                  Switch here before the departure countdown. Talents are coming later.
+                </Typography>
+              </>
+            ) : menu === "building" ? (
+              <Typography>{building} services are coming in a future update.</Typography>
+            ) : (
+              <>
+                {world && scene && ["voting", "countdown"].includes(scene.phase) ? (
+                  <>
+                    <Typography>Scene created. Vote here when you are ready.</Typography>
+                    <PortalVote
+                      scene={scene.type}
+                      difficulty={scene.difficulty}
+                      ready={scene.ready.length}
+                      total={world.players.length}
+                      voted={scene.ready.includes(playerId)}
+                      countdown={scene.phase === "countdown" ? departure : undefined}
+                      disabled={unavailable}
+                      onVote={() => {
                         const ready = !scene.ready.includes(playerId);
                         send({ type: "ready", ready });
                         if (ready) setMenu(null);
                       }}
+                    />
+                  </>
+                ) : scene?.phase === "active" && !me?.scene && !scene.portals.length ? (
+                  <>
+                    <Typography>
+                      Your party has a scene in progress. Join before the boss is defeated.
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      disabled={unavailable}
+                      onClick={() => send({ type: "joinScene" })}
                     >
-                      {scene.ready.includes(playerId) ? "Retract ready vote" : "I'm ready"}
-                    </button>
-                  </aside>
-                </>
-              ) : scene?.phase === "active" && !me?.scene && !scene.portals.length ? (
-                <>
-                  <p>Your party has a scene in progress. Join before the boss is defeated.</p>
-                  <button className="primary" onClick={() => send({ type: "joinScene" })}>
-                    Join scene
-                  </button>
-                  {canRegenerate && (
-                    <>
-                      <p>No living players remain inside. The scene is paused.</p>
-                      <button
-                        onClick={() =>
-                          send({ type: "createScene", scene: "Forest", difficulty: "Easy" })
-                        }
-                      >
-                        Regenerate scene
-                      </button>
-                    </>
-                  )}
-                </>
-              ) : scene && !canRegenerate ? (
-                <p>
-                  {["active", "ended"].includes(scene.phase)
-                    ? scene.phase === "ended"
-                      ? "Scene complete. Everyone must return before creating a new one."
-                      : "You are already in this scene."
-                    : "Scene created. Vote here when you are ready."}
-                </p>
-              ) : (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    send({ type: "createScene", scene: "Forest", difficulty: "Easy" });
-                  }}
-                >
-                  <label>
-                    Scene type
-                    <select defaultValue="Forest">
-                      <option>Forest</option>
-                    </select>
-                  </label>
-                  <label>
-                    Difficulty
-                    <select defaultValue="Easy">
-                      <option>Easy</option>
-                    </select>
-                  </label>
-                  <div className="presets">
-                    <button type="submit">{canRegenerate ? "Regenerate scene" : "Create"}</button>
-                    <button type="button" onClick={() => setMenu(null)}>
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              )}
-            </>
-          )}
+                      Join scene
+                    </Button>
+                    {canRegenerate && (
+                      <>
+                        <Typography>
+                          No living players remain inside. The scene is paused.
+                        </Typography>
+                        <Button
+                          disabled={unavailable}
+                          onClick={() =>
+                            send({ type: "createScene", scene: "Forest", difficulty: "Easy" })
+                          }
+                        >
+                          Regenerate scene
+                        </Button>
+                      </>
+                    )}
+                  </>
+                ) : scene && !canRegenerate ? (
+                  <Typography>
+                    {["active", "ended"].includes(scene.phase)
+                      ? scene.phase === "ended"
+                        ? "Scene complete. Everyone must return before creating a new one."
+                        : "You are already in this scene."
+                      : "Scene created. Vote here when you are ready."}
+                  </Typography>
+                ) : (
+                  <Stack
+                    component="form"
+                    spacing={2}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      send({ type: "createScene", scene: "Forest", difficulty: "Easy" });
+                    }}
+                  >
+                    <TextField select label="Scene type" defaultValue="Forest">
+                      <MenuItem value="Forest">Forest</MenuItem>
+                    </TextField>
+                    <TextField select label="Difficulty" defaultValue="Easy">
+                      <MenuItem value="Easy">Easy</MenuItem>
+                    </TextField>
+                    <Stack direction="row" spacing={1}>
+                      <Button type="submit" variant="contained" disabled={unavailable}>
+                        {canRegenerate ? "Regenerate scene" : "Create"}
+                      </Button>
+                      <Button onClick={() => setMenu(null)}>Cancel</Button>
+                    </Stack>
+                  </Stack>
+                )}
+              </>
+            )}
+          </Stack>
         </GameWindow>
       )}
     </main>
   );
 }
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <GameUiProvider>
+    <App />
+  </GameUiProvider>,
+);

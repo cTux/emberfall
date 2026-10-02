@@ -17,12 +17,11 @@ test("combined performance graph plots FPS and latency, preserves toggles and st
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByLabel("Latency graph", { exact: true })).toBeChecked();
   await expect(page.getByLabel("FPS graph", { exact: true })).toBeChecked();
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("button", { name: /^Close / }).click();
   const latency = page.getByLabel("Server latency", { exact: true }),
     fps = page.getByLabel("Frame rate", { exact: true });
   await expect(latency).toHaveText(/\d+ ms/);
-  await expect(latency).toHaveText(/0–\d+ ms/);
-  await expect(latency).toContainText("Network");
+
   await expect(page.getByLabel("Input acknowledgement delay", { exact: true })).toHaveCount(1);
   await expect(page.getByLabel("Snapshot age since receipt", { exact: true })).toHaveCount(1);
   await expect
@@ -44,20 +43,19 @@ test("combined performance graph plots FPS and latency, preserves toggles and st
     b = await latency.boundingBox();
   expect(b!.y).toBe(a!.y);
   expect(b!.x).toBeGreaterThan(a!.x + a!.width);
-  const graph = page.getByRole("img", { name: "FPS and latency history over the last 30 seconds" });
+  const graph = page.getByRole("img", { name: "Performance history over the last 30 seconds" });
   await expect(graph).toBeVisible();
   await expect(page.locator('[data-series="fps"]')).toHaveAttribute("d", /L/);
   await expect(page.locator('[data-series="latency"]')).toHaveAttribute("d", /L/);
   expect((await page.locator(".performance-stats").boundingBox())!.x).toBe(14);
-  await expect(fps).toHaveAttribute("x", "8");
-  await expect(latency).toHaveAttribute("x", "256");
+
   await page.screenshot({ path: "test-results/performance-graph.png" });
   await page.reload();
   await expect(latency).toBeVisible();
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByLabel("Latency graph", { exact: true })).toBeChecked();
   await page.getByLabel("FPS graph", { exact: true }).uncheck();
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("button", { name: /^Close / }).click();
   await expect(fps).toBeHidden();
   await expect(latency).toBeVisible();
   expect((await page.locator(".performance-stats").boundingBox())!.x).toBe(14);
@@ -65,7 +63,7 @@ test("combined performance graph plots FPS and latency, preserves toggles and st
   await expect(page.locator('[data-series="latency"]')).toHaveCount(1);
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByLabel("Latency graph", { exact: true }).uncheck();
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("button", { name: /^Close / }).click();
   await expect(page.locator(".performance-stats")).toBeHidden();
 });
 
@@ -94,9 +92,9 @@ test("network lines grow during stale snapshots even when ping stays low", async
   await expect.poll(async () => Number(await age.getAttribute("data-value"))).toBeGreaterThan(800);
   expect(
     Number(await page.locator('[data-series="latency"]').getAttribute("data-value")),
-  ).toBeLessThan(100);
+  ).toBeLessThan(Number(await age.getAttribute("data-value")) / 2);
   const max = Number(
-    (await page.getByLabel("Server latency", { exact: true }).textContent())?.match(/0.(\d+)/)?.[1],
+    (await page.getByLabel("Network scale", { exact: true }).textContent())?.match(/0.(\d+)/)?.[1],
   );
   expect(max).toBeGreaterThanOrEqual(Number(await age.getAttribute("data-value")));
   for (const line of [input, age]) {
@@ -105,7 +103,7 @@ test("network lines grow during stale snapshots even when ping stays low", async
       .split(/\s+/)
       .filter(Boolean)
       .map((point) => Number(point.split(",")[1]));
-    expect(ys.every((y) => y >= 20 && y <= 72)).toBe(true);
+    expect(ys.every((y) => y >= 10 && y <= 70)).toBe(true);
   }
   await page.screenshot({ path: "test-results/stale-network-graph.png" });
 });

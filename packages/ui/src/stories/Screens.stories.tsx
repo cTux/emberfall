@@ -118,6 +118,7 @@ export const Lobby: Story = {
                 />
                 <ChapterTabs
                   label="World actions"
+                  showHeading={false}
                   value={tab}
                   onChange={setTab}
                   chapters={[
@@ -130,9 +131,6 @@ export const Lobby: Story = {
                     {notice}
                   </Alert>
                 )}
-                <Typography variant="caption" color="text.secondary">
-                  Worlds fade when the last adventurer leaves.
-                </Typography>
               </Stack>
             </GameWindow>
           ) : (
@@ -167,7 +165,7 @@ export const Settings: Story = {
     return (
       <Box sx={stage}>
         <Box sx={panel}>
-          <GameWindow title="Settings" modal={false} onClose={() => {}}>
+          <GameWindow title="Settings" modal={false} height={420} onClose={() => {}}>
             <ChapterTabs
               label="Settings areas"
               value={tab}

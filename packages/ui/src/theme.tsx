@@ -31,9 +31,10 @@ export const gameTheme = createTheme({
     boss: { main: "#bd94e8" },
   },
   typography: {
+    fontSize: 14,
     fontFamily: '"Alegreya Sans", sans-serif',
     h1: { fontSize: "2rem", fontWeight: 700 },
-    h2: { fontSize: "1.5rem", fontWeight: 700 },
+    h2: { fontSize: "1.25rem", fontWeight: 700 },
     h3: { fontSize: "1.2rem", fontWeight: 700 },
     button: { textTransform: "none", fontWeight: 700 },
   },
@@ -51,6 +52,15 @@ export const gameTheme = createTheme({
           },
         })),
         {
+          "@font-face": {
+            fontFamily: "Alegreya Sans",
+            fontStyle: "italic" as const,
+            fontWeight: 400,
+            fontDisplay: "swap" as const,
+            src: "url('/fonts/AlegreyaSans-Italic.ttf') format('truetype')",
+          },
+        },
+        {
           "*, *::before, *::after": { userSelect: "none" },
           ":focus-visible": { outline: "2px solid #e6be80", outlineOffset: 3 },
           "@media (prefers-reduced-motion: reduce)": {
@@ -63,7 +73,11 @@ export const gameTheme = createTheme({
       ],
     },
     MuiButton: { defaultProps: { size: "small", disableElevation: true } },
+    MuiButtonBase: { styleOverrides: { root: { fontFamily: "inherit" } } },
     MuiIconButton: { defaultProps: { size: "small" } },
+    MuiSwitch: { defaultProps: { size: "small" } },
+    MuiDialogTitle: { styleOverrides: { root: { padding: 12 } } },
+    MuiTab: { styleOverrides: { root: { minHeight: 36, padding: "6px 12px" } } },
     MuiTextField: { defaultProps: { size: "small", fullWidth: true } },
     MuiFormControl: { defaultProps: { size: "small" } },
     MuiPaper: {
@@ -71,7 +85,10 @@ export const gameTheme = createTheme({
       styleOverrides: { root: { backgroundImage: "none" } },
     },
     MuiDialog: { defaultProps: { fullWidth: true, maxWidth: "sm" } },
-    MuiTabs: { defaultProps: { variant: "scrollable", scrollButtons: "auto" } },
+    MuiTabs: {
+      defaultProps: { variant: "scrollable", scrollButtons: "auto" },
+      styleOverrides: { root: { minHeight: 36 } },
+    },
     MuiLinearProgress: { styleOverrides: { root: { height: 6, borderRadius: 5 } } },
   },
 });

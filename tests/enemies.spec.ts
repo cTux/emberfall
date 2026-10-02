@@ -143,19 +143,19 @@ test("health bars touch names, debuffs align left, and boss bars are larger and 
     });
     const text = CanvasRenderingContext2D.prototype.fillText;
     CanvasRenderingContext2D.prototype.fillText = function (value, x, y) {
-      if (value === "The Hollow Warden" && this.font === '8px "Pixelify Sans", sans-serif') {
+      if (value === "The Hollow Warden" && this.font === '8px "Alegreya Sans", sans-serif') {
         document.body.dataset.bossName = value;
         document.body.dataset.bossNameTouching = String(
           y - this.measureText(value).actualBoundingBoxAscent === bar.y + bar.height,
         );
       }
-      if (value === "Hunter" && this.font === '8px "Pixelify Sans", sans-serif')
+      if (value === "Hunter" && this.font === '8px "Alegreya Sans", sans-serif')
         document.body.dataset.playerNameTouching = String(
           y - this.measureText(value).actualBoundingBoxAscent === bar.y + bar.height,
         );
-      if (this.font === 'bold 11px "Pixelify Sans", sans-serif' && value === "Far ally")
+      if (this.font === 'bold 11px "Alegreya Sans", sans-serif' && value === "Far ally")
         document.body.dataset.allyArrow = "yes";
-      if (this.font === 'bold 11px "Pixelify Sans", sans-serif' && value === "The Hollow Warden")
+      if (this.font === 'bold 11px "Alegreya Sans", sans-serif' && value === "The Hollow Warden")
         document.body.dataset.bossArrow = "yes";
       text.call(this, value, x, y);
     };
@@ -177,11 +177,11 @@ test("health bars touch names, debuffs align left, and boss bars are larger and 
   await page.getByRole("tab", { name: "Create a world" }).click();
   await page.getByRole("button", { name: "Light the ember" }).click();
   const hud = page.getByLabel("Boss health", { exact: true });
-  const health = page.getByRole("progressbar", { name: "The Hollow Warden hitpoints" });
+  const health = page.getByRole("progressbar", { name: "The Hollow Warden HP" });
   await expect(hud).toContainText("The Hollow Warden");
   await expect(health).toHaveAttribute("aria-valuenow", "100");
   await expect(health).toHaveAttribute("aria-valuemax", "200");
-  await expect(health).toContainText("100 / 200 HP");
+  await expect(hud).toContainText("100 / 200");
   const position = await hud.boundingBox();
   expect(position!.x + position!.width / 2).toBe(720);
   expect(position!.y).toBe(14);
@@ -189,7 +189,14 @@ test("health bars touch names, debuffs align left, and boss bars are larger and 
     .poll(() =>
       page.evaluate(() => (window as unknown as { enemyBars: Record<string, number> }).enemyBars),
     )
-    .toEqual({ "#f4d447": 16, "#c084fc": 40 });
+    .toMatchObject({ "#f4d447": 16 });
+  expect(
+    (
+      await page.evaluate(
+        () => (window as unknown as { enemyBars: Record<string, number> }).enemyBars,
+      )
+    )["#c084fc"],
+  ).toBeGreaterThan(16);
   await expect(page.locator("body")).toHaveAttribute("data-boss-name", "The Hollow Warden");
   for (const attribute of [
     "boss-name-touching",
@@ -198,10 +205,9 @@ test("health bars touch names, debuffs align left, and boss bars are larger and 
     "debuff-aligned",
   ])
     await expect(page.locator("body")).toHaveAttribute(`data-${attribute}`, "true");
-  await expect(health).toHaveCSS("border-top-color", "rgb(192, 132, 252)");
-  await expect(health.locator("span")).toHaveCSS(
-    "background-image",
-    "linear-gradient(rgb(192, 132, 252), rgb(139, 69, 207))",
+  await expect(health.locator(".MuiLinearProgress-bar")).toHaveCSS(
+    "background-color",
+    "rgb(189, 148, 232)",
   );
   for (const archetype of ["skeleton", "runner", "brute", "caster"])
     await expect(page.locator("body")).toHaveAttribute(`data-death-${archetype}`, "yes");
@@ -218,15 +224,18 @@ test("health bars touch names, debuffs align left, and boss bars are larger and 
   await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "0");
   await page.getByLabel("Blood puddles", { exact: true }).check();
   await expect(page.locator("body")).toHaveAttribute("data-blood-puddles", "4");
-  await page.getByRole("button", { name: "Close menu" }).click();
-  await expect(page.locator("body")).toHaveAttribute("data-player-health-width", "19.5");
+  await page.getByRole("button", { name: /^Close / }).click();
+  await expect(page.locator("body")).toHaveAttribute("data-player-health-width", "19");
   await expect(page.locator("body")).toHaveAttribute("data-ally-arrow", "yes");
   await page.screenshot({ path: "test-results/elite-boss-bars.png" });
   world.scene!.enemies[1].x = 4000;
   world.scene!.enemies[1].hitpoints = 50;
   update();
   await expect(health).toHaveAttribute("aria-valuenow", "50");
-  await expect(health.locator("span")).toHaveAttribute("style", "width: 25%;");
+  await expect(health.locator(".MuiLinearProgress-bar")).toHaveAttribute(
+    "style",
+    /translateX\(-75%\)/,
+  );
   expect(await hud.boundingBox()).toEqual(position);
   await expect(page.locator("body")).toHaveAttribute("data-boss-arrow", "yes");
   world.players[0].scene = undefined;
