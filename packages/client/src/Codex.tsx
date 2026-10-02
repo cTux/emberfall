@@ -138,6 +138,15 @@ const chapters = [
         </a>
         <p>Music by TimberwolfGames. Audio credits and licenses are included with the game.</p>
         <p>
+          Wardrobe:{" "}
+          <a href="https://opengameart.org/content/lpc-wooden-furniture">LPC Wooden Furniture</a> by
+          bluecarrot16, Baŝto, Lanea Zimmerman (Sharm), William Thompson, Tuomo Untinen (Reemax),
+          and Janna/Lilius/Jannax. Cropped from the original sheet;{" "}
+          <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.{" "}
+          <a href="/assets/LPC-CREDITS.txt">Full credits</a> and{" "}
+          <a href="/assets/LPC-LICENSE.txt">license</a>.
+        </p>
+        <p>
           Weapons: <a href="https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack">Kyrise</a>,{" "}
           <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Unmodified sprites
           from Kyrise's Free 16x16 RPG Icon Pack.

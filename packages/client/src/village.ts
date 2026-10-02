@@ -10,6 +10,7 @@ export interface Scenery extends Caster {
 export function villageSprites(
   nature: HTMLImageElement,
   houses: HTMLImageElement,
+  wardrobe: HTMLImageElement,
   graphics: GraphicsSettings,
 ): Scenery[] {
   const objects: Scenery[] = [];
@@ -68,24 +69,8 @@ export function villageSprites(
         b.name,
       ),
     );
-  const wardrobe = document.createElement("canvas");
-  wardrobe.width = 32;
-  wardrobe.height = 40;
-  const w = wardrobe.getContext("2d")!;
-  w.fillStyle = "#30241f";
-  w.fillRect(1, 2, 30, 38);
-  w.fillStyle = "#ad7447";
-  w.fillRect(3, 5, 26, 31);
-  w.fillStyle = "#68452e";
-  w.fillRect(5, 7, 10, 27);
-  w.fillRect(17, 7, 10, 27);
-  w.fillStyle = "#e3ba72";
-  w.fillRect(12, 21, 2, 3);
-  w.fillRect(18, 21, 2, 3);
-  w.fillStyle = "#d39b56";
-  w.fillRect(0, 1, 32, 4);
-  w.fillRect(0, 35, 32, 3);
-  add("building:wardrobe", WARDROBE.x, WARDROBE.y, 48, 60, wardrobe, 0, 0, 32, 40, "Wardrobe");
+  if (wardrobe.naturalWidth)
+    add("building:wardrobe", WARDROBE.x, WARDROBE.y, 48, 60, wardrobe, 0, 0, 64, 80, "Wardrobe");
   const torch = document.createElement("canvas");
   torch.width = 16;
   torch.height = 48;
