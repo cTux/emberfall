@@ -573,6 +573,7 @@ export function forestRenderer(
           a.facing,
           a.player.id === playerId ? now : serverTime,
           quality.bloom,
+          world?.scene?.phase === "active",
         );
     }
     if (world?.scene) drawClassProjectiles(ctx, world.scene, serverTime, near);
@@ -625,6 +626,7 @@ export function drawPlayerDetails(
   facing: number,
   now: number,
   bloom: boolean,
+  inCombat: boolean,
   showVitals = true,
 ) {
   if (showVitals) {
@@ -635,10 +637,10 @@ export function drawPlayerDetails(
     ctx.fillRect(belt - 1, y + 3, 4, 7);
     drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
   }
-  const age = now - (p.attackAt ?? 0);
-  const attacking = age >= 0 && age < PLAYER_ATTACK_DURATION;
+  const age = now - (p.attackAt ?? -Infinity);
+  const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
   const weapon = weaponImages[p.classId ?? "warrior"];
-  if (p.hitpoints > 0 && weapon.naturalWidth) {
+  if (inCombat && p.hitpoints > 0 && weapon.naturalWidth) {
     const slash = attacking && (p.classId ?? "warrior") === "warrior";
     const angle = slash
       ? (p.attackAngle ?? 0) - Math.PI / 2 + (age / PLAYER_ATTACK_DURATION) * Math.PI
@@ -653,7 +655,7 @@ export function drawPlayerDetails(
     ctx.drawImage(weapon, -size / 2, -size / 2, size, size);
     ctx.restore();
   }
-  if (age >= 0 && age < PLAYER_ATTACK_DURATION && p.hitpoints > 0) {
+  if (attacking && p.hitpoints > 0) {
     if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
       return;
     }

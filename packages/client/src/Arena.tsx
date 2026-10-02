@@ -26,6 +26,7 @@ import {
   TICK_MS,
   nearbyInteraction,
   TRAINING_ZONES,
+  inTrainingZone,
 } from "@emberfall/common";
 import type { ClientMessage, WorldState } from "@emberfall/common";
 import type { GraphicsSettings } from "./graphics";
@@ -670,6 +671,7 @@ export function Arena({
           pos.facing,
           player.id === playerId ? now : serverTime,
           quality.current.bloom,
+          !!training && inTrainingZone(player),
           false,
         );
       }
