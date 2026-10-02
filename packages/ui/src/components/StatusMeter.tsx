@@ -28,13 +28,14 @@ export function StatusMeter({
         aria-valuenow={current}
         aria-valuemin={0}
         aria-valuemax={limit || 1}
+        aria-valuetext={`${Math.round(current)} / ${Math.round(limit)}`}
       />
       <StatusMeterTextStyled centered={centered} aria-hidden="true">
         <Typography variant="caption" noWrap>
           {label}
         </Typography>
         <Typography variant="caption" sx={{ flexShrink: 0 }}>
-          {current} / {limit}
+          {Math.round(current)} / {Math.round(limit)}
         </Typography>
       </StatusMeterTextStyled>
     </StatusMeterStyled>

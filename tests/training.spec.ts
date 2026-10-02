@@ -32,7 +32,7 @@ for (const className of ["Ranger", "Druid"]) {
       .click();
     await page.keyboard.press("Escape");
     await expect.poll(() => current?.players[0].attackAt).toBeUndefined();
-    await expect(page.getByLabel("Damage per second", { exact: true })).toContainText("0.0 DPS");
+    await expect(page.getByLabel("Damage per second", { exact: true })).toContainText("0 DPS");
     const tap = async (key: string) => {
       await page.evaluate(async (key) => {
         const code = `Key${key.toUpperCase()}`;
@@ -60,9 +60,9 @@ for (const className of ["Ranger", "Druid"]) {
         .toBeCloseTo(80, 5);
       await expect.poll(() => current?.training?.damage.some((hit) => hit.amount === 2)).toBe(true);
     }
-    await expect(page.getByLabel("Damage per second", { exact: true })).not.toContainText(
-      "0.0 DPS",
-    );
+    await expect(
+      page.getByLabel("Damage per second", { exact: true }).locator("strong"),
+    ).not.toHaveText("0 DPS");
     expect(current!.players[0].hitpoints).toBe(current!.players[0].maxHitpoints);
     expect(current!.training!.enemies.map(({ x, y }) => ({ x, y }))).toEqual(positions);
     await page.screenshot({ path: `test-results/training-${className.toLowerCase()}-dps.png` });

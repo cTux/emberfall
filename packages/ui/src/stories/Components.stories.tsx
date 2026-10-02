@@ -31,6 +31,7 @@ export const Meter: Story = {
       <StatusMeter label="Mana" value={20} max={50} color="info" />
       <StatusMeter label="Empty" value={0} max={100} />
       <StatusMeter label="Invalid maximum" value={50} max={0} />
+      <StatusMeter label="Fractional" value={75.6} max={100.4} />
     </Stack>
   ),
 };
@@ -201,7 +202,7 @@ export const Performance: Story = {
         { fps: 58, latency: 40 },
         { fps: null, latency: null },
         { fps: 59, latency: 35 },
-        { fps: 60, latency: 32 },
+        { fps: 60.4, latency: 32.6 },
       ]}
     />
   ),

@@ -61,12 +61,12 @@ export function PerformanceMonitor({
       <Stack direction="row" spacing={2}>
         {showFps && (
           <Typography aria-label="Frame rate" color="success.main">
-            {current?.fps ?? "—"} FPS
+            {current?.fps == null ? "—" : Math.round(current.fps)} FPS
           </Typography>
         )}
         {showLatency && (
           <Typography aria-label="Server latency" color="info.main">
-            {current?.latency ?? "—"} ms
+            {current?.latency == null ? "—" : Math.round(current.latency)} ms
           </Typography>
         )}
       </Stack>
