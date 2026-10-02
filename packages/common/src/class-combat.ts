@@ -97,16 +97,27 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
   }
 }
 
+export function defaultSpellRange(player: Pick<Player, "classId">) {
+  return player.classId === "mage" || player.classId === "druid"
+    ? 250
+    : player.classId === "ranger"
+      ? 1000
+      : 88;
+}
+
 export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
-  const range = player.classId === "mage" || player.classId === "druid" ? 250 : 1000;
+  const range = defaultSpellRange(player);
+  const manual =
+    player.autoTarget === false && player.aimX !== undefined && player.aimY !== undefined;
+  const aim = manual ? { x: player.aimX!, y: player.aimY! } : player;
   const rooted = (enemy: Enemy) =>
     enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now) ? 1 : 0;
   const targets = scene.enemies
     .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= range)
     .sort(
       (a, b) =>
-        (player.classId === "druid" ? rooted(a) - rooted(b) : 0) ||
-        forestDistance(a, player) - forestDistance(b, player),
+        (!manual && player.classId === "druid" ? rooted(a) - rooted(b) : 0) ||
+        forestDistance(a, aim) - forestDistance(b, aim),
     )
     .slice(0, player.classId === "mage" || player.classId === "druid" ? 2 : 1);
   if (player.classId === "druid") {
@@ -130,7 +141,11 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
     return;
   }
   scene.playerShots ??= [];
-  for (const target of targets) {
+  const shotTargets: (Enemy | undefined)[] =
+    manual && player.classId === "ranger" ? [undefined] : targets;
+  if (manual && player.classId === "mage" && !shotTargets.length) shotTargets.push(undefined);
+  for (const target of shotTargets) {
+    const destination = manual && player.classId === "ranger" ? aim : (target ?? aim);
     scene.playerShots.push({
       id: ++scene.sequence,
       ownerId: player.id,
@@ -139,14 +154,14 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
       x: player.x,
       y: player.y,
       angle: Math.atan2(
-        wrappedDelta(target.y, player.y, FOREST.height),
-        wrappedDelta(target.x, player.x, FOREST.width),
+        wrappedDelta(destination.y, player.y, FOREST.height),
+        wrappedDelta(destination.x, player.x, FOREST.width),
       ),
       remaining: range,
       hitIds: [],
-      targetId: target.id,
-      targetX: target.x,
-      targetY: target.y,
+      targetId: target?.id,
+      targetX: destination.x,
+      targetY: destination.y,
     });
   }
 }

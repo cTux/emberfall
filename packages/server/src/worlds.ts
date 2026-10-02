@@ -208,6 +208,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         session.x = session.y = 0;
         session.inputAt = 0;
         const player = worlds.get(session.worldId)?.players.get(session.id);
+        if (player?.attacking) player.attacking = false;
         try {
           if (player && session.characterId)
             characters.save(session.characterId, player.name, player);
@@ -253,6 +254,14 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       const message = parsed.data;
       if (message.type === "ping") {
         send(ws, { type: "pong", id: message.id });
+        return;
+      }
+      if (message.type === "combatInput") {
+        const player = worlds.get(session.worldId ?? "")?.players.get(session.id);
+        if (player) {
+          const { type: _, ...controls } = message;
+          Object.assign(player, controls, { combatInputAt: now });
+        }
         return;
       }
       if (message.type === "move") {

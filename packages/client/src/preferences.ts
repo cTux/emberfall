@@ -1,4 +1,6 @@
 export interface Preferences {
+  autoAttack: boolean;
+  autoTarget: boolean;
   bloodPuddles: boolean;
   damageNumbers: boolean;
   fps: boolean;
@@ -10,6 +12,8 @@ export interface Preferences {
 }
 export function loadPreferences(): Preferences {
   const result = {
+    autoAttack: true,
+    autoTarget: true,
     bloodPuddles: true,
     damageNumbers: true,
     fps: true,
@@ -22,6 +26,8 @@ export function loadPreferences(): Preferences {
   try {
     const saved = JSON.parse(localStorage.getItem("emberfall.preferences") ?? "{}");
     for (const key of [
+      "autoAttack",
+      "autoTarget",
       "bloodPuddles",
       "damageNumbers",
       "fps",

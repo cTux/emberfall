@@ -13,8 +13,9 @@ export {
 export * from "./scene.ts";
 export * from "./simulation.ts";
 export * from "./training.ts";
-export { fireClassAttack, advancePlayerShot } from "./class-combat.ts";
+export { fireClassAttack, advancePlayerShot, defaultSpellRange } from "./class-combat.ts";
 export { ENEMY_HP, ENEMY_STATS, enemyMaxHealth, spawnArchetype } from "./enemies.ts";
+import { FOREST } from "./scene.ts";
 import type { SceneState } from "./scene.ts";
 
 export const MAX_PLAYERS = 8;
@@ -61,6 +62,14 @@ export const clientMessage = z.discriminatedUnion("type", [
     worldId: z.string().uuid(),
     characterToken: characterToken.unwrap(),
   }),
+  z.object({
+    type: z.literal("combatInput"),
+    autoAttack: z.boolean(),
+    autoTarget: z.boolean(),
+    attacking: z.boolean(),
+    aimX: z.number().finite().min(0).max(FOREST.width),
+    aimY: z.number().finite().min(0).max(FOREST.height),
+  }),
   z.object({ type: z.literal("leave") }),
   z.object({ type: z.literal("selectClass"), classId: classSchema }),
   z.object({
@@ -95,6 +104,12 @@ export interface Player extends CharacterProgress {
   scene?: "forest";
   attackAt?: number;
   attackAngle?: number;
+  autoAttack?: boolean;
+  autoTarget?: boolean;
+  attacking?: boolean;
+  aimX?: number;
+  aimY?: number;
+  combatInputAt?: number;
   hurtAt?: number;
   inputSeq?: number;
   inputElapsed?: number;

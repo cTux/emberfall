@@ -251,6 +251,18 @@ function App() {
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if (event.repeat) return;
+      if (
+        world &&
+        !menu &&
+        !(event.target as HTMLElement)?.closest("input, textarea, select, [contenteditable=true]")
+      ) {
+        const option =
+          event.code === "KeyF" ? "autoAttack" : event.code === "KeyG" ? "autoTarget" : null;
+        if (option) {
+          event.preventDefault();
+          setPreferences((p) => ({ ...p, [option]: !p[option] }));
+        }
+      }
       if (event.key === "Escape") {
         if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
         if (world) {

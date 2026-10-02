@@ -568,3 +568,111 @@ test("class attacks fire once per cycle and ranged classes never deal a melee sl
     assert.equal(s.playerShots!.length, 2);
   }
 });
+
+test("manual combat gates casts, retains cooldown, and expires held input", async () => {
+  const { tickPlayerCombat, PLAYER_ATTACK_INTERVAL } = await import("@emberfall/common");
+  const player = { ...hero(), classId: "ranger" as const, autoAttack: false };
+  const arena = scene();
+  arena.enemies = [enemy(1)];
+  tickPlayerCombat(arena, [player], 1000, 0.05);
+  assert.equal(player.attackAt, undefined);
+  Object.assign(player, { attacking: true, combatInputAt: 1000 });
+  tickPlayerCombat(arena, [player], 1000, 0.05);
+  assert.equal(player.attackAt, 1000);
+  assert.equal(arena.playerShots?.length, 1);
+  player.attacking = false;
+  tickPlayerCombat(arena, [player], 1300, 0.05);
+  player.attacking = true;
+  player.combatInputAt = 1400;
+  tickPlayerCombat(arena, [player], 1400, 0.05);
+  assert.equal(player.attackAt, 1000);
+  player.combatInputAt = 1000 + PLAYER_ATTACK_INTERVAL;
+  tickPlayerCombat(arena, [player], 1700, 0.05);
+  assert.equal(player.attackAt, 1700);
+  tickPlayerCombat(arena, [player], 2400, 0.05);
+  assert.equal(player.attackAt, 1700);
+  player.autoAttack = true;
+  tickPlayerCombat(arena, [player], 2400, 0.05);
+  assert.equal(player.attackAt, 2400);
+});
+
+test("manual targeting prefers cursor targets for roots and fireballs and directs arrows", async () => {
+  const { playerAimAngle } = await import("@emberfall/common");
+  const player: Player = { ...hero(), autoTarget: false, aimX: 2600, aimY: 1280 };
+  const arena = scene();
+  arena.enemies = [enemy(1, 2420), enemy(2, 2580), enemy(3, 2600), enemy(4, 2700)];
+  arena.enemies[2].debuffs = [
+    { kind: "roots", stacks: 1, expiresAt: 5000, nextTick: 2000, ownerId: "p" },
+  ];
+  player.classId = "druid";
+  fireClassAttack(arena, player, 1000);
+  assert.equal(arena.enemies[0].debuffs, undefined);
+  assert.equal(arena.enemies[1].debuffs?.[0].kind, "roots");
+  assert.equal(arena.enemies[2].debuffs?.[0].expiresAt, 6000);
+  assert.equal(arena.enemies[3].debuffs, undefined);
+  player.classId = "mage";
+  fireClassAttack(arena, player, 1000);
+  assert.deepEqual(
+    arena.playerShots?.map((shot) => shot.targetId),
+    [3, 2],
+  );
+  player.classId = "ranger";
+  player.aimX = 2400;
+  player.aimY = 1500;
+  assert.equal(playerAimAngle(player, arena.enemies), Math.PI / 2);
+  fireClassAttack(arena, player, 1000);
+  assert.equal(arena.playerShots?.at(-1)?.angle, Math.PI / 2);
+  assert.equal(arena.playerShots?.at(-1)?.targetId, undefined);
+  arena.enemies = [];
+  player.classId = "mage";
+  fireClassAttack(arena, player, 1000);
+  assert.equal(arena.playerShots?.at(-1)?.targetY, 1500);
+  player.x = FOREST.width - 10;
+  player.aimX = 10;
+  player.aimY = player.y;
+  assert.equal(playerAimAngle(player, []), 0);
+  assert.equal(
+    clientMessage.safeParse({
+      type: "combatInput",
+      autoAttack: false,
+      autoTarget: false,
+      attacking: true,
+      aimX: Infinity,
+      aimY: 0,
+    }).success,
+    false,
+  );
+});
+
+test("manual client prediction casts on hold, preserves release cooldown, and tracks cursor", async () => {
+  const { LocalMovement } = await import("../../client/src/local-movement.ts");
+  const player: Player = {
+    ...hero(),
+    autoAttack: false,
+    autoTarget: false,
+    aimX: 2400,
+    aimY: 1500,
+  };
+  const arena = scene();
+  const world = {
+    id: "w",
+    name: "W",
+    hostId: "p",
+    players: [player],
+    scene: arena,
+    serverNow: 10000,
+  };
+  const movement = new LocalMovement("p", () => {});
+  const displayed = movement.render(world, 0)!;
+  assert.equal(movement.animateAttack(displayed, world, 0), false);
+  assert.equal(displayed.attackAt, undefined);
+  assert.equal(displayed.attackAngle, Math.PI / 2);
+  displayed.attacking = true;
+  assert.equal(movement.animateAttack(displayed, world, 10), true);
+  displayed.attacking = false;
+  assert.equal(movement.animateAttack(displayed, world, 400), false);
+  displayed.attacking = true;
+  assert.equal(movement.animateAttack(displayed, world, 600), false);
+  assert.equal(movement.animateAttack(displayed, world, 710), true);
+  assert.equal(movement.animateAttack(displayed, world, 720), false);
+});
