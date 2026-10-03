@@ -53,6 +53,8 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
       playerTops: {} as Record<number, number>,
       weaponX: 0,
       weaponTop: 0,
+      weaponScaleX: 0,
+      weaponScaleY: 0,
     };
     (window as unknown as { weaponCapture: typeof capture }).weaponCapture = capture;
     const prototype = CanvasRenderingContext2D.prototype;
@@ -61,8 +63,14 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
         if (args[0] instanceof HTMLImageElement) {
           if (args[0].src.includes("/assets/weapons/")) {
             capture.weapons++;
-            capture.weaponX = args[1] + 16;
-            capture.weaponTop = args[2];
+            const transform = (context as CanvasRenderingContext2D).getTransform();
+            capture.weaponX = transform.transformPoint({ x: args[1] + 16, y: args[2] + 16 }).x;
+            capture.weaponTop = Math.min(
+              transform.transformPoint({ x: args[1], y: args[2] }).y,
+              transform.transformPoint({ x: args[1] + 32, y: args[2] + 32 }).y,
+            );
+            capture.weaponScaleX = transform.a;
+            capture.weaponScaleY = transform.d;
           }
           if (args[0].src.endsWith("/assets/weapons/ranger.png")) {
             const transform = (context as CanvasRenderingContext2D).getTransform();
@@ -75,7 +83,9 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
             )
           ) {
             capture.players++;
-            capture.playerTops[args[5] + 24] = args[6];
+            const transform = (context as CanvasRenderingContext2D).getTransform();
+            const top = transform.transformPoint({ x: args[5] + 24, y: args[6] });
+            capture.playerTops[top.x] = top.y;
           }
         }
         return Reflect.apply(target, context, args);
@@ -155,11 +165,25 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
         (window as unknown as { weaponCapture: { weapons: number } }).weaponCapture.weapons = 0;
       });
       await page.waitForTimeout(150);
-      const weapons = await page.evaluate(
-        () => (window as unknown as { weaponCapture: { weapons: number } }).weaponCapture.weapons,
+      const capture = await page.evaluate(
+        () =>
+          (
+            window as unknown as {
+              weaponCapture: { weapons: number; weaponScaleX: number; weaponScaleY: number };
+            }
+          ).weaponCapture,
       );
-      expect(weapons > 0, `${classId} village direction ${inputX},${inputY}`).toBe(inputY === -1);
+      expect(capture.weapons > 0, `${classId} village direction ${inputX},${inputY}`).toBe(
+        inputY === -1,
+      );
       if (inputY === -1) {
+        expect(
+          capture.weaponScaleX,
+          `${classId}: horizontal direction is preserved`,
+        ).toBeGreaterThan(0);
+        expect(capture.weaponScaleY, `${classId}: sheathed weapon is mirrored vertically`).toBe(
+          -capture.weaponScaleX,
+        );
         const offset = await page.evaluate(() => {
           const capture = (
             window as unknown as {
@@ -167,12 +191,13 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
                 playerTops: Record<number, number>;
                 weaponX: number;
                 weaponTop: number;
+                weaponScaleX: number;
               };
             }
           ).weaponCapture;
-          return capture.weaponTop - capture.playerTops[capture.weaponX];
+          return (capture.weaponTop - capture.playerTops[capture.weaponX]) / capture.weaponScaleX;
         });
-        expect(offset, `${classId}: sheathed weapon sits below the head`).toBe(22);
+        expect(offset, `${classId}: sheathed weapon sits below the head`).toBeCloseTo(22, 5);
         await page.screenshot({ path: `test-results/back-weapon-${classId}.png` });
       }
     }
