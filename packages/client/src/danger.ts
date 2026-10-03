@@ -16,10 +16,10 @@ export function drawPlayerRange(
   ctx.save();
   ctx.lineWidth = 2;
   ctx.strokeStyle = "#52ed87";
-  ctx.fillStyle = `rgba(52, 220, 112, ${0.08 + pulse * 0.22})`;
+  ctx.fillStyle = `rgba(52, 220, 112, ${0.03 + pulse * 0.07})`;
   ctx.beginPath();
-  ctx.moveTo(x, y + 15);
-  ctx.arc(x, y + 15, PLAYER_ATTACK_RANGE, angle - Math.PI / 2, angle + Math.PI / 2);
+  ctx.moveTo(x, y);
+  ctx.arc(x, y, PLAYER_ATTACK_RANGE, angle - Math.PI / 2, angle + Math.PI / 2);
   ctx.closePath();
   ctx.fill();
   ctx.stroke();
