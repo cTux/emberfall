@@ -48,13 +48,17 @@ for (const [label, x, y] of [
       });
     });
     await page.addInitScript(() => {
-      const capture = { center: [] as number[], tiles: [] as number[][] };
+      const capture = { center: [] as number[], view: [] as number[], tiles: [] as number[][] };
       (window as unknown as { lobbyCapture: typeof capture }).lobbyCapture = capture;
       const ellipse = CanvasRenderingContext2D.prototype.ellipse;
       CanvasRenderingContext2D.prototype.ellipse = function (...args: Parameters<typeof ellipse>) {
         if (args[2] === 18 && args[3] === 8 && this.strokeStyle === "#efd086") {
           const point = new DOMPoint(args[0], args[1] - 15).matrixTransform(this.getTransform());
           capture.center = [point.x / this.canvas.width, point.y / this.canvas.height];
+          capture.view = [
+            this.canvas.width / this.getTransform().a,
+            this.canvas.height / this.getTransform().d,
+          ];
         }
         return ellipse.apply(this, args);
       };
@@ -90,6 +94,23 @@ for (const [label, x, y] of [
       { width: 390, height: 844 },
     ]) {
       await page.setViewportSize(size);
+      // Resizing changes framing, while map expansion must not change the zoom.
+      const scale = Math.max(size.width / 960, size.height / 640);
+      await expect
+        .poll(() =>
+          page.evaluate(
+            (expected) => {
+              const view = (window as unknown as { lobbyCapture: { view: number[] } }).lobbyCapture
+                .view;
+              return (
+                view.length === 2 &&
+                view.every((value, index) => Math.abs(value - expected[index]) < 1)
+              );
+            },
+            [size.width / scale, size.height / scale],
+          ),
+        )
+        .toBe(true);
       await expect
         .poll(() =>
           page.evaluate(() => {
