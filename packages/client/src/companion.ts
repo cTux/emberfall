@@ -1,6 +1,6 @@
 import { PLAYER_ATTACK_DURATION, PLAYER_ATTACK_RANGE } from "@emberfall/common";
 import type { Bear } from "@emberfall/common";
-import { drawPlayerHealth } from "./effects";
+import { drawPlayerHealth, drawTargetHit } from "./effects";
 import { spriteMask } from "./lighting";
 
 const image = new Image();
@@ -44,6 +44,15 @@ export function drawCompanion(
     if (left) ctx.scale(-1, 1);
     ctx.drawImage(image, column * 17, 0, 17, 16, -21.25, -22, 42.5, 40);
     ctx.restore();
+    drawTargetHit(
+      ctx,
+      spriteMask(image, column, 0, left, 17)!,
+      x - 21.25,
+      y - 22,
+      42.5,
+      40,
+      now - (bear.hurtAt ?? -Infinity),
+    );
   }
   ctx.globalAlpha = 1;
   drawPlayerHealth(

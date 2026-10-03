@@ -26,7 +26,7 @@ import {
   drawNameBadge,
   drawParticles,
   drawVignette,
-  hitOutline,
+  drawTargetHit,
   drawDamageFlash,
   drawAtmosphere,
   obstacleOpacity,
@@ -202,7 +202,6 @@ export function forestRenderer(
   const drawBloodPuddles = bloodPuddleRenderer();
   let lastScene: string | undefined;
   const masks = new Map<string, HTMLCanvasElement>();
-  const outlines = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
   function mask(image: HTMLImageElement, column: number, row: number) {
     const key = image.src + column + ":" + row;
     if (!masks.has(key)) {
@@ -517,18 +516,20 @@ export function forestRenderer(
           a.size,
           a.size,
         );
+        drawTargetHit(
+          ctx,
+          mask(a.image, a.facing, 0),
+          -a.size / 2,
+          -a.size * 0.94,
+          a.size,
+          a.size,
+          serverTime - hit.at,
+        );
         ctx.restore();
         continue;
       }
       const left = a.x - a.size / 2,
         top = a.y + 15 - (a.size * 45) / 48;
-      if (hit && serverTime - hit.at < 220) {
-        const silhouette = mask(a.image, a.facing, a.row);
-        if (!outlines.has(silhouette)) outlines.set(silhouette, hitOutline(silhouette));
-        ctx.globalAlpha = 1 - (serverTime - hit.at) / 220;
-        ctx.drawImage(outlines.get(silhouette)!, left - 6, top - 6, a.size + 12, a.size + 12);
-        ctx.globalAlpha = 1;
-      }
       ctx.globalAlpha = a.player?.hitpoints === 0 ? 0.35 : 1;
       if (quality.motionBlur && a.moving) {
         ctx.globalAlpha = 0.13;
@@ -546,6 +547,16 @@ export function forestRenderer(
         ctx.globalAlpha = 1;
       }
       ctx.drawImage(a.image, a.facing * 16, a.row * 16, 16, 16, left, top, a.size, a.size);
+      if (hit && (a.enemy || a.player?.id === playerId))
+        drawTargetHit(
+          ctx,
+          mask(a.image, a.facing, a.row),
+          left,
+          top,
+          a.size,
+          a.size,
+          serverTime - hit.at,
+        );
       ctx.globalAlpha = 1;
       if (a.enemy) {
         if (a.enemy.kind === "boss") {
