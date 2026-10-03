@@ -15,7 +15,7 @@ export function drawPlayerRange(
   const pulse = age >= 0 && age < PLAYER_ATTACK_DURATION ? 1 - age / PLAYER_ATTACK_DURATION : 0;
   ctx.save();
   ctx.lineWidth = 2;
-  ctx.strokeStyle = "#52ed87";
+  ctx.strokeStyle = "rgba(82, 237, 135, 0.2)";
   ctx.fillStyle = `rgba(52, 220, 112, ${0.03 + pulse * 0.07})`;
   ctx.beginPath();
   ctx.moveTo(x, y);
