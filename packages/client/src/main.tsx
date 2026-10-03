@@ -825,6 +825,8 @@ function App() {
     </main>
   );
 }
+window.addEventListener("contextmenu", (event) => event.preventDefault(), { capture: true });
+
 createRoot(document.getElementById("root")!).render(
   <GameUiProvider>
     <PanelPositionContext value={panelPositions}>

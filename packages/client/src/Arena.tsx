@@ -870,7 +870,6 @@ export function Arena({
     <>
       <canvas
         ref={canvas}
-        onContextMenu={(event) => event.preventDefault()}
         width={ARENA.width}
         height={ARENA.height}
         aria-label={
