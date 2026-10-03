@@ -191,8 +191,15 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       const player = world.players.get(session.id);
       if (player && session.characterId) characters.save(session.characterId, player.name, player);
       if (player) {
-        if (!session.reconnectUntil) addChat(world, `${player.name} disconnected.`);
-        if (player.scene) addChat(world, `${player.name} left the scene. Everyone became weaker.`);
+        if (!session.reconnectUntil)
+          addChat(world, `${player.name} disconnected.`, undefined, player.id);
+        if (player.scene)
+          addChat(
+            world,
+            `${player.name} left the scene. Everyone became weaker.`,
+            undefined,
+            player.id,
+          );
       }
       world.players.delete(session.id);
       reconcileVote(world, Date.now());
@@ -243,7 +250,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
         session.inputAt = 0;
         const player = worlds.get(session.worldId)?.players.get(session.id);
         const world = worlds.get(session.worldId);
-        if (world && player) addChat(world, `${player.name} disconnected.`);
+        if (world && player) addChat(world, `${player.name} disconnected.`, undefined, player.id);
         if (player?.attacking) player.attacking = false;
         try {
           if (player && session.characterId)
@@ -470,7 +477,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
             player.inputSeq = player.inputElapsed = undefined;
             player.inputX = player.inputY = 0;
             sessions.delete(oldWs);
-            addChat(world, `${player.name} joined.`);
+            addChat(world, `${player.name} joined.`, undefined, player.id);
             send(ws, {
               type: "joined",
               playerId: session.id,
@@ -582,7 +589,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
           hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
         });
         if (!world.hostId) world.hostId = session.id;
-        addChat(world, `${playerName} joined.`);
+        addChat(world, `${playerName} joined.`, undefined, session.id);
         reconcileVote(world, Date.now());
         send(ws, {
           type: "joined",

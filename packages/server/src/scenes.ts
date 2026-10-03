@@ -21,7 +21,8 @@ export interface SceneWorld {
   training?: SceneState;
 }
 export function returnToLobby(world: SceneWorld, player: Player) {
-  if (player.scene) addChat(world, `${player.name} left the scene. Everyone became weaker.`);
+  if (player.scene)
+    addChat(world, `${player.name} left the scene. Everyone became weaker.`, undefined, player.id);
   player.scene = undefined;
   player.x = 480;
   player.y = 360;
@@ -109,7 +110,12 @@ export function cleanupScene(world: SceneWorld) {
     world.scene = undefined;
 }
 function enterScene(world: SceneWorld, player: Player, now: number, offset = 0) {
-  addChat(world, `${player.name} joined the scene. Everyone became stronger.`);
+  addChat(
+    world,
+    `${player.name} joined the scene. Everyone became stronger.`,
+    undefined,
+    player.id,
+  );
   player.scene = "forest";
   player.x = FOREST_PORTAL.x + offset;
   player.y = FOREST_PORTAL.y;
@@ -158,7 +164,8 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
   if (scene.phase !== "active" && scene.phase !== "ended") return;
   const living = [...world.players.values()].filter((player) => player.hitpoints > 0);
   stepCombat(scene, [...world.players.values()], now, dt);
-  for (const player of living) if (player.hitpoints <= 0) addChat(world, `${player.name} died.`);
+  for (const player of living)
+    if (player.hitpoints <= 0) addChat(world, `${player.name} died.`, undefined, player.id);
   cleanupScene(world);
 }
 export function sceneState(scene?: Scene): SceneState | undefined {

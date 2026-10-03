@@ -174,6 +174,7 @@ export interface WorldState {
 }
 export interface ChatMessage {
   id: string;
+  excludedPlayerId?: string;
   playerId: string;
   name: string;
   text: string;

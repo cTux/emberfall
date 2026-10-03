@@ -62,10 +62,17 @@ test("chat validates text, identifies senders, retains ten messages and isolates
       ["Alice joined.", "Bob joined."],
     );
     assert(alice.world!.chat!.every((m) => m.name === "System" && m.playerId === ""));
+    for (const message of alice.world!.chat!) {
+      assert.equal(
+        message.excludedPlayerId,
+        alice.world!.players.find((player) => message.text === `${player.name} joined.`)!.id,
+      );
+    }
     alice.send({ type: "chat", text: "  First message  ", playerId: "fake", name: "Fake" });
     await wait(() => bob.world?.chat?.at(-1)?.text === "First message");
     const first = bob.world!.chat!.at(-1)!;
     assert.equal(first.name, "Alice");
+    assert.equal(first.excludedPlayerId, undefined);
     assert.equal(first.playerId, alice.world!.players.find((p) => p.name === "Alice")!.id);
     alice.send({ type: "chat", text: "Too fast" });
     await wait(() =>

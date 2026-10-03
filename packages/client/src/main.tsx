@@ -403,7 +403,7 @@ function App() {
         {world && (
           <Chat
             key={world.id}
-            messages={world.chat ?? []}
+            messages={(world.chat ?? []).filter((message) => message.excludedPlayerId !== playerId)}
             send={send}
             disabled={status !== "Connected"}
           />
