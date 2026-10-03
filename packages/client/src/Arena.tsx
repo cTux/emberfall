@@ -376,7 +376,8 @@ export function Arena({
         resize();
       }
       const el = element;
-      const scale = Math.max(el.width / ARENA.width, el.height / ARENA.height);
+      // Keep the original view scale independent of the walkable map size.
+      const scale = Math.max(el.width / 960, el.height / 640);
       if (latest.current) snapshots.push(latest.current, now);
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) keys.clear();
       const view = latest.current ? snapshots.render(now) : null;
