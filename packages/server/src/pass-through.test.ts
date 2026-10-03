@@ -95,27 +95,29 @@ test("server movement, prediction and interpolation pass through every scenery k
   }
 });
 
-test("pass-through preserves village bounds, forest wrapping, speed and death rules", () => {
+test("pass-through preserves wrapping in both areas, speed and death rules", () => {
   const player = { x: 420, y: 340, hitpoints: 100 } as Player;
   movePlayer(player, 1, 1, 0.1);
   assert(Math.abs(Math.hypot(player.x - 420, player.y - 340) - ARENA.speed * 0.1) < 1e-9);
   movePlayer(player, 1, 1, 100);
-  assert.equal(player.x, ARENA.width - 12);
-  assert.equal(player.y, ARENA.height - 12 - 15);
+  assert(player.x >= 0 && player.x < ARENA.width);
+  assert(player.y >= 0 && player.y < ARENA.height);
   movePlayer(player, -1, -1, 100);
-  assert.equal(player.x, 12);
-  assert.equal(player.y, 12 - 15);
-  player.scene = "forest";
-  for (const [x, y, dx, dy] of [
-    [2, 1280, -1, 0],
-    [FOREST.width - 2, 1280, 1, 0],
-    [2400, 2, 0, -1],
-    [2400, FOREST.height - 2, 0, 1],
-  ]) {
-    Object.assign(player, { x, y });
-    movePlayer(player, dx, dy, 0.1);
-    assert.equal(player.x, (x + dx * 18 + FOREST.width) % FOREST.width);
-    assert.equal(player.y, (y + dy * 18 + FOREST.height) % FOREST.height);
+  assert(Math.abs(player.x - (420 + 18 / Math.sqrt(2))) < 1e-9);
+  assert(Math.abs(player.y - (340 + 18 / Math.sqrt(2))) < 1e-9);
+  for (const scene of [undefined, "forest"] as const) {
+    player.scene = scene;
+    for (const [x, y, dx, dy] of [
+      [2, 1280, -1, 0],
+      [FOREST.width - 2, 1280, 1, 0],
+      [2400, 2, 0, -1],
+      [2400, FOREST.height - 2, 0, 1],
+    ]) {
+      Object.assign(player, { x, y });
+      movePlayer(player, dx, dy, 0.1);
+      assert.equal(player.x, (x + dx * 18 + FOREST.width) % FOREST.width);
+      assert.equal(player.y, (y + dy * 18 + FOREST.height) % FOREST.height);
+    }
   }
   player.hitpoints = 0;
   const dead = { ...player };

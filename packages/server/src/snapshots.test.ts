@@ -26,6 +26,18 @@ const snapshot = (time: number, x: number): WorldState => ({
   serverNow: time,
   players: [{ ...hero, x, inputX: 1 }],
 });
+
+test("remote lobby players interpolate across seams instead of crossing the whole map", () => {
+  for (const axis of ["x", "y"] as const) {
+    const size = axis === "x" ? FOREST.width : FOREST.height;
+    const buffer = new SnapshotBuffer("p");
+    buffer.push({ ...snapshot(10000, 420), players: [{ ...hero, [axis]: size - 4 }] }, 0);
+    buffer.render(0);
+    buffer.push({ ...snapshot(10200, 420), players: [{ ...hero, [axis]: 4 }] }, 200);
+    const point = buffer.render(200)!.players[0][axis];
+    assert(point < 4 || point > size - 4);
+  }
+});
 test("confirmed movement interpolates, never extrapolates, and holds through packet gaps", () => {
   const buffer = new SnapshotBuffer("p");
   const base = snapshot(10000, 420);

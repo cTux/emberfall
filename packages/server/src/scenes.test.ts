@@ -370,8 +370,9 @@ test("server scene lifecycle: proximity, unanimous votes, retract, membership ch
   sceneAction(world, b, { type: "returnLobby" }, 144002);
   assert.equal(world.scene, undefined);
 });
-test("forest has 20x area; all edges wrap; indexed trunks stop players and enemies including seam copies", () => {
-  assert.equal(FOREST.width * FOREST.height, 20 * ARENA.width * ARENA.height);
+test("forest and expanded lobby share dimensions; all edges wrap; indexed trunks stop players and enemies including seam copies", () => {
+  assert.equal(FOREST.width, ARENA.width);
+  assert.equal(FOREST.height, ARENA.height);
   // Known clear crossing lines isolate wrapping from obstacle collisions.
   for (const [x, y, dx, dy] of [
     [2, 1280, -8, 0],

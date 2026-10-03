@@ -1,4 +1,12 @@
-import { WARDROBE, BUILDINGS, TORCHES, TREES, onPath, TRAINING_ZONES } from "@emberfall/common";
+import {
+  ARENA,
+  WARDROBE,
+  BUILDINGS,
+  TORCHES,
+  TREES,
+  onPath,
+  TRAINING_ZONES,
+} from "@emberfall/common";
 import { makeMask, castShadow } from "./lighting";
 import type { Caster, Light } from "./lighting";
 import type { GraphicsSettings } from "./graphics";
@@ -42,9 +50,9 @@ export function villageSprites(
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
       return seed / 4294967296;
     };
-    for (let i = 0; i < (graphics.grass ? 170 : 65); i++) {
-      const x = random() * 960,
-        y = random() * 640;
+    for (let i = 0; i < (graphics.grass ? 850 : 325); i++) {
+      const x = random() * ARENA.width,
+        y = random() * ARENA.height;
       if (
         TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.radius) ||
         onPath(x, y, 38) ||

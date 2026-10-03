@@ -5,7 +5,8 @@ export { WARDROBE } from "./world.ts";
 export const LOBBY_PORTAL = { x: 550, y: 365 };
 export const FOREST_PORTAL = { x: 2400, y: 1280 };
 export const INTERACTION_RADIUS = 68;
-export const wrap = (n: number, size: number) => ((n % size) + size) % size;
+export const wrap = (n: number, size: number) =>
+  n >= 0 && n < size ? n : ((n % size) + size) % size;
 export const wrappedDelta = (a: number, b: number, size: number) =>
   wrap(a - b + size / 2, size) - size / 2;
 export const forestDistance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
@@ -61,12 +62,13 @@ export function nearbyInteraction(
     const portal = portals.find((p) => forestDistance(player, p) < INTERACTION_RADIUS);
     return ended && portal ? { id: "return", name: "Return to village", ...portal } : null;
   }
-  if (Math.hypot(player.x - LOBBY_PORTAL.x, player.y + 15 - LOBBY_PORTAL.y) < INTERACTION_RADIUS)
+  const distance = (point: { x: number; y: number }) =>
+    forestDistance({ x: player.x, y: player.y + 15 }, point);
+  if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
     return { id: "portal", name: "Forest portal", ...LOBBY_PORTAL };
-  if (Math.hypot(player.x - WARDROBE.x, player.y + 15 - WARDROBE.y) < 55)
-    return { id: "wardrobe", name: "Wardrobe", ...WARDROBE };
+  if (distance(WARDROBE) < 55) return { id: "wardrobe", name: "Wardrobe", ...WARDROBE };
   const building = BUILDINGS.find(
-    (b) => Math.hypot(player.x - b.doorX, player.y + 15 - (b.y + 24)) < INTERACTION_RADIUS,
+    (b) => distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
   );
   return building
     ? { id: building.id, name: building.name, x: building.doorX, y: building.y }

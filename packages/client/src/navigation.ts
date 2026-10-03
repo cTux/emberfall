@@ -36,8 +36,8 @@ export function drawNavigation(ctx: CanvasRenderingContext2D, world: WorldState,
   ctx.save();
   ctx.setTransform(sx, 0, 0, sy, 0, 0);
   for (const target of targets) {
-    const x = me.scene === "forest" ? me.x + wrappedDelta(target.x, me.x, FOREST.width) : target.x;
-    const y = me.scene === "forest" ? me.y + wrappedDelta(target.y, me.y, FOREST.height) : target.y;
+    const x = me.x + wrappedDelta(target.x, me.x, FOREST.width);
+    const y = me.y + wrappedDelta(target.y, me.y, FOREST.height);
     const point = new DOMPoint(x, y).matrixTransform(matrix);
     const arrow = edgeArrow(point.x / sx, point.y / sy, width, height);
     if (!arrow) continue;

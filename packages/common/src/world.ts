@@ -1,4 +1,6 @@
-export const ARENA = { width: 960, height: 640, speed: 180 } as const;
+import { wrap, wrappedDelta } from "./scene.ts";
+
+export const ARENA = { width: 4800, height: 2560, speed: 180 } as const;
 export const WARDROBE = { x: 350, y: 365 };
 export const TRAINING_ZONES = [
   { x: 140, y: 355, radius: 135 },
@@ -8,8 +10,8 @@ export const inTrainingZone = (player: { x: number; y: number }) =>
   TRAINING_ZONES.some(
     (zone) =>
       Math.hypot(
-        (player.x - zone.x) / zone.radius,
-        (player.y + 15 - zone.y) / (zone.radius * 0.85),
+        wrappedDelta(player.x, zone.x, ARENA.width) / zone.radius,
+        wrappedDelta(player.y + 15, zone.y, ARENA.height) / (zone.radius * 0.85),
       ) <= 1,
   );
 export const BUILDINGS = [
@@ -118,9 +120,9 @@ const random = () => {
   seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
   return seed / 4294967296;
 };
-for (let i = 0; i < 110; i++) {
-  const x = 35 + random() * 890;
-  const y = 55 + random() * 555;
+for (let i = 0; i < 550; i++) {
+  const x = 35 + random() * (ARENA.width - 70);
+  const y = 55 + random() * (ARENA.height - 85);
   if (TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.radius + 35))
     continue;
   if (Math.hypot((x - 480) / 190, (y - 355) / 110) < 1 || onPath(x, y, 55)) continue;
@@ -143,14 +145,21 @@ export function moveActor(
 ) {
   if (!collide)
     return {
-      x: Math.max(radius, Math.min(ARENA.width - radius, position.x + dx)),
-      y: Math.max(radius, Math.min(ARENA.height - radius, position.y + dy)),
+      x: wrap(position.x + dx, ARENA.width),
+      y: wrap(position.y + dy, ARENA.height),
     };
   let { x, y } = position;
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
   // ponytail: scan this small fixed grove; index obstacles spatially when maps grow.
   const clear = (px: number, py: number) =>
-    TREES.every((tree) => Math.hypot(px - tree.x, py - (tree.y - 8)) >= radius + tree.radius) &&
+    TREES.every(
+      (tree) =>
+        Math.hypot(
+          wrappedDelta(px, tree.x, ARENA.width),
+          wrappedDelta(py, tree.y - 8, ARENA.height),
+        ) >=
+        radius + tree.radius,
+    ) &&
     Math.hypot(px - WARDROBE.x, py - WARDROBE.y) >= radius + 18 &&
     TORCHES.every((t) => Math.hypot(px - t.x, py - t.y) >= radius + 5) &&
     BUILDINGS.every(
@@ -161,9 +170,9 @@ export function moveActor(
         ) >= radius,
     );
   for (let i = 0; i < steps; i++) {
-    const nextX = Math.max(radius, Math.min(ARENA.width - radius, x + dx / steps));
+    const nextX = wrap(x + dx / steps, ARENA.width);
     if (clear(nextX, y)) x = nextX;
-    const nextY = Math.max(radius, Math.min(ARENA.height - radius, y + dy / steps));
+    const nextY = wrap(y + dy / steps, ARENA.height);
     if (clear(x, nextY)) y = nextY;
   }
   return { x, y };

@@ -62,8 +62,8 @@ export class SnapshotBuffer {
       radius: number,
       collide = true,
     ) => {
-      const dx = forest ? wrappedDelta(b.x, a.x, FOREST.width) : b.x - a.x;
-      const dy = forest ? wrappedDelta(b.y, a.y, FOREST.height) : b.y - a.y;
+      const dx = wrappedDelta(b.x, a.x, FOREST.width);
+      const dy = wrappedDelta(b.y, a.y, FOREST.height);
       if (Math.hypot(dx, dy) > 96) return { ...b, dx: 0, dy: 0 };
       const point = (forest ? moveForestActor : moveActor)(
         { x: a.x, y: a.y + 15 },
@@ -72,7 +72,7 @@ export class SnapshotBuffer {
         radius,
         collide,
       );
-      return { x: point.x, y: forest ? wrap(point.y - 15, FOREST.height) : point.y - 15, dx, dy };
+      return { x: point.x, y: wrap(point.y - 15, FOREST.height), dx, dy };
     };
     const players = older.players.map((a) => {
       const b = newer.players.find((p) => p.id === a.id);

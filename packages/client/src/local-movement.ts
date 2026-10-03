@@ -103,9 +103,7 @@ export class LocalMovement {
     return player;
   }
   private difference(a: { x: number; y: number }, b: { x: number; y: number }) {
-    return this.base?.scene === "forest"
-      ? { x: wrappedDelta(a.x, b.x, FOREST.width), y: wrappedDelta(a.y, b.y, FOREST.height) }
-      : { x: a.x - b.x, y: a.y - b.y };
+    return { x: wrappedDelta(a.x, b.x, FOREST.width), y: wrappedDelta(a.y, b.y, FOREST.height) };
   }
   render(world: WorldState, now: number): Player | undefined {
     this.advance(now);
@@ -191,7 +189,7 @@ export class LocalMovement {
     );
     const displayed = {
       x: point.x,
-      y: predicted.scene === "forest" ? wrap(point.y - 15, FOREST.height) : point.y - 15,
+      y: wrap(point.y - 15, FOREST.height),
     };
     this.offset = this.difference(displayed, predicted);
     const probe = { ...predicted };

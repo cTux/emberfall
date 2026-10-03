@@ -27,6 +27,7 @@ import {
   ARENA,
   FOREST,
   wrap,
+  wrappedDelta,
   defaultSpellRange,
   LOBBY_PORTAL,
   TICK_MS,
@@ -269,14 +270,14 @@ export function Arena({
       const ctx = background.getContext("2d")!;
       ctx.imageSmoothingEnabled = false;
       ctx.fillStyle = "#25392f";
-      ctx.fillRect(0, 0, 960, 640);
+      ctx.fillRect(0, 0, ARENA.width, ARENA.height);
       // A fixed seed keeps the decorative clearing identical for every client.
       let seed = 7319;
       const random = () => {
         seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
         return seed / 4294967296;
       };
-      for (let i = 0; i < 65; i++) {
+      for (let i = 0; i < 325; i++) {
         const x = random() * ARENA.width;
         const y = random() * ARENA.height;
         const radius = 35 + random() * 110;
@@ -286,7 +287,7 @@ export function Arena({
         ctx.fillStyle = patch;
         ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
       }
-      for (let i = 0; i < 1800; i++) {
+      for (let i = 0; i < 36000; i++) {
         ctx.fillStyle = random() > 0.5 ? "#80965c12" : "#142b2020";
         ctx.fillRect(random() * ARENA.width, random() * ARENA.height, 1 + random() * 3, 1);
       }
@@ -385,14 +386,8 @@ export function Arena({
         const width = el.width / scale,
           height = el.height / scale;
         inputCamera = {
-          x:
-            local.scene === "forest"
-              ? local.x - width / 2
-              : Math.max(0, Math.min(ARENA.width - width, local.x - width / 2)),
-          y:
-            local.scene === "forest"
-              ? local.y - height / 2
-              : Math.max(0, Math.min(ARENA.height - height, local.y - height / 2)),
+          x: local.x - width / 2,
+          y: local.y - height / 2,
           width,
           height,
         };
@@ -403,14 +398,8 @@ export function Arena({
           autoAttack: prefs.current.autoAttack,
           autoTarget: prefs.current.autoTarget,
           attacking: held && !blocked(),
-          aimX:
-            local.scene === "forest"
-              ? wrap(aimX, FOREST.width)
-              : Math.max(0, Math.min(ARENA.width, aimX)),
-          aimY:
-            local.scene === "forest"
-              ? wrap(aimY, FOREST.height)
-              : Math.max(0, Math.min(ARENA.height, aimY)),
+          aimX: wrap(aimX, FOREST.width),
+          aimY: wrap(aimY, FOREST.height),
         };
         Object.assign(local, combat);
         localSwing = localMovement.animateAttack(local, view, now);
@@ -488,21 +477,54 @@ export function Arena({
       const focus = local ?? { x: 480, y: 320 };
       const viewWidth = el.width / scale;
       const viewHeight = el.height / scale;
-      const cameraX = Math.max(0, Math.min(ARENA.width - viewWidth, focus.x - viewWidth / 2));
-      const cameraY = Math.max(0, Math.min(ARENA.height - viewHeight, focus.y - viewHeight / 2));
+      const cameraX = focus.x - viewWidth / 2;
+      const cameraY = focus.y - viewHeight / 2;
+      const project = (x: number, y: number) => ({
+        x: focus.x + wrappedDelta(x, focus.x, ARENA.width),
+        y: focus.y + wrappedDelta(y, focus.y, ARENA.height),
+      });
+      const visibleScenery = scenery
+        .map((object) => ({ ...object, ...project(object.x, object.y) }))
+        .filter(
+          (object) =>
+            object.x > cameraX - 200 &&
+            object.x < cameraX + viewWidth + 200 &&
+            object.y > cameraY - 200 &&
+            object.y < cameraY + viewHeight + 200,
+        );
+      const portal = project(LOBBY_PORTAL.x, LOBBY_PORTAL.y);
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
       ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(background, 0, 0);
+      for (
+        let row = Math.floor(cameraY / ARENA.height);
+        row <= (cameraY + viewHeight) / ARENA.height;
+        row++
+      )
+        for (
+          let col = Math.floor(cameraX / ARENA.width);
+          col <= (cameraX + viewWidth) / ARENA.width;
+          col++
+        )
+          ctx.drawImage(background, col * ARENA.width, row * ARENA.height);
       for (const zone of TRAINING_ZONES) {
         ctx.fillStyle = "#aa8b4930";
         ctx.strokeStyle = "#c9a56380";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.ellipse(zone.x, zone.y, zone.radius, zone.radius * 0.85, 0, 0, Math.PI * 2);
+        const point = project(zone.x, zone.y);
+        ctx.ellipse(point.x, point.y, zone.radius, zone.radius * 0.85, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
       }
-      const training = view.training;
+      const training = view.training
+        ? {
+            ...view.training,
+            enemies: view.training.enemies.map((dummy) => ({
+              ...dummy,
+              ...project(dummy.x, dummy.y),
+            })),
+          }
+        : undefined;
       const serverTime = view.serverNow ?? now;
       if (training) {
         const damageByTarget = new Map(training.damage.map((hit) => [hit.target, hit]));
@@ -527,14 +549,20 @@ export function Arena({
           ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
           drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
         }
-        drawLootAndBlood(ctx, training, serverTime, (x, y) => ({ x, y }), {
+        drawLootAndBlood(ctx, training, serverTime, project, {
           x: cameraX,
           y: cameraY,
           width: viewWidth,
           height: viewHeight,
         });
       }
-      const players = view?.players.filter((p) => !p.scene) ?? [];
+      const players = view.players
+        .filter((p) => !p.scene)
+        .map((p) => ({
+          ...p,
+          ...project(p.x, p.y),
+          bear: p.bear ? { ...p.bear, ...project(p.bear.x, p.bear.y) } : undefined,
+        }));
       const liveIds = new Set(players.map((p) => p.id));
       for (const id of positions.keys()) if (!liveIds.has(id)) positions.delete(id);
       // Use the reconciled positions consistently for bodies, lanterns and shadows.
@@ -585,14 +613,14 @@ export function Arena({
       if (quality.current.shadows) for (const caster of dynamic) castShadow(ctx, caster);
       const layers = [
         {
-          y: LOBBY_PORTAL.y + 8,
+          y: portal.y + 8,
           object: null,
           player: null,
           bear: null,
           critter: null,
-          portal: LOBBY_PORTAL,
+          portal,
         },
-        ...scenery.map((object) => ({
+        ...visibleScenery.map((object) => ({
           y: object.y,
           object,
           player: null,
@@ -635,8 +663,8 @@ export function Arena({
         if (layer.portal) {
           drawPortal(
             ctx,
-            LOBBY_PORTAL.x,
-            LOBBY_PORTAL.y,
+            portal.x,
+            portal.y,
             now,
             quality.current.bloom,
             "Forest portal",
@@ -708,8 +736,8 @@ export function Arena({
         const player = layer.player!;
         const knight = characterImages[player.classId ?? "warrior"].walk;
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
-        const dx = player.x - pos.x;
-        const dy = player.y - pos.y;
+        const dx = wrappedDelta(player.x, pos.x, ARENA.width);
+        const dy = wrappedDelta(player.y, pos.y, ARENA.height);
         const ix = player.inputX ?? 0,
           iy = player.inputY ?? 0;
         const moving = Math.hypot(ix, iy) > 0;
@@ -784,7 +812,7 @@ export function Arena({
         );
       }
       if (training) {
-        drawClassProjectiles(ctx, training, serverTime, (x, y) => ({ x, y }));
+        drawClassProjectiles(ctx, training, serverTime, project);
         if (prefs.current.damageNumbers)
           for (const hit of training.damage) {
             const age = serverTime - hit.at;
@@ -794,17 +822,19 @@ export function Arena({
             ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
             ctx.textAlign = "center";
             ctx.fillStyle = "#fff0b1";
-            ctx.fillText(String(Math.round(hit.amount)), hit.x, hit.y - 45 - age / 30);
+            const point = project(hit.x, hit.y);
+            ctx.fillText(String(Math.round(hit.amount)), point.x, point.y - 45 - age / 30);
             ctx.restore();
           }
       }
       if (quality.current.lighting) {
         ctx.save();
         ctx.fillStyle = "#f3ca7a09";
-        ctx.fillRect(0, 0, ARENA.width, ARENA.height);
+        ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
         ctx.globalCompositeOperation = "screen";
         for (let i = 0; i < TORCH_LIGHTS.length; i++) {
-          const light = TORCH_LIGHTS[i];
+          const source = TORCH_LIGHTS[i];
+          const light = { ...source, ...project(source.x, source.y) };
           const texture = torchTextures[i];
           // Cache the static blockers; update only the moving character shadows.
           if (movingLight.width !== light.radius * 2)
@@ -836,7 +866,7 @@ export function Arena({
           ctx.drawImage(
             lightTexture(
               lantern,
-              [...scenery, ...dynamic],
+              [...visibleScenery, ...dynamic],
               quality.current.shadows,
               lanternTexture,
             ),
