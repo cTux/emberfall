@@ -1,4 +1,4 @@
-import { FOREST, forestTrees, wrap } from "@emberfall/common";
+import { ARENA, FOREST, forestTrees, wrap, wrappedDelta } from "@emberfall/common";
 import { spriteMask } from "./lighting.ts";
 
 const village = [
@@ -15,7 +15,16 @@ export function crittersAt(
   now: number,
   bounds: { x: number; y: number; width: number; height: number },
 ) {
-  const homes = area === "village" ? village : [];
+  const cx = bounds.x + bounds.width / 2,
+    cy = bounds.y + bounds.height / 2;
+  const homes =
+    area === "village"
+      ? village.map((home) => ({
+          ...home,
+          x: cx + wrappedDelta(home.x, cx, ARENA.width),
+          y: cy + wrappedDelta(home.y, cy, ARENA.height),
+        }))
+      : [];
   if (area === "forest") {
     for (
       let row = Math.floor((bounds.y - 40) / 320);

@@ -2,7 +2,7 @@ import { movementFacing } from "../../client/src/facing.ts";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LocalMovement } from "../../client/src/local-movement.ts";
-import { FOREST, movePlayer } from "@emberfall/common";
+import { ARENA, FOREST, movePlayer, wrappedDelta } from "@emberfall/common";
 import type { WorldState, Player, ClientMessage } from "@emberfall/common";
 const hero: Player = {
   id: "p",
@@ -24,6 +24,24 @@ const world = (player = hero, time = 10000): WorldState => ({
   hostId: "p",
   players: [{ ...player }],
   serverNow: time,
+});
+
+test("lobby prediction and reconciliation cross both seams by the shortest path", () => {
+  for (const axis of ["x", "y"] as const) {
+    const size = axis === "x" ? ARENA.width : ARENA.height;
+    const initial = world({ ...hero, [axis]: size - 2 });
+    const movement = new LocalMovement("p", () => {});
+    movement.render(initial, 0);
+    movement.input(axis === "x" ? 1 : 0, axis === "y" ? 1 : 0, 0);
+    const predicted = movement.render(initial, 50)!;
+    assert(Math.abs(predicted[axis] - 7) < 1e-9);
+    const acknowledged = world(
+      { ...initial.players[0], [axis]: 6, inputSeq: 1, inputElapsed: 50 },
+      10050,
+    );
+    const reconciled = movement.render(acknowledged, 50)!;
+    assert(Math.abs(wrappedDelta(reconciled[axis], predicted[axis], size)) < 2);
+  }
 });
 
 test("local input is instant and partial acknowledgements replay exactly the remaining duration", () => {

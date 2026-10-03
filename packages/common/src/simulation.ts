@@ -138,9 +138,7 @@ export function tickCompanion(
   }
   if (player.hitpoints <= 0) return;
   const forest = player.scene === "forest";
-  const distance = forest
-    ? forestDistance(bear, player)
-    : Math.hypot(bear.x - player.x, bear.y - player.y);
+  const distance = forestDistance(bear, player);
   if (distance > 500) {
     bear.x = player.x;
     bear.y = player.y;
@@ -170,8 +168,8 @@ export function tickCompanion(
         : undefined;
     let destination: { x: number; y: number; hitpoints: number } = target ?? player;
     const heading = Math.atan2(
-      forest ? wrappedDelta(destination.y, bear.y, FOREST.height) : destination.y - bear.y,
-      forest ? wrappedDelta(destination.x, bear.x, FOREST.width) : destination.x - bear.x,
+      wrappedDelta(destination.y, bear.y, FOREST.height),
+      wrappedDelta(destination.x, bear.x, FOREST.width),
     );
     bear.attackAngle = heading;
     if (target) {
@@ -258,14 +256,12 @@ export function tickCompanion(
       ? player
       : decision.destination;
   const heading = Math.atan2(
-    forest ? wrappedDelta(destination.y, bear.y, FOREST.height) : destination.y - bear.y,
-    forest ? wrappedDelta(destination.x, bear.x, FOREST.width) : destination.x - bear.x,
+    wrappedDelta(destination.y, bear.y, FOREST.height),
+    wrappedDelta(destination.x, bear.x, FOREST.width),
   );
   const startX = bear.x,
     startY = bear.y;
-  const destinationDistance = forest
-    ? forestDistance(bear, destination)
-    : Math.hypot(destination.x - bear.x, destination.y - bear.y);
+  const destinationDistance = forestDistance(bear, destination);
   if (destination !== player || destinationDistance > 20) {
     const speed = ARENA.speed * 1.3;
     if (forest) {
@@ -292,7 +288,7 @@ export function tickCompanion(
         12,
       );
       bear.x = next.x;
-      bear.y = next.y - 15;
+      bear.y = wrap(next.y - 15, ARENA.height);
     }
   }
   bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > 0.001;
@@ -319,7 +315,7 @@ export function movePlayer(player: Player, x: number, y: number, dt: number) {
     false,
   );
   player.x = next.x;
-  player.y = player.scene === "forest" ? wrap(next.y - 15, FOREST.height) : next.y - 15;
+  player.y = wrap(next.y - 15, player.scene === "forest" ? FOREST.height : ARENA.height);
 }
 export function stepCombat(scene: SceneState, players: Player[], now: number, dt: number) {
   const playerCount = players.filter((p) => p.scene === "forest").length;
