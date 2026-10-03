@@ -55,7 +55,12 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input shows ra
     });
   });
   await page.addInitScript(() => {
-    const capture = { circles: 0 };
+    const capture = {
+      circles: 0,
+      range: [] as number[],
+      zone: [] as number[],
+      zoneAlpha: 0,
+    };
     (window as unknown as { rangeCapture: typeof capture }).rangeCapture = capture;
     const arc = CanvasRenderingContext2D.prototype.arc;
     CanvasRenderingContext2D.prototype.arc = function (...args: Parameters<typeof arc>) {
@@ -63,8 +68,14 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input shows ra
         this.fillStyle === "rgba(82, 237, 135, 0.08)" &&
         args[2] === 88 &&
         args[4] === Math.PI * 2
-      )
+      ) {
         capture.circles++;
+        capture.range = [args[0], args[1], args[2]];
+      }
+      if (this.strokeStyle === "#52ed87") {
+        capture.zone = [args[0], args[1], args[2]];
+        capture.zoneAlpha = Number(String(this.fillStyle).match(/[\d.]+(?=\))/)?.[0]);
+      }
       return arc.apply(this, args);
     };
   });
@@ -95,6 +106,17 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input shows ra
       ),
     )
     .toBeGreaterThan(0);
+  const marker = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          rangeCapture: { range: number[]; zone: number[]; zoneAlpha: number };
+        }
+      ).rangeCapture,
+  );
+  expect(marker.zone).toEqual(marker.range);
+  expect(marker.zoneAlpha).toBeGreaterThan(0);
+  expect(marker.zoneAlpha).toBeLessThanOrEqual(0.1);
   await page.screenshot({ path: "test-results/manual-aim-range.png" });
   await page.mouse.down();
   await expect.poll(() => inputs.at(-1)?.attacking).toBe(true);
