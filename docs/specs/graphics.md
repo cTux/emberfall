@@ -1,0 +1,50 @@
+# Graphics and visual feedback
+
+Status: implemented baseline. Goal: A readable pixel-art world rendered with Canvas 2D. See [technical design](../design/presentation.md).
+
+## GRAPHICS-01 — Presets and renderer
+
+Settings contains Low, Balanced and High (default) presets, plus persistent individual toggles. High enables soft projected tree shadows, 2D contact ambient occlusion, dense grass clusters, sprite-only motion blur, flickering campfire/player lighting, bloom, and ambient particles. Resolution options are 75%, native and 150% supersampling, with backing pixel density capped at 3x. Changes apply immediately and do not change server simulation or collision geometry.
+
+The supported renderer remains Canvas 2D. Settings include sunlight shafts, soft-light color grading, adaptive resolution and frame caps (display refresh, 30/60/120/144 FPS). Adaptive resolution adjusts the selected render scale between 50% and 100% every two seconds based on frame time; it never changes world size, input cadence or collision geometry. Low/Balanced enable adaptation; High prioritizes fixed resolution. Red gameplay warnings remain enabled at every preset. Native DLSS, frame generation, hardware ray tracing, depth-buffer SSAO and HDR output are not advertised as working Canvas settings. NVIDIA's [DLSS integration requirements](https://raw.githubusercontent.com/NVIDIA/DLSS/main/doc/DLSS_Programming_Guide_Release.pdf) require a native graphics pipeline and depth/motion data. A renderer migration would be a separate project.
+
+High defaults to 150% supersampling and display-refresh frame pacing. Low uses native scale with adaptive resolution; Balanced uses native scale with adaptation, shadows, contact occlusion, dynamic lighting, fog, vignette, color grading, particles and vegetation sway. Preferences can be adjusted individually.
+
+## GRAPHICS-02 — Village lighting
+
+A distant sun at (-6000, -8000), elevation 10000, produces parallel projected silhouette shadows throughout the village. Tall path lamps use a bronze post and orange lantern from [Karsiori's FREE Pixel Art Lantern Pack](https://karsiori.itch.io/free-pixel-art-lantern-pack), under CC0. The unmodified PNGs are combined and scaled at runtime using the lantern's original 38-frame fire animation with rising orange, red and gold portal-style embers (Ambient particles controls embers; Bloom controls their glow); credits and the original readme are in `public/assets/lanterns`. They retain the torch positions and 20x60 world dimensions and cast warm light with weak, radius-limited occlusion (145 world units); every player wears a visible belt lantern with a moving 110-unit light radius. Local shadows project away from their emitter, weaken with distance and disappear outside its radius. Trees, buildings, grass, torch posts and character sprites participate. A lantern does not shadow its own wearer. Sunlight is directional 2D projection, not a 3D renderer.
+
+Static sun shadows and static torch occlusion are cached; dynamic character blockers and belt lanterns update as players move. Light scratch canvases are reused. Existing Soft shadows, Dynamic lighting and Bloom settings control these passes. Disabling effects never changes collision geometry. The sun stays offscreen; no sun decoration obscures the playable map.
+
+## GRAPHICS-03 — Scenery and atmosphere
+
+Fog is animated, seamlessly tiled and layered Canvas 2D fog; Low disables it and Balanced/High enable it. Fog and flying particles use world coordinates with seamless repetition. Dense grass, paths and scenery share depth ordering with actors.
+
+Scenery covering the local player's sprite fades to 20% opacity (80% transparent) when the player is behind it, then returns to full opacity once the player moves clear or in front. This applies to village trees, buildings, wardrobe and torch posts, and forest trees. Players can walk through all scenery; shadows remain unchanged.
+
+Settings → Graphics includes **Waving grass and trees**, independent of grass density. Enabled by default and in Balanced/High, disabled in Low; the choice persists across reloads. Both areas use gentle, staggered foliage sway with fixed roots. Disabling it immediately restores static sprites. The shared Canvas 2D sprite draw applies a time-based horizontal shear without changing collisions, sorting, tree fading, or cached shadows. Browser checks cover movement in both areas, fixed roots, live toggling, presets, and persistence.
+
+Decorative cats and chickens wander in the village; raccoons appear in the forest. They are deterministic client visuals, participate in shadow passes and do not affect combat, collision, loot or party scaling.
+
+## GRAPHICS-04 — Combat readability
+
+Active enemy debuffs appear as centered 16-unit icons with a 2-unit gap above the health bar, with only outlined stack counts in their lower-right corners. Roots use the same row instead of drawing vines at the feet. Expired effects disappear and an empty row takes no space. Weapons appear on living characters and animate with their existing attacks; outside combat, upward-facing characters carry their class weapon across their back, including when they stop after walking up. Other non-combat directions keep weapons hidden. Wardrobe choices show weapon and ability icons. Combat rules and network state are unchanged. Existing browser coverage checks all class assets, icon placement, expiry and stacks, plus back-weapon visibility for all four classes and movement directions.
+
+Portal voting lives inside the draggable portal window, with a compact control to reopen it. Prompts project each source's world coordinates through the camera, rather than sitting at the screen edge. Village and return portals have an animated blue pixel-ripple interior, a pale blue rim, and outward-drifting square motes. Bloom adds a soft blue glow; the surface remains visible with bloom disabled. Portal bodies and their fading blue motes draw before characters. At scene completion each player's nearby portal stays fixed where it spawned.
+
+Damaged enemies (including elites, bosses, and training dummies), companions, and the local player briefly show a red sprite outline and white tint, fading over 220 ms. Killing blows flash during the enemy death animation. Other players do not receive this sprite effect. Each new hit restarts the flash, including damage over time. Local damage also flashes the screen red. A persistent Vignette toggle controls edge darkening in both village and forest. Fog and flying ambient particles use world coordinates and seamless world-sized repetition; camera movement only changes which portion is visible.
+
+Diagonal facing retains its current valid axis near a 45-degree heading to prevent sprite flicker. Player sword reach is 88 units, shown as a green forward semicircle on the ground at every graphics preset; the fill pulses on swings. The sword visual and server hit distance share the same range constant. Damage remains 5 per swing.
+
+Blood puddles have their own persistent gameplay toggle. Damage numbers and hit effects present server events; they cannot award damage or XP.
+
+## Acceptance
+
+- Preset/individual changes apply immediately and persist without changing collision or simulation. Red warnings and the Warrior attack zone remain visible at every preset.
+- Cross world seams: fog, scenery, shadows, attachments and portals remain anchored to the world.
+- Occluding scenery fades to 20% for the local character, then restores opacity; shadows retain their normal appearance.
+- Disable vegetation sway live and reload: roots stay fixed and the preference persists.
+- Damage flashes restart on each hit, including ailments and killing blows; remote players do not receive the local sprite flash.
+- Check weapon visibility, debuff spacing/expiry, torch animation, animal shadows, portal bloom-off visibility and reduced-motion countdown.
+
+Evidence: [tree-opacity.test.ts](../../packages/server/src/tree-opacity.test.ts), [graphics.spec.ts](../../tests/graphics.spec.ts), [tree-opacity.spec.ts](../../tests/tree-opacity.spec.ts), [damage-flash.spec.ts](../../tests/damage-flash.spec.ts), [weapon-visibility.spec.ts](../../tests/weapon-visibility.spec.ts), [torch-fire.spec.ts](../../tests/torch-fire.spec.ts), [animal-shadows.spec.ts](../../tests/animal-shadows.spec.ts), [critter-shadow.spec.ts](../../tests/critter-shadow.spec.ts).
