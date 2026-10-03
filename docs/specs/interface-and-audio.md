@@ -8,6 +8,8 @@ The arena fills the viewport with an aspect-preserving camera centered on the lo
 
 Party cards show server-owned name, level and HP/MP, with host/local markers and dimmed players in the other area. Bear has HP but no mana. Thin health bars also appear beneath player names.
 
+Wardrobe shows all four classes in one compact row. Each card has its matching character portrait above separate starting-weapon and base-spell squares, then level, XP, maximum HP/MP and a selection button. Weapon and spell details open on hover, keyboard focus or touch and explain the current attacks, range, cooldown and effects. There is no introductory or departure helper text. Class selection retains server validation, per-class progress and countdown restrictions; inspecting details remains available for selected or unavailable classes.
+
 During an active boss fight, forest players see a fixed top-center boss HUD with the boss name (The Hollow Warden), orange health bar and current/max HP, even when the boss is offscreen. It replaces the boss objective label and disappears on defeat or returning to the lobby; the scene-complete message then appears.
 
 Codex uses the shared forest theme with chapter tabs for controls, worlds and party, combat, the boss, character persistence, and credits. Tabs support arrow keys, Home, and End; the book remains draggable and closable.
