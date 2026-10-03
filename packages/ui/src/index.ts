@@ -4,6 +4,7 @@ export { StatusMeter, type StatusMeterProps } from "./components/StatusMeter";
 export { PartyCard, type PartyCardProps } from "./components/PartyCard";
 export { WorldList, type WorldEntry, type WorldListProps } from "./components/WorldList";
 export { ChoiceCard, type ChoiceCardProps } from "./components/ChoiceCard";
+export { ClassCard, type ClassCardProps, type ClassCardItem } from "./components/ClassCard";
 export {
   SettingToggle,
   VolumeControl,

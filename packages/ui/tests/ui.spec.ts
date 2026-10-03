@@ -2,6 +2,35 @@ import { test, expect } from "@playwright/test";
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test("wardrobe keeps one row and independent keyboard and touch details", async ({ page }) => {
+  await page.goto(story("screens-compositions--wardrobe"));
+  const ranger = page.getByRole("button", { name: "Ranger select" });
+  await ranger.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Ranger selected" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  const spell = page.getByRole("button", { name: "Base spell for Ranger: Piercing arrows" });
+  await spell.focus();
+  await expect(page.getByRole("tooltip")).toContainText("Cooldown: 0.7 seconds");
+  await spell.blur();
+  await expect(page.getByRole("tooltip")).toBeHidden();
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    const tops = await page
+      .getByRole("article")
+      .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().top)));
+    expect(new Set(tops).size).toBe(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await spell.dispatchEvent("touchstart", { touches: [{ identifier: 1 }] });
+  await expect(page.getByRole("tooltip")).toContainText("Piercing arrows");
+  await spell.dispatchEvent("touchend", { touches: [] });
+});
+
 test("connection states use colored circles without visible text", async ({ page }) => {
   await page.goto(story("components-game-patterns--connection"));
   for (const [name, color] of [

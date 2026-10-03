@@ -12,6 +12,7 @@ export interface GameWindowProps {
   open?: boolean;
   modal?: boolean;
   height?: number;
+  width?: number;
   positionKey?: string;
 }
 
@@ -23,6 +24,7 @@ export function GameWindow({
   open = true,
   modal = true,
   height,
+  width = 400,
   positionKey = `window.${title}`,
 }: GameWindowProps) {
   const id = useId();
@@ -59,7 +61,7 @@ export function GameWindow({
           ref: dragRef,
           style: dragStyle,
           sx: {
-            width: 400,
+            width,
             maxWidth: "calc(100vw - 32px)",
             height,
             maxHeight: "min(480px, calc(100dvh - 32px))",
@@ -80,7 +82,7 @@ export function GameWindow({
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        maxWidth: 400,
+        maxWidth: width,
         mx: "auto",
         height,
         maxHeight: "min(480px, calc(100dvh - 32px))",

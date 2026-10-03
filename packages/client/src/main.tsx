@@ -1,5 +1,6 @@
 import { classSprite } from "./characters";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
+import { classDetails } from "./class-details";
 import { Codex } from "./Codex";
 import { enemyMaxHealth, CLASS_IDS, CLASS_LABELS, hasLivingScenePlayers } from "@emberfall/common";
 import { useEffect, useRef, useState } from "react";
@@ -17,7 +18,7 @@ import {
   ConnectionStatus,
   BossHealth,
   SceneStatus,
-  ChoiceCard,
+  ClassCard,
   PortalVote,
 } from "@emberfall/ui";
 import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from "@mui/material";
@@ -632,6 +633,7 @@ function App() {
         <GameWindow
           key={menu}
           height={menu === "settings" ? 420 : undefined}
+          width={menu === "wardrobe" ? 600 : undefined}
           title={
             menu === "codex"
               ? "Codex"
@@ -690,52 +692,50 @@ function App() {
                 </Stack>
               </>
             ) : menu === "wardrobe" ? (
-              <>
-                <Typography>Choose your class. Each class keeps its own progress.</Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gap: { xs: 0.5, sm: 1 },
+                }}
+              >
                 {CLASS_IDS.map((id) => {
                   const selected = (me?.classId ?? "warrior") === id;
                   const stats = selected ? me : me?.classes?.[id];
+                  const details = classDetails[id];
                   return (
-                    <ChoiceCard
+                    <ClassCard
                       key={id}
                       title={CLASS_LABELS[id]}
                       selected={selected}
                       disabled={unavailable || selected || scene?.phase === "countdown"}
                       onSelect={() => send({ type: "selectClass", classId: id })}
-                      icon={
-                        <Stack direction="row" spacing={1}>
-                          <span
-                            className="portrait"
-                            style={{ backgroundImage: `url(${classSprite(id)})` }}
-                            aria-hidden="true"
-                          />
-                          <img className="combat-icon weapon-icon" src={weaponSrc(id)} alt="" />
-                        </Stack>
+                      portrait={
+                        <img
+                          src={`/assets/portraits/${id}.png`}
+                          alt={`${CLASS_LABELS[id]} portrait`}
+                        />
                       }
-                      description={
-                        id === "warrior"
-                          ? "Slashing sword · Bleeding"
-                          : id === "ranger"
-                            ? "Piercing arrows · Poison"
-                            : id === "mage"
-                              ? "Fireball · Burning"
-                              : "Roots · Boar companion"
-                      }
-                      details={
-                        <Typography variant="caption">
-                          <img className="combat-icon" src={statusSrc(classAbility[id])} alt="" />{" "}
-                          Level {stats?.level ?? 1} · XP {Math.round(stats?.experience ?? 0)} · HP{" "}
-                          {Math.round(stats?.maxHitpoints ?? 100)} · MP{" "}
-                          {Math.round(stats?.maxManapoints ?? 50)}
-                        </Typography>
-                      }
+                      weapon={{
+                        name: details.weapon,
+                        description: details.weaponDescription,
+                        icon: <img src={weaponSrc(id)} alt="" />,
+                      }}
+                      spell={{
+                        name: details.spell,
+                        description: details.spellDescription,
+                        icon: <img src={statusSrc(classAbility[id])} alt="" />,
+                      }}
+                      stats={{
+                        level: stats?.level ?? 1,
+                        experience: stats?.experience ?? 0,
+                        maxHitpoints: stats?.maxHitpoints ?? 100,
+                        maxManapoints: stats?.maxManapoints ?? 50,
+                      }}
                     />
                   );
                 })}
-                <Typography variant="caption" color="text.secondary">
-                  Switch here before the departure countdown. Talents are coming later.
-                </Typography>
-              </>
+              </Box>
             ) : menu === "building" ? (
               <Typography>{building} services are coming in a future update.</Typography>
             ) : (

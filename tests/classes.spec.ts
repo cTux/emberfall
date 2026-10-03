@@ -28,6 +28,13 @@ test("wardrobe selects and restores classes through the server", async ({ page }
     await route.continue();
   });
   let current: WorldState | undefined;
+  let lastMovingSeq = 0;
+  page.on("websocket", (socket) =>
+    socket.on("framesent", ({ payload }) => {
+      const message = JSON.parse(String(payload));
+      if (message.type === "move" && (message.x || message.y)) lastMovingSeq = message.seq;
+    }),
+  );
   page.on("websocket", (socket) =>
     socket.on("framereceived", ({ payload }) => {
       const message = JSON.parse(String(payload));
@@ -44,20 +51,29 @@ test("wardrobe selects and restores classes through the server", async ({ page }
   );
   await page.screenshot({ path: "test-results/wardrobe-village.png" });
   await page.locator("canvas[aria-label^='Shared village']").click();
-  await page.keyboard.down("a");
-  await expect
-    .poll(() => {
-      const player = current?.players[0];
-      // Stop well inside interaction range, rather than racing its outer edge.
-      return player && Math.abs(player.x - WARDROBE.x) < 40
-        ? (nearbyInteraction(player)?.id ?? `position:${player.x},${player.y}`)
-        : "approaching wardrobe";
-    })
-    .toBe("wardrobe");
-  await page.keyboard.up("a");
+  // Short steps with acknowledgement prevent queued movement overshooting the wardrobe.
+  for (let step = 0; step < 20 && Math.abs(current!.players[0].x - WARDROBE.x) >= 30; step++) {
+    await page.keyboard.press(current!.players[0].x > WARDROBE.x ? "a" : "d", { delay: 80 });
+    await expect.poll(() => (current?.players[0].inputSeq ?? 0) > lastMovingSeq).toBe(true);
+  }
+  expect(nearbyInteraction(current!.players[0])?.id).toBe("wardrobe");
   await page.keyboard.press("e");
   const wardrobe = page.getByRole("dialog", { name: "Wardrobe" });
   await expect(wardrobe).toBeVisible();
+  await expect(wardrobe.getByRole("article")).toHaveCount(4);
+  for (const name of ["Warrior", "Ranger", "Mage", "Druid"]) {
+    await expect(wardrobe.getByRole("img", { name: `${name} portrait` })).toBeVisible();
+  }
+  const spell = wardrobe.getByRole("button", { name: "Base spell for Mage: Fireball" });
+  await spell.hover();
+  await expect(page.getByRole("tooltip")).toContainText("3 damage to its direct target");
+  await page.mouse.move(0, 0);
+  await expect(page.getByRole("tooltip")).toBeHidden();
+  const tops = await wardrobe
+    .getByRole("article")
+    .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().top)));
+  expect(new Set(tops).size).toBe(1);
+  await page.screenshot({ path: "test-results/wardrobe-compact-desktop.png" });
   await wardrobe.getByRole("button", { name: /^Ranger/ }).click();
   await expect(wardrobe.getByRole("button", { name: /^Ranger/ })).toHaveAttribute(
     "aria-pressed",
@@ -79,6 +95,9 @@ test("wardrobe selects and restores classes through the server", async ({ page }
   );
   await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
   await page.screenshot({ path: "test-results/wardrobe.png" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: "test-results/wardrobe-compact-narrow.png" });
+  expect(await wardrobe.evaluate((dialog) => dialog.scrollWidth <= dialog.clientWidth)).toBe(true);
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Leave world" }).click();
   await page.getByRole("button", { name: "Leave", exact: true }).click();
