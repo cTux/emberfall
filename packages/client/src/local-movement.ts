@@ -310,7 +310,7 @@ export class LocalMovement {
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
-          if (shot.targetId === undefined || shot.kind === "arrow") shot.angle = serverShot.angle;
+          shot.angle = serverShot.angle;
         }
         return !advancePlayerShot(shot, scene.enemies, dt) && shot.remaining > 0.001;
       });
