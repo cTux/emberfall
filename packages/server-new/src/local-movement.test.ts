@@ -111,7 +111,7 @@ test("forest prediction wraps and resets on area changes without predicting dama
   assert.equal(p.x, 5);
   assert.equal(p.hitpoints, 100);
   movement.animateAttack(p, forest, 50);
-  assert.equal(p.attackAt, 0);
+  assert.equal(p.attackAt, undefined, "entry without a confirmed attack must not invent a swing");
   assert.equal(movement.render(world(), 100)!.x, 420);
 });
 

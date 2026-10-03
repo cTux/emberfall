@@ -7,12 +7,11 @@ import {
   Rectangle,
   Matrix,
   Text,
-  FillGradient,
   Color,
   BlurFilter,
 } from "pixi.js";
 import type { Renderer, GradientOptions, LinearGradientOptions } from "pixi.js";
-import "pixi.js/advanced-blend-modes";
+import "./soft-light";
 import { World } from "miniplex";
 
 type Paint = string | Gradient;
@@ -77,7 +76,7 @@ export class PixiContext {
   private pools: Record<Visual["kind"], Visual[]> = { sprite: [], graphics: [], text: [] };
   private cursors = { sprite: 0, graphics: 0, text: 0 };
   private sources = new Map<CanvasImageSource, { texture: Texture; used: number }>();
-  private gradients = new Map<string, { fill: FillGradient; used: number }>();
+  private gradients = new Map<string, { texture: Texture; used: number }>();
   private frame = 0;
   private shadowPass = false;
   private shadowStrength = 0;
@@ -116,6 +115,9 @@ export class PixiContext {
     this.ready = autoDetectRenderer({
       canvas,
       preference: ["webgl"],
+      // Soft-light grading needs the scene behind it; without this Pixi skips
+      // the blend filter and paints a flat translucent wash over the world.
+      useBackBuffer: true,
       antialias: false,
       backgroundAlpha: 1,
       resolution: 1,
@@ -168,7 +170,7 @@ export class PixiContext {
     if (this.frame % 120 === 0) {
       for (const [key, entry] of this.gradients)
         if (this.frame - entry.used > 120) {
-          entry.fill.destroy();
+          entry.texture.destroy(true);
           this.gradients.delete(key);
         }
       for (const [key, entry] of this.sources)
@@ -208,7 +210,7 @@ export class PixiContext {
     for (const entry of this.sources.values()) {
       entry.texture.destroy(true);
     }
-    for (const entry of this.gradients.values()) entry.fill.destroy();
+    for (const entry of this.gradients.values()) entry.texture.destroy(true);
     for (const group of this.maskGroups) group.destroy();
     this.shadowRects.clear();
     this.renderer?.destroy();
@@ -371,13 +373,33 @@ export class PixiContext {
     const key = JSON.stringify(normalized);
     let entry = this.gradients.get(key);
     if (!entry) {
-      const fill = new FillGradient(normalized);
-      fill.buildGradient();
-      entry = { fill, used: this.frame };
+      // Bake only the reusable ramp, on a transparent surface. FillGradient's
+      // radial builder pre-fills the outer stop, making transparent centers opaque.
+      const canvas = document.createElement("canvas");
+      canvas.width = 256;
+      canvas.height = normalized.type === "radial" ? 256 : 1;
+      const ctx = canvas.getContext("2d")!;
+      const ramp =
+        normalized.type === "radial"
+          ? ctx.createRadialGradient(
+              (normalized.center!.x + 1) * 128,
+              (normalized.center!.y + 1) * 128,
+              normalized.innerRadius! * 128,
+              128,
+              128,
+              128,
+            )
+          : ctx.createLinearGradient(0, 0, 256, 0);
+      for (const stop of normalized.colorStops!) ramp.addColorStop(stop.offset, String(stop.color));
+      ctx.fillStyle = ramp;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      const texture = Texture.from(canvas, true);
+      texture.source.addressMode = "clamp-to-edge";
+      entry = { texture, used: this.frame };
       this.gradients.set(key, entry);
     }
     entry.used = this.frame;
-    return { texture: entry.fill.texture, matrix, textureSpace: "global" };
+    return { texture: entry.texture, matrix, textureSpace: "global" };
   }
   private strokePaint() {
     const paint = this.paint(this.state.strokeStyle);
@@ -466,7 +488,21 @@ export class PixiContext {
     if (!sw || !sh || !dw || !dh) return;
     let entry = this.sources.get(source);
     if (!entry) {
-      const texture = Texture.from(image, true);
+      // WebGL uploads of SVG images without explicit dimensions can produce an
+      // empty texture. Rasterize once at the decoded size, keeping the SVG asset
+      // and the normal source-texture cache shared by all status sprites.
+      let resource: HTMLImageElement | HTMLCanvasElement = image;
+      if (
+        image instanceof HTMLImageElement &&
+        /\.svg(?:[?#]|$)|^data:image\/svg\+xml/i.test(image.currentSrc || image.src)
+      ) {
+        const raster = document.createElement("canvas");
+        raster.width = iw;
+        raster.height = ih;
+        raster.getContext("2d")!.drawImage(image, 0, 0, iw, ih);
+        resource = raster;
+      }
+      const texture = Texture.from(resource, true);
       texture.source.scaleMode = "nearest";
       entry = { texture, used: this.frame };
       this.sources.set(source, entry);

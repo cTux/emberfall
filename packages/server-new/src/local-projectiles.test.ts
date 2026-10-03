@@ -2,7 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LocalMovement } from "../../client-new/src/local-movement.ts";
 import { SnapshotBuffer } from "../../client-new/src/snapshots.ts";
-import { fireClassAttack, FOREST, requestPlayerCast } from "@emberfall/common-new";
+import {
+  fireClassAttack,
+  FOREST,
+  requestPlayerCast,
+  PLAYER_ATTACK_INTERVAL,
+} from "@emberfall/common-new";
 import type { Player, WorldState, SceneState, ClientMessage } from "@emberfall/common-new";
 
 function fixture(classId: Player["classId"] = "mage", training = false): WorldState {
@@ -68,6 +73,42 @@ function frame(
   movement.animateProjectiles(player, view, now, started);
   return { player, started, scene: (player.scene ? view.scene : view.training)! };
 }
+
+test("automatic combat entry waits for its first authoritative swing in forest and training", () => {
+  for (const training of [false, true]) {
+    for (const classId of ["warrior", "mage", "ranger", "druid"] as const) {
+      const source = fixture(classId, training);
+      source.players[0].attackAt = undefined;
+      const movement = new LocalMovement("p", () => {});
+      for (const now of [0, 25, 75, 150]) {
+        const waiting = frame(movement, source, now);
+        assert.equal(waiting.started, false, "no invented first swing or sound");
+        assert.equal(waiting.player.attackAt, undefined);
+        assert.equal(waiting.scene.playerShots?.length ?? 0, 0);
+      }
+      const confirmed = structuredClone(source);
+      confirmed.serverNow = 10200;
+      confirmed.players[0].attackAt = 10150;
+      const first = frame(movement, confirmed, 200);
+      assert.equal(first.started, true);
+      assert.equal(first.player.attackAt, 150, "use the server's actual swing age");
+      assert.equal(frame(movement, confirmed, 225).started, false);
+      const next = structuredClone(confirmed);
+      next.serverNow = 10250;
+      assert.equal(
+        frame(movement, next, 250).started,
+        false,
+        "snapshot does not restart the swing",
+      );
+      assert.equal(frame(movement, next, 250).player.attackAt, 150);
+      assert.equal(
+        frame(movement, next, 150 + PLAYER_ATTACK_INTERVAL).started,
+        true,
+        "keep extrapolating established automatic cycles",
+      );
+    }
+  }
+});
 
 test("manual confirmations with latency preserve flight and swing, correct aim and never replay completed casts", async () => {
   for (const delay of [100, 150, 300]) {

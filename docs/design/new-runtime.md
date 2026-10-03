@@ -48,6 +48,16 @@ have separate revisioned sources. The visible world is WebGL, not a Canvas frame
 uploaded to one sprite. Existing drawing helpers use a command adapter to preserve
 their visual rules while emitting native Pixi objects.
 
+Gradient ramps are baked once onto transparent textures and cached independently
+of world position, so vignette centers preserve the scene beneath them. SVG
+status assets are rasterized once at their decoded dimensions before GPU upload.
+The WebGL back buffer is enabled for soft-light color grading to blend with the
+scene instead of falling back to a plain translucent fill.
+Its blend filter unpremultiplies texture colors before applying the Canvas
+soft-light equation, then composites alpha once.
+The renderer pixel tests compare gradient blending with Canvas and check all four
+debuff glyphs, including reuse of pooled sprites.
+
 ## Compatibility
 
 The new packages cannot import old common/client/server packages. Assets and rules
@@ -61,6 +71,10 @@ training, encounters, graphics preferences, UI, audio and recovery behavior.
 Prediction covers movement, aiming and local cast presentation. Camera, shadows,
 attachments and sound follow reconciled presentation. Replayed inputs must not
 repeat sounds or effects. Server confirmation owns hits, deaths and pickups.
+Automatic attack prediction starts from the first confirmed server attack time;
+entering training or a forest never invents an initial swing from a snapshot's
+timestamp. Established cycles still extrapolate between replies, and manual casts
+retain their immediate request-based prediction.
 
 ## Persistence
 
