@@ -75,6 +75,7 @@ test("system chat announces scene transitions and deaths exactly once", () => {
   sceneAction(world, a, { type: "createScene", scene: "Forest", difficulty: "Easy" }, 6500);
   assert.equal(world.chat?.at(-1)?.text, "b left the scene. Everyone became weaker.");
   assert(world.chat?.every((m) => m.name === "System" && m.playerId === ""));
+  assert(world.chat?.every((m) => m.excludedPlayerId === m.text[0]));
 });
 
 test("empty and dead scenes freeze combat deadlines, resume on entry, and can regenerate", () => {
