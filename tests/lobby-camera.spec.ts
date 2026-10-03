@@ -74,11 +74,13 @@ for (const [label, x, y] of [
           source.height === 2560
         ) {
           const matrix = this.getTransform();
-          const a = new DOMPoint(Number(args[1]), Number(args[2])).matrixTransform(matrix);
-          const b = new DOMPoint(
-            Number(args[1]) + source.width,
-            Number(args[2]) + source.height,
-          ).matrixTransform(matrix);
+          const cropped = args.length === 9;
+          const dx = Number(args[cropped ? 5 : 1]);
+          const dy = Number(args[cropped ? 6 : 2]);
+          const width = cropped ? Number(args[7]) : source.width;
+          const height = cropped ? Number(args[8]) : source.height;
+          const a = new DOMPoint(dx, dy).matrixTransform(matrix);
+          const b = new DOMPoint(dx + width, dy + height).matrixTransform(matrix);
           capture.tiles.push([a.x, a.y, b.x, b.y, this.canvas.width, this.canvas.height]);
           if (capture.tiles.length > 4) capture.tiles.shift();
         }
@@ -127,7 +129,8 @@ for (const [label, x, y] of [
               [1, 1],
             ].every(([x, y]) =>
               capture.tiles.some(
-                ([l, t, r, b, w, h]) => x * w >= l && x * w <= r && y * h >= t && y * h <= b,
+                ([l, t, r, b, w, h]) =>
+                  x * w >= l - 0.01 && x * w <= r + 0.01 && y * h >= t - 0.01 && y * h <= b + 0.01,
               ),
             );
             return centered && covered;
