@@ -140,7 +140,8 @@ export function drawVignette(
 }
 export function hitOutline(mask: HTMLCanvasElement) {
   const outline = document.createElement("canvas");
-  outline.width = outline.height = 20;
+  outline.width = mask.width + 4;
+  outline.height = mask.height + 4;
   const c = outline.getContext("2d")!;
   for (const [x, y] of [
     [0, 2],
@@ -152,13 +153,48 @@ export function hitOutline(mask: HTMLCanvasElement) {
     [1, 3],
     [3, 1],
   ])
-    c.drawImage(mask, x, y, 16, 16);
+    c.drawImage(mask, x, y);
   c.globalCompositeOperation = "source-in";
   c.fillStyle = "#ff3737";
-  c.fillRect(0, 0, 20, 20);
+  c.fillRect(0, 0, outline.width, outline.height);
   c.globalCompositeOperation = "destination-out";
-  c.drawImage(mask, 2, 2, 16, 16);
+  c.drawImage(mask, 2, 2);
   return outline;
+}
+const hitSprites = new WeakMap<
+  HTMLCanvasElement,
+  { outline: HTMLCanvasElement; tint: HTMLCanvasElement }
+>();
+export function drawTargetHit(
+  ctx: CanvasRenderingContext2D,
+  mask: HTMLCanvasElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  age: number,
+) {
+  if (age < 0 || age >= 220) return;
+  let sprites = hitSprites.get(mask);
+  if (!sprites) {
+    const tint = document.createElement("canvas");
+    tint.width = mask.width;
+    tint.height = mask.height;
+    const c = tint.getContext("2d")!;
+    c.drawImage(mask, 0, 0);
+    c.globalCompositeOperation = "source-in";
+    c.fillStyle = "#ffffff";
+    c.fillRect(0, 0, tint.width, tint.height);
+    sprites = { outline: hitOutline(mask), tint };
+    hitSprites.set(mask, sprites);
+  }
+  const padX = (2 * width) / mask.width;
+  const padY = (2 * height) / mask.height;
+  ctx.save();
+  ctx.globalAlpha *= 1 - age / 220;
+  ctx.drawImage(sprites.outline, x - padX, y - padY, width + padX * 2, height + padY * 2);
+  ctx.drawImage(sprites.tint, x, y, width, height);
+  ctx.restore();
 }
 export function drawDamageFlash(
   ctx: CanvasRenderingContext2D,

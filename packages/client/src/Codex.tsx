@@ -88,7 +88,8 @@ const chapters = [
       <>
         {" "}
         <p>
-          Damage briefly outlines entities in red and flashes your screen when you are hit. Your
+          Damage briefly outlines targets in red and tints them white, including training dummies
+          and companions. Other players do not flash. Your screen flashes red when you are hit. Your
           movement and attack animation respond locally; the server validates movement and decides
           damage. Settings control floating damage numbers, FPS, vignette, graphics, music and sound
           effects. Your preferences and nickname stay in this browser. Server saves include XP,

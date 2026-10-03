@@ -13,6 +13,7 @@ import type { RefObject } from "react";
 import { SnapshotBuffer } from "./snapshots";
 import {
   drawPlayerHealth,
+  drawTargetHit,
   drawChatBubble,
   drawParticles,
   drawVignette,
@@ -35,7 +36,7 @@ import {
 } from "@emberfall/common";
 import type { ClientMessage, WorldState } from "@emberfall/common";
 import type { GraphicsSettings } from "./graphics";
-import { castShadow, makeMask } from "./lighting";
+import { castShadow, makeMask, spriteMask } from "./lighting";
 import type { Caster, Light } from "./lighting";
 import { villageSprites, TORCH_LIGHTS, lightTexture, drawTorchFire } from "./village";
 import type { Scenery } from "./village";
@@ -504,9 +505,22 @@ export function Arena({
       const training = view.training;
       const serverTime = view.serverNow ?? now;
       if (training) {
+        const damageByTarget = new Map(training.damage.map((hit) => [hit.target, hit]));
         for (const dummy of training.enemies) {
-          if (skeleton.naturalWidth)
+          if (skeleton.naturalWidth) {
             ctx.drawImage(skeleton, 0, 0, 16, 16, dummy.x - 24, dummy.y - 30, 48, 48);
+            const hit = damageByTarget.get(`enemy:${dummy.id}`);
+            if (hit)
+              drawTargetHit(
+                ctx,
+                spriteMask(skeleton, 0, 0)!,
+                dummy.x - 24,
+                dummy.y - 30,
+                48,
+                48,
+                serverTime - hit.at,
+              );
+          }
           ctx.fillStyle = "#152018";
           ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
           ctx.fillStyle = "#df7765";
