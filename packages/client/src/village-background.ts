@@ -40,6 +40,28 @@ export function villageBackground(graphics: GraphicsSettings) {
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = "#25392f";
   ctx.fillRect(0, 0, ARENA.width, ARENA.height);
+  // Paint overflow into the opposite edge of the cached, repeating world tile.
+  function wrapped(x: number, y: number, radius: number, paint: () => void) {
+    if (x >= radius && y >= radius && x + radius < ARENA.width && y + radius < ARENA.height) {
+      paint();
+      return;
+    }
+    for (
+      let row = Math.floor((y - radius) / ARENA.height);
+      row <= Math.floor((y + radius) / ARENA.height);
+      row++
+    )
+      for (
+        let col = Math.floor((x - radius) / ARENA.width);
+        col <= Math.floor((x + radius) / ARENA.width);
+        col++
+      ) {
+        ctx.save();
+        ctx.translate(-col * ARENA.width, -row * ARENA.height);
+        paint();
+        ctx.restore();
+      }
+  }
   // A fixed seed keeps the decorative clearing identical for every client.
   let seed = 7319;
   const random = () => {
@@ -50,32 +72,40 @@ export function villageBackground(graphics: GraphicsSettings) {
     const x = random() * ARENA.width;
     const y = random() * ARENA.height;
     const radius = 35 + random() * 110;
-    const patch = ctx.createRadialGradient(x, y, 0, x, y, radius);
-    patch.addColorStop(0, i % 2 ? "#78905712" : "#0b231c20");
-    patch.addColorStop(1, "#25392f00");
-    ctx.fillStyle = patch;
-    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    wrapped(x, y, radius, () => {
+      const patch = ctx.createRadialGradient(x, y, 0, x, y, radius);
+      patch.addColorStop(0, i % 2 ? "#78905712" : "#0b231c20");
+      patch.addColorStop(1, "#25392f00");
+      ctx.fillStyle = patch;
+      ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    });
   }
   for (let i = 0; i < 36000; i++) {
     ctx.fillStyle = random() > 0.5 ? "#80965c12" : "#142b2020";
-    ctx.fillRect(random() * ARENA.width, random() * ARENA.height, 1 + random() * 3, 1);
+    const x = random() * ARENA.width;
+    const y = random() * ARENA.height;
+    const width = 1 + random() * 3;
+    wrapped(x, y, width, () => ctx.fillRect(x, y, width, 1));
   }
   drawVillagePaths(ctx, floor);
   const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern, graphics);
   for (const object of scenery) {
-    if (graphics.shadows) castShadow(ctx, object);
-    if (graphics.ambientOcclusion && !object.id.startsWith("grass")) {
-      ctx.save();
-      ctx.translate(object.x, object.y);
-      ctx.scale(1, 0.3);
-      const radius = object.width * 0.5;
-      const ao = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
-      ao.addColorStop(0, "#07100980");
-      ao.addColorStop(1, "#07100900");
-      ctx.fillStyle = ao;
-      ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
-      ctx.restore();
-    }
+    // Bounds include the full directional sun projection and contact shading.
+    wrapped(object.x, object.y, object.width + object.height, () => {
+      if (graphics.shadows) castShadow(ctx, object);
+      if (graphics.ambientOcclusion && !object.id.startsWith("grass")) {
+        ctx.save();
+        ctx.translate(object.x, object.y);
+        ctx.scale(1, 0.3);
+        const radius = object.width * 0.5;
+        const ao = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
+        ao.addColorStop(0, "#07100980");
+        ao.addColorStop(1, "#07100900");
+        ctx.fillStyle = ao;
+        ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+        ctx.restore();
+      }
+    });
   }
   const torchTextures = TORCH_LIGHTS.map((light) => lightTexture(light, scenery, graphics.shadows));
   cached = { key, background, scenery, torchTextures };

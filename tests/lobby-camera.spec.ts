@@ -9,6 +9,7 @@ for (const [label, x, y] of [
   ["right seam", ARENA.width - 2, 355],
   ["top seam", 480, 2],
   ["bottom seam", 480, ARENA.height - 2],
+  ["inn corner seam", 85, 80],
 ] as const) {
   test(`lobby centers the character and fills the viewport at ${label}`, async ({ page }) => {
     const world: WorldState = {
@@ -137,6 +138,8 @@ for (const [label, x, y] of [
           }),
         )
         .toBe(true);
+      if (label === "inn corner seam")
+        await page.screenshot({ path: `test-results/lobby-inn-seam-${size.width}.png` });
     }
     await page.screenshot({ path: `test-results/lobby-camera-${label.replaceAll(" ", "-")}.png` });
   });
