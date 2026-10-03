@@ -1,0 +1,23 @@
+{
+  "name": "@emberfall/server-new",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.ts",
+    "build": "vite build",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@colyseus/core": "0.18.18",
+    "@colyseus/database": "0.18.4",
+    "@colyseus/schema": "5.0.35",
+    "@colyseus/ws-transport": "0.18.4",
+    "@emberfall/common-new": "workspace:*",
+    "drizzle-orm": "1.0.0-rc.2",
+    "miniplex": "2.0.0"
+  },
+  "devDependencies": {
+    "@colyseus/sdk": "0.18.4",
+    "vite": "catalog:"
+  }
+}

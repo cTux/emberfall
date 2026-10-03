@@ -1,0 +1,11 @@
+Kyrise's Free 16x16 RPG Icon Pack - V1.3
+Author: Kyrise
+Source: https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+License terms: https://creativecommons.org/licenses/by/4.0/
+Original pack readme: KYRISE-README.txt
+Unmodified 16x16 originals, renamed for class mapping:
+warrior.png = icons/16x16/sword_02b.png
+ranger.png = icons/16x16/bow_03a.png
+mage.png = icons/16x16/staff_03d.png
+druid.png = icons/16x16/staff_02ab.png
