@@ -1,4 +1,4 @@
-import { drawVillagePaths } from "./paths";
+import { villageImages, villageBackground, drawVillageBackground } from "./village-background";
 import { characterImages } from "./characters";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
@@ -39,8 +39,7 @@ import type { ClientMessage, WorldState } from "@emberfall/common";
 import type { GraphicsSettings } from "./graphics";
 import { castShadow, makeMask, spriteMask } from "./lighting";
 import type { Caster, Light } from "./lighting";
-import { villageSprites, TORCH_LIGHTS, lightTexture, drawTorchFire } from "./village";
-import type { Scenery } from "./village";
+import { TORCH_LIGHTS, lightTexture, drawTorchFire } from "./village";
 import { forestRenderer, drawFog, drawPortal, drawPlayerDetails } from "./forest";
 import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from "./combat-effects";
 import type { Preferences } from "./preferences";
@@ -99,18 +98,7 @@ export function Arena({
     const element = canvas.current!;
     const ctx = element.getContext("2d", { alpha: false })!;
     const knight = characterImages.warrior.walk;
-    const nature = new Image();
-    nature.src = "/assets/nature.png";
-    const floor = new Image();
-    floor.src = "/assets/floor.png";
-    const houses = new Image();
-    houses.src = "/assets/houses.png";
-    const wardrobe = new Image();
-    wardrobe.src = "/assets/wardrobe.png";
-    const lampPost = new Image();
-    lampPost.src = "/assets/lanterns/lamp-post.png";
-    const lantern = new Image();
-    lantern.src = "/assets/lanterns/lantern.png";
+    const { nature } = villageImages;
     const animatedLantern = new Image();
     animatedLantern.src = "/assets/lanterns/lantern-animation.png";
     const skeleton = new Image();
@@ -120,8 +108,6 @@ export function Arena({
     let lastSlashAt = -Infinity,
       lastHit = 0,
       lastWarning = 0;
-    let scenery: Scenery[] = [];
-    let torchTextures: HTMLCanvasElement[] = [];
     const movingLight = document.createElement("canvas");
     const lanternTexture = document.createElement("canvas");
     const playerMasks = new Map<HTMLImageElement, HTMLCanvasElement[]>();
@@ -263,62 +249,6 @@ export function Arena({
       ctx.stroke();
       ctx.restore();
     }
-    const background = document.createElement("canvas");
-    background.width = ARENA.width;
-    background.height = ARENA.height;
-    function paintBackground() {
-      const ctx = background.getContext("2d")!;
-      ctx.imageSmoothingEnabled = false;
-      ctx.fillStyle = "#25392f";
-      ctx.fillRect(0, 0, ARENA.width, ARENA.height);
-      // A fixed seed keeps the decorative clearing identical for every client.
-      let seed = 7319;
-      const random = () => {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-        return seed / 4294967296;
-      };
-      for (let i = 0; i < 325; i++) {
-        const x = random() * ARENA.width;
-        const y = random() * ARENA.height;
-        const radius = 35 + random() * 110;
-        const patch = ctx.createRadialGradient(x, y, 0, x, y, radius);
-        patch.addColorStop(0, i % 2 ? "#78905712" : "#0b231c20");
-        patch.addColorStop(1, "#25392f00");
-        ctx.fillStyle = patch;
-        ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-      }
-      for (let i = 0; i < 36000; i++) {
-        ctx.fillStyle = random() > 0.5 ? "#80965c12" : "#142b2020";
-        ctx.fillRect(random() * ARENA.width, random() * ARENA.height, 1 + random() * 3, 1);
-      }
-      drawVillagePaths(ctx, floor);
-      scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern, quality.current);
-      for (const object of scenery) {
-        if (quality.current.shadows) castShadow(ctx, object);
-        if (quality.current.ambientOcclusion && !object.id.startsWith("grass")) {
-          ctx.save();
-          ctx.translate(object.x, object.y);
-          ctx.scale(1, 0.3);
-          const radius = object.width * 0.5;
-          const ao = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
-          ao.addColorStop(0, "#07100980");
-          ao.addColorStop(1, "#07100900");
-          ctx.fillStyle = ao;
-          ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
-          ctx.restore();
-        }
-      }
-      torchTextures = TORCH_LIGHTS.map((light) =>
-        lightTexture(light, scenery, quality.current.shadows),
-      );
-    }
-    paintBackground();
-    nature.onload = paintBackground;
-    houses.onload = paintBackground;
-    floor.onload = paintBackground;
-    wardrobe.onload = paintBackground;
-    lampPost.onload = paintBackground;
-    lantern.onload = paintBackground;
     let frame = 0;
     let previous = performance.now();
     let resolutionScale = 1,
@@ -372,7 +302,6 @@ export function Arena({
       if (previousSettings !== quality.current) {
         previousSettings = quality.current;
         resolutionScale = 1;
-        paintBackground();
         resize();
       }
       const el = element;
@@ -475,6 +404,9 @@ export function Arena({
         frame = requestAnimationFrame(draw);
         return;
       }
+      const prepared = villageBackground(quality.current);
+      const scenery = prepared?.scenery ?? [];
+      const torchTextures = prepared?.torchTextures ?? [];
       const focus = local ?? { x: 480, y: 320 };
       const viewWidth = el.width / scale;
       const viewHeight = el.height / scale;
@@ -496,17 +428,12 @@ export function Arena({
       const portal = project(LOBBY_PORTAL.x, LOBBY_PORTAL.y);
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
       ctx.imageSmoothingEnabled = false;
-      for (
-        let row = Math.floor(cameraY / ARENA.height);
-        row <= (cameraY + viewHeight) / ARENA.height;
-        row++
-      )
-        for (
-          let col = Math.floor(cameraX / ARENA.width);
-          col <= (cameraX + viewWidth) / ARENA.width;
-          col++
-        )
-          ctx.drawImage(background, col * ARENA.width, row * ARENA.height);
+      if (prepared)
+        drawVillageBackground(ctx, prepared.background, cameraX, cameraY, viewWidth, viewHeight);
+      else {
+        ctx.fillStyle = "#25392f";
+        ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
+      }
       for (const zone of TRAINING_ZONES) {
         ctx.fillStyle = "#aa8b4930";
         ctx.strokeStyle = "#c9a56380";
@@ -836,7 +763,15 @@ export function Arena({
         for (let i = 0; i < TORCH_LIGHTS.length; i++) {
           const source = TORCH_LIGHTS[i];
           const light = { ...source, ...project(source.x, source.y) };
+          if (
+            light.x + light.radius < cameraX ||
+            light.x - light.radius > cameraX + viewWidth ||
+            light.y + light.radius < cameraY ||
+            light.y - light.radius > cameraY + viewHeight
+          )
+            continue;
           const texture = torchTextures[i];
+          if (!texture) continue;
           // Cache the static blockers; update only the moving character shadows.
           if (movingLight.width !== light.radius * 2)
             movingLight.width = movingLight.height = light.radius * 2;
@@ -889,13 +824,6 @@ export function Arena({
     }
     frame = requestAnimationFrame(draw);
     return () => {
-      nature.onload =
-        houses.onload =
-        floor.onload =
-        wardrobe.onload =
-        lampPost.onload =
-        lantern.onload =
-          null;
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener("resize", resize);

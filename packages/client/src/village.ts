@@ -24,6 +24,10 @@ export function villageSprites(
   graphics: GraphicsSettings,
 ): Scenery[] {
   const objects: Scenery[] = [];
+  const sprites = new Map<
+    CanvasImageSource,
+    Map<string, { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }>
+  >();
   function add(
     id: string,
     x: number,
@@ -37,11 +41,19 @@ export function villageSprites(
     sh: number,
     name?: string,
   ) {
-    const sprite = document.createElement("canvas");
-    sprite.width = sw;
-    sprite.height = sh;
-    sprite.getContext("2d")!.drawImage(source, sx, sy, sw, sh, 0, 0, sw, sh);
-    objects.push({ id, x, y, width, height, sprite, mask: makeMask(sprite), name });
+    let frames = sprites.get(source);
+    if (!frames) sprites.set(source, (frames = new Map()));
+    const key = `${sx}:${sy}:${sw}:${sh}`;
+    let frame = frames.get(key);
+    if (!frame) {
+      const sprite = document.createElement("canvas");
+      sprite.width = sw;
+      sprite.height = sh;
+      sprite.getContext("2d")!.drawImage(source, sx, sy, sw, sh, 0, 0, sw, sh);
+      frame = { sprite, mask: makeMask(sprite) };
+      frames.set(key, frame);
+    }
+    objects.push({ id, x, y, width, height, ...frame, name });
   }
   if (nature.naturalWidth) {
     TREES.forEach((t, i) => add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, nature, 32, 0, 32, 32));
