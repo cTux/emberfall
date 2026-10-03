@@ -247,9 +247,15 @@ export class LocalMovement {
         started = true;
       }
     } else {
-      const origin =
-        this.base?.attackAt ??
-        (Number.isFinite(this.attackAt) ? this.attackAt : (this.source?.serverNow ?? 0));
+      // Automatic attacks belong to the server clock. Entering a combat area
+      // before its first attack snapshot must not invent a swing that confirmation restarts.
+      const origin = this.base?.attackAt;
+      if (origin === undefined) {
+        player.attackAt = undefined;
+        this.attackAt = -Infinity;
+        this.attackId = undefined;
+        return false;
+      }
       const cycle =
         origin +
         Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) *

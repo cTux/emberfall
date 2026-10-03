@@ -79,7 +79,10 @@ test("training area boundaries gate server attacks, Bear hunting, and client swi
     p.x = 175;
     tickTraining(s, [p], 10050, 0.05);
     assert.equal(p.attackAt, 10050);
-    assert(movement.animateAttack(p, world, 50));
+    const confirmed = { ...world, serverNow: 10050, players: [{ ...p }] };
+    const displayed = movement.render(confirmed, 50)!;
+    assert(movement.animateAttack(displayed, confirmed, 50));
+    assert.equal(displayed.attackAt, 50);
     p.x = 300;
     tickTraining(s, [p], 10100, 0.05);
     assert.equal(p.attackAt, undefined);
