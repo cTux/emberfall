@@ -72,7 +72,7 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input shows ra
         capture.circles++;
         capture.range = [args[0], args[1], args[2]];
       }
-      if (this.strokeStyle === "#52ed87") {
+      if (this.strokeStyle === "rgba(82, 237, 135, 0.2)") {
         capture.zone = [args[0], args[1], args[2]];
         capture.zoneAlpha = Number(String(this.fillStyle).match(/[\d.]+(?=\))/)?.[0]);
       }

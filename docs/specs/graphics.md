@@ -34,7 +34,7 @@ Portal voting lives inside the draggable portal window, with a compact control t
 
 Damaged enemies (including elites, bosses, and training dummies), companions, and the local player briefly show a red sprite outline and white tint, fading over 220 ms. Killing blows flash during the enemy death animation. Other players do not receive this sprite effect. Each new hit restarts the flash, including damage over time. Local damage also flashes the screen red. A persistent Vignette toggle controls edge darkening in both village and forest. Fog and flying ambient particles use world coordinates and seamless world-sized repetition; camera movement only changes which portion is visible.
 
-Diagonal facing retains its current valid axis near a 45-degree heading to prevent sprite flicker. Player sword reach is 88 units, shown as a green forward semicircle on the ground at every graphics preset; the fill pulses on swings. The sword visual and server hit distance share the same range constant. Damage remains 5 per swing.
+Diagonal facing retains its current valid axis near a 45-degree heading to prevent sprite flicker. Player sword reach is 88 units, shown as a green forward semicircle on the ground at every graphics preset; its outline uses 20% opacity and the fill pulses on swings. The sword visual and server hit distance share the same range constant. Damage remains 5 per swing.
 
 Blood puddles have their own persistent gameplay toggle. Damage numbers and hit effects present server events; they cannot award damage or XP.
 
