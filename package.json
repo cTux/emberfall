@@ -15,7 +15,7 @@
     "https:setup": "pwsh -NoProfile -File scripts/setup-https.ps1",
     "dev-new": "pnpm https:setup && turbo dev --filter=@emberfall/client-new --filter=@emberfall/server-new",
     "build-new": "pnpm --filter @emberfall/client-new build && pnpm --filter @emberfall/server-new build",
-    "start-new": "pnpm https:setup && pnpm --filter @emberfall/server-new start",
+    "start-new": "pnpm https:setup && pnpm build-new && pnpm --filter @emberfall/server-new start",
     "test-new": "node --test --test-concurrency=1 packages/server-new/src/*.test.ts",
     "test:parity-new": "node --test scripts/new-parity.test.ts",
     "benchmark-new": "node packages/server-new/scripts/benchmark.ts",

@@ -18,6 +18,8 @@ The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's te
 ## Browser and UI verification
 
 The independent runtime uses `pnpm dev-new`, `pnpm build-new`, and `pnpm start-new`.
+`pnpm start-new` sets up HTTPS and builds both new packages before launching,
+so a fresh checkout needs no separate build step after installing dependencies.
 Its development client is on 5174 and its server on 3003. Use `PORT_NEW` and
 `SAVE_PATH_NEW` for overrides; old commands remain scoped to old packages.
 `pnpm typecheck-new` and `pnpm test-new` validate the new packages. Build before

@@ -2,7 +2,8 @@
 
 `pnpm dev-new` serves this client at **https://localhost:5174** and starts the new
 server on port 3003. `pnpm build-new` creates both production bundles;
-`pnpm start-new` serves them at https://localhost:3003. The original client keeps
+`pnpm start-new` builds both bundles and serves them at https://localhost:3003,
+so no separate build is needed after installing dependencies. The original client keeps
 its own commands, assets, storage keys and server.
 
 ## Responsibilities

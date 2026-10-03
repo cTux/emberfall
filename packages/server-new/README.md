@@ -10,6 +10,11 @@ pnpm test-new
 ```
 
 Development and production use port **3003** (`PORT_NEW` overrides it).
+From the repository root, `pnpm start-new` sets up local HTTPS, builds both new
+packages, and starts the server only if the build succeeds. It works without
+existing `dist` folders after installing dependencies and refreshes the bundles
+on each start. To run an already-built deployment without rebuilding, use
+`pnpm --filter @emberfall/server-new start` with certificates already configured.
 Production serves `client-new/dist`. The default database is
 `packages/server-new/data/characters.sqlite`; `SAVE_PATH_NEW=:memory:` is useful
 for disposable tests. TLS uses the existing local certificate setup. The
