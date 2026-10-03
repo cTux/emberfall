@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "packages/common-new",
+    "packages/client-new",
+    "packages/server-new",
+    "playwright.new.config.ts",
+    "tests-new"
+  ]
+}

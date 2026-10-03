@@ -1,0 +1,17 @@
+Music: FREE fantasy music by TimberwolfGames
+Source: https://timberwolfgames.itch.io/free-fantasy-music
+License: CC0 1.0 (public domain). Pack license included as CC0.txt.
+Start screen: Intro.mp3
+Village: In_The_Woods.mp3
+Combat: Trials.mp3
+Files are unmodified from fantasy_music_twg.zip, downloaded 2026-10-01.
+
+Sound effects: Ninja Adventure by Pixel-boy and AAA
+Source: https://pixel-boy.itch.io/ninja-adventure-asset-pack
+License: CC0 1.0, also included at /assets/LICENSE.txt.
+slash.wav: Audio/Sounds/Whoosh & Slash/Slash.wav
+hit.wav: Audio/Sounds/Hit & Impact/Hit1.wav
+warning.wav: Audio/Sounds/Alert/Alert.wav
+Files are unmodified copies from the user-provided asset pack.
+
+Additional tracks from the same CC0 pack: Theme_001.mp3 (start), Adventure.mp3 (lobby), Wastelands.mp3 (combat). Each zone loops its two-track playlist.

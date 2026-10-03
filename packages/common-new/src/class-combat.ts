@@ -1,0 +1,263 @@
+import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
+import { AILMENT_DEFINITIONS } from "./definitions/effects/ailments.ts";
+import { PICKUP_DEFINITIONS, PICKUP_RULES } from "./definitions/entities/pickups.ts";
+import { ENEMY_RULES } from "./definitions/entities/enemies.ts";
+import { appendSceneEntities } from "./entities.ts";
+import { ATTACK_DEFINITIONS } from "./definitions/abilities/attacks.ts";
+import { PLAYER_DEFINITIONS } from "./definitions/entities/players.ts";
+import { FOREST, forestDistance, wrappedDelta, wrap } from "./scene.ts";
+import { ENEMY_STATS } from "./enemies.ts";
+import type { DebuffKind, Enemy, PlayerShot, SceneState } from "./scene.ts";
+import type { Player } from "./index.ts";
+
+const damageHistory = new WeakMap<Player, { at: number; amount: number }[]>();
+export function damagePerSecond(player: Player, now: number) {
+  const recent = (damageHistory.get(player) ?? []).filter((hit) => now - hit.at < 5000);
+  damageHistory.set(player, recent);
+  return recent.reduce((sum, hit) => sum + hit.amount, 0) / 5;
+}
+
+export function hitEnemy(
+  scene: SceneState,
+  enemy: Enemy,
+  amount: number,
+  owner: Player | undefined,
+  now: number,
+  ailment?: DebuffKind,
+) {
+  if (enemy.hitpoints <= 0) return;
+  const dealt = Math.min(enemy.hitpoints, amount);
+  enemy.hitpoints = Math.max(0, enemy.hitpoints - amount);
+  if (owner) {
+    const history = damageHistory.get(owner) ?? [];
+    history.push({ at: now, amount: dealt });
+    damageHistory.set(owner, history);
+  }
+  appendSceneEntities(scene, "damage", {
+    id: ++scene.sequence,
+    x: enemy.x,
+    y: enemy.y,
+    amount: dealt,
+    at: now,
+    target: `enemy:${enemy.id}`,
+    killed: enemy.hitpoints === 0,
+    enemy:
+      enemy.hitpoints === 0
+        ? { archetype: enemy.archetype, kind: enemy.kind, angle: enemy.angle }
+        : undefined,
+  });
+  if (
+    enemy.hitpoints > 0 &&
+    ailment &&
+    ailment !== "roots" &&
+    owner &&
+    Math.random() < AILMENT_DEFINITIONS[ailment].chance
+  ) {
+    enemy.debuffs ??= [];
+    let debuff = enemy.debuffs.find((d) => d.kind === ailment && d.expiresAt >= now);
+    if (!debuff) {
+      debuff = {
+        kind: ailment,
+        stacks: 0,
+        expiresAt: now + AILMENT_DEFINITIONS[ailment].durationMs,
+        nextTick: now + AILMENT_DEFINITIONS[ailment].tickMs,
+        ownerId: owner.id,
+      };
+      enemy.debuffs = enemy.debuffs.filter((d) => d.kind !== ailment);
+      enemy.debuffs.push(debuff);
+    }
+    debuff.stacks++;
+    debuff.expiresAt = now + AILMENT_DEFINITIONS[ailment].durationMs;
+    debuff.ownerId = owner.id;
+  }
+  if (enemy.hitpoints > 0 || scene.training) return;
+  if (owner) owner.experience++;
+  scene.drops ??= [];
+  appendSceneEntities(scene, "drops", {
+    id: ++scene.sequence,
+    kind: "experience",
+    amount: ENEMY_RULES.experiencePerMember ** Math.max(0, (scene.playerCount ?? 1) - 1),
+    x: enemy.x,
+    y: enemy.y,
+    at: now,
+  });
+  if (Math.random() < PICKUP_DEFINITIONS.gold.chance)
+    appendSceneEntities(scene, "drops", {
+      id: ++scene.sequence,
+      kind: "gold",
+      x: wrap(enemy.x + 10, FOREST.width),
+      y: enemy.y,
+      at: now,
+    });
+  if (scene.drops.length > PICKUP_RULES.capacity)
+    scene.drops = scene.drops.slice(-PICKUP_RULES.capacity);
+}
+
+export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
+  for (const enemy of scene.enemies) {
+    for (const debuff of enemy.debuffs ?? []) {
+      if (debuff.kind === "roots") continue;
+      while (debuff.nextTick <= Math.min(now, debuff.expiresAt) && enemy.hitpoints > 0) {
+        hitEnemy(
+          scene,
+          enemy,
+          debuff.stacks * AILMENT_DEFINITIONS[debuff.kind].damagePerStack,
+          players.find((p) => p.id === debuff.ownerId),
+          now,
+        );
+        debuff.nextTick += AILMENT_DEFINITIONS[debuff.kind].tickMs;
+      }
+    }
+    enemy.debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now);
+  }
+}
+
+export function defaultSpellRange(player: Pick<Player, "classId" | "autoTarget">) {
+  const id = PLAYER_DEFINITIONS[player.classId ?? "warrior"].attack;
+  if (id === "slash") return ATTACK_DEFINITIONS.slash.range;
+  const definition = ATTACK_DEFINITIONS[id];
+  return player.autoTarget === false ? definition.manualRange : definition.range;
+}
+
+function applyRoots(target: Enemy, ownerId: string, now: number) {
+  target.debuffs ??= [];
+  const roots = target.debuffs.find((d) => d.kind === "roots" && d.expiresAt > now);
+  if (roots) {
+    roots.stacks++;
+    roots.expiresAt += AILMENT_DEFINITIONS.roots.durationPerStackMs;
+    roots.ownerId = ownerId;
+  } else {
+    target.debuffs = target.debuffs.filter((d) => d.kind !== "roots");
+    target.debuffs.push({
+      kind: "roots",
+      stacks: 1,
+      expiresAt: now + AILMENT_DEFINITIONS.roots.durationPerStackMs,
+      nextTick: now + 1000,
+      ownerId,
+    });
+  }
+}
+
+export function projectileAngle(aimAngle: number, index: number, count: number) {
+  return aimAngle + (index - (count - 1) / 2) * ATTACK_DEFINITIONS.arrow.spreadRadians;
+}
+
+export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
+  const range = defaultSpellRange(player);
+  const manual = player.autoTarget === false;
+  const aim = { x: player.aimX ?? player.x, y: player.aimY ?? player.y };
+  const targets = (manual ? [] : scene.enemies)
+    .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= range)
+    .sort((a, b) => forestDistance(a, player) - forestDistance(b, player))
+    .slice(0, 1);
+  scene.playerShots ??= [];
+  const shotTargets: (Enemy | undefined)[] = manual ? [undefined] : targets;
+  for (const target of shotTargets) {
+    const destination = target ?? aim;
+    const aimAngle = Math.atan2(
+      wrappedDelta(destination.y, player.y, FOREST.height),
+      wrappedDelta(destination.x, player.x, FOREST.width),
+    );
+    const attack = PLAYER_DEFINITIONS[player.classId ?? "ranger"].attack;
+    const count = attack === "slash" ? 0 : ATTACK_DEFINITIONS[attack].count;
+    for (let index = 0; index < count; index++) {
+      appendSceneEntities(scene, "playerShots", {
+        id: ++scene.sequence,
+        ownerId: player.id,
+        castAt: player.attackAt ?? now,
+        castId: player.attackId,
+        kind:
+          player.classId === "mage" ? "fireball" : player.classId === "druid" ? "roots" : "arrow",
+        x: player.x,
+        y: player.y,
+        angle: projectileAngle(aimAngle, index, count),
+        remaining: range,
+        hitIds: [],
+        targetId: target?.id,
+        targetX: destination.x,
+        targetY: destination.y,
+      });
+    }
+  }
+}
+
+/** Shared projectile motion; the callback lets the server check piercing hits at each substep. */
+export function advancePlayerShot(
+  shot: PlayerShot,
+  enemies: Enemy[],
+  dt: number,
+  onStep?: () => void,
+) {
+  const distance = Math.min(shot.remaining, Math.max(0, dt) * ATTACK_DEFINITIONS[shot.kind].speed);
+  const steps = Math.max(1, Math.ceil(distance / 6));
+  for (let i = 0; i < steps; i++) {
+    shot.x = wrap(shot.x + (Math.cos(shot.angle) * distance) / steps, FOREST.width);
+    shot.y = wrap(shot.y + (Math.sin(shot.angle) * distance) / steps, FOREST.height);
+    shot.remaining -= distance / steps;
+    onStep?.();
+    if (shot.kind !== "arrow") {
+      const hit = enemies.find(
+        (enemy) =>
+          enemy.hitpoints > 0 &&
+          forestDistance(shot, enemy) <= ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 4,
+      );
+      if (hit) {
+        shot.hitIds.push(hit.id);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function tickPlayerShots(scene: SceneState, players: Player[], now: number, dt: number) {
+  scene.explosions = (scene.explosions ?? []).filter(
+    (e) => now - e.at < TRANSIENT_EFFECTS.explosion.lifetimeMs,
+  );
+  scene.playerShots = (scene.playerShots ?? []).filter((shot) => {
+    const owner = players.find(
+      (p) =>
+        p.id === shot.ownerId &&
+        (scene.training ? !p.scene : p.scene === "forest") &&
+        p.hitpoints > 0,
+    );
+    if (!owner) return false;
+    const impacted = advancePlayerShot(shot, scene.enemies, dt, () => {
+      if (shot.kind === "arrow") {
+        for (const enemy of scene.enemies) {
+          if (
+            enemy.hitpoints <= 0 ||
+            shot.hitIds.includes(enemy.id) ||
+            forestDistance(shot, enemy) > ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 4
+          )
+            continue;
+          shot.hitIds.push(enemy.id);
+          hitEnemy(scene, enemy, ATTACK_DEFINITIONS.arrow.damage, owner, now, "poison");
+        }
+      }
+    });
+    if (impacted) {
+      if (shot.kind === "roots") {
+        const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds[0]);
+        if (target) {
+          hitEnemy(scene, target, ATTACK_DEFINITIONS.roots.damage, owner, now);
+          if (target.hitpoints > 0) applyRoots(target, owner.id, now);
+        }
+        return false;
+      }
+      appendSceneEntities(scene, "explosions", {
+        id: ++scene.sequence,
+        x: shot.x,
+        y: shot.y,
+        at: now,
+      });
+      for (const enemy of scene.enemies)
+        if (enemy.id === shot.hitIds[0])
+          hitEnemy(scene, enemy, ATTACK_DEFINITIONS.fireball.damage, owner, now, "burn");
+        else if (forestDistance(shot, enemy) <= ATTACK_DEFINITIONS.fireball.splashRadius)
+          hitEnemy(scene, enemy, ATTACK_DEFINITIONS.fireball.splashDamage, owner, now, "burn");
+      return false;
+    }
+    return shot.remaining > 0.001;
+  });
+}

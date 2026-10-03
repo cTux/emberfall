@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm https:setup && turbo dev",
-    "build": "turbo build",
+    "dev": "pnpm https:setup && turbo dev --filter=@emberfall/client --filter=@emberfall/server",
+    "build": "turbo build --filter=@emberfall/client --filter=@emberfall/server --filter=@emberfall/ui",
     "start": "pnpm https:setup && pnpm --filter @emberfall/server start",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint . && stylelint \"packages/client/src/**/*.scss\"",
@@ -12,7 +12,17 @@
     "fmt:check": "oxfmt --check .",
     "test": "node --test packages/server/src/*.test.ts",
     "test:browser": "playwright test",
-    "https:setup": "pwsh -NoProfile -File scripts/setup-https.ps1"
+    "https:setup": "pwsh -NoProfile -File scripts/setup-https.ps1",
+    "dev-new": "pnpm https:setup && turbo dev --filter=@emberfall/client-new --filter=@emberfall/server-new",
+    "build-new": "pnpm --filter @emberfall/client-new build && pnpm --filter @emberfall/server-new build",
+    "start-new": "pnpm https:setup && pnpm --filter @emberfall/server-new start",
+    "test-new": "node --test --test-concurrency=1 packages/server-new/src/*.test.ts",
+    "test:parity-new": "node --test scripts/new-parity.test.ts",
+    "benchmark-new": "node packages/server-new/scripts/benchmark.ts",
+    "lint-new": "oxlint packages/client-new packages/common-new packages/server-new tests-new scripts/new-parity.test.ts && stylelint \"packages/client-new/src/**/*.scss\"",
+    "typecheck-new": "tsc --noEmit -p tsconfig.new.json",
+    "test:browser-new": "playwright test -c playwright.new.config.ts",
+    "import-save-new": "node packages/server-new/scripts/import-save.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",

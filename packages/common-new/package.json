@@ -1,0 +1,14 @@
+{
+  "name": "@emberfall/common-new",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./protocol": "./src/protocol/state.ts",
+    "./definitions/*": "./src/definitions/*.ts"
+  },
+  "dependencies": {
+    "@colyseus/schema": "5.0.35",
+    "zod": "catalog:"
+  }
+}

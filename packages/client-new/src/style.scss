@@ -1,0 +1,290 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+.chat {
+  position: absolute;
+  z-index: 2;
+  bottom: 16px;
+  left: 16px;
+  width: min(320px, calc(100vw - 96px));
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #f4ecd6;
+}
+
+.chat:hover,
+.chat:focus-within {
+  background: #101c17d9;
+  border-color: #8daba52e;
+}
+
+.chat-log {
+  max-height: min(180px, 24dvh);
+  overflow: auto;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.chat:hover .chat-log,
+.chat:focus-within .chat-log {
+  scrollbar-color: auto;
+}
+
+.chat-input {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  visibility: hidden;
+}
+
+.chat:hover .chat-input,
+.chat:focus-within .chat-input {
+  visibility: visible;
+}
+
+.chat-input input {
+  min-width: 0;
+  flex: 1;
+  padding: 6px;
+  font: inherit;
+  color: inherit;
+  background: #081310;
+  border: 1px solid #8daba5;
+  border-radius: 3px;
+  user-select: text;
+}
+
+.chat-input button {
+  font: inherit;
+  color: inherit;
+  background: #294137;
+  border: 1px solid #8daba5;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.chat-input button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.chat-input :focus-visible {
+  outline: 2px solid #efd086;
+  outline-offset: 2px;
+}
+
+@media (hover: none) {
+  .chat-input {
+    visibility: visible;
+  }
+}
+
+.stage {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: min(320px, calc(100vw - 80px)) 1fr;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.controls {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  right: 14px;
+}
+
+.connection {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+}
+
+.party {
+  position: relative;
+  grid-column: 1;
+  width: min(320px, calc(100vw - 80px));
+  max-height: calc(100dvh - 260px);
+  overflow: auto;
+}
+
+.portrait {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  background-position: 0 0;
+  background-size: 128px 128px;
+  image-rendering: pixelated;
+}
+
+.lobby,
+.death-panel {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(400px, calc(100vw - 32px));
+}
+
+.notice {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  width: min(600px, calc(100vw - 32px));
+}
+
+.scene-clock {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+.interact {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.boss-hud {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(440px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.combat-icon {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  image-rendering: pixelated;
+}
+
+.weapon-icon {
+  width: 34px;
+  height: 34px;
+}
+
+@media (width <= 600px) {
+  .controls nav {
+    flex-direction: column;
+  }
+
+  .party {
+    width: calc(100vw - 80px);
+  }
+
+  .scene-clock {
+    top: 88px;
+  }
+
+  .boss-hud {
+    top: auto;
+    bottom: 60px;
+  }
+}
+
+.performance-stats {
+  position: relative;
+  grid-column: 1;
+  width: min(264px, calc(100vw - 80px));
+  cursor: move;
+  touch-action: none;
+  z-index: 1;
+}
+
+.performance-stats svg {
+  display: block;
+}
+
+.dps-meter {
+  position: relative;
+  grid-column: 1;
+  width: 235px;
+  padding: 8px;
+  cursor: move;
+  touch-action: none;
+  z-index: 1;
+}
+
+.performance-stats > aside,
+.dps-meter {
+  background: #101c17d9;
+  border: 1px solid #8daba52e;
+  border-radius: 4px;
+}
+
+.dps-meter small {
+  float: right;
+  color: #a7c4bc;
+}
+
+.departure-countdown {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  color: #ffdf95;
+  font-size: clamp(72px, 12vw, 128px);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow:
+    0 3px 8px #000,
+    0 0 24px #ffbd4266;
+}
+
+.departure-countdown span {
+  display: block;
+  animation: departure-pulse 1s ease-out both;
+}
+
+@keyframes departure-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  65% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .departure-countdown span {
+    animation: none;
+  }
+}

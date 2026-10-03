@@ -1,6 +1,6 @@
 # System architecture
 
-Status: implemented baseline. Emberfall is an online-only browser game. One Node process owns worlds and simulation; React presents application UI and Canvas 2D renders the moving world. There is no offline mode, desktop wrapper, room sharding or alternate renderer.
+Status: implemented original runtime. Emberfall is an online-only browser game. One Node process owns worlds and simulation; React presents application UI and Canvas 2D renders the original moving world. There is no offline mode, desktop wrapper or room sharding. The independent [new runtime](new-runtime.md) uses PixiJS, Miniplex and Colyseus; the original packages described here remain supported.
 
 ## Packages and ownership
 

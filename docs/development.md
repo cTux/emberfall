@@ -17,6 +17,21 @@ The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's te
 
 ## Browser and UI verification
 
+The independent runtime uses `pnpm dev-new`, `pnpm build-new`, and `pnpm start-new`.
+Its development client is on 5174 and its server on 3003. Use `PORT_NEW` and
+`SAVE_PATH_NEW` for overrides; old commands remain scoped to old packages.
+`pnpm typecheck-new` and `pnpm test-new` validate the new packages. Build before
+`pnpm test:browser-new`; those tests own an in-memory server per test on 3013
+(`TEST_PORT_NEW` overrides it), run sequentially, and never reuse a live database.
+Functional browser tests use Balanced graphics; explicit rendering tests use
+High. The [package guides](design/new-runtime.md) explain ownership and reuse.
+`pnpm test:parity-new` checks import isolation, asset/credit hashes, definitions
+and seeded simulation equivalence. `pnpm benchmark-new` measures simulation and
+replication kernels; see the [verification record](plans/new-runtime.md) for scope.
+`pnpm lint-new` checks the new source and styles. Use `pnpm import-save-new` only
+with an offline backup and a new destination, as described in the
+[server guide](../packages/server-new/README.md).
+
 ```sh
 pnpm exec playwright install chromium
 pnpm test:browser

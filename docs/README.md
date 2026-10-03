@@ -4,6 +4,12 @@ This is the maintained map of existing features and their implementation. The ba
 
 ## How to use these documents
 
+The independent `*-new` implementation has its own [runtime design](design/new-runtime.md)
+and [verification plan](plans/new-runtime.md). It shares these gameplay specifications
+and the UI package with the original runtime. Package guides explain development,
+testing and reuse: [common-new](../packages/common-new/README.md),
+[server-new](../packages/server-new/README.md), [client-new](../packages/client-new/README.md).
+
 - **Specifications** describe observable rules, scope and acceptance scenarios. Requirement IDs identify stable behavior groups, not individual test cases.
 - **Technical designs** describe ownership, state, interfaces, failure behavior and verification seams.
 - **The implementation plan** records delivered capabilities, dependencies and remaining work. An existing feature is not presented as work still to build.
