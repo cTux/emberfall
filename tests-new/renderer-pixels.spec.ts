@@ -33,13 +33,17 @@ test("Pixi preserves transparent vignette centers and SVG debuff pixels", async 
   );
   await page.goto("/renderer-test");
   await page.addScriptTag({ content: code });
-  const { results, icons, lights, edges } = await page.evaluate(async () => {
+  const { results, icons, lights, edges, damagePixels } = await page.evaluate(async () => {
     const fixture = (window as unknown as { RendererFixture: typeof import("./renderer-fixture") })
       .RendererFixture;
     return fixture.compare();
   });
   await page.screenshot({ path: "test-results/new-renderer-pixels.png" });
   expect(errors).toEqual([]);
+  for (const { white, red } of damagePixels) {
+    expect(white, "critical white fill survives Pixi rendering").toBeGreaterThan(3);
+    expect(red, "critical red outline survives Pixi rendering").toBeGreaterThan(3);
+  }
   expect(lights.reused).toBe(lights.first);
   expect(lights.translated).toBe(lights.first);
   expect(lights.moved).toBeGreaterThan(lights.first);

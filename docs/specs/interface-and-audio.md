@@ -40,7 +40,32 @@ Movement uses physical keyboard codes, so WASD works with non-Latin layouts. Tex
 
 Screen-edge arrows point to living teammates in the same area, the boss and return portals using wrapped distances. Enemy deaths retain their sprite and fall/fade for 0.7 seconds. See [combat readability](graphics.md#graphics-04--combat-readability) for debuff icons and weapons.
 
+## UI-06 — Equipment inspection (new runtime)
+
+The Equipment HUD action and physical `KeyI` open a draggable equipment dialog in
+village and forest. `I` toggles it closed; Escape and the close button also close
+it. Ignore repeats, modified shortcuts, text entry and other open dialogs. Use
+the existing modal focus, movement suppression and persisted drag-position rules.
+
+The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
+amulet/off-hand/ring. Slots have no border. Empty slots show a translucent fallback
+image; equipped weapons show their original icon. Hover, focus or touch exposes
+item stats or the accepted gear types. Character stats derived from all equipment
+appear on the right, stacking below the slots on narrow screens.
+
+Normal outgoing damage numbers use physical parchment, fire orange, poison lime
+and nature green. Critical numbers override the type color with white text and a
+thick red outline. Server events carry damage type and critical outcome in both
+training and forest; the existing damage-number preference applies.
+
 ## Acceptance
+
+- In the new runtime, all four classes receive only their base weapon, including
+  migrated saves. All equipped items affect combat and the displayed totals.
+- Equipment supports non-Latin `KeyI`, drag/reopen, Escape, typing suppression,
+  keyboard tooltips and narrow viewports.
+- Critical boundaries, fractional damage, training/forest, saves and network
+  reconstruction preserve damage type and critical metadata.
 
 - Toggle F/G once per press, ignore typing/repeats, persist choices and stop held manual casting after release, blur or hiding the tab.
 - Drag and reopen windows, navigate Codex tabs with arrows/Home/End, close with Escape and restore focus.

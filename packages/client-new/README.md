@@ -18,7 +18,7 @@ its own commands, assets, storage keys and server.
   detached render/prediction objects, separate from Colyseus schemas and server
   ECS objects. Companions remain based on confirmed state.
 - `Arena.tsx` coordinates input, camera, audio and world rendering. Shared UI
-  components come from the unchanged `@emberfall/ui` package; the host owns
+  components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
 - `rendering/pixi-context.ts` translates existing drawing commands into pooled
   native Pixi sprites, geometry, text and masks. The visible canvas is WebGL.
@@ -51,6 +51,12 @@ continue working if the shared UI changes; read its own README/AGENTS first.
 Browser settings and identity use `emberfall-new.*`, preserving the old runtime.
 
 ## Verify
+
+Equipment opens through the HUD or physical `KeyI`. `equipment-view.tsx` owns
+slot grid coordinates, labels and fallback icons; it passes controlled views and
+shared derived stats to `EquipmentPanel` inside the existing draggable window.
+`damage-text.ts` renders authoritative damage type and critical metadata for both
+training and forest. It never rolls hit outcomes locally.
 
 Run `pnpm typecheck-new`, affected Node prediction tests via `pnpm test-new`,
 `pnpm build-new`, then `pnpm test:browser-new`. Browser scenarios use real

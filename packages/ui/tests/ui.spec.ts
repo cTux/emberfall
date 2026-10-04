@@ -2,6 +2,31 @@ import { test, expect } from "@playwright/test";
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test("equipment exposes borderless slots, keyboard details and narrow stats", async ({ page }) => {
+  await page.goto(story("components-equipmentpanel--starter"));
+  await expect(page.locator("[data-equipment-slot]")).toHaveCount(9);
+  const weapon = page.getByRole("button", { name: "Weapon: Warrior's sword" });
+  await weapon.focus();
+  await expect(page.getByRole("tooltip")).toContainText("Critical chance");
+  await expect(weapon).toHaveCSS("border-top-width", "0px");
+  await weapon.blur();
+  await expect(page.getByRole("tooltip")).toBeHidden();
+  await page.getByRole("button", { name: "Ring: Empty" }).focus();
+  await expect(page.getByRole("tooltip")).toContainText("Accepts: Ring");
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.getByRole("button", { name: "Close Equipment" }).focus();
+    await page.getByText("Armor", { exact: true }).scrollIntoViewIfNeeded();
+    await expect(page.getByText("Armor", { exact: true })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await page.goto(story("components-equipmentpanel--empty"));
+  await expect(page.locator('[data-equipped="true"]')).toHaveCount(0);
+  await expect(page.locator('[data-equipped="false"]')).toHaveCount(9);
+});
+
 test("wardrobe keeps one row and independent keyboard and touch details", async ({ page }) => {
   await page.goto(story("screens-compositions--wardrobe"));
   const ranger = page.getByRole("button", { name: "Ranger select" });

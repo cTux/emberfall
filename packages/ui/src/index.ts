@@ -28,3 +28,9 @@ export {
 } from "./components/PerformanceMonitor";
 
 export { useDraggable, PanelPositionContext, type PanelPosition } from "./useDraggable";
+export { EquipmentPanel } from "./components/EquipmentPanel";
+export type {
+  EquipmentPanelProps,
+  EquipmentSlotView,
+  EquipmentStatView,
+} from "./components/EquipmentPanel";

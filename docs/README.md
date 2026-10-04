@@ -44,6 +44,14 @@ Server tests live in [packages/server/src](../packages/server/src), game browser
 
 ## Start here by task
 
+New-runtime equipment: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime)
+and [UI-06](specs/interface-and-audio.md#ui-06--equipment-inspection-new-runtime),
+implemented by [equipment rules](../packages/common-new/src/equipment.ts),
+[slot presentation](../packages/client-new/src/equipment-view.tsx) and the shared
+[EquipmentPanel](../packages/ui/src/components/EquipmentPanel.tsx). Verification:
+[rule/save/protocol tests](../packages/server-new/src/equipment.test.ts) and
+[browser scenarios](../tests-new/equipment.spec.ts).
+
 - Run or host the game: [operations](operations.md).
 - Understand package ownership: [architecture](design/architecture.md).
 - Find delivered work or plan a change: [implementation plan](plans/implementation.md).

@@ -2,6 +2,8 @@ import { RUNTIME } from "./definitions/runtime.ts";
 import { CLASS_IDS, CLASS_LABELS } from "./definitions/entities/players.ts";
 export { CLASS_IDS, CLASS_LABELS };
 import { z } from "zod";
+import { equipmentSchema } from "./equipment.ts";
+export * from "./equipment.ts";
 export {
   ARENA,
   TREES,
@@ -36,6 +38,7 @@ const characterToken = z
   .optional();
 export const progressSchema = z
   .object({
+    equipment: equipmentSchema.optional(),
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),
     level: z.number().int().min(1).max(10000),
     experience: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),

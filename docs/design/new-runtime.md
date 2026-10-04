@@ -12,7 +12,7 @@ reference, not dependencies of the new runtime. See the
 - `server-new`: authoritative Miniplex entities, ordered fixed-timestep systems,
   Colyseus transport/state projection and Colyseus database persistence.
 - `client-new`: Colyseus SDK, presentation/prediction Miniplex world, PixiJS world
-  rendering, audio and screen composition using the unchanged shared UI package.
+  rendering, audio and screen composition using the shared UI package.
 - `ui`: shared controlled components and theme for both runtimes.
 
 Definition objects describe types; mutable entities describe instances. Stable
@@ -114,6 +114,26 @@ reads an offline backup into a new destination and refuses to overwrite either
 an existing destination or the source. See the
 [server guide](../../packages/server-new/README.md) for commands and identity
 transfer. SQLite and the shared party registry require a single server process.
+
+## Equipment and typed damage
+
+`common-new/definitions/equipment` declares slot compatibility, gear definitions
+and per-class starter IDs. `equipment.ts` derives totals from equipped IDs;
+simulation, prediction and presentation consume that calculation. Equipment lives
+in per-class progress. Saves without equipment migrate at decode; invalid items,
+incompatible slots and wrong-class gear are rejected. Existing entity payloads
+carry equipment and typed/critical hit events without client stat messages.
+
+Weapon power replaces hardcoded direct damage; fire splash keeps its one-third
+ratio. A shared weapon-hit path rolls criticals on the server. Ailments explicitly
+carry their damage type and never reroll criticals; Bear remains physical. Armor
+mitigation applies to incoming player hits. Max HP/MP synchronize from equipment
+at authoritative lifecycle/tick boundaries and clamp current values.
+
+The UI exports a controlled EquipmentPanel with positioned slot views and stat
+rows, with no game-package dependency. Client configuration maps slots to grid
+coordinates and fallback images, passing definitions/totals into the UI. The
+existing GameWindow supplies dragging, focus and close behavior.
 
 ## Verification
 

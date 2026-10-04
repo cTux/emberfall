@@ -6,6 +6,7 @@ import {
   CLASS_IDS,
   CLASS_LABELS,
   forestDistance,
+  starterEquipment,
 } from "../packages/common-new/src/index.ts";
 
 test("every wardrobe class trains through Colyseus, preserves health, and resumes after a transport loss", async ({
@@ -112,6 +113,7 @@ test("boar chases and defeats a forest boss after portal entry, opening the retu
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   player.classId = "druid";
+  player.equipment = starterEquipment("druid");
   player.attackAt = Date.now() + 60000;
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;

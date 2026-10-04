@@ -143,6 +143,8 @@ export interface Enemy {
   angle: number;
 }
 export interface DamageEvent {
+  damageType?: import("./definitions/equipment.ts").DamageType;
+  critical?: boolean;
   enemy?: Pick<Enemy, "archetype" | "kind" | "angle">;
   killed?: boolean;
   id: number;

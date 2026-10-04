@@ -16,7 +16,9 @@ const chapters = [
           Auto-target selects only the nearest enemy. A transparent circle shows spell range when
           the cursor is beyond it. Press E near a building or blue portal to interact. Trees,
           buildings and torch posts block movement. Escape opens a leave confirmation; Escape inside
-          a window closes it. Drag window titles to move them.
+          a window closes it. Drag window titles to move them. Press I to inspect equipment and
+          character stats, or press it again to close the window. Movement and equipment hotkeys
+          follow physical keys across keyboard layouts.
         </p>{" "}
       </>
     ),
@@ -44,19 +46,23 @@ const chapters = [
       <>
         {" "}
         <p>
-          The forest wraps at every edge. Attacks are automatic. Warrior slashes for 5 damage;
-          ranger arrows deal 5 damage and pierce all targets for 1000 units. Ranger, mage, and druid
-          fire two projectiles, 3° either side of the aim direction, with 6° between them. Mage
-          fireballs travel up to 250 units with auto-target enabled, deal 3 damage to the direct
-          target, and explode within 100 units for 1 damage to other enemies. Each hit has a 10%
-          chance to cause bleeding, poison, or burning respectively. Each stack deals 1 damage per
-          second for 5 seconds. Stacks have no limit and new stacks refresh the shared timer. Icons
-          above enemy health bars show active ailments and stacks. Skeletons have 10 HP. Each spawn
-          has a 10% chance to be a big, slow enemy with triple HP, and a 10% chance to be ranged
-          with 70% HP. Every tenth spawn is elite with five times normal HP; big and ranged
-          modifiers also apply to elites. Each additional player in the forest multiplies enemy HP
-          by 1.75 and dropped XP by 1.2. Three players mean 3.0625 times HP and 1.44 times dropped
-          XP. Red areas warn of spawns and enemy attacks. Dodge filled circles and red projectiles.
+          The forest wraps at every edge. Attacks are automatic. Starter weapons have a 5% chance to
+          critically hit for 150% power. Warrior damage is physical, Mage fire, Ranger poison and
+          Druid nature. Damage numbers use those colors; critical hits appear white with a thick red
+          outline. Equipped gear determines offense and defense; inspect its totals in Equipment.
+          Warrior slashes for 5 damage; ranger arrows deal 5 damage and pierce all targets for 1000
+          units. Ranger, mage, and druid fire two projectiles, 3° either side of the aim direction,
+          with 6° between them. Mage fireballs travel up to 250 units with auto-target enabled, deal
+          3 damage to the direct target, and explode within 100 units for 1 damage to other enemies.
+          Each hit has a 10% chance to cause bleeding, poison, or burning respectively. Each stack
+          deals 1 damage per second for 5 seconds. Stacks have no limit and new stacks refresh the
+          shared timer. Icons above enemy health bars show active ailments and stacks. Skeletons
+          have 10 HP. Each spawn has a 10% chance to be a big, slow enemy with triple HP, and a 10%
+          chance to be ranged with 70% HP. Every tenth spawn is elite with five times normal HP; big
+          and ranged modifiers also apply to elites. Each additional player in the forest multiplies
+          enemy HP by 1.75 and dropped XP by 1.2. Three players mean 3.0625 times HP and 1.44 times
+          dropped XP. Red areas warn of spawns and enemy attacks. Dodge filled circles and red
+          projectiles.
         </p>{" "}
         <p>
           <img className="combat-icon" src={statusSrc("bleed")} alt="Bleeding" /> Bleeding ·{" "}

@@ -79,6 +79,12 @@ resume that imported character. Do not put bearer keys in documentation or logs.
 
 ## Extend and test
 
+Per-class progress includes equipment IDs. Decode migrates missing equipment to
+the correct starter weapon and validates slot/class compatibility. Explicitly empty
+loadouts stay empty. Class changes still save before live mutation; derived maximum
+HP/MP are synchronized and current resources clamped. No client equipment or stat
+mutation command is exposed by the inspection feature.
+
 Add content definitions and shared rules before adding command handlers. Keep
 transport details out of combat systems. Add an authoritative failure-path test
 for commands and a UI test only when player interaction changes. Use temporary

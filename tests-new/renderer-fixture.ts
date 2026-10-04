@@ -4,6 +4,7 @@ import { drawDebuffs } from "../packages/client-new/src/combat-effects";
 import { statusImages } from "../packages/client-new/src/combat-assets";
 import { drawFog } from "../packages/client-new/src/forest";
 import { lightTexture } from "../packages/client-new/src/village";
+import { drawDamageNumber } from "../packages/client-new/src/damage-text";
 
 export async function compare() {
   await Promise.all(Object.values(statusImages).map((image) => image.decode()));
@@ -214,5 +215,35 @@ export async function compare() {
     128,
     128,
   );
-  return { results, icons, lights, edges };
+  pixi.begin();
+  pixi.fillStyle = "#17251d";
+  pixi.fillRect(0, 0, 256, 256);
+  for (const [index, damageType] of (["physical", "fire", "poison", "nature"] as const).entries()) {
+    for (const critical of [false, true])
+      drawDamageNumber(
+        pixi as unknown as CanvasRenderingContext2D,
+        { id: index, x: 0, y: 0, amount: 15, at: 1000, target: "enemy:1", damageType, critical },
+        { x: 32 + index * 64, y: critical ? 120 : 70 },
+        1000,
+      );
+  }
+  pixi.present();
+  const damagePreview = document.createElement("canvas");
+  damagePreview.width = damagePreview.height = 256;
+  damagePreview.style.width = "512px";
+  damagePreview.style.imageRendering = "pixelated";
+  const damageContext = damagePreview.getContext("2d")!;
+  damageContext.drawImage(gpu, 0, 0);
+  document.body.append(damagePreview);
+  const damagePixels = Array.from({ length: 4 }, (_, index) => {
+    const pixels = damageContext.getImageData(index * 64, 50, 64, 50).data;
+    let white = 0,
+      red = 0;
+    for (let i = 0; i < pixels.length; i += 4) {
+      if (pixels[i] > 235 && pixels[i + 1] > 235 && pixels[i + 2] > 235) white++;
+      if (pixels[i] > 150 && pixels[i + 1] < 90 && pixels[i + 2] < 110) red++;
+    }
+    return { white, red };
+  });
+  return { results, icons, lights, edges, damagePixels };
 }

@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -25,6 +25,10 @@ import {
 } from "../../common-new/src/class-combat.ts";
 import type { Player, SceneState, Enemy } from "@emberfall/common-new";
 import { moveEnemies } from "../../common-new/src/enemies.ts";
+// Base-damage scenarios exclude random criticals; equipment.test.ts covers their boundaries.
+beforeEach((t) => {
+  if ("mock" in t) t.mock.method(Math, "random", () => 0.5);
+});
 const hero = (): Player => ({
   ...freshProgress(),
   id: "p",

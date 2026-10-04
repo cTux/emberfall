@@ -13,6 +13,7 @@ import {
   nearbyInteraction,
   requestPlayerCast,
   TICK_MS,
+  syncEquipmentVitals,
 } from "@emberfall/common-new";
 import type {
   ChatMessage,
@@ -578,6 +579,7 @@ export async function createRuntime(savePath = ":memory:") {
         stepMovement(session, player, world?.scene?.id, now, wallTime);
       }
       for (const world of worlds.values()) {
+        for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);
         const message: ServerMessage = { type: "state", world: state(world, now) };
         for (const [ws, session] of sessions) if (session.worldId === world.id) send(ws, message);
