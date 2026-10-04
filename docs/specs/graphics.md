@@ -41,7 +41,7 @@ Blood puddles have their own persistent gameplay toggle. Damage numbers and hit 
 ## Acceptance
 
 In the new client, world text, chat bubbles, building/portal labels and navigation
-are rendered with the world. Text textures use twice the font resolution for
+are rendered with the world. Text textures use four times the font resolution for
 sharper glyphs without increasing the world render resolution; adaptive resolution
 still affects the final canvas output.
 

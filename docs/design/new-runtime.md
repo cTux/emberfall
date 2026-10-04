@@ -54,7 +54,7 @@ axis-aligned sprite transforms avoid matrix decomposition. Light textures update
 only when a nearby blocker, its silhouette, the source light or shadow settings
 change. Camera translation and flicker alone do not upload a new texture.
 World text, chat bubbles, building/portal labels and navigation stay in the Pixi
-render pass. Pooled text uses cached textures rasterized at twice the font
+render pass. Pooled text uses cached textures rasterized at four times the font
 resolution, with nearest-neighbor sampling for sharper enlarged labels and
 damage numbers. Text density does not increase the world render resolution.
 
