@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promis
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { brotliDecompressSync, gunzipSync } from "node:zlib";
 import test from "node:test";
 import sharp from "sharp";
 import { build } from "vite";
@@ -32,7 +33,10 @@ for (const client of ["client", "client-new"]) {
     await writeFile(join(root, "public", "credits.txt"), "Artist attribution");
     await writeFile(join(root, "public", "icon.svg"), "<svg/>");
     await writeFile(join(root, "sprite.png"), original);
-    await writeFile(join(root, "index.html"), '<img src="./sprite.png">');
+    await writeFile(
+      join(root, "index.html"),
+      '<img src="./sprite.png">' + "<p>Emberfall</p>".repeat(200),
+    );
 
     await build({
       root,
@@ -58,5 +62,20 @@ for (const client of ["client", "client-new"]) {
     assert.equal(await readFile(join(root, "dist", "icon.svg"), "utf8"), "<svg/>");
     assert.deepEqual(await readFile(join(root, "public", "nested", "sprite.PNG")), original);
     assert.deepEqual(await readFile(join(root, "sprite.png")), original);
+    const html = await readFile(join(root, "dist", "index.html"));
+    for (const [extension, decode] of [
+      ["br", brotliDecompressSync],
+      ["gz", gunzipSync],
+    ] as const) {
+      const compressed = await readFile(join(root, "dist", `index.html.${extension}`));
+      assert.ok(compressed.length < html.length);
+      assert.deepEqual(decode(compressed), html);
+      await assert.rejects(readFile(join(root, "dist", `version.json.${extension}`)), {
+        code: "ENOENT",
+      });
+      await assert.rejects(readFile(join(root, "dist", "nested", `sprite.PNG.${extension}`)), {
+        code: "ENOENT",
+      });
+    }
   });
 }

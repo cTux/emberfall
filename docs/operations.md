@@ -16,6 +16,17 @@ The production health endpoint is `/health`; WebSocket uses `/ws`. Default bindi
 
 The HTTP server serves HTML and unversioned public assets with `Cache-Control: no-cache`, `version.json` with `no-store`, and content-hashed JS/CSS bundles with `public, max-age=31536000, immutable`. Vite separates dependencies into `vendors-[hash].js`; unchanged vendor content retains its filename while changed app code gets a new one. Deploy the client HTML, version file and hashed assets together as one release, retaining older hashed assets while existing clients may request them. Keep the SQLite database across deployments. Live scenes are deliberately not persisted; restarting returns recovered players to the village.
 
+Both client builds generate smaller `.br` and `.gz` companions for text assets
+over 1 KiB through `vite-plugin-compression2`, retaining the original files.
+Deploy these companions with their matching originals. Both servers negotiate
+`Accept-Encoding`, honor quality weights and explicit exclusions, and prefer
+Brotli on ties, then gzip. Missing companions fall back to another acceptable
+representation; requests rejecting every available encoding receive 406.
+Responses include `Vary: Accept-Encoding`, the original MIME/cache policy,
+and the selected representation's content length; HEAD sends the same headers
+without a body. `version.json` is excluded from compression to keep build checks
+fresh. Compression affects downloads only, not game simulation or frame rate.
+
 ## Persistence and backup
 
 The server uses Node 24's built-in SQLite database at `packages/server/data/characters.sqlite` in both development and production. `SAVE_PATH` overrides this path; keep it on persistent storage. Saves include name, level, XP, current/max HP and mana, and total time in worlds. World membership and position remain temporary. Saves happen on entry, every five seconds, on leave/disconnect, and on graceful shutdown; an abrupt process or machine failure can lose up to five seconds of recent changes. SQLite uses WAL and full synchronous writes. Stop the server before copying the database for backup, or use a SQLite-aware online backup that includes committed WAL data. Never put the database under the client public directory.
