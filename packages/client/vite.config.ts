@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 import { Agent } from "node:https";
 import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
@@ -10,6 +11,11 @@ export default defineConfig(({ command }) => {
     define: { __BUILD_ID__: JSON.stringify(buildId) },
     plugins: [
       react(),
+      ViteImageOptimizer({
+        test: /\.png$/i,
+        includePublic: true,
+        png: { compressionLevel: 9, adaptiveFiltering: true, palette: false },
+      }),
       {
         name: "client-version",
         generateBundle() {

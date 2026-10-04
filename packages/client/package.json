@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "vite build && node ../../scripts/optimize-images.ts dist"
+    "build": "vite build"
   },
   "dependencies": {
     "@emberfall/common": "workspace:*",
@@ -19,6 +19,8 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.5",
     "sass": "^1.102.0",
-    "vite": "catalog:"
+    "sharp": "^0.35.5",
+    "vite": "catalog:",
+    "vite-plugin-image-optimizer": "^2.0.3"
   }
 }

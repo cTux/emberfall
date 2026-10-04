@@ -15,11 +15,16 @@ pnpm build
 
 The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, including shared simulation and client helper tests. Build includes client, server and the static UI Storybook through Turborepo. No GitHub Actions workflow exists in the baseline; do not describe local checks as CI.
 
-Both `pnpm build` and `pnpm build-new` automatically compress PNGs in the client
-output after bundling, including copied public assets. Individual client package
-builds do the same. Source assets, licenses and development serving are untouched.
-The build logs the byte savings; files that would grow keep their original bytes.
-Run `pnpm test:images` for the optimizer's lossless-output and failure checks.
+Both `pnpm build` and `pnpm build-new` compress PNGs through
+[`vite-plugin-image-optimizer`](https://github.com/FatehAK/vite-plugin-image-optimizer)
+in each client's Vite config, including copied public assets. Individual client
+package builds do the same. PNG palette conversion is disabled to preserve sprite
+pixels. Source assets, licenses and development serving are untouched. The plugin
+logs byte savings and keeps original bytes when compression would increase size.
+It strips image metadata and logs optimization errors while retaining the original
+file. It does not preserve animated or high-bit-depth PNGs; exclude such assets in
+the Vite config if introduced. Current sprites are static 8-bit PNGs.
+Run `pnpm test:images` for real Vite build checks of both client configurations.
 
 ## Browser and UI verification
 
