@@ -7,7 +7,7 @@ import { appendSceneEntities } from "./entities.ts";
 import { ATTACK_DEFINITIONS } from "./definitions/abilities/attacks.ts";
 import { PLAYER_DEFINITIONS } from "./definitions/entities/players.ts";
 import { FOREST, forestDistance, wrappedDelta, wrap } from "./scene.ts";
-import { ENEMY_STATS } from "./enemies.ts";
+import { enemyHitbox, overlapsBody } from "./hitboxes.ts";
 import type { DebuffKind, Enemy, PlayerShot, SceneState } from "./scene.ts";
 import type { Player } from "./index.ts";
 import { characterStats } from "./equipment.ts";
@@ -234,8 +234,7 @@ export function advancePlayerShot(
       const hit = enemies.find(
         (enemy) =>
           enemy.hitpoints > 0 &&
-          forestDistance(shot, enemy) <=
-            ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + COLLISION.playerProjectileRadius,
+          overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy)),
       );
       if (hit) {
         shot.hitIds.push(hit.id);
@@ -264,8 +263,7 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
           if (
             enemy.hitpoints <= 0 ||
             shot.hitIds.includes(enemy.id) ||
-            forestDistance(shot, enemy) >
-              ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + COLLISION.playerProjectileRadius
+            !overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy))
           )
             continue;
           shot.hitIds.push(enemy.id);
@@ -290,7 +288,7 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
       });
       for (const enemy of scene.enemies)
         if (enemy.id === shot.hitIds[0]) hitWithWeapon(scene, enemy, owner, now, "burn");
-        else if (forestDistance(shot, enemy) <= ATTACK_DEFINITIONS.fireball.splashRadius)
+        else if (overlapsBody(shot, ATTACK_DEFINITIONS.fireball.splashRadius, enemyHitbox(enemy)))
           hitWithWeapon(scene, enemy, owner, now, "burn", 1 / 3);
       return false;
     }

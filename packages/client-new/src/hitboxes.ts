@@ -18,10 +18,7 @@ import {
 import { COLLISION } from "@emberfall/common-new/definitions/collision";
 import { PICKUP_RULES } from "@emberfall/common-new/definitions/entities/pickups";
 import { ATTACK_DEFINITIONS } from "@emberfall/common-new/definitions/abilities/attacks";
-import {
-  PLAYER_BODY_RADIUS,
-  PLAYER_PROJECTILE_HIT_RADIUS,
-} from "@emberfall/common-new/definitions/entities/players";
+import { modelHitbox, enemyHitbox } from "@emberfall/common-new/hitboxes";
 
 export type Hitbox = {
   x: number;
@@ -32,7 +29,6 @@ export type Hitbox = {
 } & ({ radius: number } | { width: number; height: number });
 export const HITBOX_COLORS = {
   body: "#00ffff",
-  movement: "#00ff80",
   projectile: "#ff00ff",
   scenery: "#ffff00",
   range: "#ff8800",
@@ -69,41 +65,20 @@ export function worldHitboxes(
   };
   for (const player of world.players) {
     if ((player.scene === "forest") !== forest || player.hitpoints <= 0) continue;
-    circle(
-      player.x,
-      player.y,
-      PLAYER_PROJECTILE_HIT_RADIUS - COLLISION.enemyProjectileRadius,
-      HITBOX_COLORS.body,
-      `shot body ${(PLAYER_PROJECTILE_HIT_RADIUS - COLLISION.enemyProjectileRadius).toFixed(1)}`,
-    );
-    circle(
-      player.x,
-      player.y + COLLISION.feetOffset,
-      PLAYER_BODY_RADIUS,
-      HITBOX_COLORS.movement,
-      "feet (pass-through)",
-    );
+    const body = modelHitbox(player);
+    circle(body.x, body.y, body.radius, HITBOX_COLORS.body, "body");
     if ((player.classId ?? "warrior") === "warrior") swing(player, defaultSpellRange(player));
     const bear = player.bear;
     if (bear && bear.hitpoints > 0) {
-      circle(
-        bear.x,
-        bear.y,
-        COLLISION.companionRadius,
-        HITBOX_COLORS.body,
-        `body ${COLLISION.companionRadius}`,
-      );
-      const radius = forest ? ENEMY_STATS.runner.radius : COLLISION.companionRadius;
-      circle(bear.x, bear.y + COLLISION.feetOffset, radius, HITBOX_COLORS.movement, "feet");
+      const body = modelHitbox(bear);
+      circle(body.x, body.y, body.radius, HITBOX_COLORS.body, "body");
       swing(bear, PLAYER_ATTACK_RANGE);
     }
   }
   for (const enemy of scene?.enemies ?? []) {
     if (enemy.hitpoints <= 0) continue;
-    const radius = ENEMY_STATS[enemy.archetype ?? "skeleton"].radius;
-    circle(enemy.x, enemy.y, radius, HITBOX_COLORS.body, `body ${radius}`);
-    if (!scene?.training)
-      circle(enemy.x, enemy.y + COLLISION.feetOffset, radius, HITBOX_COLORS.movement, "feet");
+    const body = enemyHitbox(enemy);
+    circle(body.x, body.y, body.radius, HITBOX_COLORS.body, "body");
     if (enemy.attack)
       circle(enemy.attack.x, enemy.attack.y, enemy.attack.radius, HITBOX_COLORS.range, "attack");
   }
@@ -111,13 +86,6 @@ export function worldHitboxes(
     circle(shot.x, shot.y, COLLISION.playerProjectileRadius, HITBOX_COLORS.projectile);
   for (const shot of scene?.projectiles ?? []) {
     circle(shot.x, shot.y, COLLISION.enemyProjectileRadius, HITBOX_COLORS.projectile);
-    circle(
-      shot.x,
-      shot.y + COLLISION.feetOffset,
-      COLLISION.enemyProjectileRadius,
-      HITBOX_COLORS.movement,
-      "terrain",
-    );
   }
   for (const drop of scene?.drops ?? [])
     circle(drop.x, drop.y, PICKUP_RULES.collectRadius, HITBOX_COLORS.range, "collect");

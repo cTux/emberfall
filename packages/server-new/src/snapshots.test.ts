@@ -160,7 +160,7 @@ test("sword reaches 88 units in its forward semicircle, with unchanged damage", 
     enemies: [
       { id: 1, x: 2480, y: 1280, hitpoints: 10, angle: 0 },
       { id: 2, x: 2488, y: 1280, hitpoints: 10, angle: 0 },
-      { id: 3, x: 2499, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 3, x: 2513, y: 1280, hitpoints: 10, angle: 0 },
       { id: 4, x: 2312, y: 1280, hitpoints: 10, angle: 0 },
     ],
   };
@@ -173,14 +173,14 @@ test("sword reaches 88 units in its forward semicircle, with unchanged damage", 
 
 test("sword body overlap includes arc and diameter edges, and wraps across the forest seam", async () => {
   const p = { ...hero, scene: "forest" as const, x: 2400, y: 1280, attackAngle: 0 };
-  const enemy = { id: 1, x: p.x + 98, y: p.y, hitpoints: 10, angle: 0 };
+  const enemy = { id: 1, x: p.x + 112, y: p.y + 6, hitpoints: 10, angle: 0 };
   assert(swordOverlapsEnemy(p, enemy));
   enemy.x += 1;
   assert(!swordOverlapsEnemy(p, enemy));
-  enemy.x = p.x - 9;
-  enemy.y = p.y + 40;
+  enemy.x = p.x - 24;
+  enemy.y = p.y + 46;
   assert(swordOverlapsEnemy(p, enemy));
-  enemy.x = p.x - 11;
+  enemy.x = p.x - 24.01;
   assert(!swordOverlapsEnemy(p, enemy));
   p.x = FOREST.width - 5;
   enemy.x = 20;

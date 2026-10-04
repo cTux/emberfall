@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./protocol": "./src/protocol/state.ts",
+    "./hitboxes": "./src/hitboxes.ts",
     "./definitions/*": "./src/definitions/*.ts"
   },
   "dependencies": {

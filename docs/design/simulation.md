@@ -31,6 +31,8 @@ Village and forest share 4800×2560 wrapped geometry. Player movement passes thr
 
 Warrior/Bear melee uses a smoothed forward half-disc and per-swing hit tracking. Projectile movement and class effects share `fireClassAttack`, `advancePlayerShot`, `tickPlayerShots` and `hitEnemy`. Manual casts validate cooldown, life, area epoch, class and training range; increasing request IDs identify processed/rejected casts and the accepted attack. Presentation prediction is described in [movement](movement.md).
 
+The new runtime shares `modelHitbox` in `common-new/hitboxes.ts` between authoritative combat and debug rendering. A model of size S has radius S/2 and center at (x, y + 15 - 7S/16), matching the sprite rectangle's center. Player and Bear models use S=48; enemies use their archetype size. Projectile overlap adds the projectile radius, and melee tests the model circle against the attack area. Feet remain movement coordinates and are omitted from the debug overlay.
+
 Player base attacks and Bear share a 1000 ms cooldown in both runtimes; the new
 runtime derives equipped attack timing from gear stats. UI shows the resulting
 cooldown without also showing attacks per second.

@@ -32,7 +32,7 @@ Experience shards and coins attract after the initial hop toward the nearest liv
 
 DPS is actual enemy damage over the previous five seconds divided by five, including ailments and Bear and excluding overkill. It returns to zero after five seconds without damage.
 
-In the new runtime, player body and incoming-projectile hit radii are 70% of the original values (8.4 and 11.9 units). Companion hit radii, melee warning areas and attack reach stay unchanged. These rules are shared by the authoritative simulation and client movement prediction.
+In the new runtime, players, enemies, training dummies and Bear have one circular damage hitbox centered on the whole visible model. Its diameter matches the rendered model size (48 units for players and Bear; 32–68 for enemy archetypes). Projectiles and melee overlap these bodies using wrapped geometry in both forest and training. Debug mode draws the same damage bodies without feet or projectile terrain overlays. Movement separation and terrain avoidance retain their existing rules; player movement still passes through scenery. Decorative scenery remains non-damageable.
 
 ## New-runtime equipment
 
