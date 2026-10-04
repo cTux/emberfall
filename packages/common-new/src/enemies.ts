@@ -1,3 +1,4 @@
+import { AILMENT_DEFINITIONS } from "./definitions/effects/ailments.ts";
 import {
   FOREST,
   forestDistance,
@@ -48,11 +49,7 @@ export function moveEnemies(
     cells.get(cell)!.add(enemy);
   }
   for (const enemy of enemies) {
-    if (
-      enemy.attack ||
-      (enemy.kind !== "boss" && enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now))
-    )
-      continue;
+    if (enemy.attack) continue;
     const stats = ENEMY_STATS[enemy.archetype ?? "skeleton"];
     const target = players
       .filter((p) => p.hitpoints > 0)
@@ -64,7 +61,12 @@ export function moveEnemies(
     const targetDistance = forestDistance(enemy, target);
     if (enemy.archetype === "caster" && targetDistance < ENEMY_RULES.casterStopRange) continue;
     cells.get(key(enemy.x, enemy.y))!.delete(enemy);
-    const distance = Math.min(stats.speed * dt, targetDistance);
+    const rooted =
+      enemy.kind !== "boss" && enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now);
+    const distance = Math.min(
+      stats.speed * dt * (rooted ? 1 - AILMENT_DEFINITIONS.roots.slowFraction : 1),
+      targetDistance,
+    );
     const steps = Math.max(1, Math.ceil(distance / 5));
     for (let step = 0; step < steps && distance > 0; step++) {
       const dx = wrappedDelta(target.x, enemy.x, FOREST.width);

@@ -166,3 +166,61 @@ test("bear chases and defeats a forest boss after portal entry, opening the retu
   expect(player.hitpoints).toBe(player.maxHitpoints);
   expect(errors).toEqual([]);
 });
+
+test("druid roots visibly bounce through authoritative training with one refreshed stack", async ({
+  page,
+  game,
+}) => {
+  await page.goto("/");
+  await page.getByLabel("Your adventurer name").fill("Root tester");
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  player.x = WARDROBE.x;
+  player.y = WARDROBE.y - 15;
+  await expect(async () => {
+    await page.keyboard.press("e");
+    await expect(page.getByRole("dialog", { name: "Wardrobe" })).toBeVisible();
+  }).toPass({ intervals: [200], timeout: 6000 });
+  await page
+    .getByRole("dialog", { name: "Wardrobe" })
+    .getByRole("button", { name: /^Druid/ })
+    .click();
+  await page.getByRole("button", { name: "Close Wardrobe", exact: true }).click();
+  await expect.poll(() => player.classId).toBe("druid");
+  const zone = TRAINING_ZONES[1];
+  player.x = zone.x - 120;
+  player.y = zone.y;
+  if (player.bear) {
+    player.bear.hitpoints = 0;
+    player.bear.resurrectAt = Date.now() + 60000;
+  }
+  await expect
+    .poll(
+      () =>
+        world.training!.playerShots!.some(
+          (shot) => shot.kind === "roots" && shot.hitIds.length === 1,
+        ),
+      { intervals: [20] },
+    )
+    .toBe(true);
+  await expect
+    .poll(
+      () =>
+        world.training!.enemies.filter((enemy) => enemy.debuffs?.some((d) => d.kind === "roots"))
+          .length,
+      { intervals: [50] },
+    )
+    .toBeGreaterThanOrEqual(2);
+  for (const enemy of world.training!.enemies)
+    for (const debuff of enemy.debuffs ?? []) {
+      if (debuff.kind !== "roots") continue;
+      expect(debuff.stacks).toBe(1);
+      expect(debuff.expiresAt - Date.now()).toBeGreaterThan(3500);
+      expect(debuff.expiresAt - Date.now()).toBeLessThanOrEqual(5000);
+    }
+  expect(player.experience).toBe(0);
+  expect(world.training!.drops?.length ?? 0).toBe(0);
+  await page.screenshot({ path: "test-results/druid-bounce-training.png" });
+});
