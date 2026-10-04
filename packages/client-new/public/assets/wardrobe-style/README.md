@@ -26,6 +26,17 @@ the unwanted painted background while preserving the 24 poses.
 Whole-frame uniqueness is insufficient: the lower-leg alpha silhouettes must
 change, and the loop must be reviewed enlarged and at game size.
 
+Color continuity is mandatory for every class generation and revision: use the
+approved idle turnaround as the direction-specific palette reference. Keep
+material hues, saturation, brightness, shading, highlights and outlines identical
+across idle, walking, attacks and fallen poses. Do not relight or recolor motion
+frames. Compare idle with all six gait phases and start/stop transitions on the
+same background at game size and enlarged; reject visible tone jumps. See the
+required rule in [REVISION-PROMPTS.md](REVISION-PROMPTS.md). Packaging matches the
+walking tonal distribution to idle, then maps walk RGB to the nearest standing
+color for the same direction with one mapping for all six phases, preserving alpha and all
+existing geometry; idle, attack and fallen pixels are untouched.
+
 The `*-stride-revised.png` sources refine the remaining directions after visual
 feedback. Packaging retains Warrior left/right and Ranger down from the earlier
 stride sheets at exactly their earlier scale. Other columns use the revised

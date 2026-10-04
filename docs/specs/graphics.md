@@ -67,6 +67,8 @@ Lanterns use four painted frames. Portals use a single regenerated stone arch:
 only the energy inside its aperture moves. Idle breathing, damage flashes and death fades remain
 procedural. All four player classes use six distinct walking poses per direction,
 with consistent weapon hands across idle, walking, attack and fallen poses.
+Each class keeps the same material colors, saturation, brightness and shading
+across idle and motion; starting or stopping must not visibly recolor the character.
 Player frames have transparent gutters and a stable scale and foot anchor;
 heads and weapons must stay entirely within their own frame.
 Runner and caster still reuse one of three poses. Druid standing/walking body

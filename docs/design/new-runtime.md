@@ -173,6 +173,10 @@ Player atlases are packaged offline into 64px cells with transparent gutters.
 Rows 0–7 retain idle, four walk poses, windup, release and fallen; rows 8–9
 add two walk poses. The six-pose cycle uses rows 1, 2, 3, 4, 8, 9.
 Walk-only sheets replace those six rows during packaging, preserving other poses.
+Packaging matches the walking color distribution to idle, then maps RGB colors
+to the same direction's standing palette with one mapping for the whole cycle,
+leaving alpha, silhouettes, scale, anchors and non-walk pixels unchanged. This
+prevents independently generated walk sheets from changing material tones.
 Direction-specific revisions retain accepted source columns with their original
 normalization, so changing another direction cannot rescale approved animation.
 The class-movement page shares the game's atlas loader and gait selector, showing
