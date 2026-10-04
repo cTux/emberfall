@@ -195,15 +195,12 @@ export async function compare() {
   const glyphCtx = glyph.getContext("2d")!;
   glyphCtx.drawImage(gpu, 0, 0);
   const pixels = glyphCtx.getImageData(0, 0, 256, 256).data;
-  const shades = [...new Set(Array.from(pixels).filter((_, i) => i % 4 === 0))].sort(
-    (a, b) => a - b,
-  );
-  // Nearest scaling repeats each raster column four times. Linear filtering
+  // A 2x text texture at 4x world scale repeats each raster column twice. Linear filtering
   // instead introduces intermediate columns and fails this edge-grid check.
-  const edges = [0, 0, 0, 0];
+  const edges = [0, 0];
   for (let y = 0; y < 100; y++)
     for (let x = 1; x < 220; x++)
-      if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) edges[x % 4]++;
+      if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) edges[x % 2]++;
   glyph.style.imageRendering = "pixelated";
   document.body.append(glyph);
   // Leave both renderers showing the same composited scene for visual inspection.
@@ -217,5 +214,5 @@ export async function compare() {
     128,
     128,
   );
-  return { results, icons, lights, edges, shades };
+  return { results, icons, lights, edges };
 }

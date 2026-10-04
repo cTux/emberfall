@@ -6,12 +6,12 @@ import {
   Texture,
   Rectangle,
   Matrix,
+  Text,
   Color,
   BlurFilter,
 } from "pixi.js";
 import type { Renderer, GradientOptions, LinearGradientOptions } from "pixi.js";
 import "./soft-light";
-import { PixelTextCache } from "./pixel-text";
 import { World } from "miniplex";
 
 type Paint = string | Gradient;
@@ -48,6 +48,7 @@ type Visual = {
   kind: "sprite" | "graphics" | "text";
   active: boolean;
   blur?: BlurFilter;
+  styleKey?: string;
   frameTexture?: Texture;
 };
 class Gradient {
@@ -61,7 +62,7 @@ class Gradient {
 }
 
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
- * geometry. Canvas is used only by asset baking and glyph masks, never a world-frame upload.
+ * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
  */
 export class PixiContext {
   readonly canvas: HTMLCanvasElement;
@@ -80,7 +81,6 @@ export class PixiContext {
   private sources = new Map<CanvasImageSource, { texture: Texture; used: number }>();
   private gradients = new Map<string, { texture: Texture; used: number }>();
   private frame = 0;
-  private textCache = new PixelTextCache();
   private shadowPass = false;
   private shadowStrength = 0;
   private shadowRects = new Map<string, HTMLCanvasElement>();
@@ -146,7 +146,6 @@ export class PixiContext {
   }
   begin() {
     this.frame++;
-    this.textCache.begin();
     this.childCursors.clear();
     this.childCursors.set(this.stage, 0);
     // Release previous clip ownership before pooled graphics take new roles.
@@ -166,7 +165,6 @@ export class PixiContext {
     if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height)
       this.renderer.resize(this.canvas.width, this.canvas.height);
     this.renderer.render(this.stage);
-    this.textCache.trim(this.frame);
     if (this.frame === 1 || this.frame % 60 === 0)
       this.canvas.dataset.renderStats = JSON.stringify(this.stats());
     if (this.frame % 120 === 0) {
@@ -204,7 +202,6 @@ export class PixiContext {
   }
   destroy() {
     this.disposed = true;
-    this.textCache.destroy();
     for (const entry of this.ecs) {
       entry.frameTexture?.destroy();
       entry.blur?.destroy();
@@ -227,7 +224,12 @@ export class PixiContext {
     const index = this.cursors[kind]++;
     let entity = this.pools[kind][index];
     if (!entity) {
-      const object = kind === "graphics" ? new Graphics() : new Sprite();
+      const object =
+        kind === "sprite"
+          ? new Sprite()
+          : kind === "graphics"
+            ? new Graphics()
+            : new Text({ text: "", resolution: 2, textureStyle: { scaleMode: "nearest" } });
       object.eventMode = "none";
       entity = this.ecs.add({ object, kind, active: true });
       this.pools[kind].push(entity);
@@ -704,40 +706,41 @@ export class PixiContext {
     return this.metrics.measureText(value);
   }
   private text(value: string, x: number, y: number, stroke: boolean) {
-    if (!value.trim()) return;
-    const sprite = this.visual("text").object as Sprite;
-    const glyph = this.textCache.get(
-      value,
-      this.state.font,
-      stroke ? this.state.lineWidth : 0,
-      this.state.lineJoin,
-      this.frame,
-    );
-    sprite.texture = glyph.texture;
-    const paint = stroke ? this.state.strokeStyle : this.state.fillStyle;
-    const color = this.color(typeof paint === "string" ? paint : "#ffffff");
-    sprite.tint = color.toNumber();
-    sprite.alpha = this.state.globalAlpha * color.alpha;
-    const align =
+    this.shadow(() => this.text(value, x, y, stroke));
+    const entity = this.visual("text"),
+      text = entity.object as Text;
+    const match = this.state.font.match(/(?:(bold|[1-9]00)\s+)?([\d.]+)px\s+(.+)/);
+    const style = {
+      fontFamily: match?.[3] ?? "sans-serif",
+      fontSize: Number(match?.[2] ?? 10),
+      fontWeight: (match?.[1] ?? "normal") as "normal" | "bold",
+      fill: stroke ? "transparent" : this.paint(this.state.fillStyle),
+      stroke: stroke
+        ? { ...this.strokePaint(), width: this.state.lineWidth, join: this.state.lineJoin }
+        : undefined,
+    };
+    const key = JSON.stringify(style);
+    if (entity.styleKey !== key) {
+      text.style = style;
+      entity.styleKey = key;
+    }
+    if (text.text !== value) text.text = value;
+    text.anchor.set(
       this.state.textAlign === "center"
         ? 0.5
         : ["right", "end"].includes(this.state.textAlign)
           ? 1
-          : 0;
-    const baseline =
-      this.state.textBaseline === "top"
-        ? glyph.ascent
-        : this.state.textBaseline === "hanging"
-          ? glyph.ascent * 0.8
-          : this.state.textBaseline === "middle"
-            ? (glyph.ascent - glyph.descent) / 2
-            : ["bottom", "ideographic"].includes(this.state.textBaseline)
-              ? -glyph.descent
-              : 0;
-    this.applyTransform(sprite, x - align * glyph.width + glyph.x, y + baseline + glyph.y);
-    sprite.position.set(Math.round(sprite.x), Math.round(sprite.y));
+          : 0,
+      this.state.textBaseline === "middle"
+        ? 0.5
+        : ["top", "hanging"].includes(this.state.textBaseline)
+          ? 0
+          : this.state.textBaseline === "alphabetic"
+            ? 0.8
+            : 1,
+    );
+    this.applyTransform(text, x, y);
   }
-
   fillText(value: string, x: number, y: number) {
     this.text(value, x, y, false);
   }

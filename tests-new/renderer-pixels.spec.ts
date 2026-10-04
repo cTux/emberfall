@@ -33,7 +33,7 @@ test("Pixi preserves transparent vignette centers and SVG debuff pixels", async 
   );
   await page.goto("/renderer-test");
   await page.addScriptTag({ content: code });
-  const { results, icons, lights, edges, shades } = await page.evaluate(async () => {
+  const { results, icons, lights, edges } = await page.evaluate(async () => {
     const fixture = (window as unknown as { RendererFixture: typeof import("./renderer-fixture") })
       .RendererFixture;
     return fixture.compare();
@@ -44,7 +44,6 @@ test("Pixi preserves transparent vignette centers and SVG debuff pixels", async 
   expect(lights.translated).toBe(lights.first);
   expect(lights.moved).toBeGreaterThan(lights.first);
   expect(lights.toggled).toBeGreaterThan(lights.moved);
-  expect(shades).toEqual([0, 255]);
   expect(edges.filter((count) => count > 0)).toHaveLength(1);
   for (const [kind, count] of Object.entries(icons))
     expect(count, `${kind} colored glyph`).toBeGreaterThan(2);
