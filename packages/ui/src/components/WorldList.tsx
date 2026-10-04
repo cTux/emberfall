@@ -1,16 +1,14 @@
 import {
   Button,
-  Chip,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Stack,
-  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock } from "@fortawesome/free-solid-svg-icons/faLock";
-
 export interface WorldEntry {
   id: string;
   name: string;
@@ -22,42 +20,53 @@ export interface WorldListProps {
   worlds: WorldEntry[];
   selectedId?: string;
   disabled?: boolean;
+  latency?: number | null;
   onJoin(world: WorldEntry): void;
-  onCreate(): void;
 }
-
-export function WorldList({ worlds, selectedId, disabled, onJoin, onCreate }: WorldListProps) {
-  if (!worlds.length)
-    return (
-      <Stack spacing={2} sx={{ alignItems: "center", py: 4 }}>
-        <Typography variant="h3" component="h3">
-          The grove is quiet.
-        </Typography>
-        <Typography color="text.secondary">No open worlds yet. Light the first ember.</Typography>
-        <Button onClick={onCreate}>Create a world</Button>
-      </Stack>
-    );
+export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: WorldListProps) {
   return (
-    <List aria-label="Available worlds" disablePadding>
-      {worlds.map((world) => (
-        <ListItem key={world.id} disablePadding>
-          <ListItemButton
-            selected={world.id === selectedId}
-            disabled={disabled || world.players >= world.capacity}
-            onClick={() => onJoin(world)}
-            aria-label={`Join ${world.name}${world.locked ? ", password protected" : ""}${world.players >= world.capacity ? ", full" : ""}, ${world.players}/${world.capacity}`}
-          >
-            <ListItemText
-              primary={world.name}
-              secondary={world.locked ? "Password protected" : "Open to everyone"}
-            />
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-              {world.locked && <FontAwesomeIcon icon={faLock} aria-hidden="true" />}
-              <Chip size="small" label={`${world.players}/${world.capacity}`} />
-            </Stack>
-          </ListItemButton>
-        </ListItem>
-      ))}
-    </List>
+    <TableContainer>
+      <Table aria-label="Available servers" size="small" sx={{ tableLayout: "fixed" }}>
+        <TableHead>
+          <TableRow>
+            <TableCell sx={{ width: "50%" }}>Name</TableCell>
+            <TableCell align="right">Latency</TableCell>
+            <TableCell align="right">Players</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {worlds.map((world) => (
+            <TableRow key={world.id} selected={world.id === selectedId}>
+              <TableCell sx={{ overflowWrap: "anywhere" }}>
+                <Button
+                  disabled={disabled || world.players >= world.capacity}
+                  onClick={() => onJoin(world)}
+                  sx={{ justifyContent: "flex-start", textAlign: "left", minWidth: 0, px: 0 }}
+                  aria-label={`Join ${world.name}${world.locked ? ", password protected" : ""}${world.players >= world.capacity ? ", full" : ""}, ${world.players}/${world.capacity}`}
+                  startIcon={
+                    world.locked ? <FontAwesomeIcon icon={faLock} aria-hidden="true" /> : undefined
+                  }
+                >
+                  {world.name}
+                </Button>
+              </TableCell>
+              <TableCell align="right">
+                {latency == null ? "—" : `${Math.round(latency)} ms`}
+              </TableCell>
+              <TableCell align="right">
+                {world.players}/{world.capacity}
+              </TableCell>
+            </TableRow>
+          ))}
+          {!worlds.length && (
+            <TableRow>
+              <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
+                No servers available.
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }

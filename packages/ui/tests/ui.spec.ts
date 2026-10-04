@@ -87,7 +87,7 @@ test("connection states use colored circles without visible text", async ({ page
   }
 });
 
-test("lobby supports locked worlds and create form", async ({ page }) => {
+test("lobby shows server columns, locked worlds and disabled creation", async ({ page }) => {
   await page.goto(story("screens-compositions--lobby"));
   await expect(page.getByRole("tab", { name: "Join a world" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Join a world" })).toHaveCount(0);
@@ -98,10 +98,18 @@ test("lobby supports locked worlds and create form", async ({ page }) => {
   await page.getByLabel("Password for Northern grove").fill("password");
   await page.getByRole("button", { name: "Join world", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("password submitted");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Test grove");
-  await page.getByRole("button", { name: "Light the ember" }).click();
-  await expect(page.getByRole("alert")).toContainText("create Test grove");
+  await expect(page.getByRole("tab", { name: "Create a world" })).toBeDisabled();
+  await expect(page.getByRole("textbox", { name: "World name", exact: true })).toHaveCount(0);
+  for (const name of ["Name", "Latency", "Players"])
+    await expect(page.getByRole("columnheader", { name, exact: true })).toBeVisible();
+  await expect(page.getByRole("table")).toContainText("42 ms");
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await page.screenshot({ path: "test-results/server-table.png" });
 });
 
 test("dialog closes with Escape, restores focus and drags", async ({ page }) => {
@@ -205,4 +213,15 @@ test("all stories render; desktop and narrow screens fit", async ({ page, reques
   }
   await page.goto("/iframe.html?id=guide-build-and-reuse--docs&viewMode=docs");
   await expect(page.getByText("Create a component", { exact: true })).toBeVisible();
+});
+
+test("server table keeps headers when empty and prevents full-server joins", async ({ page }) => {
+  await page.goto(story("components-worldlist--empty"));
+  await expect(page.getByRole("columnheader", { name: "Name", exact: true })).toBeVisible();
+  await expect(page.getByText("No servers available.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create a world" })).toHaveCount(0);
+  await page.goto(story("components-worldlist--full"));
+  await expect(page.getByRole("button", { name: /Join Playtest Default, full/ })).toBeDisabled();
+  await expect(page.getByRole("table")).toContainText("32/32");
+  await expect(page.getByRole("table")).toContainText("—");
 });

@@ -116,8 +116,6 @@ function App({
       /* Storage may be disabled. */
     }
   }, [name, steam]);
-  const [worldName, setWorldName] = useState("The quiet grove");
-  const [password, setPassword] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
   const [selected, setSelected] = useState<WorldSummary | null>(null);
   const [tab, setTab] = useState<"browse" | "create">("browse");
@@ -218,7 +216,6 @@ function App({
         setWorld(message.world);
         setPlayerId(message.playerId);
         setPending(false);
-        setPassword("");
         setJoinPassword("");
         setSelected(null);
       }
@@ -471,7 +468,7 @@ function App({
             component="aside"
             className="party"
             spacing={1}
-            aria-label={`${world.name}: ${world.players.length}/8 adventurers`}
+            aria-label={`${world.name}: ${world.players.length}/${worlds.find((entry) => entry.id === world.id)?.capacity ?? 8} adventurers`}
           >
             {world.players.map((p) => (
               <PartyCard
@@ -499,9 +496,7 @@ function App({
           <Box className="lobby">
             <GameWindow title="Emberfall" modal={false} onClose={() => setBrowserOpen(false)}>
               <Stack spacing={3}>
-                {steam ? (
-                  <Typography>Playing as {name}</Typography>
-                ) : (
+                {!steam && (
                   <TextField
                     label="Your adventurer name"
                     value={name}
@@ -515,8 +510,8 @@ function App({
                   label="World actions"
                   value={tab}
                   showHeading={false}
-                  onChange={(next) => {
-                    setTab(next === "create" ? "create" : "browse");
+                  onChange={() => {
+                    setTab("browse");
                     setError("");
                   }}
                   chapters={[
@@ -529,7 +524,7 @@ function App({
                             worlds={worlds}
                             selectedId={selected?.id}
                             disabled={unavailable || !name.trim()}
-                            onCreate={() => setTab("create")}
+                            latency={unavailable ? null : latency}
                             onJoin={(w) => {
                               if (w.locked) {
                                 setSelected(worlds.find((world) => world.id === w.id)!);
@@ -581,40 +576,8 @@ function App({
                     {
                       id: "create",
                       title: "Create a world",
-                      content: (
-                        <Stack
-                          component="form"
-                          spacing={2}
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            if (name.trim())
-                              act({ type: "create", name: worldName, playerName: name, password });
-                          }}
-                        >
-                          <TextField
-                            label="World name"
-                            required
-                            value={worldName}
-                            onChange={(e) => setWorldName(e.target.value)}
-                            slotProps={{ htmlInput: { maxLength: 24 } }}
-                          />
-                          <TextField
-                            label="Password (optional)"
-                            type="password"
-                            autoComplete="new-password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            slotProps={{ htmlInput: { maxLength: 64 } }}
-                          />
-                          <Button
-                            type="submit"
-                            variant="contained"
-                            disabled={unavailable || !name.trim() || !worldName.trim()}
-                          >
-                            {pending ? "Opening world…" : "Light the ember"}
-                          </Button>
-                        </Stack>
-                      ),
+                      disabled: true,
+                      content: null,
                     },
                   ]}
                 />

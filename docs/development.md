@@ -61,7 +61,7 @@ pnpm --filter @emberfall/ui build
 pnpm --filter @emberfall/ui test
 ```
 
-Root Playwright starts the production server on port 3002 by default, uses HTTPS with the local certificate accepted for tests, and overrides `SAVE_PATH` to `:memory:`. Build first. `TEST_PORT` overrides the test server port. `TEST_DEV=1` starts the development setup instead; unlike the production test configuration it does not automatically set an in-memory database, so set an isolated save path explicitly when using it. The root suite runs one worker and does not reuse a running server.
+Root Playwright owns a fresh production server and in-memory database per test on port 3002 by default, using HTTPS with the local certificate accepted for tests. Build first. `TEST_PORT` overrides the test server port. `TEST_DEV=1` starts the development setup instead; unlike the production test configuration it does not automatically set an in-memory database, so set an isolated save path explicitly when using it. The root suite runs one worker and does not reuse a running server.
 
 The UI suite starts Storybook on port 6007; interactive Storybook uses 6006. It can reuse an existing server outside CI. See the [UI guide](../packages/ui/README.md) for component authoring and accessibility checks.
 

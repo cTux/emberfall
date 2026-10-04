@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("cold assets, joining and reload prepare the village once and draw only visible ground", async ({
   page,
@@ -63,8 +63,7 @@ test("cold assets, joining and reload prepare the village once and draw only vis
         ).startupStats,
     );
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   await page.waitForTimeout(1500);
   const joined = await stats();
@@ -88,8 +87,7 @@ test("cold assets, joining and reload prepare the village once and draw only vis
   expect((await stats()).paints).toBe(1);
   await page.getByRole("button", { name: "Leave world" }).click();
   await page.getByRole("button", { name: "Leave", exact: true }).click();
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   await page.waitForTimeout(150);
   expect((await stats()).paints).toBe(1);

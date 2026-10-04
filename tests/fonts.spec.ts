@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the bundled Alegreya Sans font loads and is used throughout the interface", async ({
   page,

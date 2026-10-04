@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { ClientMessage } from "../packages/common/src/index";
 
 test("movement follows physical keys across layouts and layout changes", async ({ page }) => {
@@ -13,8 +13,7 @@ test("movement follows physical keys across layouts and layout changes", async (
     server.onMessage((raw) => client.send(raw));
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
 
   const sendKey = (type: string, code: string, key: string) =>

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { readFileSync } from "node:fs";
 import { stripTypeScriptTypes } from "node:module";
 import { GRAPHICS_PRESETS } from "../packages/client/src/graphics";
@@ -177,9 +177,15 @@ test("village and return portals sort players by their feet, including forest wr
   } satisfies import("../packages/common/src/index").WorldState;
   let update = () => {};
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     update = () => socket.send(JSON.stringify({ type: "state", world }));
     socket.onMessage((raw) => {
-      if (JSON.parse(String(raw)).type === "create")
+      if (JSON.parse(String(raw)).type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -219,8 +225,7 @@ test("village and return portals sort players by their feet, including forest wr
     };
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   for (const [scene, portal] of [
     [undefined, LOBBY_PORTAL],
     ["forest", { x: 2400, y: 1280 }],

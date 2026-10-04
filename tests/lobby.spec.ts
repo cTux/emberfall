@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("lobby window drags across the viewport without outer scrollbars", async ({ page }) => {
   await page.setViewportSize({ width: 960, height: 700 });
@@ -50,80 +50,22 @@ test("lobby window drags across the viewport without outer scrollbars", async ({
   await expect(panel).toBeHidden();
 });
 
-test("two browsers create, reject wrong password, join, transfer host and clean up", async ({
-  browser,
-  page,
-}) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
+test("server browser shows columns and disables creation", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("status", { name: "World server online" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Join a world" })).toHaveCount(0);
-  await expect(page.getByText("Worlds fade when the last adventurer leaves.")).toHaveCount(0);
-  await page.screenshot({ path: "test-results/lobby-desktop.png" });
-  await page.getByLabel("Your adventurer name").fill("Astrid");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Northern lights");
-  await page.getByLabel("Password (optional)").fill("embers");
-  await page.getByRole("button", { name: "Light the ember" }).click();
-  await expect(page.getByRole("complementary", { name: /Northern lights/ })).toBeVisible();
-  const context = await browser.newContext();
-  const guest = await context.newPage();
-  await guest.goto("/");
-  await guest.getByLabel("Your adventurer name").fill("Bjorn");
-  await guest.getByRole("button", { name: /Northern lights/ }).click();
-  await guest.getByLabel("Password for Northern lights").fill("wrong");
-  await guest.getByRole("button", { name: "Join world" }).click();
-  await expect(guest.getByRole("alert")).toContainText("Incorrect world password");
-  await guest.getByLabel("Password for Northern lights").fill("embers");
-  await guest.getByRole("button", { name: "Join world" }).click();
-  await expect(page.getByRole("complementary", { name: /2\/8 adventurers/ })).toBeVisible();
-  await expect(guest.getByText("Astrid", { exact: false }).first()).toBeVisible();
-  await guest.keyboard.down("d");
-  await guest.waitForTimeout(400);
-  await guest.keyboard.up("d");
-  await guest.screenshot({ path: "test-results/shared-world.png" });
-  await page.getByRole("button", { name: "Leave world" }).click();
-  await page.getByRole("button", { name: "Leave", exact: true }).click();
-  await expect(guest.getByRole("complementary", { name: /1\/8 adventurers/ })).toBeVisible();
-  await expect(guest.getByLabel("Host", { exact: true })).toBeVisible();
-  await guest.getByRole("button", { name: "Leave world" }).click();
-  await guest.getByRole("button", { name: "Leave", exact: true }).click();
-  await expect(page.getByRole("button", { name: /New Permanent World.*0\/8/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Northern lights/ })).toHaveCount(0);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: "test-results/lobby-mobile.png", fullPage: true });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  expect(errors).toEqual([]);
-  await context.close();
-});
-
-test("open worlds join without a password, reload preserves the party, and leaving cleans up", async ({
-  browser,
-  page,
-}) => {
-  await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Open grove");
-  await page.getByRole("button", { name: "Light the ember" }).click();
-  await expect(page.getByRole("complementary", { name: /Open grove/ })).toBeVisible();
-  const context = await browser.newContext();
-  const guest = await context.newPage();
-  await guest.goto("/");
-  await guest.getByRole("button", { name: /Open grove/ }).click();
-  await expect(guest.getByRole("complementary", { name: /2\/8 adventurers/ })).toBeVisible();
-  await page.reload();
-  await expect(page.getByRole("complementary", { name: /2\/8 adventurers/ })).toBeVisible();
-  await expect(page.getByLabel("Host", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Leave world" }).click();
-  await page.getByRole("button", { name: "Leave", exact: true }).click();
-  await expect(guest.getByRole("complementary", { name: /1\/8 adventurers/ })).toBeVisible();
-  await expect(guest.getByLabel("Host", { exact: true })).toBeVisible();
-  await guest.getByRole("button", { name: "Leave world" }).click();
-  await guest.getByRole("button", { name: "Leave", exact: true }).click();
-  await context.close();
-  await expect(page.getByRole("button", { name: /New Permanent World.*0\/8/ })).toBeVisible();
-  await expect(page.getByRole("button", { name: /Open grove/ })).toHaveCount(0);
+  await expect(page.getByRole("tab", { name: "Create a world" })).toBeDisabled();
+  await expect(page.getByText(/^Playing as /)).toHaveCount(0);
+  for (const name of ["Name", "Latency", "Players"])
+    await expect(page.getByRole("columnheader", { name, exact: true })).toBeVisible();
+  await expect(page.getByRole("table")).toContainText("0/32");
+  await expect(page.getByRole("table")).toContainText(/\d+ ms/);
+  for (const width of [960, 390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+  await page.screenshot({ path: "test-results/server-browser-narrow.png" });
 });
 
 test("the permanent world is public, shared and remains joinable after everyone leaves", async ({
@@ -131,22 +73,22 @@ test("the permanent world is public, shared and remains joinable after everyone 
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: /New Permanent World.*0\/8/ }).click();
-  await expect(page.getByRole("complementary", { name: /New Permanent World/ })).toBeVisible();
+  await page.getByRole("button", { name: /Playtest Default.*0\/32/ }).click();
+  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
   const context = await browser.newContext();
   try {
     const guest = await context.newPage();
     await guest.goto("/");
-    await guest.getByRole("button", { name: /New Permanent World.*1\/8/ }).click();
-    await expect(guest.getByRole("complementary", { name: /2\/8 adventurers/ })).toBeVisible();
+    await guest.getByRole("button", { name: /Playtest Default.*1\/32/ }).click();
+    await expect(guest.getByRole("complementary", { name: /2\/32 adventurers/ })).toBeVisible();
     await page.getByRole("button", { name: "Leave world" }).click();
     await page.getByRole("button", { name: "Leave", exact: true }).click();
     await expect(guest.getByLabel("Host", { exact: true })).toBeVisible();
     await guest.getByRole("button", { name: "Leave world" }).click();
     await guest.getByRole("button", { name: "Leave", exact: true }).click();
     await context.close();
-    await page.getByRole("button", { name: /New Permanent World.*0\/8/ }).click();
-    await expect(page.getByRole("complementary", { name: /1\/8 adventurers/ })).toBeVisible();
+    await page.getByRole("button", { name: /Playtest Default.*0\/32/ }).click();
+    await expect(page.getByRole("complementary", { name: /1\/32 adventurers/ })).toBeVisible();
     await expect(page.getByLabel("Host", { exact: true })).toBeVisible();
   } finally {
     await context.close();

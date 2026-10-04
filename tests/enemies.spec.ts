@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 
 test("health bars touch names, debuffs align left, and boss bars are larger and purple", async ({
@@ -73,10 +73,16 @@ test("health bars touch names, debuffs align left, and boss bars are larger and 
   );
   let update = () => {};
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     update = () => socket.send(JSON.stringify({ type: "state", world }));
     socket.onMessage((raw) => {
       const message = JSON.parse(String(raw));
-      if (message.type === "create")
+      if (message.type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -174,8 +180,7 @@ test("health bars touch names, debuffs align left, and boss bars are larger and 
     };
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const hud = page.getByLabel("Boss health", { exact: true });
   const health = page.getByRole("progressbar", { name: "The Hollow Warden HP" });
   await expect(hud).toContainText("The Hollow Warden");

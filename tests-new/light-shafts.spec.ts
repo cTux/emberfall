@@ -10,8 +10,7 @@ test("sunlight shafts render in village and forest with live presets and narrow 
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   await page.screenshot({ path: "test-results/shafts-village-high.png" });
   await page.getByRole("button", { name: "Settings", exact: true }).click();

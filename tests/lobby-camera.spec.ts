@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { ARENA, tickTraining } from "../packages/common/src/index";
 import type { WorldState } from "../packages/common/src/index";
 
@@ -36,8 +36,14 @@ for (const [label, x, y] of [
     };
     world.training = tickTraining(undefined, world.players, 10000, 0);
     await page.routeWebSocket("**/ws", (socket) => {
+      socket.send(
+        JSON.stringify({
+          type: "worlds",
+          worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+        }),
+      );
       socket.onMessage((raw) => {
-        if (JSON.parse(String(raw)).type === "create")
+        if (JSON.parse(String(raw)).type === "join")
           socket.send(
             JSON.stringify({
               type: "joined",
@@ -89,9 +95,7 @@ for (const [label, x, y] of [
       } as typeof drawImage;
     });
     await page.goto("/");
-    await page.getByRole("tab", { name: "Create a world" }).click();
-    await page.getByRole("textbox", { name: "World name", exact: true }).fill("Lobby camera");
-    await page.getByRole("button", { name: "Light the ember" }).click();
+    await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
     for (const size of [
       { width: 1440, height: 1000 },
       { width: 390, height: 844 },

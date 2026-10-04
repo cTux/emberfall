@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 import { requestPlayerCast, tickPlayerCombat } from "../packages/common/src/index";
 
@@ -46,8 +46,14 @@ test("moving mage draws fireballs at the player before any server cast arrives",
     },
   };
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     socket.onMessage((raw) => {
-      if (JSON.parse(String(raw)).type === "create")
+      if (JSON.parse(String(raw)).type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -82,8 +88,7 @@ test("moving mage draws fireballs at the player before any server cast arrives",
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await page.keyboard.down("d");
   await expect
     .poll(() =>
@@ -171,9 +176,15 @@ test("manual LMB casts confirm after latency without another slash or a held-inp
   const requests: { id: number; aimX: number; aimY: number }[] = [];
   let confirmed = false;
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     socket.onMessage((raw) => {
       const message = JSON.parse(String(raw));
-      if (message.type === "create")
+      if (message.type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -205,8 +216,7 @@ test("manual LMB casts confirm after latency without another slash or a held-inp
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await page.mouse.move(850, 500);
   await page.mouse.down();
   await expect.poll(() => requests.length).toBe(1);

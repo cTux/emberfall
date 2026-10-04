@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { TREES, forestTrees } from "../packages/common/src/index";
 import type { WorldState } from "../packages/common/src/index";
 
@@ -49,9 +49,15 @@ for (const forest of [false, true]) {
     };
     let update = () => {};
     await page.routeWebSocket("**/ws", (socket) => {
+      socket.send(
+        JSON.stringify({
+          type: "worlds",
+          worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+        }),
+      );
       update = () => socket.send(JSON.stringify({ type: "state", world }));
       socket.onMessage((raw) => {
-        if (JSON.parse(String(raw)).type === "create")
+        if (JSON.parse(String(raw)).type === "join")
           socket.send(
             JSON.stringify({
               type: "joined",
@@ -136,8 +142,7 @@ for (const forest of [false, true]) {
       { left: tree.x - tree.size / 2, top: treeY - tree.size },
     );
     await page.goto("/");
-    await page.getByRole("tab", { name: "Create a world" }).click();
-    await page.getByRole("button", { name: "Light the ember" }).click();
+    await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
     await expect(page.locator("body")).toHaveAttribute("data-tree-opacity", "0.2");
     await expect
       .poll(() => page.locator("body").getAttribute("data-tree-sway-range").then(Number))

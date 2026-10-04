@@ -59,19 +59,19 @@ export const Worlds: Story = {
     return (
       <WorldList
         worlds={[
-          { id: "1", name: "New Permanent World", players: 1, capacity: 8 },
+          { id: "1", name: "Playtest Default", players: 1, capacity: 32 },
           { id: "2", name: "The northern grove", players: 3, capacity: 8, locked: true },
           { id: "3", name: "Full world", players: 8, capacity: 8 },
         ]}
         selectedId={selectedId}
         onJoin={(world) => select(world.id)}
-        onCreate={() => {}}
+        latency={42}
       />
     );
   },
 };
 export const EmptyWorlds: Story = {
-  render: () => <WorldList worlds={[]} onJoin={() => {}} onCreate={() => {}} />,
+  render: () => <WorldList worlds={[]} onJoin={() => {}} latency={42} />,
 };
 export const Choices: Story = {
   render: function Choices() {

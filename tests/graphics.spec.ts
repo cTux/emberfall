@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("legacy reflection settings are ignored and dropped when graphics are saved", async ({
   page,
@@ -65,8 +65,7 @@ test("graphics presets change rendering, individual controls persist, and charac
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   const token = await page.evaluate(() => localStorage.getItem("emberfall.character"));
   expect(token).toMatch(/^[a-f0-9]{64}$/);
@@ -115,8 +114,7 @@ test("graphics presets change rendering, individual controls persist, and charac
     "150% · Supersampling",
   );
   await page.getByRole("button", { name: /^Close / }).click();
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem("emberfall.character"))).toBe(token);
   await page.getByRole("button", { name: "Leave world" }).click();

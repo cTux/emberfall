@@ -35,6 +35,8 @@ remembered world and character identity for automatic recovery; a successful
 `joined` message replaces the browser with gameplay. Failed attempts keep the
 browser visible with connection status and disabled join/create actions.
 
+The shared world table receives the host connection's measured round-trip latency (all listed worlds share one server). Unknown latency displays an em dash. Its Name, Latency and Players columns retain keyboard-accessible join buttons; full worlds cannot be joined. The creation tab is disabled and its form is removed. The legacy create protocol remains available for compatibility and isolated fixtures. The permanent world is renamed after restoring its saved UUID and has a 32-player limit in both directory listings and join/resume validation; other worlds retain their eight-player limit.
+
 The browser keeps the character key in localStorage and the current world ID in per-tab sessionStorage. A resumed live session retains scene, vote and position. After process restart, persisted world authorization restores the character to that world's village; combat, chat and coordinates are not persisted. Recovery rejects missing worlds, unauthorized membership, a full world and another live session. Storage failures permit recovery within the current page but cannot guarantee recovery after reload.
 
 On each connection, the client checks `version.json` before resuming gameplay. A mismatch reloads; invalid or failed checks retry. The build ID, cache policies and deployment ordering are described in [operations](../operations.md#deployment-and-cache-consistency).

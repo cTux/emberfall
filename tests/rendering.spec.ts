@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 interface RenderCapture {
   sprites: { x: number; y: number }[];
@@ -45,8 +45,7 @@ test("walking keeps direction, advances frames, and fits the full nickname", asy
   await page.goto("/");
   const name = "A very long adventurer";
   await page.getByLabel("Your adventurer name").fill(name);
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.renderCapture.label?.text)).toBe(name);
   const label = await page.evaluate(() => window.renderCapture.label!);
@@ -109,8 +108,7 @@ test("holding movement into a torch leaves the character still and idle", async 
   });
   await page.goto("/");
   await page.getByLabel("Your adventurer name").fill("Blocked walker");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   // Spawn is (420, 340); approach the torch at (440, 435) from above.
   await page.keyboard.down("d");

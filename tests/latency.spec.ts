@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("combined performance graph plots FPS and latency, preserves toggles and stays top left", async ({
   page,
@@ -32,8 +32,7 @@ test("combined performance graph plots FPS and latency, preserves toggles and st
   await expect(page.locator(".performance-stats")).not.toContainText(
     /Input ack:|Snapshot age \(local\):/,
   );
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   for (const series of ["inputDelay", "snapshotAge"]) {
     await expect(page.locator(`[data-series="${series}"]`)).toHaveAttribute("d", /L/);
     await expect(page.locator(`[data-series="${series}"]`)).toHaveAttribute("data-value", /\d/);
@@ -78,8 +77,7 @@ test("network lines grow during stale snapshots even when ping stays low", async
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const input = page.locator('[data-series="inputDelay"]');
   const age = page.locator('[data-series="snapshotAge"]');
   await expect(input).toHaveAttribute("data-value", /\d/);

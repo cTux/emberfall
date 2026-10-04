@@ -31,49 +31,21 @@ export const Lobby: Story = {
   render: function Lobby() {
     const [tab, setTab] = useState("join");
     const [name, setName] = useState("");
-    const [worldName, setWorldName] = useState("");
     const [selected, select] = useState<string>();
     const [password, setPassword] = useState("");
     const [notice, setNotice] = useState("");
     const [open, setOpen] = useState(true);
-    const create = (
-      <Stack
-        component="form"
-        spacing={2}
-        onSubmit={(event) => {
-          event.preventDefault();
-          setNotice(`Preview: create ${worldName}`);
-        }}
-      >
-        <TextField
-          label="World name"
-          required
-          value={worldName}
-          onChange={(event) => setWorldName(event.target.value)}
-          slotProps={{ htmlInput: { maxLength: 24 } }}
-        />
-        <TextField
-          label="Password (optional)"
-          type="password"
-          autoComplete="new-password"
-          slotProps={{ htmlInput: { maxLength: 64 } }}
-        />
-        <Button type="submit" variant="contained" disabled={!name.trim() || !worldName.trim()}>
-          Light the ember
-        </Button>
-      </Stack>
-    );
     const join = (
       <Stack spacing={2}>
         <WorldList
           disabled={!name.trim()}
           selectedId={selected}
           worlds={[
-            { id: "open", name: "New Permanent World", players: 1, capacity: 8 },
+            { id: "open", name: "Playtest Default", players: 1, capacity: 32 },
             { id: "locked", name: "Northern grove", players: 3, capacity: 8, locked: true },
             { id: "full", name: "Full world", players: 8, capacity: 8 },
           ]}
-          onCreate={() => setTab("create")}
+          latency={42}
           onJoin={(world) => {
             select(world.id);
             setNotice(world.locked ? "" : `Preview: join ${world.name}`);
@@ -123,7 +95,7 @@ export const Lobby: Story = {
                   onChange={setTab}
                   chapters={[
                     { id: "join", title: "Join a world", content: join },
-                    { id: "create", title: "Create a world", content: create },
+                    { id: "create", title: "Create a world", disabled: true, content: null },
                   ]}
                 />
                 {notice && (

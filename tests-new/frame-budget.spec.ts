@@ -31,8 +31,7 @@ test("profile village, training and forest frame budgets", async ({
   await system.detach();
   await page.goto("/");
   const build = await (await page.request.get("/version.json")).json();
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];

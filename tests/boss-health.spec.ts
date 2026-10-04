@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 
 test("boss HUD uses scaled health and updates on every snapshot", async ({ page }) => {
@@ -53,9 +53,15 @@ test("boss HUD uses scaled health and updates on every snapshot", async ({ page 
   };
   let update = () => {};
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     update = () => socket.send(JSON.stringify({ type: "state", world }));
     socket.onMessage((raw) => {
-      if (JSON.parse(String(raw)).type === "create")
+      if (JSON.parse(String(raw)).type === "join")
         socket.send(
           JSON.stringify({
             type: "joined",
@@ -67,8 +73,7 @@ test("boss HUD uses scaled health and updates on every snapshot", async ({ page 
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const hud = page.getByLabel("Boss health", { exact: true });
   const health = page.getByRole("progressbar", { name: "The Hollow Warden HP" });
   await expect(health).toHaveAttribute("aria-valuemax", "400");

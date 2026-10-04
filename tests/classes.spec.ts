@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 import { nearbyInteraction, WARDROBE } from "../packages/common/src/index";
 
@@ -42,8 +42,7 @@ test("wardrobe selects and restores classes through the server", async ({ page }
     }),
   );
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   await expect(page.locator("body")).toHaveAttribute(
     "data-wardrobe-sprite",
@@ -101,8 +100,7 @@ test("wardrobe selects and restores classes through the server", async ({ page }
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Leave world" }).click();
   await page.getByRole("button", { name: "Leave", exact: true }).click();
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
 });
 
@@ -243,9 +241,15 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
   });
   let sendState = () => {};
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     sendState = () => socket.send(JSON.stringify({ type: "state", world }));
     socket.onMessage((raw) => {
-      if (JSON.parse(String(raw)).type === "create")
+      if (JSON.parse(String(raw)).type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -329,8 +333,7 @@ test("classes show distinct attacks, Bear, roots, projectiles, explosions and de
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.locator("body")).toHaveAttribute("data-mage-attack", "drawn");
   await expect(page.locator("body")).toHaveAttribute("data-ranger-attack", "drawn");
   await expect(page.locator("body")).toHaveAttribute("data-druid-attack", "drawn");

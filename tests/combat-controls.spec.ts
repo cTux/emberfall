@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 
 test("combat toggles persist, hotkeys ignore dialogs, and pointer input casts without range overlays", async ({
@@ -45,9 +45,15 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input casts wi
     },
   };
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     socket.onMessage((raw) => {
       const message = JSON.parse(String(raw));
-      if (message.type === "create")
+      if (message.type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -86,8 +92,7 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input casts wi
   await page.keyboard.press("f");
   await expect(page.getByLabel("Auto-attack (F)", { exact: true })).toBeChecked();
   await page.getByRole("button", { name: /^Close / }).click();
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect.poll(() => inputs.at(-1)?.autoAttack).toBe(true);
   await page.keyboard.press("f");
   await page.keyboard.press("g");

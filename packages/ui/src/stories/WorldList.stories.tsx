@@ -8,8 +8,16 @@ const meta = {
     worlds: [{ id: "1", name: "Northern grove", players: 3, capacity: 8, locked: true }],
     disabled: false,
     onJoin: () => {},
-    onCreate: () => {},
+    latency: 42,
   },
 } satisfies Meta<typeof WorldList>;
 export default meta;
 export const Playground: StoryObj<typeof meta> = {};
+
+export const Empty: StoryObj<typeof meta> = { args: { worlds: [] } };
+export const Full: StoryObj<typeof meta> = {
+  args: {
+    worlds: [{ id: "1", name: "Playtest Default", players: 32, capacity: 32 }],
+    latency: null,
+  },
+};
