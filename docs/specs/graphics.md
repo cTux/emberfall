@@ -61,8 +61,11 @@ are not drawn a second time as attachments. Weapons stay in the character's
 anatomical right hand across facing and action changes; shields stay left.
 Lanterns use four painted frames. Portals use a single regenerated stone arch:
 only the energy inside its aperture moves. Idle breathing, damage flashes and death fades remain
-procedural. All four player classes use replacement four-pose walking sheets;
-runner and caster still reuse one of three poses. Druid standing/walking body
+procedural. All four player classes use six distinct walking poses per direction,
+with consistent weapon hands across idle, walking, attack and fallen poses.
+Player frames have transparent gutters and a stable scale and foot anchor;
+heads and weapons must stay entirely within their own frame.
+Runner and caster still reuse one of three poses. Druid standing/walking body
 height matches the other classes instead of being scaled down by its raised staff.
 The companion uses a juvenile bear smaller than the druid; the boar remains in
 the asset collection and gallery. Belt lanterns use the generated flame frames.

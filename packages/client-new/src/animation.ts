@@ -27,3 +27,17 @@ export function enemyFrame(
   if (now >= releasedAt && now - releasedAt < 180) return 6;
   return actorFrame(now, moving, alive);
 }
+
+/** Player-only six-pose gait; action rows stay compatible with the enemy atlas. */
+const playerWalkRows = [1, 2, 3, 4, 8, 9];
+export function playerFrame(
+  now: number,
+  moving: boolean,
+  alive: boolean,
+  attackAt = -Infinity,
+  duration = 260,
+) {
+  const frame = actorFrame(now, moving, alive, attackAt, duration);
+  if (frame === 0 || frame >= 5) return frame;
+  return playerWalkRows[Math.floor(Math.max(0, now) / 80) % playerWalkRows.length];
+}

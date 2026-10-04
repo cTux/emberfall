@@ -3,7 +3,7 @@ import { PixiContext } from "./rendering/pixi-context";
 import { PresentationWorld } from "./presentation/world";
 import { villageImages, villageBackground, drawVillageBackground } from "./village-background";
 import { characterImages } from "./characters";
-import { ACTOR_CELL, actorFrame, idleBreath } from "./animation";
+import { ACTOR_CELL, playerFrame, idleBreath } from "./animation";
 import { actorArt, environmentArt, wardrobeArt, drawArt } from "./art";
 import { drawChimneySmoke } from "./ambient-art";
 import { companionCaster, drawCompanion } from "./companion";
@@ -522,7 +522,7 @@ export function Arena({
         const ix = player.inputX ?? 0,
           iy = player.inputY ?? 0;
         if (Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
-        const frame = actorFrame(
+        const frame = playerFrame(
           player.id === playerId ? now : serverTime,
           Math.hypot(ix, iy) > 0,
           player.hitpoints > 0,
@@ -716,7 +716,7 @@ export function Arena({
         const ix = player.inputX ?? 0,
           iy = player.inputY ?? 0;
         const moving = Math.hypot(ix, iy) > 0;
-        const spriteRow = actorFrame(
+        const spriteRow = playerFrame(
           player.id === playerId ? now : serverTime,
           moving,
           player.hitpoints > 0,

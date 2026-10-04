@@ -8,21 +8,11 @@ const loadedArt = new Map<string, HTMLImageElement>();
  * Facing down: anatomical right is screen-left; facing up: screen-right.
  * Side views are distinct: the right arm is far when facing left, near when right.
  */
-function actorOrientation(name: string, row: number, col: number, walk = false) {
-  if (name === "ranger" && col >= 2) return { col: 5 - col, flip: true };
+function actorOrientation(name: string, row: number, col: number) {
   const flip =
-    (col === 0 &&
-      (["ranger", "mage", "druid", "caster", "warden"].includes(name) ||
-        (name === "brute" && row !== 6))) ||
-    (col === 1 &&
-      !walk &&
-      ((name === "druid" && row === 5) ||
-        (name === "caster" && row === 6) ||
-        (name === "warden" && row !== 5))) ||
-    (col === 2 &&
-      ((name === "mage" && (walk || row === 0)) ||
-        (name === "druid" && !walk && row === 0) ||
-        name === "caster"));
+    (col === 0 && (["caster", "warden"].includes(name) || (name === "brute" && row !== 6))) ||
+    (col === 1 && ((name === "caster" && row === 6) || (name === "warden" && row !== 5))) ||
+    (col === 2 && name === "caster");
   return { col, flip };
 }
 
@@ -137,52 +127,6 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
       );
       ctx.restore();
     });
-    if (["warrior", "ranger", "mage", "druid"].includes(name)) {
-      const walk = new Image();
-      walk.src = artUrl(`${name}-walk`);
-      await walk.decode();
-      input.width = walk.naturalWidth;
-      input.height = walk.naturalHeight;
-      inputContext.drawImage(walk, 0, 0);
-      const data = inputContext.getImageData(0, 0, input.width, input.height).data;
-      const stride = input.width / 4,
-        step = input.height / 4;
-      for (let row = 0; row < 4; row++)
-        for (let col = 0; col < 4; col++) {
-          const orientation = actorOrientation(name, row + 1, col, true);
-          const sourceCol = orientation.col;
-          let left = (sourceCol + 1) * stride,
-            right = sourceCol * stride;
-          let top = (row + 1) * step,
-            bottom = row * step;
-          for (let y = Math.floor(row * step); y < (row + 1) * step; y++)
-            for (let x = Math.floor(sourceCol * stride); x < (sourceCol + 1) * stride; x++)
-              if (data[(y * input.width + x) * 4 + 3] > 32) {
-                left = Math.min(left, x);
-                right = Math.max(right, x + 1);
-                top = Math.min(top, y);
-                bottom = Math.max(bottom, y + 1);
-              }
-          const height = name === "druid" ? 58 : 52;
-          const width = Math.round(((right - left) * height) / (bottom - top));
-          ctx.clearRect(col * cell, (row + 1) * cell, cell, cell);
-          ctx.save();
-          ctx.translate(col * cell + cell / 2, (row + 2) * cell - 3);
-          if (orientation.flip) ctx.scale(-1, 1);
-          ctx.drawImage(
-            walk,
-            left,
-            top,
-            right - left,
-            bottom - top,
-            -width / 2,
-            -height,
-            width,
-            height,
-          );
-          ctx.restore();
-        }
-    }
     result.src = output.toDataURL();
     result.dataset.artReady = "true";
   };
@@ -190,7 +134,21 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
   return result;
 }
 
-export const actorArt = (name: string) => loadArt(name, 4, 8, ACTOR_CELL, true);
+export const actorArt = (name: string) => {
+  if (!["warrior", "ranger", "mage", "druid"].includes(name))
+    return loadArt(name, 4, 8, ACTOR_CELL, true);
+  const key = `${name}:player-atlas`;
+  const cached = loadedArt.get(key);
+  if (cached) return cached;
+  const image = new Image();
+  loadedArt.set(key, image);
+  artImages.push(image);
+  image.onload = () => {
+    image.dataset.artReady = "true";
+  };
+  image.src = artUrl(`${name}-atlas`);
+  return image;
+};
 export const environmentArt = loadArt("environment", 3, 3, 128, true);
 export const wardrobeArt = loadArt("wardrobe", 4, 1, 128, true);
 export const animalArt = loadArt("animals", 4, 6, 64, true);

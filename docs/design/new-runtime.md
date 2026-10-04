@@ -149,7 +149,7 @@ existing GameWindow supplies dragging, focus and close behavior.
 ## Wardrobe-style presentation assets
 
 The new client owns a separate `public/assets/wardrobe-style` collection, leaving
-the original imported files and upstream notices intact. Actor sheets use four
+the original imported files and upstream notices intact. Enemy sheets use four
 direction columns (down, up, left, right) and eight action rows (idle, four walk
 frames, windup, release, fallen). The presentation loader normalizes transparent
 cell bounds to a stable foot anchor once per source; rendering and silhouette
@@ -163,15 +163,21 @@ are cached as small frame canvases, rendered as native Pixi sprites.
 The animation gallery provides an inspectable frame/direction preview; actual
 village, training and forest browser checks remain necessary for acceptance.
 
-Player walk-only sheets replace rows 1–4 during one-time packaging. Standing body
-scale is independent of raised attack props. The generated cub uses a 4×2 atlas;
+Player atlases are packaged offline into 64px cells with transparent gutters.
+Rows 0–7 retain idle, four walk poses, windup, release and fallen; rows 8–9
+add two walk poses. The six-pose cycle uses rows 1, 2, 3, 4, 8, 9.
+The player loader reads these atlases directly without runtime cropping or flips.
+Packaging measures isolated alpha components instead of slicing a guessed grid;
+supplemental sheets are normalized to the class scale. Left-facing staff casts retain
+a safe far-hand pose, avoiding source poses that switch to the near hand.
+The generated cub uses a 4×2 atlas;
 the original animal sheet retains the boar. Terrain is sampled without reflection.
 Silhouette caches use image identity and compact frame coordinates; never use the
 base64 image source as a per-frame key. Idle breathing does not continuously
 invalidate the light occlusion canvas.
 
-Source-specific orientation corrections are baked into the atlas once, including
-incorrect front/back weapon hands and duplicate right-facing source poses.
+Enemy source-specific orientation corrections remain in the legacy loader.
+Player direction and handedness are authored in the source sheets.
 Anatomical right is screen-left in a front view and screen-right in a rear view;
 profile weapons must keep their near/far arm relationship. Do not automatically
 mirror one valid profile into the opposite direction.
