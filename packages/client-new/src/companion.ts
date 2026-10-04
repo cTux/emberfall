@@ -34,6 +34,7 @@ export function drawCompanion(
   y: number,
   now: number,
   shadows = false,
+  opacity = 1,
 ) {
   ctx.save();
   if (!shadows) {
@@ -45,7 +46,7 @@ export function drawCompanion(
   const angle = bear.attackAngle ?? 0;
   const { column, left } = companionFrame(bear, now);
   const dead = bear.hitpoints <= 0;
-  ctx.globalAlpha = dead ? 0.3 : 1;
+  ctx.globalAlpha = opacity * (dead ? 0.3 : 1);
   if (image.naturalWidth) {
     ctx.save();
     ctx.translate(x, y);

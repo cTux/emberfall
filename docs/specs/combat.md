@@ -32,6 +32,8 @@ Experience shards and coins attract after the initial hop toward the nearest liv
 
 DPS is actual enemy damage over the previous five seconds divided by five, including ailments and Bear and excluding overkill. It returns to zero after five seconds without damage.
 
+In the new runtime, player body and incoming-projectile hit radii are 70% of the original values (8.4 and 11.9 units). Companion hit radii, melee warning areas and attack reach stay unchanged. These rules are shared by the authoritative simulation and client movement prediction.
+
 ## New-runtime equipment
 
 In the `*-new` runtime, [CHAR-04](characters.md#char-04--equipment-new-runtime)

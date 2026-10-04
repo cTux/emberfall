@@ -61,6 +61,7 @@ export function drawPortal(
   active: boolean,
   shadows: boolean,
   _waving: boolean,
+  opacity = 1,
 ) {
   if (portalArt.naturalWidth) {
     if (shadows)
@@ -73,6 +74,7 @@ export function drawPortal(
         mask: spriteMask(portalArt, 0, 0, false, 128, false, 128)!,
       });
     ctx.save();
+    ctx.globalAlpha = opacity;
     if (bloom) {
       ctx.shadowBlur = 12;
       ctx.shadowColor = "#53c9ff";
@@ -85,6 +87,7 @@ export function drawPortal(
   if (shadows)
     castShadow(ctx, { id: "portal", x, y: y + 8, width: 50, height: 76, mask: portalMask });
   ctx.save();
+  ctx.globalAlpha = opacity;
   ctx.translate(x, y);
   ctx.lineWidth = 4;
   if (!shadows) {
@@ -444,7 +447,7 @@ export function forestRenderer(
         p.bear
           ? [
               {
-                y: near(p.bear.x, p.bear.y).y + 15,
+                y: near(p.bear.x, p.bear.y).y + 18,
                 tree: null,
                 actor: null,
                 bear: p.bear,
@@ -477,16 +480,27 @@ export function forestRenderer(
           interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
           quality.shadows,
           quality.wavingVegetation,
+          obstacleOpacity({ x: point.x, y: point.y + 8, width: 64, height: 80 }, me),
         );
         continue;
       }
       if (layer.critter) {
+        ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, me);
         drawCritter(ctx, layer.critter, quality.shadows);
+        ctx.globalAlpha = 1;
         continue;
       }
       if (layer.bear) {
         const point = near(layer.bear.x, layer.bear.y);
-        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime, quality.shadows);
+        drawCompanion(
+          ctx,
+          layer.bear,
+          point.x,
+          point.y,
+          serverTime,
+          quality.shadows,
+          obstacleOpacity({ x: point.x, y: point.y + 18, width: 42.5, height: 40 }, me),
+        );
         continue;
       }
       if (layer.tree) {
@@ -505,7 +519,9 @@ export function forestRenderer(
         const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / 700));
         ctx.save();
         ctx.translate(a.x, a.y + 15);
-        ctx.globalAlpha = 1 - progress;
+        ctx.globalAlpha =
+          (1 - progress) *
+          obstacleOpacity({ x: a.x, y: a.y + 15, width: a.size, height: a.size }, me);
         ctx.drawImage(
           a.image,
           a.facing * ACTOR_CELL,
@@ -531,9 +547,14 @@ export function forestRenderer(
       }
       const left = a.x - a.size / 2,
         top = a.y + 15 - (a.size * 45) / 48;
-      ctx.globalAlpha = a.player?.hitpoints === 0 ? 0.35 : 1;
+      const opacity =
+        a.id === playerId
+          ? 1
+          : obstacleOpacity({ x: a.x, y: a.y + 15, width: a.size, height: a.size }, me);
+      const bodyOpacity = opacity * (a.player?.hitpoints === 0 ? 0.35 : 1);
+      ctx.globalAlpha = bodyOpacity;
       if (quality.motionBlur && a.moving) {
-        ctx.globalAlpha = 0.13;
+        ctx.globalAlpha = 0.13 * bodyOpacity;
         ctx.drawImage(
           a.image,
           a.facing * ACTOR_CELL,
@@ -545,7 +566,7 @@ export function forestRenderer(
           a.size,
           a.size,
         );
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = bodyOpacity;
       }
       const breath = idleBreath(now, a.row);
       ctx.drawImage(
