@@ -79,13 +79,15 @@ test("training has one and six stationary, harmless targets and regenerates ever
 
 test("training area boundaries gate server attacks, Bear hunting, and client swing prediction", async () => {
   for (const zone of TRAINING_ZONES) {
+    assert(inTrainingZone({ x: zone.x + 200, y: zone.y - 15 }));
+    assert(inTrainingZone({ x: zone.x, y: zone.y - 15 + 180 }));
     assert(inTrainingZone({ x: zone.x + zone.radius, y: zone.y - 15 }));
     assert(!inTrainingZone({ x: zone.x + zone.radius + 0.01, y: zone.y - 15 }));
     assert(inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 - 0.01 }));
     assert(!inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 + 0.01 }));
   }
   for (const classId of ["warrior", "ranger", "mage", "druid"] as const) {
-    const p = { ...hero(), classId, x: 300, y: 340 };
+    const p = { ...hero(), classId, x: 480, y: 340 };
     const s = tickTraining(undefined, [p], 10000, 0.05);
     assert.equal(p.attackAt, undefined);
     assert.equal(p.bear?.attackAt, undefined);
@@ -102,14 +104,14 @@ test("training area boundaries gate server attacks, Bear hunting, and client swi
     };
     movement.render(world, 0);
     assert.equal(movement.animateAttack(p, world, 0), false);
-    p.x = 175;
+    p.x = 300;
     tickTraining(s, [p], 10050, 0.05);
     assert.equal(p.attackAt, 10050);
     const confirmed = { ...world, serverNow: 10050, players: [{ ...p }] };
     const displayed = movement.render(confirmed, 50)!;
     assert(movement.animateAttack(displayed, confirmed, 50));
     assert.equal(displayed.attackAt, 50);
-    p.x = 300;
+    p.x = 480;
     tickTraining(s, [p], 10100, 0.05);
     assert.equal(p.attackAt, undefined);
     assert.equal(p.bear?.attackAt, undefined);

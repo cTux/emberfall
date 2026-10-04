@@ -80,7 +80,6 @@ test("ported definitions and generated geometry match the original game", () => 
     "BUILDINGS",
     "PATHS",
     "TORCHES",
-    "TRAINING_ZONES",
     "CLASS_IDS",
     "CLASS_LABELS",
     "ENEMY_HP",
@@ -94,6 +93,14 @@ test("ported definitions and generated geometry match the original game", () => 
     "CHAT_MAX_LENGTH",
   ] as const)
     assert.deepEqual(replacement[key], original[key], key);
+  assert.deepEqual(
+    replacement.TRAINING_ZONES,
+    original.TRAINING_ZONES.map((zone) => ({
+      ...zone,
+      radius: zone.radius * 2,
+      clearingRadius: zone.radius,
+    })),
+  );
   for (const x of [-50, 0, 50, 1200, 4799, 4850])
     for (const y of [-20, 0, 1280, 2559, 2600]) {
       assert.deepEqual(replacement.forestTrees(x, y, 300), original.forestTrees(x, y, 300));
