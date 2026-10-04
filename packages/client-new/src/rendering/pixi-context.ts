@@ -229,7 +229,7 @@ export class PixiContext {
           ? new Sprite()
           : kind === "graphics"
             ? new Graphics()
-            : new Text({ text: "", resolution: 2, textureStyle: { scaleMode: "nearest" } });
+            : new Text({ text: "", resolution: 4, textureStyle: { scaleMode: "nearest" } });
       object.eventMode = "none";
       entity = this.ecs.add({ object, kind, active: true });
       this.pools[kind].push(entity);

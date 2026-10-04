@@ -184,7 +184,7 @@ export async function compare() {
   pixi.begin();
   pixi.fillStyle = "#000000";
   pixi.fillRect(0, 0, 256, 256);
-  pixi.scale(4, 4);
+  pixi.scale(8, 8);
   pixi.font = "12px sans-serif";
   pixi.textBaseline = "top";
   pixi.fillStyle = "#ffffff";
@@ -195,7 +195,7 @@ export async function compare() {
   const glyphCtx = glyph.getContext("2d")!;
   glyphCtx.drawImage(gpu, 0, 0);
   const pixels = glyphCtx.getImageData(0, 0, 256, 256).data;
-  // A 2x text texture at 4x world scale repeats each raster column twice. Linear filtering
+  // A 4x text texture at 8x world scale repeats each raster column twice. Linear filtering
   // instead introduces intermediate columns and fails this edge-grid check.
   const edges = [0, 0];
   for (let y = 0; y < 100; y++)
