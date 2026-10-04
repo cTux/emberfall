@@ -24,6 +24,8 @@ Drawing combines predicted local presentation with buffered remote actors. The c
 
 Cull offscreen actors before expensive sprite masks/shadows, share identical sprite/grass canvases, copy presentation positions instead of whole combat state, and index hit events once per frame. Full-map redraws and cache invalidation during world joins previously caused stalls; keep startup and re-entry coverage when changing cache lifetime.
 
+Player chat is drawn after world effects in both scenes. The rounded message box has no pointer; its bottom sits two world units above the health bar, overlaying the debuff area. Both renderers use the same placement and wrapping.
+
 ## Preferences, diagnostics and audio
 
 [graphics.ts](../../packages/client/src/graphics.ts) and [preferences.ts](../../packages/client/src/preferences.ts) validate persisted settings and fall back to defaults. [panel-positions.ts](../../packages/client/src/panel-positions.ts) persists draggable-window placement. Rendering scale and frame caps affect presentation only; simulation/input cadence remains independent.

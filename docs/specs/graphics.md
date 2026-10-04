@@ -8,7 +8,7 @@ Settings contains Low, Balanced and High (default) presets, plus persistent indi
 
 Settings include sunlight shafts, soft-light color grading, adaptive resolution and frame caps (display refresh, 30/60/120/144 FPS). Adaptive resolution adjusts the selected render scale between 50% and 100% every two seconds based on frame time; it never changes world size, input cadence or collision geometry. Low/Balanced enable adaptation; High prioritizes fixed resolution. Red gameplay warnings remain enabled at every preset. Native DLSS, frame generation, hardware ray tracing, depth-buffer SSAO and HDR output are not advertised as supported. The separate PixiJS runtime preserves these settings; it does not introduce those native rendering features.
 
-High defaults to 150% supersampling and display-refresh frame pacing. Low uses native scale with adaptive resolution; Balanced uses native scale with adaptation, shadows, contact occlusion, dynamic lighting, fog, vignette, color grading, particles and vegetation sway. Preferences can be adjusted individually.
+High defaults to 150% supersampling and display-refresh frame pacing. Low uses native scale with adaptive resolution; Balanced uses native scale with adaptation, shadows, contact occlusion, dynamic lighting, vignette, color grading, particles and vegetation sway. Preferences can be adjusted individually.
 
 ## GRAPHICS-02 — Village lighting
 
@@ -18,7 +18,7 @@ Static sun shadows and static torch occlusion are cached; dynamic character bloc
 
 ## GRAPHICS-03 — Scenery and atmosphere
 
-Fog is animated, seamlessly tiled and layered; Low disables it and Balanced/High enable it. Fog and flying particles use world coordinates with seamless repetition. Dense grass, paths and scenery share depth ordering with actors. The original renderer uses Canvas 2D; the new renderer draws the same baked fog sources with native Pixi sprites.
+Fog is animated, seamlessly tiled and layered; it is disabled by default in every preset and can be enabled individually. Saved individual fog preferences remain in effect on reload. Fog and flying particles use world coordinates with seamless repetition. Dense grass, paths and scenery share depth ordering with actors. The original renderer uses Canvas 2D; the new renderer draws the same baked fog sources with native Pixi sprites.
 
 Scenery covering the local player's sprite fades to 20% opacity (80% transparent) when the player is behind it, then returns to full opacity once the player moves clear or in front. This applies to village trees, buildings, wardrobe and torch posts, and forest trees. Players can walk through all scenery; shadows remain unchanged.
 

@@ -13,10 +13,12 @@ test("legacy reflection settings are ignored and dropped when graphics are saved
   await expect(page.locator('canvas[aria-label="Forest preview"]')).toBeVisible();
   await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("tab", { name: "Graphics", exact: true }).click();
+  await expect(page.getByLabel("Volumetric fog (2D)", { exact: true })).not.toBeChecked();
   await expect(page.getByLabel("Reflections (2D)", { exact: true })).toHaveCount(0);
   await expect(page.getByLabel("Soft shadows")).not.toBeChecked();
   for (const preset of ["Low", "Balanced", "High"]) {
     await page.getByRole("button", { name: preset, exact: true }).click();
+    await expect(page.getByLabel("Volumetric fog (2D)", { exact: true })).not.toBeChecked();
     expect(
       await page.evaluate(() => JSON.parse(localStorage.getItem("emberfall.graphics")!)),
     ).not.toHaveProperty("reflections");

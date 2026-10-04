@@ -8,13 +8,17 @@ type Game = Awaited<ReturnType<typeof createGameServer>>;
 /** Tests own their server and in-memory database. Fixture setup can arrange a
  * scene directly; browser actions and updates always cross the real SDK boundary.
  */
-export const test = base.extend<{ game: Game; graphicsPreset: keyof typeof GRAPHICS_PRESETS }>({
+export const test = base.extend<{
+  game: Game;
+  graphicsPreset: keyof typeof GRAPHICS_PRESETS | null;
+}>({
   graphicsPreset: ["Balanced", { option: true }],
   page: async ({ page, graphicsPreset }, provide) => {
-    await page.addInitScript(
-      (settings) => localStorage.setItem("emberfall-new.graphics", JSON.stringify(settings)),
-      GRAPHICS_PRESETS[graphicsPreset],
-    );
+    if (graphicsPreset)
+      await page.addInitScript(
+        (settings) => localStorage.setItem("emberfall-new.graphics", JSON.stringify(settings)),
+        GRAPHICS_PRESETS[graphicsPreset],
+      );
     await provide(page);
   },
   game: [

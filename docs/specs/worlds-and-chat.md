@@ -20,7 +20,7 @@ The server adds `System` messages when a player joins or disconnects, dies, ente
 
 ## CHAT-03 — Speech bubbles and validation
 
-Each player displays only their latest message in a wrapped speech bubble above their head in both scenes, until they send another message or leave the world. The server validates trimmed, nonempty text up to 200 characters, rejects control characters, identifies the sender from their session, and allows one message per 500 ms. Messages and bubbles travel in existing world snapshots, are isolated by world, survive reconnects and scene changes, and reset when the world empties. Chat is not saved with character progress.
+Each player displays only their latest message in a wrapped, rounded rectangular speech bubble with no bottom triangle, centered two world units above their health bar in both scenes and drawn over the debuff area, until they send another message or leave the world. The server validates trimmed, nonempty text up to 200 characters, rejects control characters, identifies the sender from their session, and allows one message per 500 ms. Messages and bubbles travel in existing world snapshots, are isolated by world, survive reconnects and scene changes, and reset when the world empties. Chat is not saved with character progress.
 
 ## Acceptance
 
