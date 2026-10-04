@@ -1,10 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMitten } from "@fortawesome/free-solid-svg-icons/faMitten";
 import { faHelmetSafety } from "@fortawesome/free-solid-svg-icons/faHelmetSafety";
 import { faShirt } from "@fortawesome/free-solid-svg-icons/faShirt";
-import { faSocks } from "@fortawesome/free-solid-svg-icons/faSocks";
-import { faShoePrints } from "@fortawesome/free-solid-svg-icons/faShoePrints";
-import { faGem } from "@fortawesome/free-solid-svg-icons/faGem";
 import { faShieldHalved } from "@fortawesome/free-solid-svg-icons/faShieldHalved";
 import { faRing } from "@fortawesome/free-solid-svg-icons/faRing";
 import { EquipmentPanel } from "@emberfall/ui";
@@ -65,14 +61,42 @@ const GEAR_LABELS: Record<GearType, string> = {
   natureFocus: "Nature focus",
 };
 const FALLBACK_ICONS = {
-  gloves: faMitten,
-  helmet: faHelmetSafety,
-  bodyArmor: faShirt,
-  leggings: faSocks,
-  boots: faShoePrints,
-  amulet: faGem,
-  offHand: faShieldHalved,
-  ring: faRing,
+  gloves: (
+    <svg viewBox="0 0 64 64" fill="currentColor">
+      <path d="M19 49 10 32c-2-4 3-8 6-4l5 6V13c0-5 7-5 7 0v15h2V7c0-5 7-5 7 0v21h2V11c0-5 7-5 7 0v18h2V18c0-5 7-5 7 0v20c0 6-3 11-7 14H22zM20 54h30v8H20z" />
+    </svg>
+  ),
+  helmet: <FontAwesomeIcon icon={faHelmetSafety} />,
+  bodyArmor: <FontAwesomeIcon icon={faShirt} />,
+  leggings: (
+    <svg viewBox="0 0 64 64" fill="currentColor">
+      <path fillRule="evenodd" d="M13 5h38l3 53H37l-5-29-5 29H10zM13 12h17V5h4v7h17v4H13z" />
+      <path d="M10 54h17v6H10zM37 54h17v6H37z" />
+    </svg>
+  ),
+  boots: (
+    <svg viewBox="0 0 64 64" fill="currentColor">
+      <path
+        fillRule="evenodd"
+        d="M10 5h27v32l18 8c5 2 7 6 7 11H10zM10 11h27v4H10zM24 22h13v4H24zM24 29h13v4H24zM10 59h52v5H10z"
+      />
+    </svg>
+  ),
+  amulet: (
+    <svg viewBox="0 0 64 64" fill="currentColor">
+      <path
+        d="M12 7c0 13 7 22 20 26C45 29 52 20 52 7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="5"
+        strokeLinecap="round"
+      />
+      <path d="M28 30h8v9h-8z" />
+      <path fillRule="evenodd" d="M32 37 46 47 32 62 18 47zM32 43l6 5-6 7-6-7z" />
+    </svg>
+  ),
+  offHand: <FontAwesomeIcon icon={faShieldHalved} />,
+  ring: <FontAwesomeIcon icon={faRing} />,
 };
 const ITEM_CLASSES = Object.fromEntries(
   Object.entries(STARTER_WEAPONS).map(([id, weapon]) => [weapon, id]),
@@ -133,12 +157,7 @@ export function Equipment({ player }: { player: Player }) {
         )
         .map((type) => GEAR_LABELS[type])
         .join(", "),
-      fallback:
-        id === "weapon" ? (
-          <img src={weaponSrc(classId)} alt="" />
-        ) : (
-          <FontAwesomeIcon icon={FALLBACK_ICONS[id]} />
-        ),
+      fallback: id === "weapon" ? <img src={weaponSrc(classId)} alt="" /> : FALLBACK_ICONS[id],
       item:
         gear && canEquip(id, gear, classId)
           ? {
