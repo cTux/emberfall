@@ -148,6 +148,9 @@ export function AssetGallery() {
       <p>
         Live frames used by the new client. Choose an action and direction to inspect the animation.
       </p>
+      <p>
+        <a href="/?class-movement">All classes walking in every direction</a>
+      </p>
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 20 }}>
         <label>
           Action{" "}
