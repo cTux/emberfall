@@ -1,8 +1,8 @@
-import type { AddLabel } from "./WorldLabels";
 import { characterImages } from "./characters";
 import { weaponImages } from "./combat-assets";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
+import { drawNavigation } from "./navigation";
 import type { Interaction } from "./effects";
 import {
   bloodPuddleRenderer,
@@ -28,6 +28,7 @@ import type { Caster } from "./lighting";
 import { lightTexture } from "./village";
 import {
   drawPlayerHealth,
+  drawChatBubble,
   drawNameBadge,
   drawParticles,
   drawVignette,
@@ -59,7 +60,6 @@ export function drawPortal(
   active: boolean,
   shadows: boolean,
   waving: boolean,
-  addLabel: AddLabel,
 ) {
   if (shadows)
     castShadow(ctx, { id: "portal", x, y: y + 8, width: 50, height: 76, mask: portalMask });
@@ -118,7 +118,7 @@ export function drawPortal(
   }
   ctx.restore();
   ctx.restore();
-  drawNameBadge(ctx, x, y - 60, name, active, addLabel);
+  drawNameBadge(ctx, x, y - 60, name, active);
 }
 const fogTexture = document.createElement("canvas");
 fogTexture.width = fogTexture.height = 512;
@@ -226,7 +226,6 @@ export function forestRenderer(
     now: number,
     _dt: number,
     interaction: Interaction | null,
-    addLabel: AddLabel,
   ) => {
     if (world?.scene?.id !== lastScene) {
       positions.clear();
@@ -480,7 +479,6 @@ export function forestRenderer(
           interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
           quality.shadows,
           quality.wavingVegetation,
-          addLabel,
         );
         continue;
       }
@@ -633,6 +631,11 @@ export function forestRenderer(
         ctx.globalAlpha = 1;
       }
     drawDamageFlash(ctx, world, playerId);
+    if (world) drawNavigation(ctx, world, playerId);
+    for (const player of players) {
+      const point = near(player.x, player.y);
+      drawChatBubble(ctx, point.x, point.y, player.chat);
+    }
   };
 }
 export function drawPlayerDetails(

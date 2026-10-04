@@ -28,4 +28,3 @@ export {
 } from "./components/PerformanceMonitor";
 
 export { useDraggable, PanelPositionContext, type PanelPosition } from "./useDraggable";
-export { WorldLabel, type WorldLabelProps } from "./components/WorldLabel/WorldLabel";

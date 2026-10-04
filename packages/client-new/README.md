@@ -18,7 +18,7 @@ its own commands, assets, storage keys and server.
   detached render/prediction objects, separate from Colyseus schemas and server
   ECS objects. Companions remain based on confirmed state.
 - `Arena.tsx` coordinates input, camera, audio and world rendering. Shared UI
-  components come from the shared `@emberfall/ui` package; the host owns
+  components come from the unchanged `@emberfall/ui` package; the host owns
   actions and subscriptions.
 - `rendering/pixi-context.ts` translates existing drawing commands into pooled
   native Pixi sprites, geometry, text and masks. The visible canvas is WebGL.
