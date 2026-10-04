@@ -653,7 +653,7 @@ export function Arena({
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = obstacleOpacity(object, local);
-          const vegetation = object.id.startsWith("tree:") || object.id.startsWith("grass:");
+          const vegetation = object.id.startsWith("tree:");
           if (vegetation)
             drawVegetation(
               ctx,

@@ -190,7 +190,7 @@ export function drawFog(
 }
 
 export function forestRenderer(
-  nature: HTMLImageElement,
+  _nature: HTMLImageElement,
   _knight: HTMLImageElement,
   skeleton: HTMLImageElement,
 ) {
@@ -200,8 +200,6 @@ export function forestRenderer(
   const tree = document.createElement("canvas");
   tree.width = tree.height = 128;
   let treeMask: HTMLCanvasElement | undefined;
-  const grass = document.createElement("canvas");
-  grass.width = grass.height = 128;
   const ground = document.createElement("canvas");
   ground.width = ground.height = 320;
   const g = ground.getContext("2d")!;
@@ -240,7 +238,6 @@ export function forestRenderer(
     if (environmentArt.naturalWidth && terrainArt.naturalWidth && !treeMask) {
       tree.getContext("2d")!.drawImage(environmentArt, 0, 128, 128, 128, 0, 0, 128, 128);
       treeMask = makeMask(tree);
-      grass.getContext("2d")!.drawImage(environmentArt, 256, 128, 128, 128, 0, 0, 128, 128);
       g.fillStyle = g.createPattern(terrainTile(2), "repeat")!;
       g.fillRect(0, 0, 320, 320);
     }
@@ -285,20 +282,6 @@ export function forestRenderer(
           mask: treeMask!,
         }))
       : [];
-    if (quality.grass && nature.naturalWidth)
-      for (const t of trees)
-        for (let i = 0; i < 5; i++) {
-          drawVegetation(
-            ctx,
-            grass,
-            t.x - 57 + ((i * 41) % 120),
-            t.y - 64 + ((i * 67) % 145),
-            16,
-            16,
-            now,
-            quality.wavingVegetation,
-          );
-        }
     const players = world?.players.filter((p) => p.scene === "forest") ?? [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),

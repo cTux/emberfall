@@ -37,7 +37,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   )
     return undefined;
   if (Object.values(villageImages).some((image) => !image.complete)) return undefined;
-  const key = `${graphics.grass}:${graphics.shadows}:${graphics.ambientOcclusion}`;
+  const key = `${graphics.shadows}:${graphics.ambientOcclusion}`;
   if (cached?.key === key) return cached;
   const background = cached?.background ?? document.createElement("canvas");
   if (background.width !== ARENA.width) {
@@ -96,12 +96,12 @@ export function villageBackground(graphics: GraphicsSettings) {
     wrapped(x, y, width, () => ctx.fillRect(x, y, width, 1));
   }
   drawVillagePaths(ctx, floor);
-  const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern, graphics);
+  const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
   for (const object of scenery) {
     // Bounds include the full directional sun projection and contact shading.
     wrapped(object.x, object.y, object.width + object.height, () => {
       if (graphics.shadows) castShadow(ctx, object);
-      if (graphics.ambientOcclusion && !object.id.startsWith("grass")) {
+      if (graphics.ambientOcclusion) {
         ctx.save();
         ctx.translate(object.x, object.y);
         ctx.scale(1, 0.3);
