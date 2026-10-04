@@ -2,6 +2,7 @@ import { test as base, expect, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { createGameServer } from "../packages/server-new/src/worlds.ts";
+import { GRAPHICS_PRESETS } from "../packages/client-new/src/graphics.ts";
 import {
   steamCallback,
   steamRequest,
@@ -45,6 +46,10 @@ const test = base.extend<{
 });
 test.use({ actionTimeout: 15_000 });
 async function login(page: Page, id = heroId) {
+  await page.addInitScript(
+    (graphics) => localStorage.setItem("emberfall-new.graphics", JSON.stringify(graphics)),
+    GRAPHICS_PRESETS.Balanced,
+  );
   await page.route("**/auth/steam", async (route) => {
     const response = await route.fetch({ maxRedirects: 0 });
     const location = response.headers()["location"];
@@ -116,11 +121,13 @@ test("Steam onboarding, repeat login, shared rename dialog and another player's 
     await page.getByRole("button", { name: "Settings", exact: true }).click();
     await page.getByRole("tab", { name: "Account", exact: true }).click();
     await page.screenshot({ path: info.outputPath("account-settings.png") });
+    await friend.close();
     await page.getByRole("button", { name: "Sign out of Steam account" }).click();
     await expect(page.getByRole("link", { name: "Sign in through Steam" })).toBeVisible();
     await login(page);
     await expect(page.getByText("Playing as Renamed Hero", { exact: true })).toBeVisible();
     await expect(page.getByRole("dialog", { name: "Choose your nickname" })).toHaveCount(0);
+    await page.close();
     const device = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
     try {
       const next = await device.newPage();
