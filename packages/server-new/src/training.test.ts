@@ -6,6 +6,8 @@ import {
   FOREST,
   TRAINING_ZONES,
   inTrainingZone,
+  WARDROBE,
+  forestDistance,
 } from "@emberfall/common-new";
 import { LocalMovement } from "../../client-new/src/local-movement.ts";
 import { hitEnemy, fireClassAttack, damagePerSecond } from "../../common-new/src/class-combat.ts";
@@ -19,6 +21,29 @@ const hero = (): Player => ({
   color: 0,
   x: 125,
   y: 355,
+});
+
+test("boar leaves its wardrobe spawn, follows its owner and attacks training targets", () => {
+  const p = {
+    ...hero(),
+    classId: "druid" as const,
+    x: WARDROBE.x,
+    y: WARDROBE.y - 15,
+    attackAt: 1e6,
+  };
+  const s = tickTraining(undefined, [p], 10000, 0);
+  p.x = 480;
+  p.y = 360;
+  for (let now = 10050; now <= 12000; now += 50) tickTraining(s, [p], now, 0.05);
+  assert(forestDistance(p.bear!, p) <= 20.01, "boar must escape the wardrobe and follow");
+  p.x = 175;
+  p.y = 355;
+  for (let now = 12050; now <= 16000; now += 50) tickTraining(s, [p], now, 0.05);
+  assert(
+    s.damage.some((hit) => hit.amount === 2),
+    "boar must chase and hit the dummy",
+  );
+  assert.equal(p.experience, 0);
 });
 
 test("training has one and six stationary, harmless targets and regenerates every second", (t) => {

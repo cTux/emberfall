@@ -5,6 +5,7 @@ import {
   LOBBY_PORTAL,
   CLASS_IDS,
   CLASS_LABELS,
+  forestDistance,
 } from "../packages/common-new/src/index.ts";
 
 test("every wardrobe class trains through Colyseus, preserves health, and resumes after a transport loss", async ({
@@ -46,6 +47,13 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
     await expect.poll(() => player.classId ?? "warrior").toBe(classId);
     await wardrobe.getByRole("button", { name: "Close Wardrobe", exact: true }).click();
     await expect(wardrobe).toBeHidden();
+    if (classId === "druid") {
+      player.x = 480;
+      player.y = 360;
+      await expect.poll(() => forestDistance(player.bear!, player)).toBeLessThan(21);
+      // Isolate companion hits from the Druid's root projectiles.
+      player.attackAt = Date.now() + 60000;
+    }
     world.training!.damage = [];
     world.training!.playerShots = [];
     for (const enemy of world.training!.enemies) enemy.debuffs = [];
@@ -56,7 +64,13 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
     await expect.poll(() => player.dps ?? 0).toBeGreaterThan(0);
     expect(player.hitpoints).toBe(player.maxHitpoints);
     expect(player.experience).toBe(0);
-    if (classId === "druid") await expect.poll(() => player.bear?.name).toBe("Bear");
+    if (classId === "druid") {
+      await expect.poll(() => player.bear?.name).toBe("Bear");
+      await expect.poll(() => world.training!.damage.some((hit) => hit.amount === 2)).toBe(true);
+      await expect
+        .poll(() => forestDistance(player.bear!, world.training!.enemies[0]))
+        .toBeLessThan(95);
+    }
     await page.screenshot({ path: `test-results/new-training-${classId}.png` });
   }
   await page.getByRole("complementary", { name: "World chat", exact: true }).hover();
@@ -85,7 +99,7 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
   expect(errors).toEqual([]);
 });
 
-test("portal vote enters the forest and a confirmed boss death opens the return portal", async ({
+test("boar chases and defeats a forest boss after portal entry, opening the return portal", async ({
   page,
   game,
 }) => {
@@ -97,6 +111,8 @@ test("portal vote enters the forest and a confirmed boss death opens the return 
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
+  player.classId = "druid";
+  player.attackAt = Date.now() + 60000;
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
   const portal = page.getByRole("dialog", { name: "Forest portal" });
@@ -110,6 +126,8 @@ test("portal vote enters the forest and a confirmed boss death opens the return 
   expect(world.scene?.phase).toBe("active");
   await page.screenshot({ path: "test-results/new-forest-combat.png" });
   const scene = world.scene!;
+  player.attackAt = Date.now() + 60000;
+  scene.playerShots = [];
   const id = ++scene.sequence;
   scene.bossId = id;
   scene.enemies = [
@@ -121,7 +139,7 @@ test("portal vote enters the forest and a confirmed boss death opens the return 
       archetype: "brute",
       kind: "boss",
       name: "The Hollow Warden",
-      hitpoints: 5,
+      hitpoints: 2,
       maxHitpoints: 200,
     },
   ];

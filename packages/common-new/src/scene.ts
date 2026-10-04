@@ -65,7 +65,12 @@ export function moveForestActor(
   for (let i = 0; i < steps; i++) {
     const trees = forestTrees(x, y, 40);
     const clear = (px: number, py: number) =>
-      trees.every((t) => Math.hypot(px - t.x, py - t.y) >= radius + t.radius);
+      // Owner-position spawns must be able to escape a trunk they already overlap.
+      trees.every(
+        (t) =>
+          Math.hypot(px - t.x, py - t.y) >=
+          Math.min(radius + t.radius, Math.hypot(x - t.x, y - t.y)),
+      );
     if (clear(x + dx / steps, y)) x += dx / steps;
     if (clear(x, y + dy / steps)) y += dy / steps;
   }
