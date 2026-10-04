@@ -51,7 +51,8 @@ The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots
 amulet/off-hand/ring. Slots have no border. Empty slots show generated wardrobe-style
 equipment icons at 15% effective opacity; equipped weapons keep their full-brightness
 icon. Hover, focus or touch exposes
-item stats or the accepted gear types. Character stats derived from all equipment
+item stats or the accepted gear types. Item tooltips omit Target range and Manual
+range; both remain in the character stats. Character stats derived from all equipment
 appear on the right, stacking below the slots on narrow screens. Attack timing is
 shown only as cooldown, without a duplicate attack-speed row.
 
