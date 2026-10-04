@@ -83,9 +83,11 @@ All consumer-facing prop/data types are exported from `src/index.ts`. Screen sto
 ## Create a component
 
 `EquipmentPanel` accepts controlled slot views (ID, label, grid coordinates,
-fallback image, allowed gear text and optional item details) and calculated stat
-rows. Slots are borderless, empty images are translucent, and focus/hover/touch
-shows details. It places stats on the right on desktop and below at narrow widths.
+fallback image, allowed gear text and optional item name/icon/badges) and calculated
+stat rows. Slots are borderless and empty images are translucent. Focus/hover/touch
+opens a narrow translucent-black tooltip. Item badges use the bundled generated
+atlas, optional bottom-right values and host-supplied explanations accessible by
+mouse, keyboard and touch. It places character stats on the right on desktop and below at narrow widths.
 Compose it inside `GameWindow` for dragging and focus management. Its Storybook
 stories cover starter and empty loadouts; gameplay rules remain in the host.
 

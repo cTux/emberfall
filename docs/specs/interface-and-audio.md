@@ -56,9 +56,14 @@ the existing modal focus, movement suppression and persisted drag-position rules
 The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
 amulet/off-hand/ring. Slots have no border. Empty slots show generated wardrobe-style
 equipment icons at 15% effective opacity; equipped weapons keep their full-brightness
-icon. Hover, focus or touch exposes
-item stats or the accepted gear types. Item tooltips omit Target range and Manual
-range; both remain in the character stats. Character stats derived from all equipment
+icon. Hover, focus or touch exposes a narrow translucent-black item tooltip with
+its name and generated icon badges instead of a description paragraph or stat rows.
+Power, active range and cooldown come first. Numeric values sit at each badge's
+bottom-right corner; damage type and the final weapon effect have no number.
+Each badge exposes its own weapon-specific explanation on hover, keyboard focus
+or touch, including critical stats, swing/projectile details and ailment stacking.
+Range follows the active auto-target/cursor-aim mode. Empty slots explain accepted
+gear types. Character stats derived from all equipment
 appear on the right, stacking below the slots on narrow screens. Attack timing is
 shown only as cooldown, without a duplicate attack-speed row.
 

@@ -14,6 +14,15 @@ Wardrobe composes controlled `ClassCard` components in one four-column row insid
 
 ## Rendering pipeline and caches
 
+EquipmentPanel receives item badge labels, atlas keys, optional values and explanations
+from `client-new/equipment-view.tsx`, which derives them from shared equipment,
+attack and ailment definitions. The shared UI bundles a transparent generated icon
+atlas and presents 236px black translucent tooltips. The item popup stays beside
+its slot for keyboard tab order. Badge explanations portal into the modal container
+(or the page for nonmodal stories) to avoid scrolling-content clipping while
+preserving modal focus and pointer interaction. Click/tap explicitly opens details;
+MUI handles hover/focus and closing. Gameplay calculations stay in the host.
+
 Drawing combines predicted local presentation with buffered remote actors. The camera centers the local player and projects the nearest wrapped copy of terrain, entities, attachments, cursor aim and navigation arrows. Sort sprites/scenery by depth; faded scenery does not change its shadow or collision behavior.
 
 - [village-background.ts](../../packages/client/src/village-background.ts) prepares village ground, grass and static passes only after the asset batch is ready and the village is first drawn. Its cache survives joins/leaves/reconnects; grass, shadow and contact-occlusion changes invalidate affected content.

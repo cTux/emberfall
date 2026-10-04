@@ -33,4 +33,5 @@ export type {
   EquipmentPanelProps,
   EquipmentSlotView,
   EquipmentStatView,
+  EquipmentBadgeView,
 } from "./components/EquipmentPanel";

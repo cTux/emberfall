@@ -40,12 +40,42 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   const sword = dialog.getByRole("button", { name: "Weapon: Warrior's sword" });
   await page.keyboard.press("Tab");
   await sword.focus();
-  await expect(page.getByRole("tooltip")).toContainText("Cooldown1 sec");
-  await expect(page.getByRole("tooltip")).not.toContainText("Attack speed");
+  const itemTooltip = page.getByRole("tooltip").filter({ hasText: "Warrior's sword" });
+  await expect(itemTooltip).toBeVisible();
+  await expect(itemTooltip.locator(".MuiTooltip-tooltip").first()).toHaveCSS(
+    "background-color",
+    "rgba(0, 0, 0, 0.88)",
+  );
+  expect(
+    (await itemTooltip.locator(".MuiTooltip-tooltip").first().boundingBox())!.width,
+  ).toBeLessThanOrEqual(236);
+  await expect(itemTooltip.getByRole("button", { name: "Power: 5", exact: true })).toBeVisible();
+  await expect(itemTooltip.getByRole("button", { name: "Range: 88", exact: true })).toBeVisible();
+  await expect(itemTooltip.getByRole("button", { name: "Cooldown: 1", exact: true })).toBeVisible();
+  await expect(itemTooltip).not.toContainText("Deal 5 damage");
+  const bleed = itemTooltip.getByRole("button", { name: "Bleed", exact: true });
+  await expect(bleed).toHaveText("");
+  // Tab from the focused slot into its portalless tooltip, inside the modal.
+  await page.keyboard.press("Tab");
+  await expect(itemTooltip.getByRole("button", { name: "Power: 5", exact: true })).toBeFocused();
+  await expect(page.getByRole("tooltip").last()).toContainText("Deal 5 damage");
+  await bleed.focus();
+  await bleed.hover();
+  await expect(page.getByRole("tooltip").last()).toContainText("10% chance to apply Bleed");
+  await page.getByRole("tooltip").last().hover();
+  await expect(bleed).toBeVisible();
+  await expect(page.getByRole("tooltip").last()).toContainText("new stacks refresh the duration");
+  await page.screenshot({ path: "test-results/equipment-badges-bleed.png" });
+  await bleed.focus();
+  await expect(bleed).toBeFocused();
+  await expect(itemTooltip).toBeVisible();
+  await expect(itemTooltip).not.toContainText("Attack speed");
   await expect(sword).toHaveCSS("border-top-width", "0px");
-  await sword.blur();
+  await page.mouse.move(0, 0);
+  await dialog.getByRole("heading", { name: "Equipment", exact: true }).click();
   await expect(page.getByRole("tooltip")).toBeHidden();
   const gloves = dialog.getByRole("button", { name: "Gloves: Empty" });
+  await page.keyboard.press("Tab");
   await gloves.focus();
   await expect(page.getByRole("tooltip")).toContainText("Accepts: Gloves");
   await expect(gloves.locator('[aria-hidden="true"]').first()).toHaveCSS("opacity", "0.25");
@@ -101,6 +131,20 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
       "Cooldown1 sec",
     );
     await expect(dialog).not.toContainText("Attack speed");
+    const weapon = dialog.locator('[data-equipment-slot="weapon"]');
+    await weapon.hover();
+    const badge = page.locator('[data-equipment-badge="range"]');
+    await expect(badge).toHaveAttribute(
+      "aria-label",
+      `Range: ${(classId === "warrior" ? 88 : classId === "ranger" ? 1000 : 250).toLocaleString("en")}`,
+    );
+    const effect = { warrior: "bleed", ranger: "poison", mage: "burn", druid: "roots" }[classId];
+    await page.locator(`[data-equipment-badge="${effect}"]`).last().hover();
+    await expect(page.getByRole("tooltip").last()).toContainText(
+      classId === "druid"
+        ? "Bosses take damage but remain mobile"
+        : "new stacks refresh the duration",
+    );
     const stats = dialog.getByRole("region", { name: "Character stats" });
     const automaticRange = { warrior: 88, ranger: 1000, mage: 250, druid: 250 }[classId];
     const manualRange = classId === "warrior" ? 88 : 1000;
@@ -113,11 +157,18 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect.poll(() => player.autoTarget).toBe(false);
     await physicalI();
     await expect(stats).toContainText(`Range${manualRange.toLocaleString("en")} units`);
+    await weapon.hover();
+    await expect(page.locator('[data-equipment-badge="range"]')).toHaveAttribute(
+      "aria-label",
+      `Range: ${manualRange.toLocaleString("en")}`,
+    );
     await physicalI();
     await page.keyboard.press("g");
     await expect.poll(() => player.autoTarget).toBe(true);
     await physicalI();
     await expect(stats).toContainText(`Range${automaticRange.toLocaleString("en")} units`);
+    await weapon.hover();
+    await expect(page.locator(`[data-equipment-badge="${effect}"]`).last()).toBeVisible();
     await page.screenshot({ path: `test-results/equipment-${classId}.png` });
     await dialog.getByRole("button", { name: "Close Equipment", exact: true }).click();
     await expect(dialog).toHaveCount(0);
@@ -135,6 +186,16 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
       .toBeLessThanOrEqual(width);
     await dialog.getByText("Damage reduction", { exact: true }).scrollIntoViewIfNeeded();
     await expect(dialog.getByText("Damage reduction", { exact: true })).toBeVisible();
+    await dialog.locator('[data-equipment-slot="weapon"]').hover();
+    await page.getByRole("button", { name: "Roots", exact: true }).hover();
+    await expect(page.getByRole("tooltip").last()).toContainText(
+      "Bosses take damage but remain mobile",
+    );
+    for (const tooltip of await page.getByRole("tooltip").all()) {
+      const box = (await tooltip.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width);
+    }
   }
   await page.screenshot({ path: "test-results/equipment-narrow.png" });
   await page.keyboard.press("Escape");
