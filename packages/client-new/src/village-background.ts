@@ -33,6 +33,7 @@ export function villageBackground(graphics: GraphicsSettings) {
     [environmentArt, wardrobeArt].some(
       (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== "true",
     ) ||
+    !terrainArt.complete ||
     !terrainArt.naturalWidth
   )
     return undefined;
