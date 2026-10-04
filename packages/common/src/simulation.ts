@@ -21,7 +21,7 @@ import type { SceneState, Enemy } from "./scene.ts";
 
 export const TICK_MS = 50;
 export const PLAYER_ATTACK_RANGE = defaultSpellRange({ classId: "warrior" });
-export const PLAYER_ATTACK_INTERVAL = 700;
+export const PLAYER_ATTACK_INTERVAL = 1000;
 export const PLAYER_ATTACK_DURATION = 260;
 const swordHits = new WeakMap<object, { sceneId: string; at: number; enemies: Set<number> }>();
 type CastRequest = Extract<ClientMessage, { type: "cast" }>;

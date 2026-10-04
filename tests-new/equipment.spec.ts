@@ -40,7 +40,8 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   const sword = dialog.getByRole("button", { name: "Weapon: Warrior's sword" });
   await page.keyboard.press("Tab");
   await sword.focus();
-  await expect(page.getByRole("tooltip")).toContainText("Attack speed");
+  await expect(page.getByRole("tooltip")).toContainText("Cooldown1 sec");
+  await expect(page.getByRole("tooltip")).not.toContainText("Attack speed");
   await expect(sword).toHaveCSS("border-top-width", "0px");
   await sword.blur();
   await expect(page.getByRole("tooltip")).toBeHidden();
@@ -96,6 +97,10 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect(dialog.locator('[data-equipped="true"]')).toHaveCount(1);
     const type = { warrior: "Physical", ranger: "Poison", mage: "Fire", druid: "Nature" }[classId];
     await expect(dialog.getByRole("region", { name: "Character stats" })).toContainText(type);
+    await expect(dialog.getByRole("region", { name: "Character stats" })).toContainText(
+      "Cooldown1 sec",
+    );
+    await expect(dialog).not.toContainText("Attack speed");
     await page.screenshot({ path: `test-results/equipment-${classId}.png` });
     await dialog.getByRole("button", { name: "Close Equipment", exact: true }).click();
     await expect(dialog).toHaveCount(0);

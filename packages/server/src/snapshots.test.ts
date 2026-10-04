@@ -225,7 +225,8 @@ test("every enemy overlapping during a swing is hit once, including late entrant
   scene.enemies.push({ id: 4, x: 2460, y: 1280, hitpoints: 50, angle: 0 });
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.enemies[3].hitpoints, 50, "no hits after the active window");
-  stepCombat(scene, [player], 10700, 0);
+  for (const enemy of scene.enemies) enemy.debuffs = undefined;
+  stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
     scene.enemies.map((e) => e.hitpoints),
     [40, 40, 45, 45],
@@ -278,7 +279,7 @@ test("kills drop experience and 10-percent coins; experience pickups reward play
   assert.equal(player.experience, experience + 1, "collection grants one extra experience");
   roll = 0.1;
   scene.enemies = [{ id: 2, x: 2480, y: 1280, hitpoints: 5, angle: 0 }];
-  stepCombat(scene, [player], 10700, 0);
+  stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
     ["experience"],

@@ -321,11 +321,11 @@ test("server scene lifecycle: proximity, unanimous votes, retract, membership ch
   scene.nextSpawn = Infinity;
   scene.spawns = [];
   scene.enemies = [{ id: 999, x: a.x + 45, y: a.y, hitpoints: 10, angle: 0 }];
-  a.attackAt = 24000;
+  a.attackAt = 23700;
   b.attackAt = 30000;
   tickScene(world, 24700, 0);
   assert.equal(scene.enemies[0].hitpoints, 5);
-  tickScene(world, 25400, 0);
+  tickScene(world, 25700, 0);
   assert.equal(scene.enemies.length, 0);
   assert.equal(a.experience, 1);
   assert.throws(() => sceneAction(world, a, { type: "returnLobby" }, 26000));
@@ -354,11 +354,11 @@ test("server scene lifecycle: proximity, unanimous votes, retract, membership ch
   assert.throws(() => sceneAction(world, b, { type: "returnLobby" }, 144001));
   b.x = boss.x - 70;
   b.y = boss.y;
-  for (let hit = 1; hit <= 39; hit++) tickScene(world, 145000 + hit * 700, 0);
+  for (let hit = 1; hit <= 39; hit++) tickScene(world, 145000 + hit * 1000, 0);
   assert.equal(scene.phase, "active");
   assert.equal(boss.hitpoints, 5);
   assert.equal(scene.enemies.filter((e) => e.kind === "boss").length, 1);
-  tickScene(world, 173000, 0);
+  tickScene(world, 185000, 0);
   assert.equal(scene.phase, "ended");
   assert.equal(scene.enemies.length, 0);
   const returnPosition = { x: b.x, y: b.y };
@@ -409,7 +409,7 @@ test("combat uses wrapped distances and warned melee damage respects its cooldow
   scene.spawns = [];
   a.x = 2;
   a.y = 1280;
-  a.attackAt = 15000;
+  a.attackAt = 14700;
   a.attackAngle = Math.PI; // Face across the seam; this test isolates wrapped hit detection.
   scene.enemies = [{ id: 999, x: FOREST.width - 20, y: 1280, hitpoints: 10, angle: 0 }];
   tickScene(world, 15700, 0);

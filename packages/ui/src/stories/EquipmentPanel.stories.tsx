@@ -53,7 +53,7 @@ const meta = {
     stats: [
       { label: "Power", value: "5" },
       { label: "Damage type", value: "Physical" },
-      { label: "Attack speed", value: "1.43 / sec" },
+      { label: "Cooldown", value: "1 sec" },
       { label: "Range", value: "88 units" },
       { label: "Critical chance", value: "5%" },
       { label: "Critical damage", value: "150%" },

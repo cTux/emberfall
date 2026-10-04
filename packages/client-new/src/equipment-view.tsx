@@ -111,7 +111,6 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
   return [
     { label: "Power", value: number(stats.power) },
     { label: "Damage type", value: stats.hasWeapon ? capitalize(stats.damageType) : "—" },
-    { label: "Attack speed", value: `${number(stats.attacksPerSecond)} / sec` },
     { label: "Cooldown", value: `${number(stats.attackIntervalMs / 1000)} sec` },
     { label: "Target range", value: `${number(stats.range)} units` },
     { label: "Manual range", value: `${number(stats.manualRange)} units` },
@@ -136,7 +135,7 @@ export function Equipment({ player }: { player: Player }) {
             ...player,
             classId: itemClass,
             equipment: { weapon: gear.id },
-          }).slice(0, 8)
+          }).slice(0, 7)
         : [];
     if (attack && attack !== "slash") {
       stats.push({ label: "Projectiles", value: number(ATTACK_DEFINITIONS[attack].count) });

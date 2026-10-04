@@ -16,7 +16,7 @@ Codex uses the shared forest theme with chapter tabs for controls, worlds and pa
 
 ## UI-02 — Combat controls
 
-Settings → Gameplay includes saved Auto-attack (F) and Auto-target (G) toggles, both enabled by default. Hotkeys ignore repeated presses, text entry, and open dialogs. With auto-attack disabled, holding LMB casts the class default spell once per 700 ms cooldown. Releasing, opening a dialog, hiding the tab, or losing focus stops requesting casts; an already-started swing finishes without resetting its cooldown. Training-area restrictions still apply.
+Settings → Gameplay includes saved Auto-attack (F) and Auto-target (G) toggles, both enabled by default. Hotkeys ignore repeated presses, text entry, and open dialogs. With auto-attack disabled, holding LMB casts the class default spell once per one-second base cooldown. Releasing, opening a dialog, hiding the tab, or losing focus stops requesting casts; an already-started swing finishes without resetting its cooldown. Training-area restrictions still apply.
 
 With auto-target disabled, melee aim follows the cursor and ranged spells fly straight around the cursor direction for up to 1000 units, even without an enemy. With auto-target enabled, ranged spells aim around the nearest living enemy in default range. Beyond default spell range, a transparent circle marks warrior 88, ranger 1000, or mage/druid 250 units (1000 for cursor-aimed mage/druid). Cursor projection follows the village and wrapped forest cameras. Validated combat input is separate from movement; the server owns cooldowns and expires held-LMB input after 250 ms without a heartbeat. Local presentation shares aim, spread and projectile motion with authoritative combat.
 
@@ -51,7 +51,8 @@ The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots
 amulet/off-hand/ring. Slots have no border. Empty slots show a translucent fallback
 image; equipped weapons show their original icon. Hover, focus or touch exposes
 item stats or the accepted gear types. Character stats derived from all equipment
-appear on the right, stacking below the slots on narrow screens.
+appear on the right, stacking below the slots on narrow screens. Attack timing is
+shown only as cooldown, without a duplicate attack-speed row.
 
 Normal outgoing damage numbers use physical parchment, fire orange, poison lime
 and nature green. Critical numbers override the type color with white text and a

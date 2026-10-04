@@ -220,7 +220,12 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
     s.enemies.map((e) => e.hitpoints),
     [98, 98],
   );
-  tickCompanion(p, s, 10700, 0);
+  tickCompanion(p, s, 10999, 0);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [98, 98],
+  );
+  tickCompanion(p, s, 11000, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
     [96, 96],
@@ -641,7 +646,9 @@ test("class attacks fire once per cycle and ranged classes never deal a melee sl
       s.playerShots!.map((shot) => shot.id),
       ids,
     );
-    stepCombat(s, [p], 10700, 0);
+    stepCombat(s, [p], 10999, 0);
+    assert.equal(s.playerShots!.length, 2);
+    stepCombat(s, [p], 11000, 0);
     assert.equal(s.playerShots!.length, 4);
   }
 });
@@ -683,15 +690,15 @@ test("manual cast requests acknowledge acceptance, cooldown rejection and duplic
   assert.equal(player.attackId, 1);
   tickPlayerCombat(arena, [player], 1400, 0.05);
   assert.equal(player.attackAt, 1000);
-  assert(cast(3, 1700));
-  tickPlayerCombat(arena, [player], 1700, 0.05);
-  assert.equal(player.attackAt, 1700);
-  assert.equal(cast(3, 2400), false, "a duplicate ID cannot fire twice");
-  tickPlayerCombat(arena, [player], 2400, 0.05);
-  assert.equal(player.attackAt, 1700);
+  assert(cast(3, 2000));
+  tickPlayerCombat(arena, [player], 2000, 0.05);
+  assert.equal(player.attackAt, 2000);
+  assert.equal(cast(3, 3000), false, "a duplicate ID cannot fire twice");
+  tickPlayerCombat(arena, [player], 3000, 0.05);
+  assert.equal(player.attackAt, 2000);
   player.autoAttack = true;
-  tickPlayerCombat(arena, [player], 2400, 0.05);
-  assert.equal(player.attackAt, 2400);
+  tickPlayerCombat(arena, [player], 3000, 0.05);
+  assert.equal(player.attackAt, 3000);
 });
 
 test("slightly early held casts wait for cooldown and retain aim without duplicate launches", async () => {
@@ -716,25 +723,25 @@ test("slightly early held casts wait for cooldown and retain aim without duplica
       );
     assert(cast(1, 1000));
     tickPlayerCombat(arena, [player], 1000, 0);
-    assert.equal(cast(2, 1599), false, "requests beyond the buffer are rejected");
-    assert(cast(3, 1600));
-    assert.equal(player.attackAt, 1700, "the server still enforces the full cooldown");
-    assert.equal(cast(4, 1650), false, "another request cannot replace the buffered cast");
+    assert.equal(cast(2, 1899), false, "requests beyond the buffer are rejected");
+    assert(cast(3, 1900));
+    assert.equal(player.attackAt, 2000, "the server still enforces the full cooldown");
+    assert.equal(cast(4, 1950), false, "another request cannot replace the buffered cast");
     player.aimY = player.y + 200;
-    tickPlayerCombat(arena, [player], 1699, 0);
+    tickPlayerCombat(arena, [player], 1999, 0);
     assert.equal(arena.playerShots!.length, 2);
-    tickPlayerCombat(arena, [player], 1700, 0);
+    tickPlayerCombat(arena, [player], 2000, 0);
     assert.equal(arena.playerShots!.length, 4);
     assert.equal(arena.playerShots![2].castId, 3);
     assert.equal(arena.playerShots![2].angle, -Math.PI / 60, "buffered casts retain request aim");
-    tickPlayerCombat(arena, [player], 1750, 0);
+    tickPlayerCombat(arena, [player], 2050, 0);
     assert.equal(arena.playerShots!.length, 4, "buffered casts fire once");
     for (let id = 5; id < 15; id++) {
-      assert(cast(id, player.attackAt! + 650));
+      assert(cast(id, player.attackAt! + 950));
       tickPlayerCombat(arena, [player], player.attackAt!, 0);
       assert.equal(arena.playerShots!.at(-1)!.castId, id);
     }
-    assert.equal(player.attackAt, 8700, "repeated early arrivals never shorten cooldown");
+    assert.equal(player.attackAt, 12000, "repeated early arrivals never shorten cooldown");
   }
 });
 
@@ -908,6 +915,8 @@ test("manual client prediction casts on hold, preserves release cooldown, and tr
   assert.equal(movement.animateAttack(displayed, world, 400), false);
   displayed.attacking = true;
   assert.equal(movement.animateAttack(displayed, world, 600), false);
-  assert.equal(movement.animateAttack(displayed, world, 710), true);
-  assert.equal(movement.animateAttack(displayed, world, 720), false);
+  movement.render({ ...world, serverNow: 11000 }, 1000);
+  assert.equal(movement.animateAttack(displayed, world, 1009), false);
+  assert.equal(movement.animateAttack(displayed, world, 1010), true);
+  assert.equal(movement.animateAttack(displayed, world, 1020), false);
 });

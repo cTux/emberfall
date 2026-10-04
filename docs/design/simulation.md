@@ -31,6 +31,10 @@ Village and forest share 4800×2560 wrapped geometry. Player movement passes thr
 
 Warrior/Bear melee uses a smoothed forward half-disc and per-swing hit tracking. Projectile movement and class effects share `fireClassAttack`, `advancePlayerShot`, `tickPlayerShots` and `hitEnemy`. Manual casts validate cooldown, life, area epoch, class and training range; increasing request IDs identify processed/rejected casts and the accepted attack. Presentation prediction is described in [movement](movement.md).
 
+Player base attacks and Bear share a 1000 ms cooldown in both runtimes; the new
+runtime derives equipped attack timing from gear stats. UI shows the resulting
+cooldown without also showing attacks per second.
+
 Balance numbers are maintained once in the [combat specification](../specs/combat.md), with executable constants in the common package. Do not fork separate class rules for training, forest or the client.
 
 ## Scaling, rewards and temporary state
