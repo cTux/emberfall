@@ -121,8 +121,6 @@ export function Arena({
     let lastSlashAt = -Infinity,
       lastHit = 0,
       lastWarning = 0;
-    const movingLights: HTMLCanvasElement[] = [];
-    const lanternTexture = document.createElement("canvas");
     const playerMasks = new Map<HTMLImageElement, HTMLCanvasElement[]>();
     const characterMask = (image: HTMLImageElement, frame: number, facing: number) => {
       if (!image.naturalWidth) return undefined;
@@ -788,23 +786,8 @@ export function Arena({
             continue;
           const texture = torchTextures[i];
           if (!texture) continue;
-          const movingLight = (movingLights[i] ??= document.createElement("canvas"));
-          // Cache the static blockers; update only the moving character shadows.
-          if (movingLight.width !== light.radius * 2)
-            movingLight.width = movingLight.height = light.radius * 2;
-          const lightCtx = movingLight.getContext("2d")!;
-          lightCtx.resetTransform();
-          lightCtx.clearRect(0, 0, movingLight.width, movingLight.height);
-          lightCtx.globalCompositeOperation = "source-over";
-          lightCtx.drawImage(texture, 0, 0);
-          if (quality.current.shadows) {
-            lightCtx.translate(light.radius - light.x, light.radius - light.y);
-            lightCtx.globalCompositeOperation = "destination-out";
-            for (const caster of dynamic) castShadow(lightCtx, caster, light);
-          }
+          const movingLight = lightTexture(light, dynamic, quality.current.shadows, texture);
           ctx.globalAlpha = 0.9 + Math.sin(now / 190 + i) * 0.1;
-          const dynamicTexture = movingLight as HTMLCanvasElement & { textureRevision?: number };
-          dynamicTexture.textureRevision = (dynamicTexture.textureRevision ?? 0) + 1;
           ctx.drawImage(movingLight, light.x - light.radius, light.y - light.radius);
         }
         ctx.globalAlpha = 1;
@@ -819,12 +802,7 @@ export function Arena({
             owner: player.id,
           };
           ctx.drawImage(
-            lightTexture(
-              lantern,
-              [...visibleScenery, ...dynamic],
-              quality.current.shadows,
-              lanternTexture,
-            ),
+            lightTexture(lantern, [...visibleScenery, ...dynamic], quality.current.shadows),
             lantern.x - lantern.radius,
             lantern.y - lantern.radius,
           );

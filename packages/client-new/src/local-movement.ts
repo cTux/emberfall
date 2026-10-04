@@ -43,7 +43,7 @@ export class LocalMovement {
   private castSeq = 0;
   private requestAt = -Infinity;
   private casts = new Map<number, number>();
-  private shots: PlayerShot[] = [];
+  private shots: (PlayerShot & { confirmedId?: number })[] = [];
   private shotCastAt = -Infinity;
   private shotsAt = 0;
   private sourceAt = 0;
@@ -300,7 +300,7 @@ export class LocalMovement {
           shot.castId !== undefined
             ? (this.base?.castSeq ?? 0) >= shot.castId &&
               (this.source?.serverNow ?? 0) >= (this.base?.attackAt ?? 0)
-            : (this.source?.serverNow ?? 0) >= shot.castAt!;
+            : (this.base?.attackAt ?? -Infinity) >= shot.castAt!;
         if (acknowledged) {
           const candidates = confirmed?.playerShots?.filter(
             (s) =>
@@ -309,22 +309,44 @@ export class LocalMovement {
               !matched.has(s.id),
           );
           const serverShot =
-            candidates?.find((s) => s.targetId === shot.targetId) ?? candidates?.[0];
+            shot.confirmedId !== undefined
+              ? candidates?.find((s) => s.id === shot.confirmedId)
+              : (candidates?.find((s) => s.targetId === shot.targetId) ?? candidates?.[0]);
           if (!serverShot) return false;
           matched.add(serverShot.id);
           shot.id = serverShot.id;
+          shot.confirmedId = serverShot.id;
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
-          shot.angle = serverShot.angle;
+          // A ballistic visual keeps its launch heading. Re-aiming it from a
+          // newer server origin creates a visible kink in the flight path.
         }
-        return !advancePlayerShot(shot, scene.enemies, dt) && shot.remaining > 0.001;
+        // Buffered enemies are behind the local shot's clock. They must not
+        // invent an impact that hides a projectile the server still has alive.
+        advancePlayerShot(shot, [], dt);
+        return shot.remaining > 0.001;
       });
       if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
-        const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
-        fireClassAttack(cast, { ...player, attackAt: this.attackAt });
-        this.shots.push(...cast.playerShots);
-        if (cast.playerShots.length) this.shotCastAt = this.attackAt;
+        const known =
+          confirmed?.playerShots?.filter(
+            (shot) =>
+              shot.ownerId === player.id &&
+              (this.attackId !== undefined
+                ? shot.castId === this.attackId
+                : shot.castAt === this.attackAt),
+          ) ?? [];
+        if (known.length) {
+          this.shots.push(
+            ...known.map((shot) => ({ ...shot, confirmedId: shot.id, hitIds: [...shot.hitIds] })),
+          );
+          this.shotCastAt = this.attackAt;
+        } else if ((this.base?.attackAt ?? -Infinity) < this.attackAt) {
+          const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
+          fireClassAttack(cast, { ...player, attackAt: this.attackAt });
+          this.shots.push(...cast.playerShots);
+          if (cast.playerShots.length) this.shotCastAt = this.attackAt;
+        }
       }
       // A target absent from our snapshots cannot be predicted. Launch that server cast here too.
       const missed =
@@ -336,7 +358,9 @@ export class LocalMovement {
             (s.castId === undefined || !this.casts.has(s.castId)),
         ) ?? [];
       for (const shot of missed)
-        this.shots.push({ ...shot, x: player.x, y: player.y, hitIds: [...shot.hitIds] });
+        // Late discoveries are already in flight. Moving them back to the
+        // player while keeping the server's remaining range truncates the shot.
+        this.shots.push({ ...shot, confirmedId: shot.id, hitIds: [...shot.hitIds] });
       if (missed.length) this.shotCastAt = Math.max(...missed.map((s) => s.castAt!));
     }
     // Only replace our projectiles; other players retain snapshot interpolation.
