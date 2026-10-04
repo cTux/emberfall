@@ -11,7 +11,7 @@ export interface ClassCardProps {
   portrait: ReactNode;
   weapon: ClassCardItem;
   spell: ClassCardItem;
-  stats: { level: number; experience: number; maxHitpoints: number; maxManapoints: number };
+  stats: { level: number; experience: number; maxHitpoints: number; power: number };
   selected: boolean;
   disabled?: boolean;
   onSelect(): void;
@@ -130,7 +130,7 @@ export function ClassCard({
               ["Level", stats.level],
               ["XP", stats.experience],
               ["HP", stats.maxHitpoints],
-              ["MP", stats.maxManapoints],
+              ["Power", stats.power],
             ] as const
           ).map(([label, value]) => (
             <Box key={label} sx={{ display: "flex", justifyContent: "space-between", gap: 0.5 }}>

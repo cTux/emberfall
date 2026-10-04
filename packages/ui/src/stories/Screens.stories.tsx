@@ -283,7 +283,7 @@ export const Wardrobe: Story = {
                     icon: <Typography>S</Typography>,
                     description: `${description}. Cooldown: 0.7 seconds.`,
                   }}
-                  stats={{ level: 1, experience: 0, maxHitpoints: 100, maxManapoints: 50 }}
+                  stats={{ level: 1, experience: 0, maxHitpoints: 100, power: 5 }}
                   selected={selected === name}
                   onSelect={() => select(name)}
                 />
@@ -363,25 +363,8 @@ export const Hud: Story = {
           sx={{ justifyContent: "space-between", alignItems: "flex-start" }}
         >
           <Stack spacing={1} sx={{ width: "100%", maxWidth: 320 }}>
-            <PartyCard
-              name="Astrid"
-              level={1}
-              health={85}
-              maxHealth={100}
-              mana={35}
-              maxMana={50}
-              local
-              host
-            />
-            <PartyCard
-              name="Bjorn"
-              level={1}
-              health={100}
-              maxHealth={100}
-              mana={50}
-              maxMana={50}
-              away
-            />
+            <PartyCard name="Astrid" level={1} health={85} maxHealth={100} local host />
+            <PartyCard name="Bjorn" level={1} health={100} maxHealth={100} away />
             <PerformanceMonitor
               samples={[
                 { fps: 60, latency: 30 },

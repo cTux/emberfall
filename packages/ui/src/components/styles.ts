@@ -15,6 +15,28 @@ export const PartyCardStyled = styled(Paper)(({ theme }) => ({
   boxShadow: "none",
 }));
 
+export const PartyPortraitStyled = styled(Box)(({ theme }) => ({
+  position: "relative",
+  width: theme.spacing(3),
+  height: theme.spacing(3),
+  flexShrink: 0,
+  "& > :first-child": { width: "100%", height: "100%", display: "block" },
+}));
+
+export const PartyMarkerStyled = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "side",
+})<{ side: "left" | "right" }>(({ theme, side }) => ({
+  position: "absolute",
+  top: 0,
+  [side]: 0,
+  display: "flex",
+  fontSize: theme.typography.pxToRem(9),
+  padding: theme.spacing(0.125),
+  borderRadius: theme.shape.borderRadius,
+  color: theme.palette.primary.main,
+  backgroundColor: theme.palette.background.default,
+}));
+
 export const BossHealthStyled = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   textAlign: "center",
