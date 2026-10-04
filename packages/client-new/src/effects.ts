@@ -1,50 +1,7 @@
+import { projectLabel } from "./navigation.ts";
+import type { AddLabel } from "./WorldLabels";
 import { nearbyInteraction } from "@emberfall/common-new";
 import type { WorldState } from "@emberfall/common-new";
-
-export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {
-  if (!text) return;
-  ctx.save();
-  ctx.font = '13px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  const lines = [""];
-  for (const character of text) {
-    if (ctx.measureText(lines.at(-1)! + character).width > 200) lines.push("");
-    lines[lines.length - 1] += character;
-  }
-  const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 20;
-  const height = lines.length * 17 + 14;
-  const bottom = y - 72;
-  const left = x - width / 2;
-  const right = x + width / 2;
-  const top = bottom - height;
-  ctx.fillStyle = "#15211eee";
-  ctx.strokeStyle = "#b9c9b65c";
-  ctx.lineWidth = 1;
-  ctx.shadowColor = "#00000055";
-  ctx.shadowBlur = 8;
-  ctx.shadowOffsetY = 3;
-  ctx.beginPath();
-  ctx.moveTo(left + 8, top);
-  ctx.lineTo(right - 8, top);
-  ctx.quadraticCurveTo(right, top, right, top + 8);
-  ctx.lineTo(right, bottom - 8);
-  ctx.quadraticCurveTo(right, bottom, right - 8, bottom);
-  ctx.lineTo(x + 4, bottom);
-  ctx.lineTo(x, bottom + 4);
-  ctx.lineTo(x - 4, bottom);
-  ctx.lineTo(left + 8, bottom);
-  ctx.quadraticCurveTo(left, bottom, left, bottom - 8);
-  ctx.lineTo(left, top + 8);
-  ctx.quadraticCurveTo(left, top, left + 8, top);
-  ctx.closePath();
-  ctx.fill();
-  ctx.shadowColor = "transparent";
-  ctx.stroke();
-  ctx.fillStyle = "#f4ecd6";
-  lines.forEach((line, i) => ctx.fillText(line, x, top + 15.5 + i * 17));
-  ctx.restore();
-}
 
 export function vegetationSway(
   x: number,
@@ -217,17 +174,15 @@ export function drawNameBadge(
   y: number,
   name: string,
   active: boolean,
+  add: AddLabel,
 ) {
-  ctx.save();
-  ctx.font = '9px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "center";
-  const label = active ? `(E) ${name}` : name;
-  const width = ctx.measureText(label).width + 12;
-  ctx.fillStyle = active ? "#786747" : "#302d20";
-  ctx.fillRect(x - width / 2, y - 20, width, 13);
-  ctx.fillStyle = "#e0c995";
-  ctx.fillText(label, x, y - 10);
-  ctx.restore();
+  add({
+    id: `badge:${name}:${x}:${y}`,
+    kind: "badge",
+    text: name,
+    active,
+    ...projectLabel(ctx, x, y - 7),
+  });
 }
 
 export function drawAtmosphere(
@@ -275,7 +230,7 @@ export function drawPlayerHealth(
   boss = false,
 ) {
   ctx.save();
-  ctx.font = '8px "Alegreya Sans", sans-serif';
+  ctx.font = '11px "Alegreya Sans", sans-serif';
   ctx.textAlign = "center";
   ctx.textBaseline = "alphabetic";
   const metrics = ctx.measureText(name);

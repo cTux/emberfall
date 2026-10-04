@@ -2,6 +2,22 @@ import { test, expect } from "@playwright/test";
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test("world labels wrap long multilingual chat and pass input through", async ({ page }) => {
+  await page.goto(story("components-worldlabel--long-chat"));
+  const label = page.locator('[data-kind="chat"]').first();
+  await expect(label).toContainText("Привіт!");
+  await expect(label).toHaveCSS("pointer-events", "none");
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    expect(await label.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({ path: `test-results/world-label-${width}.png` });
+  }
+});
+
 test("wardrobe keeps one row and independent keyboard and touch details", async ({ page }) => {
   await page.goto(story("screens-compositions--wardrobe"));
   const ranger = page.getByRole("button", { name: "Ranger select" });
