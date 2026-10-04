@@ -1,4 +1,3 @@
-import { classSprite } from "./characters";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { classDetails } from "./class-details";
 import { Codex } from "./Codex";
@@ -427,15 +426,7 @@ function App() {
                 level={p.level}
                 health={displayedHp[p.id] ?? p.hitpoints}
                 maxHealth={p.maxHitpoints}
-                mana={p.manapoints}
-                maxMana={p.maxManapoints}
-                portrait={
-                  <span
-                    className="portrait"
-                    style={{ backgroundImage: `url(${classSprite(p.classId)})` }}
-                    aria-hidden="true"
-                  />
-                }
+                portrait={<img src={`/assets/portraits/${p.classId ?? "warrior"}.png`} alt="" />}
                 local={p.id === playerId}
                 host={p.id === world.hostId}
                 away={p.scene !== me?.scene}
@@ -702,7 +693,7 @@ function App() {
                         level: stats?.level ?? 1,
                         experience: stats?.experience ?? 0,
                         maxHitpoints: stats?.maxHitpoints ?? 100,
-                        maxManapoints: stats?.maxManapoints ?? 50,
+                        power: id === "warrior" || id === "ranger" ? 5 : 3,
                       }}
                     />
                   );

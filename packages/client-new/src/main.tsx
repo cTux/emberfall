@@ -9,6 +9,7 @@ import { classDetails } from "./class-details";
 import { Equipment } from "./equipment-view";
 import { Codex } from "./Codex";
 import {
+  characterStats,
   enemyMaxHealth,
   CLASS_IDS,
   CLASS_LABELS,
@@ -477,15 +478,7 @@ function App({
                 level={p.level}
                 health={displayedHp[p.id] ?? p.hitpoints}
                 maxHealth={p.maxHitpoints}
-                mana={p.manapoints}
-                maxMana={p.maxManapoints}
-                portrait={
-                  <span
-                    className="portrait"
-                    style={{ backgroundImage: `url(${classSprite(p.classId)})` }}
-                    aria-hidden="true"
-                  />
-                }
+                portrait={<img src={classSprite(p.classId)} alt="" />}
                 local={p.id === playerId}
                 host={p.id === world.hostId}
                 away={p.scene !== me?.scene}
@@ -761,7 +754,7 @@ function App({
                         level: stats?.level ?? 1,
                         experience: stats?.experience ?? 0,
                         maxHitpoints: stats?.maxHitpoints ?? 100,
-                        maxManapoints: stats?.maxManapoints ?? 50,
+                        power: characterStats({ classId: id, equipment: stats?.equipment }).power,
                       }}
                     />
                   );

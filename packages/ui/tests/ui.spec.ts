@@ -2,6 +2,35 @@ import { test, expect } from "@playwright/test";
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test("party keeps a single HP row with portrait corner icons", async ({ page }, testInfo) => {
+  await page.goto(story("components-partycard--host-away"));
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    const card = page.getByRole("article");
+    const meter = card.getByRole("progressbar", { name: "Astrid, lvl 1" });
+    await expect(card.getByRole("progressbar")).toHaveCount(1);
+    await expect(card.getByText("Astrid, lvl 1", { exact: true })).toBeVisible();
+    await expect(card.getByText("Host", { exact: true })).toHaveCount(0);
+    const host = card.getByRole("img", { name: "Host", exact: true });
+    const dimension = card.getByRole("img", { name: "In another dimension" });
+    const portrait = host.locator("..");
+    const p = (await portrait.boundingBox())!;
+    const h = (await host.boundingBox())!;
+    const d = (await dimension.boundingBox())!;
+    const m = (await meter.boundingBox())!;
+    expect(p.height).toBe(m.height);
+    expect(p.y).toBe(m.y);
+    expect(h.y).toBe(p.y);
+    expect(d.y).toBe(p.y);
+    expect(d.x).toBe(p.x);
+    expect(h.x + h.width).toBeCloseTo(p.x + p.width, 0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({ path: testInfo.outputPath(`party-${width}.png`) });
+  }
+});
+
 test.describe("equipment touch badges", () => {
   test.use({ hasTouch: true, viewport: { width: 320, height: 800 } });
   test("tap opens the item and an effect explanation", async ({ page }) => {
@@ -43,6 +72,8 @@ test("equipment exposes borderless slots, keyboard details and narrow stats", as
 
 test("wardrobe keeps one row and independent keyboard and touch details", async ({ page }) => {
   await page.goto(story("screens-compositions--wardrobe"));
+  await expect(page.getByText("Power", { exact: true })).toHaveCount(4);
+  await expect(page.getByText("MP", { exact: true })).toHaveCount(0);
   const ranger = page.getByRole("button", { name: "Ranger select" });
   await ranger.focus();
   await page.keyboard.press("Enter");

@@ -38,17 +38,8 @@ export const Meter: Story = {
 export const Party: Story = {
   render: () => (
     <Stack spacing={1}>
-      <PartyCard
-        name="Astrid"
-        level={1}
-        health={75}
-        maxHealth={100}
-        mana={30}
-        maxMana={50}
-        host
-        local
-      />
-      <PartyCard name="Bjorn" level={1} health={0} maxHealth={100} mana={50} maxMana={50} away />
+      <PartyCard name="Astrid" level={1} health={75} maxHealth={100} host local />
+      <PartyCard name="Bjorn" level={1} health={0} maxHealth={100} away />
       <PartyCard name="Bear companion" level={1} health={150} maxHealth={150} />
     </Stack>
   ),

@@ -79,8 +79,8 @@ test("fractional stats and damage render as whole numbers in wardrobe, HUD and b
   await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const party = page.getByRole("article", { name: "Hero", exact: true });
   await expect(party.getByText("76 / 100", { exact: true })).toBeVisible();
-  await expect(party.getByText("20 / 51", { exact: true })).toBeVisible();
-  await expect(party.getByRole("progressbar", { name: "Hero HP" })).toHaveAttribute(
+  await expect(party.getByRole("progressbar")).toHaveCount(1);
+  await expect(party.getByRole("progressbar", { name: "Hero, lvl 1" })).toHaveAttribute(
     "aria-valuenow",
     "75.6",
   );
@@ -88,9 +88,9 @@ test("fractional stats and damage render as whole numbers in wardrobe, HUD and b
   await expect(page.locator("body")).toHaveAttribute("data-damage-labels", '["8"]');
   await page.keyboard.press("e");
   const wardrobe = page.getByRole("dialog", { name: "Wardrobe" });
-  await expect(
-    wardrobe.getByText("Level 1 · XP 2760 · HP 100 · MP 51", { exact: true }),
-  ).toHaveCount(4);
+  await expect(wardrobe.getByText("Power", { exact: true })).toHaveCount(4);
+  await expect(wardrobe.getByText("MP", { exact: true })).toHaveCount(0);
+  await expect(wardrobe.locator("dd").filter({ hasText: /^2760$/ })).toHaveCount(4);
   await page.screenshot({ path: "test-results/rounded-wardrobe.png" });
   await page.keyboard.press("Escape");
   world.players[0].scene = "forest";

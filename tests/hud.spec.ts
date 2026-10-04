@@ -29,18 +29,14 @@ test("HUD surfaces match and draggable panels and windows persist across session
     "background-color",
     "rgba(0, 0, 0, 0)",
   );
-  const hp = page.getByRole("progressbar", { name: "Panel hero HP" });
+  const hp = page.getByRole("progressbar", { name: "Panel hero, lvl 1" });
   await expect(hp).toHaveCSS("background-color", "rgb(25, 40, 32)");
   await expect(hp.locator(".MuiLinearProgress-bar")).toHaveCSS("opacity", "1");
   const fill = await hp
     .locator(".MuiLinearProgress-bar")
     .evaluate((element) => getComputedStyle(element).backgroundColor);
   expect(fill).not.toMatch(/rgba|\/\s*0\./);
-  const manaFill = await page
-    .getByRole("progressbar", { name: "Panel hero MP" })
-    .locator(".MuiLinearProgress-bar")
-    .evaluate((element) => getComputedStyle(element).backgroundColor);
-  expect(fill).not.toBe(manaFill);
+  await expect(page.getByRole("progressbar", { name: "Panel hero MP" })).toHaveCount(0);
   await drag(page, fps, 430, 70);
   await drag(page, dps, 410, 100);
   const fpsTransform = await fps.evaluate((element) => element.style.transform);
@@ -118,15 +114,12 @@ test("nickname persists in a new session, viewport is full, party bars and contr
   await next.goto("/");
   await expect(next.getByLabel("Your adventurer name")).toHaveValue("Persistent hero");
   await next.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(next.getByRole("progressbar", { name: "Persistent hero HP" })).toHaveAttribute(
+  await expect(next.getByRole("progressbar", { name: "Persistent hero, lvl 1" })).toHaveAttribute(
     "aria-valuenow",
     "100",
   );
-  await expect(next.getByRole("progressbar", { name: "Persistent hero MP" })).toHaveAttribute(
-    "aria-valuemax",
-    "50",
-  );
-  await expect(next.getByText("Lv. 1")).toBeVisible();
+  await expect(next.getByRole("progressbar", { name: "Persistent hero MP" })).toHaveCount(0);
+  await expect(next.getByText("Persistent hero, lvl 1", { exact: true })).toBeVisible();
   await expect(next.locator("header, footer")).toHaveCount(0);
   for (const viewport of [
     { width: 1440, height: 900 },

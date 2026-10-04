@@ -1,15 +1,16 @@
-import { Avatar, Chip, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Stack, Tooltip } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCrown } from "@fortawesome/free-solid-svg-icons/faCrown";
+import { faDoorOpen } from "@fortawesome/free-solid-svg-icons/faDoorOpen";
 import type { ReactNode } from "react";
 import { StatusMeter } from "./StatusMeter";
-import { PartyCardStyled } from "./styles";
+import { PartyCardStyled, PartyPortraitStyled, PartyMarkerStyled } from "./styles";
 
 export interface PartyCardProps {
   name: string;
   level: number;
   health: number;
   maxHealth: number;
-  mana?: number;
-  maxMana?: number;
   portrait?: ReactNode;
   host?: boolean;
   local?: boolean;
@@ -21,8 +22,6 @@ export function PartyCard({
   level,
   health,
   maxHealth,
-  mana,
-  maxMana,
   portrait,
   host,
   local,
@@ -31,30 +30,32 @@ export function PartyCard({
   return (
     <PartyCardStyled as="article" aria-label={`${name}${away ? ", in another dimension" : ""}`}>
       <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-        {portrait && typeof portrait !== "string" ? (
-          portrait
-        ) : (
-          <Avatar src={typeof portrait === "string" ? portrait : undefined} alt="">
-            {name.slice(0, 1)}
-          </Avatar>
-        )}
-        <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-          <Stack direction="row" spacing={0.5} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-            <Typography noWrap sx={{ fontWeight: 700 }}>
-              {name}
-              {local ? " (you)" : ""}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Lv. {level}
-            </Typography>
-            {away && <Chip size="small" label="Dimension" variant="outlined" />}
-            {host && <Chip size="small" label="Host" aria-label="Host" variant="outlined" />}
-          </Stack>
-          <StatusMeter label={`${name} HP`} value={health} max={maxHealth} />
-          {mana !== undefined && maxMana !== undefined && (
-            <StatusMeter label={`${name} MP`} value={mana} max={maxMana} color="info" />
+        <PartyPortraitStyled>
+          {portrait && typeof portrait !== "string" ? (
+            portrait
+          ) : (
+            <Avatar src={typeof portrait === "string" ? portrait : undefined} alt="">
+              {name.slice(0, 1)}
+            </Avatar>
           )}
-        </Stack>
+          {away && (
+            <Tooltip title="In another dimension">
+              <PartyMarkerStyled side="left" role="img" aria-label="In another dimension">
+                <FontAwesomeIcon icon={faDoorOpen} aria-hidden="true" />
+              </PartyMarkerStyled>
+            </Tooltip>
+          )}
+          {host && (
+            <Tooltip title="Host">
+              <PartyMarkerStyled side="right" role="img" aria-label="Host">
+                <FontAwesomeIcon icon={faCrown} aria-hidden="true" />
+              </PartyMarkerStyled>
+            </Tooltip>
+          )}
+        </PartyPortraitStyled>
+        <Box sx={{ flex: 1, minWidth: 0 }} aria-label={local ? "Your character" : undefined}>
+          <StatusMeter label={`${name}, lvl ${level}`} value={health} max={maxHealth} />
+        </Box>
       </Stack>
     </PartyCardStyled>
   );

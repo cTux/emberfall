@@ -34,15 +34,7 @@ function GameInterface() {
   return (
     <GameUiProvider>
       <Stack spacing={2}>
-        <PartyCard
-          name="Astrid"
-          level={1}
-          health={80}
-          maxHealth={100}
-          mana={35}
-          maxMana={50}
-          local
-        />
+        <PartyCard name="Astrid" level={1} health={80} maxHealth={100} local />
         <Button variant="contained">Enter forest</Button>
       </Stack>
     </GameUiProvider>
@@ -62,7 +54,7 @@ Windows are 400px wide with a maximum height of 480px, clamped to the viewport w
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | GameWindow         | Controlled `open`, `title`, `onClose`, children; `modal=false` for inline panels. Modal focus trap, Escape and focus restoration come from MUI. Pointer-drag the title; positions persist when the host provides `PanelPositionContext`; `positionKey` defaults to the window title. |
 | StatusMeter        | `label`, `value`, `max`, semantic `color`. Clamps invalid/overflow values; exposes actual units to assistive technology.                                                                                                                                                             |
-| PartyCard          | Name, level, HP/MP, optional portrait/host/local/away. Also supports companions without mana. Away status is explicit text for readability.                                                                                                                                          |
+| PartyCard          | Name and level inside the HP bar; optional portrait/host/local/away. Portrait height matches HP; accessible host and dimension icons occupy its top corners.                                                                                                                         |
 | WorldList          | Typed world summaries, selected ID, disabled state, join/create callbacks; handles locked, full and empty states.                                                                                                                                                                    |
 | ChoiceCard         | Title, description, details, icon, selected/disabled and `onSelect`. Reuse for general exclusive choices.                                                                                                                                                                            |
 | SettingToggle      | Controlled label, checked/disabled and boolean `onChange`.                                                                                                                                                                                                                           |
