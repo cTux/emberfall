@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import type { WorldState } from "../packages/common/src/index";
 
-test("combat toggles persist, hotkeys ignore dialogs, and pointer input shows range", async ({
+test("combat toggles persist, hotkeys ignore dialogs, and pointer input casts without range overlays", async ({
   page,
 }) => {
   const inputs: Record<string, unknown>[] = [];
@@ -99,25 +99,12 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input shows ra
   expect(Number(inputs.at(-1)?.aimX)).toBeGreaterThan(2400);
   await page.mouse.up();
   await expect.poll(() => inputs.at(-1)?.attacking).toBe(false);
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () => (window as unknown as { rangeCapture: { circles: number } }).rangeCapture.circles,
-      ),
-    )
-    .toBeGreaterThan(0);
   const marker = await page.evaluate(
-    () =>
-      (
-        window as unknown as {
-          rangeCapture: { range: number[]; zone: number[]; zoneAlpha: number };
-        }
-      ).rangeCapture,
+    () => (window as unknown as { rangeCapture: { circles: number; zone: number[] } }).rangeCapture,
   );
-  expect(marker.zone).toEqual(marker.range);
-  expect(marker.zoneAlpha).toBeGreaterThan(0);
-  expect(marker.zoneAlpha).toBeLessThanOrEqual(0.1);
-  await page.screenshot({ path: "test-results/manual-aim-range.png" });
+  expect(marker.circles).toBe(0);
+  expect(marker.zone).toEqual([]);
+  await page.screenshot({ path: "test-results/manual-aim-no-range.png" });
   await page.mouse.down();
   await expect.poll(() => inputs.at(-1)?.attacking).toBe(true);
   await page.keyboard.press("Escape");

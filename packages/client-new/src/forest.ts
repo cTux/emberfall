@@ -14,7 +14,7 @@ import {
 } from "./combat-effects";
 import { defaultSpellRange, characterStats, PLAYER_ATTACK_DURATION } from "@emberfall/common-new";
 import { movementFacing } from "./facing";
-import { drawDanger, drawPlayerRange } from "./danger";
+import { drawDanger } from "./danger";
 import {
   enemyMaxHealth,
   ENEMY_STATS,
@@ -408,16 +408,6 @@ export function forestRenderer(
       }
     }
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near);
-    if (world?.scene?.phase === "active")
-      for (const actor of rendered)
-        if (actor.player && actor.player.hitpoints > 0)
-          drawPlayerRange(
-            ctx,
-            actor.player,
-            actor.x,
-            actor.y,
-            actor.player.id === playerId ? now : serverTime,
-          );
     if (world?.scene)
       drawLootAndBlood(ctx, world.scene, serverTime, near, {
         x: cameraX,

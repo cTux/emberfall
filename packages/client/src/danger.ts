@@ -1,30 +1,4 @@
-import { PLAYER_ATTACK_RANGE, PLAYER_ATTACK_DURATION } from "@emberfall/common";
-import type { SceneState, Player } from "@emberfall/common";
-
-/** The sword hits a forward semicircle, so its ground marker shows that exact footprint. */
-export function drawPlayerRange(
-  ctx: CanvasRenderingContext2D,
-  player: Player,
-  x: number,
-  y: number,
-  now: number,
-) {
-  if (player.classId && player.classId !== "warrior") return;
-  const angle = player.attackAngle ?? 0;
-  const age = now - (player.attackAt ?? -Infinity);
-  const pulse = age >= 0 && age < PLAYER_ATTACK_DURATION ? 1 - age / PLAYER_ATTACK_DURATION : 0;
-  ctx.save();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(82, 237, 135, 0.2)";
-  ctx.fillStyle = `rgba(52, 220, 112, ${0.03 + pulse * 0.07})`;
-  ctx.beginPath();
-  ctx.moveTo(x, y);
-  ctx.arc(x, y, PLAYER_ATTACK_RANGE, angle - Math.PI / 2, angle + Math.PI / 2);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-}
+import type { SceneState } from "@emberfall/common";
 
 /** Gameplay warnings deliberately remain visible at every graphics preset. */
 export function drawDanger(
