@@ -48,6 +48,14 @@ have separate revisioned sources. The visible world is WebGL, not a Canvas frame
 uploaded to one sprite. Existing drawing helpers use a command adapter to preserve
 their visual rules while emitting native Pixi objects.
 
+The display list retains unchanged child order between frames and removes unused
+tails, including clipped groups. Color parsing is bounded and reused; ordinary
+axis-aligned sprite transforms avoid matrix decomposition. Light textures update
+only when a nearby blocker, its silhouette, the source light or shadow settings
+change. Camera translation and flicker alone do not upload a new texture.
+World text uses nearest-neighbor sampling at its native glyph resolution to keep
+enlarged labels and damage numbers consistent with the pixel-art sprites.
+
 Gradient ramps are baked once onto transparent textures and cached independently
 of world position, so vignette centers preserve the scene beneath them. SVG
 status assets are rasterized once at their decoded dimensions before GPU upload.
@@ -75,6 +83,15 @@ Automatic attack prediction starts from the first confirmed server attack time;
 entering training or a forest never invents an initial swing from a snapshot's
 timestamp. Established cycles still extrapolate between replies, and manual casts
 retain their immediate request-based prediction.
+Each confirmed local projectile keeps its server identity and its original visual
+heading, even after a sibling projectile disappears. A snapshot timestamp alone
+does not reject a future automatic cast before the server's attack phase reaches
+it. Shots first discovered after the server launch retain their authoritative
+in-flight position and remaining distance instead of restarting at the player.
+Confirmed completion, rejection, death, transfers and stale-state limits still
+retire visuals; these corrections do not change server damage or projectile range.
+Buffered enemy positions cannot retire a local projectile through a speculative
+impact; only its visual range limit or authoritative completion ends its flight.
 
 ## Persistence
 

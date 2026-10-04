@@ -3,6 +3,7 @@ import { drawVignette, drawAtmosphere } from "../packages/client-new/src/effects
 import { drawDebuffs } from "../packages/client-new/src/combat-effects";
 import { statusImages } from "../packages/client-new/src/combat-assets";
 import { drawFog } from "../packages/client-new/src/forest";
+import { lightTexture } from "../packages/client-new/src/village";
 
 export async function compare() {
   await Promise.all(Object.values(statusImages).map((image) => image.decode()));
@@ -108,6 +109,100 @@ export async function compare() {
       89,
     );
   }
+  // Shrinking/reordering a retained display list must not leave ghost sprites
+  // or a previous frame's clip attached to a reused graphic.
+  compare(
+    "clipped red",
+    (ctx) => {
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(10, 10);
+      ctx.lineTo(30, 10);
+      ctx.lineTo(30, 30);
+      ctx.lineTo(10, 30);
+      ctx.closePath();
+      ctx.clip();
+      ctx.fillStyle = "#ff0000";
+      ctx.fillRect(0, 0, 80, 80);
+      ctx.restore();
+    },
+    15,
+    15,
+  );
+  compare(
+    "released clip",
+    (ctx) => {
+      ctx.fillStyle = "#00ff00";
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(80, 0);
+      ctx.lineTo(80, 80);
+      ctx.lineTo(0, 80);
+      ctx.closePath();
+      ctx.fill();
+    },
+    50,
+    50,
+  );
+  compare("removed visuals", () => {}, 15, 15);
+  compare(
+    "transformed sprite",
+    (ctx) => {
+      ctx.translate(110, 100);
+      ctx.rotate(0.3);
+      ctx.scale(-2, 1.5);
+      ctx.fillStyle = "#ff0000";
+      ctx.fillRect(-10, -10, 20, 20);
+    },
+    110,
+    100,
+  );
+  compare(
+    "reset pooled transform",
+    (ctx) => {
+      ctx.fillStyle = "#0000ff";
+      ctx.fillRect(10, 10, 30, 30);
+    },
+    20,
+    20,
+  );
+
+  const light = { x: 100, y: 100, radius: 80, height: 100, strength: 0.3, owner: "test" };
+  const mask = document.createElement("canvas");
+  mask.width = mask.height = 16;
+  mask.getContext("2d")!.fillRect(0, 0, 16, 16);
+  const caster = { id: "blocker", x: 120, y: 100, width: 16, height: 16, mask };
+  const revision = (canvas: HTMLCanvasElement) =>
+    (canvas as HTMLCanvasElement & { textureRevision: number }).textureRevision;
+  const first = revision(lightTexture(light, [caster], true));
+  const reused = revision(lightTexture(light, [caster], true));
+  const translated = revision(lightTexture({ ...light, x: 150 }, [{ ...caster, x: 170 }], true));
+  const moved = revision(lightTexture(light, [{ ...caster, x: 140 }], true));
+  const toggled = revision(lightTexture(light, [caster], false));
+  const lights = { first, reused, translated, moved, toggled };
+
+  pixi.begin();
+  pixi.fillStyle = "#000000";
+  pixi.fillRect(0, 0, 256, 256);
+  pixi.scale(4, 4);
+  pixi.font = "12px sans-serif";
+  pixi.textBaseline = "top";
+  pixi.fillStyle = "#ffffff";
+  pixi.fillText("Pixels", 2, 2);
+  pixi.present();
+  const glyph = document.createElement("canvas");
+  glyph.width = glyph.height = 256;
+  const glyphCtx = glyph.getContext("2d")!;
+  glyphCtx.drawImage(gpu, 0, 0);
+  const pixels = glyphCtx.getImageData(0, 0, 256, 256).data;
+  // Nearest scaling repeats each raster column four times. Linear filtering
+  // instead introduces intermediate columns and fails this edge-grid check.
+  const edges = [0, 0, 0, 0];
+  for (let y = 0; y < 100; y++)
+    for (let x = 1; x < 220; x++)
+      if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) edges[x % 4]++;
+  glyph.style.imageRendering = "pixelated";
+  document.body.append(glyph);
   // Leave both renderers showing the same composited scene for visual inspection.
   compare(
     "composite",
@@ -119,5 +214,5 @@ export async function compare() {
     128,
     128,
   );
-  return { results, icons };
+  return { results, icons, lights, edges };
 }

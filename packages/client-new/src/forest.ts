@@ -203,7 +203,6 @@ export function forestRenderer(
     g.fillStyle = i % 3 ? "#49654332" : "#132c2544";
     g.fillRect(random() * 320, random() * 320, 2 + random() * 6, 1 + random() * 3);
   }
-  const lanternTexture = document.createElement("canvas");
   const positions = new Map<string, { x: number; y: number; facing: number }>();
   const drawBloodPuddles = bloodPuddleRenderer();
   let lastScene: string | undefined;
@@ -610,11 +609,7 @@ export function forestRenderer(
           strength: 0.18,
           owner: p.id,
         };
-        ctx.drawImage(
-          lightTexture(light, casters, quality.shadows, lanternTexture),
-          light.x - 110,
-          light.y - 110,
-        );
+        ctx.drawImage(lightTexture(light, casters, quality.shadows), light.x - 110, light.y - 110);
       }
       ctx.restore();
     }

@@ -75,6 +75,9 @@ export class PixiContext {
   readonly ready: Promise<void>;
   private pools: Record<Visual["kind"], Visual[]> = { sprite: [], graphics: [], text: [] };
   private cursors = { sprite: 0, graphics: 0, text: 0 };
+  private childCursors = new Map<Container, number>();
+  private colors = new Map<string, Color>();
+  private drawMatrix = new Matrix();
   private sources = new Map<CanvasImageSource, { texture: Texture; used: number }>();
   private gradients = new Map<string, { texture: Texture; used: number }>();
   private frame = 0;
@@ -86,6 +89,7 @@ export class PixiContext {
   private currentMask: Graphics | null = null;
   private currentGroup?: Container;
   private stack: State[] = [];
+  private stackDepth = 0;
   private path: PathCommand[] = [];
   private metrics = document.createElement("canvas").getContext("2d")!;
   private state: State = this.defaults();
@@ -142,26 +146,22 @@ export class PixiContext {
   }
   begin() {
     this.frame++;
-    for (const entity of this.ecs) {
-      entity.active = false;
-      entity.object.visible = false;
-      entity.object.mask = null;
-    }
-    this.stage.removeChildren();
-    for (const group of this.maskGroups) {
-      group.removeChildren();
-      group.mask = null;
-    }
+    this.childCursors.clear();
+    this.childCursors.set(this.stage, 0);
+    // Release previous clip ownership before pooled graphics take new roles.
+    for (const group of this.maskGroups) group.mask = null;
     this.maskCursor = 0;
     this.currentMask = null;
     this.currentGroup = undefined;
     this.cursors = { sprite: 0, graphics: 0, text: 0 };
     this.state = this.defaults();
-    this.stack.length = 0;
+    this.stackDepth = 0;
     this.path.length = 0;
   }
   present() {
     if (!this.renderer) return;
+    for (const [parent, count] of this.childCursors)
+      if (parent.children.length > count) parent.removeChildren(count);
     if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height)
       this.renderer.resize(this.canvas.width, this.canvas.height);
     this.renderer.render(this.stage);
@@ -217,6 +217,8 @@ export class PixiContext {
     this.stage.destroy();
     this.sources.clear();
     this.gradients.clear();
+    this.colors.clear();
+    this.childCursors.clear();
   }
   private visual(kind: Visual["kind"]): Visual {
     const index = this.cursors[kind]++;
@@ -227,7 +229,7 @@ export class PixiContext {
           ? new Sprite()
           : kind === "graphics"
             ? new Graphics()
-            : new Text({ text: "" });
+            : new Text({ text: "", resolution: 1, textureStyle: { scaleMode: "nearest" } });
       object.eventMode = "none";
       entity = this.ecs.add({ object, kind, active: true });
       this.pools[kind].push(entity);
@@ -236,7 +238,8 @@ export class PixiContext {
     entity.active = true;
     object.visible = true;
     object.alpha = this.state.globalAlpha;
-    object.setFromMatrix(this.state.matrix);
+    // Sprites and text receive their final transform at the draw call below.
+    if (kind === "graphics") object.setFromMatrix(this.state.matrix);
     object.blendMode =
       (
         {
@@ -248,12 +251,11 @@ export class PixiContext {
         } as const
       )[this.state.globalCompositeOperation as "source-over"] ?? "normal";
     object.mask = null;
-    object.filters = null;
     if (this.shadowPass && this.shadowStrength > 0) {
       entity.blur ??= new BlurFilter({ quality: 2, resolution: 0.5 });
       entity.blur.strength = this.shadowStrength;
-      object.filters = [entity.blur];
-    }
+      if (object.filters?.[0] !== entity.blur) object.filters = [entity.blur];
+    } else if (object.filters?.length) object.filters = null;
     if (this.state.mask) {
       // One clip for a contiguous group, not one stencil pass for every portal
       // pixel or particle. Children remain eligible for normal sprite batching.
@@ -261,20 +263,48 @@ export class PixiContext {
         const group = (this.maskGroups[this.maskCursor] ??= new Container());
         this.maskCursor++;
         group.mask = this.state.mask;
-        this.stage.addChild(group);
+        this.place(this.stage, group);
+        this.childCursors.set(group, 0);
         this.currentMask = this.state.mask;
         this.currentGroup = group;
       }
-      this.currentGroup.addChild(object);
+      this.place(this.currentGroup, object);
     } else {
       this.currentMask = null;
       this.currentGroup = undefined;
-      this.stage.addChild(object);
+      this.place(this.stage, object);
     }
     return entity;
   }
+  private place(parent: Container, object: Container) {
+    const index = this.childCursors.get(parent) ?? 0;
+    if (parent.children[index] !== object) parent.addChildAt(object, index);
+    this.childCursors.set(parent, index + 1);
+  }
+  private color(value: string) {
+    let color = this.colors.get(value);
+    if (!color) {
+      color = new Color(value);
+      if (this.colors.size >= 512) this.colors.delete(this.colors.keys().next().value!);
+      this.colors.set(value, color);
+    }
+    return color;
+  }
+  private applyTransform(object: Container, x: number, y: number, sx = 1, sy = 1) {
+    const m = this.state.matrix;
+    const tx = m.a * x + m.c * y + m.tx;
+    const ty = m.b * x + m.d * y + m.ty;
+    if (m.b === 0 && m.c === 0 && m.a * sx >= 0 && m.d * sy >= 0) {
+      object.position.set(tx, ty);
+      object.scale.set(m.a * sx, m.d * sy);
+      object.rotation = 0;
+      object.skew.set(0, 0);
+    } else {
+      object.setFromMatrix(this.drawMatrix.set(m.a * sx, m.b * sx, m.c * sy, m.d * sy, tx, ty));
+    }
+  }
   private shadow(draw: () => void) {
-    if (this.shadowPass || new Color(this.state.shadowColor).alpha === 0) return;
+    if (this.shadowPass || this.color(this.state.shadowColor).alpha === 0) return;
     this.save();
     this.shadowPass = true;
     this.shadowStrength = this.state.shadowBlur / 2;
@@ -289,11 +319,11 @@ export class PixiContext {
     }
   }
   private rectangleShadow(x: number, y: number, width: number, height: number) {
-    if (this.shadowPass || new Color(this.state.shadowColor).alpha === 0) return;
+    if (this.shadowPass || this.color(this.state.shadowColor).alpha === 0) return;
     const blur = this.state.shadowBlur,
       padding = Math.ceil(blur * 3 + 2);
     const opacity =
-      typeof this.state.fillStyle === "string" ? new Color(this.state.fillStyle).alpha : 1;
+      typeof this.state.fillStyle === "string" ? this.color(this.state.fillStyle).alpha : 1;
     const key = `${width}:${height}:${blur}:${opacity}:${this.state.shadowColor}`;
     let canvas = this.shadowRects.get(key);
     if (!canvas) {
@@ -538,12 +568,10 @@ export class PixiContext {
       texture.update();
     }
     sprite.texture = texture;
-    const tint = new Color(this.shadowPass ? this.state.shadowColor : "#ffffff");
+    const tint = this.color(this.shadowPass ? this.state.shadowColor : "#ffffff");
     sprite.tint = tint.toNumber();
     sprite.alpha *= tint.alpha;
-    sprite.setFromMatrix(
-      this.state.matrix.clone().append(new Matrix(dw / sw, 0, 0, dh / sh, dx, dy)),
-    );
+    this.applyTransform(sprite, dx, dy, dw / sw, dh / sh);
   }
   fillRect(x: number, y: number, width: number, height: number) {
     this.rectangleShadow(x, y, width, height);
@@ -553,11 +581,11 @@ export class PixiContext {
       return;
     }
     const sprite = this.visual("sprite").object as Sprite;
-    const color = new Color(this.state.fillStyle);
+    const color = this.color(this.state.fillStyle);
     sprite.texture = Texture.WHITE;
     sprite.tint = color.toNumber();
     sprite.alpha = this.state.globalAlpha * color.alpha;
-    sprite.setFromMatrix(this.state.matrix.clone().append(new Matrix(width, 0, 0, height, x, y)));
+    this.applyTransform(sprite, x, y, width, height);
   }
   strokeRect(x: number, y: number, width: number, height: number) {
     this.shadow(() => this.strokeRect(x, y, width, height));
@@ -619,14 +647,16 @@ export class PixiContext {
     this.state.mask = mask;
   }
   save() {
-    this.stack.push({
-      ...this.state,
-      matrix: this.state.matrix.clone(),
-      dash: [...this.state.dash],
-    });
+    const saved = (this.stack[this.stackDepth++] ??= this.defaults());
+    this.copyState(saved, this.state);
   }
   restore() {
-    this.state = this.stack.pop() ?? this.defaults();
+    if (this.stackDepth) this.copyState(this.state, this.stack[--this.stackDepth]);
+  }
+  private copyState(target: State, source: State) {
+    const matrix = target.matrix;
+    Object.assign(target, source);
+    target.matrix = matrix.copyFrom(source.matrix);
   }
   setTransform(a: number, b: number, c: number, d: number, e: number, f: number) {
     this.state.matrix.set(a, b, c, d, e, f);
@@ -639,7 +669,7 @@ export class PixiContext {
     return new DOMMatrix([m.a, m.b, m.c, m.d, m.tx, m.ty]);
   }
   transform(a: number, b: number, c: number, d: number, e: number, f: number) {
-    this.state.matrix.append(new Matrix(a, b, c, d, e, f));
+    this.state.matrix.append(this.drawMatrix.set(a, b, c, d, e, f));
   }
   translate(x: number, y: number) {
     this.transform(1, 0, 0, 1, x, y);
@@ -651,7 +681,7 @@ export class PixiContext {
     this.transform(Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0, 0);
   }
   setLineDash(values: number[]) {
-    this.state.dash = values;
+    this.state.dash = [...values];
   }
   createLinearGradient(x0: number, y0: number, x1: number, y1: number) {
     return new Gradient({
@@ -709,7 +739,7 @@ export class PixiContext {
             ? 0.8
             : 1,
     );
-    text.setFromMatrix(this.state.matrix.clone().append(new Matrix(1, 0, 0, 1, x, y)));
+    this.applyTransform(text, x, y);
   }
   fillText(value: string, x: number, y: number) {
     this.text(value, x, y, false);

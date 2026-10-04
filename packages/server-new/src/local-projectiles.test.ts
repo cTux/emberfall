@@ -366,7 +366,7 @@ test("training snapshots are detached before local projectile rendering", async 
   assert.deepEqual(source, before);
 });
 
-test("a server cast with a previously unseen target still launches at the displayed player once", async () => {
+test("a late server cast retains its in-flight position and remaining range without relaunching", async () => {
   const source = fixture(),
     movement = new LocalMovement("p", () => {});
   source.scene!.enemies = [];
@@ -377,10 +377,89 @@ test("a server cast with a previously unseen target still launches at the displa
   reply.serverNow = 10100;
   reply.players[0].attackAt = 10100;
   fireClassAttack(reply.scene!, reply.players[0]);
+  for (const shot of reply.scene!.playerShots!) {
+    shot.x += 80;
+    shot.remaining -= 80;
+  }
   const result = frame(movement, reply, 150);
   assert.equal(result.scene.playerShots!.length, 2);
-  assert(result.scene.playerShots!.every((s) => s.x === result.player.x));
+  assert.deepEqual(
+    result.scene.playerShots!.map((s) => [s.x, s.y, s.remaining]),
+    reply.scene!.playerShots!.map((s) => [s.x, s.y, s.remaining]),
+  );
   assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 2);
   for (let now = 250; now <= 650; now += 50) frame(movement, reply, now);
   assert.equal(frame(movement, reply, 650).scene.playerShots!.length, 0);
+});
+
+test("confirmation cannot bend a moving cast or rebind its surviving projectile to a sibling", () => {
+  for (const training of [false, true]) {
+    const source = fixture("ranger", training);
+    const movement = new LocalMovement("p", () => {});
+    frame(movement, source, 0);
+    movement.input(0, 1, 0);
+    const cast = frame(movement, source, 100);
+    const angles = cast.scene.playerShots!.map((s) => s.angle);
+    const reply = structuredClone(source);
+    reply.serverNow = 10100;
+    reply.players[0].attackAt = 10100;
+    const scene = (training ? reply.training : reply.scene)!;
+    fireClassAttack(scene, reply.players[0]);
+    assert.notEqual(scene.playerShots![0].angle, angles[0]);
+    assert.deepEqual(
+      frame(movement, reply, 150).scene.playerShots!.map((s) => s.angle),
+      angles,
+    );
+    const next = structuredClone(reply);
+    next.serverNow = 10150;
+    const nextScene = (training ? next.training : next.scene)!;
+    nextScene.playerShots!.shift();
+    const remaining = frame(movement, next, 200).scene.playerShots!;
+    assert.equal(remaining.length, 1);
+    assert.equal(remaining[0].id, nextScene.playerShots![0].id);
+    assert.equal(remaining[0].angle, angles[1]);
+    assert.equal(frame(movement, next, 220).scene.playerShots![0].angle, angles[1]);
+  }
+});
+
+test("a snapshot timestamp alone cannot reject an automatic cast before the server attacks", () => {
+  const source = fixture("ranger");
+  const movement = new LocalMovement("p", () => {});
+  frame(movement, source, 0);
+  assert.equal(frame(movement, source, 100).scene.playerShots!.length, 2);
+  const early = structuredClone(source);
+  early.serverNow = 10100;
+  // The timestamp advanced but the attack phase still belongs to the previous cycle.
+  assert.equal(frame(movement, early, 150).scene.playerShots!.length, 2);
+  const accepted = structuredClone(early);
+  accepted.serverNow = 10150;
+  accepted.players[0].attackAt = 10100;
+  fireClassAttack(accepted.scene!, accepted.players[0]);
+  assert.equal(frame(movement, accepted, 200).scene.playerShots!.length, 2);
+});
+
+test("buffered enemy positions cannot hide a projectile before a confirmed impact", () => {
+  const source = fixture("mage");
+  const movement = new LocalMovement("p", () => {});
+  frame(movement, source, 0);
+  frame(movement, source, 100);
+  const reply = structuredClone(source);
+  reply.serverNow = 10100;
+  reply.players[0].attackAt = 10100;
+  fireClassAttack(reply.scene!, reply.players[0]);
+  const player = movement.render(reply, 150)!;
+  const buffered = structuredClone(reply);
+  buffered.scene!.enemies[0].x = player.x + 10;
+  buffered.scene!.enemies[0].y = player.y;
+  movement.animateProjectiles(player, buffered, 150, false);
+  assert.equal(
+    buffered.scene!.playerShots!.length,
+    2,
+    "do not predict impact against older enemies",
+  );
+  assert.equal(buffered.scene!.damage.length, 0);
+  const completed = structuredClone(reply);
+  completed.serverNow = 10150;
+  completed.scene!.playerShots = [];
+  assert.equal(frame(movement, completed, 200).scene.playerShots!.length, 0);
 });
