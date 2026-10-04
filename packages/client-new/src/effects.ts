@@ -14,7 +14,7 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   }
   const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 20;
   const height = lines.length * 17 + 14;
-  const bottom = y - 72;
+  const bottom = y - 48; // Two units above the player health bar; overlays the debuff area.
   const left = x - width / 2;
   const right = x + width / 2;
   const top = bottom - height;
@@ -30,9 +30,6 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.quadraticCurveTo(right, top, right, top + 8);
   ctx.lineTo(right, bottom - 8);
   ctx.quadraticCurveTo(right, bottom, right - 8, bottom);
-  ctx.lineTo(x + 4, bottom);
-  ctx.lineTo(x, bottom + 4);
-  ctx.lineTo(x - 4, bottom);
   ctx.lineTo(left + 8, bottom);
   ctx.quadraticCurveTo(left, bottom, left, bottom - 8);
   ctx.lineTo(left, top + 8);
