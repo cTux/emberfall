@@ -649,11 +649,6 @@ export function drawPlayerDetails(
   showVitals = true,
 ) {
   if (showVitals) {
-    const belt = x + (facing === 2 ? -15 : 12);
-    ctx.fillStyle = "#493b27";
-    ctx.fillRect(belt - 3, y + 1, 7, 11);
-    ctx.fillStyle = "#ffe2a0";
-    ctx.fillRect(belt - 1, y + 3, 4, 7);
     drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
   }
   const age = now - (p.attackAt ?? -Infinity);

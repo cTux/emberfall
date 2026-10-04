@@ -231,23 +231,3 @@ export function drawArt(
   if (!image.naturalWidth || image.dataset.artReady !== "true") return;
   ctx.drawImage(image, column * cell, row * cell, cell, cell, x, y, width, height);
 }
-
-export function drawBeltLantern(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  facing: number,
-  now: number,
-) {
-  drawArt(
-    ctx,
-    effectsArt,
-    Math.floor(now / 140) % 4,
-    0,
-    x + (facing === 2 ? -21 : 6),
-    y - 2,
-    14,
-    18,
-    128,
-  );
-}

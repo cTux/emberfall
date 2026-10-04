@@ -710,14 +710,6 @@ export function Arena({
             48,
           );
         }
-        // Belt lantern: warm glass and a dark metal frame attached to each character.
-        const beltX = pos.x + (pos.facing === 2 ? -15 : 12);
-        ctx.fillStyle = "#382e21";
-        ctx.fillRect(beltX - 3, pos.y + 1, 7, 11);
-        ctx.fillStyle = "#e7a74d";
-        ctx.fillRect(beltX - 2, pos.y + 3, 5, 7);
-        ctx.fillStyle = "#ffe2a0";
-        ctx.fillRect(beltX, pos.y + 4, 2, 5);
         drawPlayerHealth(
           ctx,
           pos.x,

@@ -1,4 +1,3 @@
-import { drawBeltLantern } from "./art";
 import { alignLocalPickups } from "./pickup-presentation";
 import { PixiContext } from "./rendering/pixi-context";
 import { PresentationWorld } from "./presentation/world";
@@ -781,7 +780,6 @@ export function Arena({
             48 * idleBreath(now, spriteRow),
           );
         }
-        drawBeltLantern(ctx, pos.x, pos.y, pos.facing, now);
         drawPlayerHealth(
           ctx,
           pos.x,

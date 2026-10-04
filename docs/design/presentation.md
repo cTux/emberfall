@@ -18,7 +18,7 @@ Drawing combines predicted local presentation with buffered remote actors. The c
 
 - [village-background.ts](../../packages/client/src/village-background.ts) prepares village ground, grass and static passes only after the asset batch is ready and the village is first drawn. Its cache survives joins/leaves/reconnects; grass, shadow and contact-occlusion changes invalidate affected content.
 - [forest.ts](../../packages/client/src/forest.ts), [village.ts](../../packages/client/src/village.ts) and [paths.ts](../../packages/client/src/paths.ts) draw the world with visible-region and wrapped-seam handling.
-- [lighting.ts](../../packages/client/src/lighting.ts) caches sprite masks/static shadows and reuses scratch canvases; moving blockers and belt lights update dynamically.
+- [lighting.ts](../../packages/client/src/lighting.ts) caches sprite masks/static shadows and reuses scratch canvases; moving blockers and player lights update dynamically.
 - [combat-effects.ts](../../packages/client/src/combat-effects.ts), [effects.ts](../../packages/client/src/effects.ts), [danger.ts](../../packages/client/src/danger.ts) and [navigation.ts](../../packages/client/src/navigation.ts) render authoritative events, warnings and navigation.
 - [critters.ts](../../packages/client/src/critters.ts) derives decorative animal motion locally. These animals are not server actors or targets.
 
