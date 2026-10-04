@@ -41,10 +41,54 @@ const meta = {
             item: {
               name: "Warrior's sword",
               icon: <FontAwesomeIcon icon={faShieldHalved} />,
-              description: "Physical damage. A forward slash hits each enemy once per swing.",
-              stats: [
-                { label: "Power", value: "5" },
-                { label: "Critical chance", value: "5%" },
+              badges: [
+                {
+                  label: "Power",
+                  icon: "power",
+                  value: "5",
+                  explanation: "Deal 5 physical damage to each enemy struck, once per swing.",
+                },
+                {
+                  label: "Range",
+                  icon: "range",
+                  value: "88",
+                  explanation: "The sword reaches enemies within 88 units.",
+                },
+                {
+                  label: "Cooldown",
+                  icon: "cooldown",
+                  value: "1",
+                  explanation: "Wait 1 second between attacks.",
+                },
+                {
+                  label: "Damage type",
+                  icon: "physical",
+                  explanation: "This sword deals physical damage.",
+                },
+                {
+                  label: "Critical chance",
+                  icon: "criticalChance",
+                  value: "5%",
+                  explanation: "Each hit has a 5% chance to critically strike.",
+                },
+                {
+                  label: "Critical damage",
+                  icon: "criticalDamage",
+                  value: "150%",
+                  explanation: "Critical hits deal 150% of normal damage.",
+                },
+                {
+                  label: "Active swing",
+                  icon: "duration",
+                  value: "0.26",
+                  explanation: "The swing remains active for 0.26 seconds.",
+                },
+                {
+                  label: "Bleed",
+                  icon: "bleed",
+                  explanation:
+                    "Hits have a 10% chance to apply Bleed. Each stack deals 1 damage per second for 5 seconds; new stacks refresh the duration.",
+                },
               ],
             },
           }

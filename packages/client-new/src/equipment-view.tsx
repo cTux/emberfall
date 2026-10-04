@@ -1,5 +1,5 @@
 import { EquipmentPanel } from "@emberfall/ui";
-import type { EquipmentSlotView, EquipmentStatView } from "@emberfall/ui";
+import type { EquipmentSlotView, EquipmentStatView, EquipmentBadgeView } from "@emberfall/ui";
 import {
   EQUIPMENT_SLOTS,
   SLOT_GEAR_TYPES,
@@ -13,7 +13,7 @@ import {
 import type { EquipmentSlot, GearType, Player, ClassId } from "@emberfall/common-new";
 import { ATTACK_DEFINITIONS } from "@emberfall/common-new/definitions/abilities/attacks";
 import { PLAYER_DEFINITIONS } from "@emberfall/common-new/definitions/entities/players";
-import { classDetails } from "./class-details";
+import { AILMENT_DEFINITIONS } from "@emberfall/common-new/definitions/effects/ailments";
 import { weaponSrc } from "./combat-assets";
 
 export const SLOT_POSITIONS = {
@@ -81,30 +81,112 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: "Damage reduction", value: percent(stats.damageReduction) },
   ];
 }
+
+function weaponBadges(player: Player, classId: ClassId, weapon: string): EquipmentBadgeView[] {
+  const stats = characterStats({ ...player, classId, equipment: { weapon } });
+  const { attack, ailment } = PLAYER_DEFINITIONS[classId];
+  const range = player.autoTarget === false ? stats.manualRange : stats.range;
+  const badges: EquipmentBadgeView[] = [
+    {
+      label: "Power",
+      icon: "power",
+      value: number(stats.power),
+      explanation:
+        attack === "slash"
+          ? `Deal ${number(stats.power)} damage to each enemy struck, once per swing, in a forward half-disc.`
+          : `Each projectile deals ${number(stats.power)} damage to its target.${attack === "arrow" ? " Arrows pierce and damage every enemy in their path." : ""}`,
+    },
+    {
+      label: "Range",
+      icon: "range",
+      value: number(range),
+      explanation: `Attack range: ${number(range)} units${attack === "slash" ? "." : player.autoTarget === false ? " with cursor aim." : " with auto-target."}`,
+    },
+    {
+      label: "Cooldown",
+      icon: "cooldown",
+      value: number(stats.attackIntervalMs / 1000),
+      explanation: `Wait ${number(stats.attackIntervalMs / 1000)} seconds between attacks.`,
+    },
+    {
+      label: "Damage type",
+      icon:
+        stats.damageType === "physical"
+          ? "physical"
+          : stats.damageType === "nature"
+            ? "nature"
+            : stats.damageType === "fire"
+              ? "burn"
+              : "poison",
+      explanation: `This weapon deals ${stats.damageType} damage.`,
+    },
+    {
+      label: "Critical chance",
+      icon: "criticalChance",
+      value: percent(stats.criticalChance),
+      explanation: `Each hit has a ${percent(stats.criticalChance)} chance to critically strike.`,
+    },
+    {
+      label: "Critical damage",
+      icon: "criticalDamage",
+      value: percent(stats.criticalMultiplier),
+      explanation: `Critical hits deal ${percent(stats.criticalMultiplier)} of normal damage.`,
+    },
+  ];
+  if (attack === "slash") {
+    badges.push({
+      label: "Active swing",
+      icon: "duration",
+      value: number(ATTACK_DEFINITIONS.slash.durationMs / 1000),
+      explanation: `The swing remains active for ${number(ATTACK_DEFINITIONS.slash.durationMs / 1000)} seconds. Each enemy can be hit once per swing.`,
+    });
+  } else {
+    const definition = ATTACK_DEFINITIONS[attack];
+    badges.push({
+      label: "Projectiles",
+      icon: "projectiles",
+      value: number(definition.count),
+      explanation: `Fire ${definition.count} projectiles per attack in a small spread.`,
+    });
+    badges.push({
+      label: "Projectile speed",
+      icon: "speed",
+      value: number(definition.speed),
+      explanation: `Projectiles travel at ${definition.speed} units per second.`,
+    });
+    if (attack === "fireball") {
+      const { splashRadius, splashDamage } = ATTACK_DEFINITIONS.fireball;
+      badges.push({
+        label: "Splash damage",
+        icon: "splash",
+        value: number(splashDamage),
+        explanation: `Fireballs explode on impact, dealing ${splashDamage} damage to other enemies within ${splashRadius} units.`,
+      });
+    }
+  }
+  if (ailment === "roots") {
+    const duration = AILMENT_DEFINITIONS.roots.durationPerStackMs / 1000;
+    badges.push({
+      label: "Roots",
+      icon: "roots",
+      explanation: `The first root immobilizes ordinary enemies for ${duration} seconds; each active stack adds ${duration} seconds. Bosses take damage but remain mobile.`,
+    });
+  } else {
+    const definition = AILMENT_DEFINITIONS[ailment];
+    badges.push({
+      label: capitalize(ailment),
+      icon: ailment,
+      explanation: `Hits have a ${percent(definition.chance)} chance to apply ${capitalize(ailment)}. Each stack deals ${definition.damagePerStack} damage every ${definition.tickMs / 1000} second for ${definition.durationMs / 1000} seconds; new stacks refresh the duration.`,
+    });
+  }
+  return badges;
+}
 export function Equipment({ player }: { player: Player }) {
   const classId = player.classId ?? "warrior";
   const equipment = equippedItems(player);
   const slots: EquipmentSlotView[] = EQUIPMENT_SLOTS.map((id) => {
     const gear = GEAR_DEFINITIONS[equipment[id] ?? ""];
     const itemClass = gear ? ITEM_CLASSES[gear.id] : undefined;
-    const attack = itemClass ? PLAYER_DEFINITIONS[itemClass].attack : undefined;
-    const stats =
-      gear && itemClass
-        ? equipmentStatRows({
-            ...player,
-            classId: itemClass,
-            equipment: { weapon: gear.id },
-          })
-            .slice(0, 6)
-            .filter(({ label }) => label !== "Range")
-        : [];
-    if (attack && attack !== "slash") {
-      stats.push({ label: "Projectiles", value: number(ATTACK_DEFINITIONS[attack].count) });
-      stats.push({
-        label: "Projectile speed",
-        value: `${ATTACK_DEFINITIONS[attack].speed} units / sec`,
-      });
-    }
     return {
       id,
       label: SLOT_LABELS[id],
@@ -130,8 +212,7 @@ export function Equipment({ player }: { player: Player }) {
           ? {
               name: gear.name,
               icon: <img src={weaponSrc(itemClass ?? classId)} alt="" />,
-              description: classDetails[itemClass ?? classId].spellDescription,
-              stats,
+              badges: itemClass ? weaponBadges(player, itemClass, gear.id) : [],
             }
           : undefined,
     };

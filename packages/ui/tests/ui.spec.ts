@@ -2,12 +2,26 @@ import { test, expect } from "@playwright/test";
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test.describe("equipment touch badges", () => {
+  test.use({ hasTouch: true, viewport: { width: 320, height: 800 } });
+  test("tap opens the item and an effect explanation", async ({ page }) => {
+    await page.goto(story("components-equipmentpanel--starter"));
+    await page.getByRole("button", { name: "Weapon: Warrior's sword" }).tap();
+    const bleed = page.getByRole("button", { name: "Bleed", exact: true });
+    await expect(bleed).toBeVisible();
+    await bleed.tap();
+    await expect(page.getByRole("tooltip").last()).toContainText("10% chance to apply Bleed");
+  });
+});
+
 test("equipment exposes borderless slots, keyboard details and narrow stats", async ({ page }) => {
   await page.goto(story("components-equipmentpanel--starter"));
   await expect(page.locator("[data-equipment-slot]")).toHaveCount(9);
   const weapon = page.getByRole("button", { name: "Weapon: Warrior's sword" });
   await weapon.focus();
-  await expect(page.getByRole("tooltip")).toContainText("Critical chance");
+  await expect(
+    page.getByRole("tooltip").getByRole("button", { name: "Critical chance: 5%", exact: true }),
+  ).toBeVisible();
   await expect(weapon).toHaveCSS("border-top-width", "0px");
   await weapon.blur();
   await expect(page.getByRole("tooltip")).toBeHidden();
