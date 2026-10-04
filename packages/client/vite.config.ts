@@ -1,11 +1,14 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
+import { compression } from "vite-plugin-compression2";
+import { visualizer } from "rollup-plugin-visualizer";
+import { fileURLToPath } from "node:url";
 import { Agent } from "node:https";
 import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
   const buildId = command === "build" ? randomUUID() : "development";
   const shared = {
     define: { __BUILD_ID__: JSON.stringify(buildId) },
@@ -33,6 +36,21 @@ export default defineConfig(({ command }) => {
           });
         },
       } satisfies import("vite").Plugin,
+      compression({
+        algorithms: ["brotliCompress", "gzip"],
+        include: /\.(js|mjs|css|html|json|svg)$/,
+        exclude: /(^|\/)version\.json$/,
+        threshold: 1024,
+      }),
+      mode === "analyze" &&
+        visualizer({
+          filename: fileURLToPath(
+            new URL("./node_modules/.cache/bundle-report.html", import.meta.url),
+          ),
+          gzipSize: true,
+          brotliSize: true,
+          open: false,
+        }),
     ],
   };
   if (command === "build")

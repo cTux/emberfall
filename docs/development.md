@@ -26,6 +26,14 @@ file. It does not preserve animated or high-bit-depth PNGs; exclude such assets 
 the Vite config if introduced. Current sprites are static 8-bit PNGs.
 Run `pnpm test:images` for real Vite build checks of both client configurations.
 
+Use `pnpm --filter @emberfall/client analyze` or
+`pnpm --filter @emberfall/client-new analyze` for an optional production build
+with a `rollup-plugin-visualizer` bundle report. Open the selected package's
+`node_modules/.cache/bundle-report.html` to inspect dependencies and estimated
+gzip/Brotli sizes. Reports are ignored by Git and stay outside deployed `dist`.
+Normal builds do not generate reports. Text compression runs in both build modes;
+see [serving and deployment](operations.md#deployment-and-cache-consistency).
+
 ## Browser and UI verification
 
 The independent runtime uses `pnpm dev-new`, `pnpm build-new`, and `pnpm start-new`.

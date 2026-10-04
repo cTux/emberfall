@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@emberfall/common": "workspace:*",
+    "negotiator": "^1.1.0",
     "ws": "^8.22.0"
   },
   "devDependencies": {
+    "@types/negotiator": "^0.6.5",
     "vite": "catalog:"
   }
 }
