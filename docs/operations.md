@@ -12,6 +12,18 @@ production. The callback is `STEAM_ORIGIN/auth/steam/callback`. Turbo passes the
 variables to the server; do not use a `VITE_` prefix for the API key. Missing
 configuration stops startup rather than enabling guest access.
 
+The server's development and production commands load `.env` from the repository
+root, then `packages/server-new/.env` if present. Package values override root
+values; variables already set in the shell take precedence over both files.
+Restart the server after editing either file. Keep these files out of Git.
+
+```dotenv
+STEAM_ORIGIN=https://localhost:5174
+STEAM_WEB_API_KEY=your-steam-web-api-key
+```
+
+For production, replace the example origin with the public HTTPS origin.
+
 New production serves both HTTP routes and Colyseus traffic on 3003. Proxy `/auth`,
 `/api`, matchmaking and WebSocket traffic to that server, keep the browser on the
 configured origin, and use publicly trusted HTTPS for public login. `HTTP_ONLY=1`

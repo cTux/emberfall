@@ -24,6 +24,8 @@ original server's port, save path, and packages are not used.
 
 Steam login is required by the executable. Set `STEAM_ORIGIN` (canonical browser
 HTTPS origin, without a trailing slash) and `STEAM_WEB_API_KEY` before launching.
+Both server commands load the repository-root `.env`, then this package's `.env`
+if present. Existing shell variables take precedence. Restart after edits.
 See [Steam operations](../../docs/operations.md#steam-login-new-runtime). Steam
 accounts start fresh; old browser saves remain intact. Account/session tables share
 the character database. The server owns nickname changes and character identity;
