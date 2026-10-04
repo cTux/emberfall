@@ -26,9 +26,9 @@ Each player displays only their latest message in a wrapped, rounded rectangular
 
 - Creating joins the creator; wrong passwords and full worlds reject entry. Other worlds receive no state or chat.
 - Leaving transfers the host label; the last departure removes a player-created world but preserves the permanent world.
-- Resume within the grace period without duplicating the player or losing position, vote or scene. After server restart, authorized recovery enters the village.
+- On interruption, immediately show the world browser's server list, close gameplay dialogs and clear the displayed world while preserving the recovery target. Resume automatically when the server is available, without duplicating the player or losing position, vote or scene within the grace period. After server restart, authorized recovery enters the village.
 - Explicit leave revokes recovery. Failed build checks retry; changed build IDs reload before gameplay resumes.
 - Typing never moves the character. Invalid or rate-limited chat is rejected; only the newest ten messages remain.
 - System messages do not overwrite speech bubbles or consume player chat cooldowns.
 
-Evidence: [worlds.test.ts](../../packages/server/src/worlds.test.ts), [reconnect.test.ts](../../packages/server/src/reconnect.test.ts), [update-recovery.test.ts](../../packages/server/src/update-recovery.test.ts), [chat.test.ts](../../packages/server/src/chat.test.ts), [chat.spec.ts](../../tests/chat.spec.ts).
+Evidence: [worlds.test.ts](../../packages/server/src/worlds.test.ts), [reconnect.test.ts](../../packages/server/src/reconnect.test.ts), [update-recovery.test.ts](../../packages/server/src/update-recovery.test.ts), [chat.test.ts](../../packages/server/src/chat.test.ts), [chat.spec.ts](../../tests/chat.spec.ts), [original-client recovery](../../tests/reconnect.spec.ts), [new-client recovery](../../tests-new/reconnect.spec.ts), [Steam recovery](../../tests-new/accounts.spec.ts).

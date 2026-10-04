@@ -67,6 +67,51 @@ async function edit(page: Page) {
   await page.getByRole("tab", { name: "Account", exact: true }).click();
   await page.getByRole("button", { name: "Change nickname", exact: true }).click();
 }
+
+test("Steam players see the server list during an outage and resume automatically", async ({
+  page,
+  game,
+}) => {
+  await page.addInitScript(() => {
+    const Native = window.WebSocket;
+    window.WebSocket = class extends Native {
+      constructor(url: string | URL, protocols?: string | string[]) {
+        super(url, protocols);
+        (window as unknown as { recoverySocket: WebSocket }).recoverySocket = this;
+      }
+    };
+  });
+  await login(page);
+  await page.getByRole("button", { name: "Save nickname", exact: true }).click();
+  await page.getByRole("button", { name: /^Join New Permanent World/ }).click();
+  await expect(page.locator(".party")).toContainText("Steam Hero");
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  let unavailable = true;
+  let failures = 0;
+  await page.route("**/api/account/ticket", (route) => {
+    if (unavailable) {
+      failures++;
+      return route.fulfill({ status: 503 });
+    }
+    return route.continue();
+  });
+  await page.evaluate(() =>
+    (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(3001),
+  );
+  await expect(page.getByRole("region", { name: "Emberfall", exact: true })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Join a world" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.locator(".party")).toBeHidden();
+  await expect.poll(() => failures).toBeGreaterThanOrEqual(2);
+  unavailable = false;
+  await expect(page.locator(".party")).toContainText("Steam Hero");
+  await expect(page.getByRole("region", { name: "Emberfall", exact: true })).toBeHidden();
+  expect(world.players.size).toBe(1);
+  expect([...world.players.values()][0]).toBe(player);
+});
 test("Steam onboarding, repeat login, shared rename dialog and another player's view", async ({
   page,
   browser,

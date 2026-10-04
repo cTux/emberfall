@@ -29,6 +29,12 @@ Input safeguards include a 2,048-byte message limit, 256-session upgrade limit, 
 
 Explicit leave removes membership and revokes automatic recovery. An interrupted connection instead clears input and retains its session/world state for 30 seconds. The client retries immediately, then at one-second intervals after repeated failures. Expired sessions are saved and removed on the five-second autosave sweep.
 
+Both clients clear their displayed world and player on interruption, close gameplay
+dialogs, and reopen the world browser on its server-list tab. They retain the
+remembered world and character identity for automatic recovery; a successful
+`joined` message replaces the browser with gameplay. Failed attempts keep the
+browser visible with connection status and disabled join/create actions.
+
 The browser keeps the character key in localStorage and the current world ID in per-tab sessionStorage. A resumed live session retains scene, vote and position. After process restart, persisted world authorization restores the character to that world's village; combat, chat and coordinates are not persisted. Recovery rejects missing worlds, unauthorized membership, a full world and another live session. Storage failures permit recovery within the current page but cannot guarantee recovery after reload.
 
 On each connection, the client checks `version.json` before resuming gameplay. A mismatch reloads; invalid or failed checks retry. The build ID, cache policies and deployment ordering are described in [operations](../operations.md#deployment-and-cache-consistency).

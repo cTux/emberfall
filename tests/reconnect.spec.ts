@@ -9,19 +9,27 @@ test("failed connections retry automatically and interrupted lobby, vote and for
   let joined: Extract<ServerMessage, { type: "joined" }> | undefined;
   let state: WorldState | undefined;
   const errors: string[] = [];
+  let unavailable = false;
+  let failedAttempts = 0;
   page.on("pageerror", (error) => errors.push(error.message));
   await page.addInitScript(() => {
     const NativeWebSocket = window.WebSocket;
     let attempts = 0;
     window.WebSocket = class extends NativeWebSocket {
       constructor(url: string | URL, protocols?: string | string[]) {
-        super(++attempts <= 2 ? new URL("/unavailable", url) : url, protocols);
+        super(
+          ++attempts <= 2 || (window as unknown as { unavailable?: boolean }).unavailable
+            ? new URL("/unavailable", url)
+            : url,
+          protocols,
+        );
         (window as unknown as { recoverySocket: WebSocket }).recoverySocket = this;
       }
     };
   });
   page.on("websocket", (socket) => {
     attempts++;
+    if (unavailable) failedAttempts++;
     socket.on("framereceived", ({ payload }) => {
       const message = JSON.parse(String(payload)) as ServerMessage;
       if (message.type === "joined") joined = message;
@@ -43,13 +51,29 @@ test("failed connections retry automatically and interrupted lobby, vote and for
   const interrupt = async () => {
     const before = attempts;
     joined = undefined;
+    unavailable = true;
+    failedAttempts = 0;
+    await page.evaluate(() => {
+      (window as unknown as { unavailable: boolean }).unavailable = true;
+    });
     await page.evaluate(() =>
       (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(
         3001,
         "Simulated transport failure",
       ),
     );
-    await expect.poll(() => attempts).toBe(before + 1);
+    await expect(page.getByRole("region", { name: "Emberfall", exact: true })).toBeVisible();
+    await expect(page.getByRole("tab", { name: "Join a world" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await expect(page.getByRole("complementary", { name: /Recovery grove/ })).toBeHidden();
+    await expect.poll(() => failedAttempts).toBeGreaterThanOrEqual(2);
+    unavailable = false;
+    await page.evaluate(() => {
+      (window as unknown as { unavailable: boolean }).unavailable = false;
+    });
+    await expect.poll(() => attempts).toBeGreaterThan(before + 1);
     await expect.poll(() => joined?.playerId).toBe(id);
     expect(joined!.world.id).toBe(worldId);
     expect(joined!.world.players).toHaveLength(1);
