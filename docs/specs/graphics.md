@@ -52,7 +52,11 @@ based on the approved wardrobe-style concepts, including a newly drawn wardrobe.
 Players, enemies and animals have frame-based locomotion; combatants also have
 attack/cast and fallen poses. Idle motion, damage flashes and death transitions
 remain presentation-only. Scenery, weapons, portraits and effects use the same
-palette and outline treatment. Buildings and ground stay fixed; lobby chimneys
+palette and outline treatment. The new client does not scatter decorative bushes in the village or forest at any
+graphics preset. Ground textures and trees remain. The obsolete Dense grass clusters
+setting is removed, and the foliage setting is named Waving trees; old saved grass
+preferences are ignored.
+Buildings and ground stay fixed; lobby chimneys
 emit subtle drifting smoke when Ambient particles is enabled.
 
 This replaces the original-runtime source art and frame counts described above.

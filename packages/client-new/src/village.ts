@@ -1,15 +1,6 @@
-import {
-  ARENA,
-  WARDROBE,
-  BUILDINGS,
-  TORCHES,
-  TREES,
-  onPath,
-  TRAINING_ZONES,
-} from "@emberfall/common-new";
+import { WARDROBE, BUILDINGS, TORCHES, TREES } from "@emberfall/common-new";
 import { makeMask, castShadow } from "./lighting";
 import type { Caster, Light } from "./lighting";
-import type { GraphicsSettings } from "./graphics";
 import { environmentArt, wardrobeArt } from "./art";
 import { chimneyAnchors } from "./ambient-art";
 
@@ -24,7 +15,6 @@ export function villageSprites(
   _wardrobe: HTMLImageElement,
   _lampPost: HTMLImageElement,
   _lantern: HTMLImageElement,
-  graphics: GraphicsSettings,
 ): Scenery[] {
   const objects: Scenery[] = [];
   const sprites = new Map<
@@ -62,23 +52,6 @@ export function villageSprites(
     TREES.forEach((t, i) =>
       add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
     );
-    let seed = 713;
-    const random = () => {
-      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      return seed / 4294967296;
-    };
-    for (let i = 0; i < (graphics.grass ? 850 : 325); i++) {
-      const x = random() * ARENA.width,
-        y = random() * ARENA.height;
-      if (
-        TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius) ||
-        onPath(x, y, 38) ||
-        BUILDINGS.some((b) => Math.abs(x - b.x) < 85 && y > b.y - 105 && y < b.y + 20)
-      )
-        continue;
-      const size = 12 + random() * 10;
-      add(`grass:${i}`, x, y, size, size, environmentArt, 256, 128, 128, 128);
-    }
   }
   if (environmentArt.naturalWidth)
     BUILDINGS.forEach((b, i) => {
