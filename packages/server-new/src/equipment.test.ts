@@ -60,7 +60,7 @@ test("every class starts with exactly its compatible weapon and preserves base s
     assert.deepEqual(Object.keys(player.equipment!), ["weapon"]);
     const stats = characterStats(player);
     assert.deepEqual([stats.power, stats.range, stats.damageType], expected[classId]);
-    assert.equal(stats.attackIntervalMs, 700);
+    assert.equal(stats.attackIntervalMs, 1000);
     assert.equal(stats.criticalChance, 0.05);
     assert.equal(stats.criticalMultiplier, 1.5);
     assert.deepEqual(validateClassEquipment(player.equipment!, classId), player.equipment);
@@ -78,6 +78,24 @@ test("every class starts with exactly its compatible weapon and preserves base s
     const item: GearDefinition = { id: "test", name: "Off-hand", gearType, stats: {} };
     for (const classId of CLASS_IDS)
       assert.equal(canEquip("offHand", item, classId), classId === allowed);
+  }
+});
+
+test("all class base attacks wait a full second in training and forest", () => {
+  for (const training of [true, false]) {
+    for (const classId of CLASS_IDS) {
+      const player = hero(classId);
+      if (!training) player.scene = "forest";
+      else Object.assign(player, { x: 140, y: 340 });
+      const arena = scene(training);
+      tickPlayerCombat(arena, [player], 1000, 0);
+      assert.equal(player.attackAt, 1000);
+      tickPlayerCombat(arena, [player], 1999, 0);
+      assert.equal(player.attackAt, 1000, `${classId} cannot attack early`);
+      tickPlayerCombat(arena, [player], 2000, 0);
+      assert.equal(player.attackAt, 2000, `${classId} attacks at the cooldown boundary`);
+      if (training) assert.equal(player.experience, 0);
+    }
   }
 });
 

@@ -2,7 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { LocalMovement } from "../../client/src/local-movement.ts";
 import { SnapshotBuffer } from "../../client/src/snapshots.ts";
-import { fireClassAttack, FOREST, requestPlayerCast } from "@emberfall/common";
+import {
+  fireClassAttack,
+  FOREST,
+  requestPlayerCast,
+  PLAYER_ATTACK_INTERVAL,
+} from "@emberfall/common";
 import type { Player, WorldState, SceneState, ClientMessage } from "@emberfall/common";
 
 function fixture(classId: Player["classId"] = "mage", training = false): WorldState {
@@ -40,7 +45,7 @@ function fixture(classId: Player["classId"] = "mage", training = false): WorldSt
         y: training ? 340 : 1280,
         classId,
         scene: training ? undefined : "forest",
-        attackAt: 9400,
+        attackAt: 10100 - PLAYER_ATTACK_INTERVAL,
         color: 0,
         hitpoints: 100,
         maxHitpoints: 100,
@@ -127,8 +132,14 @@ test("manual confirmations with latency preserve flight and swing, correct aim a
         false,
         "held casts wait for the authoritative cooldown rather than the predicted launch",
       );
-      assert.equal(frame(movement, complete, 749 + delay, controls).started, false);
-      assert.equal(frame(movement, complete, 750 + delay, controls).started, true);
+      assert.equal(
+        frame(movement, complete, PLAYER_ATTACK_INTERVAL + 49 + delay, controls).started,
+        false,
+      );
+      assert.equal(
+        frame(movement, complete, PLAYER_ATTACK_INTERVAL + 50 + delay, controls).started,
+        true,
+      );
       assert.equal(requests.length, 2);
       assert.equal(requests[1].id, requests[0].id + 1);
     }
@@ -161,7 +172,7 @@ test("manual rejection removes predicted effects, restores cooldown and keeps re
   assert.equal(rejected.scene.playerShots!.length, 0);
   assert.equal(rejected.player.attackAt, 100, "restore the authoritative previous swing phase");
   assert.equal(frame(movement, reply, 700, controls).started, false);
-  assert.equal(frame(movement, reply, 800, controls).started, true);
+  assert.equal(frame(movement, reply, 1100, controls).started, true);
   assert.equal(requests[1].id, requests[0].id + 1);
   const resume = new LocalMovement("p", () => {});
   const retained = structuredClone(reply);

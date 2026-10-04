@@ -3,7 +3,7 @@ export const ATTACK_DEFINITIONS = {
     id: "slash",
     range: 88,
     damage: 5,
-    intervalMs: 700,
+    intervalMs: 1000,
     durationMs: 260,
     aimSmoothingSeconds: 0.08,
   },

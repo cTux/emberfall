@@ -120,7 +120,7 @@ function enterScene(world: SceneWorld, player: Player, now: number, offset = 0) 
   player.x = FOREST_PORTAL.x + offset;
   player.y = FOREST_PORTAL.y;
   player.hitpoints = player.maxHitpoints;
-  player.attackAt = now - 700;
+  player.attackAt = undefined;
   player.attackAngle = undefined;
   if (player.bear) {
     player.bear.x = player.x;
