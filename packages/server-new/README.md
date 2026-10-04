@@ -22,6 +22,15 @@ original server's port, save path, and packages are not used.
 
 ## Ownership and patterns
 
+Steam login is required by the executable. Set `STEAM_ORIGIN` (canonical browser
+HTTPS origin, without a trailing slash) and `STEAM_WEB_API_KEY` before launching.
+See [Steam operations](../../docs/operations.md#steam-login-new-runtime). Steam
+accounts start fresh; old browser saves remain intact. Account/session tables share
+the character database. The server owns nickname changes and character identity;
+client bearer/name fields cannot override them. The optional Steam argument on the
+server factory is omitted only by isolated legacy-protocol tests, never by the
+production entrypoint.
+
 - `worlds.ts` composes HTTP, Colyseus and the authoritative application. Each
   connection has a private Colyseus session room, preserving browsing and world
   transfers on one connection. A shared in-process party runtime owns combat;

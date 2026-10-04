@@ -87,6 +87,14 @@ export class CharacterStore {
       CREATE TABLE IF NOT EXISTS world_members (character_id TEXT PRIMARY KEY REFERENCES characters(id), world_id TEXT NOT NULL REFERENCES worlds(id)) STRICT;
       CREATE TABLE IF NOT EXISTS emberfall_migrations (version INTEGER PRIMARY KEY) STRICT;
       INSERT OR IGNORE INTO emberfall_migrations VALUES (1);`);
+        this.db.exec(`CREATE TABLE IF NOT EXISTS steam_accounts (
+          steam_id TEXT PRIMARY KEY, character_id TEXT UNIQUE NOT NULL REFERENCES characters(id),
+          nickname TEXT, steam_name TEXT NOT NULL
+        ) STRICT;
+        CREATE TABLE IF NOT EXISTS account_sessions (
+          token_hash TEXT PRIMARY KEY, steam_id TEXT NOT NULL REFERENCES steam_accounts(steam_id),
+          expires_at INTEGER NOT NULL
+        ) STRICT;`);
       })
       .catch((error) => {
         this.close();
@@ -141,11 +149,16 @@ export class CharacterStore {
   }
   load(token: string) {
     const hash = createHash("sha256").update(token).digest("hex");
+    const identity = this.db.prepare("SELECT id FROM characters WHERE token_hash=?").get(hash);
+    if (!identity) throw new Error("Character save not found.");
+    return this.loadById(String(identity.id));
+  }
+  loadById(id: string) {
     const row = this.db
       .prepare(
-        `SELECT c.id, c.name, s.data, s.version FROM characters c JOIN ${this.savesTable} s ON s.user_id=c.id AND s.slot=0 WHERE c.token_hash=?`,
+        `SELECT c.id, c.name, s.data, s.version FROM characters c JOIN ${this.savesTable} s ON s.user_id=c.id AND s.slot=0 WHERE c.id=?`,
       )
-      .get(hash);
+      .get(id);
     if (!row)
       throw new Error(
         "Character save not found. Check that you are connected to the correct server.",
@@ -216,7 +229,9 @@ export class CharacterStore {
         );
       if (!result.changes) throw new VersionConflictError(id, 0, version);
       this.db
-        .prepare("UPDATE characters SET name=?, updated_at=? WHERE id=?")
+        .prepare(
+          "UPDATE characters SET name=COALESCE((SELECT nickname FROM steam_accounts WHERE character_id=characters.id), ?), updated_at=? WHERE id=?",
+        )
         .run(name, Date.now(), id);
     });
     this.versions.set(id, version + 1);
@@ -241,14 +256,73 @@ export class CharacterStore {
     this.save(id, player.name, updated);
     Object.assign(player, updated);
   }
+  steamAccount(steamId: string) {
+    const row = this.db.prepare("SELECT * FROM steam_accounts WHERE steam_id=?").get(steamId);
+    if (!row) return undefined;
+    return {
+      steamId,
+      characterId: String(row.character_id),
+      nickname: row.nickname === null ? null : String(row.nickname),
+      steamName: String(row.steam_name),
+    };
+  }
+  loginSteam(steamId: string, steamName: string) {
+    return this.transaction(() => {
+      if (!this.steamAccount(steamId)) {
+        const character = this.create("Wanderer");
+        this.db
+          .prepare("INSERT INTO steam_accounts VALUES (?, ?, NULL, ?)")
+          .run(steamId, character.id, steamName);
+      } else if (steamName) {
+        this.db
+          .prepare("UPDATE steam_accounts SET steam_name=? WHERE steam_id=?")
+          .run(steamName, steamId);
+      }
+      return this.steamAccount(steamId)!;
+    });
+  }
+  renameSteam(steamId: string, nickname: string) {
+    return this.transaction(() => {
+      const account = this.steamAccount(steamId);
+      if (!account) throw new Error("Account not found");
+      this.db
+        .prepare("UPDATE steam_accounts SET nickname=? WHERE steam_id=?")
+        .run(nickname, steamId);
+      this.db
+        .prepare("UPDATE characters SET name=?, updated_at=? WHERE id=?")
+        .run(nickname, Date.now(), account.characterId);
+      return this.steamAccount(steamId)!;
+    });
+  }
+  createSession(steamId: string, expiresAt: number) {
+    const token = randomBytes(32).toString("hex");
+    this.db.prepare("DELETE FROM account_sessions WHERE expires_at<=?").run(Date.now());
+    this.db
+      .prepare("INSERT INTO account_sessions VALUES (?, ?, ?)")
+      .run(createHash("sha256").update(token).digest("hex"), steamId, expiresAt);
+    return token;
+  }
+  session(token: string) {
+    const row = this.db
+      .prepare("SELECT steam_id FROM account_sessions WHERE token_hash=? AND expires_at>?")
+      .get(createHash("sha256").update(token).digest("hex"), Date.now());
+    return row ? this.steamAccount(String(row.steam_id)) : undefined;
+  }
+  revokeSession(token: string) {
+    this.db
+      .prepare("DELETE FROM account_sessions WHERE token_hash=?")
+      .run(createHash("sha256").update(token).digest("hex"));
+  }
+  private transactionId = 0;
   private transaction<T>(operation: () => T): T {
-    this.db.exec("BEGIN IMMEDIATE");
+    const savepoint = `operation_${++this.transactionId}`;
+    this.db.exec(`SAVEPOINT ${savepoint}`);
     try {
       const result = operation();
-      this.db.exec("COMMIT");
+      this.db.exec(`RELEASE ${savepoint}`);
       return result;
     } catch (error) {
-      this.db.exec("ROLLBACK");
+      this.db.exec(`ROLLBACK TO ${savepoint}; RELEASE ${savepoint}`);
       throw error;
     }
   }

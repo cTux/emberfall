@@ -40,9 +40,18 @@ An explicit product decision takes precedence over the baseline. If source and s
 | Asset provenance, credits and fonts                                 | [Assets](assets.md)                                                                                                                               | [Presentation](design/presentation.md)                                       | `fonts.spec.ts`, shipped license/credit files                                                                                            |
 | Progression without required choices                                | [PROG-01](specs/progression.md)                                                                                                                   | [Architecture boundary](design/architecture.md#change-boundaries)            | Future acceptance only; no new progression implementation                                                                                |
 
+New-runtime Steam accounts and nickname onboarding/editing are specified in
+[CHAR-05](specs/characters.md#char-05--steam-accounts-and-nickname), with
+[design and verification](design/steam-accounts.md). Evidence: [server tests](../packages/server-new/src/accounts.test.ts) and [browser tests](../tests-new/accounts.spec.ts).
+
 Server tests live in [packages/server/src](../packages/server/src), game browser tests in [tests](../tests), and shared UI tests in [packages/ui/tests](../packages/ui/tests). See [development](development.md) for commands and evidence expectations.
 
 ## Start here by task
+
+Steam login and account nicknames (new runtime):
+[CHAR-05](specs/characters.md#char-05--steam-accounts-and-nickname),
+[Account settings](specs/interface-and-audio.md#ui-04--settings-and-music), and
+[integration design and verification](design/steam-accounts.md).
 
 New-client wardrobe-style art: [GRAPHICS-05](specs/graphics.md#graphics-05--wardrobe-style-art-in-the-new-client),
 [atlas design](design/new-runtime.md#wardrobe-style-presentation-assets), and

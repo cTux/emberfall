@@ -76,6 +76,8 @@ export default defineConfig(({ command, mode }) => {
         key: readFileSync(new URL("../../.certs/localhost-key.pem", import.meta.url)),
       },
       proxy: {
+        "/auth": { target: `https://127.0.0.1:${serverPort}`, agent: new Agent({ ca: cert }) },
+        "/api": { target: `https://127.0.0.1:${serverPort}`, agent: new Agent({ ca: cert }) },
         "/matchmake": { target: `https://127.0.0.1:${serverPort}`, agent: new Agent({ ca: cert }) },
         "/colyseus": {
           target: `wss://127.0.0.1:${serverPort}`,

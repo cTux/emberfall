@@ -3,6 +3,7 @@ import { ChapterTabs, SettingToggle, VolumeControl } from "@emberfall/ui";
 import { Button, Link, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import type { Preferences } from "./preferences";
 import { GRAPHICS_LABELS, GRAPHICS_PRESETS, type GraphicsSettings } from "./graphics";
+import type { AccountView } from "@emberfall/common-new";
 
 export function Settings({
   tab,
@@ -11,6 +12,9 @@ export function Settings({
   setPreferences,
   graphics,
   setGraphics,
+  account,
+  onRename,
+  onLogout,
 }: {
   tab: string;
   onTab(tab: string): void;
@@ -18,6 +22,9 @@ export function Settings({
   setPreferences: Dispatch<SetStateAction<Preferences>>;
   graphics: GraphicsSettings;
   setGraphics: Dispatch<SetStateAction<GraphicsSettings>>;
+  account: AccountView;
+  onRename(): void;
+  onLogout(): void;
 }) {
   const toggle = (
     key:
@@ -45,6 +52,21 @@ export function Settings({
       onChange={onTab}
       showHeading={false}
       chapters={[
+        ...(account.mode === "steam"
+          ? [
+              {
+                id: "account",
+                title: "Account",
+                content: (
+                  <Stack spacing={2}>
+                    <Typography>Nickname: {account.nickname}</Typography>
+                    <Button onClick={onRename}>Change nickname</Button>
+                    <Button onClick={onLogout}>Sign out of Steam account</Button>
+                  </Stack>
+                ),
+              },
+            ]
+          : []),
         {
           id: "gameplay",
           title: "Gameplay",

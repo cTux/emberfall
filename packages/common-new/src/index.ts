@@ -1,4 +1,5 @@
 import { RUNTIME } from "./definitions/runtime.ts";
+export { nicknameSchema, type AccountView } from "./account.ts";
 import { CLASS_IDS, CLASS_LABELS } from "./definitions/entities/players.ts";
 export { CLASS_IDS, CLASS_LABELS };
 import { z } from "zod";

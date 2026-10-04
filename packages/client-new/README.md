@@ -8,6 +8,13 @@ its own commands, assets, storage keys and server.
 
 ## Responsibilities
 
+`Account.tsx` loads the server account before entering the game. First Steam login
+opens the nickname dialog; Settings → Account reuses it for editing. The nickname
+belongs to the account, while graphics/audio preferences remain in localStorage.
+`connection.ts` exchanges the HttpOnly session cookie for a short-lived, single-use
+Colyseus admission ticket. It never stores Steam/session credentials in localStorage.
+Configure the server as described in [operations](../../docs/operations.md#steam-login-new-runtime).
+
 - `connection.ts` adapts the Colyseus SDK to typed application events. Application
   recovery retains existing world/character behavior; automatic SDK reconnect
   is disabled so the two mechanisms cannot create competing sessions.

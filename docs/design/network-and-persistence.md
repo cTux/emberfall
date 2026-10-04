@@ -4,6 +4,10 @@ Status: implemented. Implements [worlds/chat](../specs/worlds-and-chat.md) and [
 
 ## Transport and trust boundary
 
+The new runtime uses [Steam accounts](steam-accounts.md) for authentication,
+nickname ownership and session security. It preserves old browser saves without
+linking them. The following describes the original runtime.
+
 [worlds.ts](../../packages/server/src/worlds.ts) serves `/health`, static production files and `/ws`. The upgrade checks path, browser Origin host and connection capacity. WebSocket messages pass the Zod discriminated union in [common/index.ts](../../packages/common/src/index.ts). The server derives the acting character and world from the session, never a client-supplied damage or identity claim.
 
 Input safeguards include a 2,048-byte message limit, 256-session upgrade limit, bounded password hashing, message/action rate limits, slow-consumer eviction and heartbeat cleanup. Passwords use random salts, scrypt and timing-safe comparison; public world listings expose a locked flag, not hashes. These controls are per process/connection and do not replace ingress limits for public hosting.

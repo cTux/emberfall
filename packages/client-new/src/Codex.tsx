@@ -30,12 +30,12 @@ const chapters = [
         {" "}
         <p>
           New Permanent World is always open to everyone, with room for eight players. Other worlds
-          disappear when everyone leaves. Your character is saved on the server and linked to this
-          browser. A portal creates a Forest / Easy scene on the server. Vote inside the portal
-          window. Everyone must be ready. Retract your vote to cancel the five-second countdown. You
-          can join a world during combat, then use its village portal to join or rejoin the running
-          scene until the boss dies and return portals open. After that, everyone must return before
-          creating a new scene. Party members in another dimension appear dimmed.
+          disappear when everyone leaves. Your character is saved on the server and linked to your
+          Steam account. A portal creates a Forest / Easy scene on the server. Vote inside the
+          portal window. Everyone must be ready. Retract your vote to cancel the five-second
+          countdown. You can join a world during combat, then use its village portal to join or
+          rejoin the running scene until the boss dies and return portals open. After that, everyone
+          must return before creating a new scene. Party members in another dimension appear dimmed.
         </p>{" "}
       </>
     ),
@@ -99,9 +99,10 @@ const chapters = [
           and companions. Other players do not flash. Your screen flashes red when you are hit. Your
           movement and attack animation respond locally; the server validates movement and decides
           damage. Settings control floating damage numbers, FPS, vignette, graphics, music and sound
-          effects. Your preferences and nickname stay in this browser. Server saves include XP,
-          health, mana and playtime; clearing browser storage loses the character key. No offline
-          mode.
+          effects. Your preferences stay in this browser. Your nickname belongs to your Steam
+          account; change it in Settings → Account. Server saves include XP, health, mana and
+          playtime. Sign in through the same Steam account to recover your character on another
+          browser. No offline mode.
         </p>{" "}
       </>
     ),

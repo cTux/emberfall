@@ -14,7 +14,9 @@ export class GameConnection {
   onerror: (() => void) | null = null;
   private room?: Room<SessionState>;
   private closed = false;
-  constructor(url: string) {
+  private steam: boolean;
+  constructor(url: string, steam = false) {
+    this.steam = steam;
     void this.connect(url);
   }
   private async connect(url: string) {
@@ -30,9 +32,19 @@ export class GameConnection {
               },
             }
           : undefined;
+      let ticket: string | undefined;
+      if (this.steam) {
+        const response = await fetch("/api/account/ticket", {
+          method: "POST",
+          credentials: "same-origin",
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!response.ok) throw new Error("Authentication required");
+        ticket = (await response.json()).ticket;
+      }
       const room = await new Client(endpoint.toString(), options).create<SessionState>(
         "session",
-        { protocolVersion: RUNTIME.protocolVersion },
+        { protocolVersion: RUNTIME.protocolVersion, ticket },
         SessionState,
       );
       this.room = room;
