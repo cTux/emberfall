@@ -79,6 +79,9 @@ lantern gently sways around its hook, with subtle flame flicker; no second lamp
 is overlaid on the scenery. Ambient particles controls its small rising embers.
 `/?art-gallery` previews the same packaged frames and provides action, direction,
 pause and background controls. Raw sheets and prompts remain with the assets.
+`/?class-movement` shows all four classes walking in all four directions at once,
+with travel, pause, speed and frame controls. Walking must visibly alternate
+planted and lifted feet, including beneath robes. Torso changes alone do not count.
 
 Animation selection follows the existing movement and confirmed/predicted action
 timestamps, never changes simulation timing, and uses the same frame for sprite

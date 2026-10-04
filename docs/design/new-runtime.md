@@ -166,6 +166,12 @@ village, training and forest browser checks remain necessary for acceptance.
 Player atlases are packaged offline into 64px cells with transparent gutters.
 Rows 0–7 retain idle, four walk poses, windup, release and fallen; rows 8–9
 add two walk poses. The six-pose cycle uses rows 1, 2, 3, 4, 8, 9.
+Walk-only sheets replace those six rows during packaging, preserving other poses.
+Direction-specific revisions retain accepted source columns with their original
+normalization, so changing another direction cannot rescale approved animation.
+The class-movement page shares the game's atlas loader and gait selector, showing
+every class/direction enlarged and at game size. Verify lower-leg silhouettes,
+not just whole-frame uniqueness, and visually inspect the loop at game size.
 The player loader reads these atlases directly without runtime cropping or flips.
 Packaging measures isolated alpha components instead of slicing a guessed grid;
 supplemental sheets are normalized to the class scale. Left-facing staff casts retain

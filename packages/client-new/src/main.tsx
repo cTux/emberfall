@@ -1,6 +1,7 @@
 import { GameConnection } from "./connection";
 import { classSprite } from "./characters";
 import { AssetGallery } from "./AssetGallery";
+import { ClassMovementGallery } from "./ClassMovementGallery";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { classDetails } from "./class-details";
 import { Equipment } from "./equipment-view";
@@ -857,7 +858,13 @@ window.addEventListener("contextmenu", (event) => event.preventDefault(), { capt
 createRoot(document.getElementById("root")!).render(
   <GameUiProvider>
     <PanelPositionContext value={panelPositions}>
-      {new URLSearchParams(location.search).has("art-gallery") ? <AssetGallery /> : <App />}
+      {new URLSearchParams(location.search).has("class-movement") ? (
+        <ClassMovementGallery />
+      ) : new URLSearchParams(location.search).has("art-gallery") ? (
+        <AssetGallery />
+      ) : (
+        <App />
+      )}
     </PanelPositionContext>
   </GameUiProvider>,
 );

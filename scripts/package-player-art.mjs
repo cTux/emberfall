@@ -8,24 +8,30 @@ try {
   const page = await browser.newPage();
   for (const name of ["warrior", "ranger", "mage", "druid"]) {
     const source = await readFile(`${root}/${name}-complete.png`);
+    const stride = await readFile(`${root}/${name}-stride.png`);
+    const repair = await readFile(`${root}/${name}-stride-revised.png`);
     const extra = ["warrior", "mage", "druid"].includes(name)
       ? await readFile(`${root}/${name}-extra.png`)
       : null;
     const packed = await page.evaluate(
-      async ({ source, name, extra }) => {
-        const sources = [source, ...(extra ? [extra] : [])];
+      async ({ source, name, extra, stride, repair }) => {
+        const sources = [source, ...(extra ? [extra] : []), stride, repair];
+        const strideIndex = sources.length - 2;
         const allFrames = [];
         const images = [];
         for (let sourceIndex = 0; sourceIndex < sources.length; sourceIndex++) {
-          const rowCount = sourceIndex
-            ? name === "warrior"
-              ? 3
-              : name === "druid"
-                ? 10
-                : 1
-            : name === "warrior"
-              ? 9
-              : 10;
+          const isStride = sourceIndex >= strideIndex;
+          const rowCount = isStride
+            ? 6
+            : sourceIndex
+              ? name === "warrior"
+                ? 3
+                : name === "druid"
+                  ? 10
+                  : 1
+              : name === "warrior"
+                ? 9
+                : 10;
           const image = new Image();
           image.src = `data:image/png;base64,${sources[sourceIndex]}`;
           await image.decode();
@@ -99,7 +105,7 @@ try {
             const group = components.slice(row * 4, row * 4 + 4).sort((a, b) => a.left - b.left);
             group.forEach((f, col) => frames.push({ ...f, row, col, sourceIndex }));
           }
-          allFrames.push(...frames);
+          allFrames.push(...frames.map((frame) => ({ ...frame, isStride })));
         }
         let frames = allFrames.filter((f) => f.sourceIndex === 0);
         if (name === "warrior") {
@@ -107,7 +113,9 @@ try {
             .filter((f) => f.row < 6 || f.row === 8)
             .map((f) => ({ ...f, row: f.row === 8 ? 9 : f.row }));
           frames.push(
-            ...allFrames.filter((f) => f.sourceIndex === 1).map((f) => ({ ...f, row: f.row + 6 })),
+            ...allFrames
+              .filter((f) => f.sourceIndex === 1 && !f.isStride)
+              .map((f) => ({ ...f, row: f.row + 6 })),
           );
         }
         if (name === "druid")
@@ -159,14 +167,73 @@ try {
             height,
           );
         }
-        return { png: output.toDataURL().split(",")[1], frames, scale };
+        const originalStrides = allFrames.filter((f) => f.sourceIndex === strideIndex);
+        const revisedStrides = allFrames.filter((f) => f.sourceIndex === strideIndex + 1);
+        // Preserve explicitly accepted directions byte-for-byte, including their
+        // original normalization; a revised sheet must not rescale those cells.
+        const approved = name === "warrior" ? [2, 3] : name === "ranger" ? [0] : [];
+        const strides = [
+          ...originalStrides.filter((f) => approved.includes(f.col)),
+          ...revisedStrides.filter((f) => !approved.includes(f.col)),
+        ];
+        const strideScale = Math.min(
+          58 / Math.max(...originalStrides.map((f) => f.width)),
+          (baseHeight * scale) / Math.max(...originalStrides.map((f) => f.height)),
+        );
+        const repairScale = Math.min(
+          58 / Math.max(...revisedStrides.map((f) => f.width)),
+          (baseHeight * scale) / Math.max(...revisedStrides.map((f) => f.height)),
+        );
+        const walkRows = [1, 2, 3, 4, 8, 9];
+        for (const f of strides) {
+          const frameScale = f.sourceIndex === strideIndex ? strideScale : repairScale;
+          const width = Math.round(f.width * frameScale);
+          const height = Math.round(f.height * frameScale);
+          const y = walkRows[f.row] * 64;
+          out.clearRect(f.col * 64, y, 64, 64);
+          out.drawImage(
+            images[f.sourceIndex],
+            f.left,
+            f.top,
+            f.width,
+            f.height,
+            f.col * 64 + Math.floor((64 - width) / 2),
+            y + 61 - height,
+            width,
+            height,
+          );
+        }
+        return {
+          png: output.toDataURL().split(",")[1],
+          frames,
+          scale,
+          strides,
+          strideScale,
+          repairScale,
+        };
       },
-      { source: source.toString("base64"), name, extra: extra?.toString("base64") },
+      {
+        source: source.toString("base64"),
+        name,
+        extra: extra?.toString("base64"),
+        stride: stride.toString("base64"),
+        repair: repair.toString("base64"),
+      },
     );
     await writeFile(`${root}/${name}-atlas.png`, Buffer.from(packed.png, "base64"));
     await writeFile(
       `${root}/${name}-atlas.json`,
-      JSON.stringify({ scale: packed.scale, frames: packed.frames }, null, 2) + "\n",
+      JSON.stringify(
+        {
+          scale: packed.scale,
+          frames: packed.frames,
+          strideScale: packed.strideScale,
+          repairScale: packed.repairScale,
+          strides: packed.strides,
+        },
+        null,
+        2,
+      ) + "\n",
     );
     console.log(`${name}: ${packed.frames.length} isolated frames, scale ${packed.scale}`);
   }

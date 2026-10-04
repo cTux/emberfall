@@ -27,3 +27,17 @@ Use the test-owned Colyseus server fixture, inspect village/forest screenshots,
 and cover relevant classes/settings/wrapped seams. Performance claims need a
 scene, viewport, settings, GPU/browser and measured frame times; screenshots
 alone are insufficient. Record actual results and remaining limitations.
+
+For player art or locomotion changes, inspect `/?class-movement` across every
+class and direction at game size and enlarged, both traveling and in place.
+Feet must alternate planted/lifted contact with visible knee/boot movement,
+including beneath robes. Torso bob, weapon changes and distinct whole-image
+hashes do not prove a working gait. Compare lower-leg silhouettes across the
+cycle, check the loop seam, transparent gutters, stable scale and weapon hands,
+and run `tests-new/player-art.spec.ts` plus affected village/forest scenarios.
+Preserve approved class identities and non-walk poses when replacing walk art.
+When feedback accepts specific directions, preserve those cells and their scale
+exactly. Inspect both half-cycles: each leg must take its turn leading/supporting;
+a single centered boot pumping vertically or one unchanged trailing leg still
+fails even when silhouette tests pass. Treat automated pixel checks as rejection
+filters, never as visual approval. Compare opposite contact and passing poses.

@@ -8,6 +8,36 @@ Preview: run the new client and visit /?art-gallery . The gallery shares the gam
 
 ## Prompt log
 
+### Player stride correction
+
+`warrior-stride.png`, `ranger-stride.png`, `mage-stride.png` and `druid-stride.png`
+were generated with built-in imagegen using each approved class atlas as its
+identity reference. The packager replaces only the six walking rows, retaining
+idle, attack and fallen poses. Inspect all directions at `/?class-movement`.
+
+Prompt applied per class: preserve the class design, palette, pixel outlines and
+weapon hands; draw a transparent four-column (down/up/left/right), six-row walk
+cycle with left contact, recoil, right passing, right contact, recoil and left
+passing poses. Show distinct planted/lifted boots, knee bends and fore/aft stride,
+including boots below robes. Keep the camera and scale stable, use generous
+gutters, and omit text, shadows, grids and scenery. A second imagegen edit removed
+the unwanted painted background while preserving the 24 poses.
+
+Whole-frame uniqueness is insufficient: the lower-leg alpha silhouettes must
+change, and the loop must be reviewed enlarged and at game size.
+
+The `*-stride-revised.png` sources refine the remaining directions after visual
+feedback. Packaging retains Warrior left/right and Ranger down from the earlier
+stride sheets at exactly their earlier scale. Other columns use the revised
+sources. The follow-up prompt requests separate boot tracks for front/back,
+opposite leading/supporting legs across the half-cycles, and near/far knee
+changes in profile, preserving upper bodies and weapon hands. Background removal
+is a separate built-in imagegen pass. Automated silhouette/contact checks are
+rejection filters, not evidence that the animation looks natural.
+The profile correction explicitly requests long contact strides, a vertical
+supporting leg with the other heel raised, and narrow passing poses with boots
+beneath the hip. This avoids six variations of the same split-foot stance.
+
 ### warrior
 
 Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
