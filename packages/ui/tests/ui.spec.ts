@@ -2,6 +2,33 @@ import { test, expect } from "@playwright/test";
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test("companion health sits beneath the player at desktop and narrow widths", async ({
+  page,
+}, testInfo) => {
+  await page.goto(story("components-partycard--with-companion"));
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    const player = page.getByRole("progressbar", { name: "Astrid, lvl 1" });
+    const companion = page.getByRole("progressbar", { name: "Bear", exact: true });
+    await expect(companion).toHaveAttribute("aria-valuenow", "75");
+    await expect(companion).toHaveAttribute("aria-valuemax", "150");
+    const p = (await player.boundingBox())!;
+    const c = (await companion.boundingBox())!;
+    expect(c.y).toBeGreaterThanOrEqual(p.y + p.height);
+    expect(c.height).toBeLessThan(p.height);
+    expect(c.width).toBeLessThan(p.width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({ path: testInfo.outputPath(`companion-${width}.png`) });
+  }
+  await page.goto(story("components-partycard--defeated-companion"));
+  await expect(page.getByRole("progressbar", { name: "Bear", exact: true })).toHaveAttribute(
+    "aria-valuenow",
+    "0",
+  );
+});
+
 test("party keeps a single HP row with portrait corner icons", async ({ page }, testInfo) => {
   await page.goto(story("components-partycard--host-away"));
   for (const width of [1280, 320]) {

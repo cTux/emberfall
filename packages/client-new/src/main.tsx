@@ -478,6 +478,29 @@ function App({
                 level={p.level}
                 health={displayedHp[p.id] ?? p.hitpoints}
                 maxHealth={p.maxHitpoints}
+                companion={
+                  p.bear
+                    ? {
+                        name: p.bear.name,
+                        health: p.bear.hitpoints,
+                        maxHealth: p.bear.maxHitpoints,
+                        portrait: (
+                          <Box
+                            component="span"
+                            role="img"
+                            aria-label={`${p.bear.name} portrait`}
+                            sx={{
+                              backgroundImage: 'url("/assets/wardrobe-style/bear-cub.png")',
+                              backgroundSize: "400% 200%",
+                              backgroundPosition: "left top",
+                              backgroundRepeat: "no-repeat",
+                              imageRendering: "pixelated",
+                            }}
+                          />
+                        ),
+                      }
+                    : undefined
+                }
                 portrait={<img src={classSprite(p.classId)} alt="" />}
                 local={p.id === playerId}
                 host={p.id === world.hostId}

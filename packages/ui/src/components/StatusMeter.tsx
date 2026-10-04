@@ -7,6 +7,7 @@ export interface StatusMeterProps {
   max: number;
   color?: "success" | "info" | "warning" | "error" | "boss";
   centered?: boolean;
+  compact?: boolean;
 }
 
 export function StatusMeter({
@@ -15,6 +16,7 @@ export function StatusMeter({
   max,
   color = "success",
   centered = false,
+  compact = false,
 }: StatusMeterProps) {
   const limit = Number.isFinite(max) && max > 0 ? max : 0;
   const current = Number.isFinite(value) ? Math.min(limit, Math.max(0, value)) : 0;
@@ -24,6 +26,7 @@ export function StatusMeter({
         variant="determinate"
         value={limit ? (current / limit) * 100 : 0}
         color={color}
+        compact={compact}
         aria-label={label}
         aria-valuenow={current}
         aria-valuemin={0}

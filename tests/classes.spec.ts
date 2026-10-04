@@ -78,10 +78,7 @@ test("wardrobe selects and restores classes through the server", async ({ page }
     "aria-pressed",
     "true",
   );
-  await expect(page.locator(".party article .portrait")).toHaveCSS(
-    "background-image",
-    /ranger.png/,
-  );
+  await expect(page.locator(".party article img")).toHaveAttribute("src", /ranger.png/);
   await wardrobe.getByRole("button", { name: /^Mage/ }).click();
   await expect(wardrobe.getByRole("button", { name: /^Mage/ })).toHaveAttribute(
     "aria-pressed",
@@ -92,16 +89,24 @@ test("wardrobe selects and restores classes through the server", async ({ page }
     "aria-pressed",
     "true",
   );
-  await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
+  await expect(page.locator(".party article img")).toHaveAttribute("src", /druid.png/);
+  await expect(
+    page.getByRole("progressbar", { name: "Bear", exact: true, includeHidden: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("img", { name: "Bear portrait", includeHidden: true })).toBeVisible();
   await page.screenshot({ path: "test-results/wardrobe.png" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: "test-results/wardrobe-compact-narrow.png" });
   expect(await wardrobe.evaluate((dialog) => dialog.scrollWidth <= dialog.clientWidth)).toBe(true);
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Leave world" }).click();
   await page.getByRole("button", { name: "Leave", exact: true }).click();
   await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
+  await expect(page.locator(".party article img")).toHaveAttribute("src", /druid.png/);
+  await expect(
+    page.getByRole("progressbar", { name: "Bear", exact: true, includeHidden: true }),
+  ).toBeVisible();
 });
 
 test("classes show distinct attacks, Bear, roots, projectiles, explosions and debuffs", async ({

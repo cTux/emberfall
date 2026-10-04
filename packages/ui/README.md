@@ -70,6 +70,8 @@ Windows are 400px wide with a maximum height of 480px, clamped to the viewport w
 
 `ClassCard` presents a portrait, two independently focusable weapon/spell tooltip buttons, rounded stats and a selection button. Its host supplies all content and selection restrictions. `GameWindow.width` defaults to 400; the wardrobe uses 600.
 
+`PartyCard.companion` optionally supplies a name, health, maxHealth and portrait for a smaller row beneath the player. Defeated companions stay visible at zero health; omit the view when the player has no companion. `StatusMeter.compact` uses the smaller row height without changing accessible values.
+
 All consumer-facing prop/data types are exported from `src/index.ts`. Screen stories demonstrate lobby, HUD, settings, wardrobe, Codex, portal vote, leave confirmation, death and building service placeholders by composing these components. Those compositions are examples, not duplicated application state machines. No network calls, persistence, gameplay calculations, authorization or game-package imports belong here.
 
 ## Create a component
