@@ -142,6 +142,7 @@ export function moveActor(
   dy: number,
   radius: number,
   collide = true,
+  collideScenery = true,
 ) {
   if (!collide)
     return {
@@ -152,23 +153,25 @@ export function moveActor(
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
   // ponytail: scan this small fixed grove; index obstacles spatially when maps grow.
   const clear = (px: number, py: number) =>
-    TREES.every(
-      (tree) =>
+    // Owner-position spawns must be able to escape a trunk they already overlap.
+    TREES.every((tree) => {
+      const distance = (tx: number, ty: number) =>
         Math.hypot(
-          wrappedDelta(px, tree.x, ARENA.width),
-          wrappedDelta(py, tree.y - 8, ARENA.height),
-        ) >=
-        radius + tree.radius,
-    ) &&
-    Math.hypot(px - WARDROBE.x, py - WARDROBE.y) >= radius + 18 &&
-    TORCHES.every((t) => Math.hypot(px - t.x, py - t.y) >= radius + 5) &&
-    BUILDINGS.every(
-      (b) =>
-        Math.hypot(
-          px - Math.max(b.x - b.sourceWidth + 8, Math.min(b.x + b.sourceWidth - 8, px)),
-          py - Math.max(b.y - 40, Math.min(b.y, py)),
-        ) >= radius,
-    );
+          wrappedDelta(tx, tree.x, ARENA.width),
+          wrappedDelta(ty, tree.y - 8, ARENA.height),
+        );
+      return distance(px, py) >= Math.min(radius + tree.radius, distance(x, y));
+    }) &&
+    (!collideScenery ||
+      (Math.hypot(px - WARDROBE.x, py - WARDROBE.y) >= radius + 18 &&
+        TORCHES.every((t) => Math.hypot(px - t.x, py - t.y) >= radius + 5) &&
+        BUILDINGS.every(
+          (b) =>
+            Math.hypot(
+              px - Math.max(b.x - b.sourceWidth + 8, Math.min(b.x + b.sourceWidth - 8, px)),
+              py - Math.max(b.y - 40, Math.min(b.y, py)),
+            ) >= radius,
+        )));
   for (let i = 0; i < steps; i++) {
     const nextX = wrap(x + dx / steps, ARENA.width);
     if (clear(nextX, y)) x = nextX;

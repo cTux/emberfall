@@ -9,6 +9,10 @@ import {
   FOREST,
   forestTrees,
   movePlayer,
+  moveActor,
+  moveForestActor,
+  tickCompanion,
+  forestDistance,
 } from "@emberfall/common-new";
 import type { Player, WorldState } from "@emberfall/common-new";
 import { LocalMovement } from "../../client-new/src/local-movement.ts";
@@ -123,4 +127,35 @@ test("pass-through preserves wrapping in both areas, speed and death rules", asy
   const dead = { ...player };
   movePlayer(player, 1, 1, 1);
   assert.deepEqual(player, dead);
+});
+
+test("companion escapes owner-position spawns inside trees without disabling tree collision", () => {
+  for (const forest of [false, true]) {
+    const tree = forest ? forestTrees(400, 400, 100)[0] : TREES[0];
+    const cy = forest ? tree.y : tree.y - 8;
+    const move = forest ? moveForestActor : moveActor;
+    const center = { x: tree.x, y: cy };
+    const escaped = move(center, 80, 0, 12);
+    assert(escaped.x > center.x + tree.radius + 12, "initial overlap must allow escape");
+    const blocked = move({ x: center.x - 80, y: cy }, 160, 0, 12);
+    assert(blocked.x <= center.x - tree.radius - 12, "new entry must remain blocked");
+    const p = {
+      id: "druid",
+      classId: "druid",
+      x: center.x,
+      y: cy - 15,
+      hitpoints: 100,
+      maxHitpoints: 100,
+      scene: forest ? "forest" : undefined,
+    } as Player;
+    tickCompanion(p, undefined, 10000, 0);
+    p.x += 600;
+    tickCompanion(p, undefined, 10050, 0);
+    p.x = center.x;
+    tickCompanion(p, undefined, 10100, 0);
+    assert.equal(p.bear!.x, center.x, "teleport must use the owner position");
+    p.x += 60;
+    for (let now = 10150; now <= 14100; now += 50) tickCompanion(p, undefined, now, 0.05);
+    assert(forestDistance(p.bear!, p) <= 20.01, "teleported companion must resume following");
+  }
 });

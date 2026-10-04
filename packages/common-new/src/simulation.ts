@@ -301,6 +301,8 @@ export function tickCompanion(
         Math.cos(heading) * travel,
         Math.sin(heading) * travel,
         12,
+        true,
+        false, // Follow through village fixtures, while retaining tree collision.
       );
       bear.x = next.x;
       bear.y = wrap(next.y - 15, ARENA.height);
