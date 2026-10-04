@@ -43,6 +43,11 @@ test("Pixi preserves transparent vignette centers and SVG debuff pixels", async 
   );
   await page.screenshot({ path: "test-results/new-renderer-pixels.png" });
   expect(errors).toEqual([]);
+  const shaftCenter = results["shaft center"].actual[0];
+  expect(shaftCenter).toBeGreaterThan(131);
+  for (const edge of ["shaft left feather", "shaft right feather"])
+    expect(results[edge].actual[0]).toBeLessThanOrEqual(129);
+  expect(results["shaft after camera move"].actual).toEqual(results["shaft center"].actual);
   expect(groupedLabels).toEqual(["8"]);
   for (const { white, red } of damagePixels) {
     expect(white, "critical white fill survives Pixi rendering").toBeGreaterThan(3);

@@ -244,17 +244,28 @@ export function drawAtmosphere(
   }
   if (settings.lightShafts) {
     ctx.globalCompositeOperation = "screen";
-    for (let col = Math.floor((x - height) / 420); col < (x + width) / 420; col++) {
-      const base = col * 420 + Math.sin(now / 12000 + col) * 12;
-      const gradient = ctx.createLinearGradient(base, y, base + height * 0.6, y + height);
-      gradient.addColorStop(0, "#ffe6a818");
+    const slope = 0.6;
+    const beamWidth = 160;
+    // Anchor parallel beams to the world, rather than restarting at the viewport top.
+    const first = Math.floor((x - slope * (y + height) - beamWidth - 12) / 420);
+    const last = Math.ceil((x + width - slope * y + 12) / 420);
+    for (let col = first; col <= last; col++) {
+      const base = col * 420 + Math.sin(now / 12000 + col) * 12 + slope * y;
+      // Fade across the beam's perpendicular axis so both long edges are transparent.
+      const cross = beamWidth / (1 + slope * slope);
+      const gradient = ctx.createLinearGradient(base, y, base + cross, y - slope * cross);
+      gradient.addColorStop(0, "#ffe6a800");
+      gradient.addColorStop(0.2, "#ffe6a803");
+      gradient.addColorStop(0.5, "#ffe6a80c");
+      gradient.addColorStop(0.8, "#ffe6a803");
       gradient.addColorStop(1, "#ffe6a800");
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.moveTo(base, y);
-      ctx.lineTo(base + 45, y);
-      ctx.lineTo(base + height * 0.6 + 100, y + height);
-      ctx.lineTo(base + height * 0.6, y + height);
+      ctx.lineTo(base + beamWidth, y);
+      ctx.lineTo(base + height * slope + beamWidth, y + height);
+      ctx.lineTo(base + height * slope, y + height);
+      ctx.closePath();
       ctx.fill();
     }
   }
