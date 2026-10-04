@@ -33,6 +33,9 @@ innate 100 maximum health and 50 maximum mana, plus gear bonuses. Armor starts a
 zero and mitigates incoming damage by `armor / (100 + armor)`. Unequipped
 characters cannot attack. The server owns equipment and combat results.
 
+The equipment panel shows one Range row for the current targeting mode:
+automatic targeting uses automatic range, and manual targeting uses manual range.
+
 Starter weapons retain existing power/range/cadence and have a 5% critical chance
 for 150% damage. Warrior damage is physical, Mage fire, Ranger poison and Druid
 nature. Each direct hit rolls independently; splash scales from weapon power and

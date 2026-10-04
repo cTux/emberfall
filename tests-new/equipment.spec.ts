@@ -101,6 +101,23 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
       "Cooldown1 sec",
     );
     await expect(dialog).not.toContainText("Attack speed");
+    const stats = dialog.getByRole("region", { name: "Character stats" });
+    const automaticRange = { warrior: 88, ranger: 1000, mage: 250, druid: 250 }[classId];
+    const manualRange = classId === "warrior" ? 88 : 1000;
+    await expect(stats.getByText("Range", { exact: true })).toHaveCount(1);
+    await expect(stats).toContainText(`Range${automaticRange.toLocaleString("en")} units`);
+    await expect(stats).not.toContainText("Target range");
+    await expect(stats).not.toContainText("Manual range");
+    await physicalI();
+    await page.keyboard.press("g");
+    await expect.poll(() => player.autoTarget).toBe(false);
+    await physicalI();
+    await expect(stats).toContainText(`Range${manualRange.toLocaleString("en")} units`);
+    await physicalI();
+    await page.keyboard.press("g");
+    await expect.poll(() => player.autoTarget).toBe(true);
+    await physicalI();
+    await expect(stats).toContainText(`Range${automaticRange.toLocaleString("en")} units`);
     await page.screenshot({ path: `test-results/equipment-${classId}.png` });
     await dialog.getByRole("button", { name: "Close Equipment", exact: true }).click();
     await expect(dialog).toHaveCount(0);

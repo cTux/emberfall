@@ -69,8 +69,10 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: "Power", value: number(stats.power) },
     { label: "Damage type", value: stats.hasWeapon ? capitalize(stats.damageType) : "—" },
     { label: "Cooldown", value: `${number(stats.attackIntervalMs / 1000)} sec` },
-    { label: "Target range", value: `${number(stats.range)} units` },
-    { label: "Manual range", value: `${number(stats.manualRange)} units` },
+    {
+      label: "Range",
+      value: `${number(player.autoTarget === false ? stats.manualRange : stats.range)} units`,
+    },
     { label: "Critical chance", value: percent(stats.criticalChance) },
     { label: "Critical damage", value: percent(stats.criticalMultiplier) },
     { label: "Maximum health", value: number(stats.maxHitpoints) },
@@ -93,8 +95,8 @@ export function Equipment({ player }: { player: Player }) {
             classId: itemClass,
             equipment: { weapon: gear.id },
           })
-            .slice(0, 7)
-            .filter(({ label }) => label !== "Target range" && label !== "Manual range")
+            .slice(0, 6)
+            .filter(({ label }) => label !== "Range")
         : [];
     if (attack && attack !== "slash") {
       stats.push({ label: "Projectiles", value: number(ATTACK_DEFINITIONS[attack].count) });
