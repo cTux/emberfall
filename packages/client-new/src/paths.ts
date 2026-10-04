@@ -1,4 +1,5 @@
 import { ARENA, PATHS } from "@emberfall/common-new";
+import { terrainTile } from "./art";
 
 /** Plain dirt at the buildings' 2x pixel scale, with continuous rounded joins. */
 export function drawVillagePaths(ctx: CanvasRenderingContext2D, floor: HTMLImageElement) {
@@ -20,9 +21,7 @@ export function drawVillagePaths(ctx: CanvasRenderingContext2D, floor: HTMLImage
     mask.stroke();
   }
   // Only the center tile is dirt throughout; edge tiles contain bright grass.
-  const tile = document.createElement("canvas");
-  tile.width = tile.height = 16;
-  tile.getContext("2d")!.drawImage(floor, 192, 128, 16, 16, 0, 0, 16, 16);
+  const tile = terrainTile(1, 64);
   mask.resetTransform();
   mask.globalCompositeOperation = "source-in";
   mask.fillStyle = mask.createPattern(tile, "repeat")!;

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { crittersAt } from "../../client-new/src/critters.ts";
+import { crittersAt } from "../../client-new/src/critter-motion.ts";
 
 test("ambient critters wander, stay bounded, cull and repeat across forest seams", async () => {
   const lobby = { x: 0, y: 0, width: 960, height: 640 };
@@ -12,7 +12,7 @@ test("ambient critters wander, stay bounded, cull and repeat across forest seams
     const critters = crittersAt("village", now, lobby);
     critters.forEach((p, i) => {
       assert.ok(Math.abs(p.x - first[i]!.x) <= 40);
-      assert.ok(p.frame === 0 || p.frame === 1);
+      assert.ok(Number.isInteger(p.frame) && p.frame >= 0 && p.frame <= 4);
       assert.equal(p.y, first[i]!.y);
     });
   }

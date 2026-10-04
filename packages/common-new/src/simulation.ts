@@ -420,6 +420,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
         distance = next;
       }
     }
+    drop.collectorId = target?.id;
     if (!target) return true;
     const travel = Math.min(distance, PICKUP_RULES.speed * Math.max(0, dt));
     if (distance <= PICKUP_RULES.collectRadius || distance - travel <= PICKUP_RULES.collectRadius) {

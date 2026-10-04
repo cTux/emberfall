@@ -1,5 +1,6 @@
 import { GameConnection } from "./connection";
 import { classSprite } from "./characters";
+import { AssetGallery } from "./AssetGallery";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { classDetails } from "./class-details";
 import { Equipment } from "./equipment-view";
@@ -741,12 +742,7 @@ function App() {
                       selected={selected}
                       disabled={unavailable || selected || scene?.phase === "countdown"}
                       onSelect={() => send({ type: "selectClass", classId: id })}
-                      portrait={
-                        <img
-                          src={`/assets/portraits/${id}.png`}
-                          alt={`${CLASS_LABELS[id]} portrait`}
-                        />
-                      }
+                      portrait={<img src={classSprite(id)} alt={`${CLASS_LABELS[id]} portrait`} />}
                       weapon={{
                         name: details.weapon,
                         description: details.weaponDescription,
@@ -861,7 +857,7 @@ window.addEventListener("contextmenu", (event) => event.preventDefault(), { capt
 createRoot(document.getElementById("root")!).render(
   <GameUiProvider>
     <PanelPositionContext value={panelPositions}>
-      <App />
+      {new URLSearchParams(location.search).has("art-gallery") ? <AssetGallery /> : <App />}
     </PanelPositionContext>
   </GameUiProvider>,
 );

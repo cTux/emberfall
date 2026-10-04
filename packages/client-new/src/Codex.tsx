@@ -18,7 +18,7 @@ const chapters = [
           buildings and torch posts block movement. Escape opens a leave confirmation; Escape inside
           a window closes it. Drag window titles to move them. Press I to inspect equipment and
           character stats, or press it again to close the window. Movement and equipment hotkeys
-          follow physical keys across keyboard layouts.
+          follow physical keys across keybeard layouts.
         </p>{" "}
       </>
     ),
@@ -119,10 +119,10 @@ const chapters = [
           Druid aims root projectiles at the nearest enemy within 250 units when auto-target is
           enabled. Each hit deals 3 damage and adds a root stack, extending movement disable by
           three seconds. Roots cause no damage over time. Bosses show roots and take damage but keep
-          moving. Boar has 1.5 times your maximum HP, strikes with tusks for 2 damage, and revives
+          moving. Bear has 1.5 times your maximum HP, strikes with claws for 2 damage, and revives
           five seconds after death. It chases the nearest enemy within 200 units of you, returns
-          when more than 200 units away from you, and resumes hunting once back at your side. Boar
-          keeps an 80-unit gap for tusk attacks, backs away from close enemies, and tries to dodge
+          when more than 200 units away from you, and resumes hunting once back at your side. Bear
+          keeps an 80-unit gap for claw attacks, backs away from close enemies, and tries to dodge
           attack warnings and incoming projectiles.
         </p>
         <p>
@@ -137,7 +137,13 @@ const chapters = [
     title: "Credits",
     content: (
       <>
-        <p>Art and characters from the Ninja Adventure asset pack by Pixel-boy & AAA.</p>
+        <p>
+          New-client sprites and animations were generated for Emberfall using the approved
+          wardrobe-style concepts. The wardrobe reference is LPC Wooden Furniture; its credits and
+          CC BY-SA 3.0 license are preserved. The original imported art remains bundled for
+          provenance.
+        </p>
+        <p>Original art and characters: Ninja Adventure asset pack by Pixel-boy & AAA.</p>
         <a
           href="https://pixel-boy.itch.io/ninja-adventure-asset-pack"
           target="_blank"
@@ -147,7 +153,7 @@ const chapters = [
         </a>
         <p>Music by TimberwolfGames. Audio credits and licenses are included with the game.</p>
         <p>
-          Village lamp posts:{" "}
+          Original village lamp posts:{" "}
           <a href="https://karsiori.itch.io/free-pixel-art-lantern-pack">Karsiori</a>,{" "}
           <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>. Bronze post and
           orange lantern from the FREE Pixel Art Lantern Pack.
@@ -156,18 +162,19 @@ const chapters = [
           Wardrobe:{" "}
           <a href="https://opengameart.org/content/lpc-wooden-furniture">LPC Wooden Furniture</a> by
           bluecarrot16, Baŝto, Lanea Zimmerman (Sharm), William Thompson, Tuomo Untinen (Reemax),
-          and Janna/Lilius/Jannax. Cropped from the original sheet;{" "}
+          and Janna/Lilius/Jannax. Original crop used as the reference for the regenerated wardrobe;{" "}
           <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.{" "}
           <a href="/assets/LPC-CREDITS.txt">Full credits</a> and{" "}
           <a href="/assets/LPC-LICENSE.txt">license</a>.
         </p>
         <p>
-          Weapons: <a href="https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack">Kyrise</a>,{" "}
+          Original weapons:{" "}
+          <a href="https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack">Kyrise</a>,{" "}
           <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Unmodified sprites
           from Kyrise's Free 16x16 RPG Icon Pack.
         </p>
         <p>
-          Status and spell icons:{" "}
+          Original status and spell icons:{" "}
           <a href="https://game-icons.net/">Lorc and Delapouite / Game-icons.net</a>,{" "}
           <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>. Colors adapted for
           Emberfall.

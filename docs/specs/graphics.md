@@ -45,6 +45,43 @@ lifetime, sums exact amounts before rounding, and uses critical styling if any h
 was critical. Later hits start a new total; hits without player attribution remain
 separate. This applies in training and forest and does not alter damage or DPS.
 
+## GRAPHICS-05 — Wardrobe-style art in the new client
+
+The new client uses a cohesive pixel-art set
+based on the approved wardrobe-style concepts, including a newly drawn wardrobe.
+Players, enemies and animals have frame-based locomotion; combatants also have
+attack/cast and fallen poses. Idle motion, damage flashes and death transitions
+remain presentation-only. Scenery, weapons, portraits and effects use the same
+palette and outline treatment. Buildings and ground stay fixed; lobby chimneys
+emit subtle drifting smoke when Ambient particles is enabled.
+
+This replaces the original-runtime source art and frame counts described above.
+New-client weapons are part of the character frames, including idle poses; they
+are not drawn a second time as attachments. Weapons stay in the character's
+anatomical right hand across facing and action changes; shields stay left.
+Lanterns use four painted frames. Portals use a single regenerated stone arch:
+only the energy inside its aperture moves. Idle breathing, damage flashes and death fades remain
+procedural. All four player classes use replacement four-pose walking sheets;
+runner and caster still reuse one of three poses. Druid standing/walking body
+height matches the other classes instead of being scaled down by its raised staff.
+The companion uses a juvenile bear smaller than the druid; the boar remains in
+the asset collection and gallery. Belt lanterns use the generated flame frames.
+Ground tiles preserve asymmetric source scatter rather than mirrored quadrants.
+The wardrobe opens while its interaction is available nearby.
+Window frames use intertwined roots, leaves and sparse small flowers. Their
+black panel backgrounds are 76% opaque, with text and controls fully opaque.
+The decorative frame overlaps the panel edge without a transparent gutter.
+Path lanterns use one painted lantern suspended from a fixed wooden post. The
+lantern gently sways around its hook, with subtle flame flicker; no second lamp
+is overlaid on the scenery. Ambient particles controls its small rising embers.
+`/?art-gallery` previews the same packaged frames and provides action, direction,
+pause and background controls. Raw sheets and prompts remain with the assets.
+
+Animation selection follows the existing movement and confirmed/predicted action
+timestamps, never changes simulation timing, and uses the same frame for sprite
+and shadow/hit masks. Direction changes must not crop sprites or expose another
+atlas cell. Keep the original runtime and its credited assets intact.
+
 ## Acceptance
 
 In the new client, world text, chat bubbles, building/portal labels and navigation

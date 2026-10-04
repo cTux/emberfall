@@ -10,17 +10,20 @@ import {
 import { makeMask, castShadow } from "./lighting";
 import type { Caster, Light } from "./lighting";
 import type { GraphicsSettings } from "./graphics";
+import { environmentArt, wardrobeArt } from "./art";
+import { chimneyAnchors } from "./ambient-art";
 
 export interface Scenery extends Caster {
   sprite: HTMLCanvasElement;
   name?: string;
+  chimney?: { x: number; y: number };
 }
 export function villageSprites(
-  nature: HTMLImageElement,
-  houses: HTMLImageElement,
-  wardrobe: HTMLImageElement,
-  lampPost: HTMLImageElement,
-  lantern: HTMLImageElement,
+  _nature: HTMLImageElement,
+  _houses: HTMLImageElement,
+  _wardrobe: HTMLImageElement,
+  _lampPost: HTMLImageElement,
+  _lantern: HTMLImageElement,
   graphics: GraphicsSettings,
 ): Scenery[] {
   const objects: Scenery[] = [];
@@ -55,8 +58,10 @@ export function villageSprites(
     }
     objects.push({ id, x, y, width, height, ...frame, name });
   }
-  if (nature.naturalWidth) {
-    TREES.forEach((t, i) => add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, nature, 32, 0, 32, 32));
+  if (environmentArt.naturalWidth) {
+    TREES.forEach((t, i) =>
+      add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
+    );
     let seed = 713;
     const random = () => {
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -72,37 +77,45 @@ export function villageSprites(
       )
         continue;
       const size = 12 + random() * 10;
-      add(`grass:${i}`, x, y, size, size, nature, 64, 160, 16, 16);
+      add(`grass:${i}`, x, y, size, size, environmentArt, 256, 128, 128, 128);
     }
   }
-  if (houses.naturalWidth)
-    BUILDINGS.forEach((b) =>
+  if (environmentArt.naturalWidth)
+    BUILDINGS.forEach((b, i) => {
       add(
         `building:${b.id}`,
         b.x,
         b.y,
         b.sourceWidth * 2,
         96,
-        houses,
-        b.sourceX,
+        environmentArt,
+        (i % 3) * 128,
         0,
-        b.sourceWidth,
-        48,
+        128,
+        128,
         b.name,
-      ),
+      );
+      const anchor = chimneyAnchors[i % 3];
+      objects.at(-1)!.chimney = { x: (anchor.x - 0.5) * b.sourceWidth * 2, y: (anchor.y - 1) * 96 };
+    });
+  if (wardrobeArt.naturalWidth)
+    add(
+      "building:wardrobe",
+      WARDROBE.x,
+      WARDROBE.y,
+      60,
+      64,
+      wardrobeArt,
+      0,
+      0,
+      128,
+      128,
+      "Wardrobe",
     );
-  if (wardrobe.naturalWidth)
-    add("building:wardrobe", WARDROBE.x, WARDROBE.y, 48, 60, wardrobe, 0, 0, 64, 80, "Wardrobe");
-  if (lampPost.naturalWidth && lantern.naturalWidth) {
-    const torch = document.createElement("canvas");
-    torch.width = 32;
-    torch.height = 96;
-    const ctx = torch.getContext("2d")!;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(lampPost, 10, 24, 12, 72);
-    ctx.drawImage(lantern, 4, 0, 24, 34);
-    TORCHES.forEach((t, i) => add(`torch:${i}`, t.x, t.y, 20, 60, torch, 0, 0, 32, 96));
-  }
+  if (environmentArt.naturalWidth)
+    TORCHES.forEach((t, i) =>
+      add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128),
+    );
   return objects.sort((a, b) => a.y - b.y);
 }
 export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
@@ -113,49 +126,53 @@ export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
   owner: `torch:${i}`,
 }));
 
+let hangingLamp: { post: HTMLCanvasElement; lamp: HTMLCanvasElement } | undefined;
+
+/** Split the existing painting once: one fixed post and one suspended lantern. */
 export function drawTorchFire(
   ctx: CanvasRenderingContext2D,
-  lantern: HTMLImageElement,
   x: number,
   y: number,
   now: number,
   particles: boolean,
   bloom: boolean,
+  width = 42,
+  height = 64,
 ) {
-  ctx.save();
-  ctx.translate(x, y - 60);
-  if (lantern.naturalWidth) {
-    // Original sheet: 38 frames, seven 24x34 cells per row.
-    const frame = Math.floor((now + x * 13 + y * 7) / 80) % 38;
-    ctx.drawImage(
-      lantern,
-      (frame % 7) * 24,
-      Math.floor(frame / 7) * 34,
-      24,
-      34,
-      -7.5,
-      0,
-      15,
-      21.25,
-    );
+  if (!environmentArt.naturalWidth) return;
+  if (!hangingLamp) {
+    const post = document.createElement("canvas");
+    post.width = post.height = 128;
+    const paint = post.getContext("2d")!;
+    paint.drawImage(environmentArt, 0, 256, 128, 128, 0, 0, 128, 128);
+    const lamp = document.createElement("canvas");
+    lamp.width = 27;
+    lamp.height = 46;
+    lamp.getContext("2d")!.drawImage(post, 69, 28, 27, 46, 0, 0, 27, 46);
+    paint.clearRect(69, 28, 27, 46);
+    hangingLamp = { post, lamp };
   }
+  ctx.save();
+  ctx.translate(x - width / 2, y - height);
+  ctx.scale(width / 128, height / 128);
+  ctx.drawImage(hangingLamp.post, 0, 0);
+  ctx.translate(82, 28);
+  // Time-only phase stays continuous when projected coordinates wrap.
+  ctx.rotate(Math.sin(now / 1500) * 0.065 + Math.sin(now / 3700) * 0.02);
+  ctx.drawImage(hangingLamp.lamp, -13, 0);
+  const opacity = ctx.globalAlpha;
+  ctx.globalAlpha = opacity * (0.08 + Math.sin(now / 113) * 0.035);
+  ctx.fillStyle = "#ffd477";
+  ctx.fillRect(-3, 26, 6, 10);
   if (particles) {
-    const opacity = ctx.globalAlpha;
     if (bloom) {
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 3;
       ctx.shadowColor = "#ff8b32";
     }
-    for (let i = 0; i < 12; i++) {
-      const age = ((now + x * 13 + y * 7 + i * 137) % 1800) / 1800;
-      const angle = i * 2.399963;
-      ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.8;
-      ctx.fillStyle = ["#ffe6a3", "#ffac42", "#f45b28"][i % 3];
-      ctx.fillRect(
-        Math.round(Math.cos(angle) * (3 + age * 10)),
-        Math.round(10 + Math.sin(angle) * 4 - age * 30),
-        2,
-        2,
-      );
+    for (let i = 0; i < 4; i++) {
+      const age = ((now + i * 450) % 1800) / 1800;
+      ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.45;
+      ctx.fillRect(Math.sin(i * 2.4 + age) * 5, 25 - age * 24, 1, 1);
     }
   }
   ctx.restore();

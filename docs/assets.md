@@ -4,6 +4,14 @@ Use licensed project assets and preserve their original credits. Asgard’s Fall
 
 ## Sprites and icons
 
+The new client uses the [wardrobe-style collection](../packages/client-new/public/assets/wardrobe-style/README.md):
+generated actor and animal animations, village/forest scenery, a regenerated opening
+wardrobe, weapons, portraits, status icons, lantern/portal/projectile frames,
+pickups, terrain and a window panel skin. Source sheets and exact generation
+prompts accompany the assets. The live `/?art-gallery` page shares the runtime
+atlas loader for inspection. Original imported files and their notices remain
+intact; the following attribution describes those retained originals.
+
 Class weapons use [Kyrise's Free 16x16 RPG Icon Pack v1.3](https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack) under CC BY 4.0: steel sword, green wooden bow, red-and-gold mage staff and green druid staff. The four original 16x16 PNGs are unmodified and renamed for their classes. Kyrise is credited in the Codex and `public/assets/weapons/CREDITS.txt`; the original pack readme is included as `KYRISE-README.txt`. [Game-icons.net](https://game-icons.net/) provides bleeding, poison, burning and plant-roots symbols under CC BY 3.0, credited in the Codex and `public/assets/status/CREDITS.txt`. These clear silhouettes remain readable in the compact nameplate row; the weapons retain the game's pixel-art style.
 
 Selected original sprites are copied from the adjacent `ninja-adventure-gallery/src/assets` directory into `packages/client/public/assets`. The original gallery is unchanged. Ninja Adventure by Pixel-boy and AAA is CC0; the original license and credits accompany the copies. [Asset source](https://pixel-boy.itch.io/ninja-adventure-asset-pack).

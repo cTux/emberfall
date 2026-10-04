@@ -1,6 +1,10 @@
 import { test, expect } from "./fixtures";
 import { writeFileSync } from "node:fs";
-import { TRAINING_ZONES, LOBBY_PORTAL } from "../packages/common-new/src/index.ts";
+import {
+  TRAINING_ZONES,
+  LOBBY_PORTAL,
+  starterEquipment,
+} from "../packages/common-new/src/index.ts";
 
 test.use({ graphicsPreset: "High" });
 test.use({
@@ -34,9 +38,10 @@ test("profile village, training and forest frame budgets", async ({
   const player = [...world.players.values()][0];
   const session = await page.context().newCDPSession(page);
   await session.send("Profiler.enable");
-  for (const scene of ["village", "training", "forest"] as const) {
+  for (const scene of ["village", "training", "forest", "crowded"] as const) {
     if (scene === "training") {
       player.classId = "mage";
+      player.equipment = starterEquipment("mage");
       player.x = TRAINING_ZONES[0].x - 120;
       player.y = TRAINING_ZONES[0].y;
     }
@@ -52,6 +57,24 @@ test("profile village, training and forest frame budgets", async ({
       await portal.getByRole("button", { name: "I'm ready" }).click();
       await expect(page.getByLabel("Forest combat scene.")).toBeVisible({ timeout: 10000 });
       await page.keyboard.down("d");
+    }
+    if (scene === "crowded") {
+      const forest = world.scene!;
+      player.x = 2400;
+      player.y = 1280;
+      player.hitpoints = player.maxHitpoints = 100000;
+      player.hurtAt = Date.now() + 60000;
+      forest.endsAt = Date.now() + 600000;
+      forest.enemies = Array.from({ length: 80 }, (_, i) => ({
+        id: ++forest.sequence,
+        x: player.x + Math.cos(i * 2.4) * (80 + i * 3),
+        y: player.y + Math.sin(i * 2.4) * (80 + i * 3),
+        angle: 0,
+        hitpoints: 100000,
+        maxHitpoints: 100000,
+        kind: "normal" as const,
+        archetype: (["skeleton", "runner", "brute", "caster"] as const)[i % 4],
+      }));
     }
     await page.waitForTimeout(3000);
     if (profileCpu) await session.send("Profiler.start");

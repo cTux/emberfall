@@ -96,11 +96,14 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
   ).toBeVisible({ timeout: 15000 });
   await expect.poll(() => game.runtime.worlds.get(worldId)?.players.size).toBe(1);
   expect(game.runtime.worlds.get(worldId)!.players.get(id)?.classId).toBe("druid");
-  await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
+  await expect(page.locator(".party article .portrait")).toHaveCSS(
+    "background-image",
+    /druid-portrait.png/,
+  );
   expect(errors).toEqual([]);
 });
 
-test("boar chases and defeats a forest boss after portal entry, opening the return portal", async ({
+test("bear chases and defeats a forest boss after portal entry, opening the return portal", async ({
   page,
   game,
 }) => {
