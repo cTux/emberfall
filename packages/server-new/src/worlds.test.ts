@@ -39,7 +39,9 @@ test("latest input is coalesced, held between packets, timed out and rejected ac
     await new Promise((r) => setTimeout(r, 380));
     const stopped = samples.at(-1)!;
     assert(stopped.x > first.x, "direction persists between heartbeats");
-    assert(stopped.x <= 465, "missing heartbeat stops movement after 250ms");
+    // A packet received at a tick boundary moves at ages 0, 50, ... 250:
+    // six steps. Other tick phases permit five. The timeout is inclusive.
+    assert(stopped.x <= 474, "missing heartbeat stops movement after 250ms");
     await new Promise((r) => setTimeout(r, 100));
     assert.equal(samples.at(-1)!.x, stopped.x);
     ws.send(JSON.stringify({ type: "move", seq: 5, epoch: "old-scene", x: 1, y: 0 }));

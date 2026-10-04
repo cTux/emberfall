@@ -4,6 +4,27 @@ import { stepMovement, type MovementInput } from "./systems/movement.ts";
 import { freshProgress } from "./characters.ts";
 import type { Player } from "@emberfall/common-new";
 
+test("untimed heartbeat movement includes age 250ms and stops immediately after it", () => {
+  for (const phase of [0, 49]) {
+    const player: Player = { ...freshProgress(), id: "p", name: "p", x: 420, y: 340, color: 0 };
+    const input: MovementInput = {
+      x: 1,
+      y: 0,
+      inputAt: 1000,
+      lastSeq: 1,
+      epoch: "lobby",
+      inputs: [],
+    };
+    for (let age = phase; age <= 250; age += 50) stepMovement(input, player, undefined, 1000 + age);
+    assert.equal(player.x, phase === 0 ? 474 : 465);
+    const stopped = player.x;
+    stepMovement(input, player, undefined, 1251);
+    stepMovement(input, player, undefined, 1300);
+    assert.equal(player.x, stopped);
+    assert.equal(player.inputX, 0);
+  }
+});
+
 test("a fixed tick consumes partial commands once and bounds a queued burst", () => {
   const player: Player = { ...freshProgress(), id: "p", name: "p", x: 420, y: 340, color: 0 };
   const input: MovementInput = {
