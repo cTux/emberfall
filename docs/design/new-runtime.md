@@ -12,7 +12,7 @@ reference, not dependencies of the new runtime. See the
 - `server-new`: authoritative Miniplex entities, ordered fixed-timestep systems,
   Colyseus transport/state projection and Colyseus database persistence.
 - `client-new`: Colyseus SDK, presentation/prediction Miniplex world, PixiJS world
-  rendering, audio and screen composition using the unchanged shared UI package.
+  rendering, audio and screen composition using the shared UI package.
 - `ui`: shared controlled components and theme for both runtimes.
 
 Definition objects describe types; mutable entities describe instances. Stable
@@ -53,8 +53,15 @@ tails, including clipped groups. Color parsing is bounded and reused; ordinary
 axis-aligned sprite transforms avoid matrix decomposition. Light textures update
 only when a nearby blocker, its silhouette, the source light or shadow settings
 change. Camera translation and flicker alone do not upload a new texture.
-World text uses nearest-neighbor sampling at its native glyph resolution to keep
-enlarged labels and damage numbers consistent with the pixel-art sprites.
+World text is baked at native font size into binary-alpha glyph masks and drawn
+as nearest-neighbor Pixi sprites. A bounded cache reuses text masks across colors
+and frames, refreshes when fonts load, and releases textures on disposal. Outlines
+use the same baseline as fills; whole-label opacity still supports hit fades.
+Chat bubbles, building/portal labels and navigation are controlled React UI.
+The host collects their CSS-pixel positions from the rendered camera transform;
+React updates content only when it changes, while refs track positions each frame.
+Wrapped positions, scene filtering and game actions remain in the client. The
+overlay clips to the viewport and passes pointer events through to the canvas.
 
 Gradient ramps are baked once onto transparent textures and cached independently
 of world position, so vignette centers preserve the scene beneath them. SVG

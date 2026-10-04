@@ -4,7 +4,9 @@ import { villageImages, villageBackground, drawVillageBackground } from "./villa
 import { characterImages } from "./characters";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
-import { drawNavigation } from "./navigation";
+import { collectNavigation, projectLabel } from "./navigation";
+import { useWorldLabels } from "./WorldLabels";
+import type { Label } from "./WorldLabels";
 import { useDraggable } from "@emberfall/ui";
 import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
@@ -16,7 +18,6 @@ import { SnapshotBuffer } from "./snapshots";
 import {
   drawPlayerHealth,
   drawTargetHit,
-  drawChatBubble,
   drawParticles,
   drawVignette,
   drawNameBadge,
@@ -81,6 +82,7 @@ export function Arena({
     handleProps: dpsHandle,
   } = useDraggable("panel.dps", !!world);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const { publish: publishLabels, overlay: worldLabels } = useWorldLabels();
   const [renderError, setRenderError] = useState(false);
   const latest = useRef(world);
   const sender = useRef(send);
@@ -312,6 +314,34 @@ export function Arena({
         frameCount = 0;
       }
       renderer.begin();
+      const labels: Label[] = [];
+      const addLabel = (label: Label) => {
+        if (
+          label.x > -240 &&
+          label.x < element.clientWidth + 240 &&
+          label.y > -40 &&
+          label.y < element.clientHeight + 300
+        )
+          labels.push(label);
+      };
+      const finishLabels = (view: WorldState | null) => {
+        const me = view?.players.find((p) => p.id === playerId);
+        if (view && me) {
+          collectNavigation(ctx, view, playerId, addLabel);
+          for (const p of view.players) {
+            if (!p.chat || p.scene !== me.scene) continue;
+            const x = me.x + wrappedDelta(p.x, me.x, FOREST.width);
+            const y = me.y + wrappedDelta(p.y, me.y, FOREST.height);
+            addLabel({
+              id: `chat:${p.id}`,
+              kind: "chat",
+              text: p.chat,
+              ...projectLabel(ctx, x, y - 72),
+            });
+          }
+        }
+        publishLabels(labels);
+      };
       const delta = Math.min(0.1, (now - previous) / 1000);
       previous = now;
       if (previousSettings !== quality.current) {
@@ -412,8 +442,10 @@ export function Arena({
           now,
           delta,
           interaction.current,
+          addLabel,
         );
         drawCursorRange(local);
+        finishLabels(view);
         renderer.present();
         frame = requestAnimationFrame(draw);
         return;
@@ -613,6 +645,7 @@ export function Arena({
             interaction.current?.id === "portal",
             quality.current.shadows,
             quality.current.wavingVegetation,
+            addLabel,
           );
           continue;
         }
@@ -672,6 +705,7 @@ export function Arena({
               object.y,
               object.name,
               object.id === `building:${interaction.current?.id}`,
+              addLabel,
             );
           continue;
         }
@@ -815,8 +849,7 @@ export function Arena({
       drawAtmosphere(ctx, cameraX, cameraY, viewWidth, viewHeight, now, quality.current);
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawCursorRange(local);
-      drawNavigation(ctx, view, playerId);
-      for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
+      finishLabels(view);
       renderer.present();
       frame = requestAnimationFrame(draw);
     }
@@ -839,7 +872,7 @@ export function Arena({
       presentation.clear();
       audio.dispose();
     };
-  }, [playerId, interaction, onHitpoints]);
+  }, [playerId, interaction, onHitpoints, publishLabels]);
   return (
     <>
       {renderError && (
@@ -859,6 +892,7 @@ export function Arena({
             : "Forest preview"
         }
       />
+      {worldLabels}
       <PerformanceGraph
         frameRate={frameRate}
         latency={latency}

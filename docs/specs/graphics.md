@@ -38,6 +38,13 @@ Diagonal facing retains its current valid axis near a 45-degree heading to preve
 
 Blood puddles have their own persistent gameplay toggle. Damage numbers and hit effects present server events; they cannot award damage or XP.
 
+In the new client, world names, damage numbers and debuff counts use hard-edged
+glyphs with nearest-neighbor scaling, without font-edge smoothing. Outlines and
+intentional damage-number fades remain. Chat bubbles, building/portal labels and
+screen-edge navigation use React overlays at browser text resolution, independent
+of adaptive world resolution. Overlays follow the wrapped camera, stay below HUD
+windows and never intercept gameplay input.
+
 ## Acceptance
 
 - Preset/individual changes apply immediately and persist without changing collision or simulation. Red warnings and the Warrior attack zone remain visible at every preset.

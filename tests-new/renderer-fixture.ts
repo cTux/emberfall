@@ -195,6 +195,9 @@ export async function compare() {
   const glyphCtx = glyph.getContext("2d")!;
   glyphCtx.drawImage(gpu, 0, 0);
   const pixels = glyphCtx.getImageData(0, 0, 256, 256).data;
+  const shades = [...new Set(Array.from(pixels).filter((_, i) => i % 4 === 0))].sort(
+    (a, b) => a - b,
+  );
   // Nearest scaling repeats each raster column four times. Linear filtering
   // instead introduces intermediate columns and fails this edge-grid check.
   const edges = [0, 0, 0, 0];
@@ -214,5 +217,5 @@ export async function compare() {
     128,
     128,
   );
-  return { results, icons, lights, edges };
+  return { results, icons, lights, edges, shades };
 }
