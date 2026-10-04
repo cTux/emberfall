@@ -41,6 +41,16 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   await sword.focus();
   const itemTooltip = page.getByRole("tooltip").filter({ hasText: "Warrior's sword" });
   await expect(itemTooltip).toBeVisible();
+  expect(await itemTooltip.evaluate((node) => node.closest('[role="dialog"]') === null)).toBe(true);
+  await expect(dialog).toHaveCSS("border-top-width", "1px");
+  await expect(dialog).toHaveCSS("border-top-style", "solid");
+  await expect(dialog).toHaveCSS("border-image-source", "none");
+  await expect(dialog.locator(".MuiDialogTitle-root").locator("..")).toHaveCSS(
+    "border-bottom-width",
+    "0px",
+  );
+  const content = dialog.locator(".MuiDialogContent-root");
+  expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
   await expect(itemTooltip.locator(".MuiTooltip-tooltip").first()).toHaveCSS(
     "background-color",
     "rgba(0, 0, 0, 0.88)",
@@ -54,10 +64,14 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   await expect(itemTooltip).not.toContainText("Deal 5 damage");
   const bleed = itemTooltip.getByRole("button", { name: "Bleed", exact: true });
   await expect(bleed).toHaveText("");
-  // Tab from the focused slot into its portalless tooltip, inside the modal.
+  // Tab reaches the portalled badges without leaving the modal focus scope.
   await page.keyboard.press("Tab");
   await expect(itemTooltip.getByRole("button", { name: "Power: 5", exact: true })).toBeFocused();
   await expect(page.getByRole("tooltip").last()).toContainText("Deal 5 damage");
+  await page.keyboard.press("Shift+Tab");
+  await expect(sword).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(itemTooltip.getByRole("button", { name: "Power: 5", exact: true })).toBeFocused();
   await bleed.focus();
   await bleed.hover();
   await expect(page.getByRole("tooltip").last()).toContainText("10% chance to apply Bleed");
@@ -168,6 +182,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect(stats).toContainText(`Range${automaticRange.toLocaleString("en")} units`);
     await weapon.hover();
     await expect(page.locator(`[data-equipment-badge="${effect}"]`).last()).toBeVisible();
+    expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
     await page.screenshot({ path: `test-results/equipment-${classId}.png` });
     await dialog.getByRole("button", { name: "Close Equipment", exact: true }).click();
     await expect(dialog).toHaveCount(0);

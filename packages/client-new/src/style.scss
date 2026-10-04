@@ -6,8 +6,7 @@ body {
 /* New-client skin only; the shared UI and original runtime keep their theme. */
 [class~="MuiPaper-root"][role="dialog"],
 .lobby > [class~="MuiPaper-root"] {
-  border: 8px solid transparent;
-  border-image: url("/assets/wardrobe-style/panel-leaves.png") 12% / 18px round;
+  border: 1px solid #8daba5;
   border-radius: 0;
   background-color: rgb(0 0 0 / 76%);
   background-image: none;

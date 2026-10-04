@@ -19,10 +19,10 @@ Wardrobe composes controlled `ClassCard` components in one four-column row insid
 EquipmentPanel receives item badge labels, atlas keys, optional values and explanations
 from `client-new/equipment-view.tsx`, which derives them from shared equipment,
 attack and ailment definitions. The shared UI bundles a transparent generated icon
-atlas and presents 236px black translucent tooltips. The item popup stays beside
-its slot for keyboard tab order. Badge explanations portal into the modal container
+atlas and presents 236px black translucent tooltips. Item popups and badge explanations portal into the modal container
 (or the page for nonmodal stories) to avoid scrolling-content clipping while
-preserving modal focus and pointer interaction. Click/tap explicitly opens details;
+preserving modal focus and pointer interaction. Tab/Shift+Tab connect each slot
+with its first badge across the portal. Click/tap explicitly opens details;
 MUI handles hover/focus and closing. Gameplay calculations stay in the host.
 
 Drawing combines predicted local presentation with buffered remote actors. The camera centers the local player and projects the nearest wrapped copy of terrain, entities, attachments, cursor aim and navigation arrows. Sort sprites/scenery by depth; faded scenery does not change its shadow or collision behavior.

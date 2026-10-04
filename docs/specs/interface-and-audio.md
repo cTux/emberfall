@@ -60,12 +60,15 @@ The Equipment HUD action and physical `KeyI` open a draggable equipment dialog i
 village and forest. `I` toggles it closed; Escape and the close button also close
 it. Ignore repeats, modified shortcuts, text entry and other open dialogs. Use
 the existing modal focus, movement suppression and persisted drag-position rules.
+New-runtime windows use a light solid border, with no divider under the title.
 
 The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
 amulet/off-hand/ring. Slots have no border. Empty slots show generated wardrobe-style
 equipment icons at 15% effective opacity; equipped weapons keep their full-brightness
 icon. Hover, focus or touch exposes a narrow translucent-black item tooltip with
 its name and generated icon badges instead of a description paragraph or stat rows.
+Tooltips render outside the window's scrollable content without creating a scrollbar
+or being clipped by its edges. Keyboard access to badges stays within the modal.
 Power, active range and cooldown come first. Numeric values sit at each badge's
 bottom-right corner; damage type and the final weapon effect have no number.
 Each badge exposes its own weapon-specific explanation on hover, keyboard focus
