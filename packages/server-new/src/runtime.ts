@@ -28,6 +28,7 @@ import type { Scene } from "./scenes.ts";
 import { addChat } from "./chat.ts";
 
 const derive = promisify(scrypt);
+type AccountIdentity = () => { characterId: string; nickname: string | null } | undefined;
 interface World {
   chat?: ChatMessage[];
   id: string;
@@ -165,7 +166,7 @@ export async function createRuntime(savePath = ":memory:") {
     session.x = 0;
     session.y = 0;
   }
-  wss.on("connection", (ws: WebSocket) => {
+  wss.on("connection", (ws: WebSocket, account?: AccountIdentity) => {
     if (sessions.size >= 256) {
       ws.close(1008, "Server is full");
       return;
@@ -226,6 +227,25 @@ export async function createRuntime(savePath = ":memory:") {
     });
     ws.on("command", async (command: unknown) => {
       const error = (message: string) => send(ws, { type: "error", message });
+      const authenticated = account?.();
+      if (account && !authenticated?.nickname) {
+        ws.close(1008, "Please sign in again");
+        return;
+      }
+      if (
+        authenticated &&
+        command &&
+        typeof command === "object" &&
+        "type" in command &&
+        ["join", "create", "resume"].includes(String(command.type))
+      ) {
+        // Wire credentials cannot select or rename a Steam-owned character.
+        command = {
+          ...command,
+          playerName: authenticated.nickname,
+          characterToken: "0".repeat(64),
+        };
+      }
       const now = Date.now();
       if (now - session.windowAt > 1000) {
         session.windowAt = now;
@@ -391,9 +411,11 @@ export async function createRuntime(savePath = ":memory:") {
       session.busy = true;
       let createdWorld: World | undefined;
       try {
-        const existingCharacter = message.characterToken
-          ? characters.load(message.characterToken)
-          : undefined;
+        const existingCharacter = authenticated
+          ? characters.loadById(authenticated.characterId)
+          : message.characterToken
+            ? characters.load(message.characterToken)
+            : undefined;
         const active = () =>
           existingCharacter &&
           [...sessions.values()].some((s) => s.worldId && s.characterId === existingCharacter.id);
@@ -434,7 +456,7 @@ export async function createRuntime(savePath = ":memory:") {
               type: "joined",
               playerId: session.id,
               world: state(world),
-              characterToken: message.characterToken,
+              characterToken: authenticated ? "" : message.characterToken,
             });
             return;
           }
@@ -506,10 +528,13 @@ export async function createRuntime(savePath = ":memory:") {
           return;
         }
         // Password hashing yields; refresh after it so a recent save cannot be overwritten.
-        let character = message.characterToken
-          ? characters.load(message.characterToken)
-          : undefined;
-        let token = message.characterToken;
+        if (ws.readyState !== WebSocket.OPEN || (account && !account()?.nickname)) return;
+        let character = authenticated
+          ? characters.loadById(authenticated.characterId)
+          : message.characterToken
+            ? characters.load(message.characterToken)
+            : undefined;
+        let token = authenticated ? "" : message.characterToken;
         if (!character) {
           const created = characters.create(
             message.type === "resume" ? existingCharacter!.name : message.playerName,
@@ -517,7 +542,11 @@ export async function createRuntime(savePath = ":memory:") {
           character = created;
           token = created.token;
         }
-        const playerName = message.type === "resume" ? existingCharacter!.name : message.playerName;
+        const playerName = authenticated
+          ? account!()!.nickname!
+          : message.type === "resume"
+            ? existingCharacter!.name
+            : message.playerName;
         characters.save(character.id, playerName, {
           ...character.progress,
           classId: character.classId,
@@ -642,5 +671,18 @@ export async function createRuntime(savePath = ":memory:") {
     if (failures.length)
       throw new AggregateError(failures, "Some characters could not be saved during shutdown");
   }
-  return { connect: (peer: WebSocket) => wss.emit("connection", peer), close, characters, worlds };
+  function renameCharacter(characterId: string, nickname: string) {
+    for (const session of sessions.values()) {
+      if (session.characterId !== characterId) continue;
+      const player = worlds.get(session.worldId ?? "")?.players.get(session.id);
+      if (player) player.name = nickname;
+    }
+  }
+  return {
+    connect: (peer: WebSocket, account?: AccountIdentity) => wss.emit("connection", peer, account),
+    renameCharacter,
+    close,
+    characters,
+    worlds,
+  };
 }

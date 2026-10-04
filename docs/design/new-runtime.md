@@ -101,6 +101,12 @@ impact; only its visual range limit or authoritative completion ends its flight.
 
 ## Persistence
 
+The executable now uses [Steam accounts](steam-accounts.md) for character ownership
+and nickname onboarding/editing. Existing browser saves remain intact; Steam
+accounts start fresh. Browser-token authentication remains only in isolated parity
+fixtures. Sessions, account tables and public-origin configuration are described
+in the account design and [operations](../operations.md#steam-login-new-runtime).
+
 `@colyseus/database` boots a SQLite schema through Drizzle using Node's synchronous
 SQLite connection. Character documents occupy cloud-save slot 0; identity hashes
 and world membership use Emberfall tables. Save format versions are distinct from

@@ -1,3 +1,5 @@
+import { AccountGate } from "./Account";
+import type { AccountView } from "@emberfall/common-new";
 import { GameConnection } from "./connection";
 import { classSprite } from "./characters";
 import { AssetGallery } from "./AssetGallery";
@@ -45,7 +47,17 @@ import { loadGraphics } from "./graphics";
 import "./style.scss";
 import { panelPositions } from "./panel-positions";
 
-function App() {
+function App({
+  account,
+  rename,
+  logout,
+  refresh,
+}: {
+  account: AccountView;
+  rename(): void;
+  logout(): Promise<void>;
+  refresh(): Promise<void>;
+}) {
   const socket = useRef<GameConnection | null>(null);
   const [status, setStatus] = useState("Connecting");
   const [latency, setLatency] = useState<number | null>(null);
@@ -54,13 +66,15 @@ function App() {
   const [displayedHp, setDisplayedHp] = useState<Record<string, number>>({});
   const [world, setWorld] = useState<WorldState | null>(null);
   const [playerId, setPlayerId] = useState("");
-  const [name, setName] = useState(() => {
+  const [legacyName, setName] = useState(() => {
     try {
       return localStorage.getItem("emberfall-new.nickname")?.slice(0, 24) || "Wanderer";
     } catch {
       return "Wanderer";
     }
   });
+  const steam = account.mode === "steam";
+  const name = steam ? account.nickname! : legacyName;
   const [menu, setMenu] = useState<
     "codex" | "settings" | "portal" | "building" | "wardrobe" | "equipment" | "exit" | null
   >(null);
@@ -81,12 +95,13 @@ function App() {
   const characterToken = useRef<string | undefined>(undefined);
   useEffect(() => {
     try {
-      characterToken.current = localStorage.getItem("emberfall-new.character") ?? undefined;
+      if (!steam)
+        characterToken.current = localStorage.getItem("emberfall-new.character") ?? undefined;
       previousWorld.current = sessionStorage.getItem("emberfall-new.world");
     } catch {
       /* Keep the key in memory for this session. */
     }
-  }, []);
+  }, [steam]);
   useEffect(() => {
     try {
       localStorage.setItem("emberfall-new.graphics", JSON.stringify(graphics));
@@ -96,11 +111,11 @@ function App() {
   }, [graphics]);
   useEffect(() => {
     try {
-      localStorage.setItem("emberfall-new.nickname", name);
+      if (!steam) localStorage.setItem("emberfall-new.nickname", name);
     } catch {
       /* Storage may be disabled. */
     }
-  }, [name]);
+  }, [name, steam]);
   const [worldName, setWorldName] = useState("The quiet grove");
   const [password, setPassword] = useState("");
   const [joinPassword, setJoinPassword] = useState("");
@@ -128,7 +143,7 @@ function App() {
     const versionRequest = new AbortController();
     let disposed = false;
     let resuming = false;
-    const ws = new GameConnection(url);
+    const ws = new GameConnection(url, steam);
     socket.current = ws;
     let joinedId = "";
     let previousScene: string | undefined;
@@ -167,13 +182,13 @@ function App() {
       if (disposed || ws.readyState !== GameConnection.OPEN) return;
       failedConnections.current = 0;
       setError("");
-      resuming = !!previousWorld.current && !!characterToken.current;
+      resuming = !!previousWorld.current && (steam || !!characterToken.current);
       if (resuming) {
         setPending(true);
         ws.send({
           type: "resume",
           worldId: previousWorld.current!,
-          characterToken: characterToken.current!,
+          characterToken: steam ? "0".repeat(64) : characterToken.current!,
         });
       } else setStatus("Connected");
       ping();
@@ -194,7 +209,7 @@ function App() {
         previousScene = undefined;
         characterToken.current = message.characterToken;
         try {
-          localStorage.setItem("emberfall-new.character", message.characterToken);
+          if (!steam) localStorage.setItem("emberfall-new.character", message.characterToken);
         } catch {
           setError(
             "Your browser cannot remember this character key. Enable site storage to restore progress next session.",
@@ -243,6 +258,7 @@ function App() {
       }
     };
     ws.onclose = () => {
+      if (steam) void refresh();
       clearInterval(pingTimer);
       setLatency(null);
       setStatus("Reconnecting");
@@ -263,7 +279,7 @@ function App() {
       ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null;
       ws.close();
     };
-  }, [retry]);
+  }, [retry, steam, refresh]);
   const send = (message: ClientMessage) => {
     if (status === "Connected" && socket.current?.readyState === GameConnection.OPEN)
       socket.current.send(message);
@@ -313,7 +329,12 @@ function App() {
         setMenu(menu === "equipment" ? null : "equipment");
         return;
       }
-      if (world && !menu && !typing) {
+      if (
+        world &&
+        !menu &&
+        !typing &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
         const option =
           event.code === "KeyF" ? "autoAttack" : event.code === "KeyG" ? "autoTarget" : null;
         if (option) {
@@ -471,14 +492,18 @@ function App() {
           <Box className="lobby">
             <GameWindow title="Emberfall" modal={false} onClose={() => setBrowserOpen(false)}>
               <Stack spacing={3}>
-                <TextField
-                  label="Your adventurer name"
-                  value={name}
-                  required
-                  autoComplete="nickname"
-                  onChange={(e) => setName(e.target.value)}
-                  slotProps={{ htmlInput: { maxLength: 24 } }}
-                />
+                {steam ? (
+                  <Typography>Playing as {name}</Typography>
+                ) : (
+                  <TextField
+                    label="Your adventurer name"
+                    value={name}
+                    required
+                    autoComplete="nickname"
+                    onChange={(e) => setName(e.target.value)}
+                    slotProps={{ htmlInput: { maxLength: 24 } }}
+                  />
+                )}
                 <ChapterTabs
                   label="World actions"
                   value={tab}
@@ -692,6 +717,14 @@ function App() {
               <Equipment player={me} />
             ) : menu === "settings" ? (
               <Settings
+                account={account}
+                onRename={() => {
+                  setMenu(null);
+                  rename();
+                }}
+                onLogout={() => {
+                  void logout();
+                }}
                 tab={settingsTab}
                 onTab={setSettingsTab}
                 preferences={preferences}
@@ -863,7 +896,7 @@ createRoot(document.getElementById("root")!).render(
       ) : new URLSearchParams(location.search).has("art-gallery") ? (
         <AssetGallery />
       ) : (
-        <App />
+        <AccountGate>{(props) => <App {...props} />}</AccountGate>
       )}
     </PanelPositionContext>
   </GameUiProvider>,

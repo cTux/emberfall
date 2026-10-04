@@ -4,7 +4,7 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 
 ## UI-01 — HUD and windows
 
-The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames persist in browser localStorage; when storage is blocked the session still works.
+The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Original-runtime nicknames persist in browser localStorage; when storage is blocked that session still works. New-runtime nicknames belong to Steam accounts; see CHAR-05.
 
 Party cards show server-owned name, level and HP/MP, with host/local markers and dimmed players in the other area. Bear has HP but no mana. Thin health bars also appear beneath player names.
 
@@ -29,6 +29,12 @@ The network graph plots ping, input acknowledgement delay, and local snapshot ag
 The top-left performance panel overlays a green FPS trace and blue round-trip latency trace on one 30-second scrolling graph, sampled twice per second. The duplicate numeric caption is omitted; color-coded axis ranges (for example 0–240 FPS and 0–100 ms) describe the scales, not current readings. Both traces are enabled by default, with compact 8-pixel side padding. Each trace retains its own saved visibility toggle; disabling both hides the panel. A DPS meter sits between the graph and party list (and stays visible when the graph is hidden). It shows your actual enemy damage over a rolling five-second window, divided by five, including damage over time and the companion; overkill is excluded. The server calculates it from the shared hit path, and it returns to zero after five seconds without damage.
 
 ## UI-04 — Settings and music
+
+New runtime: Settings → Account displays the saved game nickname and
+opens the same nickname dialog used after first Steam login. Account data is saved
+on the server, independently of local presentation preferences. See
+[CHAR-05](characters.md#char-05--steam-accounts-and-nickname) and the
+[account design](../design/steam-accounts.md). The original runtime retains the groups below.
 
 Settings groups are Gameplay, Graphics and Sound. Preferences persist locally; malformed or unavailable storage falls back to defaults. Gameplay includes auto-attack, auto-target, blood puddles, damage numbers and performance visibility. Audio has independent music/effects enable switches and volumes; defaults are 0.22 music and 0.35 effects.
 

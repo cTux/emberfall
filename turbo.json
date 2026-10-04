@@ -1,7 +1,11 @@
 {
   "globalDependencies": ["scripts/optimize-images.ts"],
   "tasks": {
-    "dev": { "cache": false, "persistent": true, "passThroughEnv": ["PORT_NEW", "SAVE_PATH_NEW"] },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": ["PORT_NEW", "SAVE_PATH_NEW", "STEAM_ORIGIN", "STEAM_WEB_API_KEY"]
+    },
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] }
   }
 }
