@@ -1,4 +1,5 @@
 {
+  "globalDependencies": ["scripts/optimize-images.ts"],
   "tasks": {
     "dev": { "cache": false, "persistent": true, "passThroughEnv": ["PORT_NEW", "SAVE_PATH_NEW"] },
     "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] }
