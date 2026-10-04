@@ -6,11 +6,13 @@ export default defineConfig({
   testDir: "./tests",
   workers: 1,
   use: { baseURL, ignoreHTTPSErrors: true, viewport: { width: 1440, height: 1000 } },
-  webServer: {
-    command: dev ? "pnpm dev" : "pnpm start",
-    env: dev ? {} : { PORT: port, SAVE_PATH: ":memory:" },
-    url: dev ? baseURL : `${baseURL}/health`,
-    reuseExistingServer: false,
-    ignoreHTTPSErrors: true,
-  },
+  webServer: dev
+    ? {
+        command: "pnpm dev",
+        env: {},
+        url: baseURL,
+        reuseExistingServer: false,
+        ignoreHTTPSErrors: true,
+      }
+    : undefined,
 });

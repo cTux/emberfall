@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import {
   ARENA,
   BUILDINGS,
@@ -32,8 +32,7 @@ test("curved dirt paths are continuous and reach the sprite doorways", async ({ 
   });
   await page.goto("/");
   await page.getByLabel("Your adventurer name").fill("Path visitor");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.locator("body")).toHaveAttribute("data-path-smoothing", "false");
   await expect(page.locator("body")).toHaveAttribute("data-path-texture", "[192,128,16,16]");
   const { pixels, green } = await page.evaluate(async () => {

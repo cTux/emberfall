@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 
 test("fractional stats and damage render as whole numbers in wardrobe, HUD and both scenes", async ({
@@ -48,9 +48,15 @@ test("fractional stats and damage render as whole numbers in wardrobe, HUD and b
   };
   let update = () => {};
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     update = () => socket.send(JSON.stringify({ type: "state", world }));
     socket.onMessage((raw) => {
-      if (JSON.parse(String(raw)).type === "create")
+      if (JSON.parse(String(raw)).type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -70,8 +76,7 @@ test("fractional stats and damage render as whole numbers in wardrobe, HUD and b
     };
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const party = page.getByRole("article", { name: "Hero", exact: true });
   await expect(party.getByText("76 / 100", { exact: true })).toBeVisible();
   await expect(party.getByText("20 / 51", { exact: true })).toBeVisible();

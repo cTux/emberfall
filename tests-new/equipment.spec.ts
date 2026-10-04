@@ -14,8 +14,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await page.getByLabel("Your adventurer name").fill("Gear tester");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const opener = page.getByRole("button", { name: "Equipment (I)" });
   await expect(opener).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;

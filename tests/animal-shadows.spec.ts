@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 
 for (const forest of [false, true]) {
@@ -59,8 +59,14 @@ for (const forest of [false, true]) {
         : undefined,
     };
     await page.routeWebSocket("**/ws", (socket) => {
+      socket.send(
+        JSON.stringify({
+          type: "worlds",
+          worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+        }),
+      );
       socket.onMessage((raw) => {
-        if (JSON.parse(String(raw)).type === "create")
+        if (JSON.parse(String(raw)).type === "join")
           socket.send(
             JSON.stringify({
               type: "joined",
@@ -107,8 +113,7 @@ for (const forest of [false, true]) {
       });
     });
     await page.goto("/");
-    await page.getByRole("tab", { name: "Create a world" }).click();
-    await page.getByRole("button", { name: "Light the ember" }).click();
+    await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
     await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
     for (const preset of ["Low", "Balanced", "High"]) {
       await page.getByRole("button", { name: "Settings", exact: true }).click();

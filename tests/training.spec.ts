@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { nearbyInteraction, inTrainingZone } from "../packages/common/src/index";
 import type { WorldState } from "../packages/common/src/index";
 
@@ -15,8 +15,7 @@ for (const className of ["Ranger", "Druid"]) {
       }),
     );
     await page.goto("/");
-    await page.getByRole("tab", { name: "Create a world" }).click();
-    await page.getByRole("button", { name: "Light the ember" }).click();
+    await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
     await expect.poll(() => current?.training?.enemies.length).toBe(7);
     const positions = current!.training!.enemies.map(({ x, y }) => ({ x, y }));
     await page.locator("canvas").click();

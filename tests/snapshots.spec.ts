@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 
 test("a one-pixel server correction is visually ignored without walking animation", async ({
@@ -34,8 +34,7 @@ test("a one-pixel server correction is visually ignored without walking animatio
   });
   await page.goto("/");
   await page.getByLabel("Your adventurer name").fill("Smooth");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   await page.waitForTimeout(300);
   await page.evaluate(() => {
@@ -102,8 +101,7 @@ test("local movement is instant during delayed snapshots and reconciles after de
   });
   await page.goto("/");
   await page.getByLabel("Your adventurer name").fill("Buffered");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect.poll(() => latest?.players[0].inputSeq ?? 0).toBeGreaterThan(2);
   blocked = true;
   const received = delivered;

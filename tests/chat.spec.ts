@@ -1,12 +1,11 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { ClientMessage } from "../packages/common/src/index";
 
 test("Enter respects dialogs and empty messages, and Send releases focus outside hover", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const chat = page.getByRole("complementary", { name: "World chat", exact: true });
   const input = chat.getByRole("textbox", { name: "Chat message" });
   await page.mouse.move(900, 600);
@@ -50,8 +49,7 @@ test("chat shows only whole messages and reveals its background and scrollbar on
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const chat = page.getByRole("complementary", { name: "World chat", exact: true });
   const log = page.getByRole("log");
   await expect(log.locator(":scope > div")).toHaveCount(30);
@@ -137,13 +135,11 @@ test("hover reveals chat, click focuses, typing stops movement, and both players
   try {
     await page.goto("/");
     await page.getByRole("textbox", { name: "Your adventurer name" }).fill("Alice");
-    await page.getByRole("tab", { name: "Create a world" }).click();
-    await page.getByRole("textbox", { name: "World name", exact: true }).fill("Chat browser test");
-    await page.getByRole("button", { name: "Light the ember" }).click();
+    await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
     await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
     await other.goto("/");
     await other.getByRole("textbox", { name: "Your adventurer name" }).fill("Bob");
-    await other.getByRole("button", { name: /Join Chat browser test/ }).click();
+    await other.getByRole("button", { name: /Join Playtest Default/ }).click();
     await expect(other.getByRole("button", { name: "Leave world" })).toBeVisible();
     await expect(page.getByRole("log")).toContainText("System: Bob joined.");
     await expect(other.getByRole("log")).toContainText("System: Alice joined.");

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 
 test("the native context menu is blocked across the page and portaled menus", async ({ page }) => {
   await page.goto("/");

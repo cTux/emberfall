@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { ServerMessage, WorldState } from "../packages/common/src/index.ts";
 
 test("failed connections retry automatically and interrupted lobby, vote and forest sessions resume", async ({
@@ -41,11 +41,8 @@ test("failed connections retry automatically and interrupted lobby, vote and for
     page.getByRole("status", { name: "World server online", includeHidden: true }),
   ).toBeVisible();
   expect(attempts).toBe(3);
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Recovery grove");
-  await page.getByLabel("Password (optional)").fill("secret");
-  await page.getByRole("button", { name: "Light the ember" }).click();
-  await expect(page.getByRole("complementary", { name: /Recovery grove/ })).toBeVisible();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
   const id = joined!.playerId;
   const worldId = joined!.world.id;
   const interrupt = async () => {
@@ -67,7 +64,7 @@ test("failed connections retry automatically and interrupted lobby, vote and for
       "aria-selected",
       "true",
     );
-    await expect(page.getByRole("complementary", { name: /Recovery grove/ })).toBeHidden();
+    await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeHidden();
     await expect.poll(() => failedAttempts).toBeGreaterThanOrEqual(2);
     unavailable = false;
     await page.evaluate(() => {
@@ -108,15 +105,17 @@ test("failed connections retry automatically and interrupted lobby, vote and for
   await page.keyboard.down("d");
   await expect.poll(() => state!.players[0].x).toBeGreaterThan(forestX + 10);
   await page.keyboard.up("d");
-  // A normal server closure removes the session, like an unavailable world after restart.
+  // The permanent world survives a normal closure; recovery starts in its village.
+  joined = undefined;
   await page.evaluate(() =>
     (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(1000),
   );
   await expect(
     page.getByRole("status", { name: "World server online", includeHidden: true }),
   ).toBeVisible();
-  await expect(page.getByRole("alert")).toContainText("previous session is no longer available");
-  await expect(page.getByLabel("Your adventurer name")).toBeVisible();
+  await expect.poll(() => joined?.world.id).toBe(worldId);
+  await expect(page.getByLabel("Shared village. Move with WASD or arrow keys.")).toBeVisible();
+  expect(joined!.world.players[0].scene).toBeUndefined();
   expect(errors).toEqual([]);
 });
 
@@ -141,11 +140,8 @@ test("page reload resumes the same world and deliberate leave clears its recover
     }),
   );
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Reload grove");
-  await page.getByLabel("Password (optional)").fill("secret");
-  await page.getByRole("button", { name: "Light the ember" }).click();
-  await expect(page.getByRole("complementary", { name: /Reload grove/ })).toBeVisible();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
   const before = joined!;
   joined = undefined;
   await page.reload();
@@ -156,7 +152,7 @@ test("page reload resumes the same world and deliberate leave clears its recover
   expect(vendorBytes).toHaveLength(2);
   expect(vendorBytes[0]).toBeGreaterThan(0);
   expect(vendorBytes[1]).toBe(0);
-  await expect(page.getByRole("complementary", { name: /Reload grove/ })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
   await page.evaluate(() => {
     // Use the public protocol to exercise explicit leave independently of the exit dialog.
     const ws = (window as unknown as { recoverySocket: WebSocket }).recoverySocket;
@@ -214,10 +210,8 @@ test("a new deployment reloads once, fetches its app bundle, and resumes the rem
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Updated grove");
-  await page.getByRole("button", { name: "Light the ember" }).click();
-  await expect(page.getByRole("complementary", { name: /Updated grove/ })).toBeVisible();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
   const before = joined!;
   joined = undefined;
   deployed = true;
@@ -226,7 +220,7 @@ test("a new deployment reloads once, fetches its app bundle, and resumes the rem
   );
   await expect.poll(() => navigations).toBe(2);
   await expect.poll(() => joined?.world.id).toBe(before.world.id);
-  await expect(page.getByRole("complementary", { name: /Updated grove/ })).toBeVisible();
+  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
   expect(appDownloads).toBe(1);
   expect(updateChecks).toBeGreaterThanOrEqual(3);
   expect(joined!.characterToken).toBe(before.characterToken);

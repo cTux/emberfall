@@ -5,6 +5,7 @@ export interface Chapter {
   id: string;
   title: string;
   content: ReactNode;
+  disabled?: boolean;
 }
 export interface ChapterTabsProps {
   label: string;
@@ -21,7 +22,7 @@ export function ChapterTabs({
   onChange,
 }: ChapterTabsProps) {
   const id = useId();
-  const active = chapters.find((chapter) => chapter.id === value);
+  const active = chapters.find((chapter) => chapter.id === value && !chapter.disabled);
   return (
     <Stack spacing={2}>
       <Tabs
@@ -36,6 +37,7 @@ export function ChapterTabs({
             aria-controls={`${id}-panel-${chapter.id}`}
             value={chapter.id}
             label={chapter.title}
+            disabled={chapter.disabled}
           />
         ))}
       </Tabs>
@@ -43,12 +45,12 @@ export function ChapterTabs({
         <Box
           key={chapter.id}
           role="tabpanel"
-          hidden={value !== chapter.id}
+          hidden={value !== chapter.id || chapter.disabled}
           id={`${id}-panel-${chapter.id}`}
           aria-labelledby={`${id}-${chapter.id}`}
           tabIndex={0}
         >
-          {value === chapter.id && (
+          {value === chapter.id && !chapter.disabled && (
             <>
               {showHeading && (
                 <Typography component="h3" variant="h3" gutterBottom>

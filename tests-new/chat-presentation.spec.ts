@@ -26,8 +26,7 @@ test("fog is opt-in and player messages sit above health in village and forest",
   await expect(fog).toBeChecked();
   await fog.uncheck();
   await page.getByRole("button", { name: "Close Settings", exact: true }).click();
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];

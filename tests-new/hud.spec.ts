@@ -18,8 +18,7 @@ test("HUD surfaces match and draggable panels and windows persist across session
   const lobby = page.getByRole("region", { name: "Emberfall", exact: true });
   await drag(page, lobby.getByRole("heading", { name: "Emberfall" }), 90, 30);
   const lobbyTransform = await lobby.evaluate((element) => element.style.transform);
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   const dps = page.getByLabel("Damage per second", { exact: true });
   await expect(dps).toBeVisible();
   const fps = page.locator(".performance-stats");
@@ -73,8 +72,7 @@ test("HUD surfaces match and draggable panels and windows persist across session
   await expect
     .poll(() => next.locator(".performance-stats").evaluate((element) => element.style.transform))
     .toBe(fpsTransform);
-  await next.getByRole("tab", { name: "Create a world" }).click();
-  await next.getByRole("button", { name: "Light the ember" }).click();
+  await next.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(next.getByLabel("Damage per second", { exact: true })).toBeVisible();
   await expect
     .poll(() =>
@@ -119,8 +117,7 @@ test("nickname persists in a new session, viewport is full, party bars and contr
   const next = await context.newPage();
   await next.goto("/");
   await expect(next.getByLabel("Your adventurer name")).toHaveValue("Persistent hero");
-  await next.getByRole("tab", { name: "Create a world" }).click();
-  await next.getByRole("button", { name: "Light the ember" }).click();
+  await next.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(next.getByRole("progressbar", { name: "Persistent hero HP" })).toHaveAttribute(
     "aria-valuenow",
     "100",

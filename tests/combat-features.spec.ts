@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { WorldState } from "../packages/common/src/index";
 
 test("warnings, enemy silhouettes, graphics controls and scene music work together", async ({
@@ -75,9 +75,15 @@ test("warnings, enemy silhouettes, graphics controls and scene music work togeth
     },
   };
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     socket.onMessage((raw) => {
       const message = JSON.parse(String(raw));
-      if (message.type === "create")
+      if (message.type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -197,8 +203,7 @@ test("warnings, enemy silhouettes, graphics controls and scene music work togeth
   await page.getByRole("combobox", { name: "Frame rate limit" }).click();
   await page.getByRole("option", { name: "60 FPS", exact: true }).click();
   await page.getByRole("button", { name: /^Close / }).click();
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect.poll(() => playing("Trials.mp3")).toBe(true);
   await finishTrack("Trials.mp3");
   await expect.poll(() => playing("Wastelands.mp3")).toBe(true);

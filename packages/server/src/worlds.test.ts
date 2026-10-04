@@ -166,10 +166,10 @@ test("world lifecycle, passwords, movement, capacity and isolation over real soc
     assert(initial.type === "worlds");
     assert.equal(initial.worlds.length, 1);
     const permanent = initial.worlds[0];
-    assert.equal(permanent.name, "New Permanent World");
+    assert.equal(permanent.name, "Playtest Default");
     assert.equal(permanent.locked, false);
     assert.equal(permanent.players, 0);
-    assert.equal(permanent.capacity, 8);
+    assert.equal(permanent.capacity, 32);
     host.send({ type: "create", name: "Test grove", playerName: "Host", password: "secret" });
     const joined = await host.wait((m) => m.type === "joined");
     assert(joined.type === "joined");
@@ -329,6 +329,59 @@ test("timed inputs acknowledge partial steps, reject stale areas and cannot acce
     assert.equal(samples.at(-1)!.attackId, undefined, "duplicate request IDs cannot be replayed");
   } finally {
     ws.terminate();
+    await app.close();
+  }
+});
+
+test("Playtest Default admits 32 players and rejects the 33rd", async () => {
+  const app = createGameServer();
+  app.server.listen(0, "127.0.0.1");
+  await once(app.server, "listening");
+  const address = app.server.address();
+  assert(address && typeof address !== "string");
+  const clients: WebSocket[] = [];
+  try {
+    for (let i = 0; i < 33; i++) {
+      const ws = new WebSocket(`ws://127.0.0.1:${address.port}/ws`);
+      clients.push(ws);
+      const messages: ServerMessage[] = [];
+      ws.on("message", (raw) => messages.push(JSON.parse(raw.toString())));
+      await once(ws, "open");
+      const wait = async (type: ServerMessage["type"]) => {
+        const deadline = Date.now() + 5000;
+        while (!messages.some((m) => m.type === type)) {
+          assert(Date.now() < deadline, `Missing ${type}`);
+          await new Promise((resolve) => setTimeout(resolve, 5));
+        }
+        return messages.find((m) => m.type === type)!;
+      };
+      const listing = await wait("worlds");
+      assert(listing.type === "worlds");
+      const world = listing.worlds[0];
+      assert.equal(world.name, "Playtest Default");
+      assert.equal(world.capacity, 32);
+      assert.equal(world.players, Math.min(i, 32));
+      ws.send(
+        JSON.stringify({
+          type: "join",
+          worldId: world.id,
+          playerName: `Player ${i}`,
+          password: "",
+        }),
+      );
+      if (i < 32) {
+        const joined = await wait("joined");
+        assert(joined.type === "joined");
+        assert.equal(joined.world.players.length, i + 1);
+      } else {
+        const error = await wait("error");
+        assert(error.type === "error");
+        assert.match(error.message, /full/);
+        assert(!messages.some((m) => m.type === "joined"));
+      }
+    }
+  } finally {
+    for (const ws of clients) ws.terminate();
     await app.close();
   }
 });

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import type { SceneState } from "../packages/common/src/scene.ts";
 
 test("portal creates server scene; two players vote, retract, fight and individually return", async ({
@@ -22,15 +22,13 @@ test("portal creates server scene; two players vote, retract, fight and individu
   await page.goto("/");
   await expect(page.getByLabel("Forest preview")).toBeVisible();
   await expect(page.locator("body")).toHaveCSS("user-select", "none");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("textbox", { name: "World name", exact: true }).fill("Portal party");
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   const context = await browser.newContext();
   const guest = await context.newPage();
   await guest.goto("/");
-  await guest.getByRole("button", { name: /Portal party/ }).click();
-  await expect(page.getByRole("complementary", { name: /2\/8/ })).toBeVisible();
+  await guest.getByRole("button", { name: /Playtest Default/ }).click();
+  await expect(page.getByRole("complementary", { name: /2\/32/ })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toContainText("leave the lobby");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
@@ -84,7 +82,7 @@ test("portal creates server scene; two players vote, retract, fight and individu
   const lateContext = await browser.newContext();
   const late = await lateContext.newPage();
   await late.goto("/");
-  await late.getByRole("button", { name: /Portal party/ }).click();
+  await late.getByRole("button", { name: /Playtest Default/ }).click();
   await expect(late.getByLabel("Shared village. Move with WASD or arrow keys.")).toBeVisible();
   await expect(late.locator('.party article[aria-label$="in another dimension"]')).toHaveCount(2);
   await expect(

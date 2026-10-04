@@ -27,13 +27,14 @@ const chapters = [
       <>
         {" "}
         <p>
-          New Permanent World is always open to everyone, with room for eight players. Other worlds
-          disappear when everyone leaves. Your character is saved on the server and linked to this
-          browser. A portal creates a Forest / Easy scene on the server. Vote inside the portal
-          window. Everyone must be ready. Retract your vote to cancel the five-second countdown. You
-          can join a world during combat, then use its village portal to join or rejoin the running
-          scene until the boss dies and return portals open. After that, everyone must return before
-          creating a new scene. Party members in another dimension appear dimmed.
+          Playtest Default is always open to everyone, with room for 32 players. World creation is
+          disabled. Other worlds disappear when everyone leaves. Your character is saved on the
+          server and linked to this browser. A portal creates a Forest / Easy scene on the server.
+          Vote inside the portal window. Everyone must be ready. Retract your vote to cancel the
+          five-second countdown. You can join a world during combat, then use its village portal to
+          join or rejoin the running scene until the boss dies and return portals open. After that,
+          everyone must return before creating a new scene. Party members in another dimension
+          appear dimmed.
         </p>{" "}
       </>
     ),

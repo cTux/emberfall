@@ -83,7 +83,7 @@ test("Steam players see the server list during an outage and resume automaticall
   });
   await login(page);
   await page.getByRole("button", { name: "Save nickname", exact: true }).click();
-  await page.getByRole("button", { name: /^Join New Permanent World/ }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.locator(".party")).toContainText("Steam Hero");
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
@@ -129,15 +129,17 @@ test("Steam onboarding, repeat login, shared rename dialog and another player's 
   await expect(page.getByRole("textbox", { name: "Nickname" })).toHaveValue("Steam Hero");
   await page.getByRole("textbox", { name: "Nickname" }).fill("Ember Hero");
   await page.getByRole("button", { name: "Save nickname", exact: true }).click();
-  await expect(page.getByText("Playing as Ember Hero", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: /^Join New Permanent World/ }).click();
+  await expect(page.getByRole("button", { name: /^Join Playtest Default/ })).toBeVisible();
+  expect((await (await page.request.get("/api/account")).json()).nickname).toBe("Ember Hero");
+  await expect(page.getByText(/^Playing as /)).toHaveCount(0);
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.locator(".party")).toContainText("Ember Hero");
   const context = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
   try {
     const friend = await context.newPage();
     await login(friend, friendId);
     await friend.getByRole("button", { name: "Save nickname", exact: true }).click();
-    await friend.getByRole("button", { name: /^Join New Permanent World/ }).click();
+    await friend.getByRole("button", { name: /^Join Playtest Default/ }).click();
     await expect(friend.locator(".party")).toContainText("Ember Hero");
     await edit(page);
     await expect(page.getByRole("textbox", { name: "Nickname" })).toHaveValue("Ember Hero");
@@ -170,14 +172,18 @@ test("Steam onboarding, repeat login, shared rename dialog and another player's 
     await page.getByRole("button", { name: "Sign out of Steam account" }).click();
     await expect(page.getByRole("link", { name: "Sign in through Steam" })).toBeVisible();
     await login(page);
-    await expect(page.getByText("Playing as Renamed Hero", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Join Playtest Default/ })).toBeVisible();
+    expect((await (await page.request.get("/api/account")).json()).nickname).toBe("Renamed Hero");
+    await expect(page.getByText(/^Playing as /)).toHaveCount(0);
     await expect(page.getByRole("dialog", { name: "Choose your nickname" })).toHaveCount(0);
     await page.close();
     const device = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
     try {
       const next = await device.newPage();
       await login(next);
-      await expect(next.getByText("Playing as Renamed Hero", { exact: true })).toBeVisible();
+      await expect(next.getByRole("button", { name: /^Join Playtest Default/ })).toBeVisible();
+      expect((await (await next.request.get("/api/account")).json()).nickname).toBe("Renamed Hero");
+      await expect(next.getByText(/^Playing as /)).toHaveCount(0);
       await expect(next.getByRole("dialog", { name: "Choose your nickname" })).toHaveCount(0);
       expect(await next.evaluate(() => localStorage.getItem("emberfall-new.character"))).toBeNull();
     } finally {
@@ -202,6 +208,8 @@ test.describe("profile outage", () => {
     await page.getByRole("textbox", { name: "Nickname" }).fill("Мандрівник");
     await page.screenshot({ path: info.outputPath("nickname-narrow.png") });
     await page.getByRole("textbox", { name: "Nickname" }).press("Enter");
-    await expect(page.getByText("Playing as Мандрівник", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Join Playtest Default/ })).toBeVisible();
+    expect((await (await page.request.get("/api/account")).json()).nickname).toBe("Мандрівник");
+    await expect(page.getByText(/^Playing as /)).toHaveCount(0);
   });
 });

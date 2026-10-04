@@ -68,11 +68,11 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
   const restoredWorlds = characters.worlds();
   const permanentWorld: World = {
     id: randomUUID(),
-    name: "New Permanent World",
     hostId: "",
     salt: "",
     players: new Map(),
     ...restoredWorlds.find((world) => world.permanent),
+    name: "Playtest Default",
   };
   characters.saveWorld(permanentWorld, true);
   const worlds = new Map<string, World>(
@@ -206,7 +206,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
       name: w.name,
       locked: !!w.hash,
       players: w.players.size,
-      capacity: MAX_PLAYERS,
+      capacity: w === permanentWorld ? 32 : MAX_PLAYERS,
     })),
   });
   const broadcastList = () => {
@@ -572,7 +572,7 @@ export function createGameServer(staticRoot?: string, savePath = ":memory:", tls
             error("This world has closed.");
             return;
           }
-          if (world.players.size >= MAX_PLAYERS) {
+          if (world.players.size >= (world === permanentWorld ? 32 : MAX_PLAYERS)) {
             error("This world is full.");
             return;
           }

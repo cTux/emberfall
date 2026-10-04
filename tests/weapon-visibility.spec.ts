@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures";
 import { CLASS_IDS, tickTraining } from "../packages/common/src/index";
 import type { WorldState } from "../packages/common/src/index";
 
@@ -32,10 +32,16 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
   world.scene = { ...world.training!, id: "forest", training: false, phase: "active", enemies: [] };
   let sendState = () => {};
   await page.routeWebSocket("**/ws", (socket) => {
+    socket.send(
+      JSON.stringify({
+        type: "worlds",
+        worlds: [{ id: "fixture", name: "Playtest Default", players: 0, capacity: 32 }],
+      }),
+    );
     sendState = () => socket.send(JSON.stringify({ type: "state", world }));
     socket.onMessage((raw) => {
       const message = JSON.parse(String(raw));
-      if (message.type === "create")
+      if (message.type === "join")
         socket.send(
           JSON.stringify({ type: "joined", playerId: "p", world, characterToken: "a".repeat(64) }),
         );
@@ -93,8 +99,7 @@ test("all classes sheath weapons outside combat and draw them in forest and trai
     });
   });
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   for (const classId of CLASS_IDS) {
     world.players[0].classId = classId;

@@ -8,8 +8,7 @@ test("movement follows physical keys across layouts and layout changes", async (
     return { x: player?.inputX ?? 0, y: player?.inputY ?? 0 };
   };
   await page.goto("/");
-  await page.getByRole("tab", { name: "Create a world" }).click();
-  await page.getByRole("button", { name: "Light the ember" }).click();
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
 
   const sendKey = (type: string, code: string, key: string) =>
