@@ -8,6 +8,7 @@ import { ATTACK_DEFINITIONS } from "./definitions/abilities/attacks.ts";
 import { RUNTIME } from "./definitions/runtime.ts";
 import {
   hitEnemy,
+  hitWithWeapon,
   tickDebuffs,
   fireClassAttack,
   tickPlayerShots,
@@ -26,6 +27,7 @@ import {
 import { ARENA, moveActor, inTrainingZone } from "./world.ts";
 import type { Player, Bear, ClientMessage } from "./index.ts";
 import type { SceneState, Enemy } from "./scene.ts";
+import { characterStats } from "./equipment.ts";
 
 export const TICK_MS = RUNTIME.tickMs;
 export const PLAYER_ATTACK_RANGE = defaultSpellRange({ classId: "warrior" });
@@ -76,7 +78,11 @@ export function nearestEnemyAngle(
     : fallback;
 }
 
-export function swordOverlapsEnemy(player: Pick<Player, "x" | "y" | "attackAngle">, enemy: Enemy) {
+export function swordOverlapsEnemy(
+  player: Pick<Player, "x" | "y" | "attackAngle">,
+  enemy: Enemy,
+  range = PLAYER_ATTACK_RANGE,
+) {
   const dx = wrappedDelta(enemy.x, player.x, FOREST.width),
     dy = wrappedDelta(enemy.y, player.y, FOREST.height);
   const angle = player.attackAngle ?? 0;
@@ -85,8 +91,8 @@ export function swordOverlapsEnemy(player: Pick<Player, "x" | "y" | "attackAngle
   // Distance from the enemy's collision circle to the filled forward half-disc.
   const distance =
     forward >= 0
-      ? Math.max(0, Math.hypot(dx, dy) - PLAYER_ATTACK_RANGE)
-      : Math.hypot(forward, Math.max(0, Math.abs(sideways) - PLAYER_ATTACK_RANGE));
+      ? Math.max(0, Math.hypot(dx, dy) - range)
+      : Math.hypot(forward, Math.max(0, Math.abs(sideways) - range));
   return distance <= ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 1e-6;
 }
 
@@ -103,10 +109,19 @@ function slash(
     swordHits.set(actor, swing);
   }
   for (const enemy of scene.enemies) {
-    if (enemy.hitpoints <= 0 || swing.enemies.has(enemy.id) || !swordOverlapsEnemy(actor, enemy))
+    if (
+      enemy.hitpoints <= 0 ||
+      swing.enemies.has(enemy.id) ||
+      !swordOverlapsEnemy(
+        actor,
+        enemy,
+        actor === owner ? defaultSpellRange(owner) : PLAYER_ATTACK_RANGE,
+      )
+    )
       continue;
     swing.enemies.add(enemy.id);
-    hitEnemy(scene, enemy, amount, owner, now, amount === 5 ? "bleed" : undefined);
+    if (actor === owner) hitWithWeapon(scene, enemy, owner, now, "bleed");
+    else hitEnemy(scene, enemy, amount, owner, now);
   }
 }
 
@@ -512,8 +527,10 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     ...alive.flatMap((p) => (p.bear && p.bear.hitpoints > 0 ? [p.bear] : [])),
   ];
   moveEnemies(scene.enemies, combatants, dt, now);
-  const hurt = (target: Player | Bear, damage = ENEMY_RULES.damage) => {
+  const hurt = (target: Player | Bear, damage: number = ENEMY_RULES.damage) => {
     if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) return;
+    const reduction = "returning" in target ? 0 : characterStats(target).damageReduction;
+    damage = Math.min(target.hitpoints, damage * (1 - reduction));
     target.hitpoints = Math.max(0, target.hitpoints - damage);
     target.hurtAt = now;
     if ("returning" in target && target.hitpoints === 0)
@@ -523,6 +540,8 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
       x: target.x,
       y: target.y,
       amount: damage,
+      damageType: "physical",
+      critical: false,
       at: now,
       target: target.id,
     });
@@ -630,22 +649,24 @@ export function requestPlayerCast(
 ) {
   if (request.id <= (player.castSeq ?? 0)) return false;
   player.castSeq = request.id;
+  const stats = characterStats(player);
   if (
     !scene ||
+    !stats.hasWeapon ||
     scene.phase !== "active" ||
     scene.pausedAt !== undefined ||
     player.hitpoints <= 0 ||
     request.classId !== (player.classId ?? "warrior") ||
     request.epoch !== (player.scene === "forest" ? scene.id : "lobby") ||
     (!player.scene && !inTrainingZone(player)) ||
-    (player.attackAt !== undefined && now - player.attackAt < PLAYER_ATTACK_INTERVAL - 2 * TICK_MS)
+    (player.attackAt !== undefined && now - player.attackAt < stats.attackIntervalMs - 2 * TICK_MS)
   )
     return false;
   player.autoAttack = false;
   player.autoTarget = request.autoTarget;
   player.aimX = request.aimX;
   player.aimY = request.aimY;
-  player.attackAt = Math.max(now, (player.attackAt ?? -Infinity) + PLAYER_ATTACK_INTERVAL);
+  player.attackAt = Math.max(now, (player.attackAt ?? -Infinity) + stats.attackIntervalMs);
   player.attackId = request.id;
   castInputs.set(player, request);
   return true;
@@ -653,7 +674,8 @@ export function requestPlayerCast(
 
 export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number, dt: number) {
   for (const player of alive) {
-    if (scene.training && !inTrainingZone(player)) {
+    const stats = characterStats(player);
+    if (!stats.hasWeapon || (scene.training && !inTrainingZone(player))) {
       player.attackAt = undefined;
       continue;
     }
@@ -665,9 +687,9 @@ export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number
     const attacking = player.autoAttack !== false;
     if (
       attacking &&
-      (player.attackAt === undefined || now - player.attackAt >= PLAYER_ATTACK_INTERVAL)
+      (player.attackAt === undefined || now - player.attackAt >= stats.attackIntervalMs)
     ) {
-      player.attackAt = now - ((now - (player.attackAt ?? now)) % PLAYER_ATTACK_INTERVAL);
+      player.attackAt = now - ((now - (player.attackAt ?? now)) % stats.attackIntervalMs);
       player.attackId = undefined;
     }
     if (player.attackAt === undefined) continue;
@@ -698,7 +720,7 @@ export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number
       }
       continue;
     }
-    slash(scene, player, player, now, ATTACK_DEFINITIONS.slash.damage);
+    slash(scene, player, player, now, stats.power);
     if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
   }
   tickPlayerShots(scene, alive, now, dt);

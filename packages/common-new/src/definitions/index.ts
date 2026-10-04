@@ -17,8 +17,10 @@ import { FOREST_DEFINITION } from "./worlds/forest.ts";
 import { RUNTIME } from "./runtime.ts";
 import { CRITTER_DEFINITIONS, VILLAGE_CRITTERS } from "./entities/critters.ts";
 import { TRANSIENT_EFFECTS } from "./effects/transient.ts";
+import { GEAR_DEFINITIONS, SLOT_GEAR_TYPES, STARTER_WEAPONS } from "./equipment.ts";
 
 export const GAME_DEFINITIONS = {
+  equipment: { items: GEAR_DEFINITIONS, slots: SLOT_GEAR_TYPES, starters: STARTER_WEAPONS },
   players: PLAYER_DEFINITIONS,
   initialProgress: INITIAL_PROGRESS,
   enemies: {
@@ -58,6 +60,10 @@ export function validateDefinitions() {
     throw new Error(`Definition ${path} is not serializable data`);
   }
   plain(GAME_DEFINITIONS, "definitions");
+  for (const id of Object.values(STARTER_WEAPONS)) {
+    if (!GEAR_DEFINITIONS[id]?.damageType || !GEAR_DEFINITIONS[id]?.stats.attacksPerSecond)
+      throw new Error(`Invalid starter weapon ${id}`);
+  }
   if (!(FOREST_ENCOUNTER.boss in BOSS_DEFINITIONS)) throw new Error("Invalid forest boss");
   for (const boss of Object.values(BOSS_DEFINITIONS)) {
     if (!(boss.archetype in ENEMY_STATS)) throw new Error(`Invalid boss archetype ${boss.id}`);

@@ -9,6 +9,8 @@ import { FOREST, forestDistance, wrappedDelta, wrap } from "./scene.ts";
 import { ENEMY_STATS } from "./enemies.ts";
 import type { DebuffKind, Enemy, PlayerShot, SceneState } from "./scene.ts";
 import type { Player } from "./index.ts";
+import { characterStats } from "./equipment.ts";
+import type { DamageType } from "./definitions/equipment.ts";
 
 const damageHistory = new WeakMap<Player, { at: number; amount: number }[]>();
 export function damagePerSecond(player: Player, now: number) {
@@ -24,6 +26,8 @@ export function hitEnemy(
   owner: Player | undefined,
   now: number,
   ailment?: DebuffKind,
+  damageType: DamageType = "physical",
+  critical = false,
 ) {
   if (enemy.hitpoints <= 0) return;
   const dealt = Math.min(enemy.hitpoints, amount);
@@ -38,6 +42,8 @@ export function hitEnemy(
     x: enemy.x,
     y: enemy.y,
     amount: dealt,
+    damageType,
+    critical,
     at: now,
     target: `enemy:${enemy.id}`,
     killed: enemy.hitpoints === 0,
@@ -104,6 +110,8 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
           debuff.stacks * AILMENT_DEFINITIONS[debuff.kind].damagePerStack,
           players.find((p) => p.id === debuff.ownerId),
           now,
+          undefined,
+          debuff.kind === "burn" ? "fire" : debuff.kind === "poison" ? "poison" : "physical",
         );
         debuff.nextTick += AILMENT_DEFINITIONS[debuff.kind].tickMs;
       }
@@ -112,11 +120,35 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
   }
 }
 
-export function defaultSpellRange(player: Pick<Player, "classId" | "autoTarget">) {
-  const id = PLAYER_DEFINITIONS[player.classId ?? "warrior"].attack;
-  if (id === "slash") return ATTACK_DEFINITIONS.slash.range;
-  const definition = ATTACK_DEFINITIONS[id];
-  return player.autoTarget === false ? definition.manualRange : definition.range;
+export function defaultSpellRange(player: Pick<Player, "classId" | "autoTarget" | "equipment">) {
+  const stats = characterStats(player);
+  if (!stats.hasWeapon) return 0;
+  return player.autoTarget === false ? stats.manualRange : stats.range;
+}
+
+/** Called only by authoritative hit resolution, never by cast prediction. */
+export function hitWithWeapon(
+  scene: SceneState,
+  enemy: Enemy,
+  owner: Player,
+  now: number,
+  ailment?: DebuffKind,
+  powerScale = 1,
+) {
+  if (enemy.hitpoints <= 0) return;
+  const stats = characterStats(owner);
+  if (!stats.hasWeapon) return;
+  const critical = Math.random() < stats.criticalChance;
+  hitEnemy(
+    scene,
+    enemy,
+    stats.power * powerScale * (critical ? stats.criticalMultiplier : 1),
+    owner,
+    now,
+    ailment,
+    stats.damageType,
+    critical,
+  );
 }
 
 function applyRoots(target: Enemy, ownerId: string, now: number) {
@@ -143,6 +175,7 @@ export function projectileAngle(aimAngle: number, index: number, count: number) 
 }
 
 export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
+  if (!characterStats(player).hasWeapon) return;
   const range = defaultSpellRange(player);
   const manual = player.autoTarget === false;
   const aim = { x: player.aimX ?? player.x, y: player.aimY ?? player.y };
@@ -232,7 +265,7 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
           )
             continue;
           shot.hitIds.push(enemy.id);
-          hitEnemy(scene, enemy, ATTACK_DEFINITIONS.arrow.damage, owner, now, "poison");
+          hitWithWeapon(scene, enemy, owner, now, "poison");
         }
       }
     });
@@ -240,7 +273,7 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
       if (shot.kind === "roots") {
         const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds[0]);
         if (target) {
-          hitEnemy(scene, target, ATTACK_DEFINITIONS.roots.damage, owner, now);
+          hitWithWeapon(scene, target, owner, now);
           if (target.hitpoints > 0) applyRoots(target, owner.id, now);
         }
         return false;
@@ -252,10 +285,9 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
         at: now,
       });
       for (const enemy of scene.enemies)
-        if (enemy.id === shot.hitIds[0])
-          hitEnemy(scene, enemy, ATTACK_DEFINITIONS.fireball.damage, owner, now, "burn");
+        if (enemy.id === shot.hitIds[0]) hitWithWeapon(scene, enemy, owner, now, "burn");
         else if (forestDistance(shot, enemy) <= ATTACK_DEFINITIONS.fireball.splashRadius)
-          hitEnemy(scene, enemy, ATTACK_DEFINITIONS.fireball.splashDamage, owner, now, "burn");
+          hitWithWeapon(scene, enemy, owner, now, "burn", 1 / 3);
       return false;
     }
     return shot.remaining > 0.001;

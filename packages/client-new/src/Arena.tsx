@@ -757,16 +757,7 @@ export function Arena({
         drawClassProjectiles(ctx, training, serverTime, project);
         if (prefs.current.damageNumbers)
           for (const hit of training.damage) {
-            const age = serverTime - hit.at;
-            if (age < 0 || age > 750) continue;
-            ctx.save();
-            ctx.globalAlpha = 1 - age / 800;
-            ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
-            ctx.textAlign = "center";
-            ctx.fillStyle = "#fff0b1";
-            const point = project(hit.x, hit.y);
-            ctx.fillText(String(Math.round(hit.amount)), point.x, point.y - 45 - age / 30);
-            ctx.restore();
+            drawDamageNumber(ctx, hit, project(hit.x, hit.y), serverTime);
           }
       }
       if (quality.current.lighting) {
@@ -884,3 +875,4 @@ export function Arena({
     </>
   );
 }
+import { drawDamageNumber } from "./damage-text";

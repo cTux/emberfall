@@ -44,6 +44,14 @@ membership with `push`, `splice`, or index assignment in a shared system.
 
 ## Verify
 
+Equipment content lives in `definitions/equipment.ts`: slot-to-gear compatibility,
+class-specific weapon/off-hand categories and starter IDs. Character progress stores
+equipped IDs per class. `equipment.ts` validates compatibility and derives totals
+across every slot. Combat, prediction and UI use those totals; adding an item must
+not introduce another balance table. Critical damage rolls only in the server's
+weapon-hit path. Legacy missing loadouts receive starters; explicit empty loadouts
+remain unarmed.
+
 From the repository root: `pnpm typecheck-new`, `pnpm test-new`, and
 `pnpm build-new`. Focused Node tests live under `packages/server-new/src` and
 cover shared kernels, client prediction, ECS equivalence, and protocol patches.

@@ -32,6 +32,14 @@ Experience shards and coins attract after the initial hop toward the nearest liv
 
 DPS is actual enemy damage over the previous five seconds divided by five, including ailments and Bear and excluding overkill. It returns to zero after five seconds without damage.
 
+## New-runtime equipment
+
+In the `*-new` runtime, [CHAR-04](characters.md#char-04--equipment-new-runtime)
+defines gear-derived power, attack speed, range, armor and typed critical damage.
+The values above describe starter weapons before critical hits. The same shared
+hit path applies in training and forest; existing ailment and companion rules
+remain separate from weapon critical rolls.
+
 ## Acceptance
 
 - A Warrior swing hits each overlapping enemy at most once during its active window, including late entrants and bodies across a seam.

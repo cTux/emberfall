@@ -2,6 +2,7 @@ import { GameConnection } from "./connection";
 import { classSprite } from "./characters";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { classDetails } from "./class-details";
+import { Equipment } from "./equipment-view";
 import { Codex } from "./Codex";
 import {
   enemyMaxHealth,
@@ -33,6 +34,7 @@ import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons/faRightFromBracket";
 import { faDoorOpen } from "@fortawesome/free-solid-svg-icons/faDoorOpen";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons/faGlobe";
+import { faShieldHalved } from "@fortawesome/free-solid-svg-icons/faShieldHalved";
 import { Settings } from "./Settings";
 import { loadPreferences } from "./preferences";
 import { Arena } from "./Arena";
@@ -58,7 +60,7 @@ function App() {
     }
   });
   const [menu, setMenu] = useState<
-    "codex" | "settings" | "portal" | "building" | "wardrobe" | "exit" | null
+    "codex" | "settings" | "portal" | "building" | "wardrobe" | "equipment" | "exit" | null
   >(null);
   const [building, setBuilding] = useState("");
   const [settingsTab, setSettingsTab] = useState("gameplay");
@@ -291,11 +293,25 @@ function App() {
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if (event.repeat) return;
+      const typing =
+        event.target instanceof Element &&
+        !!event.target.closest("input, textarea, select, [contenteditable=true]");
       if (
+        event.code === "KeyI" &&
         world &&
-        !menu &&
-        !(event.target as HTMLElement)?.closest("input, textarea, select, [contenteditable=true]")
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        !typing &&
+        (menu === "equipment" ||
+          (!menu && !document.querySelector('[role="dialog"][aria-modal="true"]')))
       ) {
+        event.preventDefault();
+        setMenu(menu === "equipment" ? null : "equipment");
+        return;
+      }
+      if (world && !menu && !typing) {
         const option =
           event.code === "KeyF" ? "autoAttack" : event.code === "KeyG" ? "autoTarget" : null;
         if (option) {
@@ -373,6 +389,12 @@ function App() {
               },
               ...(world
                 ? [
+                    {
+                      id: "equipment",
+                      label: "Equipment (I)",
+                      icon: faShieldHalved,
+                      onClick: () => setMenu("equipment"),
+                    },
                     {
                       id: "leave",
                       label: "Leave world",
@@ -638,19 +660,21 @@ function App() {
         <GameWindow
           key={menu}
           height={menu === "settings" ? 420 : undefined}
-          width={menu === "wardrobe" ? 600 : undefined}
+          width={menu === "wardrobe" || menu === "equipment" ? 600 : undefined}
           title={
             menu === "codex"
               ? "Codex"
-              : menu === "settings"
-                ? "Settings"
-                : menu === "portal"
-                  ? "Forest portal"
-                  : menu === "wardrobe"
-                    ? "Wardrobe"
-                    : menu === "exit"
-                      ? "Leave?"
-                      : building
+              : menu === "equipment"
+                ? "Equipment"
+                : menu === "settings"
+                  ? "Settings"
+                  : menu === "portal"
+                    ? "Forest portal"
+                    : menu === "wardrobe"
+                      ? "Wardrobe"
+                      : menu === "exit"
+                        ? "Leave?"
+                        : building
           }
           onClose={() => setMenu(null)}
         >
@@ -662,6 +686,8 @@ function App() {
             )}
             {menu === "codex" ? (
               <Codex />
+            ) : menu === "equipment" && me ? (
+              <Equipment player={me} />
             ) : menu === "settings" ? (
               <Settings
                 tab={settingsTab}

@@ -5,11 +5,31 @@ import { dirname } from "node:path";
 import { drizzle } from "drizzle-orm/node-sqlite";
 import { getTableName } from "drizzle-orm";
 import { GameDatabase, VersionConflictError } from "@colyseus/database";
-import { progressSchema, classSchema, CLASS_IDS } from "@emberfall/common-new";
+import {
+  progressSchema,
+  classSchema,
+  CLASS_IDS,
+  starterEquipment,
+  validateClassEquipment,
+  syncEquipmentVitals,
+} from "@emberfall/common-new";
 import { INITIAL_PROGRESS } from "@emberfall/common-new/definitions/entities/players";
 import type { CharacterProgress, ClassId, Player } from "@emberfall/common-new";
 
-export const freshProgress = (): CharacterProgress => structuredClone(INITIAL_PROGRESS);
+export const freshProgress = (classId?: ClassId): CharacterProgress => ({
+  ...structuredClone(INITIAL_PROGRESS),
+  ...(classId ? { equipment: starterEquipment(classId) } : {}),
+});
+function classProgress(value: unknown, classId: ClassId): CharacterProgress {
+  const progress = progressSchema.parse(value);
+  progress.equipment = validateClassEquipment(
+    progress.equipment ?? starterEquipment(classId),
+    classId,
+  );
+  const derived = { ...progress, classId } as Player;
+  syncEquipmentVitals(derived);
+  return progressSchema.parse(derived);
+}
 export function decodeProgress(raw: string) {
   const data = JSON.parse(raw);
   if (data.formatVersion !== undefined && data.formatVersion !== 1)
@@ -18,8 +38,9 @@ export function decodeProgress(raw: string) {
   const classes = Object.fromEntries(
     CLASS_IDS.map((id) => [
       id,
-      progressSchema.parse(
-        data.classes?.[id] ?? (id === "warrior" && !data.classes ? data : freshProgress()),
+      classProgress(
+        data.classes?.[id] ?? (id === "warrior" && !data.classes ? data : freshProgress(id)),
+        id,
       ),
     ]),
   ) as Record<ClassId, CharacterProgress>;
@@ -180,7 +201,7 @@ export class CharacterStore {
       ...progress.classes,
       [classId]: progressSchema.parse(progress),
     };
-    for (const id of CLASS_IDS) classes[id] = progressSchema.parse(classes[id]);
+    for (const id of CLASS_IDS) classes[id] = classProgress(classes[id], id);
     const version = this.versions.get(id) ?? Number(row.version);
     this.transaction(() => {
       const result = this.db
@@ -206,7 +227,7 @@ export class CharacterStore {
       ClassId,
       CharacterProgress
     >;
-    const next = classes[classId] ?? freshProgress();
+    const next = classProgress(classes[classId] ?? freshProgress(classId), classId);
     const updated = {
       ...player,
       ...next,

@@ -1,7 +1,7 @@
 import {
   playerAimAngle,
   smoothAttackAngle,
-  PLAYER_ATTACK_INTERVAL,
+  characterStats,
   inTrainingZone,
   fireClassAttack,
   advancePlayerShot,
@@ -199,7 +199,9 @@ export class LocalMovement {
   }
   animateAttack(player: Player, world: WorldState, now: number) {
     const scene = player.scene === "forest" ? world.scene : world.training;
+    const stats = characterStats(player);
     if (
+      !stats.hasWeapon ||
       player.hitpoints <= 0 ||
       scene?.phase !== "active" ||
       scene.pausedAt !== undefined ||
@@ -228,7 +230,7 @@ export class LocalMovement {
       const confirmedAt =
         this.base?.attackAt === undefined ? -Infinity : now - (serverNow - this.base.attackAt);
       const origin = Math.max(confirmedAt, this.requestAt);
-      if (player.attacking && now - origin >= PLAYER_ATTACK_INTERVAL) {
+      if (player.attacking && now - origin >= stats.attackIntervalMs) {
         this.attackAt = serverNow;
         this.requestAt = now;
         this.attackId = ++this.castSeq;
@@ -258,8 +260,8 @@ export class LocalMovement {
       }
       const cycle =
         origin +
-        Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) *
-          PLAYER_ATTACK_INTERVAL;
+        Math.floor(Math.max(0, serverNow - origin) / stats.attackIntervalMs) *
+          stats.attackIntervalMs;
       started = cycle !== this.attackAt;
       this.attackAt = cycle;
       this.attackId = undefined;

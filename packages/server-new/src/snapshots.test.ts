@@ -1,10 +1,14 @@
 import { edgeArrow } from "../../client-new/src/navigation.ts";
 import { swordOverlapsEnemy, smoothAttackAngle } from "@emberfall/common-new";
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { SnapshotBuffer } from "../../client-new/src/snapshots.ts";
 import { FOREST, stepCombat } from "@emberfall/common-new";
 import type { WorldState, Player, SceneState } from "@emberfall/common-new";
+// These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
+beforeEach((t) => {
+  if ("mock" in t) t.mock.method(Math, "random", () => 0.5);
+});
 const hero: Player = {
   id: "p",
   name: "P",

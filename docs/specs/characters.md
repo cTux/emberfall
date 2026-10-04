@@ -16,6 +16,28 @@ The wardrobe opposite the village portal switches between warrior (default), ran
 
 Save on entry, every five seconds, on explicit leave, on disconnect and during graceful shutdown. An abrupt exit can lose up to five seconds of progress. Failed loads report an error instead of silently creating a replacement; failed saves are reported and retried. Live positions, scenes, chat, attacks and Bear state are temporary. Class changes save successfully before becoming visible. See [operations](../operations.md) for database configuration and backups.
 
+## CHAR-04 — Equipment (new runtime)
+
+Each class starts with exactly one equipped item: its sword, bow, fire staff or
+nature staff. Equipment is saved independently per class. Older saves without
+equipment receive that class's starter weapon; explicitly empty slots stay empty.
+The nine slots are weapon, gloves, helmet, body armor, leggings, boots, amulet,
+off-hand and ring. Off-hands accept class-appropriate shields, quivers, orbs and
+nature focuses. This feature provides inspection and starter equipment; acquiring
+or manually changing items is outside its scope.
+
+All equipped items contribute to one shared stat calculation. Weapons supply
+power, attacks per second, automatic/manual range, damage type and critical stats;
+other gear can add power, cadence, range, health, mana and armor. Characters retain
+innate 100 maximum health and 50 maximum mana, plus gear bonuses. Armor starts at
+zero and mitigates incoming damage by `armor / (100 + armor)`. Unequipped
+characters cannot attack. The server owns equipment and combat results.
+
+Starter weapons retain existing power/range/cadence and have a 5% critical chance
+for 150% damage. Warrior damage is physical, Mage fire, Ranger poison and Druid
+nature. Each direct hit rolls independently; splash scales from weapon power and
+can crit. Ailment ticks and Bear attacks do not inherit weapon critical rolls.
+
 ## Acceptance
 
 - Restart with the same character key preserves name and each class’s XP, level, HP/MP, playtime and reserved talent data.

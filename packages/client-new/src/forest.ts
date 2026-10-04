@@ -10,7 +10,7 @@ import {
   drawClassProjectiles,
   drawDebuffs,
 } from "./combat-effects";
-import { PLAYER_ATTACK_RANGE, PLAYER_ATTACK_DURATION } from "@emberfall/common-new";
+import { defaultSpellRange, characterStats, PLAYER_ATTACK_DURATION } from "@emberfall/common-new";
 import { movementFacing } from "./facing";
 import { drawDanger, drawPlayerRange } from "./danger";
 import {
@@ -620,15 +620,7 @@ export function forestRenderer(
     if (quality.vignette) drawVignette(ctx, cameraX, cameraY, width, height);
     if (prefs.damageNumbers)
       for (const hit of world?.scene?.damage ?? []) {
-        const age = serverTime - hit.at;
-        if (age > 750) continue;
-        const p = near(hit.x, hit.y);
-        ctx.globalAlpha = 1 - age / 800;
-        ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
-        ctx.textAlign = "center";
-        ctx.fillStyle = hit.target.startsWith("enemy:") ? "#fff0b1" : "#ff8b81";
-        ctx.fillText(String(Math.round(hit.amount)), p.x, p.y - 45 - age / 30);
-        ctx.globalAlpha = 1;
+        drawDamageNumber(ctx, hit, near(hit.x, hit.y), serverTime);
       }
     drawDamageFlash(ctx, world, playerId);
     if (world) drawNavigation(ctx, world, playerId);
@@ -658,6 +650,8 @@ export function drawPlayerDetails(
     drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
   }
   const age = now - (p.attackAt ?? -Infinity);
+  if (!characterStats(p).hasWeapon) return;
+  const attackRange = defaultSpellRange(p);
   const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
   const weapon = weaponImages[p.classId ?? "warrior"];
   if (inCombat && p.hitpoints > 0 && weapon.naturalWidth) {
@@ -668,7 +662,7 @@ export function drawPlayerDetails(
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
-    ctx.translate(slash ? PLAYER_ATTACK_RANGE / 2 : 23, -2);
+    ctx.translate(slash ? attackRange / 2 : 23, -2);
     // The bow faces down-left in its source sprite; swords and staffs face up-left.
     ctx.rotate(((p.classId === "ranger" ? -3 : 3) * Math.PI) / 4);
     ctx.imageSmoothingEnabled = false;
@@ -699,7 +693,7 @@ export function drawPlayerDetails(
     ctx.strokeStyle = `rgba(195,237,255,${1 - progress * 0.7})`;
     ctx.lineWidth = 9;
     ctx.beginPath();
-    ctx.arc(0, 0, PLAYER_ATTACK_RANGE - 5, -0.65, 0);
+    ctx.arc(0, 0, Math.max(0, attackRange - 5), -0.65, 0);
     ctx.stroke();
     ctx.fillStyle = "#a8ffce";
     for (let i = 0; i < 10; i++) {
@@ -710,3 +704,4 @@ export function drawPlayerDetails(
     ctx.restore();
   }
 }
+import { drawDamageNumber } from "./damage-text";

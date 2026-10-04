@@ -78,6 +78,7 @@ test("server saves survive restart, authenticate independently of nickname, and 
       experience: 321,
       hitpoints: 77,
       manapoints: 14,
+      equipment: {},
     });
     assert.throws(() => store.save(saved.id, "Hero", { ...saved.progress, level: -1 }));
     assert.throws(() => store.load("0".repeat(64)));
@@ -94,6 +95,7 @@ test("server saves survive restart, authenticate independently of nickname, and 
       characterToken: token,
       level: 9999,
       experience: 9999,
+      equipment: { weapon: "mage-staff" },
     });
     const restored = await returning.wait("joined");
     assert(restored.type === "joined");
@@ -103,6 +105,12 @@ test("server saves survive restart, authenticate independently of nickname, and 
     assert.equal(player.experience, 321);
     assert.equal(player.hitpoints, 77);
     assert.equal(player.manapoints, 14);
+    assert.deepEqual(
+      player.equipment,
+      {},
+      "empty saved equipment survives restart and ignores forged gear",
+    );
+    assert.deepEqual(player.classes?.mage.equipment, { weapon: "mage-staff" });
     assert(player.playtimeSeconds >= 1);
     const stranger = await connect();
     stranger.send({
