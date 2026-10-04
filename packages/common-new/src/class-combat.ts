@@ -1,4 +1,5 @@
 import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
+import { COLLISION } from "./definitions/collision.ts";
 import { AILMENT_DEFINITIONS } from "./definitions/effects/ailments.ts";
 import { PICKUP_DEFINITIONS, PICKUP_RULES } from "./definitions/entities/pickups.ts";
 import { ENEMY_RULES } from "./definitions/entities/enemies.ts";
@@ -233,7 +234,8 @@ export function advancePlayerShot(
       const hit = enemies.find(
         (enemy) =>
           enemy.hitpoints > 0 &&
-          forestDistance(shot, enemy) <= ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 4,
+          forestDistance(shot, enemy) <=
+            ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + COLLISION.playerProjectileRadius,
       );
       if (hit) {
         shot.hitIds.push(hit.id);
@@ -262,7 +264,8 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
           if (
             enemy.hitpoints <= 0 ||
             shot.hitIds.includes(enemy.id) ||
-            forestDistance(shot, enemy) > ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 4
+            forestDistance(shot, enemy) >
+              ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + COLLISION.playerProjectileRadius
           )
             continue;
           shot.hitIds.push(enemy.id);

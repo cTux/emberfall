@@ -3,6 +3,7 @@ import { BEAR_DEFINITION } from "./definitions/entities/companions.ts";
 import { ENEMY_RULES, BOSS_DEFINITIONS } from "./definitions/entities/enemies.ts";
 import { FOREST_ENCOUNTER } from "./definitions/encounters/forest.ts";
 import { PICKUP_RULES } from "./definitions/entities/pickups.ts";
+import { COLLISION } from "./definitions/collision.ts";
 import { appendSceneEntities } from "./entities.ts";
 import { ATTACK_DEFINITIONS } from "./definitions/abilities/attacks.ts";
 import { RUNTIME } from "./definitions/runtime.ts";
@@ -608,7 +609,11 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
         )
       )
         return false;
-      const hit = combatants.find((p) => p.hitpoints > 0 && forestDistance(p, shot) <= 17);
+      const hit = combatants.find(
+        (p) =>
+          p.hitpoints > 0 &&
+          forestDistance(p, shot) <= COLLISION.actorRadius + COLLISION.enemyProjectileRadius,
+      );
       if (hit) {
         hurt(hit);
         return false;

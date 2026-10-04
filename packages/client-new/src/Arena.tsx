@@ -1,4 +1,5 @@
 import { alignLocalPickups } from "./pickup-presentation";
+import { drawHitboxes } from "./hitboxes";
 import { PixiContext } from "./rendering/pixi-context";
 import { PresentationWorld } from "./presentation/world";
 import { villageImages, villageBackground, drawVillageBackground } from "./village-background";
@@ -820,6 +821,16 @@ export function Arena({
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawNavigation(ctx, view, playerId);
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
+      element.dataset.debugHitboxes = String(
+        prefs.current.debugHitboxes
+          ? drawHitboxes(ctx, view, false, {
+              x: cameraX,
+              y: cameraY,
+              width: viewWidth,
+              height: viewHeight,
+            })
+          : 0,
+      );
       renderer.present();
       frame = requestAnimationFrame(draw);
     }

@@ -62,6 +62,16 @@ render pass. Pooled text uses cached textures rasterized at four times the font
 resolution, with nearest-neighbor sampling for sharper enlarged labels and
 damage numbers. Text density does not increase the world render resolution.
 
+The optional hitbox overlay runs after world effects in both village and forest.
+`client-new/hitboxes.ts` reads detached displayed poses and common-new collision,
+enemy, world, attack and pickup definitions. Body, feet, projectile and scenery
+shapes have distinct colors; orange labeled rings indicate action ranges rather
+than solid bodies. The preference defaults to false, lives in `emberfall-new.preferences`,
+and does not change server rules or client prediction. Player movement passes
+through scenery; bear/enemy feet shapes represent their scenery collision checks.
+`data-debug-hitboxes` reports the number of visible shapes for rendering diagnostics.
+Verification: [hitbox overlay tests](../../tests-new/hitboxes.spec.ts).
+
 Gradient ramps are baked once onto transparent textures and cached independently
 of world position, so vignette centers preserve the scene beneath them. SVG
 status assets are rasterized once at their decoded dimensions before GPU upload.

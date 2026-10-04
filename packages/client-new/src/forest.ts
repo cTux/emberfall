@@ -5,6 +5,7 @@ import { portalArt, drawStonePortal } from "./ambient-art";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
+import { drawHitboxes } from "./hitboxes";
 import type { Interaction } from "./effects";
 import {
   bloodPuddleRenderer,
@@ -632,6 +633,11 @@ export function forestRenderer(
       const point = near(player.x, player.y);
       drawChatBubble(ctx, point.x, point.y, player.chat);
     }
+    ctx.canvas.dataset.debugHitboxes = String(
+      prefs.debugHitboxes && world
+        ? drawHitboxes(ctx, world, true, { x: cameraX, y: cameraY, width, height })
+        : 0,
+    );
   };
 }
 export function drawPlayerDetails(

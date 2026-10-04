@@ -5,6 +5,7 @@ export interface Preferences {
   damageNumbers: boolean;
   fps: boolean;
   latency: boolean;
+  debugHitboxes: boolean;
   sound: boolean;
   music: boolean;
   musicVolume: number;
@@ -18,6 +19,7 @@ export function loadPreferences(): Preferences {
     damageNumbers: true,
     fps: true,
     latency: true,
+    debugHitboxes: false,
     sound: true,
     music: true,
     musicVolume: 0.22,
@@ -32,6 +34,7 @@ export function loadPreferences(): Preferences {
       "damageNumbers",
       "fps",
       "latency",
+      "debugHitboxes",
       "sound",
       "music",
     ] as const)
