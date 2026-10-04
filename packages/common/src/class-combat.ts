@@ -109,22 +109,15 @@ export function defaultSpellRange(player: Pick<Player, "classId" | "autoTarget">
 }
 
 function applyRoots(target: Enemy, ownerId: string, now: number) {
-  target.debuffs ??= [];
-  const roots = target.debuffs.find((d) => d.kind === "roots" && d.expiresAt > now);
-  if (roots) {
-    roots.stacks++;
-    roots.expiresAt += 3000;
-    roots.ownerId = ownerId;
-  } else {
-    target.debuffs = target.debuffs.filter((d) => d.kind !== "roots");
-    target.debuffs.push({
-      kind: "roots",
-      stacks: 1,
-      expiresAt: now + 3000,
-      nextTick: now + 1000,
-      ownerId,
-    });
-  }
+  if (target.kind === "boss") return;
+  target.debuffs = (target.debuffs ?? []).filter((d) => d.kind !== "roots");
+  target.debuffs.push({
+    kind: "roots",
+    stacks: 1,
+    expiresAt: now + 5000,
+    nextTick: now + 1000,
+    ownerId,
+  });
 }
 
 export function projectileAngle(aimAngle: number, index: number, count: number) {
@@ -176,6 +169,19 @@ export function advancePlayerShot(
   dt: number,
   onStep?: () => void,
 ) {
+  if (shot.kind === "roots" && shot.hitIds.length === 1) {
+    const target = enemies.find((enemy) => enemy.id === shot.targetId && enemy.hitpoints > 0);
+    if (!target) {
+      shot.remaining = 0;
+      return false;
+    }
+    const destination = target;
+    shot.angle = Math.atan2(
+      wrappedDelta(destination.y, shot.y, FOREST.height),
+      wrappedDelta(destination.x, shot.x, FOREST.width),
+    );
+    shot.remaining = forestDistance(shot, destination) + 64;
+  }
   const distance = Math.min(shot.remaining, Math.max(0, dt) * (shot.kind === "arrow" ? 600 : 380));
   const steps = Math.max(1, Math.ceil(distance / 6));
   for (let i = 0; i < steps; i++) {
@@ -187,6 +193,8 @@ export function advancePlayerShot(
       const hit = enemies.find(
         (enemy) =>
           enemy.hitpoints > 0 &&
+          !shot.hitIds.includes(enemy.id) &&
+          (shot.kind !== "roots" || shot.hitIds.length === 0 || enemy.id === shot.targetId) &&
           forestDistance(shot, enemy) <= ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 4,
       );
       if (hit) {
@@ -224,10 +232,27 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
     });
     if (impacted) {
       if (shot.kind === "roots") {
-        const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds[0]);
+        const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds.at(-1));
         if (target) {
           hitEnemy(scene, target, 3, owner, now);
           if (target.hitpoints > 0) applyRoots(target, owner.id, now);
+          if (shot.hitIds.length === 1) {
+            const next = scene.enemies
+              .filter((enemy) => enemy.hitpoints > 0 && !shot.hitIds.includes(enemy.id))
+              .reduce<Enemy | undefined>(
+                (best, enemy) =>
+                  !best || forestDistance(target, enemy) < forestDistance(target, best)
+                    ? enemy
+                    : best,
+                undefined,
+              );
+            if (next) {
+              shot.targetId = next.id;
+              shot.targetX = next.x;
+              shot.targetY = next.y;
+              return true;
+            }
+          }
         }
         return false;
       }

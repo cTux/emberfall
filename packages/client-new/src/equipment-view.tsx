@@ -165,11 +165,11 @@ function weaponBadges(player: Player, classId: ClassId, weapon: string): Equipme
     }
   }
   if (ailment === "roots") {
-    const duration = AILMENT_DEFINITIONS.roots.durationPerStackMs / 1000;
+    const duration = AILMENT_DEFINITIONS.roots.durationMs / 1000;
     badges.push({
       label: "Roots",
       icon: "roots",
-      explanation: `The first root immobilizes ordinary enemies for ${duration} seconds; each active stack adds ${duration} seconds. Bosses take damage but remain mobile.`,
+      explanation: `Each projectile bounces once to the nearest other living enemy for full power. Roots slow ordinary enemies by 10% for ${duration} seconds with one stack; hits refresh the duration. Bosses are immune to roots.`,
     });
   } else {
     const definition = AILMENT_DEFINITIONS[ailment];

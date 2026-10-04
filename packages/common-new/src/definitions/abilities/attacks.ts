@@ -37,7 +37,7 @@ export const ATTACK_DEFINITIONS = {
     damage: 3,
     count: 2,
     spreadRadians: Math.PI / 30,
-    rootDurationMs: 3000,
+    bounces: 1,
     piercing: false,
   },
 } as const;

@@ -199,3 +199,34 @@ test("attack aim follows a new nearest target before the next swing and uses ser
   assert(player.attackAngle! > 0 && player.attackAngle! < Math.PI);
   assert.equal(player.attackAt, -100);
 });
+
+test("local druid bounces retain server position and hit history without predicting damage", () => {
+  const p = { ...hero, classId: "druid" as const, scene: "forest" as const, attackAt: 9900 };
+  const initial = world(p);
+  initial.scene = {
+    id: "s",
+    phase: "active",
+    enemies: [],
+    playerShots: [
+      {
+        id: 1,
+        ownerId: "p",
+        kind: "roots",
+        castAt: 9900,
+        x: 500,
+        y: 340,
+        angle: Math.PI,
+        remaining: 100,
+        hitIds: [1],
+        targetId: 2,
+      },
+    ],
+  } as unknown as NonNullable<WorldState["scene"]>;
+  const movement = new LocalMovement("p", () => {});
+  const player = movement.render(initial, 0)!;
+  movement.animateProjectiles(player, initial, 0, false);
+  assert.equal(initial.scene.playerShots!.length, 1);
+  assert.equal(initial.scene.playerShots![0].x, 500);
+  assert.deepEqual(initial.scene.playerShots![0].hitIds, [1]);
+  assert.equal(player.hitpoints, 100);
+});

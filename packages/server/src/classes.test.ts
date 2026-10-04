@@ -100,36 +100,100 @@ test("class records migrate legacy progress, save independently, and survive res
   }
 });
 
-test("root impacts deal three damage and add three seconds per stack without DOT", () => {
+test("roots bounce once at full power and refresh one five-second stack without DOT", () => {
+  for (const training of [false, true]) {
+    const s = scene(),
+      p = { ...hero(), classId: "druid" as const };
+    if (training) {
+      s.training = true;
+      delete p.scene;
+    }
+    s.enemies = [enemy(2, 2480), enemy(1, 2420), enemy(3, 2540), enemy(4, 2425, 0)];
+    fireClassAttack(s, p, 10000);
+    assert(s.enemies.every((e) => e.debuffs === undefined));
+    tickPlayerShots(s, [p], 10050, 0.05);
+    const target = s.enemies[1],
+      bounce = s.enemies[0];
+    assert.equal(target.hitpoints, 94);
+    assert.equal(target.debuffs![0].stacks, 1);
+    assert.equal(target.debuffs![0].expiresAt, 15050);
+    assert(s.playerShots!.every((shot) => shot.targetId === bounce.id));
+    tickPlayerShots(s, [p], 10250, 0.2);
+    assert.equal(bounce.hitpoints, 94);
+    assert.equal(bounce.debuffs![0].stacks, 1);
+    assert.equal(s.playerShots!.length, 0);
+    assert.equal(s.enemies[2].hitpoints, 100);
+    fireClassAttack(s, p, 10700);
+    tickPlayerShots(s, [p], 10750, 0.05);
+    tickPlayerShots(s, [p], 10950, 0.2);
+    assert.equal(target.hitpoints, 88);
+    assert.equal(target.debuffs![0].stacks, 1);
+    assert.equal(target.debuffs![0].expiresAt, 15750);
+    tickDebuffs(s, [p], 15749);
+    assert.equal(target.hitpoints, 88);
+    assert.equal(target.debuffs!.length, 1);
+    tickDebuffs(s, [p], 15750);
+    assert.equal(target.debuffs!.length, 0);
+    if (training) {
+      assert.equal(p.experience, 0);
+      assert.equal(s.drops?.length ?? 0, 0);
+    }
+  }
+});
+
+test("root slow reduces ordinary speed by exactly ten percent and expires at its deadline", () => {
+  for (const kind of ["normal", "boss"] as const) {
+    const plain = { ...enemy(1), kind },
+      rooted = {
+        ...enemy(1),
+        kind,
+        debuffs: [
+          { kind: "roots" as const, stacks: 1, expiresAt: 5000, nextTick: 1000, ownerId: "p" },
+        ],
+      };
+    const p = hero();
+    moveEnemies([plain], [p], 0.01, 4999);
+    moveEnemies([rooted], [p], 0.01, 4999);
+    assert(
+      Math.abs(
+        forestDistance(rooted, enemy(1)) / forestDistance(plain, enemy(1)) -
+          (kind === "boss" ? 1 : 0.9),
+      ) < 1e-9,
+    );
+    const expired = { ...enemy(1), kind, debuffs: rooted.debuffs };
+    moveEnemies([expired], [p], 0.01, 5000);
+    assert.deepEqual({ x: expired.x, y: expired.y }, { x: plain.x, y: plain.y });
+  }
+});
+
+test("root bounce selects across seams, excludes dead targets, and stops when its target dies", () => {
+  const s = scene(),
+    p = { ...hero(), classId: "druid" as const, x: 20 };
+  s.enemies = [enemy(1, 30), enemy(2, FOREST.width - 20), enemy(3, 130), enemy(4, 32, 0)];
+  fireClassAttack(s, p, 1000);
+  tickPlayerShots(s, [p], 1050, 0.05);
+  assert(s.playerShots!.every((shot) => shot.targetId === 2));
+  tickPlayerShots(s, [p], 1250, 0.2);
+  assert.equal(s.enemies[1].hitpoints, 94);
+  assert.equal(s.enemies[2].hitpoints, 100);
+  assert.equal(s.playerShots!.length, 0);
+  fireClassAttack(s, p, 2000);
+  tickPlayerShots(s, [p], 2050, 0.05);
+  s.enemies[1].hitpoints = 0;
+  tickPlayerShots(s, [p], 2250, 0.2);
+  assert.equal(s.playerShots!.length, 0);
+  assert.equal(s.enemies[2].hitpoints, 100);
+});
+
+test("roots damage a lone enemy only once per projectile and never bounce back", () => {
   const s = scene(),
     p = { ...hero(), classId: "druid" as const };
-  s.enemies = [enemy(2, 2480), enemy(1, 2420), enemy(3, 2540)];
-  fireClassAttack(s, p, 10000);
-  assert(s.enemies.every((e) => e.debuffs === undefined));
-  tickPlayerShots(s, [p], 10050, 0.05);
-  const target = s.enemies[1];
-  assert.equal(target.hitpoints, 94);
-  assert.equal(target.debuffs![0].stacks, 2);
-  assert.equal(target.debuffs![0].expiresAt, 16050);
-  fireClassAttack(s, p, 10700);
-  tickPlayerShots(s, [p], 10750, 0.05);
-  assert.equal(target.hitpoints, 88);
-  assert.equal(target.debuffs![0].stacks, 4);
-  assert.equal(target.debuffs![0].expiresAt, 22050);
-  moveEnemies([target], [p], 0.1, 22049);
-  assert.equal(target.x, 2420);
-  tickDebuffs(s, [p], 22050);
-  assert.equal(target.hitpoints, 88);
-  assert.equal(target.debuffs!.length, 0);
-  moveEnemies([target], [p], 0.1, 22050);
-  assert(target.x < 2420);
-  target.x = 2420;
-  fireClassAttack(s, p, 23000);
-  s.playerShots!.splice(1);
-  tickPlayerShots(s, [p], 23050, 0.05);
-  assert.equal(target.debuffs![0].stacks, 1);
-  assert.equal(target.debuffs![0].expiresAt, 26050);
-  assert(s.enemies.filter((e) => e !== target).every((e) => e.debuffs === undefined));
+  s.enemies = [enemy(1, 2420)];
+  fireClassAttack(s, p, 1000);
+  tickPlayerShots(s, [p], 1050, 0.05);
+  tickPlayerShots(s, [p], 1250, 1);
+  assert.equal(s.enemies[0].hitpoints, 94);
+  assert.equal(s.playerShots!.length, 0);
 });
 
 test("projectile spread centers odd and even counts with six-degree spacing", () => {
@@ -171,7 +235,7 @@ test("all ranged classes launch two straight projectiles in both aiming modes", 
   }
 });
 
-test("roots immobilize ordinary enemies but leave bosses mobile, and root kills complete the boss", () => {
+test("roots slow ordinary enemies, bosses are immune, and root kills complete the boss", () => {
   const s = scene(),
     p = { ...hero(), classId: "druid" as const, attackAt: 10000 };
   const normal = enemy(1),
@@ -182,9 +246,9 @@ test("roots immobilize ordinary enemies but leave bosses mobile, and root kills 
   tickPlayerShots(s, [p], 10100, 0.2);
   fireClassAttack(s, { ...p, x: boss.x }, 10100);
   tickPlayerShots(s, [p], 10100, 0);
-  assert.equal(boss.debuffs![0].kind, "roots");
+  assert.equal(boss.debuffs?.length ?? 0, 0);
   moveEnemies([normal], [p], 0.1, 10100);
-  assert.equal(normal.x, 2480);
+  assert(normal.x < 2480);
   moveEnemies([boss], [p], 0.1, 10100);
   assert(boss.x > 2300);
   boss.hitpoints = 2;
@@ -469,7 +533,7 @@ test("Druid launches roots without instant melee damage, with zero or one target
   assert.equal(s.playerShots!.length, 2);
   tickPlayerShots(s, [p], 10100, 0.1);
   assert.equal(s.enemies[0].hitpoints, 94);
-  assert.equal(s.enemies[0].debuffs![0].expiresAt, 16100);
+  assert.equal(s.enemies[0].debuffs![0].expiresAt, 15100);
   s.enemies = [];
   assert.doesNotThrow(() => fireClassAttack(s, p, 10700));
 });
@@ -913,4 +977,18 @@ test("manual client prediction casts on hold, preserves release cooldown, and tr
   assert.equal(movement.animateAttack(displayed, world, 1009), false);
   assert.equal(movement.animateAttack(displayed, world, 1010), true);
   assert.equal(movement.animateAttack(displayed, world, 1020), false);
+});
+
+test("a lethal root impact still bounces and credits both kills through the shared path", () => {
+  const s = scene(),
+    p = { ...hero(), classId: "druid" as const };
+  s.enemies = [enemy(1, 2420, 3), enemy(2, 2480, 3)];
+  fireClassAttack(s, p, 1000);
+  tickPlayerShots(s, [p], 1050, 0.05);
+  tickPlayerShots(s, [p], 1250, 0.2);
+  assert(s.enemies.every((e) => e.hitpoints === 0));
+  tickPlayerShots(s, [p], 2300, 1);
+  assert.equal(p.experience, 2);
+  assert.equal(s.drops!.filter((drop) => drop.kind === "experience").length, 2);
+  assert.equal(s.playerShots!.length, 0);
 });

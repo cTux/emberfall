@@ -329,6 +329,8 @@ export class LocalMovement {
           matched.add(serverShot.id);
           shot.id = serverShot.id;
           shot.confirmedId = serverShot.id;
+          // Render server-confirmed bounces through snapshot interpolation.
+          if (serverShot.kind === "roots" && serverShot.hitIds.length === 1) return false;
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
@@ -352,7 +354,11 @@ export class LocalMovement {
         if (known.length) {
           this.shots.push(
             ...known
-              .filter((shot) => !this.shots.some((existing) => existing.confirmedId === shot.id))
+              .filter(
+                (shot) =>
+                  !(shot.kind === "roots" && shot.hitIds.length === 1) &&
+                  !this.shots.some((existing) => existing.confirmedId === shot.id),
+              )
               .map(adopt),
           );
           this.shotCastAt = this.attackAt;
@@ -368,6 +374,7 @@ export class LocalMovement {
         confirmed?.playerShots?.filter(
           (s) =>
             s.ownerId === player.id &&
+            !(s.kind === "roots" && s.hitIds.length === 1) &&
             s.castAt !== undefined &&
             s.castAt > this.shotCastAt &&
             (s.castId === undefined || !this.casts.has(s.castId)),
@@ -380,7 +387,9 @@ export class LocalMovement {
     }
     // Only replace our projectiles; other players retain snapshot interpolation.
     scene.playerShots = [
-      ...(scene.playerShots ?? []).filter((s) => s.ownerId !== player.id),
+      ...(scene.playerShots ?? []).filter(
+        (s) => s.ownerId !== player.id || (s.kind === "roots" && s.hitIds.length === 1),
+      ),
       ...this.shots.map((s) => ({ ...s })),
     ];
   }

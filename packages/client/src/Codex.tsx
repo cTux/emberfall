@@ -112,9 +112,10 @@ const chapters = [
         </p>
         <p>
           Druid aims root projectiles at the nearest enemy within 250 units when auto-target is
-          enabled. Each hit deals 3 damage and adds a root stack, extending movement disable by
-          three seconds. Roots cause no damage over time. Bosses show roots and take damage but keep
-          moving. Boar has 1.5 times your maximum HP, strikes with tusks for 2 damage, and revives
+          enabled. Each projectile bounces once to the nearest other living enemy. Both hits deal
+          full power and apply one root stack, slowing ordinary enemies by 10% for five seconds.
+          Further hits refresh the duration. Roots cause no damage over time and do not affect
+          bosses. Boar has 1.5 times your maximum HP, strikes with tusks for 2 damage, and revives
           five seconds after death. It chases the nearest enemy within 200 units of you, returns
           when more than 200 units away from you, and resumes hunting once back at your side. Boar
           keeps an 80-unit gap for tusk attacks, backs away from close enemies, and tries to dodge
