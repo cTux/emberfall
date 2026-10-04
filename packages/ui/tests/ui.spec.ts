@@ -225,3 +225,49 @@ test("server table keeps headers when empty and prevents full-server joins", asy
   await expect(page.getByRole("table")).toContainText("32/32");
   await expect(page.getByRole("table")).toContainText("—");
 });
+
+test("server rows join once from every cell and keyboard, respecting disabled states", async ({
+  page,
+}) => {
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto(story("components-worldlist--row-interaction"));
+    const row = page.getByRole("row").filter({ hasText: "Northern grove" });
+    const status = page.getByRole("status");
+    for (let cell = 0; cell < 3; cell++) {
+      await row
+        .getByRole("cell")
+        .nth(cell)
+        .click({ position: { x: 4, y: 4 } });
+      await expect(status).toHaveText(`Joins: ${cell + 1}`);
+    }
+    const join = row.getByRole("button");
+    await join.click();
+    await expect(status).toHaveText("Joins: 4");
+    await join.focus();
+    await expect(join).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(status).toHaveText("Joins: 5");
+    await page.keyboard.press("Space");
+    await expect(status).toHaveText("Joins: 6");
+    const full = page.getByRole("row").filter({ hasText: "Full world" });
+    for (let cell = 0; cell < 3; cell++) {
+      await full
+        .getByRole("cell")
+        .nth(cell)
+        .click({ position: { x: 4, y: 4 } });
+    }
+    await expect(full.getByRole("button")).toBeDisabled();
+    await expect(status).toHaveText("Joins: 6");
+    await page.goto(story("components-worldlist--disabled"));
+    for (let cell = 0; cell < 3; cell++) {
+      await row
+        .getByRole("cell")
+        .nth(cell)
+        .click({ position: { x: 4, y: 4 } });
+    }
+    await expect(row.getByRole("button")).toBeDisabled();
+    await expect(status).toHaveText("Joins: 0");
+  }
+});
