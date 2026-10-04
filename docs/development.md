@@ -15,6 +15,12 @@ pnpm build
 
 The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, including shared simulation and client helper tests. Build includes client, server and the static UI Storybook through Turborepo. No GitHub Actions workflow exists in the baseline; do not describe local checks as CI.
 
+Both `pnpm build` and `pnpm build-new` automatically compress PNGs in the client
+output after bundling, including copied public assets. Individual client package
+builds do the same. Source assets, licenses and development serving are untouched.
+The build logs the byte savings; files that would grow keep their original bytes.
+Run `pnpm test:images` for the optimizer's lossless-output and failure checks.
+
 ## Browser and UI verification
 
 The independent runtime uses `pnpm dev-new`, `pnpm build-new`, and `pnpm start-new`.

@@ -13,6 +13,13 @@ Status: implemented original runtime. Emberfall is an online-only browser game. 
 
 Node 24 executes server TypeScript during development. Vite builds the client and bundles the server with an SSR target. The Node HTTP/WebSocket application, not Vite, runs the multiplayer server. Turborepo coordinates workspace commands.
 
+Both client package build commands run [PNG optimization](../../scripts/optimize-images.ts)
+after Vite finishes. The optimizer processes only build output, preserves paths,
+dimensions, pixels and color profiles, and replaces a PNG only when it becomes smaller.
+It skips animated and higher-bit-depth PNGs; other asset formats and development serving
+are unchanged. Compression failures fail the build. Turbo includes the shared
+optimizer in its cache inputs so a script change cannot reuse stale output.
+
 ## Data flow
 
 ```mermaid
