@@ -108,7 +108,11 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
             describeChild
             enterTouchDelay={0}
             leaveDelay={250}
-            slotProps={{ popper: { disablePortal: true } }}
+            slotProps={{
+              popper: {
+                container: () => panelRef.current?.closest(".MuiDialog-container") ?? document.body,
+              },
+            }}
             title={
               <Stack spacing={1}>
                 <Typography variant="subtitle2">
@@ -116,7 +120,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                 </Typography>
                 {slot.item ? (
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                    {slot.item.badges.map((badge) => {
+                    {slot.item.badges.map((badge, index) => {
                       const cell = BADGE_CELLS[badge.icon];
                       return (
                         <GearTooltipStyled
@@ -147,6 +151,16 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                             aria-label={`${badge.label}${badge.value ? `: ${badge.value}` : ""}`}
                             data-equipment-badge={badge.icon}
                             onClick={() => setOpenBadge(badge.label)}
+                            onKeyDown={(event) => {
+                              if (index !== 0 || event.key !== "Tab" || !event.shiftKey) return;
+                              const slotButton = panelRef.current?.querySelector<HTMLButtonElement>(
+                                `[data-equipment-slot="${CSS.escape(slot.id)}"]`,
+                              );
+                              if (slotButton) {
+                                event.preventDefault();
+                                slotButton.focus();
+                              }
+                            }}
                           >
                             <Box
                               aria-hidden="true"
@@ -180,6 +194,17 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               data-equipment-slot={slot.id}
               data-equipped={!!slot.item}
               onClick={() => setOpenSlot(slot.id)}
+              onKeyDown={(event) => {
+                if (event.key !== "Tab" || event.shiftKey || openSlot !== slot.id) return;
+                const tooltipId = event.currentTarget.getAttribute("aria-describedby");
+                const badge = tooltipId
+                  ? document.getElementById(tooltipId)?.querySelector<HTMLButtonElement>("button")
+                  : null;
+                if (badge) {
+                  event.preventDefault();
+                  badge.focus();
+                }
+              }}
               sx={{
                 gridColumn: slot.position.column,
                 gridRow: slot.position.row,

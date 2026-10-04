@@ -6,7 +6,6 @@ export const WindowTitleStyled = styled(Box)(({ theme }) => ({
   alignItems: "center",
   justifyContent: "space-between",
   paddingRight: theme.spacing(1),
-  borderBottom: `1px solid ${theme.palette.divider}`,
   cursor: "move",
   touchAction: "none",
 }));

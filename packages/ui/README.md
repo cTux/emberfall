@@ -85,7 +85,10 @@ All consumer-facing prop/data types are exported from `src/index.ts`. Screen sto
 `EquipmentPanel` accepts controlled slot views (ID, label, grid coordinates,
 fallback image, allowed gear text and optional item name/icon/badges) and calculated
 stat rows. Slots are borderless and empty images are translucent. Focus/hover/touch
-opens a narrow translucent-black tooltip. Item badges use the bundled generated
+opens a narrow translucent-black tooltip outside the window's scrollable content,
+without adding scrollbars or clipping details. Modal tooltips remain inside the
+dialog's focus scope, and Tab/Shift+Tab connect the slot and its first badge.
+Item badges use the bundled generated
 atlas, optional bottom-right values and host-supplied explanations accessible by
 mouse, keyboard and touch. It places character stats on the right on desktop and below at narrow widths.
 Compose it inside `GameWindow` for dragging and focus management. Its Storybook
