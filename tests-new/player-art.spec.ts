@@ -1,7 +1,7 @@
 import { test, expect } from "./fixtures";
 import { writeFile } from "node:fs/promises";
 
-test("all player poses have safe cell gutters and six distinct walking images", async ({
+test("all player poses have safe gutters, six distinct gaits and stable standing colors", async ({
   page,
 }) => {
   await page.goto("/?art-gallery");
@@ -24,6 +24,23 @@ test("all player poses have safe cell gutters and six distinct walking images", 
     images.forEach((image, i) => {
       if (image.width !== 256 || image.height !== 640) failures.push(`${names[i]} size`);
       for (let col = 0; col < 4; col++) {
+        ctx.clearRect(0, 0, 64, 64);
+        ctx.drawImage(image, col * 64, 0, 64, 64, 0, 0, 64, 64);
+        const idle = ctx.getImageData(0, 0, 64, 64).data;
+        const palette: number[][] = [];
+        const idleTone = [0, 0, 0];
+        let idleCount = 0;
+        for (let i = 0; i < idle.length; i += 4)
+          if (idle[i + 3] >= 128) {
+            palette.push([idle[i], idle[i + 1], idle[i + 2]]);
+            if (idle[i + 3] >= 200) {
+              idleCount++;
+              idleTone.forEach((_, channel) => (idleTone[channel] += idle[i + channel]));
+            }
+          }
+        const walkTone = [0, 0, 0];
+        let walkCount = 0;
+        const checked = new Set<string>();
         const distinct = new Set<string>();
         const feet = new Set<string>();
         const contacts: number[] = [];
@@ -41,6 +58,23 @@ test("all player poses have safe cell gutters and six distinct walking images", 
             }
           if (count < 100) failures.push(`${names[i]} ${col},${row} empty`);
           if (walks.includes(row)) {
+            for (let p = 0; p < pixels.length; p += 4) {
+              if (pixels[p + 3] < 200) continue;
+              const rgb = [pixels[p], pixels[p + 1], pixels[p + 2]];
+              walkCount++;
+              walkTone.forEach((_, channel) => (walkTone[channel] += rgb[channel]));
+              const key = rgb.join(",");
+              if (checked.has(key)) continue;
+              checked.add(key);
+              // Allow canvas alpha round-trip rounding, but reject a new tone
+              // introduced by a separately generated animation sheet.
+              if (
+                !palette.some((color) =>
+                  color.every((value, channel) => Math.abs(value - rgb[channel]) <= 3),
+                )
+              )
+                failures.push(`${names[i]} ${col},${row} changes standing palette: ${key}`);
+            }
             distinct.add(tile.toDataURL());
             // Alpha only: recoloring robes or animating a weapon must not hide
             // a frozen lower-leg silhouette. Inspect the bottom eight pixels.
@@ -60,6 +94,14 @@ test("all player poses have safe cell gutters and six distinct walking images", 
             if (contactPixels) contacts.push(contactX / contactPixels);
           }
         }
+        // A sheet can use the right colors yet look brighter by overusing its
+        // highlights. Compare the whole six-phase cycle to standing at rest.
+        if (
+          idleTone.some(
+            (sum, channel) => Math.abs(sum / idleCount - walkTone[channel] / walkCount) > 5,
+          )
+        )
+          failures.push(`${names[i]} ${col} changes overall standing tone`);
         if (distinct.size !== 6) failures.push(`${names[i]} ${col} repeated gait`);
         if (feet.size < 4) failures.push(`${names[i]} ${col} passive feet`);
         // Front/back must transfer ground contact between two foot tracks,
@@ -95,7 +137,7 @@ test("all player poses have safe cell gutters and six distinct walking images", 
     const out = preview.getContext("2d")!;
     out.imageSmoothingEnabled = false;
     const frames: string[] = [];
-    for (const row of walks) {
+    for (const row of [0, ...walks]) {
       out.fillStyle = "#202a25";
       out.fillRect(0, 0, 800, 760);
       out.font = "18px sans-serif";
@@ -114,7 +156,7 @@ test("all player poses have safe cell gutters and six distinct walking images", 
   });
   expect(result.failures).toEqual([]);
   for (const [i, png] of result.frames.entries())
-    await writeFile(`test-results/player-walk-${i}.png`, Buffer.from(png, "base64"));
+    await writeFile(`test-results/player-pose-${i}.png`, Buffer.from(png, "base64"));
 });
 
 test("class movement page shows every direction and supports gait inspection", async ({ page }) => {

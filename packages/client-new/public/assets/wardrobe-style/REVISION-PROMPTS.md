@@ -22,6 +22,19 @@ Production game sprite sheet: exact same druid design, palette and pixel style a
 
 Corrections: ranger front poses were regenerated with bow on screen-left; druid front poses were regenerated with staff on screen-left. Mage idle was regenerated as a separate down/up/left/right turnaround. Warrior supplemental poses use a single sword in the right hand, with a waist-level anticipation and extended release. Existing original sheets and license notices remain intact.
 
+### Required color continuity for every class generation and revision
+
+Use the approved standing turnaround as the color authority for each direction.
+Keep identical material hues, saturation, brightness, shadow colors, highlights
+and outline tones in idle, every walk phase, attacks and fallen poses. Change
+pose only; do not brighten, darken, recolor or relight the costume, skin, hair,
+weapons or equipment when the character moves. Walk-only replacements must match
+the existing idle palette, including previously accepted directions. Compare
+idle to every gait phase side by side and while starting/stopping at game size
+on the same background and lighting; reject visible tone jumps. Atlas packaging
+also locks walking RGB to the matching standing direction's palette without
+changing alpha or geometry.
+
 ### warrior-walk
 
 Replacement WALK ONLY sprite sheet for the exact warrior character in reference. Preserve costume, colors, equipment and crisp warm woodland pixel art. Exact FOUR columns by FOUR rows, sixteen full-body sprites evenly spaced with transparent margins. Columns: facing DOWN front, UP back, LEFT profile, RIGHT profile. Rows temporal gait phases: 1 LEFT leg fully forward RIGHT leg fully back (wide contact pose); 2 left planted while RIGHT knee lifted forward passing below pelvis; 3 RIGHT leg fully forward LEFT leg fully back (opposite wide contact); 4 right planted while LEFT knee lifted passing. CRITICAL visible alternating anatomical legs and boots in all frames, distinct opposite contacts. Do not repeat same leading leg. Robe split exposes boots and knees. Arms counter-swing and coat hem sways. All bodies SAME HEIGHT and baseline, head centered in each cell, consistent camera. No attack or fallen poses, no labels grid floor or cast shadow. Four by four square sheet.
