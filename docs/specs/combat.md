@@ -22,7 +22,7 @@ Each Druid has a permanent companion named Bear in village and forest, with its 
 
 ## COMBAT-04 — Training
 
-The lobby has two marked training clearings: one skeleton dummy on the west side and six in a 1/2/3 triangle on the east side. Each has 1,000,000,000 HP, replenished to full every second by the server. Dummies never move or attack and award no XP or loot. Player attacks, ailments, projectiles, and the companion use the same combat handling as the forest. The unlabeled areas each have a 135-unit horizontal radius and a 114.75-unit vertical radius. Lobby auto-attacks and companion hunting start only while the player's feet are inside either area and stop on leaving; already-fired projectiles and ailments can finish. Forest combat is unchanged. Training state is shared within each world and separate from the forest scene.
+The lobby has two training clearings: one skeleton dummy on the west side and six in a 1/2/3 triangle on the east side. Each has 1,000,000,000 HP, replenished to full every second by the server. Dummies never move or attack and award no XP or loot. Player attacks, ailments, projectiles, and the companion use the same combat handling as the forest. In the new runtime, each area has a 270-unit horizontal radius and a 229.5-unit vertical radius, with no ground fill or circle outline. The original runtime retains its 135-unit horizontal and 114.75-unit vertical radii and ground indicators. Lobby auto-attacks and companion hunting start only while the player's feet are inside either area and stop on leaving; already-fired projectiles and ailments can finish. Forest combat is unchanged. Training state is shared within each world and separate from the forest scene.
 
 ## COMBAT-05 — Rewards and damage accounting
 

@@ -38,7 +38,6 @@ import {
   LOBBY_PORTAL,
   TICK_MS,
   nearbyInteraction,
-  TRAINING_ZONES,
   inTrainingZone,
 } from "@emberfall/common-new";
 import type { ClientMessage, WorldState } from "@emberfall/common-new";
@@ -466,16 +465,6 @@ export function Arena({
       else {
         ctx.fillStyle = "#25392f";
         ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
-      }
-      for (const zone of TRAINING_ZONES) {
-        ctx.fillStyle = "#aa8b4930";
-        ctx.strokeStyle = "#c9a56380";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        const point = project(zone.x, zone.y);
-        ctx.ellipse(point.x, point.y, zone.radius, zone.radius * 0.85, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
       }
       const training = view.training
         ? {

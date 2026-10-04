@@ -19,6 +19,10 @@ Definition objects describe types; mutable entities describe instances. Stable
 definition IDs connect them. The simulation owns live state; network projections
 and render objects never write damage, rewards or saved progress back into it.
 
+Training definitions keep the 270-unit combat radius separate from the 135-unit
+vegetation clearing radius, preserving seeded tree placement. The client renders
+dummies without a zone fill or outline; shared wrapped geometry still gates attacks.
+
 ## Simulation and replication
 
 Each party has one Miniplex simulation world. Components reference canonical

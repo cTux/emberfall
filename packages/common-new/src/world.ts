@@ -62,7 +62,7 @@ const random = () => {
 for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
   const x = 35 + random() * (ARENA.width - 70);
   const y = 55 + random() * (ARENA.height - 85);
-  if (TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.radius + 35))
+  if (TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + 35))
     continue;
   if (Math.hypot((x - 480) / 190, (y - 355) / 110) < 1 || onPath(x, y, 55)) continue;
   if (BUILDINGS.some((b) => Math.abs(x - b.x) < 100 && y > b.y - 130 && y < b.y + 65)) continue;

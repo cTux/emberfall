@@ -1,8 +1,8 @@
 export const ARENA = { width: 4800, height: 2560, speed: 180 } as const;
 export const WARDROBE = { x: 350, y: 365 };
 export const TRAINING_ZONES = [
-  { x: 140, y: 355, radius: 135 },
-  { x: 820, y: 355, radius: 135 },
+  { x: 140, y: 355, radius: 270, clearingRadius: 135 },
+  { x: 820, y: 355, radius: 270, clearingRadius: 135 },
 ] as const;
 export const BUILDINGS = [
   { id: "inn", name: "Inn", x: 235, y: 225, doorX: 219, sourceX: 0, sourceWidth: 64 },

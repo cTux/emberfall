@@ -71,7 +71,7 @@ export function villageSprites(
       const x = random() * ARENA.width,
         y = random() * ARENA.height;
       if (
-        TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.radius) ||
+        TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius) ||
         onPath(x, y, 38) ||
         BUILDINGS.some((b) => Math.abs(x - b.x) < 85 && y > b.y - 105 && y < b.y + 20)
       )
