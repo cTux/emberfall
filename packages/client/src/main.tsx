@@ -237,6 +237,13 @@ function App() {
       clearInterval(pingTimer);
       setLatency(null);
       setStatus("Reconnecting");
+      setWorld(null);
+      setPlayerId("");
+      setMenu(null);
+      setBrowserOpen(true);
+      setTab("browse");
+      setSelected(null);
+      setJoinPassword("");
       setWorlds([]);
       setPending(false);
       setError("Connection lost. Reconnecting automatically…");
