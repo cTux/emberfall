@@ -1,7 +1,5 @@
-import {
-  PLAYER_BODY_RADIUS,
-  PLAYER_PROJECTILE_HIT_RADIUS,
-} from "./definitions/entities/players.ts";
+import { PLAYER_BODY_RADIUS } from "./definitions/entities/players.ts";
+import { modelHitbox, enemyHitbox, overlapsBody } from "./hitboxes.ts";
 import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
 import { BEAR_DEFINITION } from "./definitions/entities/companions.ts";
 import { ENEMY_RULES, BOSS_DEFINITIONS } from "./definitions/entities/enemies.ts";
@@ -88,8 +86,9 @@ export function swordOverlapsEnemy(
   enemy: Enemy,
   range = PLAYER_ATTACK_RANGE,
 ) {
-  const dx = wrappedDelta(enemy.x, player.x, FOREST.width),
-    dy = wrappedDelta(enemy.y, player.y, FOREST.height);
+  const body = enemyHitbox(enemy);
+  const dx = wrappedDelta(body.x, player.x, FOREST.width),
+    dy = wrappedDelta(body.y, player.y, FOREST.height);
   const angle = player.attackAngle ?? 0;
   const forward = dx * Math.cos(angle) + dy * Math.sin(angle);
   const sideways = -dx * Math.sin(angle) + dy * Math.cos(angle);
@@ -98,7 +97,7 @@ export function swordOverlapsEnemy(
     forward >= 0
       ? Math.max(0, Math.hypot(dx, dy) - range)
       : Math.hypot(forward, Math.max(0, Math.abs(sideways) - range));
-  return distance <= ENEMY_STATS[enemy.archetype ?? "skeleton"].radius + 1e-6;
+  return distance <= body.radius + 1e-6;
 }
 
 function slash(
@@ -583,7 +582,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
           });
       } else {
         for (const player of combatants)
-          if (forestDistance(player, attack) <= attack.radius) hurt(player);
+          if (overlapsBody(attack, attack.radius, modelHitbox(player))) hurt(player);
       }
     } else if (
       target &&
@@ -615,11 +614,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
         return false;
       const hit = combatants.find(
         (p) =>
-          p.hitpoints > 0 &&
-          forestDistance(p, shot) <=
-            ("returning" in p
-              ? COLLISION.companionRadius + COLLISION.enemyProjectileRadius
-              : PLAYER_PROJECTILE_HIT_RADIUS),
+          p.hitpoints > 0 && overlapsBody(shot, COLLISION.enemyProjectileRadius, modelHitbox(p)),
       );
       if (hit) {
         hurt(hit);

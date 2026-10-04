@@ -420,10 +420,10 @@ test("enemies damage Bear; death resurrects exactly five seconds later at its ow
     p: Player = { ...hero(), classId: "druid", attackAt: 10000 };
   tickCompanion(p, s, 10000, 0);
   const bear = p.bear!;
-  bear.x = 2460;
+  bear.x = 2470;
   bear.hitpoints = 10;
-  const e = enemy(1, 2460);
-  e.attack = { startedAt: 9000, endsAt: 10000, x: 2460, y: 1280, radius: 40, ranged: false };
+  const e = enemy(1, 2470);
+  e.attack = { startedAt: 9000, endsAt: 10000, x: 2470, y: 1280, radius: 40, ranged: false };
   s.enemies = [e];
   stepCombat(s, [p], 10000, 0);
   assert.equal(bear.hitpoints, 0);
@@ -614,7 +614,8 @@ test("fireball damages the actual collision target only once and splashes across
   const s = scene(),
     p = { ...hero(), classId: "mage" as const, x: 5 };
   const direct = enemy(1, FOREST.width - 5);
-  s.enemies = [direct, enemy(2, 95), enemy(3, 95.01), enemy(4, FOREST.width - 200)];
+  s.enemies = [direct, enemy(2, 119), enemy(3, 119.01), enemy(4, FOREST.width - 200)];
+  for (const target of s.enemies) target.y += 6; // Model centers align with the explosion.
   fireClassAttack(s, p, 1000);
   s.playerShots!.splice(1);
   s.playerShots![0].x = direct.x;
@@ -843,7 +844,7 @@ test("untargeted spells follow cast aim past the cursor and expire after 1000px"
         aimY: 1300,
       };
       const arena = scene();
-      arena.enemies = [enemy(1, 2420), enemy(2, 2580)];
+      arena.enemies = [enemy(1, 2440), enemy(2, 2580)];
       fireClassAttack(arena, player, 1000);
       assert.equal(arena.playerShots?.length, 2);
       const shot = arena.playerShots![0];

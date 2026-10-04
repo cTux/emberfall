@@ -255,9 +255,9 @@ test("every tenth successful spawn is a 50 HP elite; timer spawns only one 200 H
   assert.equal(scene.portals.length, 0);
 });
 
-test("player projectile hitboxes shrink to 70%, including wrapped boundaries", () => {
+test("enemy projectiles overlap the whole player model, including wrapped boundaries", () => {
   for (const wrapped of [false, true]) {
-    for (const gap of [11.8, 12, 16]) {
+    for (const gap of [16, 28.9, 29.1]) {
       const p = player(wrapped ? 2 : 2400, 1280);
       const scene: SceneState = {
         id: "hitbox",
@@ -276,7 +276,7 @@ test("player projectile hitboxes shrink to 70%, including wrapped boundaries", (
           {
             id: 1,
             x: wrapped ? FOREST.width + 2 - gap : p.x - gap,
-            y: p.y,
+            y: p.y - 6,
             vx: 0,
             vy: 0,
             expiresAt: 20000,
@@ -284,8 +284,8 @@ test("player projectile hitboxes shrink to 70%, including wrapped boundaries", (
         ],
       };
       stepCombat(scene, [p], 10000, 0);
-      assert.equal(p.hitpoints, gap < 11.9 ? 90 : 100);
-      assert.equal(scene.projectiles!.length, gap < 11.9 ? 0 : 1);
+      assert.equal(p.hitpoints, gap < 29 ? 90 : 100);
+      assert.equal(scene.projectiles!.length, gap < 29 ? 0 : 1);
     }
   }
 });

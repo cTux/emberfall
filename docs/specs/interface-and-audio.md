@@ -40,9 +40,10 @@ Settings groups are Gameplay, Graphics and Sound. Preferences persist locally; m
 
 The new client's Gameplay settings include **Debug mode: show hitboxes**, disabled
 by default and persisted locally. It takes effect immediately in village, training
-and forest at every graphics preset. Show body and projectile hitboxes, separate
-feet/scenery collision shapes, and labeled attack, splash, collection and interaction
-ranges. Use simulation dimensions rather than sprite bounds. Decorative critters,
+and forest at every graphics preset. Show whole-model damage circles and projectile
+hitboxes, scenery collision shapes, and labeled attack, splash, collection and interaction
+ranges. Omit feet zones and projectile terrain zones. Use the shared simulation's model
+dimensions for damage bodies and rule dimensions for other shapes. Decorative critters,
 blood, labels and particles have no hitboxes. Outlines follow displayed positions
 and wrapped camera geometry; authoritative server positions still decide hits.
 

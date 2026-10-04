@@ -8,14 +8,10 @@ import {
   type WorldState,
 } from "../packages/common-new/src/index.ts";
 import { loadPreferences } from "../packages/client-new/src/preferences.ts";
-import {
-  INITIAL_PROGRESS,
-  PLAYER_BODY_RADIUS,
-  PLAYER_PROJECTILE_HIT_RADIUS,
-} from "../packages/common-new/src/definitions/entities/players.ts";
-import { COLLISION } from "../packages/common-new/src/definitions/collision.ts";
+import { INITIAL_PROGRESS } from "../packages/common-new/src/definitions/entities/players.ts";
+import { modelHitbox, enemyHitbox } from "../packages/common-new/src/hitboxes.ts";
 
-test("player overlay preserves the reduced incoming-hit threshold and separate feet radius", () => {
+test("player overlay covers the whole model and omits feet zones", () => {
   const world: WorldState = {
     id: "w",
     hostId: "p",
@@ -35,11 +31,10 @@ test("player overlay preserves the reduced incoming-hit threshold and separate f
   const shapes = worldHitboxes(world, true, { x: 0, y: 0, width: 200, height: 200 });
   const body = shapes.find((shape) => shape.color === HITBOX_COLORS.body)!;
   assert("radius" in body);
-  assert.equal(body.radius + COLLISION.enemyProjectileRadius, PLAYER_PROJECTILE_HIT_RADIUS);
-  const feet = shapes.find((shape) => shape.label === "feet (pass-through)")!;
-  assert("radius" in feet);
-  assert.equal(feet.radius, PLAYER_BODY_RADIUS);
-  assert.equal(feet.y, 115);
+  assert.deepEqual({ x: body.x, y: body.y, radius: body.radius }, modelHitbox(world.players[0]));
+  assert.equal(body.radius, 24);
+  assert.equal(body.y, 94);
+  assert(!shapes.some((shape) => shape.label?.includes("feet") || shape.label === "terrain"));
 });
 
 test("debug setting defaults off and only accepts saved booleans", () => {
@@ -91,8 +86,10 @@ test("all enemy archetypes, both projectile sides and pickup ranges use rule geo
   const world: WorldState = { id: "w", hostId: "p", name: "test", players: [], scene };
   const shapes = worldHitboxes(world, true, { x: 0, y: 0, width: 500, height: 500 });
   assert.deepEqual(
-    shapes.filter((s) => s.color === HITBOX_COLORS.body).map((s) => "radius" in s && s.radius),
-    [10, 8, 16, 10],
+    shapes
+      .filter((s) => s.color === HITBOX_COLORS.body)
+      .map((s) => ({ x: s.x, y: s.y, radius: "radius" in s && s.radius })),
+    scene.enemies.map(enemyHitbox),
   );
   assert.deepEqual(
     shapes
@@ -101,7 +98,7 @@ test("all enemy archetypes, both projectile sides and pickup ranges use rule geo
     [4, 4, 4, 5],
   );
   assert(shapes.some((s) => s.label === "collect" && "radius" in s && s.radius === 22));
-  assert(shapes.some((s) => s.label === "feet" && s.y === 115));
+  assert(!shapes.some((s) => s.label?.includes("feet") || s.label === "terrain"));
 });
 
 test("overlay projects a hitbox across the wrapped seam and restores drawing state", () => {
@@ -132,6 +129,6 @@ test("overlay projects a hitbox across the wrapped seam and restores drawing sta
     width: 200,
     height: 200,
   });
-  assert(arcs.some(([x, y, radius]) => x === -3 && y === 100 && radius === 10));
+  assert(arcs.some(([x, y, radius]) => x === -3 && y === 94 && radius === 24));
   assert.equal(saves, restores);
 });
