@@ -92,7 +92,9 @@ export function Equipment({ player }: { player: Player }) {
             ...player,
             classId: itemClass,
             equipment: { weapon: gear.id },
-          }).slice(0, 7)
+          })
+            .slice(0, 7)
+            .filter(({ label }) => label !== "Target range" && label !== "Manual range")
         : [];
     if (attack && attack !== "slash") {
       stats.push({ label: "Projectiles", value: number(ATTACK_DEFINITIONS[attack].count) });
