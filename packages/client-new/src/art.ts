@@ -166,7 +166,9 @@ export function terrainTile(column: number, size = 320) {
   tile.width = tile.height = size;
   const ctx = tile.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
-  if (terrainArt.naturalWidth) {
+  // PNG dimensions are available before its pixels finish loading. Caching a
+  // draw at that point permanently retains an empty tile, even after onload.
+  if (terrainArt.complete && terrainArt.naturalWidth) {
     const width = terrainArt.naturalWidth / 3;
     // Preserve the irregular source texture: mirrored copies create visible
     // diamonds and repeated four-way tufts. 320 divides both wrapped axes.

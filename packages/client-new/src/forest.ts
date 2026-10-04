@@ -235,7 +235,12 @@ export function forestRenderer(
       lastScene = world?.scene?.id;
     }
     const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
-    if (environmentArt.naturalWidth && terrainArt.naturalWidth && !treeMask) {
+    if (
+      environmentArt.naturalWidth &&
+      terrainArt.complete &&
+      terrainArt.naturalWidth &&
+      !treeMask
+    ) {
       tree.getContext("2d")!.drawImage(environmentArt, 0, 128, 128, 128, 0, 0, 128, 128);
       treeMask = makeMask(tree);
       g.fillStyle = g.createPattern(terrainTile(2), "repeat")!;
