@@ -76,6 +76,26 @@ export async function compare() {
     10,
     5,
   );
+  for (const [name, x] of [
+    ["shaft left feather", 62],
+    ["shaft center", 140],
+    ["shaft right feather", 218],
+  ] as const)
+    compare(
+      name,
+      (ctx) => drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: false, lightShafts: true }),
+      x,
+      100,
+    );
+  compare(
+    "shaft after camera move",
+    (ctx) => {
+      ctx.translate(-50, -70);
+      drawAtmosphere(ctx, 50, 70, 256, 256, 0, { colorGrading: false, lightShafts: true });
+    },
+    90,
+    30,
+  );
   for (const shade of ["#101817", "#b4cfdc"]) {
     compare(
       `grading ${shade}`,
