@@ -1,7 +1,12 @@
+import { drawBeltLantern } from "./art";
+import { alignLocalPickups } from "./pickup-presentation";
 import { PixiContext } from "./rendering/pixi-context";
 import { PresentationWorld } from "./presentation/world";
 import { villageImages, villageBackground, drawVillageBackground } from "./village-background";
 import { characterImages } from "./characters";
+import { ACTOR_CELL, actorFrame, idleBreath } from "./animation";
+import { actorArt, environmentArt, wardrobeArt, drawArt } from "./art";
+import { drawChimneySmoke } from "./ambient-art";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
@@ -112,10 +117,7 @@ export function Arena({
     const ctx = renderer as unknown as CanvasRenderingContext2D;
     const knight = characterImages.warrior.walk;
     const { nature } = villageImages;
-    const animatedLantern = new Image();
-    animatedLantern.src = "/assets/lanterns/lantern-animation.png";
-    const skeleton = new Image();
-    skeleton.src = "/assets/skeleton.png";
+    const skeleton = actorArt("skeleton");
     const drawForest = forestRenderer(nature, knight, skeleton);
     const audio = gameAudio(() => prefs.current);
     let lastSlashAt = -Infinity,
@@ -132,8 +134,20 @@ export function Arena({
       const index = frame * 4 + facing;
       if (!masks[index]) {
         const tile = document.createElement("canvas");
-        tile.width = tile.height = 16;
-        tile.getContext("2d")!.drawImage(image, facing * 16, frame * 16, 16, 16, 0, 0, 16, 16);
+        tile.width = tile.height = ACTOR_CELL;
+        tile
+          .getContext("2d")!
+          .drawImage(
+            image,
+            facing * ACTOR_CELL,
+            frame * ACTOR_CELL,
+            ACTOR_CELL,
+            ACTOR_CELL,
+            0,
+            0,
+            ACTOR_CELL,
+            ACTOR_CELL,
+          );
         masks[index] = makeMask(tile);
       }
       return masks[index];
@@ -261,6 +275,8 @@ export function Arena({
       ctx.restore();
     }
     let frame = 0;
+    let wardrobeOpenedAt = 0;
+    let wardrobeActive = false;
     let previous = performance.now();
     let resolutionScale = 1,
       budgetAt = performance.now(),
@@ -277,6 +293,9 @@ export function Arena({
     let fpsAt = performance.now(),
       fpsFrames = 0;
     function draw(now: number) {
+      const openWardrobe = interaction.current?.id === "wardrobe";
+      if (openWardrobe && !wardrobeActive) wardrobeOpenedAt = now;
+      wardrobeActive = openWardrobe;
       if (!renderer.initialized) {
         frame = requestAnimationFrame(draw);
         return;
@@ -349,6 +368,7 @@ export function Arena({
         Object.assign(local, combat);
         localSwing = localMovement.animateAttack(local, view, now);
         localMovement.animateProjectiles(local, view, now, localSwing);
+        alignLocalPickups(view, local);
       }
       presentation.update(view, playerId, local);
       networkTiming.current = {
@@ -471,13 +491,13 @@ export function Arena({
       if (training) {
         const damageByTarget = new Map(training.damage.map((hit) => [hit.target, hit]));
         for (const dummy of training.enemies) {
-          if (skeleton.naturalWidth) {
-            ctx.drawImage(skeleton, 0, 0, 16, 16, dummy.x - 24, dummy.y - 30, 48, 48);
+          if (environmentArt.naturalWidth) {
+            drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
             const hit = damageByTarget.get(`enemy:${dummy.id}`);
             if (hit)
               drawTargetHit(
                 ctx,
-                spriteMask(skeleton, 0, 0)!,
+                spriteMask(environmentArt, 1, 2, false, 128, false, 128)!,
                 dummy.x - 24,
                 dummy.y - 30,
                 48,
@@ -514,7 +534,18 @@ export function Arena({
         const ix = player.inputX ?? 0,
           iy = player.inputY ?? 0;
         if (Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
-        const frame = Math.hypot(ix, iy) > 0 ? Math.floor(now / 120) % 4 : 0;
+        const frame = actorFrame(
+          player.id === playerId ? now : serverTime,
+          Math.hypot(ix, iy) > 0,
+          player.hitpoints > 0,
+          player.attackAt,
+        );
+        if (frame === 5 || frame === 6)
+          pos.facing = movementFacing(
+            Math.cos(player.attackAngle ?? 0),
+            Math.sin(player.attackAngle ?? 0),
+            pos.facing,
+          );
         const mask = characterMask(
           characterImages[player.classId ?? "warrior"].walk,
           frame,
@@ -646,6 +677,28 @@ export function Arena({
               now,
               quality.current.wavingVegetation,
             );
+          else if (object.id === "building:wardrobe") {
+            const open = interaction.current?.id === "wardrobe";
+            drawArt(
+              ctx,
+              wardrobeArt,
+              open ? Math.min(3, Math.floor((now - wardrobeOpenedAt) / 100)) : 0,
+              0,
+              object.x - object.width / 2,
+              object.y - object.height,
+              object.width,
+              object.height,
+              128,
+            );
+          } else if (object.id.startsWith("torch:"))
+            drawTorchFire(
+              ctx,
+              object.x,
+              object.y,
+              now,
+              quality.current.particles,
+              quality.current.bloom,
+            );
           else
             ctx.drawImage(
               object.sprite,
@@ -654,16 +707,8 @@ export function Arena({
               object.width,
               object.height,
             );
-          if (object.id.startsWith("torch:"))
-            drawTorchFire(
-              ctx,
-              animatedLantern,
-              object.x,
-              object.y,
-              now,
-              quality.current.particles,
-              quality.current.bloom,
-            );
+          if (object.chimney && quality.current.particles)
+            drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
           if (object.name)
             drawNameBadge(
@@ -683,8 +728,20 @@ export function Arena({
         const ix = player.inputX ?? 0,
           iy = player.inputY ?? 0;
         const moving = Math.hypot(ix, iy) > 0;
-        // Sheet columns: down, up, left, right. Rows: the four walking frames.
+        const spriteRow = actorFrame(
+          player.id === playerId ? now : serverTime,
+          moving,
+          player.hitpoints > 0,
+          player.attackAt,
+        );
+        // Four directions share the same idle, walk, action and fallen rows.
         if (moving) pos.facing = movementFacing(ix, iy, pos.facing);
+        if (spriteRow === 5 || spriteRow === 6)
+          pos.facing = movementFacing(
+            Math.cos(player.attackAngle ?? 0),
+            Math.sin(player.attackAngle ?? 0),
+            pos.facing,
+          );
         pos.x = player.x;
         pos.y = player.y;
         positions.set(player.id, pos);
@@ -700,10 +757,10 @@ export function Arena({
               ctx.globalAlpha = 0.09;
               ctx.drawImage(
                 knight,
-                pos.facing * 16,
-                (Math.floor(now / 120) % 4) * 16,
-                16,
-                16,
+                pos.facing * ACTOR_CELL,
+                spriteRow * ACTOR_CELL,
+                ACTOR_CELL,
+                ACTOR_CELL,
                 pos.x - 24 - dx * sample * 0.45,
                 pos.y - 30 - dy * sample * 0.45,
                 48,
@@ -714,24 +771,17 @@ export function Arena({
           }
           ctx.drawImage(
             knight,
-            pos.facing * 16,
-            (moving ? Math.floor(now / 120) % 4 : 0) * 16,
-            16,
-            16,
+            pos.facing * ACTOR_CELL,
+            spriteRow * ACTOR_CELL,
+            ACTOR_CELL,
+            ACTOR_CELL,
             pos.x - 24,
-            pos.y - 30,
+            pos.y + 18 - 48 * idleBreath(now, spriteRow),
             48,
-            48,
+            48 * idleBreath(now, spriteRow),
           );
         }
-        // Belt lantern: warm glass and a dark metal frame attached to each character.
-        const beltX = pos.x + (pos.facing === 2 ? -15 : 12);
-        ctx.fillStyle = "#382e21";
-        ctx.fillRect(beltX - 3, pos.y + 1, 7, 11);
-        ctx.fillStyle = "#e7a74d";
-        ctx.fillRect(beltX - 2, pos.y + 3, 5, 7);
-        ctx.fillStyle = "#ffe2a0";
-        ctx.fillRect(beltX, pos.y + 4, 2, 5);
+        drawBeltLantern(ctx, pos.x, pos.y, pos.facing, now);
         drawPlayerHealth(
           ctx,
           pos.x,

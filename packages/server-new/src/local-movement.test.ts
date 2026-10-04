@@ -68,6 +68,34 @@ test("local input is instant and partial acknowledgements replay exactly the rem
   assert.equal(hero.x, 420, "source state stays immutable");
 });
 
+test("interleaved event and RAF timestamps cannot manufacture movement time or input backlog", () => {
+  const sent: ClientMessage[] = [];
+  const movement = new LocalMovement("p", (message) => sent.push(message));
+  const initial = world();
+  movement.render(initial, 0);
+  movement.input(1, 0, 0);
+  let current = initial;
+  for (let tick = 1; tick <= 200; tick++) {
+    const now = tick * 50;
+    movement.input(1, 0, now);
+    movement.render(current, now - 8); // RAF sampled before the input handler.
+    const next = structuredClone(current);
+    movePlayer(next.players[0], 1, 0, 0.05);
+    next.serverNow = 10000 + now;
+    const last = sent.filter((m) => m.type === "move").at(-1)!;
+    next.players[0].inputSeq = last.seq;
+    next.players[0].inputElapsed = last.durationMs;
+    const rendered = movement.render(next, now)!;
+    assert(Math.abs(wrappedDelta(rendered.x, next.players[0].x, FOREST.width)) < 1e-7);
+    current = next;
+  }
+  const duration = sent.reduce(
+    (total, message) => total + (message.type === "move" ? (message.durationMs ?? 0) : 0),
+    0,
+  );
+  assert.equal(duration, 10000, "ten seconds of real time sends exactly ten seconds of movement");
+});
+
 test("small visual errors stay still, accumulated error converges, large corrections and death snap", async () => {
   const movement = new LocalMovement("p", () => {});
   movement.render(world(), 0);

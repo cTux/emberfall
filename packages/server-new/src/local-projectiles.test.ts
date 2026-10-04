@@ -391,11 +391,45 @@ test("a late server cast retains its in-flight position and remaining range with
   assert.equal(result.scene.playerShots!.length, 2);
   assert.deepEqual(
     result.scene.playerShots!.map((s) => [s.x, s.y, s.remaining]),
-    reply.scene!.playerShots!.map((s) => [s.x, s.y, s.remaining]),
+    reply.scene!.playerShots!.map((s) => [
+      s.x + result.player.x - reply.players[0].x,
+      s.y,
+      s.remaining,
+    ]),
   );
   assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 2);
   for (let now = 250; now <= 650; now += 50) frame(movement, reply, now);
   assert.equal(frame(movement, reply, 650).scene.playerShots!.length, 0);
+});
+
+test("newly confirmed moving casts attach once to the displayed pose in both areas and across seams", () => {
+  for (const training of [false, true])
+    for (const delay of [50, 200, 700]) {
+      const source = fixture("mage", training);
+      source.players[0].x = FOREST.width - 5;
+      source.players[0].attackAt = undefined;
+      const movement = new LocalMovement("p", () => {});
+      frame(movement, source, 0);
+      movement.input(1, 0, 0);
+      for (let t = 50; t < delay; t += 50) frame(movement, source, t);
+      const reply = structuredClone(source);
+      reply.serverNow! += delay;
+      reply.players[0].attackAt = reply.serverNow;
+      reply.players[0].autoTarget = false;
+      reply.players[0].aimX = 200;
+      reply.players[0].aimY = reply.players[0].y;
+      fireClassAttack((training ? reply.training : reply.scene)!, reply.players[0]);
+      const result = frame(movement, reply, delay);
+      assert.equal(result.scene.playerShots!.length, 2);
+      for (const shot of result.scene.playerShots!) {
+        assert(Math.abs(shot.x - result.player.x) < 1e-8);
+        assert.equal(shot.y, result.player.y);
+      }
+      const next = frame(movement, reply, delay + 10);
+      assert.equal(next.scene.playerShots!.length, 2);
+      assert(next.scene.playerShots![0].remaining < result.scene.playerShots![0].remaining);
+      assert.equal((training ? reply.training : reply.scene)!.playerShots![0].x, FOREST.width - 5);
+    }
 });
 
 test("confirmation cannot bend a moving cast or rebind its surviving projectile to a sibling", () => {

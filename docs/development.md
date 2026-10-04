@@ -58,7 +58,7 @@ Browser artifacts go to ignored `test-results/` and `playwright-report/` as conf
 
 For an opt-in hardware frame-budget measurement, build the new client, set
 `PERF_NEW=1`, then run `pnpm test:browser-new tests-new/frame-budget.spec.ts`.
-The isolated village, training and moving-forest cases use High at 1440×1000,
+The isolated village, training, moving-forest and 80-enemy crowded cases use High at 1440×1000,
 three seconds of warmup and 1,200 uncapped animation frames each. JSON records
 include browser/GPU, frame percentiles and frames over the 240 FPS budget;
 screenshots accompany them in `test-results/`. Windows uses ANGLE D3D11.

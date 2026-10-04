@@ -50,7 +50,7 @@ test("new runtime imports and dependencies remain independent", () => {
   }
 });
 
-test("all shipped assets and attribution remain identical", () => {
+test("original shipped assets and attribution remain intact alongside the new art collection", () => {
   const originalRoot = resolve("packages/client/public");
   const newRoot = resolve("packages/client-new/public");
   const hash = (path: string) => createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -60,6 +60,7 @@ test("all shipped assets and attribution remain identical", () => {
   assert.deepEqual(
     files(newRoot)
       .map((path) => relative(newRoot, path))
+      .filter((path) => !path.replaceAll("\\", "/").startsWith("assets/wardrobe-style/"))
       .sort(),
     originalFiles,
   );

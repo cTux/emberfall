@@ -156,6 +156,8 @@ export interface DamageEvent {
   target: string;
 }
 export interface LootDrop {
+  /** Server-selected attraction target; presentation may attach to its reconciled pose. */
+  collectorId?: string;
   amount?: number;
   id: number;
   kind: "experience" | "gold";

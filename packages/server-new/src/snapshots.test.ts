@@ -328,6 +328,7 @@ test("loot attracts across the seam and rewards every living scene player exactl
   const players = [dead, lobby, player, teammate, nearby];
   stepCombat(scene, players, 400, 0.05);
   assert.equal(scene.drops![0].x, FOREST.width - 66);
+  assert.equal(scene.drops![0].collectorId, player.id);
   assert.equal(scene.drops![1].x, FOREST.width - 66);
   for (let i = 0; i < 10; i++) stepCombat(scene, players, 450 + i * 50, 0.05);
   assert.equal(scene.drops!.length, 0);

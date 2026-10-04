@@ -61,13 +61,21 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
     const previousHit = world.training!.sequence;
     player.x = TRAINING_ZONES[0].x - 65;
     player.y = TRAINING_ZONES[0].y;
-    await expect.poll(() => world.training!.damage.some((hit) => hit.id > previousHit)).toBe(true);
+    // Damage records live for 800ms; 1s polling can miss every 1s companion hit.
+    await expect
+      .poll(() => world.training!.damage.some((hit) => hit.id > previousHit), {
+        intervals: [50],
+        timeout: 10000,
+      })
+      .toBe(true);
     await expect.poll(() => player.dps ?? 0).toBeGreaterThan(0);
     expect(player.hitpoints).toBe(player.maxHitpoints);
     expect(player.experience).toBe(0);
     if (classId === "druid") {
       await expect.poll(() => player.bear?.name).toBe("Bear");
-      await expect.poll(() => world.training!.damage.some((hit) => hit.amount === 2)).toBe(true);
+      await expect
+        .poll(() => world.training!.damage.some((hit) => hit.amount === 2), { intervals: [50] })
+        .toBe(true);
       await expect
         .poll(() => forestDistance(player.bear!, world.training!.enemies[0]))
         .toBeLessThan(95);
@@ -96,11 +104,14 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
   ).toBeVisible({ timeout: 15000 });
   await expect.poll(() => game.runtime.worlds.get(worldId)?.players.size).toBe(1);
   expect(game.runtime.worlds.get(worldId)!.players.get(id)?.classId).toBe("druid");
-  await expect(page.locator(".party article .portrait")).toHaveCSS("background-image", /druid.png/);
+  await expect(page.locator(".party article .portrait")).toHaveCSS(
+    "background-image",
+    /druid-portrait.png/,
+  );
   expect(errors).toEqual([]);
 });
 
-test("boar chases and defeats a forest boss after portal entry, opening the return portal", async ({
+test("bear chases and defeats a forest boss after portal entry, opening the return portal", async ({
   page,
   game,
 }) => {

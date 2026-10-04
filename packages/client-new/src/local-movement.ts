@@ -58,8 +58,10 @@ export class LocalMovement {
   }
 
   private advance(now: number) {
-    const elapsed = now - this.at;
-    this.at = now;
+    // RAF's timestamp can predate an input handler's performance.now(). Never
+    // rewind this clock or the next frame predicts/sends the same time twice.
+    const elapsed = Math.max(0, now - this.at);
+    this.at = Math.max(this.at, now);
     if (this.base) {
       const queued = this.pending.reduce((n, p) => n + p.durationMs, 0);
       this.unsent += Math.min(
@@ -280,6 +282,15 @@ export class LocalMovement {
   animateProjectiles(player: Player, world: WorldState, now: number, started: boolean) {
     const scene = player.scene === "forest" ? world.scene : world.training;
     const confirmed = player.scene === "forest" ? this.source?.scene : this.source?.training;
+    // Apply the prediction offset once at adoption, never every frame. Retain
+    // distance already flown, remaining range, heading and authoritative identity.
+    const adopt = (shot: PlayerShot) => ({
+      ...shot,
+      x: wrap(shot.x + wrappedDelta(player.x, this.base!.x, FOREST.width), FOREST.width),
+      y: wrap(shot.y + wrappedDelta(player.y, this.base!.y, FOREST.height), FOREST.height),
+      confirmedId: shot.id,
+      hitIds: [...shot.hitIds],
+    });
     const dt = Math.min(100, Math.max(0, now - this.shotsAt)) / 1000;
     this.shotsAt = now;
     if (!scene) {
@@ -340,7 +351,9 @@ export class LocalMovement {
           ) ?? [];
         if (known.length) {
           this.shots.push(
-            ...known.map((shot) => ({ ...shot, confirmedId: shot.id, hitIds: [...shot.hitIds] })),
+            ...known
+              .filter((shot) => !this.shots.some((existing) => existing.confirmedId === shot.id))
+              .map(adopt),
           );
           this.shotCastAt = this.attackAt;
         } else if ((this.base?.attackAt ?? -Infinity) < this.attackAt) {
@@ -362,7 +375,7 @@ export class LocalMovement {
       for (const shot of missed)
         // Late discoveries are already in flight. Moving them back to the
         // player while keeping the server's remaining range truncates the shot.
-        this.shots.push({ ...shot, confirmedId: shot.id, hitIds: [...shot.hitIds] });
+        this.shots.push(adopt(shot));
       if (missed.length) this.shotCastAt = Math.max(...missed.map((s) => s.castAt!));
     }
     // Only replace our projectiles; other players retain snapshot interpolation.

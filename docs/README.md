@@ -44,6 +44,19 @@ Server tests live in [packages/server/src](../packages/server/src), game browser
 
 ## Start here by task
 
+New-client wardrobe-style art: [GRAPHICS-05](specs/graphics.md#graphics-05--wardrobe-style-art-in-the-new-client),
+[atlas design](design/new-runtime.md#wardrobe-style-presentation-assets), and
+[asset provenance and prompts](../packages/client-new/public/assets/wardrobe-style/README.md).
+Verification: `tests-new/art-animation.test.ts`, `tests-new/art-assets.spec.ts`,
+and the training/forest browser scenarios in `tests-new/gameplay.spec.ts`.
+
+New-client frame-time regressions: [performance skill](../.agents/skills/emberfall-performance/SKILL.md)
+and `tests-new/frame-budget.spec.ts`. Local projectile/pickup offsets:
+[reconciliation skill](../.agents/skills/emberfall-reconciliation/SKILL.md),
+[alignment design](design/new-runtime.md#local-effect-alignment),
+`packages/server-new/src/local-projectiles.test.ts` and
+`packages/server-new/src/pickup-presentation.test.ts`.
+
 New-runtime equipment: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime)
 and [UI-06](specs/interface-and-audio.md#ui-06--equipment-inspection-new-runtime),
 implemented by [equipment rules](../packages/common-new/src/equipment.ts),

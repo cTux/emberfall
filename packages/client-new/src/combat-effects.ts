@@ -1,5 +1,6 @@
 import { TRANSIENT_EFFECTS } from "@emberfall/common-new/definitions/effects/transient";
 import { statusImages } from "./combat-assets";
+import { effectsArt, pickupArt, drawArt } from "./art";
 import type { SceneState, LootDrop, Enemy, DamageEvent } from "@emberfall/common-new";
 
 export function bloodPuddleRenderer() {
@@ -121,7 +122,18 @@ export function drawLootAndBlood(
     ctx.beginPath();
     ctx.ellipse(p.x, p.y + 2, 5, 2, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.drawImage(lootSprite(drop.kind), p.x - 20, p.y - 24 - jump);
+    if (pickupArt.naturalWidth)
+      drawArt(
+        ctx,
+        pickupArt,
+        Math.floor((now + drop.id * 70) / 170) % 4,
+        drop.kind === "gold" ? 1 : 2,
+        p.x - 10,
+        p.y - 16 - jump,
+        20,
+        20,
+      );
+    else ctx.drawImage(lootSprite(drop.kind), p.x - 20, p.y - 24 - jump);
   }
   // Bound bursts independently of ambient-particle settings, so hits remain readable on Low.
   for (const hit of scene.damage.slice(-80)) {
@@ -157,7 +169,9 @@ export function drawClassProjectiles(
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(shot.angle);
-    if (shot.kind === "arrow") {
+    if (shot.kind === "arrow" && pickupArt.naturalWidth) {
+      drawArt(ctx, pickupArt, Math.floor(now / 100) % 4, 0, -22, -22, 44, 44);
+    } else if (shot.kind === "arrow") {
       ctx.strokeStyle = "#92d89c";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -171,6 +185,18 @@ export function drawClassProjectiles(
       ctx.lineTo(5, 4);
       ctx.closePath();
       ctx.fill();
+    } else if (effectsArt.naturalWidth) {
+      drawArt(
+        ctx,
+        effectsArt,
+        Math.floor(now / 100) % 3,
+        shot.kind === "roots" ? 3 : 2,
+        -24,
+        -24,
+        48,
+        48,
+        128,
+      );
     } else {
       ctx.fillStyle = shot.kind === "roots" ? "#56bc7277" : "#ef722977";
       ctx.beginPath();

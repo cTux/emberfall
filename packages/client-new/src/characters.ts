@@ -1,18 +1,10 @@
-import { PLAYER_DEFINITIONS } from "@emberfall/common-new/definitions/entities/players";
+import { actorArt, artUrl } from "./art";
 import { CLASS_IDS } from "@emberfall/common-new";
 import type { ClassId } from "@emberfall/common-new";
-export const classSprite = (id: ClassId = "warrior") => PLAYER_DEFINITIONS[id].sprite;
-const load = (src: string) => {
-  const image = new Image();
-  image.src = src;
-  return image;
-};
+export const classSprite = (id: ClassId = "warrior") => artUrl(`${id}-portrait`);
 export const characterImages = Object.fromEntries(
-  CLASS_IDS.map((id) => [
-    id,
-    {
-      walk: load(classSprite(id)),
-      attack: load(`/assets/${id}-attack.png`),
-    },
-  ]),
+  CLASS_IDS.map((id) => {
+    const image = actorArt(id);
+    return [id, { walk: image, attack: image }];
+  }),
 ) as Record<ClassId, { walk: HTMLImageElement; attack: HTMLImageElement }>;
