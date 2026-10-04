@@ -15,6 +15,12 @@ export interface PartyCardProps {
   host?: boolean;
   local?: boolean;
   away?: boolean;
+  companion?: {
+    name: string;
+    health: number;
+    maxHealth: number;
+    portrait: ReactNode;
+  };
 }
 
 export function PartyCard({
@@ -26,6 +32,7 @@ export function PartyCard({
   host,
   local,
   away,
+  companion,
 }: PartyCardProps) {
   return (
     <PartyCardStyled as="article" aria-label={`${name}${away ? ", in another dimension" : ""}`}>
@@ -57,6 +64,19 @@ export function PartyCard({
           <StatusMeter label={`${name}, lvl ${level}`} value={health} max={maxHealth} />
         </Box>
       </Stack>
+      {companion && (
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center", mt: 0.5, width: "85%" }}>
+          <PartyPortraitStyled compact>{companion.portrait}</PartyPortraitStyled>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <StatusMeter
+              label={companion.name}
+              value={companion.health}
+              max={companion.maxHealth}
+              compact
+            />
+          </Box>
+        </Stack>
+      )}
     </PartyCardStyled>
   );
 }

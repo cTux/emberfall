@@ -15,10 +15,12 @@ export const PartyCardStyled = styled(Paper)(({ theme }) => ({
   boxShadow: "none",
 }));
 
-export const PartyPortraitStyled = styled(Box)(({ theme }) => ({
+export const PartyPortraitStyled = styled(Box, {
+  shouldForwardProp: (prop) => prop !== "compact",
+})<{ compact?: boolean }>(({ theme, compact }) => ({
   position: "relative",
-  width: theme.spacing(3),
-  height: theme.spacing(3),
+  width: theme.spacing(compact ? 2.5 : 3),
+  height: theme.spacing(compact ? 2.5 : 3),
   flexShrink: 0,
   "& > :first-child": { width: "100%", height: "100%", display: "block" },
 }));
@@ -52,8 +54,10 @@ export const PortalVoteStyled = styled(Paper)(({ theme }) => ({
 
 export const StatusMeterStyled = styled(Box)({ position: "relative" });
 
-export const StatusMeterProgressStyled = styled(LinearProgress)(({ theme, color = "primary" }) => ({
-  height: theme.spacing(3),
+export const StatusMeterProgressStyled = styled(LinearProgress, {
+  shouldForwardProp: (prop) => prop !== "compact",
+})<{ compact?: boolean }>(({ theme, color = "primary", compact }) => ({
+  height: theme.spacing(compact ? 2.5 : 3),
   borderRadius: theme.shape.borderRadius,
   backgroundColor: theme.palette.background.paper,
   // Solid muted fills keep parchment text readable without showing the scene through.

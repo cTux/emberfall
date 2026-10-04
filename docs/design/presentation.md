@@ -16,6 +16,8 @@ Wardrobe composes controlled `ClassCard` components in one four-column row insid
 
 PartyCard displays nickname and level within a single HP meter, without a heading or MP meter. Its portrait and meter share the same theme height. Accessible host (top-right crown) and away-dimension (top-left door) icons overlay the portrait. Both clients supply matching class facesets; the new client calculates Power from each class loadout through characterStats.
 
+An optional controlled companion view adds a shorter, narrower HP row beneath the player inside PartyCard. Both clients supply the companion name, confirmed health and portrait from their existing companion sprite art. StatusMeter retains accessible health values at the compact size; no companion state or gameplay rules live in the UI package.
+
 ## Rendering pipeline and caches
 
 EquipmentPanel receives item badge labels, atlas keys, optional values and explanations

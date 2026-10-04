@@ -16,3 +16,9 @@ const meta = {
 export default meta;
 export const Playground: StoryObj<typeof meta> = {};
 export const HostAway: StoryObj<typeof meta> = { args: { away: true } };
+export const WithCompanion: StoryObj<typeof meta> = {
+  args: { companion: { name: "Bear", health: 75, maxHealth: 150, portrait: "🐻" } },
+};
+export const DefeatedCompanion: StoryObj<typeof meta> = {
+  args: { companion: { name: "Bear", health: 0, maxHealth: 150, portrait: "🐻" } },
+};
