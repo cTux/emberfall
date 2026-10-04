@@ -160,7 +160,10 @@ test("projectile and splash hits carry weapon metadata; ailments never criticall
     assert(arena.damage.length > 0);
     assert(
       arena.damage.every(
-        (hit) => hit.critical && hit.damageType === characterStats(player).damageType,
+        (hit) =>
+          hit.ownerId === player.id &&
+          hit.critical &&
+          hit.damageType === characterStats(player).damageType,
       ),
     );
     if (classId === "mage") assert(arena.damage.some((hit) => hit.amount === 1.5));
@@ -247,6 +250,7 @@ test("native protocol patches retain equipment and typed critical damage in deta
       y: 1280,
       at: 1000,
       amount: 4.5,
+      ownerId: "p",
       damageType: "fire",
       critical: true,
     },

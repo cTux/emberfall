@@ -4,7 +4,7 @@ import { drawDebuffs } from "../packages/client-new/src/combat-effects";
 import { statusImages } from "../packages/client-new/src/combat-assets";
 import { drawFog } from "../packages/client-new/src/forest";
 import { lightTexture } from "../packages/client-new/src/village";
-import { drawDamageNumber } from "../packages/client-new/src/damage-text";
+import { drawDamageNumber, drawDamageNumbers } from "../packages/client-new/src/damage-text";
 
 export async function compare() {
   await Promise.all(Object.values(statusImages).map((image) => image.decode()));
@@ -245,5 +245,44 @@ export async function compare() {
     }
     return { white, red };
   });
-  return { results, icons, lights, edges, damagePixels };
+  pixi.begin();
+  pixi.fillStyle = "#17251d";
+  pixi.fillRect(0, 0, 256, 256);
+  const groupedLabels: string[] = [];
+  const fillText = pixi.fillText.bind(pixi);
+  pixi.fillText = (text, x, y) => {
+    groupedLabels.push(String(text));
+    fillText(text, x, y);
+  };
+  drawDamageNumbers(
+    pixi as unknown as CanvasRenderingContext2D,
+    [
+      {
+        id: 1,
+        ownerId: "mage",
+        target: "enemy:1",
+        damageType: "fire",
+        amount: 3,
+        at: 1000,
+        x: 128,
+        y: 128,
+      },
+      {
+        id: 2,
+        ownerId: "mage",
+        target: "enemy:1",
+        damageType: "fire",
+        amount: 4.5,
+        critical: true,
+        at: 1010,
+        x: 128,
+        y: 128,
+      },
+    ],
+    (x, y) => ({ x, y }),
+    1010,
+  );
+  pixi.fillText = fillText;
+  pixi.present();
+  return { results, icons, lights, edges, damagePixels, groupedLabels };
 }

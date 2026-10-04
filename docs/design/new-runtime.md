@@ -130,6 +130,13 @@ carry their damage type and never reroll criticals; Bear remains physical. Armor
 mitigation applies to incoming player hits. Max HP/MP synchronize from equipment
 at authoritative lifecycle/tick boundaries and clamp current values.
 
+Enemy damage events carry optional `ownerId` from the authoritative hit path,
+including attributed ailments and companion hits, through the existing event
+payload. `damage-text.ts` groups detached events by owner, target and damage type
+in fixed 10 ms windows anchored to the first hit, shared by both render paths.
+It copies events for presentation, leaving combat events and other hit effects intact.
+Missing ownership bypasses grouping; any critical hit marks the displayed sum critical.
+
 The UI exports a controlled EquipmentPanel with positioned slot views and stat
 rows, with no game-package dependency. Client configuration maps slots to grid
 coordinates and fallback images, passing definitions/totals into the UI. The
