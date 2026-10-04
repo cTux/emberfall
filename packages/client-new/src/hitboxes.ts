@@ -18,6 +18,10 @@ import {
 import { COLLISION } from "@emberfall/common-new/definitions/collision";
 import { PICKUP_RULES } from "@emberfall/common-new/definitions/entities/pickups";
 import { ATTACK_DEFINITIONS } from "@emberfall/common-new/definitions/abilities/attacks";
+import {
+  PLAYER_BODY_RADIUS,
+  PLAYER_PROJECTILE_HIT_RADIUS,
+} from "@emberfall/common-new/definitions/entities/players";
 
 export type Hitbox = {
   x: number;
@@ -68,9 +72,16 @@ export function worldHitboxes(
     circle(
       player.x,
       player.y,
-      COLLISION.actorRadius,
+      PLAYER_PROJECTILE_HIT_RADIUS - COLLISION.enemyProjectileRadius,
       HITBOX_COLORS.body,
-      `body ${COLLISION.actorRadius}`,
+      `shot body ${(PLAYER_PROJECTILE_HIT_RADIUS - COLLISION.enemyProjectileRadius).toFixed(1)}`,
+    );
+    circle(
+      player.x,
+      player.y + COLLISION.feetOffset,
+      PLAYER_BODY_RADIUS,
+      HITBOX_COLORS.movement,
+      "feet (pass-through)",
     );
     if ((player.classId ?? "warrior") === "warrior") swing(player, defaultSpellRange(player));
     const bear = player.bear;
@@ -78,11 +89,11 @@ export function worldHitboxes(
       circle(
         bear.x,
         bear.y,
-        COLLISION.actorRadius,
+        COLLISION.companionRadius,
         HITBOX_COLORS.body,
-        `body ${COLLISION.actorRadius}`,
+        `body ${COLLISION.companionRadius}`,
       );
-      const radius = forest ? ENEMY_STATS.runner.radius : COLLISION.actorRadius;
+      const radius = forest ? ENEMY_STATS.runner.radius : COLLISION.companionRadius;
       circle(bear.x, bear.y + COLLISION.feetOffset, radius, HITBOX_COLORS.movement, "feet");
       swing(bear, PLAYER_ATTACK_RANGE);
     }

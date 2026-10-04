@@ -456,28 +456,6 @@ export function Arena({
         : undefined;
       const serverTime = view.serverNow ?? now;
       if (training) {
-        const damageByTarget = new Map(training.damage.map((hit) => [hit.target, hit]));
-        for (const dummy of training.enemies) {
-          if (environmentArt.naturalWidth) {
-            drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
-            const hit = damageByTarget.get(`enemy:${dummy.id}`);
-            if (hit)
-              drawTargetHit(
-                ctx,
-                spriteMask(environmentArt, 1, 2, false, 128, false, 128)!,
-                dummy.x - 24,
-                dummy.y - 30,
-                48,
-                48,
-                serverTime - hit.at,
-              );
-          }
-          ctx.fillStyle = "#152018";
-          ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
-          ctx.fillStyle = "#df7765";
-          ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
-          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
-        }
         drawLootAndBlood(ctx, training, serverTime, project, {
           x: cameraX,
           y: cameraY,
@@ -559,6 +537,7 @@ export function Arena({
           bear: null,
           critter: null,
           portal,
+          dummy: null,
         },
         ...visibleScenery.map((object) => ({
           y: object.y,
@@ -567,6 +546,7 @@ export function Arena({
           bear: null,
           critter: null,
           portal: null,
+          dummy: null,
         })),
         ...players.map((player) => ({
           y: player.y + 15,
@@ -575,17 +555,19 @@ export function Arena({
           bear: null,
           critter: null,
           portal: null,
+          dummy: null,
         })),
         ...players.flatMap((p) =>
           p.bear
             ? [
                 {
-                  y: p.bear.y + 15,
+                  y: p.bear.y + 18,
                   object: null,
                   player: null,
                   bear: p.bear,
                   critter: null,
                   portal: null,
+                  dummy: null,
                 },
               ]
             : [],
@@ -597,9 +579,49 @@ export function Arena({
           bear: null,
           critter,
           portal: null,
+          dummy: null,
+        })),
+        ...(training?.enemies ?? []).map((dummy) => ({
+          y: dummy.y + 15,
+          object: null,
+          player: null,
+          bear: null,
+          critter: null,
+          portal: null,
+          dummy,
         })),
       ].sort((a, b) => a.y - b.y);
+      const damageByTarget = new Map(training?.damage.map((hit) => [hit.target, hit]));
       for (const layer of layers) {
+        if (layer.dummy) {
+          const dummy = layer.dummy;
+          ctx.globalAlpha = obstacleOpacity(
+            { x: dummy.x, y: dummy.y + 15, width: 48, height: 48 },
+            local,
+          );
+          if (environmentArt.naturalWidth) {
+            drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
+            const hit = damageByTarget.get(`enemy:${dummy.id}`);
+            if (hit)
+              drawTargetHit(
+                ctx,
+                spriteMask(environmentArt, 1, 2, false, 128, false, 128)!,
+                dummy.x - 24,
+                dummy.y - 30,
+                48,
+                48,
+                serverTime - hit.at,
+              );
+          }
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = "#152018";
+          ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
+          ctx.fillStyle = "#df7765";
+          ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
+          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
+
+          continue;
+        }
         if (layer.portal) {
           drawPortal(
             ctx,
@@ -611,11 +633,14 @@ export function Arena({
             interaction.current?.id === "portal",
             quality.current.shadows,
             quality.current.wavingVegetation,
+            obstacleOpacity({ x: portal.x, y: portal.y + 8, width: 64, height: 80 }, local),
           );
           continue;
         }
         if (layer.critter) {
+          ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, local);
           drawCritter(ctx, layer.critter, quality.current.shadows);
+          ctx.globalAlpha = 1;
           continue;
         }
         if (layer.bear) {
@@ -626,6 +651,10 @@ export function Arena({
             layer.bear.y,
             view?.serverNow ?? now,
             quality.current.shadows,
+            obstacleOpacity(
+              { x: layer.bear.x, y: layer.bear.y + 18, width: 42.5, height: 40 },
+              local,
+            ),
           );
           continue;
         }
@@ -712,16 +741,16 @@ export function Arena({
         pos.x = player.x;
         pos.y = player.y;
         positions.set(player.id, pos);
-        ctx.strokeStyle = colors[player.color];
-        ctx.lineWidth = player.id === playerId ? 2 : 1;
-        ctx.beginPath();
-        ctx.ellipse(pos.x, pos.y + 15, 18, 8, 0, 0, Math.PI * 2);
-        ctx.stroke();
+        const opacity =
+          player.id === playerId
+            ? 1
+            : obstacleOpacity({ x: pos.x, y: pos.y + 15, width: 48, height: 48 }, local);
+        ctx.globalAlpha = opacity;
         if (knight.complete && knight.naturalWidth) {
           if (quality.current.motionBlur && moving) {
             // Sprite-only temporal samples keep HUD text and the world sharp.
             for (let sample = 3; sample > 0; sample--) {
-              ctx.globalAlpha = 0.09;
+              ctx.globalAlpha = 0.09 * opacity;
               ctx.drawImage(
                 knight,
                 pos.facing * ACTOR_CELL,
@@ -734,7 +763,7 @@ export function Arena({
                 48,
               );
             }
-            ctx.globalAlpha = 1;
+            ctx.globalAlpha = opacity;
           }
           ctx.drawImage(
             knight,
@@ -748,6 +777,7 @@ export function Arena({
             48 * idleBreath(now, spriteRow),
           );
         }
+        ctx.globalAlpha = 1;
         drawPlayerHealth(
           ctx,
           pos.x,

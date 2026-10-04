@@ -1,3 +1,7 @@
+import {
+  PLAYER_BODY_RADIUS,
+  PLAYER_PROJECTILE_HIT_RADIUS,
+} from "./definitions/entities/players.ts";
 import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
 import { BEAR_DEFINITION } from "./definitions/entities/companions.ts";
 import { ENEMY_RULES, BOSS_DEFINITIONS } from "./definitions/entities/enemies.ts";
@@ -345,7 +349,7 @@ export function movePlayer(player: Player, x: number, y: number, dt: number) {
     { x: player.x, y: player.y + 15 },
     (x / length) * ARENA.speed * dt,
     (y / length) * ARENA.speed * dt,
-    12,
+    PLAYER_BODY_RADIUS,
     false,
   );
   player.x = next.x;
@@ -612,7 +616,10 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
       const hit = combatants.find(
         (p) =>
           p.hitpoints > 0 &&
-          forestDistance(p, shot) <= COLLISION.actorRadius + COLLISION.enemyProjectileRadius,
+          forestDistance(p, shot) <=
+            ("returning" in p
+              ? COLLISION.companionRadius + COLLISION.enemyProjectileRadius
+              : PLAYER_PROJECTILE_HIT_RADIUS),
       );
       if (hit) {
         hurt(hit);

@@ -35,29 +35,45 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
           </TableRow>
         </TableHead>
         <TableBody>
-          {worlds.map((world) => (
-            <TableRow key={world.id} selected={world.id === selectedId}>
-              <TableCell sx={{ overflowWrap: "anywhere" }}>
-                <Button
-                  disabled={disabled || world.players >= world.capacity}
-                  onClick={() => onJoin(world)}
-                  sx={{ justifyContent: "flex-start", textAlign: "left", minWidth: 0, px: 0 }}
-                  aria-label={`Join ${world.name}${world.locked ? ", password protected" : ""}${world.players >= world.capacity ? ", full" : ""}, ${world.players}/${world.capacity}`}
-                  startIcon={
-                    world.locked ? <FontAwesomeIcon icon={faLock} aria-hidden="true" /> : undefined
-                  }
-                >
-                  {world.name}
-                </Button>
-              </TableCell>
-              <TableCell align="right">
-                {latency == null ? "—" : `${Math.round(latency)} ms`}
-              </TableCell>
-              <TableCell align="right">
-                {world.players}/{world.capacity}
-              </TableCell>
-            </TableRow>
-          ))}
+          {worlds.map((world) => {
+            const joinDisabled = disabled || world.players >= world.capacity;
+            return (
+              <TableRow
+                key={world.id}
+                selected={world.id === selectedId}
+                hover={!joinDisabled}
+                onClick={() => {
+                  if (!joinDisabled) onJoin(world);
+                }}
+                sx={{ cursor: joinDisabled ? "default" : "pointer" }}
+              >
+                <TableCell sx={{ overflowWrap: "anywhere" }}>
+                  <Button
+                    disabled={joinDisabled}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onJoin(world);
+                    }}
+                    sx={{ justifyContent: "flex-start", textAlign: "left", minWidth: 0, px: 0 }}
+                    aria-label={`Join ${world.name}${world.locked ? ", password protected" : ""}${world.players >= world.capacity ? ", full" : ""}, ${world.players}/${world.capacity}`}
+                    startIcon={
+                      world.locked ? (
+                        <FontAwesomeIcon icon={faLock} aria-hidden="true" />
+                      ) : undefined
+                    }
+                  >
+                    {world.name}
+                  </Button>
+                </TableCell>
+                <TableCell align="right">
+                  {latency == null ? "—" : `${Math.round(latency)} ms`}
+                </TableCell>
+                <TableCell align="right">
+                  {world.players}/{world.capacity}
+                </TableCell>
+              </TableRow>
+            );
+          })}
           {!worlds.length && (
             <TableRow>
               <TableCell colSpan={3} align="center" sx={{ py: 4 }}>

@@ -8,6 +8,39 @@ import {
   type WorldState,
 } from "../packages/common-new/src/index.ts";
 import { loadPreferences } from "../packages/client-new/src/preferences.ts";
+import {
+  INITIAL_PROGRESS,
+  PLAYER_BODY_RADIUS,
+  PLAYER_PROJECTILE_HIT_RADIUS,
+} from "../packages/common-new/src/definitions/entities/players.ts";
+import { COLLISION } from "../packages/common-new/src/definitions/collision.ts";
+
+test("player overlay preserves the reduced incoming-hit threshold and separate feet radius", () => {
+  const world: WorldState = {
+    id: "w",
+    hostId: "p",
+    name: "test",
+    players: [
+      {
+        ...INITIAL_PROGRESS,
+        id: "p",
+        name: "hero",
+        x: 100,
+        y: 100,
+        color: 0,
+        scene: "forest",
+      },
+    ],
+  };
+  const shapes = worldHitboxes(world, true, { x: 0, y: 0, width: 200, height: 200 });
+  const body = shapes.find((shape) => shape.color === HITBOX_COLORS.body)!;
+  assert("radius" in body);
+  assert.equal(body.radius + COLLISION.enemyProjectileRadius, PLAYER_PROJECTILE_HIT_RADIUS);
+  const feet = shapes.find((shape) => shape.label === "feet (pass-through)")!;
+  assert("radius" in feet);
+  assert.equal(feet.radius, PLAYER_BODY_RADIUS);
+  assert.equal(feet.y, 115);
+});
 
 test("debug setting defaults off and only accepts saved booleans", () => {
   const original = Object.getOwnPropertyDescriptor(globalThis, "localStorage");

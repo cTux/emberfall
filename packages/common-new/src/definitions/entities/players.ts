@@ -1,3 +1,7 @@
+// Player bodies are 70% of the original collision radii; artwork stays full size.
+export const PLAYER_BODY_RADIUS = 12 * 0.7;
+export const PLAYER_PROJECTILE_HIT_RADIUS = 17 * 0.7;
+
 export const CLASS_IDS = ["warrior", "ranger", "mage", "druid"] as const;
 export const CLASS_LABELS = {
   warrior: "Warrior",

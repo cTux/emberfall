@@ -23,6 +23,8 @@ Training definitions keep the 270-unit combat radius separate from the 135-unit
 vegetation clearing radius, preserving seeded tree placement. The client renders
 dummies without a zone fill or outline; shared wrapped geometry still gates attacks.
 
+Village dummies join the same foot-position render sort as scenery and actors. Actor bodies use the scenery overlap test against the reconciled local player, fading to 20% while in front; health bars keep full opacity. Shared player definitions own the reduced body and incoming-projectile hit radii.
+
 ## Simulation and replication
 
 Each party has one Miniplex simulation world. Components reference canonical
@@ -68,7 +70,11 @@ enemy, world, attack and pickup definitions. Body, feet, projectile and scenery
 shapes have distinct colors; orange labeled rings indicate action ranges rather
 than solid bodies. The preference defaults to false, lives in `emberfall-new.preferences`,
 and does not change server rules or client prediction. Player movement passes
-through scenery; bear/enemy feet shapes represent their scenery collision checks.
+through scenery; its feet circle is labeled as pass-through. Bear/enemy feet shapes
+represent their scenery collision checks. Player projectile-target bodies use the
+combined incoming-projectile hit threshold minus the incoming projectile radius,
+so the displayed circle sum reproduces the actual hit check independently of the
+player movement radius.
 `data-debug-hitboxes` reports the number of visible shapes for rendering diagnostics.
 Verification: [hitbox overlay tests](../../tests-new/hitboxes.spec.ts).
 
