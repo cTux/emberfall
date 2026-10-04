@@ -34,7 +34,6 @@ import {
   FOREST,
   wrap,
   wrappedDelta,
-  defaultSpellRange,
   LOBBY_PORTAL,
   TICK_MS,
   nearbyInteraction,
@@ -252,26 +251,6 @@ export function Arena({
       localMovement.input(x, y, performance.now());
     }
     const input = setInterval(sendMovement, TICK_MS);
-    function drawCursorRange(player: import("@emberfall/common-new").Player | undefined) {
-      if (!player || prefs.current.autoTarget || !pointer || player.hitpoints <= 0) return;
-      const scene = player.scene === "forest" ? latest.current?.scene : latest.current?.training;
-      if (scene?.phase !== "active" || (!player.scene && !inTrainingZone(player))) return;
-      const x = inputCamera.x + pointer.x * inputCamera.width;
-      const y = inputCamera.y + pointer.y * inputCamera.height;
-      const range = defaultSpellRange({ ...player, autoTarget: false });
-      if (Math.hypot(x - player.x, y - player.y) <= range) return;
-      const scale = element.width / inputCamera.width;
-      ctx.save();
-      ctx.setTransform(scale, 0, 0, scale, -inputCamera.x * scale, -inputCamera.y * scale);
-      ctx.fillStyle = "rgba(82, 237, 135, 0.08)";
-      ctx.strokeStyle = "rgba(82, 237, 135, 0.45)";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(player.x, player.y, range, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    }
     let frame = 0;
     let wardrobeOpenedAt = 0;
     let wardrobeActive = false;
@@ -431,7 +410,6 @@ export function Arena({
           delta,
           interaction.current,
         );
-        drawCursorRange(local);
         renderer.present();
         frame = requestAnimationFrame(draw);
         return;
@@ -840,7 +818,6 @@ export function Arena({
       if (quality.current.fog) drawFog(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
       drawAtmosphere(ctx, cameraX, cameraY, viewWidth, viewHeight, now, quality.current);
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
-      drawCursorRange(local);
       drawNavigation(ctx, view, playerId);
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
       renderer.present();
