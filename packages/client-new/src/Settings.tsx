@@ -34,6 +34,7 @@ export function Settings({
       | "damageNumbers"
       | "fps"
       | "latency"
+      | "debugHitboxes"
       | "sound"
       | "music",
     label: string,
@@ -78,6 +79,13 @@ export function Settings({
               {toggle("damageNumbers", "Floating damage numbers")}
               {toggle("fps", "FPS graph")}
               {toggle("latency", "Latency graph")}
+              {toggle("debugHitboxes", "Debug mode: show hitboxes")}
+              <Typography variant="caption" color="text.secondary">
+                Body hitboxes, scenery collisions and labeled interaction ranges. Decorative
+                entities have no hitboxes. Overlays follow displayed positions; the server decides
+                hits. Cyan: bodies. Green: terrain collision. Magenta: projectiles. Yellow: scenery.
+                Orange: ranges.
+              </Typography>
             </Stack>
           ),
         },

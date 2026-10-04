@@ -38,6 +38,14 @@ on the server, independently of local presentation preferences. See
 
 Settings groups are Gameplay, Graphics and Sound. Preferences persist locally; malformed or unavailable storage falls back to defaults. Gameplay includes auto-attack, auto-target, blood puddles, damage numbers and performance visibility. Audio has independent music/effects enable switches and volumes; defaults are 0.22 music and 0.35 effects.
 
+The new client's Gameplay settings include **Debug mode: show hitboxes**, disabled
+by default and persisted locally. It takes effect immediately in village, training
+and forest at every graphics preset. Show body and projectile hitboxes, separate
+feet/scenery collision shapes, and labeled attack, splash, collection and interaction
+ranges. Use simulation dimensions rather than sprite bounds. Decorative critters,
+blood, labels and particles have no hitboxes. Outlines follow displayed positions
+and wrapped camera geometry; authoritative server positions still decide hits.
+
 [FREE fantasy music by TimberwolfGames](https://timberwolfgames.itch.io/free-fantasy-music) supplies six CC0 tracks: Intro / Theme_001 (start), In The Woods / Adventure (village), and Trials / Wastelands (combat). Each two-track playlist repeats indefinitely and resumes its selection when returning to an area. Music crossfades between areas, starts after a user gesture, pauses in hidden tabs, and has independent enable/volume controls. Sampled effects use bounded voice pools and the existing CC0 Ninja Adventure pack. Original licenses and filenames are in `packages/client/public/audio/CREDITS.txt` and `CC0.txt`.
 
 ## UI-05 — Input and display details

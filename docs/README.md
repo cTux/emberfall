@@ -48,6 +48,10 @@ Server tests live in [packages/server/src](../packages/server/src), game browser
 
 ## Start here by task
 
+New-client hitbox debugging: [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music),
+[overlay design](design/new-runtime.md), [renderer](../packages/client-new/src/hitboxes.ts)
+and [browser verification](../tests-new/hitboxes.spec.ts).
+
 Steam login and account nicknames (new runtime):
 [CHAR-05](specs/characters.md#char-05--steam-accounts-and-nickname),
 [Account settings](specs/interface-and-audio.md#ui-04--settings-and-music), and
