@@ -11,7 +11,7 @@ import {
   artImages,
   artUrl,
 } from "./art";
-import { actorFrame, idleBreath } from "./animation";
+import { actorFrame, playerFrame, idleBreath } from "./animation";
 import { drawStonePortal, drawChimneySmoke, chimneyAnchors } from "./ambient-art";
 
 const names = [
@@ -57,8 +57,18 @@ export function AssetGallery() {
       actors.forEach((image, i) => {
         const x = 20 + (i % 5) * 235,
           y = 20 + Math.floor(i / 5) * 200;
-        const breath = idleBreath(clock, row);
-        drawArt(ctx, image, direction, row, x + 45, y + 144 * (1 - breath), 144, 144 * breath);
+        const actorRow =
+          i < 4
+            ? playerFrame(
+                action === "attack" ? clock % 780 : clock,
+                action === "walk",
+                action !== "fallen",
+                action === "attack" ? 0 : -Infinity,
+                600,
+              )
+            : row;
+        const breath = idleBreath(clock, actorRow);
+        drawArt(ctx, image, direction, actorRow, x + 45, y + 144 * (1 - breath), 144, 144 * breath);
         ctx.fillStyle = "#eedebc";
         ctx.fillText(names[i], x + 117, y + 169);
       });

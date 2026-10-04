@@ -1,5 +1,5 @@
 import { characterImages } from "./characters";
-import { ACTOR_CELL, actorFrame, enemyFrame, idleBreath } from "./animation";
+import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from "./animation";
 import { actorArt, environmentArt, terrainArt, terrainTile } from "./art";
 import { portalArt, drawStonePortal } from "./ambient-art";
 import { companionCaster, drawCompanion } from "./companion";
@@ -357,7 +357,7 @@ export function forestRenderer(
         const actorTime = actor.id === playerId ? now : serverTime;
         const point = near(pos.x, pos.y),
           row = actor.player
-            ? actorFrame(actorTime, moving, actor.player.hitpoints > 0, actor.player.attackAt)
+            ? playerFrame(actorTime, moving, actor.player.hitpoints > 0, actor.player.attackAt)
             : enemyFrame(
                 serverTime,
                 moving,
