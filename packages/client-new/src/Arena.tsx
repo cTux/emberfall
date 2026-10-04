@@ -756,9 +756,7 @@ export function Arena({
       if (training) {
         drawClassProjectiles(ctx, training, serverTime, project);
         if (prefs.current.damageNumbers)
-          for (const hit of training.damage) {
-            drawDamageNumber(ctx, hit, project(hit.x, hit.y), serverTime);
-          }
+          drawDamageNumbers(ctx, training.damage, project, serverTime);
       }
       if (quality.current.lighting) {
         ctx.save();
@@ -875,4 +873,4 @@ export function Arena({
     </>
   );
 }
-import { drawDamageNumber } from "./damage-text";
+import { drawDamageNumbers } from "./damage-text";

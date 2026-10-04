@@ -38,6 +38,13 @@ Diagonal facing retains its current valid axis near a 45-degree heading to preve
 
 Blood puddles have their own persistent gameplay toggle. Damage numbers and hit effects present server events; they cannot award damage or XP.
 
+In the new runtime, floating damage numbers combine hits from the same player to
+the same target with the same damage type within 10 ms of the first hit (inclusive),
+using server event timestamps. Each total keeps the first hit's position and
+lifetime, sums exact amounts before rounding, and uses critical styling if any hit
+was critical. Later hits start a new total; hits without player attribution remain
+separate. This applies in training and forest and does not alter damage or DPS.
+
 ## Acceptance
 
 In the new client, world text, chat bubbles, building/portal labels and navigation

@@ -7,6 +7,35 @@ export const DAMAGE_COLORS: Record<DamageType, string> = {
   nature: "#61dba3",
 };
 export const CRITICAL_TEXT_STYLE = { fill: "#ffffff", outline: "#d52b3f", width: 4 };
+
+/** Fixed windows prevent a rapid stream of hits from extending a number forever. */
+export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[] {
+  const totals: DamageEvent[] = [];
+  const latest = new Map<string, DamageEvent>();
+  for (const hit of [...hits].sort((a, b) => a.at - b.at)) {
+    const key = JSON.stringify([hit.ownerId, hit.target, hit.damageType ?? "physical"]);
+    const previous = hit.ownerId ? latest.get(key) : undefined;
+    if (previous && hit.at - previous.at <= 10) {
+      previous.amount += hit.amount;
+      previous.critical = previous.critical || hit.critical;
+    } else {
+      const total = { ...hit };
+      totals.push(total);
+      if (hit.ownerId) latest.set(key, total);
+    }
+  }
+  return totals;
+}
+
+export function drawDamageNumbers(
+  ctx: CanvasRenderingContext2D,
+  hits: readonly DamageEvent[],
+  project: (x: number, y: number) => { x: number; y: number },
+  now: number,
+) {
+  for (const hit of combineDamageNumbers(hits))
+    drawDamageNumber(ctx, hit, project(hit.x, hit.y), now);
+}
 /** Both combat areas render the same authoritative damage metadata. */
 export function drawDamageNumber(
   ctx: CanvasRenderingContext2D,

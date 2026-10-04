@@ -42,6 +42,7 @@ export function hitEnemy(
     x: enemy.x,
     y: enemy.y,
     amount: dealt,
+    ownerId: owner?.id,
     damageType,
     critical,
     at: now,

@@ -618,10 +618,7 @@ export function forestRenderer(
     drawAtmosphere(ctx, cameraX, cameraY, width, height, now, quality);
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near, true);
     if (quality.vignette) drawVignette(ctx, cameraX, cameraY, width, height);
-    if (prefs.damageNumbers)
-      for (const hit of world?.scene?.damage ?? []) {
-        drawDamageNumber(ctx, hit, near(hit.x, hit.y), serverTime);
-      }
+    if (prefs.damageNumbers) drawDamageNumbers(ctx, world?.scene?.damage ?? [], near, serverTime);
     drawDamageFlash(ctx, world, playerId);
     if (world) drawNavigation(ctx, world, playerId);
     for (const player of players) {
@@ -704,4 +701,4 @@ export function drawPlayerDetails(
     ctx.restore();
   }
 }
-import { drawDamageNumber } from "./damage-text";
+import { drawDamageNumbers } from "./damage-text";
