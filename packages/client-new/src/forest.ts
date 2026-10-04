@@ -1,6 +1,6 @@
 import { characterImages } from "./characters";
 import { ACTOR_CELL, actorFrame, enemyFrame, idleBreath } from "./animation";
-import { actorArt, environmentArt, drawBeltLantern, terrainArt, terrainTile } from "./art";
+import { actorArt, environmentArt, terrainArt, terrainTile } from "./art";
 import { portalArt, drawStonePortal } from "./ambient-art";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
@@ -668,7 +668,6 @@ export function drawPlayerDetails(
   showVitals = true,
 ) {
   if (showVitals) {
-    drawBeltLantern(ctx, x, y, facing, now);
     drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
   }
   const age = now - (p.attackAt ?? -Infinity);
