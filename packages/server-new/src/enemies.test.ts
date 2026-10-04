@@ -254,3 +254,38 @@ test("every tenth successful spawn is a 50 HP elite; timer spawns only one 200 H
   assert.equal(scene.phase, "active");
   assert.equal(scene.portals.length, 0);
 });
+
+test("player projectile hitboxes shrink to 70%, including wrapped boundaries", () => {
+  for (const wrapped of [false, true]) {
+    for (const gap of [11.8, 12, 16]) {
+      const p = player(wrapped ? 2 : 2400, 1280);
+      const scene: SceneState = {
+        id: "hitbox",
+        type: "Forest",
+        difficulty: "Easy",
+        phase: "active",
+        ready: [],
+        countdownAt: null,
+        endsAt: 1e9,
+        nextSpawn: 1e9,
+        sequence: 0,
+        damage: [],
+        portals: [],
+        enemies: [],
+        projectiles: [
+          {
+            id: 1,
+            x: wrapped ? FOREST.width + 2 - gap : p.x - gap,
+            y: p.y,
+            vx: 0,
+            vy: 0,
+            expiresAt: 20000,
+          },
+        ],
+      };
+      stepCombat(scene, [p], 10000, 0);
+      assert.equal(p.hitpoints, gap < 11.9 ? 90 : 100);
+      assert.equal(scene.projectiles!.length, gap < 11.9 ? 0 : 1);
+    }
+  }
+});

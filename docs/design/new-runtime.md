@@ -23,6 +23,8 @@ Training definitions keep the 270-unit combat radius separate from the 135-unit
 vegetation clearing radius, preserving seeded tree placement. The client renders
 dummies without a zone fill or outline; shared wrapped geometry still gates attacks.
 
+Village dummies join the same foot-position render sort as scenery and actors. Actor bodies use the scenery overlap test against the reconciled local player, fading to 20% while in front; health bars keep full opacity. Shared player definitions own the reduced body and incoming-projectile hit radii.
+
 ## Simulation and replication
 
 Each party has one Miniplex simulation world. Components reference canonical
