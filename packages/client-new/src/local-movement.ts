@@ -286,8 +286,14 @@ export class LocalMovement {
     // distance already flown, remaining range, heading and authoritative identity.
     const adopt = (shot: PlayerShot) => ({
       ...shot,
-      x: wrap(shot.x + wrappedDelta(player.x, this.base!.x, FOREST.width), FOREST.width),
-      y: wrap(shot.y + wrappedDelta(player.y, this.base!.y, FOREST.height), FOREST.height),
+      x:
+        shot.kind === "roots" && shot.hitIds.length
+          ? shot.x
+          : wrap(shot.x + wrappedDelta(player.x, this.base!.x, FOREST.width), FOREST.width),
+      y:
+        shot.kind === "roots" && shot.hitIds.length
+          ? shot.y
+          : wrap(shot.y + wrappedDelta(player.y, this.base!.y, FOREST.height), FOREST.height),
       confirmedId: shot.id,
       hitIds: [...shot.hitIds],
     });
@@ -329,8 +335,10 @@ export class LocalMovement {
           matched.add(serverShot.id);
           shot.id = serverShot.id;
           shot.confirmedId = serverShot.id;
-          // Render server-confirmed bounces through snapshot interpolation.
-          if (serverShot.kind === "roots" && serverShot.hitIds.length === 1) return false;
+          // Keep the same visual through every server-confirmed turn.
+          if (serverShot.kind === "roots" && serverShot.hitIds.length > shot.hitIds.length) {
+            Object.assign(shot, serverShot, { hitIds: [...serverShot.hitIds] });
+          }
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
@@ -339,7 +347,7 @@ export class LocalMovement {
         }
         // Buffered enemies are behind the local shot's clock. They must not
         // invent an impact that hides a projectile the server still has alive.
-        advancePlayerShot(shot, [], dt);
+        advancePlayerShot(shot, confirmed?.enemies ?? [], dt, undefined, false);
         return shot.remaining > 0.001;
       });
       if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
@@ -354,11 +362,7 @@ export class LocalMovement {
         if (known.length) {
           this.shots.push(
             ...known
-              .filter(
-                (shot) =>
-                  !(shot.kind === "roots" && shot.hitIds.length === 1) &&
-                  !this.shots.some((existing) => existing.confirmedId === shot.id),
-              )
+              .filter((shot) => !this.shots.some((existing) => existing.confirmedId === shot.id))
               .map(adopt),
           );
           this.shotCastAt = this.attackAt;
@@ -374,7 +378,6 @@ export class LocalMovement {
         confirmed?.playerShots?.filter(
           (s) =>
             s.ownerId === player.id &&
-            !(s.kind === "roots" && s.hitIds.length === 1) &&
             s.castAt !== undefined &&
             s.castAt > this.shotCastAt &&
             (s.castId === undefined || !this.casts.has(s.castId)),
@@ -387,9 +390,7 @@ export class LocalMovement {
     }
     // Only replace our projectiles; other players retain snapshot interpolation.
     scene.playerShots = [
-      ...(scene.playerShots ?? []).filter(
-        (s) => s.ownerId !== player.id || (s.kind === "roots" && s.hitIds.length === 1),
-      ),
+      ...(scene.playerShots ?? []).filter((s) => s.ownerId !== player.id),
       ...this.shots.map((s) => ({ ...s })),
     ];
   }

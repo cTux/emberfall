@@ -33,6 +33,6 @@ export const classDetails: Record<
       "A nature staff. Its starting spell fires two root projectiles. The Druid also has a permanent companion named Bear.",
     spell: "Roots",
     spellDescription:
-      "Fire two projectiles; each bounces once to the nearest other enemy. Both hits deal full power. Roots slow ordinary enemies by 10% for 5 seconds with one stack; hits refresh the duration. Bosses take damage but are immune to roots. Range: 250 units with auto-target, 1,000 with cursor aim. Cooldown: 1 second. Bear has 1.5× your maximum HP and claws for 2 damage per enemy per swing. It returns after 5 seconds when defeated.",
+      "Fire one continuous projectile that bounces up to three times to the nearest unhit enemy within 250 units of each impact. Every hit deals full power. Roots slow ordinary enemies by 10% for 5 seconds with one stack; hits refresh the duration. Bosses take damage but are immune to roots. Range: 250 units with auto-target, 1,000 with cursor aim. Cooldown: 1 second. Bear has 1.5× your maximum HP and claws for 2 damage per enemy per swing. It returns after 5 seconds when defeated.",
   },
 };

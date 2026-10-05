@@ -140,7 +140,7 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
       wrappedDelta(destination.y, player.y, FOREST.height),
       wrappedDelta(destination.x, player.x, FOREST.width),
     );
-    const count = 2;
+    const count = player.classId === "druid" ? 1 : 2;
     for (let index = 0; index < count; index++) {
       scene.playerShots.push({
         id: ++scene.sequence,
@@ -168,8 +168,10 @@ export function advancePlayerShot(
   enemies: Enemy[],
   dt: number,
   onStep?: () => void,
+  detectHits = true,
 ) {
-  if (shot.kind === "roots" && shot.hitIds.length === 1) {
+  let travelLimit = shot.remaining;
+  if (shot.kind === "roots" && shot.hitIds.length > 0) {
     const target = enemies.find((enemy) => enemy.id === shot.targetId && enemy.hitpoints > 0);
     if (!target) {
       shot.remaining = 0;
@@ -181,15 +183,17 @@ export function advancePlayerShot(
       wrappedDelta(destination.x, shot.x, FOREST.width),
     );
     shot.remaining = forestDistance(shot, destination) + 64;
+    // Hold at the target while waiting for the next authoritative bounce.
+    travelLimit = detectHits ? shot.remaining : forestDistance(shot, destination);
   }
-  const distance = Math.min(shot.remaining, Math.max(0, dt) * (shot.kind === "arrow" ? 600 : 380));
+  const distance = Math.min(travelLimit, Math.max(0, dt) * (shot.kind === "arrow" ? 600 : 380));
   const steps = Math.max(1, Math.ceil(distance / 6));
   for (let i = 0; i < steps; i++) {
     shot.x = wrap(shot.x + (Math.cos(shot.angle) * distance) / steps, FOREST.width);
     shot.y = wrap(shot.y + (Math.sin(shot.angle) * distance) / steps, FOREST.height);
     shot.remaining -= distance / steps;
     onStep?.();
-    if (shot.kind !== "arrow") {
+    if (detectHits && shot.kind !== "arrow") {
       const hit = enemies.find(
         (enemy) =>
           enemy.hitpoints > 0 &&
@@ -236,9 +240,14 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
         if (target) {
           hitEnemy(scene, target, 3, owner, now);
           if (target.hitpoints > 0) applyRoots(target, owner.id, now);
-          if (shot.hitIds.length === 1) {
+          if (shot.hitIds.length <= 3) {
             const next = scene.enemies
-              .filter((enemy) => enemy.hitpoints > 0 && !shot.hitIds.includes(enemy.id))
+              .filter(
+                (enemy) =>
+                  enemy.hitpoints > 0 &&
+                  !shot.hitIds.includes(enemy.id) &&
+                  forestDistance(target, enemy) <= 250,
+              )
               .reduce<Enemy | undefined>(
                 (best, enemy) =>
                   !best || forestDistance(target, enemy) < forestDistance(target, best)

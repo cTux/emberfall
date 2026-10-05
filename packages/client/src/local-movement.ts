@@ -307,14 +307,19 @@ export class LocalMovement {
           if (!serverShot) return false;
           matched.add(serverShot.id);
           shot.id = serverShot.id;
-          // Render server-confirmed bounces through snapshot interpolation.
-          if (serverShot.kind === "roots" && serverShot.hitIds.length === 1) return false;
+          // Keep the same visual through every server-confirmed turn.
+          if (serverShot.kind === "roots" && serverShot.hitIds.length > shot.hitIds.length) {
+            Object.assign(shot, serverShot, { hitIds: [...serverShot.hitIds] });
+          }
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
           shot.angle = serverShot.angle;
         }
-        return !advancePlayerShot(shot, scene.enemies, dt) && shot.remaining > 0.001;
+        if (shot.kind === "roots") {
+          advancePlayerShot(shot, confirmed?.enemies ?? [], dt, undefined, false);
+        } else if (advancePlayerShot(shot, scene.enemies, dt)) return false;
+        return shot.remaining > 0.001;
       });
       if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
         const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
@@ -327,20 +332,22 @@ export class LocalMovement {
         confirmed?.playerShots?.filter(
           (s) =>
             s.ownerId === player.id &&
-            !(s.kind === "roots" && s.hitIds.length === 1) &&
             s.castAt !== undefined &&
             s.castAt > this.shotCastAt &&
             (s.castId === undefined || !this.casts.has(s.castId)),
         ) ?? [];
       for (const shot of missed)
-        this.shots.push({ ...shot, x: player.x, y: player.y, hitIds: [...shot.hitIds] });
+        this.shots.push({
+          ...shot,
+          x: shot.kind === "roots" && shot.hitIds.length ? shot.x : player.x,
+          y: shot.kind === "roots" && shot.hitIds.length ? shot.y : player.y,
+          hitIds: [...shot.hitIds],
+        });
       if (missed.length) this.shotCastAt = Math.max(...missed.map((s) => s.castAt!));
     }
     // Only replace our projectiles; other players retain snapshot interpolation.
     scene.playerShots = [
-      ...(scene.playerShots ?? []).filter(
-        (s) => s.ownerId !== player.id || (s.kind === "roots" && s.hitIds.length === 1),
-      ),
+      ...(scene.playerShots ?? []).filter((s) => s.ownerId !== player.id),
       ...this.shots.map((s) => ({ ...s })),
     ];
   }

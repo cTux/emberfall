@@ -154,6 +154,7 @@ export function drawClassProjectiles(
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(shot.angle);
+    if (shot.kind === "roots") ctx.scale(0.5, 0.5);
     if (shot.kind === "arrow") {
       ctx.strokeStyle = "#92d89c";
       ctx.lineWidth = 2;
