@@ -32,6 +32,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   await physicalI();
   await expect(dialog).toBeVisible();
   await expect(dialog.locator("[data-equipment-slot]")).toHaveCount(9);
+  await expect(dialog).not.toContainText(/mana/i);
   await expect(dialog.locator('[data-equipped="true"]')).toHaveCount(1);
   await expect(dialog.getByRole("region", { name: "Character stats" })).toContainText("150%");
   await physicalI("i", true);
@@ -154,9 +155,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     const effect = { warrior: "bleed", ranger: "poison", mage: "burn", druid: "roots" }[classId];
     await page.locator(`[data-equipment-badge="${effect}"]`).last().hover();
     await expect(page.getByRole("tooltip").last()).toContainText(
-      classId === "druid"
-        ? "Bosses take damage but remain mobile"
-        : "new stacks refresh the duration",
+      classId === "druid" ? "Bosses are immune to roots." : "new stacks refresh the duration",
     );
     const stats = dialog.getByRole("region", { name: "Character stats" });
     const automaticRange = { warrior: 88, ranger: 1000, mage: 250, druid: 250 }[classId];
@@ -202,9 +201,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect(dialog.getByText("Damage reduction", { exact: true })).toBeVisible();
     await dialog.locator('[data-equipment-slot="weapon"]').hover();
     await page.getByRole("button", { name: "Roots", exact: true }).hover();
-    await expect(page.getByRole("tooltip").last()).toContainText(
-      "Bosses take damage but remain mobile",
-    );
+    await expect(page.getByRole("tooltip").last()).toContainText("Bosses are immune to roots.");
     for (const tooltip of await page.getByRole("tooltip").all()) {
       const box = (await tooltip.boundingBox())!;
       expect(box.x).toBeGreaterThanOrEqual(0);

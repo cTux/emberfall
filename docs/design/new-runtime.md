@@ -153,8 +153,8 @@ carry equipment and typed/critical hit events without client stat messages.
 Weapon power replaces hardcoded direct damage; fire splash keeps its one-third
 ratio. A shared weapon-hit path rolls criticals on the server. Ailments explicitly
 carry their damage type and never reroll criticals; Bear remains physical. Armor
-mitigation applies to incoming player hits. Max HP/MP synchronize from equipment
-at authoritative lifecycle/tick boundaries and clamp current values.
+mitigation applies to incoming player hits. Max HP synchronizes from equipment
+at authoritative lifecycle/tick boundaries and clamps current health.
 
 Enemy damage events carry optional `ownerId` from the authoritative hit path,
 including attributed ailments and companion hits, through the existing event

@@ -78,8 +78,8 @@ const chapters = [
           When time runs out, a boss with 200 HP and a purple health bar arrives. Enemies keep
           spawning until it falls. Defeat it to clear the remaining enemies and open blue return
           portals near every player. Death lets you return immediately while your party continues.
-          Returning restores health and mana. Players joining during a run wait in the village. A
-          new scene can be created once everyone has returned.
+          Returning restores health. Players joining during a run wait in the village. A new scene
+          can be created once everyone has returned.
         </p>{" "}
       </>
     ),
@@ -95,8 +95,7 @@ const chapters = [
           movement and attack animation respond locally; the server validates movement and decides
           damage. Settings control floating damage numbers, FPS, vignette, graphics, music and sound
           effects. Your preferences and nickname stay in this browser. Server saves include XP,
-          health, mana and playtime; clearing browser storage loses the character key. No offline
-          mode.
+          health and playtime; clearing browser storage loses the character key. No offline mode.
         </p>{" "}
       </>
     ),
@@ -122,9 +121,9 @@ const chapters = [
           from close enemies, and tries to dodge attack warnings and incoming projectiles.
         </p>
         <p>
-          Level, experience, health, mana, and playtime are saved separately for each class under
-          your existing character identity. Existing progress belongs to Warrior. Talents are
-          planned for later.
+          Level, experience, health, and playtime are saved separately for each class under your
+          existing character identity. Existing progress belongs to Warrior. Talents are planned for
+          later.
         </p>
       </>
     ),

@@ -16,8 +16,6 @@ const world: WorldState = {
       scene: "forest",
       hitpoints: 100,
       maxHitpoints: 100,
-      manapoints: 50,
-      maxManapoints: 50,
       color: 0,
       level: 1,
       experience: 0,

@@ -16,8 +16,6 @@ test("boss HUD uses scaled health and updates on every snapshot", async ({ page 
         color: 0,
         hitpoints: 100,
         maxHitpoints: 100,
-        manapoints: 50,
-        maxManapoints: 50,
         level: 1,
         experience: 0,
         playtimeSeconds: 0,

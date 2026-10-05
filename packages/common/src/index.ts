@@ -43,11 +43,9 @@ export const progressSchema = z
     experience: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),
     hitpoints: z.number().finite().nonnegative(),
     maxHitpoints: z.number().finite().positive(),
-    manapoints: z.number().finite().nonnegative(),
-    maxManapoints: z.number().finite().positive(),
     playtimeSeconds: z.number().finite().nonnegative(),
   })
-  .refine((p) => p.hitpoints <= p.maxHitpoints && p.manapoints <= p.maxManapoints);
+  .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion("type", [
   z.object({

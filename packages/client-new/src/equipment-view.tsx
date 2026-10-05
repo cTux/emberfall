@@ -76,7 +76,6 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: "Critical chance", value: percent(stats.criticalChance) },
     { label: "Critical damage", value: percent(stats.criticalMultiplier) },
     { label: "Maximum health", value: number(stats.maxHitpoints) },
-    { label: "Maximum mana", value: number(stats.maxManapoints) },
     { label: "Armor", value: number(stats.armor) },
     { label: "Damage reduction", value: percent(stats.damageReduction) },
   ];

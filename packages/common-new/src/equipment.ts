@@ -90,7 +90,5 @@ export function characterStats(player: EquipmentOwner): CharacterStats {
 export function syncEquipmentVitals(player: Player) {
   const stats = characterStats(player);
   player.maxHitpoints = stats.maxHitpoints;
-  player.maxManapoints = stats.maxManapoints;
   player.hitpoints = Math.min(player.hitpoints, player.maxHitpoints);
-  player.manapoints = Math.min(player.manapoints, player.maxManapoints);
 }

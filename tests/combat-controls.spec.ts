@@ -20,8 +20,6 @@ test("combat toggles persist, hotkeys ignore dialogs, and pointer input casts wi
         scene: "forest",
         hitpoints: 100,
         maxHitpoints: 100,
-        manapoints: 50,
-        maxManapoints: 50,
         level: 1,
         experience: 0,
         playtimeSeconds: 0,

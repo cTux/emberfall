@@ -4,13 +4,13 @@ Status: implemented; CHAR-05 applies to the new runtime. Goal: Preserve characte
 
 ## CHAR-01 — Identity and recovery
 
-In the original runtime, a server-generated 256-bit bearer key in browser localStorage identifies the character; only its SHA-256 hash is stored in the database. Nicknames are not credentials. Clearing browser site data loses access to that character; there is no account recovery or cross-device login yet. Duplicate active sessions for the same character are rejected. The browser cannot write levels, XP, or stats. Failed loads do not silently reset characters; failed saves are reported and retried. Forest kills add 1 XP each; playtime also progresses. Dead characters revive on rejoining a village. Every return from a scene (return portal, death window, or leaving early) restores the returning player to maximum health and mana and their companion to maximum health immediately, clearing any pending companion resurrection. Bear has no mana stat.
+In the original runtime, a server-generated 256-bit bearer key in browser localStorage identifies the character; only its SHA-256 hash is stored in the database. Nicknames are not credentials. Clearing browser site data loses access to that character; there is no account recovery or cross-device login yet. Duplicate active sessions for the same character are rejected. The browser cannot write levels, XP, or stats. Failed loads do not silently reset characters; failed saves are reported and retried. Forest kills add 1 XP each; playtime also progresses. Dead characters revive on rejoining a village. Every return from a scene (return portal, death window, or leaving early) restores the returning player to maximum health and their companion to maximum health immediately, clearing any pending companion resurrection.
 
-New characters start at level 1 with 0 XP, 100/100 HP, 50/50 MP and 0 playtime. Level and XP are stored, but level advancement and talent effects are not implemented. Collecting XP currently requires no progression choice.
+New characters start at level 1 with 0 XP, 100/100 HP and 0 playtime. Level and XP are stored, but level advancement and talent effects are not implemented. Collecting XP currently requires no progression choice. Mana is not a character resource, equipment stat or UI element. Older saves discard obsolete mana fields without resetting other progress.
 
 ## CHAR-02 — Class selection
 
-The wardrobe opposite the village portal switches between warrior (default), ranger, mage, and druid, only while in lobby and outside the departure countdown. Existing character saves migrate to warrior; each class keeps independent level, XP, health, mana, playtime, and reserved talent data under the same character identity (the original browser token or new-runtime Steam account). Switching is server-validated by proximity and saved before it becomes visible.
+The wardrobe opposite the village portal switches between warrior (default), ranger, mage, and druid, only while in lobby and outside the departure countdown. Existing character saves migrate to warrior; each class keeps independent level, XP, health, playtime, and reserved talent data under the same character identity (the original browser token or new-runtime Steam account). Switching is server-validated by proximity and saved before it becomes visible.
 
 ## CHAR-03 — Save lifecycle
 
@@ -28,8 +28,8 @@ or manually changing items is outside its scope.
 
 All equipped items contribute to one shared stat calculation. Weapons supply
 power, attacks per second, automatic/manual range, damage type and critical stats;
-other gear can add power, cadence, range, health, mana and armor. Characters retain
-innate 100 maximum health and 50 maximum mana, plus gear bonuses. Armor starts at
+other gear can add power, cadence, range, health and armor. Characters retain
+innate 100 maximum health, plus gear bonuses. Armor starts at
 zero and mitigates incoming damage by `armor / (100 + armor)`. Unequipped
 characters cannot attack. The server owns equipment and combat results.
 
@@ -88,10 +88,10 @@ Steam acceptance:
 
 ## Acceptance — original identity and shared character behavior
 
-- Restart with the same character key preserves name and each class’s XP, level, HP/MP, playtime and reserved talent data.
+- Restart with the same character key preserves name and each class’s XP, level, HP, playtime and reserved talent data.
 - Older single-class saves load as Warrior; missing classes start fresh without overwriting existing class progress.
 - Class selection fails outside wardrobe range, in the forest or during departure countdown.
-- Returning by portal, early exit or death restores maximum HP/MP and an existing Bear, cancelling pending resurrection.
+- Returning by portal, early exit or death restores maximum HP and an existing Bear, cancelling pending resurrection.
 - A second live session cannot use the same character key. Missing/corrupt saves surface an error.
 - XP collection does not open an upgrade selector or block movement; see [PROG-01](progression.md#prog-01--uninterrupted-progression).
 

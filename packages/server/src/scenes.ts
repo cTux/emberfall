@@ -27,7 +27,6 @@ export function returnToLobby(world: SceneWorld, player: Player) {
   player.x = 480;
   player.y = 360;
   player.hitpoints = player.maxHitpoints;
-  player.manapoints = player.maxManapoints;
   player.attackAt = undefined;
   player.attackAngle = undefined;
   if (player.bear) {

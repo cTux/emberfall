@@ -6,7 +6,9 @@ import { join } from "node:path";
 import { once } from "node:events";
 import { WebSocket } from "ws";
 import type { ServerMessage } from "@emberfall/common";
-import { CharacterStore } from "./characters.ts";
+import { DatabaseSync } from "node:sqlite";
+import { CLASS_IDS } from "@emberfall/common";
+import { CharacterStore, freshProgress } from "./characters.ts";
 import { createGameServer } from "./worlds.ts";
 
 test("server saves survive restart, authenticate independently of nickname, and reject forged progress", async () => {
@@ -76,7 +78,6 @@ test("server saves survive restart, authenticate independently of nickname, and 
       level: 4,
       experience: 321,
       hitpoints: 77,
-      manapoints: 14,
     });
     assert.throws(() => store.save(saved.id, "Hero", { ...saved.progress, level: -1 }));
     assert.throws(() => store.load("0".repeat(64)));
@@ -101,7 +102,8 @@ test("server saves survive restart, authenticate independently of nickname, and 
     assert.equal(player.level, 4);
     assert.equal(player.experience, 321);
     assert.equal(player.hitpoints, 77);
-    assert.equal(player.manapoints, 14);
+    assert(!("manapoints" in player));
+    assert(!("maxManapoints" in player));
     assert(player.playtimeSeconds >= 1);
     const stranger = await connect();
     stranger.send({
@@ -119,6 +121,51 @@ test("server saves survive restart, authenticate independently of nickname, and 
     for (const ws of clients) ws.terminate();
     await app.close();
     assert(directory.startsWith(join(tmpdir(), "emberfall-save-test-")));
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("old single-class and per-class saves discard mana without losing progress", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "emberfall-mana-removal-"));
+  const path = join(directory, "characters.sqlite");
+  const store = new CharacterStore(path);
+  const db = new DatabaseSync(path);
+  try {
+    const legacy = {
+      ...freshProgress(),
+      experience: 87.5,
+      hitpoints: 77,
+      manapoints: 14,
+      maxManapoints: 50,
+    };
+    for (const raw of [
+      legacy,
+      { classId: "mage", classes: Object.fromEntries(CLASS_IDS.map((id) => [id, legacy])) },
+    ]) {
+      const created = store.create("Hero");
+      db.prepare("UPDATE characters SET progress=? WHERE id=?").run(
+        JSON.stringify(raw),
+        created.id,
+      );
+      const loaded = store.load(created.token);
+      assert.equal(loaded.progress.experience, 87.5);
+      assert.equal(loaded.progress.hitpoints, 77);
+      for (const progress of Object.values(loaded.classes)) {
+        assert(!("manapoints" in progress));
+        assert(!("maxManapoints" in progress));
+      }
+      store.save(created.id, loaded.name, {
+        ...loaded.progress,
+        classId: loaded.classId,
+        classes: loaded.classes,
+      });
+      const saved = db.prepare("SELECT progress FROM characters WHERE id=?").get(created.id);
+      assert(saved);
+      assert(!/mana/i.test(String(saved.progress)));
+    }
+  } finally {
+    db.close();
+    store.close();
     await rm(directory, { recursive: true, force: true });
   }
 });

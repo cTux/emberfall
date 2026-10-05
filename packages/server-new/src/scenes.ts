@@ -31,7 +31,6 @@ export function returnToLobby(world: SceneWorld, player: Player) {
   player.x = VILLAGE_DEFINITION.returnSpawn.x;
   player.y = VILLAGE_DEFINITION.returnSpawn.y;
   player.hitpoints = player.maxHitpoints;
-  player.manapoints = player.maxManapoints;
   player.attackAt = undefined;
   player.attackAngle = undefined;
   if (player.bear) {
