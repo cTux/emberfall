@@ -106,7 +106,7 @@ test("manual confirmations with latency preserve flight and swing, correct aim a
       const confirmed = frame(movement, reply, 50 + delay, { ...controls, attacking: false });
       assert.equal(confirmed.started, false, "confirmation cannot repeat animation or sound");
       assert.equal(confirmed.player.attackAt, cast.player.attackAt);
-      assert.equal(confirmed.scene.playerShots!.length, 2);
+      assert.equal(confirmed.scene.playerShots!.length, classId === "druid" ? 1 : 2);
       assert(confirmed.scene.playerShots![0].x > flight.scene.playerShots![0].x);
       assert.equal(confirmed.scene.playerShots![0].targetId, undefined);
       assert.equal(requests.length, 1);
@@ -353,4 +353,47 @@ test("a server cast with a previously unseen target still launches at the displa
   assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 2);
   for (let now = 250; now <= 650; now += 50) frame(movement, reply, now);
   assert.equal(frame(movement, reply, 650).scene.playerShots!.length, 0);
+});
+
+test("a local root projectile remains visible through all confirmed bounces despite delayed snapshots", () => {
+  for (const training of [false, true]) {
+    const source = fixture("druid", training);
+    const scene = (training ? source.training : source.scene)!;
+    source.players[0].attackAt = 10000;
+    source.players[0].autoAttack = false;
+    fireClassAttack(scene, source.players[0], 10000);
+    const id = scene.playerShots![0].id;
+    const movement = new LocalMovement("p", () => {});
+    assert.equal(frame(movement, source, 0).scene.playerShots!.length, 1);
+    for (let bounce = 1; bounce <= 3; bounce++) {
+      const reply = structuredClone(source);
+      reply.serverNow! += bounce * 100;
+      const confirmed = (training ? reply.training : reply.scene)!;
+      const shot = confirmed.playerShots![0];
+      shot.x += bounce * 20;
+      shot.hitIds = Array.from({ length: bounce }, (_, i) => i + 10);
+      shot.targetId = confirmed.enemies[1].id;
+      movement.render(reply, bounce * 100);
+      for (let elapsed = 0; elapsed <= 60; elapsed += 20) {
+        // The buffered world can still have no projectile at the transition.
+        const buffered = structuredClone(reply);
+        const view = (training ? buffered.training : buffered.scene)!;
+        view.playerShots = [];
+        const player = movement.render(reply, bounce * 100 + elapsed)!;
+        movement.animateProjectiles(player, buffered, bounce * 100 + elapsed, false);
+        assert.equal(view.playerShots!.length, 1);
+        assert.equal(view.playerShots![0].id, id);
+        assert.deepEqual(view.playerShots![0].hitIds, shot.hitIds);
+        assert(view.playerShots![0].x >= shot.x);
+        assert(
+          confirmed.enemies.every((e) => e.hitpoints === 100),
+          "presentation never damages enemies",
+        );
+      }
+    }
+    const done = structuredClone(source);
+    done.serverNow! += 500;
+    (training ? done.training : done.scene)!.playerShots = [];
+    assert.equal(frame(movement, done, 500).scene.playerShots!.length, 0);
+  }
 });

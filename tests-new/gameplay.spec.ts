@@ -200,11 +200,12 @@ test("druid roots visibly bounce through authoritative training with one refresh
     .poll(
       () =>
         world.training!.playerShots!.some(
-          (shot) => shot.kind === "roots" && shot.hitIds.length === 1,
+          (shot) => shot.kind === "roots" && shot.hitIds.length === 3,
         ),
       { intervals: [20] },
     )
     .toBe(true);
+  await page.screenshot({ path: "test-results/druid-bounce-in-flight.png" });
   await expect
     .poll(
       () =>
@@ -212,7 +213,7 @@ test("druid roots visibly bounce through authoritative training with one refresh
           .length,
       { intervals: [50] },
     )
-    .toBeGreaterThanOrEqual(2);
+    .toBeGreaterThanOrEqual(4);
   for (const enemy of world.training!.enemies)
     for (const debuff of enemy.debuffs ?? []) {
       if (debuff.kind !== "roots") continue;

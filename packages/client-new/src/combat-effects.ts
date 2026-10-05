@@ -169,6 +169,7 @@ export function drawClassProjectiles(
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(shot.angle);
+    if (shot.kind === "roots") ctx.scale(0.5, 0.5);
     if (shot.kind === "arrow" && pickupArt.naturalWidth) {
       drawArt(ctx, pickupArt, Math.floor(now / 100) % 4, 0, -22, -22, 44, 44);
     } else if (shot.kind === "arrow") {

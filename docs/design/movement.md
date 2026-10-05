@@ -12,7 +12,7 @@ Older direction-only clients retain a 250 ms held-input timeout; a connection ca
 
 ## Stale state and performance
 
-Client rendering predicts local movement, sword presentation and local mage/ranger projectile visuals; it does not run enemy pathfinding or authoritative combat simulation. After one second without a fresh snapshot, walking animation, local attack animations and slash sounds stop, and predicted projectiles clear. Paused scenes also suppress local attacks. Fresh snapshots resume prediction from the server's swing phase without replaying missed swings. Attacks spend no mana, so mana rollback is not needed. Damage, roots, death and rewards remain authoritative; no hit rewind is performed. Presentation optimization and diagnostics are described in [presentation design](presentation.md).
+Client rendering predicts local movement, sword presentation and local mage/ranger/druid projectile visuals; it does not run enemy pathfinding or authoritative combat simulation. After one second without a fresh snapshot, walking animation, local attack animations and slash sounds stop, and predicted projectiles clear. Paused scenes also suppress local attacks. Fresh snapshots resume prediction from the server's swing phase without replaying missed swings. Attacks spend no mana, so mana rollback is not needed. Druid visuals retain one projectile through server-confirmed bounces, without switching to delayed snapshot rendering at impact. Shared motion steers the visual while hit detection is disabled; only server snapshots update hit history. Damage, roots, death and rewards remain authoritative; no hit rewind is performed. Presentation optimization and diagnostics are described in [presentation design](presentation.md).
 
 ## Ownership
 

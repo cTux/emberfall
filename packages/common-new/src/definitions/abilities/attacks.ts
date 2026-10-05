@@ -35,9 +35,10 @@ export const ATTACK_DEFINITIONS = {
     manualRange: 1000,
     speed: 380,
     damage: 3,
-    count: 2,
+    count: 1,
     spreadRadians: Math.PI / 30,
-    bounces: 1,
+    bounces: 3,
+    bounceRadius: 250,
     piercing: false,
   },
 } as const;
