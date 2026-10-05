@@ -4,7 +4,7 @@ export const BEAR_DEFINITION = {
   sprite: "/assets/companion-boar.png",
   healthMultiplier: 1.5,
   damageType: "physical",
-  range: 250,
+  range: 75,
   huntRadius: 200,
   spacing: 80,
   returnRadius: 20,

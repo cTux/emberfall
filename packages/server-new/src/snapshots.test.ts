@@ -141,7 +141,7 @@ test("boss defeat puts fixed return portals within reach of all scattered player
   assert.equal(scene.portals[0].x, 12, "portal must stay in the scene, not follow a player");
 });
 
-test("sword reaches 88 units in its forward semicircle, with unchanged damage", async () => {
+test("sword reaches 75 units in its forward semicircle, with unchanged damage", async () => {
   const player = { ...hero, scene: "forest" as const, x: 2400, y: 1280 };
   const scene: SceneState = {
     id: "range",
@@ -156,10 +156,10 @@ test("sword reaches 88 units in its forward semicircle, with unchanged damage", 
     damage: [],
     portals: [],
     enemies: [
-      { id: 1, x: 2480, y: 1280, hitpoints: 10, angle: 0 },
-      { id: 2, x: 2488, y: 1280, hitpoints: 10, angle: 0 },
-      { id: 3, x: 2513, y: 1280, hitpoints: 10, angle: 0 },
-      { id: 4, x: 2312, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 1, x: 2470, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 2, x: 2475, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 3, x: 2500, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 4, x: 2325, y: 1280, hitpoints: 10, angle: 0 },
     ],
   };
   stepCombat(scene, [player], 10000, 0);
@@ -171,7 +171,7 @@ test("sword reaches 88 units in its forward semicircle, with unchanged damage", 
 
 test("sword body overlap includes arc and diameter edges, and wraps across the forest seam", async () => {
   const p = { ...hero, scene: "forest" as const, x: 2400, y: 1280, attackAngle: 0 };
-  const enemy = { id: 1, x: p.x + 112, y: p.y + 6, hitpoints: 10, angle: 0 };
+  const enemy = { id: 1, x: p.x + 99, y: p.y + 6, hitpoints: 10, angle: 0 };
   assert(swordOverlapsEnemy(p, enemy));
   enemy.x += 1;
   assert(!swordOverlapsEnemy(p, enemy));

@@ -20,7 +20,9 @@ import {
   requestPlayerCast,
   stepCombat,
   clientMessage,
+  swordOverlapsEnemy,
 } from "@emberfall/common-new";
+import { enemyHitbox } from "../../common-new/src/hitboxes.ts";
 import type { Player, ClassId, GearDefinition, WorldState, Enemy } from "@emberfall/common-new";
 import {
   hitWithWeapon,
@@ -50,12 +52,29 @@ const scene = (training = true) => ({
   endsAt: 1e9,
 });
 
+test("Warrior and Bear use 75-unit melee geometry, including wrapped model boundaries", () => {
+  const player = hero();
+  const ranges = [defaultSpellRange(player), companionStats(hero("druid")).range];
+  for (const range of ranges) {
+    assert.equal(range, 75);
+    for (const wrapped of [false, true]) {
+      const actor = { x: wrapped ? 4790 : 2400, y: 1280, attackAngle: 0 };
+      const enemy = target();
+      enemy.y += actor.y - enemyHitbox(enemy).y;
+      enemy.x = (actor.x + range + enemyHitbox(enemy).radius) % 4800;
+      assert.equal(swordOverlapsEnemy(actor, enemy, range), true);
+      enemy.x += 0.01;
+      assert.equal(swordOverlapsEnemy(actor, enemy, range), false);
+    }
+  }
+});
+
 test("Bear inherits gear stats with physical damage, fixed range, health and bleed overrides", (t) => {
   const gear: GearDefinition = {
     id: "bear-test-ring",
     name: "Test ring",
     gearType: "ring",
-    stats: { power: 10, attacksPerSecond: 1, armor: 100, maxHitpoints: 20, maxManapoints: 30 },
+    stats: { power: 10, attacksPerSecond: 1, armor: 100, maxHitpoints: 20 },
   };
   GEAR_DEFINITIONS[gear.id] = gear;
   t.after(() => delete GEAR_DEFINITIONS[gear.id]);
@@ -70,13 +89,13 @@ test("Bear inherits gear stats with physical damage, fixed range, health and ble
     assert.deepEqual(stats, {
       ...characterStats(player),
       damageType: "physical",
-      range: 250,
-      manualRange: 250,
+      range: 75,
+      manualRange: 75,
       maxHitpoints: 180,
     });
     const arena = scene(training);
-    // A target inside the owner leash, but over 88 units from Bear.
-    arena.enemies[0].x = player.x + 190;
+    // A target whose model overlaps the 75-unit claw range.
+    arena.enemies[0].x = player.x + 80;
     tickCompanion(player, arena, 1000, 0);
     assert.equal(player.bear!.maxHitpoints, 180);
     assert.equal(arena.damage[0].amount, 13);
@@ -116,7 +135,7 @@ test("Bear critical and 10% bleed boundaries work in forest and training across 
       if (!training) player.scene = "forest";
       player.x = 5;
       const arena = scene(training);
-      arena.enemies[0].x = 4800 - 185;
+      arena.enemies[0].x = 4800 - 65;
       tickCompanion(player, arena, 1000, 0);
       assert.equal(arena.damage[0].critical, roll < 0.05);
       assert.equal(arena.damage[0].amount, roll < 0.05 ? 4.5 : 3);
@@ -135,7 +154,7 @@ test("Bear critical and 10% bleed boundaries work in forest and training across 
 
 test("every class starts with exactly its compatible weapon and preserves base stats", () => {
   const expected = {
-    warrior: [5, 88, "physical"],
+    warrior: [5, 75, "physical"],
     ranger: [5, 1000, "poison"],
     mage: [3, 250, "fire"],
     druid: [3, 250, "nature"],
@@ -209,13 +228,13 @@ test("all nine slots aggregate and gear controls real power, range, cadence and 
   }
   const stats = characterStats(player);
   assert.equal(stats.power, 13);
-  assert.equal(defaultSpellRange(player), 104);
+  assert.equal(defaultSpellRange(player), 91);
   assert.equal(stats.damageReduction, 0.5);
   syncEquipmentVitals(player);
   assert.equal(player.maxHitpoints, 140);
   const arena = scene(false);
   player.scene = "forest";
-  arena.enemies[0].x = player.x + 110;
+  arena.enemies[0].x = player.x + 97;
   tickPlayerCombat(arena, [player], 1000, 0.05);
   assert.equal(arena.enemies[0].hitpoints, 87, "extended sword range and summed power apply");
   const interval = stats.attackIntervalMs;

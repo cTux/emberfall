@@ -1,7 +1,7 @@
 export const ATTACK_DEFINITIONS = {
   slash: {
     id: "slash",
-    range: 88,
+    range: 75,
     damage: 5,
     intervalMs: 1000,
     durationMs: 260,
