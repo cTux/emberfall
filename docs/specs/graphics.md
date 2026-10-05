@@ -28,6 +28,10 @@ Decorative cats and chickens wander in the village; raccoons appear in the fores
 
 ## GRAPHICS-04 — Combat readability
 
+In the new client, all player projectiles (arrows, fireballs and Druid roots) have
+a thin, one-world-unit light-green silhouette outline in training and forest,
+at every graphics preset. Their class art, size, animation and flight remain intact.
+
 Active enemy debuffs appear as centered 16-unit icons with a 2-unit gap above the health bar, with only outlined stack counts in their lower-right corners. Roots use the same row instead of drawing vines at the feet. Expired effects disappear and an empty row takes no space. Weapons appear on living characters and animate with their existing attacks; outside combat, upward-facing characters carry their class weapon across their back, including when they stop after walking up. Other non-combat directions keep weapons hidden. Wardrobe choices show weapon and ability icons. Combat rules and network state are unchanged. Existing browser coverage checks all class assets, icon placement, expiry and stacks, plus back-weapon visibility for all four classes and movement directions.
 
 Portal voting lives inside the draggable portal window, with a compact control to reopen it. Prompts project each source's world coordinates through the camera, rather than sitting at the screen edge. Village and return portals have an animated blue pixel-ripple interior, a pale blue rim, and outward-drifting square motes. Bloom adds a soft blue glow; the surface remains visible with bloom disabled. Portal bodies and their fading blue motes draw before characters. At scene completion each player's nearby portal stays fixed where it spawned.

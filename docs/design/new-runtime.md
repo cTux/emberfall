@@ -224,6 +224,11 @@ changing interior pixels and moving smoke.
 
 ## Local effect alignment
 
+The shared training/forest projectile renderer bakes a light-green silhouette
+outline once per projectile art frame at its displayed size. It reuses the hit
+outline helper with a one-unit radius, draws the original art over it and caches
+the ten frames. Procedural fallbacks retain the same outline before art is ready.
+
 Movement's elapsed-time accumulator is monotonic across input handlers and RAF
 callbacks: a frame timestamp may predate `performance.now()` observed by an input
 event. Rewinding the accumulator double-counts time and grows the input backlog.

@@ -135,10 +135,10 @@ export function drawVignette(
   ctx.fillStyle = gradient;
   ctx.fillRect(x, y, width, height);
 }
-export function hitOutline(mask: HTMLCanvasElement) {
+export function hitOutline(mask: HTMLCanvasElement, color = "#ff3737", radius = 2) {
   const outline = document.createElement("canvas");
-  outline.width = mask.width + 4;
-  outline.height = mask.height + 4;
+  outline.width = mask.width + radius * 2;
+  outline.height = mask.height + radius * 2;
   const c = outline.getContext("2d")!;
   for (const [x, y] of [
     [0, 2],
@@ -150,12 +150,12 @@ export function hitOutline(mask: HTMLCanvasElement) {
     [1, 3],
     [3, 1],
   ])
-    c.drawImage(mask, x, y);
+    c.drawImage(mask, (x * radius) / 2, (y * radius) / 2);
   c.globalCompositeOperation = "source-in";
-  c.fillStyle = "#ff3737";
+  c.fillStyle = color;
   c.fillRect(0, 0, outline.width, outline.height);
   c.globalCompositeOperation = "destination-out";
-  c.drawImage(mask, 2, 2);
+  c.drawImage(mask, radius, radius);
   return outline;
 }
 const hitSprites = new WeakMap<

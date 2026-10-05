@@ -33,14 +33,13 @@ test("Pixi preserves transparent vignette centers and SVG debuff pixels", async 
   );
   await page.goto("/renderer-test");
   await page.addScriptTag({ content: code });
-  const { results, icons, lights, edges, damagePixels, groupedLabels } = await page.evaluate(
-    async () => {
+  const { results, icons, lights, edges, damagePixels, groupedLabels, projectilePixels } =
+    await page.evaluate(async () => {
       const fixture = (
         window as unknown as { RendererFixture: typeof import("./renderer-fixture") }
       ).RendererFixture;
       return fixture.compare();
-    },
-  );
+    });
   await page.screenshot({ path: "test-results/new-renderer-pixels.png" });
   expect(errors).toEqual([]);
   const shaftCenter = results["shaft center"].actual[0];
@@ -49,6 +48,9 @@ test("Pixi preserves transparent vignette centers and SVG debuff pixels", async 
     expect(results[edge].actual[0]).toBeLessThanOrEqual(129);
   expect(results["shaft after camera move"].actual).toEqual(results["shaft center"].actual);
   expect(groupedLabels).toEqual(["8"]);
+  expect(projectilePixels).toHaveLength(20);
+  for (const [index, count] of projectilePixels.entries())
+    expect(count, `projectile frame ${index}: ${projectilePixels.join(", ")}`).toBeGreaterThan(8);
   for (const { white, red } of damagePixels) {
     expect(white, "critical white fill survives Pixi rendering").toBeGreaterThan(3);
     expect(red, "critical red outline survives Pixi rendering").toBeGreaterThan(3);
