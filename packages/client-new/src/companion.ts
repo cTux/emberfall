@@ -1,5 +1,6 @@
 import { bearArt as image } from "./art";
-import { PLAYER_ATTACK_DURATION, PLAYER_ATTACK_RANGE } from "@emberfall/common-new";
+import { PLAYER_ATTACK_DURATION } from "@emberfall/common-new";
+import { BEAR_DEFINITION } from "@emberfall/common-new/definitions/entities/companions";
 import type { Bear } from "@emberfall/common-new";
 import { drawPlayerHealth, drawTargetHit } from "./effects";
 import { spriteMask } from "./lighting";
@@ -90,7 +91,7 @@ export function drawCompanion(
     ctx.lineWidth = 3;
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
-      ctx.arc(0, 0, PLAYER_ATTACK_RANGE - 5 - i * 7, -0.65, 0);
+      ctx.arc(0, 0, BEAR_DEFINITION.range - 5 - i * 7, -0.65, 0);
       ctx.stroke();
     }
   }

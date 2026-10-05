@@ -34,7 +34,10 @@ Warrior/Bear melee uses a smoothed forward half-disc and per-swing hit tracking.
 The new runtime shares `modelHitbox` in `common-new/hitboxes.ts` between authoritative combat and debug rendering. A model of size S has radius S/2 and center at (x, y + 15 - 7S/16), matching the sprite rectangle's center. Player and Bear models use S=48; enemies use their archetype size. Projectile overlap adds the projectile radius, and melee tests the model circle against the attack area. Feet remain movement coordinates and are omitted from the debug overlay.
 
 Player base attacks and Bear share a 1000 ms cooldown in both runtimes; the new
-runtime derives equipped attack timing from gear stats. UI shows the resulting
+runtime derives player and Bear attack timing from gear stats. `companionStats`
+inherits the owner's totals with physical damage, 250-unit range and 1.5× maximum
+HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% bleed,
+and enemy hit resolution applies the owner's armor. UI shows the resulting
 cooldown without also showing attacks per second.
 
 Balance numbers are maintained once in the [combat specification](../specs/combat.md), with executable constants in the common package. Do not fork separate class rules for training, forest or the client.

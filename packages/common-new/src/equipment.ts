@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { BEAR_DEFINITION } from "./definitions/entities/companions.ts";
 import {
   EQUIPMENT_SLOTS,
   SLOT_GEAR_TYPES,
@@ -91,4 +92,13 @@ export function syncEquipmentVitals(player: Player) {
   const stats = characterStats(player);
   player.maxHitpoints = stats.maxHitpoints;
   player.hitpoints = Math.min(player.hitpoints, player.maxHitpoints);
+}
+export function companionStats(player: Player): CharacterStats {
+  return {
+    ...characterStats(player),
+    damageType: BEAR_DEFINITION.damageType,
+    range: BEAR_DEFINITION.range,
+    manualRange: BEAR_DEFINITION.range,
+    maxHitpoints: player.maxHitpoints * BEAR_DEFINITION.healthMultiplier,
+  };
 }

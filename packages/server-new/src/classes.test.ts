@@ -290,7 +290,7 @@ test("roots slow ordinary enemies, bosses are immune, and root kills complete th
   assert(s.drops?.length);
 });
 
-test("bear swipes once per enemy per cycle for two damage, leashes, returns and resumes", async () => {
+test("bear swipes once per enemy per cycle for owner power, leashes, returns and resumes", async () => {
   const s = scene(),
     p: Player = { ...hero(), classId: "druid" };
   s.enemies = [enemy(1, 2440), enemy(2, 2460)];
@@ -300,22 +300,22 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
   assert.equal(bear.maxHitpoints, 150);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [98, 98],
+    [97, 97],
   );
   tickCompanion(p, s, 10050, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [98, 98],
+    [97, 97],
   );
   tickCompanion(p, s, 10999, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [98, 98],
+    [97, 97],
   );
   tickCompanion(p, s, 11000, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [96, 96],
+    [94, 94],
   );
   bear.x = p.x + 220;
   tickCompanion(p, s, 11400, 0.05);
@@ -331,7 +331,7 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
   tickCompanion(p, s, 12400, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [94, 94],
+    [91, 91],
   );
 });
 
@@ -379,7 +379,7 @@ test("Bear stops in claw range, backs away from close enemies, and preserves spa
   tickCompanion(p, s, 10000, 1);
   const bear = p.bear!;
   assert.equal(forestDistance(bear, e), 80);
-  assert.equal(e.hitpoints, 98);
+  assert.equal(e.hitpoints, 97);
   const stoppedX = bear.x;
   tickCompanion(p, s, 10050, 0.05);
   assert.equal(bear.x, stoppedX);
@@ -387,19 +387,19 @@ test("Bear stops in claw range, backs away from close enemies, and preserves spa
   e.x = bear.x + 20;
   tickCompanion(p, s, 10999, 0.05);
   assert.equal(bear.x, stoppedX, "hold the destination until one second has elapsed");
-  tickCompanion(p, s, 11000, 0.3);
+  tickCompanion(p, s, 11000, 0.4);
   assert.equal(forestDistance(bear, e), 80);
   assert(bear.x < stoppedX);
   assert.equal(bear.moving, true);
   p.x = 5;
   bear.x = FOREST.width - 20;
   e.x = 25;
-  tickCompanion(p, s, 12000, 0.25);
+  tickCompanion(p, s, 12000, 0.4);
   assert.equal(forestDistance(bear, e), 80);
-  assert.equal(e.hitpoints, 94);
+  assert.equal(e.hitpoints, 91);
 });
 
-test("Bear moves at 1.3 times player speed in forest and village", async () => {
+test("Bear moves at player speed in forest and village", async () => {
   for (const forest of [true, false]) {
     const p: Player = {
       ...hero(),
@@ -413,8 +413,7 @@ test("Bear moves at 1.3 times player speed in forest and village", async () => {
     const start = { x: p.bear!.x, y: p.bear!.y };
     tickCompanion(p, undefined, 10050, 0.05);
     assert(
-      Math.abs(Math.hypot(p.bear!.x - start.x, p.bear!.y - start.y) - ARENA.speed * 1.3 * 0.05) <
-        1e-6,
+      Math.abs(Math.hypot(p.bear!.x - start.x, p.bear!.y - start.y) - ARENA.speed * 0.05) < 1e-6,
     );
   }
 });
@@ -427,7 +426,7 @@ test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", async
     e = enemy(1, 2460);
   s.enemies = [e];
   e.attack = { startedAt: 11000, endsAt: 11500, x: bear.x, y: bear.y, radius: 40, ranged: false };
-  tickCompanion(p, s, 11000, 0.25);
+  tickCompanion(p, s, 11000, 0.4);
   assert(forestDistance(bear, e.attack) > e.attack.radius);
   e.attack = undefined;
   const safeX = bear.x;
@@ -439,10 +438,10 @@ test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", async
   assert.equal(bear.moving, false);
   bear.x = p.x;
   bear.y = p.y;
-  s.projectiles = [{ id: 2, x: bear.x - 40, y: bear.y, vx: 210, vy: 0, expiresAt: 14000 }];
+  s.projectiles = [{ id: 2, x: bear.x - 70, y: bear.y, vx: 210, vy: 0, expiresAt: 14000 }];
   tickCompanion(p, s, 12000, 0.05);
   assert(bear.y > p.y);
-  p.x = 2320;
+  p.x = 2280;
   p.attackAt = 1e6;
   for (let i = 1; i <= 8; i++) stepCombat(s, [p], 12000 + i * 50, 0.05);
   assert.equal(bear.hitpoints, 150);

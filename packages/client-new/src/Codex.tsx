@@ -123,10 +123,12 @@ const chapters = [
           250 units of each impact. All hits deal full power and apply one root stack, slowing
           ordinary enemies by 10% for five seconds. Further hits refresh the duration. Roots cause
           no damage over time and do not affect bosses. Bear has 1.5 times your maximum HP, strikes
-          with claws for 2 damage, and revives five seconds after death. It chases the nearest enemy
-          within 200 units of you, returns when more than 200 units away from you, and resumes
-          hunting once back at your side. Bear keeps an 80-unit gap for claw attacks, backs away
-          from close enemies, and tries to dodge attack warnings and incoming projectiles.
+          with physical claws reaching 250 units, inherits your power, attack speed, critical stats
+          and armor, and has a 10% chance per hit to inflict bleed. It revives five seconds after
+          death and moves at your speed. It chases the nearest enemy within 200 units of you,
+          returns when more than 200 units away from you, and resumes hunting once back at your
+          side. Bear keeps an 80-unit gap for claw attacks, backs away from close enemies, and tries
+          to dodge attack warnings and incoming projectiles.
         </p>
         <p>
           Level, experience, health, and playtime are saved separately for each class under your

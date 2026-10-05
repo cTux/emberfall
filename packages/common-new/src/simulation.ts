@@ -10,7 +10,6 @@ import { appendSceneEntities } from "./entities.ts";
 import { ATTACK_DEFINITIONS } from "./definitions/abilities/attacks.ts";
 import { RUNTIME } from "./definitions/runtime.ts";
 import {
-  hitEnemy,
   hitWithWeapon,
   tickDebuffs,
   fireClassAttack,
@@ -30,7 +29,7 @@ import {
 import { ARENA, moveActor, inTrainingZone } from "./world.ts";
 import type { Player, Bear, ClientMessage } from "./index.ts";
 import type { SceneState, Enemy } from "./scene.ts";
-import { characterStats } from "./equipment.ts";
+import { characterStats, companionStats } from "./equipment.ts";
 
 export const TICK_MS = RUNTIME.tickMs;
 export const PLAYER_ATTACK_RANGE = defaultSpellRange({ classId: "warrior" });
@@ -100,13 +99,7 @@ export function swordOverlapsEnemy(
   return distance <= body.radius + 1e-6;
 }
 
-function slash(
-  scene: SceneState,
-  actor: Player | Bear,
-  owner: Player,
-  now: number,
-  amount: number,
-) {
+function slash(scene: SceneState, actor: Player | Bear, owner: Player, now: number) {
   let swing = swordHits.get(actor);
   if (!swing || swing.at !== actor.attackAt || swing.sceneId !== scene.id) {
     swing = { sceneId: scene.id, at: actor.attackAt!, enemies: new Set() };
@@ -119,13 +112,13 @@ function slash(
       !swordOverlapsEnemy(
         actor,
         enemy,
-        actor === owner ? defaultSpellRange(owner) : PLAYER_ATTACK_RANGE,
+        actor === owner ? defaultSpellRange(owner) : BEAR_DEFINITION.range,
       )
     )
       continue;
     swing.enemies.add(enemy.id);
     if (actor === owner) hitWithWeapon(scene, enemy, owner, now, "bleed");
-    else hitEnemy(scene, enemy, amount, owner, now);
+    else hitWithWeapon(scene, enemy, owner, now, "bleed", 1, companionStats(owner));
   }
 }
 
@@ -294,7 +287,7 @@ export function tickCompanion(
     startY = bear.y;
   const destinationDistance = forestDistance(bear, destination);
   if (destination !== player || destinationDistance > BEAR_DEFINITION.returnRadius) {
-    const speed = BEAR_DEFINITION.speed;
+    const speed = ARENA.speed;
     if (forest) {
       const body: Enemy = {
         id: 1,
@@ -335,10 +328,14 @@ export function tickCompanion(
     bear.attackAt = undefined;
     return;
   }
-  if (bear.attackAt === undefined || now - bear.attackAt >= PLAYER_ATTACK_INTERVAL)
+  const stats = companionStats(player);
+  if (!stats.hasWeapon) {
+    bear.attackAt = undefined;
+    return;
+  }
+  if (bear.attackAt === undefined || now - bear.attackAt >= stats.attackIntervalMs)
     bear.attackAt = now;
-  if (now - bear.attackAt < PLAYER_ATTACK_DURATION)
-    slash(scene, bear, player, now, BEAR_DEFINITION.damage);
+  if (now - bear.attackAt < PLAYER_ATTACK_DURATION) slash(scene, bear, player, now);
 }
 
 export function movePlayer(player: Player, x: number, y: number, dt: number) {
@@ -534,7 +531,8 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
   moveEnemies(scene.enemies, combatants, dt, now);
   const hurt = (target: Player | Bear, damage: number = ENEMY_RULES.damage) => {
     if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) return;
-    const reduction = "returning" in target ? 0 : characterStats(target).damageReduction;
+    const owner = "returning" in target ? alive.find((p) => p.bear === target) : target;
+    const reduction = owner ? characterStats(owner).damageReduction : 0;
     damage = Math.min(target.hitpoints, damage * (1 - reduction));
     target.hitpoints = Math.max(0, target.hitpoints - damage);
     target.hurtAt = now;
@@ -728,7 +726,7 @@ export function tickPlayerCombat(scene: SceneState, alive: Player[], now: number
       }
       continue;
     }
-    slash(scene, player, player, now, stats.power);
+    slash(scene, player, player, now);
     if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
   }
   tickPlayerShots(scene, alive, now, dt);
