@@ -1,6 +1,7 @@
 import { TRANSIENT_EFFECTS } from "@emberfall/common-new/definitions/effects/transient";
 import { statusImages } from "./combat-assets";
 import { effectsArt, pickupArt, drawArt } from "./art";
+import { hitOutline } from "./effects";
 import type { SceneState, LootDrop, Enemy, DamageEvent } from "@emberfall/common-new";
 
 export function bloodPuddleRenderer() {
@@ -157,6 +158,45 @@ export function drawLootAndBlood(
   ctx.restore();
 }
 
+const projectileOutlines = new Map<string, HTMLCanvasElement>();
+function drawProjectileArt(
+  ctx: CanvasRenderingContext2D,
+  kind: "arrow" | "fireball" | "roots",
+  now: number,
+) {
+  const arrow = kind === "arrow";
+  const image = arrow ? pickupArt : effectsArt;
+  if (!image.naturalWidth || image.dataset.artReady !== "true") return false;
+  const column = Math.floor(now / 100) % (arrow ? 4 : 3);
+  const size = arrow ? 44 : kind === "roots" ? 24 : 48;
+  const key = `${kind}:${column}`;
+  let outlined = projectileOutlines.get(key);
+  if (!outlined) {
+    const sprite = document.createElement("canvas");
+    sprite.width = sprite.height = size;
+    const spriteContext = sprite.getContext("2d")!;
+    spriteContext.imageSmoothingEnabled = false;
+    drawArt(
+      spriteContext,
+      image,
+      column,
+      arrow ? 0 : kind === "roots" ? 3 : 2,
+      0,
+      0,
+      size,
+      size,
+      arrow ? 64 : 128,
+    );
+    outlined = hitOutline(sprite, "#baffaa", 1);
+    const outlineContext = outlined.getContext("2d")!;
+    outlineContext.globalCompositeOperation = "source-over";
+    outlineContext.drawImage(sprite, 1, 1);
+    projectileOutlines.set(key, outlined);
+  }
+  ctx.drawImage(outlined, -size / 2 - 1, -size / 2 - 1);
+  return true;
+}
+
 export function drawClassProjectiles(
   ctx: CanvasRenderingContext2D,
   scene: SceneState,
@@ -169,16 +209,24 @@ export function drawClassProjectiles(
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(shot.angle);
+    if (drawProjectileArt(ctx, shot.kind, now)) {
+      ctx.restore();
+      continue;
+    }
     if (shot.kind === "roots") ctx.scale(0.5, 0.5);
-    if (shot.kind === "arrow" && pickupArt.naturalWidth) {
-      drawArt(ctx, pickupArt, Math.floor(now / 100) % 4, 0, -22, -22, 44, 44);
-    } else if (shot.kind === "arrow") {
-      ctx.strokeStyle = "#92d89c";
-      ctx.lineWidth = 2;
+    ctx.strokeStyle = "#baffaa";
+    ctx.lineWidth = shot.kind === "roots" ? 2 : 1;
+    if (shot.kind === "arrow") {
+      ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(-22, 0);
       ctx.lineTo(9, 0);
       ctx.stroke();
+      ctx.strokeStyle = "#92d89c";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.strokeStyle = "#baffaa";
+      ctx.lineWidth = 1;
       ctx.fillStyle = "#edffe7";
       ctx.beginPath();
       ctx.moveTo(13, 0);
@@ -186,23 +234,13 @@ export function drawClassProjectiles(
       ctx.lineTo(5, 4);
       ctx.closePath();
       ctx.fill();
-    } else if (effectsArt.naturalWidth) {
-      drawArt(
-        ctx,
-        effectsArt,
-        Math.floor(now / 100) % 3,
-        shot.kind === "roots" ? 3 : 2,
-        -24,
-        -24,
-        48,
-        48,
-        128,
-      );
+      ctx.stroke();
     } else {
       ctx.fillStyle = shot.kind === "roots" ? "#56bc7277" : "#ef722977";
       ctx.beginPath();
       ctx.ellipse(-8, 0, 20, 7, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
       ctx.fillStyle = shot.kind === "roots" ? "#79db87" : "#ff9d36";
       ctx.beginPath();
       ctx.arc(0, 0, 8, 0, Math.PI * 2);
