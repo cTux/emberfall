@@ -62,8 +62,8 @@ export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
       ...BASE_CRITICAL_STATS,
       power: 5,
       attacksPerSecond: BASE_ATTACK_SPEED,
-      range: 88,
-      manualRange: 88,
+      range: ATTACK_DEFINITIONS.slash.range,
+      manualRange: ATTACK_DEFINITIONS.slash.range,
     },
   },
   "ranger-bow": {

@@ -35,7 +35,7 @@ The new runtime shares `modelHitbox` in `common-new/hitboxes.ts` between authori
 
 Player base attacks and Bear share a 1000 ms cooldown in both runtimes; the new
 runtime derives player and Bear attack timing from gear stats. `companionStats`
-inherits the owner's totals with physical damage, 250-unit range and 1.5× maximum
+inherits the owner's totals with physical damage, 75-unit range and 1.5× maximum
 HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% bleed,
 and enemy hit resolution applies the owner's armor. UI shows the resulting
 cooldown without also showing attacks per second.

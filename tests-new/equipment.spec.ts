@@ -60,7 +60,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     (await itemTooltip.locator(".MuiTooltip-tooltip").first().boundingBox())!.width,
   ).toBeLessThanOrEqual(236);
   await expect(itemTooltip.getByRole("button", { name: "Power: 5", exact: true })).toBeVisible();
-  await expect(itemTooltip.getByRole("button", { name: "Range: 88", exact: true })).toBeVisible();
+  await expect(itemTooltip.getByRole("button", { name: "Range: 75", exact: true })).toBeVisible();
   await expect(itemTooltip.getByRole("button", { name: "Cooldown: 1", exact: true })).toBeVisible();
   await expect(itemTooltip).not.toContainText("Deal 5 damage");
   const bleed = itemTooltip.getByRole("button", { name: "Bleed", exact: true });
@@ -150,7 +150,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     const badge = page.locator('[data-equipment-badge="range"]');
     await expect(badge).toHaveAttribute(
       "aria-label",
-      `Range: ${(classId === "warrior" ? 88 : classId === "ranger" ? 1000 : 250).toLocaleString("en")}`,
+      `Range: ${(classId === "warrior" ? 75 : classId === "ranger" ? 1000 : 250).toLocaleString("en")}`,
     );
     const effect = { warrior: "bleed", ranger: "poison", mage: "burn", druid: "roots" }[classId];
     await page.locator(`[data-equipment-badge="${effect}"]`).last().hover();
@@ -158,8 +158,8 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
       classId === "druid" ? "Bosses are immune to roots." : "new stacks refresh the duration",
     );
     const stats = dialog.getByRole("region", { name: "Character stats" });
-    const automaticRange = { warrior: 88, ranger: 1000, mage: 250, druid: 250 }[classId];
-    const manualRange = classId === "warrior" ? 88 : 1000;
+    const automaticRange = { warrior: 75, ranger: 1000, mage: 250, druid: 250 }[classId];
+    const manualRange = classId === "warrior" ? 75 : 1000;
     await expect(stats.getByText("Range", { exact: true })).toHaveCount(1);
     await expect(stats).toContainText(`Range${automaticRange.toLocaleString("en")} units`);
     await expect(stats).not.toContainText("Target range");
