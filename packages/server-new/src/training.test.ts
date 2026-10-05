@@ -41,7 +41,7 @@ test("boar leaves its wardrobe spawn, follows its owner and attacks training tar
   let bearHit = false;
   for (let now = 12050; now <= 16000; now += 50) {
     tickTraining(s, [p], now, 0.05);
-    bearHit ||= s.damage.some((hit) => hit.amount === 2);
+    bearHit ||= s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5);
   }
   assert(bearHit, "boar must chase and hit the dummy");
   assert.equal(p.experience, 0);
@@ -158,7 +158,7 @@ test("boar reaches a stationary dummy from every side and keeps landing tusk att
     assert(Math.abs(Math.hypot(bear.x - dummy.x, bear.y - dummy.y) - 80) < 1e-6);
     assert.equal(bear.moving, false);
     assert(p.dps! >= 1.2, "at least three boar hits, with player roots disabled");
-    assert(s.damage.some((hit) => hit.amount === 2));
+    assert(s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5));
     assert.equal(dummy.x, TRAINING_ZONES[0].x);
     assert.equal(dummy.y, TRAINING_ZONES[0].y);
   }

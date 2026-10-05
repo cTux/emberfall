@@ -11,11 +11,11 @@ import {
   forestTrees,
   wrappedDelta,
   defaultSpellRange,
-  PLAYER_ATTACK_RANGE,
   PLAYER_ATTACK_DURATION,
   type WorldState,
 } from "@emberfall/common-new";
 import { COLLISION } from "@emberfall/common-new/definitions/collision";
+import { BEAR_DEFINITION } from "@emberfall/common-new/definitions/entities/companions";
 import { PICKUP_RULES } from "@emberfall/common-new/definitions/entities/pickups";
 import { ATTACK_DEFINITIONS } from "@emberfall/common-new/definitions/abilities/attacks";
 import { modelHitbox, enemyHitbox } from "@emberfall/common-new/hitboxes";
@@ -72,7 +72,7 @@ export function worldHitboxes(
     if (bear && bear.hitpoints > 0) {
       const body = modelHitbox(bear);
       circle(body.x, body.y, body.radius, HITBOX_COLORS.body, "body");
-      swing(bear, PLAYER_ATTACK_RANGE);
+      swing(bear, BEAR_DEFINITION.range);
     }
   }
   for (const enemy of scene?.enemies ?? []) {

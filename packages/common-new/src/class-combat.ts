@@ -10,7 +10,7 @@ import { FOREST, forestDistance, wrappedDelta, wrap } from "./scene.ts";
 import { enemyHitbox, overlapsBody } from "./hitboxes.ts";
 import type { DebuffKind, Enemy, PlayerShot, SceneState } from "./scene.ts";
 import type { Player } from "./index.ts";
-import { characterStats } from "./equipment.ts";
+import { characterStats, type CharacterStats } from "./equipment.ts";
 import type { DamageType } from "./definitions/equipment.ts";
 
 const damageHistory = new WeakMap<Player, { at: number; amount: number }[]>();
@@ -136,9 +136,9 @@ export function hitWithWeapon(
   now: number,
   ailment?: DebuffKind,
   powerScale = 1,
+  stats: CharacterStats = characterStats(owner),
 ) {
   if (enemy.hitpoints <= 0) return;
-  const stats = characterStats(owner);
   if (!stats.hasWeapon) return;
   const critical = Math.random() < stats.criticalChance;
   hitEnemy(

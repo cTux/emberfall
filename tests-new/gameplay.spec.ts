@@ -73,7 +73,13 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
     if (classId === "druid") {
       await expect.poll(() => player.bear?.name).toBe("Bear");
       await expect
-        .poll(() => world.training!.damage.some((hit) => hit.amount === 2), { intervals: [50] })
+        .poll(
+          () =>
+            world.training!.damage.some(
+              (hit) => hit.damageType === "physical" && (hit.amount === 3 || hit.amount === 4.5),
+            ),
+          { intervals: [50] },
+        )
         .toBe(true);
       await expect
         .poll(() => forestDistance(player.bear!, world.training!.enemies[0]))
@@ -103,10 +109,11 @@ test("every wardrobe class trains through Colyseus, preserves health, and resume
   ).toBeVisible({ timeout: 15000 });
   await expect.poll(() => game.runtime.worlds.get(worldId)?.players.size).toBe(1);
   expect(game.runtime.worlds.get(worldId)!.players.get(id)?.classId).toBe("druid");
-  await expect(page.locator(".party article .portrait")).toHaveCSS(
-    "background-image",
-    /druid-portrait.png/,
-  );
+  await expect(
+    page
+      .getByRole("article", { name: "Class tester", exact: true })
+      .locator('img[src$="druid-portrait.png"]'),
+  ).toBeVisible();
   expect(errors).toEqual([]);
 });
 
