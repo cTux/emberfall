@@ -15,8 +15,6 @@ for (const forest of [true, false]) {
       color: 0,
       hitpoints: 100,
       maxHitpoints: 100,
-      manapoints: 50,
-      maxManapoints: 50,
       level: 1,
       experience: 0,
       playtimeSeconds: 0,

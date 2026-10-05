@@ -53,7 +53,7 @@ On each connection, the client checks `version.json` before resuming gameplay. A
 
 A key is 32 cryptographically random bytes encoded as 64 hex characters. Losing browser storage loses access; there is no account recovery. Raw keys are not stored in SQLite.
 
-Legacy progress JSON decodes into Warrior; missing classes get fresh progress. Current saves encode the selected `classId` and per-class progress map. Validation preserves fractional XP and constrains finite, nonnegative values and HP/MP maxima. Switching class saves the proposed new state before mutating the live player. No schema migration or runtime save change is part of the documentation rollout.
+Legacy progress JSON decodes into Warrior; missing classes get fresh progress. Current saves encode the selected `classId` and per-class progress map. Validation preserves fractional XP and constrains finite, nonnegative values and HP maxima. Switching class saves the proposed new state before mutating the live player. Both runtimes discard obsolete mana fields when decoding progress and omit them from new saves and snapshots; other class progress is preserved. No database schema migration is needed.
 
 ## Failure and verification
 

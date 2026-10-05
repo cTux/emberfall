@@ -6,7 +6,7 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 
 The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Original-runtime nicknames persist in browser localStorage; when storage is blocked that session still works. New-runtime nicknames belong to Steam accounts; see CHAR-05.
 
-Party cards show server-owned `Nickname, lvl N` inside the HP bar, with no heading or mana bar. The class portrait matches the bar height; a crown marks the host in its top-right corner and a dimension icon marks players in another area in its top-left corner. Icons retain accessible labels and away players stay dimmed. Thin health bars also appear beneath player names.
+Party cards show server-owned `Nickname, lvl N` inside the HP bar, with no heading. The class portrait matches the bar height; a crown marks the host in its top-right corner and a dimension icon marks players in another area in its top-left corner. Icons retain accessible labels and away players stay dimmed. Thin health bars also appear beneath player names.
 
 When a player has a battle companion, their party card shows a smaller portrait and HP bar directly below the player's row. It displays the companion's name and confirmed current/maximum HP, including zero HP while defeated, and disappears when the player no longer has a companion.
 

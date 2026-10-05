@@ -18,7 +18,7 @@ Open http://localhost:6006. `build` produces the static Storybook in `packages/u
 
 ## Visual contract
 
-One dark forest theme: green-black surfaces, parchment text, warm ember primary actions, green health, blue mana, red danger. Alegreya Sans matches the game and is bundled locally under the SIL Open Font License. No external font service, game art dependency, gradients or ornamental frames.
+One dark forest theme: green-black surfaces, parchment text, warm ember primary actions, green health, blue information, red danger. Alegreya Sans matches the game and is bundled locally under the SIL Open Font License. No external font service, game art dependency, gradients or ornamental frames.
 
 `gameTheme` owns palette, typography, spacing, corners and MUI defaults. Use semantic colors such as `primary.main`, `text.secondary`, `divider`, `success` and `info`. Use the theme's spacing scale and responsive breakpoints. Preserve focus rings, readable contrast, reduced motion, labels, loading and disabled states. This library deliberately provides one color scheme.
 

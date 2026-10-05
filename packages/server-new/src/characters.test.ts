@@ -6,7 +6,8 @@ import { join } from "node:path";
 import { once } from "node:events";
 import { WebSocket } from "./testing/socket.ts";
 import type { ServerMessage } from "@emberfall/common-new";
-import { CharacterStore } from "./characters.ts";
+import { CLASS_IDS } from "@emberfall/common-new";
+import { CharacterStore, freshProgress } from "./characters.ts";
 import { createGameServer } from "./worlds.ts";
 
 test("server saves survive restart, authenticate independently of nickname, and reject forged progress", async () => {
@@ -77,7 +78,6 @@ test("server saves survive restart, authenticate independently of nickname, and 
       level: 4,
       experience: 321,
       hitpoints: 77,
-      manapoints: 14,
       equipment: {},
     });
     assert.throws(() => store.save(saved.id, "Hero", { ...saved.progress, level: -1 }));
@@ -104,7 +104,8 @@ test("server saves survive restart, authenticate independently of nickname, and 
     assert.equal(player.level, 4);
     assert.equal(player.experience, 321);
     assert.equal(player.hitpoints, 77);
-    assert.equal(player.manapoints, 14);
+    assert(!("manapoints" in player));
+    assert(!("maxManapoints" in player));
     assert.deepEqual(
       player.equipment,
       {},
@@ -129,5 +130,47 @@ test("server saves survive restart, authenticate independently of nickname, and 
     await app.close();
     assert(directory.startsWith(join(tmpdir(), "emberfall-save-test-")));
     await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("old single-class and per-class saves discard mana without losing progress", async () => {
+  const store = new CharacterStore(":memory:");
+  await store.ready;
+  try {
+    const legacy = {
+      ...freshProgress(),
+      experience: 87.5,
+      hitpoints: 77,
+      manapoints: 14,
+      maxManapoints: 50,
+    };
+    for (const raw of [
+      legacy,
+      {
+        formatVersion: 1,
+        classId: "mage",
+        classes: Object.fromEntries(CLASS_IDS.map((id) => [id, legacy])),
+      },
+    ]) {
+      const created = store.create("Hero");
+      const save = (await store.database.saves.load(created.id))!;
+      await store.database.saves.save(created.id, raw, 0, save.version);
+      const loaded = store.load(created.token);
+      assert.equal(loaded.progress.experience, 87.5);
+      assert.equal(loaded.progress.hitpoints, 77);
+      for (const progress of Object.values(loaded.classes)) {
+        assert(!("manapoints" in progress));
+        assert(!("maxManapoints" in progress));
+      }
+      store.save(created.id, loaded.name, {
+        ...loaded.progress,
+        classId: loaded.classId,
+        classes: loaded.classes,
+      });
+      const saved = (await store.database.saves.load(created.id))!;
+      assert(!/mana/i.test(JSON.stringify(saved.data)));
+    }
+  } finally {
+    store.close();
   }
 });

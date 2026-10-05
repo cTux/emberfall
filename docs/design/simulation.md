@@ -43,7 +43,7 @@ Balance numbers are maintained once in the [combat specification](../specs/comba
 
 Count all forest members for party scaling, including dead members, but exclude village members and companions. When membership changes, adjust existing and pending enemies while preserving health percentage. Freeze an XP drop's amount at death; pickup distributes it to living forest players. Kill credit is a separate reward through the shared hit path. Training exits before granting kill rewards or creating drops.
 
-Scene entities, projectiles, drops, damage events, companion state and DPS history are temporary. Scene completion clears hostiles while leaving collectible rewards and fixed return portals. Returning to the village restores HP/MP and existing Bear health and clears pending resurrection.
+Scene entities, projectiles, drops, damage events, companion state and DPS history are temporary. Scene completion clears hostiles while leaving collectible rewards and fixed return portals. Returning to the village restores HP and existing Bear health and clears pending resurrection.
 
 ## Verification
 

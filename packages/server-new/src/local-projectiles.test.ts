@@ -49,8 +49,6 @@ function fixture(classId: Player["classId"] = "mage", training = false): WorldSt
         color: 0,
         hitpoints: 100,
         maxHitpoints: 100,
-        manapoints: 50,
-        maxManapoints: 50,
         level: 1,
         experience: 0,
         playtimeSeconds: 0,

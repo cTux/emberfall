@@ -24,8 +24,6 @@ const hero = (id: string): Player => ({
   experience: 0,
   hitpoints: 100,
   maxHitpoints: 100,
-  manapoints: 50,
-  maxManapoints: 50,
   playtimeSeconds: 0,
 });
 
@@ -155,7 +153,6 @@ test("empty and dead scenes freeze combat deadlines, resume on entry, and can re
   );
   sceneAction(world, b, { type: "leaveScene" }, 65000);
   a.hitpoints = 0;
-  a.manapoints = 0;
   sceneAction(world, c, { type: "createScene", scene: "Forest", difficulty: "Easy" }, 66000);
   assert.notEqual(world.scene!.id, scene.id);
   assert.equal(world.scene!.phase, "voting");
@@ -163,7 +160,6 @@ test("empty and dead scenes freeze combat deadlines, resume on entry, and can re
   assert.deepEqual(world.scene!.ready, []);
   assert.equal(a.scene, undefined);
   assert.equal(a.hitpoints, a.maxHitpoints);
-  assert.equal(a.manapoints, a.maxManapoints);
   for (const player of [a, b, c]) sceneAction(world, player, { type: "ready", ready: true }, 66000);
   tickScene(world, 71000, 0);
   for (const player of [a, b, c]) sceneAction(world, player, { type: "leaveScene" }, 71000);
@@ -241,9 +237,7 @@ test("every scene exit restores all classes and injured or dead companions to th
       }
       for (const player of players) {
         player.maxHitpoints = 120;
-        player.maxManapoints = 80;
         player.hitpoints = exit === "death" ? 0 : 12;
-        player.manapoints = 0;
         if (player.bear) {
           player.bear.maxHitpoints = 180;
           player.bear.hitpoints = bearHealth;
@@ -259,7 +253,6 @@ test("every scene exit restores all classes and injured or dead companions to th
         );
         assert.equal(player.scene, undefined);
         assert.equal(player.hitpoints, 120);
-        assert.equal(player.manapoints, 80);
         if (player.bear) {
           assert.equal(player.bear.hitpoints, 180);
           assert.equal(player.bear.resurrectAt, undefined);

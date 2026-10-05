@@ -40,7 +40,6 @@ export interface GearStats {
   criticalChance: number;
   criticalMultiplier: number;
   maxHitpoints: number;
-  maxManapoints: number;
   armor: number;
 }
 export interface GearDefinition {
@@ -122,6 +121,5 @@ export const INNATE_STATS: GearStats = {
   criticalChance: 0,
   criticalMultiplier: 0,
   maxHitpoints: 100,
-  maxManapoints: 50,
   armor: 0,
 };

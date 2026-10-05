@@ -93,7 +93,7 @@ resume that imported character. Do not put bearer keys in documentation or logs.
 Per-class progress includes equipment IDs. Decode migrates missing equipment to
 the correct starter weapon and validates slot/class compatibility. Explicitly empty
 loadouts stay empty. Class changes still save before live mutation; derived maximum
-HP/MP are synchronized and current resources clamped. No client equipment or stat
+HP is synchronized and current health clamped. No client equipment or stat
 mutation command is exposed by the inspection feature.
 
 Add content definitions and shared rules before adding command handlers. Keep

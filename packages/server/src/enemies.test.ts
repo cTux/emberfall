@@ -14,8 +14,6 @@ const player = (x: number, y: number): Player => ({
   scene: "forest",
   hitpoints: 100,
   maxHitpoints: 100,
-  manapoints: 50,
-  maxManapoints: 50,
   level: 1,
   experience: 0,
   playtimeSeconds: 0,

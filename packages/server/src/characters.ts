@@ -10,8 +10,6 @@ export const freshProgress = (): CharacterProgress => ({
   experience: 0,
   hitpoints: 100,
   maxHitpoints: 100,
-  manapoints: 50,
-  maxManapoints: 50,
   playtimeSeconds: 0,
   talents: {},
 });

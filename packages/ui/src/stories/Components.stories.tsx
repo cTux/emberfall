@@ -28,7 +28,6 @@ export const Meter: Story = {
   render: () => (
     <Stack spacing={2}>
       <StatusMeter label="Health" value={75} max={100} />
-      <StatusMeter label="Mana" value={20} max={50} color="info" />
       <StatusMeter label="Empty" value={0} max={100} />
       <StatusMeter label="Invalid maximum" value={50} max={0} />
       <StatusMeter label="Fractional" value={75.6} max={100.4} />

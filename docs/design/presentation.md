@@ -14,7 +14,7 @@ Use the existing theme → MUI defaults → colocated styled rules → small loc
 
 Wardrobe composes controlled `ClassCard` components in one four-column row inside a 600px `GameWindow`. Cards own layout and MUI tooltips; the client supplies portraits, weapon/spell descriptions, rounded class stats (level, XP, maximum HP and Power), selection state and callbacks. Only the selection button is disabled by selection, connection or countdown state. Tooltip buttons remain focusable. Window width is configurable without changing other dialogs. Matching Ninja Adventure facesets are shipped with the client and recorded in its asset notes.
 
-PartyCard displays nickname and level within a single HP meter, without a heading or MP meter. Its portrait and meter share the same theme height. Accessible host (top-right crown) and away-dimension (top-left door) icons overlay the portrait. Both clients supply matching class facesets; the new client calculates Power from each class loadout through characterStats.
+PartyCard displays nickname and level within a single HP meter, without a heading. Its portrait and meter share the same theme height. Accessible host (top-right crown) and away-dimension (top-left door) icons overlay the portrait. Both clients supply matching class facesets; the new client calculates Power from each class loadout through characterStats.
 
 An optional controlled companion view adds a shorter, narrower HP row beneath the player inside PartyCard. Both clients supply the companion name, confirmed health and portrait from their existing companion sprite art. StatusMeter retains accessible health values at the compact size; no companion state or gameplay rules live in the UI package.
 

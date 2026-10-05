@@ -9,8 +9,6 @@ test("fractional stats and damage render as whole numbers in wardrobe, HUD and b
     experience: Number("2760.3999999999944"),
     hitpoints: 75.6,
     maxHitpoints: 100.4,
-    manapoints: 20.4,
-    maxManapoints: 50.6,
     playtimeSeconds: 0,
   };
   const world: WorldState = {

@@ -18,8 +18,6 @@ test("warnings, enemy silhouettes, graphics controls and scene music work togeth
         color: 0,
         hitpoints: 100,
         maxHitpoints: 100,
-        manapoints: 50,
-        maxManapoints: 50,
         level: 1,
         experience: 0,
         playtimeSeconds: 0,

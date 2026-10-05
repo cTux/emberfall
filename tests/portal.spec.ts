@@ -166,8 +166,6 @@ test("village and return portals sort players by their feet, including forest wr
         color: 0,
         hitpoints: 100,
         maxHitpoints: 100,
-        manapoints: 50,
-        maxManapoints: 50,
         level: 1,
         experience: 0,
         playtimeSeconds: 0,

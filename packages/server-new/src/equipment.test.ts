@@ -115,7 +115,6 @@ test("all nine slots aggregate and gear controls real power, range, cadence and 
         manualRange: 2,
         armor: 12.5,
         maxHitpoints: 5,
-        maxManapoints: 2,
       },
     };
     player.equipment![slot] = id;
@@ -129,7 +128,6 @@ test("all nine slots aggregate and gear controls real power, range, cadence and 
   assert.equal(stats.damageReduction, 0.5);
   syncEquipmentVitals(player);
   assert.equal(player.maxHitpoints, 140);
-  assert.equal(player.maxManapoints, 66);
   const arena = scene(false);
   player.scene = "forest";
   arena.enemies[0].x = player.x + 110;
