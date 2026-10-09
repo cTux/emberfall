@@ -5,6 +5,7 @@ import {
   BUILDINGS,
   TORCHES,
   WARDROBE,
+  INNKEEPER,
   LOBBY_PORTAL,
   INTERACTION_RADIUS,
   ENEMY_STATS,
@@ -135,14 +136,22 @@ export function worldHitboxes(
         height: 40,
         color: HITBOX_COLORS.scenery,
       });
-      circle(
-        building.doorX,
-        building.y + 24 - COLLISION.feetOffset,
-        INTERACTION_RADIUS,
-        HITBOX_COLORS.range,
-        "interact",
-      );
+      if (building.id !== "inn")
+        circle(
+          building.doorX,
+          building.y + 24 - COLLISION.feetOffset,
+          INTERACTION_RADIUS,
+          HITBOX_COLORS.range,
+          "interact",
+        );
     }
+    circle(
+      INNKEEPER.x,
+      INNKEEPER.y - COLLISION.feetOffset,
+      INTERACTION_RADIUS,
+      HITBOX_COLORS.range,
+      "interact",
+    );
   }
   return shapes;
 }

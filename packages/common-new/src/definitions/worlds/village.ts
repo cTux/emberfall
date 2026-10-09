@@ -1,5 +1,6 @@
 export const ARENA = { width: 4800, height: 2560, speed: 180 } as const;
 export const WARDROBE = { x: 350, y: 365 };
+export const INNKEEPER = { id: "innkeeper", name: "Marta the Innkeeper", x: 285, y: 300 } as const;
 export const TRAINING_ZONES = [
   { x: 140, y: 355, radius: 270, clearingRadius: 135 },
   { x: 820, y: 355, radius: 270, clearingRadius: 135 },
@@ -76,6 +77,7 @@ export const VILLAGE_DEFINITION = {
   id: "village",
   geometry: ARENA,
   wardrobe: WARDROBE,
+  innkeeper: INNKEEPER,
   buildings: BUILDINGS,
   torches: TORCHES,
   trainingZones: TRAINING_ZONES,

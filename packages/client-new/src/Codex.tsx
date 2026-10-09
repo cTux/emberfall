@@ -14,11 +14,11 @@ const chapters = [
           enabled. With auto-attack off, hold LMB to cast on cooldown. With auto-target off, aim
           with the cursor; spells fly straight up to 1000 units and hit enemies in their path.
           Auto-target selects only the nearest enemy. A transparent circle shows spell range when
-          the cursor is beyond it. Press E near a building or blue portal to interact. Trees,
-          buildings and torch posts block movement. Escape opens a leave confirmation; Escape inside
-          a window closes it. Drag window titles to move them. Press I to inspect equipment and
-          character stats, or press it again to close the window. Movement and equipment hotkeys
-          follow physical keys across keybeard layouts.
+          the cursor is beyond it. Press E near a building, Marta the Innkeeper or blue portal to
+          interact. Trees, buildings and torch posts block movement. Escape opens a leave
+          confirmation; Escape inside a window closes it. Drag window titles to move them. Press I
+          to inspect equipment and character stats, or press it again to close the window. Movement
+          and equipment hotkeys follow physical keys across keybeard layouts.
         </p>{" "}
       </>
     ),

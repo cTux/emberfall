@@ -3,7 +3,7 @@ import type { GraphicsSettings } from "./graphics";
 import { drawVillagePaths } from "./paths";
 import { castShadow } from "./lighting";
 import { villageSprites, TORCH_LIGHTS, lightTexture } from "./village";
-import { environmentArt, wardrobeArt, terrainArt, terrainTile } from "./art";
+import { environmentArt, wardrobeArt, innkeeperArt, terrainArt, terrainTile } from "./art";
 
 const nature = new Image();
 nature.src = "/assets/nature.png";
@@ -30,7 +30,7 @@ let cached:
 /** Shared across Arena remounts. Wait for all assets, including failed loads. */
 export function villageBackground(graphics: GraphicsSettings) {
   if (
-    [environmentArt, wardrobeArt].some(
+    [environmentArt, wardrobeArt, innkeeperArt].some(
       (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== "true",
     ) ||
     !terrainArt.complete ||
@@ -101,7 +101,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   for (const object of scenery) {
     // Bounds include the full directional sun projection and contact shading.
     wrapped(object.x, object.y, object.width + object.height, () => {
-      if (graphics.shadows) castShadow(ctx, object);
+      if (graphics.shadows && !object.frames) castShadow(ctx, object);
       if (graphics.ambientOcclusion) {
         ctx.save();
         ctx.translate(object.x, object.y);
@@ -116,7 +116,13 @@ export function villageBackground(graphics: GraphicsSettings) {
       }
     });
   }
-  const torchTextures = TORCH_LIGHTS.map((light) => lightTexture(light, scenery, graphics.shadows));
+  const torchTextures = TORCH_LIGHTS.map((light) =>
+    lightTexture(
+      light,
+      scenery.filter((object) => !object.frames),
+      graphics.shadows,
+    ),
+  );
   const texture = background as HTMLCanvasElement & { textureRevision?: number };
   texture.textureRevision = (texture.textureRevision ?? 0) + 1;
   cached = { key, background, scenery, torchTextures };

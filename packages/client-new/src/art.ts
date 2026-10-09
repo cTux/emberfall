@@ -151,6 +151,7 @@ export const actorArt = (name: string) => {
 };
 export const environmentArt = loadArt("environment", 3, 3, 128, true);
 export const wardrobeArt = loadArt("wardrobe", 4, 1, 128, true);
+export const innkeeperArt = loadArt("innkeeper", 4, 1, 64, true);
 export const animalArt = loadArt("animals", 4, 6, 64, true);
 export const bearArt = loadArt("bear-cub", 4, 2, 64, true);
 export const effectsArt = loadArt("effects", 4, 4, 128);

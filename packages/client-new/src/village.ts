@@ -1,13 +1,14 @@
-import { WARDROBE, BUILDINGS, TORCHES, TREES } from "@emberfall/common-new";
+import { WARDROBE, BUILDINGS, TORCHES, TREES, INNKEEPER } from "@emberfall/common-new";
 import { makeMask, castShadow } from "./lighting";
 import type { Caster, Light } from "./lighting";
-import { environmentArt, wardrobeArt } from "./art";
+import { environmentArt, wardrobeArt, innkeeperArt } from "./art";
 import { chimneyAnchors } from "./ambient-art";
 
 export interface Scenery extends Caster {
   sprite: HTMLCanvasElement;
   name?: string;
   chimney?: { x: number; y: number };
+  frames?: { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }[];
 }
 export function villageSprites(
   _nature: HTMLImageElement,
@@ -33,20 +34,33 @@ export function villageSprites(
     sw: number,
     sh: number,
     name?: string,
+    frameCount = 1,
   ) {
     let frames = sprites.get(source);
     if (!frames) sprites.set(source, (frames = new Map()));
-    const key = `${sx}:${sy}:${sw}:${sh}`;
-    let frame = frames.get(key);
-    if (!frame) {
-      const sprite = document.createElement("canvas");
-      sprite.width = sw;
-      sprite.height = sh;
-      sprite.getContext("2d")!.drawImage(source, sx, sy, sw, sh, 0, 0, sw, sh);
-      frame = { sprite, mask: makeMask(sprite) };
-      frames.set(key, frame);
-    }
-    objects.push({ id, x, y, width, height, ...frame, name });
+    const animation = Array.from({ length: frameCount }, (_, i) => {
+      const key = `${sx + i * sw}:${sy}:${sw}:${sh}`;
+      let frame = frames.get(key);
+      if (!frame) {
+        const sprite = document.createElement("canvas");
+        sprite.width = sw;
+        sprite.height = sh;
+        sprite.getContext("2d")!.drawImage(source, sx + i * sw, sy, sw, sh, 0, 0, sw, sh);
+        frame = { sprite, mask: makeMask(sprite) };
+        frames.set(key, frame);
+      }
+      return frame;
+    });
+    objects.push({
+      id,
+      x,
+      y,
+      width,
+      height,
+      ...animation[0],
+      name,
+      ...(frameCount > 1 ? { frames: animation } : {}),
+    });
   }
   if (environmentArt.naturalWidth) {
     TREES.forEach((t, i) =>
@@ -84,6 +98,21 @@ export function villageSprites(
       128,
       128,
       "Wardrobe",
+    );
+  if (innkeeperArt.naturalWidth)
+    add(
+      "npc:innkeeper",
+      INNKEEPER.x,
+      INNKEEPER.y,
+      48,
+      48,
+      innkeeperArt,
+      0,
+      0,
+      64,
+      64,
+      INNKEEPER.name,
+      4,
     );
   if (environmentArt.naturalWidth)
     TORCHES.forEach((t, i) =>

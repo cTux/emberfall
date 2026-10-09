@@ -18,6 +18,12 @@ batch; bake reusable glow primitives instead of filtering each spark. Bound
 cache lifetimes and dispose resources on remount. Never substitute a whole
 Canvas-rendered world texture for native Pixi rendering.
 
+Sprite generation must be delegated to a `gpt-6-astra` agent (GPT-6 Astra).
+That agent owns generation, visual inspection and asset provenance; use the
+built-in image generation tool and existing art as the style reference. Do not
+generate replacement sprites from another Codex model. Keep animation frames
+at a stable scale and foot anchor, and verify the loop in the actual client.
+
 Reuse controlled components from the [UI package](../../../packages/ui/README.md).
 Read its instructions before editing it and verify both clients for shared API
 changes. Keep browser identity keys isolated under `emberfall-new.*`.

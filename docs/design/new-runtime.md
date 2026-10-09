@@ -27,6 +27,15 @@ Village dummies join the same foot-position render sort as scenery and actors. A
 
 ## Simulation and replication
 
+The shared village definition owns Marta the Innkeeper's fixed position and
+display name. `nearbyInteraction` excludes the Inn doorway and selects Marta
+using the existing wrapped proximity check. The client reuses the building
+placeholder window and scenery depth ordering. Her cached idle frames advance
+by time, with the same frame used for rendering and shadow masks; there is no
+moving NPC state, network command or persistence change. Verification:
+[village rules](../../packages/server-new/src/village.test.ts) and
+[Innkeeper browser scenario](../../tests-new/innkeeper.spec.ts).
+
 Gold collection adds one coin to the nearest living forest collector, once, in shared simulation. The optional validated `coins` progress field defaults to zero when loading old saves. Existing per-class save scheduling and protocol payloads carry the balance; the shared party card receives confirmed values from the new client.
 
 Each party has one Miniplex simulation world. Components reference canonical

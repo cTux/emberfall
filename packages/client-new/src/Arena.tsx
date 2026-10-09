@@ -417,6 +417,9 @@ export function Arena({
       }
       const prepared = villageBackground(quality.current);
       const scenery = prepared?.scenery ?? [];
+      for (const object of scenery)
+        if (object.frames)
+          Object.assign(object, object.frames[Math.floor(now / 400) % object.frames.length]);
       const torchTextures = prepared?.torchTextures ?? [];
       const focus = local ?? { x: 480, y: 320 };
       const viewWidth = el.width / scale;
@@ -474,6 +477,8 @@ export function Arena({
       for (const id of positions.keys()) if (!liveIds.has(id)) positions.delete(id);
       // Use the reconciled positions consistently for bodies, lanterns and shadows.
       const dynamic: Caster[] = [];
+      if (quality.current.shadows)
+        for (const object of visibleScenery) if (object.frames) castShadow(ctx, object);
       for (const player of players) {
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
         const ix = player.inputX ?? 0,
@@ -712,7 +717,8 @@ export function Arena({
               object.x,
               object.y,
               object.name,
-              object.id === `building:${interaction.current?.id}`,
+              object.id === `building:${interaction.current?.id}` ||
+                object.id === `npc:${interaction.current?.id}`,
             );
           continue;
         }
@@ -821,7 +827,12 @@ export function Arena({
             continue;
           const texture = torchTextures[i];
           if (!texture) continue;
-          const movingLight = lightTexture(light, dynamic, quality.current.shadows, texture);
+          const movingLight = lightTexture(
+            light,
+            [...dynamic, ...visibleScenery.filter((object) => object.frames)],
+            quality.current.shadows,
+            texture,
+          );
           ctx.globalAlpha = 0.9 + Math.sin(now / 190 + i) * 0.1;
           ctx.drawImage(movingLight, light.x - light.radius, light.y - light.radius);
         }
