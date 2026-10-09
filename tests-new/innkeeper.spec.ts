@@ -6,6 +6,10 @@ test("Marta opens the service placeholder while the Inn has no interaction", asy
   game,
 }) => {
   const errors: string[] = [];
+  const inn = BUILDINGS.find((building) => building.id === "inn")!;
+  expect(INNKEEPER.x - (inn.x + inn.sourceWidth)).toBeGreaterThan(0);
+  expect(INNKEEPER.x - (inn.x + inn.sourceWidth)).toBeLessThanOrEqual(24);
+  expect(Math.abs(INNKEEPER.y - inn.y)).toBeLessThanOrEqual(16);
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
   await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
@@ -31,7 +35,6 @@ test("Marta opens the service placeholder while the Inn has no interaction", asy
       clip: { x: 685, y: 365, width: 70, height: 70 },
     });
   }
-  const inn = BUILDINGS.find((building) => building.id === "inn")!;
   player.x = inn.doorX;
   player.y = inn.y + 9;
   // Allow the confirmed relocation to reach presentation before testing E.

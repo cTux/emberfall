@@ -80,7 +80,7 @@ export function villageSprites(
         0,
         128,
         128,
-        b.name,
+        b.id === "inn" ? undefined : b.name,
       );
       const anchor = chimneyAnchors[i % 3];
       objects.at(-1)!.chimney = { x: (anchor.x - 0.5) * b.sourceWidth * 2, y: (anchor.y - 1) * 96 };
