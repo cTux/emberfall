@@ -408,7 +408,9 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     }
     scene.pausedAt = undefined;
   }
-  const collectors = players.filter((p) => p.scene === "forest" && p.hitpoints > 0);
+  const collectors = players.filter(
+    (p) => p.scene === "forest" && p.hitpoints > 0 && !p.reconnecting,
+  );
   scene.drops = (scene.drops ?? []).filter((drop) => {
     if (now - drop.at >= PICKUP_RULES.lifetimeMs) return false;
     if (now - drop.at < PICKUP_RULES.initialHopMs) return true;
@@ -444,12 +446,12 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     );
     return true;
   });
-  for (const player of players.filter((p) => p.scene === "forest"))
+  for (const player of players.filter((p) => p.scene === "forest" && !p.reconnecting))
     tickCompanion(player, scene, now, dt);
   if (scene.phase !== "active") return;
   scene.spawns ??= [];
   scene.projectiles ??= [];
-  const alive = players.filter((p) => p.scene === "forest" && p.hitpoints > 0);
+  const alive = players.filter((p) => p.scene === "forest" && p.hitpoints > 0 && !p.reconnecting);
   const spawnBoss = now >= scene.endsAt! && scene.bossId === undefined;
   scene.damage = scene.damage.filter((d) => now - d.at < TRANSIENT_EFFECTS.damage.lifetimeMs);
   if (

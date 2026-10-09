@@ -113,6 +113,7 @@ export const clientMessage = z.discriminatedUnion("type", [
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export interface Player extends CharacterProgress {
+  reconnecting?: boolean;
   chat?: string;
   dps?: number;
   bear?: Bear;

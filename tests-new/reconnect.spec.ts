@@ -66,3 +66,70 @@ test("an outage shows the server list and automatically restores the same player
   await expect(page.locator(".party")).toBeHidden();
   expect(errors).toEqual([]);
 });
+
+test("peers see a red reconnecting character in village and forest until recovery", async ({
+  page,
+  browser,
+  game,
+}, info) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  await context.addInitScript(() => {
+    const Native = window.WebSocket;
+    window.WebSocket = class extends Native {
+      constructor(url: string | URL, protocols?: string | string[]) {
+        super(url, protocols);
+        (window as unknown as { recoverySocket: WebSocket }).recoverySocket = this;
+      }
+    };
+  });
+  const guest = await context.newPage();
+  let unavailable = false;
+  await guest.route("**/matchmake/**", (route) => (unavailable ? route.abort() : route.continue()));
+  try {
+    await guest.goto(page.url());
+    await guest.getByRole("button", { name: /^Join Playtest Default/ }).click();
+    await expect(guest.getByRole("button", { name: "Leave world" })).toBeVisible();
+    const world = [...game.runtime.worlds.values()].find((w) => w.players.size === 2)!;
+    const [host, remote] = [...world.players.values()];
+    remote.x = host.x + 70;
+    remote.y = host.y;
+    for (const area of ["village", "forest"] as const) {
+      if (area === "forest") {
+        const { sceneAction, tickScene } = await import("../packages/server-new/src/scenes.ts");
+        const { LOBBY_PORTAL } = await import("../packages/common-new/src/index.ts");
+        for (const p of world.players.values()) {
+          p.x = LOBBY_PORTAL.x;
+          p.y = LOBBY_PORTAL.y - 15;
+        }
+        const now = Date.now();
+        sceneAction(world, host, { type: "createScene", scene: "Forest", difficulty: "Easy" }, now);
+        for (const p of world.players.values())
+          sceneAction(world, p, { type: "ready", ready: true }, now);
+        tickScene(world, now + 5000, 0);
+        world.scene!.nextSpawn = 1e12;
+        remote.x = host.x + 70;
+        remote.y = host.y;
+        await expect(page.getByLabel("Forest combat scene.")).toBeVisible();
+      }
+      unavailable = true;
+      await guest.evaluate(() =>
+        (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(3001),
+      );
+      await expect.poll(() => remote.reconnecting).toBe(true);
+      expect(world.players.size).toBe(2);
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: info.outputPath(`reconnecting-${area}.png`) });
+      unavailable = false;
+      await expect(guest.getByRole("button", { name: "Leave world" })).toBeVisible();
+      await expect.poll(() => remote.reconnecting).toBeUndefined();
+      expect(world.players.get(remote.id)).toBe(remote);
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: info.outputPath(`restored-${area}.png`) });
+    }
+  } finally {
+    await context.close();
+  }
+});

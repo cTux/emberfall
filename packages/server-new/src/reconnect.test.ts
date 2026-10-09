@@ -75,3 +75,70 @@ test("resume authenticates retained sessions, rejects live takeover, expires and
     for (const ws of clients) ws.terminate();
   }
 });
+
+test("normal transport close retains a reconnecting player for exactly ten seconds", async (t) => {
+  const { createRuntime } = await import("./runtime.ts");
+  const { Peer } = await import("./network/peer.ts");
+  const app = await createRuntime();
+  const messages: ServerMessage[] = [];
+  const peer = new Peer(
+    (message) => messages.push(message),
+    () => {},
+  );
+  app.connect(peer);
+  peer.receive({ type: "create", name: "Grace", playerName: "Owner", password: "" });
+  const joined = messages.find((m) => m.type === "joined");
+  assert(joined?.type === "joined");
+  const world = app.worlds.get(joined.world.id)!;
+  const player = world.players.get(joined.playerId)!;
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: Date.now() });
+  try {
+    peer.detached(1000);
+    assert.equal(player.reconnecting, true);
+    assert.equal(world.chat?.at(-1)?.text, "Owner joined.");
+    t.mock.timers.tick(9999);
+    assert.equal(world.players.get(player.id), player);
+    t.mock.timers.tick(1);
+    assert.equal(world.players.size, 0);
+    assert.equal(app.worlds.has(world.id), false);
+  } finally {
+    await app.close();
+  }
+});
+
+test("resume cancels expiry and clears reconnecting; explicit leave remains immediate", async (t) => {
+  const { createRuntime } = await import("./runtime.ts");
+  const { Peer } = await import("./network/peer.ts");
+  const app = await createRuntime();
+  const messages: ServerMessage[] = [];
+  const peer = new Peer(
+    (message) => messages.push(message),
+    () => {},
+  );
+  app.connect(peer);
+  peer.receive({ type: "create", name: "Grace", playerName: "Owner", password: "" });
+  const joined = messages.find((m) => m.type === "joined");
+  assert(joined?.type === "joined");
+  const world = app.worlds.get(joined.world.id)!;
+  const player = world.players.get(joined.playerId)!;
+  t.mock.timers.enable({ apis: ["Date", "setTimeout"], now: Date.now() });
+  try {
+    peer.detached(1005);
+    t.mock.timers.tick(9000);
+    const next = new Peer(
+      (message) => messages.push(message),
+      () => {},
+    );
+    app.connect(next);
+    next.receive({ type: "resume", worldId: world.id, characterToken: joined.characterToken });
+    assert.equal(world.players.get(player.id), player);
+    assert.equal(player.reconnecting, undefined);
+    assert.equal(world.chat?.length, 1);
+    t.mock.timers.tick(1000);
+    assert.equal(world.players.get(player.id), player);
+    next.receive({ type: "leave" });
+    assert.equal(world.players.size, 0);
+  } finally {
+    await app.close();
+  }
+});

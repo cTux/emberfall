@@ -39,6 +39,7 @@ type State = {
   textBaseline: CanvasTextBaseline;
   shadowBlur: number;
   shadowColor: string;
+  spriteTint: string;
   shadowOffsetY: number;
   mask: Graphics | null;
   dash: number[];
@@ -107,6 +108,7 @@ export class PixiContext {
       textAlign: "start",
       textBaseline: "alphabetic",
       shadowBlur: 0,
+      spriteTint: "#ffffff",
       shadowColor: "transparent",
       shadowOffsetY: 0,
       mask: null,
@@ -568,7 +570,7 @@ export class PixiContext {
       texture.update();
     }
     sprite.texture = texture;
-    const tint = this.color(this.shadowPass ? this.state.shadowColor : "#ffffff");
+    const tint = this.color(this.shadowPass ? this.state.shadowColor : this.state.spriteTint);
     sprite.tint = tint.toNumber();
     sprite.alpha *= tint.alpha;
     this.applyTransform(sprite, dx, dy, dw / sw, dh / sh);
@@ -758,6 +760,12 @@ export class PixiContext {
   }
   set strokeStyle(v: Paint) {
     this.state.strokeStyle = v;
+  }
+  get spriteTint() {
+    return this.state.spriteTint;
+  }
+  set spriteTint(value: string) {
+    this.state.spriteTint = value;
   }
   get globalAlpha() {
     return this.state.globalAlpha;

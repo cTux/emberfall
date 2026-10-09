@@ -27,7 +27,9 @@ Input safeguards include a 2,048-byte message limit, 256-session upgrade limit, 
 
 ## Recovery lifecycle
 
-Explicit leave removes membership and revokes automatic recovery. An interrupted connection instead clears input and retains its session/world state for 30 seconds. The client retries immediately, then at one-second intervals after repeated failures. Expired sessions are saved and removed on the five-second autosave sweep.
+The new runtime retains interrupted players for 10 seconds using a cancellable session timer. A replicated `Player.reconnecting` status drives the red Pixi sprite tint and Reconnecting debuff label. Shared forest/training simulation excludes these players and their companions from active combat and enemy targeting/hits. Resume clears the status and timer without replacing the player. Expiry saves before removal; failed saves retain state for the existing autosave retry. Explicit leave and policy rejection still remove immediately. No save migration is needed.
+
+In the original runtime, explicit leave removes membership and revokes automatic recovery. An interrupted connection instead clears input and retains its session/world state for 30 seconds. The client retries immediately, then at one-second intervals after repeated failures. Expired sessions are saved and removed on the five-second autosave sweep.
 
 Both clients clear their displayed world and player on interruption, close gameplay
 dialogs, and reopen the world browser on its server-list tab. They retain the

@@ -752,6 +752,7 @@ export function Arena({
             ? 1
             : obstacleOpacity({ x: pos.x, y: pos.y + 15, width: 48, height: 48 }, local);
         ctx.globalAlpha = opacity;
+        renderer.spriteTint = player.reconnecting ? "#ff5555" : "#ffffff";
         if (knight.complete && knight.naturalWidth) {
           if (quality.current.motionBlur && moving) {
             // Sprite-only temporal samples keep HUD text and the world sharp.
@@ -783,6 +784,7 @@ export function Arena({
             48 * idleBreath(now, spriteRow),
           );
         }
+        renderer.spriteTint = "#ffffff";
         ctx.globalAlpha = 1;
         drawPlayerHealth(
           ctx,
