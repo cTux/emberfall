@@ -14,6 +14,8 @@ The wardrobe opposite the village portal switches between warrior (default), ran
 
 ## CHAR-03 — Save lifecycle
 
+New-runtime coins are saved independently per class with the existing progress lifecycle. Older saves start at zero coins without losing other progress. Clients cannot grant or overwrite coins.
+
 Save on entry, every five seconds, on explicit leave, on disconnect and during graceful shutdown. An abrupt exit can lose up to five seconds of progress. Failed loads report an error instead of silently creating a replacement; failed saves are reported and retried. Live positions, scenes, chat, attacks and Bear state are temporary. Class changes save successfully before becoming visible. See [operations](../operations.md) for database configuration and backups.
 
 ## CHAR-04 — Equipment (new runtime)

@@ -1,16 +1,20 @@
-import { Avatar, Box, Stack, Tooltip } from "@mui/material";
+import { Avatar, Box, Stack, Tooltip, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCrown } from "@fortawesome/free-solid-svg-icons/faCrown";
 import { faDoorOpen } from "@fortawesome/free-solid-svg-icons/faDoorOpen";
+import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
 import type { ReactNode } from "react";
 import { StatusMeter } from "./StatusMeter";
 import { PartyCardStyled, PartyPortraitStyled, PartyMarkerStyled } from "./styles";
+
+const coinFormat = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
 
 export interface PartyCardProps {
   name: string;
   level: number;
   health: number;
   maxHealth: number;
+  coins?: number;
   portrait?: ReactNode;
   host?: boolean;
   local?: boolean;
@@ -28,6 +32,7 @@ export function PartyCard({
   level,
   health,
   maxHealth,
+  coins,
   portrait,
   host,
   local,
@@ -60,20 +65,40 @@ export function PartyCard({
             </Tooltip>
           )}
         </PartyPortraitStyled>
-        <Box sx={{ flex: 1, minWidth: 0 }} aria-label={local ? "Your character" : undefined}>
-          <StatusMeter label={`${name}, lvl ${level}`} value={health} max={maxHealth} />
-        </Box>
+        <Stack direction="row" spacing={1} sx={{ flex: 1, minWidth: 0, alignItems: "center" }}>
+          <Box sx={{ width: "60%", minWidth: 0 }} aria-label={local ? "Your character" : undefined}>
+            <StatusMeter label={`${name}, lvl ${level}`} value={health} max={maxHealth} />
+          </Box>
+          {coins !== undefined && (
+            <Typography
+              variant="caption"
+              aria-label={`${name}: ${coins} coins`}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                whiteSpace: "nowrap",
+                color: "primary.main",
+              }}
+            >
+              <FontAwesomeIcon icon={faCoins} aria-hidden="true" />
+              {coinFormat.format(coins).toLowerCase()}
+            </Typography>
+          )}
+        </Stack>
       </Stack>
       {companion && (
         <Stack direction="row" spacing={1} sx={{ alignItems: "center", mt: 0.5, width: "85%" }}>
           <PartyPortraitStyled compact>{companion.portrait}</PartyPortraitStyled>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <StatusMeter
-              label={companion.name}
-              value={companion.health}
-              max={companion.maxHealth}
-              compact
-            />
+            <Box sx={{ width: "60%" }}>
+              <StatusMeter
+                label={companion.name}
+                value={companion.health}
+                max={companion.maxHealth}
+                compact
+              />
+            </Box>
           </Box>
         </Stack>
       )}

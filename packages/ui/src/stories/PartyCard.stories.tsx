@@ -11,11 +11,14 @@ const meta = {
     maxHealth: 100,
     host: true,
     local: true,
+    coins: 13,
   },
 } satisfies Meta<typeof PartyCard>;
 export default meta;
 export const Playground: StoryObj<typeof meta> = {};
 export const HostAway: StoryObj<typeof meta> = { args: { away: true } };
+export const Thousands: StoryObj<typeof meta> = { args: { coins: 1000 } };
+export const Millions: StoryObj<typeof meta> = { args: { coins: 3000000 } };
 export const WithCompanion: StoryObj<typeof meta> = {
   args: { companion: { name: "Bear", health: 75, maxHealth: 150, portrait: "🐻" } },
 };

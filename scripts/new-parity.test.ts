@@ -160,7 +160,10 @@ test("all class simulations retain original results across a seeded encounter", 
         original.stepCombat(scene, [player], tick * 50, 0.05);
         Math.random = seeded();
         replacement.stepCombat(nextScene, [nextPlayer], tick * 50, 0.05);
-        assert.deepEqual(nextPlayer, player, `${classId} player tick ${tick}`);
+        // Coins are a new-runtime reward; all other combat state must retain parity.
+        const { coins, ...combatPlayer } = nextPlayer as replacement.Player;
+        assert(Number.isSafeInteger(coins ?? 0) && (coins ?? 0) >= 0);
+        assert.deepEqual(combatPlayer, player, `${classId} player tick ${tick}`);
         assert.deepEqual(nextScene, scene, `${classId} scene tick ${tick}`);
       }
     }

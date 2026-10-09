@@ -72,6 +72,8 @@ Windows are 400px wide with a maximum height of 480px, clamped to the viewport w
 
 `PartyCard.companion` optionally supplies a name, health, maxHealth and portrait for a smaller row beneath the player. Defeated companions stay visible at zero health; omit the view when the player has no companion. `StatusMeter.compact` uses the smaller row height without changing accessible values.
 
+Party bars use 60% of their former width. Optional `PartyCard.coins` places a coin icon and compact amount immediately after the player's HP bar, with the full balance accessible to screen readers. The host supplies the confirmed balance; the component does not collect or save coins.
+
 All consumer-facing prop/data types are exported from `src/index.ts`. Screen stories demonstrate lobby, HUD, settings, wardrobe, Codex, portal vote, leave confirmation, death and building service placeholders by composing these components. Those compositions are examples, not duplicated application state machines. No network calls, persistence, gameplay calculations, authorization or game-package imports belong here.
 
 ## Create a component

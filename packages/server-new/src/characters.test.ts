@@ -77,10 +77,13 @@ test("server saves survive restart, authenticate independently of nickname, and 
       ...saved.progress,
       level: 4,
       experience: 321,
+      coins: 1003,
       hitpoints: 77,
       equipment: {},
     });
     assert.throws(() => store.save(saved.id, "Hero", { ...saved.progress, level: -1 }));
+    for (const coins of [-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1])
+      assert.throws(() => store.save(saved.id, "Hero", { ...saved.progress, coins }));
     assert.throws(() => store.load("0".repeat(64)));
     store.close();
     assert(!(await readFile(path)).includes(Buffer.from(token)));
@@ -95,6 +98,7 @@ test("server saves survive restart, authenticate independently of nickname, and 
       characterToken: token,
       level: 9999,
       experience: 9999,
+      coins: 99999,
       equipment: { weapon: "mage-staff" },
     });
     const restored = await returning.wait("joined");
@@ -103,6 +107,11 @@ test("server saves survive restart, authenticate independently of nickname, and 
     assert.equal(player.name, "Renamed hero");
     assert.equal(player.level, 4);
     assert.equal(player.experience, 321);
+    assert.equal(
+      player.coins,
+      1003,
+      "saved coins survive restart and ignore forged client balances",
+    );
     assert.equal(player.hitpoints, 77);
     assert(!("manapoints" in player));
     assert(!("maxManapoints" in player));
@@ -144,6 +153,7 @@ test("old single-class and per-class saves discard mana without losing progress"
       manapoints: 14,
       maxManapoints: 50,
     };
+    delete legacy.coins;
     for (const raw of [
       legacy,
       {
@@ -158,6 +168,11 @@ test("old single-class and per-class saves discard mana without losing progress"
       const loaded = store.load(created.token);
       assert.equal(loaded.progress.experience, 87.5);
       assert.equal(loaded.progress.hitpoints, 77);
+      assert.equal(
+        loaded.progress.coins,
+        0,
+        "old saves start with zero coins without losing progress",
+      );
       for (const progress of Object.values(loaded.classes)) {
         assert(!("manapoints" in progress));
         assert(!("maxManapoints" in progress));

@@ -279,6 +279,7 @@ test("kills drop experience and 10-percent coins; experience pickups reward play
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.drops!.length, 0);
   assert.equal(player.experience, experience + 1, "collection grants one extra experience");
+  assert.equal(player.coins, 1, "gold grants one saved coin to its collector");
   roll = 0.1;
   scene.enemies = [{ id: 2, x: 2480, y: 1280, hitpoints: 5, angle: 0 }];
   stepCombat(scene, [player], 11000, 0);
@@ -331,6 +332,10 @@ test("loot attracts across the seam and rewards every living scene player exactl
   for (let i = 0; i < 10; i++) stepCombat(scene, players, 450 + i * 50, 0.05);
   assert.equal(scene.drops!.length, 0);
   assert.deepEqual(
+    players.map((p) => p.coins ?? 0),
+    [0, 0, 1, 0, 0],
+  );
+  assert.deepEqual(
     players.map((p) => p.experience),
     [0, 0, 1, 8, 1],
   );
@@ -343,6 +348,7 @@ test("loot attracts across the seam and rewards every living scene player exactl
   );
   stepCombat(scene, players, 1000, 0);
   stepCombat(scene, players, 1050, 0);
+  assert.equal(player.coins, 1, "removed coins cannot reward twice");
   assert.equal(scene.drops.length, 0);
   assert.deepEqual(
     players.map((p) => p.experience),
