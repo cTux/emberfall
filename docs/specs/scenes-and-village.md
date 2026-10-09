@@ -10,8 +10,8 @@ The create/join browser shows a forest backdrop; entering a world takes players 
 
 Lobby buildings and portals show interaction availability directly in their existing nameplate: a lighter background and `(E) Building name` while in range. They no longer show a separate tooltip.
 
-In the new runtime, the Inn remains scenery without an interaction. Marta the
-Innkeeper stands outside it, facing forward with a looping idle animation and
+In the new runtime, the Inn remains scenery without an interaction or nameplate. Marta the
+Innkeeper stands right beside its right wall, facing forward with a looping idle animation and
 no movement. E within 68 units opens the same service placeholder window used
 by other buildings, titled with her name. Her nameplate shows availability in
 the same way. Accepted future scope: Marta will sell consumables and buy items
