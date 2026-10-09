@@ -70,6 +70,15 @@ and `tests-new/frame-budget.spec.ts`. Local projectile/pickup offsets:
 `packages/server-new/src/local-projectiles.test.ts` and
 `packages/server-new/src/pickup-presentation.test.ts`.
 
+New-runtime saved coins: [save lifecycle](specs/characters.md#char-03--save-lifecycle)
+and [HUD](specs/interface-and-audio.md#ui-01--hud-and-windows), implemented by
+[pickup rules](../packages/common-new/src/simulation.ts),
+[character saves](../packages/server-new/src/characters.ts), and
+[PartyCard](../packages/ui/src/components/PartyCard.tsx). Verification:
+[pickup tests](../packages/server-new/src/snapshots.test.ts),
+[restart tests](../packages/server-new/src/characters.test.ts), and
+[browser scenario](../tests-new/coins.spec.ts).
+
 New-runtime equipment: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime)
 and [UI-06](specs/interface-and-audio.md#ui-06--equipment-inspection-new-runtime),
 implemented by [equipment rules](../packages/common-new/src/equipment.ts),

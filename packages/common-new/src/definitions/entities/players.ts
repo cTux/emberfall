@@ -42,6 +42,7 @@ export const PLAYER_DEFINITIONS = {
 export const INITIAL_PROGRESS = {
   level: 1,
   experience: 0,
+  coins: 0,
   hitpoints: 100,
   maxHitpoints: 100,
   playtimeSeconds: 0,

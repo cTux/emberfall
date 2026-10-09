@@ -10,6 +10,8 @@ Party cards show server-owned `Nickname, lvl N` inside the HP bar, with no headi
 
 When a player has a battle companion, their party card shows a smaller portrait and HP bar directly below the player's row. It displays the companion's name and confirmed current/maximum HP, including zero HP while defeated, and disappears when the player no longer has a companion.
 
+Party health bars use 60% of their previous width, including the companion row. In the new runtime, each player's confirmed coin balance appears immediately after their HP bar with a coin icon. Amounts use compact lowercase suffixes (13, 1k, 3m), at most one decimal, and an accessible label with the full amount.
+
 Wardrobe shows all four classes in one compact row. Each card has its matching character portrait above separate starting-weapon and base-spell squares, then level, XP, maximum HP, Power and a selection button. Power uses calculated class equipment stats in the new runtime and base attack damage in the original runtime. Weapon and spell details open on hover, keyboard focus or touch and explain the current attacks, range, cooldown and effects. There is no introductory or departure helper text. Class selection retains server validation, per-class progress and countdown restrictions; inspecting details remains available for selected or unavailable classes.
 
 During an active boss fight, forest players see a fixed top-center boss HUD with the boss name (The Hollow Warden), orange health bar and current/max HP, even when the boss is offscreen. It replaces the boss objective label and disappears on defeat or returning to the lobby; the scene-complete message then appears.

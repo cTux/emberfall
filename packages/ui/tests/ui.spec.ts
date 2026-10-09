@@ -2,6 +2,35 @@ import { test, expect } from "@playwright/test";
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test("party bars use sixty percent of their old width with compact coins immediately after", async ({
+  page,
+}, testInfo) => {
+  for (const [variant, amount, compact] of [
+    ["playground", 13, "13"],
+    ["thousands", 1000, "1k"],
+    ["millions", 3000000, "3m"],
+  ] as const) {
+    await page.goto(story(`components-partycard--${variant}`));
+    for (const width of [1280, 320]) {
+      await page.setViewportSize({ width, height: 800 });
+      const meter = page.getByRole("progressbar", { name: "Astrid, lvl 1" });
+      const coins = page.getByLabel(`Astrid: ${amount} coins`, { exact: true });
+      await expect(coins).toHaveText(compact);
+      const bar = (await meter.boundingBox())!;
+      const available = await meter
+        .locator("../../..")
+        .evaluate((element) => element.getBoundingClientRect().width);
+      expect(bar.width).toBeCloseTo(available * 0.6, 0);
+      const balance = (await coins.boundingBox())!;
+      expect(balance.x).toBeCloseTo(bar.x + bar.width + 8, 0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      await page.screenshot({ path: testInfo.outputPath(`coins-${variant}-${width}.png`) });
+    }
+  }
+});
+
 test("companion health sits beneath the player at desktop and narrow widths", async ({
   page,
 }, testInfo) => {

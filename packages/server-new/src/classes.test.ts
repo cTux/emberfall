@@ -71,6 +71,7 @@ test("class records migrate legacy progress, save independently, and survive res
       ...created.progress,
       level: 4,
       experience: 234,
+      coins: 13,
       talents: { strength: 2 },
     });
     const old = store.load(created.token);
@@ -78,8 +79,10 @@ test("class records migrate legacy progress, save independently, and survive res
     const player = { ...hero(), ...old.progress, classId: old.classId, classes: old.classes };
     store.selectClass(old.id, player, "ranger");
     assert.equal(player.level, 1);
+    assert.equal(player.coins, 0);
     assert.deepEqual(player.talents, {});
     player.experience = 17;
+    player.coins = 3;
     store.selectClass(old.id, player, "mage");
     player.experience = 9;
     store.save(old.id, player.name, player);
@@ -90,6 +93,8 @@ test("class records migrate legacy progress, save independently, and survive res
     assert.equal(restored.classId, "mage");
     assert.equal(restored.progress.experience, 9);
     assert.equal(restored.classes.ranger.experience, 17);
+    assert.equal(restored.classes.ranger.coins, 3);
+    assert.equal(restored.classes.warrior.coins, 13);
     assert.equal(restored.classes.warrior.experience, 234);
     assert.deepEqual(restored.classes.warrior.talents, { strength: 2 });
     assert.equal(restored.classes.druid.maxHitpoints, 100);
@@ -100,6 +105,7 @@ test("class records migrate legacy progress, save independently, and survive res
     store.selectClass(old.id, player, "warrior");
     assert.equal(player.level, 4);
     assert.equal(player.experience, 234);
+    assert.equal(player.coins, 13);
   } finally {
     store.close();
     rmSync(directory, { recursive: true });

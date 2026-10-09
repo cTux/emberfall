@@ -27,6 +27,8 @@ Village dummies join the same foot-position render sort as scenery and actors. A
 
 ## Simulation and replication
 
+Gold collection adds one coin to the nearest living forest collector, once, in shared simulation. The optional validated `coins` progress field defaults to zero when loading old saves. Existing per-class save scheduling and protocol payloads carry the balance; the shared party card receives confirmed values from the new client.
+
 Each party has one Miniplex simulation world. Components reference canonical
 plain entities; ordered query views preserve targeting and spawn order even when
 Miniplex removes an item by swapping it with the last item. Shared kernels consume

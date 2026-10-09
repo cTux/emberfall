@@ -478,6 +478,7 @@ function App({
                 level={p.level}
                 health={displayedHp[p.id] ?? p.hitpoints}
                 maxHealth={p.maxHitpoints}
+                coins={p.coins ?? 0}
                 companion={
                   p.bear
                     ? {

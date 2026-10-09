@@ -4,7 +4,7 @@ import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
 import { BEAR_DEFINITION } from "./definitions/entities/companions.ts";
 import { ENEMY_RULES, BOSS_DEFINITIONS } from "./definitions/entities/enemies.ts";
 import { FOREST_ENCOUNTER } from "./definitions/encounters/forest.ts";
-import { PICKUP_RULES } from "./definitions/entities/pickups.ts";
+import { PICKUP_DEFINITIONS, PICKUP_RULES } from "./definitions/entities/pickups.ts";
 import { COLLISION } from "./definitions/collision.ts";
 import { appendSceneEntities } from "./entities.ts";
 import { ATTACK_DEFINITIONS } from "./definitions/abilities/attacks.ts";
@@ -427,6 +427,11 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     if (distance <= PICKUP_RULES.collectRadius || distance - travel <= PICKUP_RULES.collectRadius) {
       if (drop.kind === "experience")
         for (const player of collectors) player.experience += drop.amount ?? 1;
+      else
+        target.coins = Math.min(
+          Number.MAX_SAFE_INTEGER,
+          (target.coins ?? 0) + PICKUP_DEFINITIONS.gold.baseAmount,
+        );
       return false;
     }
     drop.x = wrap(
