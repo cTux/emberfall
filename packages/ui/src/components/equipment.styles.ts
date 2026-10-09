@@ -41,3 +41,16 @@ export const GearBadgeValueStyled = styled(Box)(({ theme }) => ({
   fontWeight: 700,
   fontVariantNumeric: "tabular-nums",
 }));
+
+export const BackpackSlotStyled = styled(ButtonBase)(({ theme }) => ({
+  position: "relative",
+  width: 44,
+  height: 44,
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.background.default,
+  boxShadow: `inset 0 0 0 2px ${alpha(theme.palette.common.black, 0.4)}`,
+  "& img, & svg": { width: 36, height: 36, objectFit: "contain", imageRendering: "pixelated" },
+  "&:hover": { borderColor: theme.palette.text.secondary },
+  "&.Mui-focusVisible": { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 1 },
+}));

@@ -48,6 +48,7 @@ export interface GearDefinition {
   gearType: GearType;
   damageType?: DamageType;
   stats: Partial<GearStats>;
+  price?: number;
 }
 
 const BASE_CRITICAL_STATS = { criticalChance: 0.05, criticalMultiplier: 1.5 };
@@ -106,6 +107,37 @@ export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
     },
   },
 };
+export const LOOT_GEAR_TYPES = [
+  "gloves",
+  "helmet",
+  "bodyArmor",
+  "leggings",
+  "boots",
+  "amulet",
+  "ring",
+  "shield",
+  "quiver",
+  "orb",
+  "natureFocus",
+] as const;
+const LOOT_NAMES = [
+  "Gloves",
+  "Helmet",
+  "Body armor",
+  "Leggings",
+  "Boots",
+  "Amulet",
+  "Ring",
+  "Shield",
+  "Quiver",
+  "Mage orb",
+  "Nature focus",
+];
+for (const [index, gearType] of LOOT_GEAR_TYPES.entries()) {
+  const id = `loot-${gearType}`;
+  GEAR_DEFINITIONS[id] = { id, name: LOOT_NAMES[index], gearType, stats: { armor: 1 }, price: 1 };
+}
+export const LOOT_ITEM_IDS = LOOT_GEAR_TYPES.map((type) => `loot-${type}`);
 export const STARTER_WEAPONS = {
   warrior: "warrior-sword",
   ranger: "ranger-bow",

@@ -6,6 +6,8 @@ import { drizzle } from "drizzle-orm/node-sqlite";
 import { getTableName } from "drizzle-orm";
 import { GameDatabase, VersionConflictError } from "@colyseus/database";
 import {
+  merchantSchema,
+  freshMerchant,
   progressSchema,
   classSchema,
   CLASS_IDS,
@@ -14,7 +16,7 @@ import {
   syncEquipmentVitals,
 } from "@emberfall/common-new";
 import { INITIAL_PROGRESS } from "@emberfall/common-new/definitions/entities/players";
-import type { CharacterProgress, ClassId, Player } from "@emberfall/common-new";
+import type { CharacterProgress, ClassId, Player, Merchant } from "@emberfall/common-new";
 
 export const freshProgress = (classId?: ClassId): CharacterProgress => ({
   ...structuredClone(INITIAL_PROGRESS),
@@ -23,6 +25,7 @@ export const freshProgress = (classId?: ClassId): CharacterProgress => ({
 function classProgress(value: unknown, classId: ClassId): CharacterProgress {
   const progress = progressSchema.parse(value);
   progress.coins ??= 0;
+  progress.backpack ??= [];
   progress.equipment = validateClassEquipment(
     progress.equipment ?? starterEquipment(classId),
     classId,
@@ -88,7 +91,9 @@ export class CharacterStore {
       CREATE TABLE IF NOT EXISTS world_members (character_id TEXT PRIMARY KEY REFERENCES characters(id), world_id TEXT NOT NULL REFERENCES worlds(id)) STRICT;
       CREATE TABLE IF NOT EXISTS emberfall_migrations (version INTEGER PRIMARY KEY) STRICT;
       INSERT OR IGNORE INTO emberfall_migrations VALUES (1);`);
-        this.db.exec(`CREATE TABLE IF NOT EXISTS steam_accounts (
+        this.db
+          .exec(`CREATE TABLE IF NOT EXISTS merchants (world_id TEXT PRIMARY KEY REFERENCES worlds(id) ON DELETE CASCADE, data TEXT NOT NULL) STRICT;
+        CREATE TABLE IF NOT EXISTS steam_accounts (
           steam_id TEXT PRIMARY KEY, character_id TEXT UNIQUE NOT NULL REFERENCES characters(id),
           nickname TEXT, steam_name TEXT NOT NULL
         ) STRICT;
@@ -199,10 +204,15 @@ export class CharacterStore {
     });
     this.versions.set(id, 1);
   }
+  merchant(worldId: string): Merchant {
+    const row = this.db.prepare("SELECT data FROM merchants WHERE world_id=?").get(worldId);
+    return row ? merchantSchema.parse(JSON.parse(String(row.data))) : freshMerchant();
+  }
   save(
     id: string,
     name: string,
     progress: CharacterProgress & Partial<Pick<Player, "classId" | "classes">>,
+    merchant?: { worldId: string; state: Merchant },
   ) {
     const row = this.db
       .prepare(`SELECT data, version FROM ${this.savesTable} WHERE user_id=? AND slot=0`)
@@ -229,6 +239,12 @@ export class CharacterStore {
           version,
         );
       if (!result.changes) throw new VersionConflictError(id, 0, version);
+      if (merchant)
+        this.db
+          .prepare(
+            "INSERT INTO merchants VALUES (?, ?) ON CONFLICT(world_id) DO UPDATE SET data=excluded.data",
+          )
+          .run(merchant.worldId, JSON.stringify(merchantSchema.parse(merchant.state)));
       this.db
         .prepare(
           "UPDATE characters SET name=COALESCE((SELECT nickname FROM steam_accounts WHERE character_id=characters.id), ?), updated_at=? WHERE id=?",

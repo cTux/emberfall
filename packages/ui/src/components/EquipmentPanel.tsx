@@ -39,7 +39,14 @@ export interface EquipmentSlotView {
   position: { column: number; row: number };
   fallback: ReactNode;
   accepts: string;
-  item?: { name: string; icon: ReactNode; badges: EquipmentBadgeView[] };
+  item?: {
+    name: string;
+    icon: ReactNode;
+    badges: EquipmentBadgeView[];
+    details?: string;
+    price?: number;
+  };
+  onUnequip?(): void;
 }
 export interface EquipmentPanelProps {
   slots: EquipmentSlotView[];
@@ -50,7 +57,7 @@ function StatRows({ stats }: { stats: EquipmentStatView[] }) {
   return (
     <Box
       component="dl"
-      sx={{ m: 0, display: "grid", gridTemplateColumns: "1fr auto", columnGap: 2, rowGap: 0.5 }}
+      sx={{ m: 0, display: "grid", gridTemplateColumns: "1fr auto", columnGap: 2, rowGap: 0.25 }}
     >
       {stats.map(({ label, value }) => (
         <Box key={label} sx={{ display: "contents" }}>
@@ -80,8 +87,8 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
       ref={panelRef}
       sx={{
         display: "grid",
-        gridTemplateColumns: { xs: "1fr", sm: "240px minmax(0, 1fr)" },
-        gap: 3,
+        gridTemplateColumns: "1fr",
+        gap: 1,
         alignItems: "start",
       }}
     >
@@ -89,15 +96,19 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
         aria-label="Equipment slots"
         sx={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 72px)",
-          gridTemplateRows: "repeat(4, 78px)",
-          gap: 1,
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gridTemplateRows: "repeat(4, 44px)",
+          gap: 0.5,
           justifyContent: "center",
+          maxWidth: 160,
+          width: "100%",
+          mx: "auto",
         }}
       >
         {slots.map((slot) => (
           <GearTooltipStyled
             key={slot.id}
+            disableInteractive={!slot.item?.badges.length}
             open={openSlot === slot.id}
             onOpen={() => setOpenSlot(slot.id)}
             onClose={() => {
@@ -186,6 +197,12 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                 ) : (
                   <Typography variant="body2">Accepts: {slot.accepts}</Typography>
                 )}
+                {slot.item?.details && <Typography variant="body2">{slot.item.details}</Typography>}
+                {slot.item && (
+                  <Typography variant="body2" color="primary.main">
+                    {slot.item.price ?? 1} gold
+                  </Typography>
+                )}
               </Stack>
             }
           >
@@ -194,7 +211,18 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               data-equipment-slot={slot.id}
               data-equipped={!!slot.item}
               onClick={() => setOpenSlot(slot.id)}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                slot.onUnequip?.();
+                setOpenSlot(null);
+              }}
               onKeyDown={(event) => {
+                if ((event.key === "Enter" || event.key === " ") && slot.onUnequip) {
+                  event.preventDefault();
+                  slot.onUnequip();
+                  setOpenSlot(null);
+                  return;
+                }
                 if (event.key !== "Tab" || event.shiftKey || openSlot !== slot.id) return;
                 const tooltipId = event.currentTarget.getAttribute("aria-describedby");
                 const badge = tooltipId
@@ -224,8 +252,8 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               <Box
                 aria-hidden="true"
                 sx={{
-                  width: 44,
-                  height: 44,
+                  width: { xs: 32, sm: 44 },
+                  height: { xs: 32, sm: 44 },
                   display: "grid",
                   placeItems: "center",
                   opacity: slot.item ? 1 : 0.25,
@@ -240,17 +268,11 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               >
                 {slot.item?.icon ?? slot.fallback}
               </Box>
-              <Typography variant="caption" color="text.secondary">
-                {slot.label}
-              </Typography>
             </ButtonBase>
           </GearTooltipStyled>
         ))}
       </Box>
       <Stack component="section" aria-label="Character stats" spacing={1} sx={{ minWidth: 0 }}>
-        <Typography component="h3" variant="subtitle2">
-          Character stats
-        </Typography>
         <StatRows stats={stats} />
       </Stack>
     </Box>

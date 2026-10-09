@@ -163,7 +163,8 @@ export interface LootDrop {
   collectorId?: string;
   amount?: number;
   id: number;
-  kind: "experience" | "gold";
+  kind: "experience" | "gold" | "item";
+  itemId?: string;
   x: number;
   y: number;
   at: number;

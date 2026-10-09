@@ -59,7 +59,7 @@ Browser settings and identity use `emberfall-new.*`, preserving the old runtime.
 
 ## Verify
 
-Equipment opens through the HUD or physical `KeyI`. `equipment-view.tsx` owns
+Inventory opens through the HUD or physical `KeyI`. `equipment-view.tsx` owns
 slot grid coordinates, labels and fallback icons; it passes controlled views and
 shared derived stats to `EquipmentPanel` inside the existing draggable window.
 `damage-text.ts` renders authoritative damage type and critical metadata for both

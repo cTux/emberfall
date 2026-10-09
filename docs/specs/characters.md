@@ -25,8 +25,23 @@ nature staff. Equipment is saved independently per class. Older saves without
 equipment receive that class's starter weapon; explicitly empty slots stay empty.
 The nine slots are weapon, gloves, helmet, body armor, leggings, boots, amulet,
 off-hand and ring. Off-hands accept class-appropriate shields, quivers, orbs and
-nature focuses. This feature provides inspection and starter equipment; acquiring
-or manually changing items is outside its scope.
+nature focuses. The unlimited backpack is saved independently per class. Older saves receive an
+empty backpack. Right-clicking compatible gear equips it, returning the old item
+to the backpack; right-clicking equipment unequips it. Totals update immediately
+from confirmed equipment. Removing the weapon disables its default attack.
+
+Forest enemies each drop one random non-weapon item across armor, jewelry and
+class-specific off-hand types. Every dropped item has 1 armor and costs 1 gold.
+Training grants no loot. Pickup remains automatic without interrupting play.
+Consumables stack by type; right-click consumes one. Health potions restore 25 HP,
+clamped to maximum HP, and are not consumed at full health or while dead.
+
+Marta has one shared backpack and gold balance per world, initially 5000 gold and
+five health potions. Right-click sells one player item or buys one merchant item
+for its listed price. Each transfer updates both inventories and gold balances
+atomically. Insufficient gold, stale items, incompatible gear and trading outside
+Marta's village interaction range are rejected without changing saved state.
+Merchant stock and gold survive restarts for worlds that still exist.
 
 All equipped items contribute to one shared stat calculation. Weapons supply
 power, attacks per second, automatic/manual range, damage type and critical stats;

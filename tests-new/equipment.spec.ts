@@ -15,11 +15,11 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   await page.goto("/");
   await page.getByLabel("Your adventurer name").fill("Gear tester");
   await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  const opener = page.getByRole("button", { name: "Equipment (I)" });
+  const opener = page.getByRole("button", { name: "Inventory (I)" });
   await expect(opener).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
-  const dialog = page.getByRole("dialog", { name: "Equipment", exact: true });
+  const dialog = page.getByRole("dialog", { name: "Inventory", exact: true });
   const physicalI = (key = "ш", repeat = false) =>
     page.evaluate(
       ({ key, repeat }) => {
@@ -86,17 +86,17 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
   await expect(itemTooltip).not.toContainText("Attack speed");
   await expect(sword).toHaveCSS("border-top-width", "0px");
   await page.mouse.move(0, 0);
-  await dialog.getByRole("heading", { name: "Equipment", exact: true }).click();
+  await dialog.getByRole("heading", { name: "Inventory", exact: true }).click();
   await expect(page.getByRole("tooltip")).toBeHidden();
   const gloves = dialog.getByRole("button", { name: "Gloves: Empty" });
   await page.keyboard.press("Tab");
   await gloves.focus();
   await expect(page.getByRole("tooltip")).toContainText("Accepts: Gloves");
   await expect(gloves.locator('[aria-hidden="true"]').first()).toHaveCSS("opacity", "0.25");
-  await dialog.getByRole("heading", { name: "Equipment", exact: true }).click();
+  await dialog.getByRole("heading", { name: "Inventory", exact: true }).click();
   const before = (await dialog.boundingBox())!;
   const title = (await dialog
-    .getByRole("heading", { name: "Equipment", exact: true })
+    .getByRole("heading", { name: "Inventory", exact: true })
     .boundingBox())!;
   await page.mouse.move(title.x + 60, title.y + 10);
   await page.mouse.down();
@@ -183,7 +183,7 @@ test("equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect(page.locator(`[data-equipment-badge="${effect}"]`).last()).toBeVisible();
     expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
     await page.screenshot({ path: `test-results/equipment-${classId}.png` });
-    await dialog.getByRole("button", { name: "Close Equipment", exact: true }).click();
+    await dialog.getByRole("button", { name: "Close Inventory", exact: true }).click();
     await expect(dialog).toHaveCount(0);
   }
   await opener.click();

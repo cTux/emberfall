@@ -6,10 +6,11 @@ import { AssetGallery } from "./AssetGallery";
 import { ClassMovementGallery } from "./ClassMovementGallery";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { classDetails } from "./class-details";
-import { Equipment } from "./equipment-view";
+import { Equipment, Trading } from "./equipment-view";
 import { Codex } from "./Codex";
 import {
   characterStats,
+  INNKEEPER,
   enemyMaxHealth,
   CLASS_IDS,
   CLASS_LABELS,
@@ -419,7 +420,7 @@ function App({
                 ? [
                     {
                       id: "equipment",
-                      label: "Equipment (I)",
+                      label: "Inventory (I)",
                       icon: faShieldHalved,
                       onClick: () => setMenu("equipment"),
                     },
@@ -674,12 +675,18 @@ function App({
         <GameWindow
           key={menu}
           height={menu === "settings" ? 420 : undefined}
-          width={menu === "wardrobe" || menu === "equipment" ? 600 : undefined}
+          width={
+            menu === "wardrobe"
+              ? 600
+              : menu === "equipment" || (menu === "building" && building === INNKEEPER.name)
+                ? 520
+                : undefined
+          }
           title={
             menu === "codex"
               ? "Codex"
               : menu === "equipment"
-                ? "Equipment"
+                ? "Inventory"
                 : menu === "settings"
                   ? "Settings"
                   : menu === "portal"
@@ -701,7 +708,7 @@ function App({
             {menu === "codex" ? (
               <Codex />
             ) : menu === "equipment" && me ? (
-              <Equipment player={me} />
+              <Equipment player={me} send={send} />
             ) : menu === "settings" ? (
               <Settings
                 account={account}
@@ -784,6 +791,8 @@ function App({
                   );
                 })}
               </Box>
+            ) : menu === "building" && building === INNKEEPER.name && me && world?.merchant ? (
+              <Trading player={me} merchant={world.merchant} send={send} />
             ) : menu === "building" ? (
               <Typography>{building} services are coming in a future update.</Typography>
             ) : (

@@ -12,7 +12,7 @@ Any future progression feedback must leave movement, targeting and attacking ava
 
 - XP is granted through kill credit and shared pickups; no level threshold or upgrade offer is implemented.
 - Level, XP and reserved talent data are saved independently for each class.
-- In the new runtime, each gold pickup adds one coin to its collector's saved class balance without a prompt. No spending system exists. Original-runtime gold remains visual only.
+- In the new runtime, each gold pickup adds one coin to its collector's saved class balance without a prompt. Coins can be spent or earned through optional Innkeeper trading in the new runtime. Original-runtime gold remains visual only.
 - The wardrobe changes class in the village. It is not a progression reward flow.
 
 See [characters](characters.md) and [combat rewards](combat.md#combat-05--rewards-and-damage-accounting) for implemented rules.

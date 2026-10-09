@@ -1,3 +1,4 @@
+import { LOOT_ITEM_IDS } from "./equipment.ts";
 import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
 import { COLLISION } from "./definitions/collision.ts";
 import { AILMENT_DEFINITIONS } from "./definitions/effects/ailments.ts";
@@ -97,6 +98,14 @@ export function hitEnemy(
       y: enemy.y,
       at: now,
     });
+  appendSceneEntities(scene, "drops", {
+    id: ++scene.sequence,
+    kind: "item",
+    itemId: LOOT_ITEM_IDS[Math.floor(Math.random() * LOOT_ITEM_IDS.length)],
+    x: wrap(enemy.x - 10, FOREST.width),
+    y: enemy.y,
+    at: now,
+  });
   if (scene.drops.length > PICKUP_RULES.capacity)
     scene.drops = scene.drops.slice(-PICKUP_RULES.capacity);
 }

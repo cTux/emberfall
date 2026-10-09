@@ -1,4 +1,9 @@
-import { EquipmentPanel } from "@emberfall/ui";
+import { Box } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFlask } from "@fortawesome/free-solid-svg-icons/faFlask";
+import type { ClientMessage, BackpackItem } from "@emberfall/common-new";
+import { itemDefinition, CONSUMABLES } from "@emberfall/common-new";
+import { Backpack, EquipmentPanel } from "@emberfall/ui";
 import type { EquipmentSlotView, EquipmentStatView, EquipmentBadgeView } from "@emberfall/ui";
 import {
   EQUIPMENT_SLOTS,
@@ -180,7 +185,13 @@ function weaponBadges(player: Player, classId: ClassId, weapon: string): Equipme
   }
   return badges;
 }
-export function Equipment({ player }: { player: Player }) {
+export function Equipment({
+  player,
+  send,
+}: {
+  player: Player;
+  send(message: ClientMessage): void;
+}) {
   const classId = player.classId ?? "warrior";
   const equipment = equippedItems(player);
   const slots: EquipmentSlotView[] = EQUIPMENT_SLOTS.map((id) => {
@@ -188,6 +199,7 @@ export function Equipment({ player }: { player: Player }) {
     const itemClass = gear ? ITEM_CLASSES[gear.id] : undefined;
     return {
       id,
+      onUnequip: gear ? () => send({ type: "unequip", slot: id }) : undefined,
       label: SLOT_LABELS[id],
       position: SLOT_POSITIONS[id],
       accepts: (SLOT_GEAR_TYPES[id] as readonly GearType[])
@@ -210,11 +222,91 @@ export function Equipment({ player }: { player: Player }) {
         gear && canEquip(id, gear, classId)
           ? {
               name: gear.name,
-              icon: <img src={weaponSrc(itemClass ?? classId)} alt="" />,
+              icon: itemIcon(gear.id),
+              price: gear.price ?? 1,
+              details: gear.stats.armor ? `Armor: ${gear.stats.armor}` : undefined,
               badges: itemClass ? weaponBadges(player, itemClass, gear.id) : [],
             }
           : undefined,
     };
   });
-  return <EquipmentPanel slots={slots} stats={equipmentStatRows(player)} />;
+  return (
+    <Box sx={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 1.5 }}>
+      <EquipmentPanel slots={slots} stats={equipmentStatRows(player)} />
+      <Backpack
+        label="Your backpack"
+        items={backpackViews(player.backpack ?? [])}
+        coins={player.coins ?? 0}
+        action="Use"
+        onUse={(id) => send({ type: "useItem", id })}
+      />
+    </Box>
+  );
+}
+
+function itemIcon(itemId: string) {
+  if (itemId === "health-potion") return <FontAwesomeIcon icon={faFlask} />;
+  const gear = GEAR_DEFINITIONS[itemId];
+  const itemClass = ITEM_CLASSES[itemId];
+  const slot = gear
+    ? EQUIPMENT_SLOTS.find((slot) =>
+        (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear.gearType),
+      )
+    : "amulet";
+  const fallback = `/assets/wardrobe-style/slot-${slot ?? "offHand"}.png`;
+  return (
+    <img
+      src={itemClass ? weaponSrc(itemClass) : fallback}
+      alt=""
+      onError={(event) => {
+        if (!event.currentTarget.src.endsWith(fallback)) event.currentTarget.src = fallback;
+      }}
+    />
+  );
+}
+export function backpackViews(items: BackpackItem[]) {
+  return items.map((item) => {
+    const definition = itemDefinition(item.itemId);
+    const gear = GEAR_DEFINITIONS[item.itemId];
+    const potion = CONSUMABLES[item.itemId as keyof typeof CONSUMABLES];
+    return {
+      ...item,
+      name: definition.name,
+      icon: itemIcon(item.itemId),
+      price: definition.price ?? 1,
+      details: potion
+        ? `Restores ${potion.healing} health`
+        : gear.stats.armor
+          ? `Armor: ${gear.stats.armor}`
+          : "Weapon",
+    };
+  });
+}
+export function Trading({
+  player,
+  merchant,
+  send,
+}: {
+  player: Player;
+  merchant: import("@emberfall/common-new").Merchant;
+  send(message: ClientMessage): void;
+}) {
+  return (
+    <Box sx={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 1.5 }}>
+      <Backpack
+        label="Innkeeper's backpack"
+        items={backpackViews(merchant.backpack)}
+        coins={merchant.coins}
+        action="Buy"
+        onUse={(id) => send({ type: "trade", id, buying: true })}
+      />
+      <Backpack
+        label="Your backpack"
+        items={backpackViews(player.backpack ?? [])}
+        coins={player.coins ?? 0}
+        action="Sell"
+        onUse={(id) => send({ type: "trade", id, buying: false })}
+      />
+    </Box>
+  );
 }

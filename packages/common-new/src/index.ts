@@ -3,7 +3,9 @@ export { nicknameSchema, type AccountView } from "./account.ts";
 import { CLASS_IDS, CLASS_LABELS } from "./definitions/entities/players.ts";
 export { CLASS_IDS, CLASS_LABELS };
 import { z } from "zod";
-import { equipmentSchema } from "./equipment.ts";
+import { backpackSchema, type Merchant } from "./inventory.ts";
+export * from "./inventory.ts";
+import { EQUIPMENT_SLOTS, equipmentSchema } from "./equipment.ts";
 export * from "./equipment.ts";
 export {
   ARENA,
@@ -40,6 +42,7 @@ const characterToken = z
 export const progressSchema = z
   .object({
     equipment: equipmentSchema.optional(),
+    backpack: backpackSchema.optional(),
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),
     level: z.number().int().min(1).max(10000),
     experience: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),
@@ -51,6 +54,9 @@ export const progressSchema = z
   .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("useItem"), id: z.string().min(1).max(64) }),
+  z.object({ type: z.literal("unequip"), slot: z.enum(EQUIPMENT_SLOTS) }),
+  z.object({ type: z.literal("trade"), id: z.string().min(1).max(64), buying: z.boolean() }),
   z.object({
     type: z.literal("chat"),
     text: z
@@ -165,6 +171,7 @@ export interface WorldSummary {
   capacity: number;
 }
 export interface WorldState {
+  merchant?: Merchant;
   chat?: ChatMessage[];
   training?: SceneState;
   id: string;

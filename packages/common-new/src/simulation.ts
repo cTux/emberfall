@@ -29,6 +29,7 @@ import {
 import { ARENA, moveActor, inTrainingZone } from "./world.ts";
 import type { Player, Bear, ClientMessage } from "./index.ts";
 import type { SceneState, Enemy } from "./scene.ts";
+import { addItem } from "./inventory.ts";
 import { characterStats, companionStats } from "./equipment.ts";
 
 export const TICK_MS = RUNTIME.tickMs;
@@ -429,6 +430,12 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     if (distance <= PICKUP_RULES.collectRadius || distance - travel <= PICKUP_RULES.collectRadius) {
       if (drop.kind === "experience")
         for (const player of collectors) player.experience += drop.amount ?? 1;
+      else if (drop.kind === "item" && drop.itemId)
+        addItem((target.backpack ??= []), {
+          id: `${scene.id}:${drop.id}`,
+          itemId: drop.itemId,
+          quantity: 1,
+        });
       else
         target.coins = Math.min(
           Number.MAX_SAFE_INTEGER,

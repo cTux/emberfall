@@ -634,7 +634,10 @@ test("proc boundary is ten percent; DOT kills use the same loot, XP and boss com
   stepCombat(s, [p], 1000, 0);
   assert.equal(s.phase, "ended");
   assert.equal(p.experience, 1);
-  assert.equal(s.drops!.length, 1);
+  assert.deepEqual(
+    s.drops!.map((drop) => drop.kind),
+    ["experience", "item"],
+  );
 });
 
 test("ranger arrows pierce every target once, wrap, and expire at 1000 units", (t) => {

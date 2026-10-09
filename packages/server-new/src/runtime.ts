@@ -14,6 +14,9 @@ import {
   requestPlayerCast,
   TICK_MS,
   syncEquipmentVitals,
+  useBackpackItem,
+  unequipItem,
+  tradeItem,
 } from "@emberfall/common-new";
 import type {
   ChatMessage,
@@ -21,6 +24,7 @@ import type {
   ServerMessage,
   WorldState,
   SceneState,
+  Merchant,
 } from "@emberfall/common-new";
 import { CharacterStore } from "./characters.ts";
 import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from "./scenes.ts";
@@ -30,6 +34,7 @@ import { addChat } from "./chat.ts";
 const derive = promisify(scrypt);
 type AccountIdentity = () => { characterId: string; nickname: string | null } | undefined;
 interface World {
+  merchant?: Merchant;
   chat?: ChatMessage[];
   id: string;
   name: string;
@@ -116,6 +121,7 @@ export async function createRuntime(savePath = ":memory:") {
     scene: sceneState(world.scene),
     training: world.training,
     serverNow: now,
+    merchant: (world.merchant ??= characters.merchant(world.id)),
   });
   const list = () => ({
     type: "worlds" as const,
@@ -332,6 +338,52 @@ export async function createRuntime(savePath = ":memory:") {
       }
       if (session.busy) {
         error("Please wait for your previous request.");
+        return;
+      }
+      if (message.type === "useItem" || message.type === "unequip" || message.type === "trade") {
+        const world = worlds.get(session.worldId ?? "");
+        const player = world?.players.get(session.id);
+        if (!world || !player || !session.characterId || player.hitpoints <= 0) {
+          error("Join a world with a living character first.");
+          return;
+        }
+        if (
+          message.type === "trade" &&
+          (player.scene || nearbyInteraction(player)?.id !== "innkeeper")
+        ) {
+          error("Trade near Marta the Innkeeper in the village.");
+          return;
+        }
+        let saving = false;
+        try {
+          const next = structuredClone(player);
+          const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
+          if (message.type === "trade") tradeItem(next, merchant, message.id, message.buying);
+          else if (message.type === "unequip") unequipItem(next, message.slot);
+          else useBackpackItem(next, message.id);
+          saving = true;
+          characters.save(
+            session.characterId,
+            next.name,
+            next,
+            message.type === "trade" ? { worldId: world.id, state: merchant } : undefined,
+          );
+          Object.assign(player, {
+            backpack: next.backpack,
+            equipment: next.equipment,
+            coins: next.coins,
+            hitpoints: next.hitpoints,
+            maxHitpoints: next.maxHitpoints,
+          });
+          if (message.type === "trade") world.merchant = merchant;
+          send(ws, { type: "state", world: state(world) });
+        } catch (failure) {
+          error(
+            !saving && failure instanceof Error
+              ? failure.message
+              : "Unable to save item action. Please retry.",
+          );
+        }
         return;
       }
       if (message.type === "chat") {

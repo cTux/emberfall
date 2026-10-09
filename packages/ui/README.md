@@ -86,7 +86,7 @@ without adding scrollbars or clipping details. Modal tooltips remain inside the
 dialog's focus scope, and Tab/Shift+Tab connect the slot and its first badge.
 Item badges use the bundled generated
 atlas, optional bottom-right values and host-supplied explanations accessible by
-mouse, keyboard and touch. It places character stats on the right on desktop and below at narrow widths.
+mouse, keyboard and touch. It places character stats below the compact equipment grid. Optional item actions stay with the host. `Backpack` displays an unlimited controlled item grid, stacked counts, custom tooltips ending with price, and right-click/keyboard callbacks. `GoldBalance` is shared with the HUD and trader.
 Compose it inside `GameWindow` for dragging and focus management. Its Storybook
 stories cover starter and empty loadouts; gameplay rules remain in the host.
 
