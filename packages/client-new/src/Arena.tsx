@@ -25,6 +25,7 @@ import {
   drawParticles,
   drawVignette,
   drawNameBadge,
+  drawCharacterName,
   drawAtmosphere,
   obstacleOpacity,
   drawVegetation,
@@ -711,14 +712,22 @@ export function Arena({
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
-          if (object.name)
+          if (object.name && object.id === "npc:innkeeper")
+            drawCharacterName(
+              ctx,
+              object.x,
+              object.y - object.height - 9,
+              object.name,
+              undefined,
+              interaction.current?.id === "innkeeper",
+            );
+          else if (object.name)
             drawNameBadge(
               ctx,
               object.x,
               object.y,
               object.name,
-              object.id === `building:${interaction.current?.id}` ||
-                object.id === `npc:${interaction.current?.id}`,
+              object.id === `building:${interaction.current?.id}`,
             );
           continue;
         }

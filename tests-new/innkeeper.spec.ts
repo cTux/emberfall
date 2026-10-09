@@ -16,6 +16,13 @@ test("Marta opens the service placeholder while the Inn has no interaction", asy
   await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
+  player.x = INNKEEPER.x - 70;
+  player.y = INNKEEPER.y - 18;
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: "test-results/innkeeper-name-inactive.png" });
+  player.x = INNKEEPER.x - 45;
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: "test-results/innkeeper-name-active.png" });
   player.x = INNKEEPER.x;
   player.y = INNKEEPER.y + 35;
   const dialog = page.getByRole("dialog", { name: INNKEEPER.name });

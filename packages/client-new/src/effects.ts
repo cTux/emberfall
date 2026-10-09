@@ -208,6 +208,34 @@ export function drawDamageFlash(
   ctx.restore();
 }
 export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>>;
+export function drawCharacterName(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  name: string,
+  color = "#ffffff",
+  active = false,
+) {
+  ctx.save();
+  ctx.font = '8px "Alegreya Sans", sans-serif';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  const label = active ? `(E) ${name}` : name;
+  const metrics = ctx.measureText(label);
+  if (active) {
+    const width = Math.ceil(metrics.width) + 12;
+    ctx.fillStyle = "#786747";
+    ctx.fillRect(x - width / 2, y - 2, width, 13);
+  }
+  ctx.strokeStyle = "#101817";
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.strokeText(label, x, y + metrics.actualBoundingBoxAscent);
+  ctx.fillStyle = color;
+  ctx.fillText(label, x, y + metrics.actualBoundingBoxAscent);
+  ctx.restore();
+}
+
 export function drawNameBadge(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -298,13 +326,7 @@ export function drawPlayerHealth(
     (width - 2) * Math.max(0, Math.min(1, hp / Math.max(1, max))),
     height - 2,
   );
-  ctx.strokeStyle = "#101817";
-  ctx.lineWidth = 2;
-  ctx.lineJoin = "round";
-  const nameY = y + height + metrics.actualBoundingBoxAscent;
-  ctx.strokeText(name, x, nameY);
-  ctx.fillStyle = color;
-  ctx.fillText(name, x, nameY);
+  drawCharacterName(ctx, x, y + height, name, color);
   ctx.restore();
   return width;
 }
