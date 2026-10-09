@@ -5,6 +5,9 @@ import {
   PATHS,
   TORCHES,
   WARDROBE,
+  INNKEEPER,
+  INTERACTION_RADIUS,
+  ARENA,
   moveActor,
   nearbyInteraction,
 } from "@emberfall/common-new";
@@ -32,6 +35,7 @@ test("village paths and door approaches are walkable while buildings and torch p
     const result = moveActor({ x: building.doorX, y: building.y + 30 }, 0, -80, 12);
     assert(result.y >= building.y + 12);
     assert(result.y < building.y + 30);
+    if (building.id === "inn") continue;
     assert.deepEqual(nearbyInteraction({ x: building.doorX, y: building.y + 30, hitpoints: 100 }), {
       id: building.id,
       name: building.name,
@@ -64,4 +68,15 @@ test("village paths and door approaches are walkable while buildings and torch p
         assert.equal(result.y, point.y + 1, `Blocked path at ${point.x},${point.y}`);
       }
     }
+});
+
+test("Marta replaces the Inn interaction with living village-only wrapped proximity", () => {
+  const player = { x: INNKEEPER.x, y: INNKEEPER.y - 15, hitpoints: 100 };
+  assert.deepEqual(nearbyInteraction(player), INNKEEPER);
+  assert.deepEqual(nearbyInteraction({ ...player, x: player.x + ARENA.width }), INNKEEPER);
+  assert.equal(nearbyInteraction({ ...player, hitpoints: 0 }), null);
+  assert.equal(nearbyInteraction({ ...player, scene: "forest" }), null);
+  assert.equal(nearbyInteraction({ ...player, x: player.x + INTERACTION_RADIUS }), null);
+  const inn = BUILDINGS.find((b) => b.id === "inn")!;
+  assert.equal(nearbyInteraction({ ...player, x: inn.doorX, y: inn.y + 9 }), null);
 });

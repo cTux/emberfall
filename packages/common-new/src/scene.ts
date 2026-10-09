@@ -7,6 +7,8 @@ import {
 } from "./definitions/worlds/forest.ts";
 export { FOREST, LOBBY_PORTAL, FOREST_PORTAL, INTERACTION_RADIUS };
 import { BUILDINGS, WARDROBE } from "./world.ts";
+import { INNKEEPER } from "./definitions/worlds/village.ts";
+export { INNKEEPER };
 
 export { WARDROBE } from "./world.ts";
 
@@ -91,8 +93,9 @@ export function nearbyInteraction(
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
     return { id: "portal", name: "Forest portal", ...LOBBY_PORTAL };
   if (distance(WARDROBE) < 55) return { id: "wardrobe", name: "Wardrobe", ...WARDROBE };
+  if (distance(INNKEEPER) < INTERACTION_RADIUS) return { ...INNKEEPER };
   const building = BUILDINGS.find(
-    (b) => distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
+    (b) => b.id !== "inn" && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
   );
   return building
     ? { id: building.id, name: building.name, x: building.doorX, y: building.y }

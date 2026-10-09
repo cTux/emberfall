@@ -10,6 +10,13 @@ The create/join browser shows a forest backdrop; entering a world takes players 
 
 Lobby buildings and portals show interaction availability directly in their existing nameplate: a lighter background and `(E) Building name` while in range. They no longer show a separate tooltip.
 
+In the new runtime, the Inn remains scenery without an interaction. Marta the
+Innkeeper stands outside it, facing forward with a looping idle animation and
+no movement. E within 68 units opens the same service placeholder window used
+by other buildings, titled with her name. Her nameplate shows availability in
+the same way. Accepted future scope: Marta will sell consumables and buy items
+collected in battle; trading and its economy are not implemented yet.
+
 ## SCENE-02 — World geometry
 
 The lobby and generated forest are each 4800×2560 and wrap on all four edges. The lobby is 20 times its original area (five times the width and four times the height). Its camera always centers the local character, including while training or crossing an edge; terrain, scenery, players, companions, combat effects, cursor aim, and navigation use the nearest wrapped positions. The original village buildings, wardrobe, portal, and training dummies keep their positions, with extra terrain and vegetation around them. Both areas share the same dimensions so combat and interpolation use the same wrapped distances. Tree generation and nearby-cell collision queries are shared; combat distances and client interpolation also wrap.

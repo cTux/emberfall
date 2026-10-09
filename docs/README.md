@@ -48,6 +48,10 @@ Server tests live in [packages/server/src](../packages/server/src), game browser
 
 ## Start here by task
 
+New-runtime Innkeeper: [SCENE-01](specs/scenes-and-village.md#scene-01--village-and-interactions),
+[runtime design](design/new-runtime.md), [shared village definition](../packages/common-new/src/definitions/worlds/village.ts)
+and [browser verification](../tests-new/innkeeper.spec.ts).
+
 New-client hitbox debugging: [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music),
 [overlay design](design/new-runtime.md), [renderer](../packages/client-new/src/hitboxes.ts)
 and [browser verification](../tests-new/hitboxes.spec.ts).
