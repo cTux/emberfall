@@ -1,10 +1,7 @@
 import { test, expect } from "./fixtures";
 import { BUILDINGS, INNKEEPER } from "../packages/common-new/src/index.ts";
 
-test("Marta opens the service placeholder while the Inn has no interaction", async ({
-  page,
-  game,
-}) => {
+test("Marta opens shared trading while the Inn has no interaction", async ({ page, game }) => {
   const errors: string[] = [];
   const inn = BUILDINGS.find((building) => building.id === "inn")!;
   expect(INNKEEPER.x - (inn.x + inn.sourceWidth)).toBeGreaterThan(0);
@@ -30,7 +27,8 @@ test("Marta opens the service placeholder while the Inn has no interaction", asy
     await page.keyboard.press("e");
     await expect(dialog).toBeVisible();
   }).toPass({ intervals: [200], timeout: 6000 });
-  await expect(dialog).toContainText(`${INNKEEPER.name} services are coming in a future update.`);
+  await expect(dialog.getByRole("region", { name: "Innkeeper's backpack" })).toBeVisible();
+  await expect(dialog.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();
   await page.screenshot({ path: "test-results/innkeeper-placeholder.png" });
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();

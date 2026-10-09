@@ -35,3 +35,7 @@ export type {
   EquipmentStatView,
   EquipmentBadgeView,
 } from "./components/EquipmentPanel";
+
+export { Backpack } from "./components/Backpack";
+export type { BackpackItemView, BackpackProps } from "./components/Backpack";
+export { GoldBalance } from "./components/GoldBalance";

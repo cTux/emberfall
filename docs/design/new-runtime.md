@@ -30,7 +30,7 @@ Village dummies join the same foot-position render sort as scenery and actors. A
 The shared village definition owns Marta the Innkeeper's fixed position and
 display name. `nearbyInteraction` excludes the Inn doorway and selects Marta
 using the existing wrapped proximity check. The client reuses the building
-placeholder window and scenery depth ordering. Marta and player health labels
+trading window and scenery depth ordering. Marta and player health labels
 share `drawCharacterName`; Marta's label sits above her sprite and adds the
 interaction background and `(E)` only while selected. Her cached idle frames advance
 by time, with the same frame used for rendering and shadow masks; there is no
@@ -267,3 +267,25 @@ checks and browser scenarios. Verify PixiJS screenshots and representative frame
 times separately. Passing sampled scenarios does not establish pixel-identical
 rendering, hardware GPU throughput, or production capacity. Keep measured limits
 alongside results in the verification record.
+
+## Inventory, loot and shared trading
+
+`common-new/inventory.ts` owns validated unlimited backpack entries, stack merging,
+gear exchange, consumable use and one-item trades. Stable entry IDs make stale
+commands harmless. Gear definitions are the single source of armor and price.
+Per-class progress includes the backpack; older saves default to an empty array.
+Forest kill drops join the existing wrapped pickup system; training exits before
+rewards. The client renders confirmed inventory and never grants items or coins.
+
+`runtime.ts` derives item ownership from the authenticated session. Trading also
+checks village proximity. Item commands mutate a detached copy, save first, then
+publish live state. `characters.ts` stores shared merchant state by world ID and
+commits it with the character save in one SQLite transaction. Single-process
+synchronous commands serialize competing buyers; the first successful transfer
+removes the entry before another can buy it. World deletion deletes merchant state.
+The existing protocol payload carries backpacks and merchant state without a
+second transport. UI components remain controlled; host callbacks send commands.
+
+Verification: `packages/server-new/src/inventory.test.ts` and
+`tests-new/inventory.spec.ts` cover transfers, failures, migration, restart,
+stacking, loot, unarmed casting and the replicated UI.

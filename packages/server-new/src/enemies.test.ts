@@ -82,7 +82,7 @@ test("scene population compounds enemy HP and dropped XP, preserving fractions i
       assert.equal(newcomer.experience, 1.2 ** (count - 1));
       assert.equal(lobby.experience, 0);
       if (count > 1) assert.equal(players[count - 1].experience, 0);
-      assert.equal(scene.drops!.length, 0);
+      assert.equal(scene.drops!.filter((drop) => drop.kind === "experience").length, 0);
       const store = new CharacterStore(":memory:");
       await store.ready;
       try {

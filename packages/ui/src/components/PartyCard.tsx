@@ -2,12 +2,10 @@ import { Avatar, Box, Stack, Tooltip, Typography } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCrown } from "@fortawesome/free-solid-svg-icons/faCrown";
 import { faDoorOpen } from "@fortawesome/free-solid-svg-icons/faDoorOpen";
-import { faCoins } from "@fortawesome/free-solid-svg-icons/faCoins";
+import { GoldBalance } from "./GoldBalance";
 import type { ReactNode } from "react";
 import { StatusMeter } from "./StatusMeter";
 import { PartyCardStyled, PartyPortraitStyled, PartyMarkerStyled } from "./styles";
-
-const coinFormat = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
 
 export interface PartyCardProps {
   name: string;
@@ -69,22 +67,7 @@ export function PartyCard({
           <Box sx={{ width: "60%", minWidth: 0 }} aria-label={local ? "Your character" : undefined}>
             <StatusMeter label={`${name}, lvl ${level}`} value={health} max={maxHealth} />
           </Box>
-          {coins !== undefined && (
-            <Typography
-              variant="caption"
-              aria-label={`${name}: ${coins} coins`}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                whiteSpace: "nowrap",
-                color: "primary.main",
-              }}
-            >
-              <FontAwesomeIcon icon={faCoins} aria-hidden="true" />
-              {coinFormat.format(coins).toLowerCase()}
-            </Typography>
-          )}
+          {coins !== undefined && <GoldBalance name={name} coins={coins} />}
         </Stack>
       </Stack>
       {companion && (

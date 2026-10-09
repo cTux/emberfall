@@ -17,8 +17,8 @@ const chapters = [
           the cursor is beyond it. Press E near a building, Marta the Innkeeper or blue portal to
           interact. Trees, buildings and torch posts block movement. Escape opens a leave
           confirmation; Escape inside a window closes it. Drag window titles to move them. Press I
-          to inspect equipment and character stats, or press it again to close the window. Movement
-          and equipment hotkeys follow physical keys across keybeard layouts.
+          to open your inventory and character stats, or press it again to close the window.
+          Movement and equipment hotkeys follow physical keys across keyboard layouts.
         </p>{" "}
       </>
     ),
@@ -50,7 +50,7 @@ const chapters = [
           The forest wraps at every edge. Attacks are automatic. Starter weapons have a 5% chance to
           critically hit for 150% power. Warrior damage is physical, Mage fire, Ranger poison and
           Druid nature. Damage numbers use those colors; critical hits appear white with a thick red
-          outline. Equipped gear determines offense and defense; inspect its totals in Equipment.
+          outline. Equipped gear determines offense and defense; inspect its totals in Inventory.
           Warrior slashes for 5 damage; ranger arrows deal 5 damage and pierce all targets for 1000
           units. Ranger and mage fire two projectiles, 3° either side of the aim direction, with 6°
           between them. Mage fireballs travel up to 250 units with auto-target enabled, deal 3

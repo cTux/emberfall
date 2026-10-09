@@ -93,8 +93,7 @@ resume that imported character. Do not put bearer keys in documentation or logs.
 Per-class progress includes equipment IDs. Decode migrates missing equipment to
 the correct starter weapon and validates slot/class compatibility. Explicitly empty
 loadouts stay empty. Class changes still save before live mutation; derived maximum
-HP is synchronized and current health clamped. No client equipment or stat
-mutation command is exposed by the inspection feature.
+HP is synchronized and current health clamped. Validated item commands save a detached character before publishing changes. Shared merchant stock is committed in the same transaction as each trade.
 
 Add content definitions and shared rules before adding command handlers. Keep
 transport details out of combat systems. Add an authoritative failure-path test

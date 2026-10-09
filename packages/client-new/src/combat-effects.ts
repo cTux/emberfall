@@ -123,7 +123,12 @@ export function drawLootAndBlood(
     ctx.beginPath();
     ctx.ellipse(p.x, p.y + 2, 5, 2, 0, 0, Math.PI * 2);
     ctx.fill();
-    if (pickupArt.naturalWidth)
+    if (drop.kind === "item") {
+      ctx.fillStyle = "#c3a6e8";
+      ctx.fillRect(p.x - 7, p.y - 14 - jump, 14, 14);
+      ctx.strokeStyle = "#f2dcff";
+      ctx.strokeRect(p.x - 7, p.y - 14 - jump, 14, 14);
+    } else if (pickupArt.naturalWidth)
       drawArt(
         ctx,
         pickupArt,

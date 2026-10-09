@@ -59,13 +59,15 @@ Movement uses physical keyboard codes, so WASD works with non-Latin layouts. Tex
 
 Screen-edge arrows point to living teammates in the same area, the boss and return portals using wrapped distances. Enemy deaths retain their sprite and fall/fade for 0.7 seconds. See [combat readability](graphics.md#graphics-04--combat-readability) for debuff icons and weapons.
 
-## UI-06 — Equipment inspection (new runtime)
+## UI-06 — Inventory and trading (new runtime)
 
-The Equipment HUD action and physical `KeyI` open a draggable equipment dialog in
+The Inventory HUD action and physical `KeyI` open a draggable inventory dialog in
 village and forest. `I` toggles it closed; Escape and the close button also close
 it. Ignore repeats, modified shortcuts, text entry and other open dialogs. Use
 the existing modal focus, movement suppression and persisted drag-position rules.
 New-runtime windows use a light solid border, with no divider under the title.
+
+The Inventory window opens with physical KeyI or the HUD action. Compact square backpack slots use item art when available and default equipment-slot art otherwise. Stack counts sit at the bottom right. Item tooltips end with the gold price. Right-click activates an item; Enter or Space provides the same action for keyboard users. Marta opens two compact backpacks, hers on the left and the player's on the right, each with the same gold display used in the HUD.
 
 The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
 amulet/off-hand/ring. Slots have no border. Empty slots show generated wardrobe-style
@@ -80,7 +82,7 @@ Each badge exposes its own weapon-specific explanation on hover, keyboard focus
 or touch, including critical stats, swing/projectile details and ailment stacking.
 Range follows the active auto-target/cursor-aim mode. Empty slots explain accepted
 gear types. Character stats derived from all equipment
-appear on the right, stacking below the slots on narrow screens. Attack timing is
+appear underneath equipment on the left, with the unlimited backpack on the right. Attack timing is
 shown only as cooldown, without a duplicate attack-speed row.
 
 Normal outgoing damage numbers use physical parchment, fire orange, poison lime

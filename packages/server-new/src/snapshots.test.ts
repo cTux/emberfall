@@ -270,12 +270,12 @@ test("kills drop experience and 10-percent coins; experience pickups reward play
   stepCombat(scene, [player], 10000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ["experience", "gold"],
+    ["experience", "gold", "item"],
   );
   const experience = player.experience;
   player.x = 2440;
   stepCombat(scene, [player], 10200, 0);
-  assert.equal(scene.drops!.length, 2, "initial hop is visible before pickup");
+  assert.equal(scene.drops!.length, 3, "initial hop is visible before pickup");
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.drops!.length, 0);
   assert.equal(player.experience, experience + 1, "collection grants one extra experience");
@@ -285,7 +285,7 @@ test("kills drop experience and 10-percent coins; experience pickups reward play
   stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ["experience"],
+    ["experience", "item"],
   );
   scene.phase = "ended";
   stepCombat(scene, [player], 71000, 0);
