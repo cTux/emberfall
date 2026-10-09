@@ -30,7 +30,9 @@ Village dummies join the same foot-position render sort as scenery and actors. A
 The shared village definition owns Marta the Innkeeper's fixed position and
 display name. `nearbyInteraction` excludes the Inn doorway and selects Marta
 using the existing wrapped proximity check. The client reuses the building
-placeholder window and scenery depth ordering. Her cached idle frames advance
+placeholder window and scenery depth ordering. Marta and player health labels
+share `drawCharacterName`; Marta's label sits above her sprite and adds the
+interaction background and `(E)` only while selected. Her cached idle frames advance
 by time, with the same frame used for rendering and shadow masks; there is no
 moving NPC state, network command or persistence change. Verification:
 [village rules](../../packages/server-new/src/village.test.ts) and

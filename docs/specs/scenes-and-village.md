@@ -13,8 +13,9 @@ Lobby buildings and portals show interaction availability directly in their exis
 In the new runtime, the Inn remains scenery without an interaction or nameplate. Marta the
 Innkeeper stands right beside its right wall, facing forward with a looping idle animation and
 no movement. E within 68 units opens the same service placeholder window used
-by other buildings, titled with her name. Her nameplate shows availability in
-the same way. Accepted future scope: Marta will sell consumables and buy items
+by other buildings, titled with her name. Her name uses the player's font, outline
+and placement above the sprite, adding a highlighted background and `(E)` while
+in range. Accepted future scope: Marta will sell consumables and buy items
 collected in battle; trading and its economy are not implemented yet.
 
 ## SCENE-02 — World geometry
