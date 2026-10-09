@@ -1,3 +1,4 @@
+import type { PixiContext } from "./rendering/pixi-context";
 import { characterImages } from "./characters";
 import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from "./animation";
 import { actorArt, environmentArt, terrainArt, terrainTile } from "./art";
@@ -569,6 +570,7 @@ export function forestRenderer(
         );
         ctx.globalAlpha = bodyOpacity;
       }
+      (ctx as unknown as PixiContext).spriteTint = a.player?.reconnecting ? "#ff5555" : "#ffffff";
       const breath = idleBreath(now, a.row);
       ctx.drawImage(
         a.image,
@@ -581,6 +583,7 @@ export function forestRenderer(
         a.size,
         a.size * breath,
       );
+      (ctx as unknown as PixiContext).spriteTint = "#ffffff";
       if (hit && (a.enemy || a.player?.id === playerId))
         drawTargetHit(
           ctx,
@@ -674,6 +677,18 @@ export function drawPlayerDetails(
 ) {
   if (showVitals) {
     drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
+  }
+  if (p.reconnecting) {
+    ctx.save();
+    ctx.font = 'bold 10px "Alegreya Sans", sans-serif';
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ff5555";
+    ctx.strokeStyle = "#101817";
+    ctx.lineWidth = 3;
+    ctx.strokeText("Reconnecting", x, y - 62);
+    ctx.fillText("Reconnecting", x, y - 62);
+    ctx.restore();
+    return;
   }
   const age = now - (p.attackAt ?? -Infinity);
   if (!characterStats(p).hasWeapon) return;

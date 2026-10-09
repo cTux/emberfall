@@ -190,6 +190,7 @@ test("world lifecycle, passwords, movement, capacity and isolation over real soc
         m.type === "state" &&
         m.world.players.some((p) => p.id === other.playerId && p.x > other.world.players[1].x),
     );
+    host.send({ type: "leave" });
     host.ws.close();
     await guest.wait(
       (m) =>
@@ -211,7 +212,7 @@ test("world lifecycle, passwords, movement, capacity and isolation over real soc
     excess.messages.length = 0;
     await excess.wait((m) => m.type === "state");
     assert(excess.messages.every((m) => m.type !== "state" || m.world.id !== id));
-    for (const ws of clients) if (ws !== excess.ws) ws.close();
+    for (const ws of clients) if (ws !== excess.ws) ws.send(JSON.stringify({ type: "leave" }));
     await excess.wait((m) => m.type === "worlds" && !m.worlds.some((w) => w.id === id));
     excess.send({ type: "leave" });
     await excess.wait((m) => m.type === "left");
@@ -234,7 +235,7 @@ test("world lifecycle, passwords, movement, capacity and isolation over real soc
     assert(secondJoin.type === "joined");
     assert.equal(secondJoin.world.players.length, 2);
     second.messages.length = 0;
-    first.ws.close();
+    first.send({ type: "leave" });
     await second.wait(
       (m) =>
         m.type === "state" &&
@@ -254,7 +255,7 @@ test("world lifecycle, passwords, movement, capacity and isolation over real soc
     assert.equal(rejoined.world.players.length, 1);
     assert.equal(rejoined.world.scene, undefined);
     excess.messages.length = 0;
-    second.ws.close();
+    second.send({ type: "leave" });
     await excess.wait(
       (m) => m.type === "worlds" && m.worlds.some((w) => w.id === permanent.id && w.players === 0),
     );

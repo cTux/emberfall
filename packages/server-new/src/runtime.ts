@@ -66,6 +66,7 @@ interface Session {
   actionAt: number;
   characterId?: string;
   reconnectUntil?: number;
+  reconnectTimer?: ReturnType<typeof setTimeout>;
 }
 
 export async function createRuntime(savePath = ":memory:") {
@@ -136,8 +137,7 @@ export async function createRuntime(savePath = ":memory:") {
       const player = world.players.get(session.id);
       if (player && session.characterId) characters.save(session.characterId, player.name, player);
       if (player) {
-        if (!session.reconnectUntil)
-          addChat(world, `${player.name} disconnected.`, undefined, player.id);
+        addChat(world, `${player.name} disconnected.`, undefined, player.id);
         if (player.scene)
           addChat(
             world,
@@ -159,6 +159,7 @@ export async function createRuntime(savePath = ":memory:") {
         world.chat = [];
       } else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
     }
+    clearTimeout(session.reconnectTimer);
     session.worldId = undefined;
     session.inputs = [];
     session.lastSeq = 0;
@@ -196,14 +197,25 @@ export async function createRuntime(savePath = ":memory:") {
         sessions.delete(ws);
         return;
       }
-      if (session.worldId && !shuttingDown && code !== 1000 && code !== 1005 && code !== 1008) {
+      if (session.worldId && !shuttingDown && code !== 1008) {
         session.reconnectUntil = Date.now() + RUNTIME.reconnectMs;
         session.inputs = [];
         session.x = session.y = 0;
         session.inputAt = 0;
         const player = worlds.get(session.worldId)?.players.get(session.id);
-        const world = worlds.get(session.worldId);
-        if (world && player) addChat(world, `${player.name} disconnected.`, undefined, player.id);
+        if (player) {
+          player.reconnecting = true;
+          player.inputX = player.inputY = 0;
+        }
+        session.reconnectTimer = setTimeout(() => {
+          try {
+            leave(session);
+            sessions.delete(ws);
+            broadcastList();
+          } catch (error) {
+            console.error("Character save failed on reconnect expiry; autosave will retry:", error);
+          }
+        }, RUNTIME.reconnectMs);
         if (player?.attacking) player.attacking = false;
         try {
           if (player && session.characterId)
@@ -448,10 +460,11 @@ export async function createRuntime(savePath = ":memory:") {
             session.characterId = old.characterId;
             session.chatAt = old.chatAt;
             const player = world.players.get(session.id)!;
+            delete player.reconnecting;
+            clearTimeout(old.reconnectTimer);
             player.inputSeq = player.inputElapsed = undefined;
             player.inputX = player.inputY = 0;
             sessions.delete(oldWs);
-            addChat(world, `${player.name} joined.`, undefined, player.id);
             send(ws, {
               type: "joined",
               playerId: session.id,
@@ -660,6 +673,7 @@ export async function createRuntime(savePath = ":memory:") {
     clearInterval(autosave);
     const failures: unknown[] = [];
     for (const session of sessions.values()) {
+      clearTimeout(session.reconnectTimer);
       try {
         leave(session);
       } catch (error) {

@@ -102,7 +102,8 @@ test("chat validates text, identifies senders, retains ten messages and isolates
     const joined = bob.messages.find((m) => m.type === "joined");
     assert(joined?.type === "joined");
     bob.ws.terminate();
-    await wait(() => alice.world?.chat?.at(-1)?.text === "Bob disconnected.");
+    await wait(() => alice.world?.players.find((p) => p.name === "Bob")?.reconnecting === true);
+    assert.equal(alice.world!.chat!.at(-1)!.text, "Message 10");
     assert(
       alice.world!.players.some((p) => p.name === "Bob"),
       "interruption retains membership",
@@ -113,13 +114,14 @@ test("chat validates text, identifies senders, retains ten messages and isolates
       worldId: joined.world.id,
       characterToken: joined.characterToken,
     });
-    await wait(() => resumed.world?.chat?.at(-1)?.text === "Bob joined.");
+    await wait(() => !!resumed.world);
+    assert.equal(resumed.world!.chat!.at(-1)!.text, "Message 10");
     assert.equal(resumed.world!.players.find((p) => p.name === "Bob")!.id, joined.playerId);
-    assert.equal(alice.world!.chat!.filter((m) => m.text === "Bob disconnected.").length, 1);
-    resumed.ws.close(1000);
+    assert.equal(alice.world!.chat!.filter((m) => m.text === "Bob disconnected.").length, 0);
+    resumed.send({ type: "leave" });
     await wait(() => alice.world?.players.length === 1);
     assert.equal(alice.world!.chat!.at(-1)?.text, "Bob disconnected.");
-    assert.equal(alice.world!.chat!.filter((m) => m.text === "Bob disconnected.").length, 2);
+    assert.equal(alice.world!.chat!.filter((m) => m.text === "Bob disconnected.").length, 1);
     assert.equal(alice.world!.players.find((p) => p.name === "Alice")!.chat, undefined);
   } finally {
     sockets.forEach((ws) => ws.terminate());

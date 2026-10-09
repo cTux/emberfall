@@ -4,7 +4,7 @@ export const RUNTIME = {
   chatLimit: 10,
   chatMaxLength: 200,
   autosaveMs: 5000,
-  reconnectMs: 30000,
+  reconnectMs: 10000,
   predictionLimitMs: 1000,
   protocolVersion: 1,
 } as const;

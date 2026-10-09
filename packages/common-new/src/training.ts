@@ -20,7 +20,9 @@ export function tickTraining(
       TRAINING_DEFINITION.refreshMs;
   }
   scene.damage = scene.damage.filter((hit) => now - hit.at < TRANSIENT_EFFECTS.damage.lifetimeMs);
-  const lobby = players.filter((player) => !player.scene && player.hitpoints > 0);
+  const lobby = players.filter(
+    (player) => !player.scene && player.hitpoints > 0 && !player.reconnecting,
+  );
   tickDebuffs(scene, lobby, now);
   for (const player of lobby)
     tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt);
