@@ -275,6 +275,20 @@ test("all stories render; desktop and narrow screens fit", async ({ page, reques
     await page.goto(story(entry.id));
     await expect(page.locator("#storybook-root > *").first()).toBeAttached();
     await expect(page.locator(".sb-errordisplay")).toBeHidden();
+    if (
+      entry.id.startsWith("components-backpack--") ||
+      entry.id.startsWith("components-equipmentpanel--")
+    ) {
+      const icons = page.locator("#storybook-root img");
+      for (const icon of await icons.all()) {
+        await expect
+          .poll(() => icon.evaluate((image: HTMLImageElement) => image.naturalWidth))
+          .toBeGreaterThan(0);
+      }
+      if (entry.id.endsWith("--stacked") || entry.id.endsWith("--starter")) {
+        await page.screenshot({ path: testInfo.outputPath(`${entry.id}.png`) });
+      }
+    }
   }
   expect(errors).toEqual([]);
   for (const width of [1280, 390]) {
