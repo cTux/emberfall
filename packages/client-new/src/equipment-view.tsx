@@ -1,6 +1,4 @@
 import { Box } from "@mui/material";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFlask } from "@fortawesome/free-solid-svg-icons/faFlask";
 import type { ClientMessage, BackpackItem } from "@emberfall/common-new";
 import { itemDefinition, CONSUMABLES } from "@emberfall/common-new";
 import { Backpack, EquipmentPanel } from "@emberfall/ui";
@@ -245,7 +243,6 @@ export function Equipment({
 }
 
 function itemIcon(itemId: string) {
-  if (itemId === "health-potion") return <FontAwesomeIcon icon={faFlask} />;
   const gear = GEAR_DEFINITIONS[itemId];
   const itemClass = ITEM_CLASSES[itemId];
   const slot = gear
@@ -256,7 +253,13 @@ function itemIcon(itemId: string) {
   const fallback = `/assets/wardrobe-style/slot-${slot ?? "offHand"}.png`;
   return (
     <img
-      src={itemClass ? weaponSrc(itemClass) : fallback}
+      src={
+        itemId === "health-potion"
+          ? "/assets/wardrobe-style/health-potion.png"
+          : itemClass
+            ? weaponSrc(itemClass)
+            : fallback
+      }
       alt=""
       onError={(event) => {
         if (!event.currentTarget.src.endsWith(fallback)) event.currentTarget.src = fallback;

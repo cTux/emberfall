@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFlask } from "@fortawesome/free-solid-svg-icons/faFlask";
+import healthPotion from "../assets/health-potion.png";
 import { Backpack } from "../index";
 
 const meta = {
@@ -18,7 +17,7 @@ const meta = {
         quantity: 5,
         price: 1,
         details: "Restores 25 health",
-        icon: <FontAwesomeIcon icon={faFlask} />,
+        icon: <img src={healthPotion} alt="" />,
       },
     ],
   },

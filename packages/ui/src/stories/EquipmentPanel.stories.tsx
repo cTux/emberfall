@@ -1,25 +1,32 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShieldHalved } from "@fortawesome/free-solid-svg-icons/faShieldHalved";
-import { faRing } from "@fortawesome/free-solid-svg-icons/faRing";
+import weaponSlot from "../assets/item-icons/slot-weapon.png";
+import glovesSlot from "../assets/item-icons/slot-gloves.png";
+import helmetSlot from "../assets/item-icons/slot-helmet.png";
+import bodyArmorSlot from "../assets/item-icons/slot-bodyArmor.png";
+import leggingsSlot from "../assets/item-icons/slot-leggings.png";
+import bootsSlot from "../assets/item-icons/slot-boots.png";
+import amuletSlot from "../assets/item-icons/slot-amulet.png";
+import offHandSlot from "../assets/item-icons/slot-offHand.png";
+import ringSlot from "../assets/item-icons/slot-ring.png";
+import warriorWeapon from "../assets/item-icons/warrior-weapon.png";
 import { EquipmentPanel, GameWindow } from "../index";
 import type { EquipmentSlotView } from "../index";
 
 const slots: EquipmentSlotView[] = [
-  ["Weapon", 1, 2],
-  ["Gloves", 1, 3],
-  ["Helmet", 2, 1],
-  ["Body armor", 2, 2],
-  ["Leggings", 2, 3],
-  ["Boots", 2, 4],
-  ["Amulet", 3, 1],
-  ["Off-hand", 3, 2],
-  ["Ring", 3, 3],
-].map(([label, column, row]) => ({
+  ["Weapon", 1, 2, weaponSlot],
+  ["Gloves", 1, 3, glovesSlot],
+  ["Helmet", 2, 1, helmetSlot],
+  ["Body armor", 2, 2, bodyArmorSlot],
+  ["Leggings", 2, 3, leggingsSlot],
+  ["Boots", 2, 4, bootsSlot],
+  ["Amulet", 3, 1, amuletSlot],
+  ["Off-hand", 3, 2, offHandSlot],
+  ["Ring", 3, 3, ringSlot],
+].map(([label, column, row, image]) => ({
   id: String(label),
   label: String(label),
   position: { column: Number(column), row: Number(row) },
-  fallback: <FontAwesomeIcon icon={label === "Ring" ? faRing : faShieldHalved} />,
+  fallback: <img src={String(image)} alt="" className="equipment-slot-placeholder" />,
   accepts: label === "Off-hand" ? "Shield" : String(label),
 }));
 const meta = {
@@ -40,7 +47,7 @@ const meta = {
             ...slot,
             item: {
               name: "Warrior's sword",
-              icon: <FontAwesomeIcon icon={faShieldHalved} />,
+              icon: <img src={warriorWeapon} alt="" />,
               badges: [
                 {
                   label: "Power",

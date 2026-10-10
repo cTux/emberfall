@@ -26,6 +26,9 @@ test("inventory equips, unequips and consumes stacks; shared trading transfers i
   await expect(inventory).toBeVisible();
   const backpack = inventory.getByRole("region", { name: "Your backpack" });
   await expect(backpack.getByRole("button", { name: "Use Health potion (3)" })).toBeVisible();
+  const potionIcon = backpack.getByRole("button", { name: "Use Health potion (3)" }).locator("img");
+  await expect(potionIcon).toHaveAttribute("src", "/assets/wardrobe-style/health-potion.png");
+  await expect(potionIcon).toHaveJSProperty("naturalWidth", 96);
   await backpack.getByRole("button", { name: "Use Helmet", exact: true }).hover();
   const tooltip = page.getByRole("tooltip");
   await expect(tooltip).toContainText("Armor: 1");
