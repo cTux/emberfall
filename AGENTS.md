@@ -11,6 +11,8 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 
 ## Find the right guidance
 
+- [Local skill integration](docs/agents/skill-integration.md): prefer project-local upstream skills for overlapping workflows; use the existing Emberfall skills for runtime-specific rules.
+
 - [Documentation map](docs/README.md): implemented specs, technical designs and implementation plan. Update affected sources for behavior changes rather than appending feature history to README.
 - [Development](docs/development.md): setup/check commands, skill maintenance and PR verification. Run checks proportionate to the change and report actual evidence.
 - [Operations](docs/operations.md): HTTPS, hosting, saves and recovery.
