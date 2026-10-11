@@ -3,10 +3,73 @@ import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { mkdtempSync, readFileSync, rmSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { parseEnv } from "node:util";
 import { CharacterStore, freshProgress, decodeProgress } from "./characters.ts";
 import { importLegacy } from "./persistence/import-legacy.ts";
+
+test("import CLI defaults to the configured save and prints a restart path without overwriting", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "emberfall-import-cli-"));
+  const source = join(dir, "legacy.sqlite");
+  const destination = `${source}.imported.sqlite`;
+  const token = "b".repeat(64);
+  const legacy = new DatabaseSync(source);
+  legacy.exec("CREATE TABLE characters (id TEXT, token_hash TEXT, name TEXT, progress TEXT)");
+  legacy
+    .prepare("INSERT INTO characters VALUES (?, ?, ?, ?)")
+    .run(
+      "cli-hero",
+      createHash("sha256").update(token).digest("hex"),
+      "Hero",
+      JSON.stringify({ ...freshProgress(), experience: 12.5 }),
+    );
+  legacy.close();
+  const before = readFileSync(source);
+  const script = fileURLToPath(new URL("../scripts/import-save.ts", import.meta.url));
+  const server = fileURLToPath(new URL("../", import.meta.url));
+  const run = (...args: string[]) =>
+    spawnSync(process.execPath, [script, ...args], {
+      cwd: dir,
+      env: { ...process.env, SAVE_PATH_NEW: relative(server, source) },
+      encoding: "utf8",
+    });
+  try {
+    const imported = run();
+    assert.equal(imported.status, 0, imported.stderr);
+    const setting = imported.stdout
+      .split(/\r?\n/)
+      .find((line) => line.startsWith("SAVE_PATH_NEW="))!;
+    assert.equal(resolve(parseEnv(setting).SAVE_PATH_NEW), destination);
+    assert.deepEqual(readFileSync(source), before);
+    const store = new CharacterStore(destination);
+    await store.ready;
+    try {
+      assert.equal(store.load(token).progress.experience, 12.5);
+    } finally {
+      store.close();
+    }
+    const saved = readFileSync(destination);
+    const repeated = run();
+    assert.equal(repeated.status, 1);
+    assert.match(repeated.stderr, /already exists/);
+    assert.deepEqual(readFileSync(destination), saved);
+    const explicit = run(source, join(dir, "explicit.sqlite"));
+    assert.equal(explicit.status, 0, explicit.stderr);
+    const invalid = run(source);
+    assert.equal(invalid.status, 1);
+    assert.match(invalid.stderr, /Usage:/);
+    assert.doesNotMatch(invalid.stderr, /at file:/);
+    const missing = run(join(dir, "missing.sqlite"), join(dir, "missing-target.sqlite"));
+    assert.equal(missing.status, 1);
+    assert(!existsSync(join(dir, "missing-target.sqlite")));
+    assert.deepEqual(readFileSync(source), before);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
 
 test("save revisions reject stale writers and interoperate with Colyseus cloud saves", async () => {
   const dir = mkdtempSync(join(tmpdir(), "emberfall-new-cas-"));

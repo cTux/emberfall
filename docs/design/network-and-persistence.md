@@ -20,7 +20,7 @@ Client build checks load `version.json` before recovery. Mismatches reload; inva
 
 [CharacterStore](../../packages/server/src/characters.ts) stores versioned validated progress through the Colyseus SQLite schema, with revision checks and atomic character/merchant writes. Class and inventory changes save detached state before publishing. Autosave runs every five seconds; disconnect and shutdown also save. Failures surface errors and retain state for retry. Shutdown attempts every save and closes resources even after failures.
 
-Older progress documents preserve fractional XP and class progress, default missing equipment/backpacks/coins, and discard obsolete mana. Import an offline legacy backup only into a new destination with `pnpm import-save`; see the [server guide](../../packages/server/README.md). Renaming packages does not migrate a database. Deployments must keep `SAVE_PATH_NEW` pointing to their existing database, or move a stopped backup from `packages/server-new/data` to `packages/server/data`.
+Older progress documents preserve fractional XP and class progress, default missing equipment/backpacks/coins, and discard obsolete mana. Import an offline legacy backup only into a new destination with `pnpm import-save`; without arguments it reads the configured server database, writes a separate `<source>.imported.sqlite`, and prints the required `SAVE_PATH_NEW` setting. Stop the server and back up the source first; see the [server guide](../../packages/server/README.md). Renaming packages does not migrate a database. Deployments must keep `SAVE_PATH_NEW` pointing to their existing database, or move a stopped backup from `packages/server-new/data` to `packages/server/data`.
 
 ## Verification
 
