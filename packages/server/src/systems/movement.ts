@@ -1,4 +1,4 @@
-import { movePlayer, TICK_MS, type Player } from "@emberfall/common";
+import { movePlayer, TICK_MS, type Player } from '@emberfall/common';
 export interface MovementInput {
   chatAt?: number;
   timed?: boolean;
@@ -30,7 +30,7 @@ export function stepMovement(
     player.inputX = player.inputY = 0;
     while (budget > 0.0001 && session.inputs.length) {
       const command = session.inputs[0];
-      const epoch = player.scene === "forest" ? sceneId : "lobby";
+      const epoch = player.scene === 'forest' ? sceneId : 'lobby';
       const elapsed = command.elapsed ?? 0;
       const dt = Math.min(budget, command.durationMs! - elapsed);
       if (command.epoch === epoch && now - session.inputAt <= 1000) {
@@ -48,7 +48,7 @@ export function stepMovement(
   }
   const command = session.inputs.shift();
   if (command) player.inputSeq = command.seq;
-  const epoch = player.scene === "forest" ? sceneId : "lobby";
+  const epoch = player.scene === 'forest' ? sceneId : 'lobby';
   if (command) {
     session.epoch = command.epoch;
     session.x = command.x;

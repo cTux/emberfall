@@ -1,6 +1,6 @@
 export const ATTACK_DEFINITIONS = {
   slash: {
-    id: "slash",
+    id: 'slash',
     range: 75,
     damage: 5,
     intervalMs: 1000,
@@ -8,7 +8,7 @@ export const ATTACK_DEFINITIONS = {
     aimSmoothingSeconds: 0.08,
   },
   arrow: {
-    id: "arrow",
+    id: 'arrow',
     range: 1000,
     manualRange: 1000,
     speed: 600,
@@ -18,7 +18,7 @@ export const ATTACK_DEFINITIONS = {
     piercing: true,
   },
   fireball: {
-    id: "fireball",
+    id: 'fireball',
     range: 250,
     manualRange: 1000,
     speed: 380,
@@ -30,7 +30,7 @@ export const ATTACK_DEFINITIONS = {
     piercing: false,
   },
   roots: {
-    id: "roots",
+    id: 'roots',
     range: 250,
     manualRange: 1000,
     speed: 380,

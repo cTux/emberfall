@@ -1,35 +1,29 @@
-import type { PixiContext } from "./rendering/pixi-context";
-import { characterImages } from "./characters";
-import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from "./animation";
-import { actorArt, environmentArt, terrainArt, terrainTile } from "./art";
-import { portalArt, drawStonePortal } from "./ambient-art";
-import { companionCaster, drawCompanion } from "./companion";
-import { critterCaster, crittersAt, drawCritter } from "./critters";
-import { drawNavigation } from "./navigation";
-import { drawHitboxes } from "./hitboxes";
-import type { Interaction } from "./effects";
+import type { PixiContext } from './rendering/pixi-context';
+import { characterImages } from './characters';
+import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from './animation';
+import { actorArt, environmentArt, terrainArt, terrainTile } from './art';
+import { portalArt, drawStonePortal } from './ambient-art';
+import { companionCaster, drawCompanion } from './companion';
+import { critterCaster, crittersAt, drawCritter } from './critters';
+import { drawNavigation } from './navigation';
+import { drawHitboxes } from './hitboxes';
+import type { Interaction } from './effects';
 import {
   bloodPuddleRenderer,
   drawLootAndBlood,
   drawClassProjectiles,
   drawDebuffs,
-} from "./combat-effects";
-import { defaultSpellRange, characterStats, PLAYER_ATTACK_DURATION } from "@emberfall/common";
-import { movementFacing } from "./facing";
-import { drawDanger } from "./danger";
-import {
-  enemyMaxHealth,
-  ENEMY_STATS,
-  FOREST,
-  forestTrees,
-  wrappedDelta,
-} from "@emberfall/common";
-import type { WorldState, Player } from "@emberfall/common";
-import type { GraphicsSettings } from "./graphics";
-import type { Preferences } from "./preferences";
-import { makeMask, castShadow, spriteMask } from "./lighting";
-import type { Caster } from "./lighting";
-import { lightTexture } from "./village";
+} from './combat-effects';
+import { defaultSpellRange, characterStats, PLAYER_ATTACK_DURATION } from '@emberfall/common';
+import { movementFacing } from './facing';
+import { drawDanger } from './danger';
+import { enemyMaxHealth, ENEMY_STATS, FOREST, forestTrees, wrappedDelta } from '@emberfall/common';
+import type { WorldState, Player } from '@emberfall/common';
+import type { GraphicsSettings } from './graphics';
+import type { Preferences } from './preferences';
+import { makeMask, castShadow, spriteMask } from './lighting';
+import type { Caster } from './lighting';
+import { lightTexture } from './village';
 import {
   drawPlayerHealth,
   drawChatBubble,
@@ -41,13 +35,13 @@ import {
   drawAtmosphere,
   obstacleOpacity,
   drawVegetation,
-} from "./effects";
+} from './effects';
 
-const portalSilhouette = document.createElement("canvas");
+const portalSilhouette = document.createElement('canvas');
 portalSilhouette.width = 50;
 portalSilhouette.height = 76;
-const portalContext = portalSilhouette.getContext("2d")!;
-portalContext.fillStyle = "#347fe0";
+const portalContext = portalSilhouette.getContext('2d')!;
+portalContext.fillStyle = '#347fe0';
 portalContext.beginPath();
 portalContext.ellipse(25, 38, 25, 38, 0, 0, Math.PI * 2);
 portalContext.fill();
@@ -68,7 +62,7 @@ export function drawPortal(
   if (portalArt.naturalWidth) {
     if (shadows)
       castShadow(ctx, {
-        id: "portal",
+        id: 'portal',
         x,
         y: y + 8,
         width: 64,
@@ -79,7 +73,7 @@ export function drawPortal(
     ctx.globalAlpha = opacity;
     if (bloom) {
       ctx.shadowBlur = 12;
-      ctx.shadowColor = "#53c9ff";
+      ctx.shadowColor = '#53c9ff';
     }
     drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
     ctx.restore();
@@ -87,13 +81,13 @@ export function drawPortal(
     return;
   }
   if (shadows)
-    castShadow(ctx, { id: "portal", x, y: y + 8, width: 50, height: 76, mask: portalMask });
+    castShadow(ctx, { id: 'portal', x, y: y + 8, width: 50, height: 76, mask: portalMask });
   ctx.save();
   ctx.globalAlpha = opacity;
   ctx.translate(x, y);
   ctx.lineWidth = 4;
   if (!shadows) {
-    ctx.fillStyle = "#162e4d";
+    ctx.fillStyle = '#162e4d';
     ctx.beginPath();
     ctx.ellipse(0, 1, 31, 12, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -101,16 +95,16 @@ export function drawPortal(
   ctx.save();
   if (bloom) {
     ctx.shadowBlur = 20;
-    ctx.shadowColor = "#53c9ff";
+    ctx.shadowColor = '#53c9ff';
   }
-  ctx.fillStyle = "#101e68";
+  ctx.fillStyle = '#101e68';
   ctx.beginPath();
   ctx.ellipse(0, -30, 25, 38, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.save();
   ctx.clip();
   ctx.shadowBlur = 0;
-  const colors = ["#101e68", "#182c86", "#2042a6", "#285ac5", "#347fe0", "#52b4f5", "#8cddff"];
+  const colors = ['#101e68', '#182c86', '#2042a6', '#285ac5', '#347fe0', '#52b4f5', '#8cddff'];
   const time = now / 1600;
   for (let py = -68; py < 8; py += 3) {
     for (let px = -25; px < 25; px += 3) {
@@ -123,14 +117,14 @@ export function drawPortal(
     }
   }
   ctx.restore();
-  ctx.strokeStyle = "#8cddff";
+  ctx.strokeStyle = '#8cddff';
   ctx.lineWidth = 2;
   ctx.stroke();
   for (let i = 0; i < 24; i++) {
     const age = ((now + i * 137) % 1800) / 1800,
       angle = i * 2.399963;
     ctx.globalAlpha = Math.sin(age * Math.PI) * 0.8;
-    ctx.fillStyle = i % 3 === 0 ? "#b3efff" : "#52b4f5";
+    ctx.fillStyle = i % 3 === 0 ? '#b3efff' : '#52b4f5';
     ctx.fillRect(
       Math.round(Math.cos(angle) * (18 + age * 28)),
       Math.round(-30 + Math.sin(angle) * 28 - age * 35),
@@ -142,17 +136,17 @@ export function drawPortal(
   ctx.restore();
   drawNameBadge(ctx, x, y - 60, name, active);
 }
-const fogTexture = document.createElement("canvas");
+const fogTexture = document.createElement('canvas');
 fogTexture.width = fogTexture.height = 512;
-const fogContext = fogTexture.getContext("2d")!;
+const fogContext = fogTexture.getContext('2d')!;
 for (let i = 0; i < 36; i++) {
   for (const offsetX of [-512, 0, 512])
     for (const offsetY of [-512, 0, 512]) {
       const x = ((i * 137) % 512) + offsetX,
         y = ((i * 211) % 512) + offsetY;
       const gradient = fogContext.createRadialGradient(x, y, 0, x, y, 100);
-      gradient.addColorStop(0, "#b4cfdc12");
-      gradient.addColorStop(1, "#b4cfdc00");
+      gradient.addColorStop(0, '#b4cfdc12');
+      gradient.addColorStop(1, '#b4cfdc00');
       fogContext.fillStyle = gradient;
       fogContext.fillRect(x - 100, y - 100, 200, 200);
     }
@@ -166,7 +160,7 @@ export function drawFog(
   now: number,
 ) {
   ctx.save();
-  ctx.globalCompositeOperation = "screen";
+  ctx.globalCompositeOperation = 'screen';
   // World-space tiles: the camera only selects which volumes to draw.
   for (let layer = 0; layer < 2; layer++) {
     const tileWidth = layer ? 1600 : 960,
@@ -200,15 +194,15 @@ export function forestRenderer(
   skeleton: HTMLImageElement,
 ) {
   const enemyImages = Object.fromEntries(
-    ["runner", "brute", "caster", "warden"].map((name) => [name, actorArt(name)]),
+    ['runner', 'brute', 'caster', 'warden'].map((name) => [name, actorArt(name)]),
   );
-  const tree = document.createElement("canvas");
+  const tree = document.createElement('canvas');
   tree.width = tree.height = 128;
   let treeMask: HTMLCanvasElement | undefined;
-  const ground = document.createElement("canvas");
+  const ground = document.createElement('canvas');
   ground.width = ground.height = 320;
-  const g = ground.getContext("2d")!;
-  g.fillStyle = "#22392d";
+  const g = ground.getContext('2d')!;
+  g.fillStyle = '#22392d';
   g.fillRect(0, 0, 320, 320);
   let seed = 512;
   const random = () => {
@@ -216,7 +210,7 @@ export function forestRenderer(
     return seed / 4294967296;
   };
   for (let i = 0; i < 700; i++) {
-    g.fillStyle = i % 3 ? "#49654332" : "#132c2544";
+    g.fillStyle = i % 3 ? '#49654332' : '#132c2544';
     g.fillRect(random() * 320, random() * 320, 2 + random() * 6, 1 + random() * 3);
   }
   const positions = new Map<string, { x: number; y: number; facing: number }>();
@@ -246,9 +240,9 @@ export function forestRenderer(
       terrainArt.naturalWidth &&
       !treeMask
     ) {
-      tree.getContext("2d")!.drawImage(environmentArt, 0, 128, 128, 128, 0, 0, 128, 128);
+      tree.getContext('2d')!.drawImage(environmentArt, 0, 128, 128, 128, 0, 0, 128, 128);
       treeMask = makeMask(tree);
-      g.fillStyle = g.createPattern(terrainTile(2), "repeat")!;
+      g.fillStyle = g.createPattern(terrainTile(2), 'repeat')!;
       g.fillRect(0, 0, 320, 320);
     }
     const scale = Math.max(ctx.canvas.width / 960, ctx.canvas.height / 640),
@@ -292,7 +286,7 @@ export function forestRenderer(
           mask: treeMask!,
         }))
       : [];
-    const players = world?.players.filter((p) => p.scene === "forest") ?? [];
+    const players = world?.players.filter((p) => p.scene === 'forest') ?? [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
       ...(world?.scene?.enemies ?? []).map((e) => ({
@@ -304,7 +298,7 @@ export function forestRenderer(
       })),
       ...(
         world?.scene?.damage.filter(
-          (d) => d.killed && d.target.startsWith("enemy:") && serverTime - d.at < 700,
+          (d) => d.killed && d.target.startsWith('enemy:') && serverTime - d.at < 700,
         ) ?? []
       ).map((d) => ({
         id: d.target,
@@ -316,13 +310,13 @@ export function forestRenderer(
           debuffs: undefined,
           attack: undefined,
           cooldownUntil: undefined,
-          archetype: "skeleton" as const,
+          archetype: 'skeleton' as const,
           id: 0,
           x: d.x,
           y: d.y,
           hitpoints: 0,
           angle: 0,
-          kind: "normal" as const,
+          kind: 'normal' as const,
           ...d.enemy,
         },
       })),
@@ -357,14 +351,14 @@ export function forestRenderer(
                 actor.enemy!.hitpoints > 0,
                 actor.enemy!.attack,
                 (actor.enemy!.cooldownUntil ?? -Infinity) -
-                  ENEMY_STATS[actor.enemy!.archetype ?? "skeleton"].cooldown,
+                  ENEMY_STATS[actor.enemy!.archetype ?? 'skeleton'].cooldown,
               ),
           image = actor.player
-            ? characterImages[actor.player.classId ?? "warrior"].walk
-            : actor.enemy?.kind === "boss"
+            ? characterImages[actor.player.classId ?? 'warrior'].walk
+            : actor.enemy?.kind === 'boss'
               ? enemyImages.warden
-              : (enemyImages[actor.enemy?.archetype ?? "skeleton"] ?? skeleton);
-        const size = actor.enemy ? ENEMY_STATS[actor.enemy.archetype ?? "skeleton"].size : 48;
+              : (enemyImages[actor.enemy?.archetype ?? 'skeleton'] ?? skeleton);
+        const size = actor.enemy ? ENEMY_STATS[actor.enemy.archetype ?? 'skeleton'].size : 48;
         if (row === 5 || row === 6) {
           const angle = actor.player?.attackAngle ?? actor.enemy?.angle ?? 0;
           pos.facing = movementFacing(Math.cos(angle), Math.sin(angle), pos.facing);
@@ -381,7 +375,7 @@ export function forestRenderer(
         return { ...actor, ...point, facing: pos.facing, row, image, size, moving, dx, dy };
       })
       .filter((a) => Math.abs(a.x - cx) < width / 2 + 80 && Math.abs(a.y - cy) < height / 2 + 80);
-    const critters = crittersAt("forest", world ? serverTime : now, {
+    const critters = crittersAt('forest', world ? serverTime : now, {
       x: cameraX,
       y: cameraY,
       width,
@@ -405,7 +399,7 @@ export function forestRenderer(
     }
     if (quality.shadows) for (const caster of casters) castShadow(ctx, caster);
     if (!quality.shadows) {
-      ctx.fillStyle = "#07120955";
+      ctx.fillStyle = '#07120955';
       for (const t of trees) {
         ctx.beginPath();
         ctx.ellipse(t.x, t.y, 23, 8, 0, 0, Math.PI * 2);
@@ -421,7 +415,7 @@ export function forestRenderer(
         height,
       });
     const layers = [
-      ...(world?.scene?.phase === "ended" ? world.scene.portals : []).map((portal) => ({
+      ...(world?.scene?.phase === 'ended' ? world.scene.portals : []).map((portal) => ({
         y: near(portal.x, portal.y).y + 8,
         tree: null,
         actor: null,
@@ -478,8 +472,8 @@ export function forestRenderer(
           point.y,
           now,
           quality.bloom,
-          "Return to village",
-          interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
+          'Return to village',
+          interaction?.id === 'return' && interaction.x === portal.x && interaction.y === portal.y,
           quality.shadows,
           quality.wavingVegetation,
           obstacleOpacity({ x: point.x, y: point.y + 8, width: 64, height: 80 }, me),
@@ -570,7 +564,7 @@ export function forestRenderer(
         );
         ctx.globalAlpha = bodyOpacity;
       }
-      (ctx as unknown as PixiContext).spriteTint = a.player?.reconnecting ? "#ff5555" : "#ffffff";
+      (ctx as unknown as PixiContext).spriteTint = a.player?.reconnecting ? '#ff5555' : '#ffffff';
       const breath = idleBreath(now, a.row);
       ctx.drawImage(
         a.image,
@@ -583,7 +577,7 @@ export function forestRenderer(
         a.size,
         a.size * breath,
       );
-      (ctx as unknown as PixiContext).spriteTint = "#ffffff";
+      (ctx as unknown as PixiContext).spriteTint = '#ffffff';
       if (hit && (a.enemy || a.player?.id === playerId))
         drawTargetHit(
           ctx,
@@ -596,22 +590,22 @@ export function forestRenderer(
         );
       ctx.globalAlpha = 1;
       if (a.enemy) {
-        if (a.enemy.kind === "boss") {
+        if (a.enemy.kind === 'boss') {
           const width = drawPlayerHealth(
             ctx,
             a.x,
             top - 10,
             a.enemy.hitpoints,
             enemyMaxHealth(a.enemy),
-            a.enemy.name ?? "The Hollow Warden",
-            "#ffffff",
+            a.enemy.name ?? 'The Hollow Warden',
+            '#ffffff',
             true,
           );
           drawDebuffs(ctx, a.enemy, a.x - width / 2, top - 10, serverTime);
         } else {
-          ctx.fillStyle = "#102020";
+          ctx.fillStyle = '#102020';
           ctx.fillRect(a.x - 17, top - 8, 34, 5);
-          ctx.fillStyle = a.enemy.kind === "elite" ? "#f4d447" : "#df7765";
+          ctx.fillStyle = a.enemy.kind === 'elite' ? '#f4d447' : '#df7765';
           ctx.fillRect(a.x - 16, top - 7, (32 * a.enemy.hitpoints) / enemyMaxHealth(a.enemy), 3);
           drawDebuffs(ctx, a.enemy, a.x - 17, top - 8, serverTime);
         }
@@ -625,13 +619,13 @@ export function forestRenderer(
           a.facing,
           a.player.id === playerId ? now : serverTime,
           quality.bloom,
-          world?.scene?.phase === "active",
+          world?.scene?.phase === 'active',
         );
     }
     if (world?.scene) drawClassProjectiles(ctx, world.scene, serverTime, near);
     if (quality.lighting) {
       ctx.save();
-      ctx.globalCompositeOperation = "screen";
+      ctx.globalCompositeOperation = 'screen';
       for (const p of rendered.filter((a) => a.player && a.player.hitpoints > 0)) {
         const light = {
           x: p.x + (p.facing === 2 ? -15 : 12),
@@ -681,12 +675,12 @@ export function drawPlayerDetails(
   if (p.reconnecting) {
     ctx.save();
     ctx.font = 'bold 10px "Alegreya Sans", sans-serif';
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#ff5555";
-    ctx.strokeStyle = "#101817";
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#ff5555';
+    ctx.strokeStyle = '#101817';
     ctx.lineWidth = 3;
-    ctx.strokeText("Reconnecting", x, y - 62);
-    ctx.fillText("Reconnecting", x, y - 62);
+    ctx.strokeText('Reconnecting', x, y - 62);
+    ctx.fillText('Reconnecting', x, y - 62);
     ctx.restore();
     return;
   }
@@ -696,7 +690,7 @@ export function drawPlayerDetails(
   const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
   // Class weapons are painted into the directional action frames.
   if (attacking && p.hitpoints > 0) {
-    if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
+    if (p.classId === 'ranger' || p.classId === 'mage' || p.classId === 'druid') {
       return;
     }
     const progress = age / PLAYER_ATTACK_DURATION,
@@ -705,7 +699,7 @@ export function drawPlayerDetails(
     ctx.translate(x, y);
     ctx.rotate(angle);
     if (bloom) {
-      ctx.shadowColor = "#c3edff";
+      ctx.shadowColor = '#c3edff';
       ctx.shadowBlur = 10;
     }
     ctx.strokeStyle = `rgba(195,237,255,${1 - progress * 0.7})`;
@@ -713,7 +707,7 @@ export function drawPlayerDetails(
     ctx.beginPath();
     ctx.arc(0, 0, Math.max(0, attackRange - 5), -0.65, 0);
     ctx.stroke();
-    ctx.fillStyle = "#a8ffce";
+    ctx.fillStyle = '#a8ffce';
     for (let i = 0; i < 10; i++) {
       ctx.globalAlpha = (1 - progress) * (1 - i / 14);
       ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);
@@ -722,4 +716,4 @@ export function drawPlayerDetails(
     ctx.restore();
   }
 }
-import { drawDamageNumbers } from "./damage-text";
+import { drawDamageNumbers } from './damage-text';

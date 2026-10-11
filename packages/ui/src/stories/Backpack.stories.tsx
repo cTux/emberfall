@@ -1,23 +1,23 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import healthPotion from "../assets/health-potion.png";
-import { Backpack } from "../index";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import healthPotion from '../assets/health-potion.png';
+import { Backpack } from '../index';
 
 const meta = {
-  title: "Components/Backpack",
+  title: 'Components/Backpack',
   component: Backpack,
   args: {
-    label: "Your backpack",
+    label: 'Your backpack',
     coins: 5000,
-    action: "Use",
+    action: 'Use',
     onUse: () => {},
     items: [
       {
-        id: "potion",
-        name: "Health potion",
+        id: 'potion',
+        name: 'Health potion',
         quantity: 5,
         price: 1,
-        details: "Restores 25 health",
-        icon: <img src={healthPotion} alt="" />,
+        details: 'Restores 25 health',
+        icon: <img src={healthPotion} alt='' />,
       },
     ],
   },

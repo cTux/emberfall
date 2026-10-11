@@ -1,7 +1,7 @@
-import { RUNTIME } from "@emberfall/common/definitions/runtime";
-import { EventEmitter } from "node:events";
-import { Client, type Room } from "@colyseus/sdk";
-import { SessionState, materializeState } from "@emberfall/common/protocol";
+import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { EventEmitter } from 'node:events';
+import { Client, type Room } from '@colyseus/sdk';
+import { SessionState, materializeState } from '@emberfall/common/protocol';
 
 /** Ports the existing behavioral assertions to a real Colyseus connection. */
 export class WebSocket extends EventEmitter {
@@ -16,28 +16,28 @@ export class WebSocket extends EventEmitter {
   private async connect(url: string) {
     try {
       const endpoint = new URL(url);
-      endpoint.pathname = "/";
+      endpoint.pathname = '/';
       this.room = await new Client(endpoint.toString()).create<SessionState>(
-        "session",
+        'session',
         { protocolVersion: RUNTIME.protocolVersion },
         SessionState,
       );
       this.room.reconnection.enabled = false;
-      this.room.onMessage("event", (data) =>
-        this.emit("message", Buffer.from(JSON.stringify(data))),
+      this.room.onMessage('event', (data) =>
+        this.emit('message', Buffer.from(JSON.stringify(data))),
       );
       this.room.onStateChange((state) => {
         const world = materializeState(state);
-        if (world) this.emit("message", Buffer.from(JSON.stringify({ type: "state", world })));
+        if (world) this.emit('message', Buffer.from(JSON.stringify({ type: 'state', world })));
       });
       this.room.onLeave((code) => {
         this.readyState = 3;
-        this.emit("close", code);
+        this.emit('close', code);
       });
       this.readyState = 1;
-      this.emit("open");
+      this.emit('open');
     } catch (error) {
-      this.emit("error", error);
+      this.emit('error', error);
     }
   }
   send(raw: string | Buffer) {
@@ -47,7 +47,7 @@ export class WebSocket extends EventEmitter {
     } catch {
       command = raw.toString();
     }
-    this.room?.send("command", command);
+    this.room?.send('command', command);
   }
   close(code = 1000) {
     if (code === 1000) void this.room?.leave();

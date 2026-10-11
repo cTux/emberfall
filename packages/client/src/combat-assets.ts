@@ -1,12 +1,12 @@
-import type { ClassId, DebuffKind } from "@emberfall/common";
+import type { ClassId, DebuffKind } from '@emberfall/common';
 
 export const weaponSrc = (id: ClassId) => `/assets/wardrobe-style/${id}-weapon.png`;
 export const statusSrc = (kind: DebuffKind) => `/assets/wardrobe-style/${kind}.png`;
 export const classAbility = {
-  warrior: "bleed",
-  ranger: "poison",
-  mage: "burn",
-  druid: "roots",
+  warrior: 'bleed',
+  ranger: 'poison',
+  mage: 'burn',
+  druid: 'roots',
 } as const;
 const load = (src: string) => {
   const image = new Image();
@@ -14,14 +14,14 @@ const load = (src: string) => {
   return image;
 };
 export const weaponImages = {
-  warrior: load(weaponSrc("warrior")),
-  ranger: load(weaponSrc("ranger")),
-  mage: load(weaponSrc("mage")),
-  druid: load(weaponSrc("druid")),
+  warrior: load(weaponSrc('warrior')),
+  ranger: load(weaponSrc('ranger')),
+  mage: load(weaponSrc('mage')),
+  druid: load(weaponSrc('druid')),
 };
 export const statusImages = {
-  bleed: load(statusSrc("bleed")),
-  poison: load(statusSrc("poison")),
-  burn: load(statusSrc("burn")),
-  roots: load(statusSrc("roots")),
+  bleed: load(statusSrc('bleed')),
+  poison: load(statusSrc('poison')),
+  burn: load(statusSrc('burn')),
+  roots: load(statusSrc('roots')),
 };

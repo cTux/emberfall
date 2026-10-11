@@ -1,19 +1,19 @@
-import type { DamageEvent, DamageType } from "@emberfall/common";
+import type { DamageEvent, DamageType } from '@emberfall/common';
 
 export const DAMAGE_COLORS: Record<DamageType, string> = {
-  physical: "#fff0b1",
-  fire: "#ff9d48",
-  poison: "#c6e85a",
-  nature: "#61dba3",
+  physical: '#fff0b1',
+  fire: '#ff9d48',
+  poison: '#c6e85a',
+  nature: '#61dba3',
 };
-export const CRITICAL_TEXT_STYLE = { fill: "#ffffff", outline: "#d52b3f", width: 4 };
+export const CRITICAL_TEXT_STYLE = { fill: '#ffffff', outline: '#d52b3f', width: 4 };
 
 /** Fixed windows prevent a rapid stream of hits from extending a number forever. */
 export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[] {
   const totals: DamageEvent[] = [];
   const latest = new Map<string, DamageEvent>();
   for (const hit of [...hits].sort((a, b) => a.at - b.at)) {
-    const key = JSON.stringify([hit.ownerId, hit.target, hit.damageType ?? "physical"]);
+    const key = JSON.stringify([hit.ownerId, hit.target, hit.damageType ?? 'physical']);
     const previous = hit.ownerId ? latest.get(key) : undefined;
     if (previous && hit.at - previous.at <= 10) {
       previous.amount += hit.amount;
@@ -48,18 +48,18 @@ export function drawDamageNumber(
   ctx.save();
   ctx.globalAlpha = 1 - age / 800;
   ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "center";
+  ctx.textAlign = 'center';
   ctx.fillStyle = hit.critical
     ? CRITICAL_TEXT_STYLE.fill
-    : hit.target.startsWith("enemy:")
-      ? DAMAGE_COLORS[hit.damageType ?? "physical"]
-      : "#ff8b81";
+    : hit.target.startsWith('enemy:')
+      ? DAMAGE_COLORS[hit.damageType ?? 'physical']
+      : '#ff8b81';
   const value = String(Math.round(hit.amount));
   const y = point.y - 45 - age / 30;
   if (hit.critical) {
     ctx.strokeStyle = CRITICAL_TEXT_STYLE.outline;
     ctx.lineWidth = CRITICAL_TEXT_STYLE.width;
-    ctx.lineJoin = "round";
+    ctx.lineJoin = 'round';
     ctx.strokeText(value, point.x, y);
   }
   ctx.fillText(value, point.x, y);

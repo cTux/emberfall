@@ -1,13 +1,13 @@
-import { test, expect } from "./fixtures";
-import { writeFile } from "node:fs/promises";
+import { test, expect } from './fixtures';
+import { writeFile } from 'node:fs/promises';
 
-test("all player poses have safe gutters, six distinct gaits and stable standing colors", async ({
+test('all player poses have safe gutters, six distinct gaits and stable standing colors', async ({
   page,
 }) => {
-  await page.goto("/?art-gallery");
-  await expect(page.getByLabel("Animated asset gallery")).toHaveAttribute("data-ready", "true");
+  await page.goto('/?art-gallery');
+  await expect(page.getByLabel('Animated asset gallery')).toHaveAttribute('data-ready', 'true');
   const result = await page.evaluate(async () => {
-    const names = ["warrior", "ranger", "mage", "druid"];
+    const names = ['warrior', 'ranger', 'mage', 'druid'];
     const images = await Promise.all(
       names.map(async (name) => {
         const image = new Image();
@@ -17,9 +17,9 @@ test("all player poses have safe gutters, six distinct gaits and stable standing
       }),
     );
     const failures: string[] = [];
-    const tile = document.createElement("canvas");
+    const tile = document.createElement('canvas');
     tile.width = tile.height = 64;
-    const ctx = tile.getContext("2d", { willReadFrequently: true })!;
+    const ctx = tile.getContext('2d', { willReadFrequently: true })!;
     const walks = [1, 2, 3, 4, 8, 9];
     images.forEach((image, i) => {
       if (image.width !== 256 || image.height !== 640) failures.push(`${names[i]} size`);
@@ -63,7 +63,7 @@ test("all player poses have safe gutters, six distinct gaits and stable standing
               const rgb = [pixels[p], pixels[p + 1], pixels[p + 2]];
               walkCount++;
               walkTone.forEach((_, channel) => (walkTone[channel] += rgb[channel]));
-              const key = rgb.join(",");
+              const key = rgb.join(',');
               if (checked.has(key)) continue;
               checked.add(key);
               // Allow canvas alpha round-trip rounding, but reject a new tone
@@ -82,7 +82,7 @@ test("all player poses have safe gutters, six distinct gaits and stable standing
             for (let y = 53; y < 61; y++)
               for (let x = 16; x < 48; x++)
                 silhouette.push(pixels[(y * 64 + x) * 4 + 3] > 128 ? 1 : 0);
-            feet.add(silhouette.join(""));
+            feet.add(silhouette.join(''));
             let contactX = 0,
               contactPixels = 0;
             for (let y = 58; y < 61; y++)
@@ -112,7 +112,7 @@ test("all player poses have safe gutters, six distinct gaits and stable standing
           const silhouettes = [...feet];
           const spans = silhouettes.map((silhouette) => {
             const occupied = [...silhouette].flatMap((pixel, index) =>
-              pixel === "1" ? [index % 32] : [],
+              pixel === '1' ? [index % 32] : [],
             );
             return occupied.length ? Math.max(...occupied) - Math.min(...occupied) : 0;
           });
@@ -131,62 +131,62 @@ test("all player poses have safe gutters, six distinct gaits and stable standing
         }
       }
     });
-    const preview = document.createElement("canvas");
+    const preview = document.createElement('canvas');
     preview.width = 800;
     preview.height = 760;
-    const out = preview.getContext("2d")!;
+    const out = preview.getContext('2d')!;
     out.imageSmoothingEnabled = false;
     const frames: string[] = [];
     for (const row of [0, ...walks]) {
-      out.fillStyle = "#202a25";
+      out.fillStyle = '#202a25';
       out.fillRect(0, 0, 800, 760);
-      out.font = "18px sans-serif";
-      out.textAlign = "center";
-      out.fillStyle = "#efdfbe";
-      ["Down", "Up", "Left", "Right"].forEach((label, i) => out.fillText(label, 170 + i * 175, 30));
+      out.font = '18px sans-serif';
+      out.textAlign = 'center';
+      out.fillStyle = '#efdfbe';
+      ['Down', 'Up', 'Left', 'Right'].forEach((label, i) => out.fillText(label, 170 + i * 175, 30));
       images.forEach((image, i) => {
-        out.textAlign = "left";
+        out.textAlign = 'left';
         out.fillText(names[i], 8, 125 + i * 175);
         for (let col = 0; col < 4; col++)
           out.drawImage(image, col * 64, row * 64, 64, 64, 95 + col * 175, 40 + i * 175, 160, 160);
       });
-      frames.push(preview.toDataURL().split(",")[1]);
+      frames.push(preview.toDataURL().split(',')[1]);
     }
     return { failures, frames };
   });
   expect(result.failures).toEqual([]);
   for (const [i, png] of result.frames.entries())
-    await writeFile(`test-results/player-pose-${i}.png`, Buffer.from(png, "base64"));
+    await writeFile(`test-results/player-pose-${i}.png`, Buffer.from(png, 'base64'));
 });
 
-test("class movement page shows every direction and supports gait inspection", async ({ page }) => {
+test('class movement page shows every direction and supports gait inspection', async ({ page }) => {
   const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/?class-movement");
-  const canvas = page.getByLabel("All classes walking in four directions");
-  await expect(canvas).toHaveAttribute("data-ready", "true");
-  const first = await canvas.getAttribute("data-frame");
-  await expect.poll(() => canvas.getAttribute("data-frame")).not.toBe(first);
-  await page.getByRole("button", { name: "Pause", exact: true }).click();
-  await page.getByLabel("Travel", { exact: true }).uncheck();
-  await expect(canvas).toHaveAttribute("data-travel", "false");
-  const pausedFrame = await canvas.getAttribute("data-frame");
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/?class-movement');
+  const canvas = page.getByLabel('All classes walking in four directions');
+  await expect(canvas).toHaveAttribute('data-ready', 'true');
+  const first = await canvas.getAttribute('data-frame');
+  await expect.poll(() => canvas.getAttribute('data-frame')).not.toBe(first);
+  await page.getByRole('button', { name: 'Pause', exact: true }).click();
+  await page.getByLabel('Travel', { exact: true }).uncheck();
+  await expect(canvas).toHaveAttribute('data-travel', 'false');
+  const pausedFrame = await canvas.getAttribute('data-frame');
   await page.waitForTimeout(160);
-  await expect(canvas).toHaveAttribute("data-frame", pausedFrame!);
+  await expect(canvas).toHaveAttribute('data-frame', pausedFrame!);
   const seen = new Set<string>();
   for (let frame = 0; frame < 6; frame++) {
-    const previous = await canvas.getAttribute("data-frame");
-    await page.getByRole("button", { name: "Next frame" }).click();
-    await expect.poll(() => canvas.getAttribute("data-frame")).not.toBe(previous);
-    seen.add((await canvas.getAttribute("data-frame"))!);
+    const previous = await canvas.getAttribute('data-frame');
+    await page.getByRole('button', { name: 'Next frame' }).click();
+    await expect.poll(() => canvas.getAttribute('data-frame')).not.toBe(previous);
+    seen.add((await canvas.getAttribute('data-frame'))!);
     await canvas.screenshot({ path: `test-results/class-movement-${frame}.png` });
   }
   expect(seen.size).toBe(6);
-  await page.getByLabel("Speed", { exact: true }).selectOption("0.5");
-  await page.getByRole("button", { name: "Play", exact: true }).click();
-  await page.getByLabel("Travel", { exact: true }).check();
-  await expect(canvas).toHaveAttribute("data-travel", "true");
+  await page.getByLabel('Speed', { exact: true }).selectOption('0.5');
+  await page.getByRole('button', { name: 'Play', exact: true }).click();
+  await page.getByLabel('Travel', { exact: true }).check();
+  await expect(canvas).toHaveAttribute('data-travel', 'true');
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: "test-results/class-movement-mobile.png", fullPage: true });
+  await page.screenshot({ path: 'test-results/class-movement-mobile.png', fullPage: true });
   expect(errors).toEqual([]);
 });

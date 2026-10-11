@@ -62,13 +62,13 @@ export function castShadow(ctx: CanvasRenderingContext2D, caster: Caster, light?
   ctx.restore();
 }
 export function makeMask(sprite: HTMLCanvasElement) {
-  const mask = document.createElement("canvas");
+  const mask = document.createElement('canvas');
   mask.width = sprite.width;
   mask.height = sprite.height;
-  const ctx = mask.getContext("2d")!;
+  const ctx = mask.getContext('2d')!;
   ctx.drawImage(sprite, 0, 0);
-  ctx.globalCompositeOperation = "source-in";
-  ctx.fillStyle = "#10161e";
+  ctx.globalCompositeOperation = 'source-in';
+  ctx.fillStyle = '#10161e';
   ctx.fillRect(0, 0, mask.width, mask.height);
   // Atlas padding is not ground. Measure contact once, before projecting the
   // silhouette, so transparent foot padding cannot lift it off its own shadow.
@@ -104,10 +104,10 @@ export function spriteMask(
   if (!masks) spriteMasks.set(image, (masks = new Map()));
   const key = `${column}:${row}:${flip}:${frameWidth}:${trimBottom}:${frameHeight}`;
   if (!masks.has(key)) {
-    const tile = document.createElement("canvas");
+    const tile = document.createElement('canvas');
     tile.width = frameWidth;
     tile.height = frameHeight;
-    const ctx = tile.getContext("2d")!;
+    const ctx = tile.getContext('2d')!;
     if (flip) {
       ctx.translate(frameWidth, 0);
       ctx.scale(-1, 1);
@@ -134,10 +134,10 @@ export function spriteMask(
           .some((a, i) => i % 4 === 3 && a > 0)
       )
         bottom--;
-      const cropped = document.createElement("canvas");
+      const cropped = document.createElement('canvas');
       cropped.width = tile.width;
       cropped.height = bottom;
-      cropped.getContext("2d")!.drawImage(mask, 0, 0);
+      cropped.getContext('2d')!.drawImage(mask, 0, 0);
       masks.set(key, cropped);
     } else masks.set(key, mask);
   }

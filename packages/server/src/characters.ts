@@ -1,10 +1,10 @@
-import { DatabaseSync } from "node:sqlite";
-import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
-import { drizzle } from "drizzle-orm/node-sqlite";
-import { getTableName } from "drizzle-orm";
-import { GameDatabase, VersionConflictError } from "@colyseus/database";
+import { DatabaseSync } from 'node:sqlite';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { drizzle } from 'drizzle-orm/node-sqlite';
+import { getTableName } from 'drizzle-orm';
+import { GameDatabase, VersionConflictError } from '@colyseus/database';
 import {
   merchantSchema,
   freshMerchant,
@@ -14,9 +14,9 @@ import {
   starterEquipment,
   validateClassEquipment,
   syncEquipmentVitals,
-} from "@emberfall/common";
-import { INITIAL_PROGRESS } from "@emberfall/common/definitions/entities/players";
-import type { CharacterProgress, ClassId, Player, Merchant } from "@emberfall/common";
+} from '@emberfall/common';
+import { INITIAL_PROGRESS } from '@emberfall/common/definitions/entities/players';
+import type { CharacterProgress, ClassId, Player, Merchant } from '@emberfall/common';
 
 export const freshProgress = (classId?: ClassId): CharacterProgress => ({
   ...structuredClone(INITIAL_PROGRESS),
@@ -37,13 +37,13 @@ function classProgress(value: unknown, classId: ClassId): CharacterProgress {
 export function decodeProgress(raw: string) {
   const data = JSON.parse(raw);
   if (data.formatVersion !== undefined && data.formatVersion !== 1)
-    throw new Error("Unsupported save format");
-  const classId: ClassId = data.classes ? classSchema.parse(data.classId) : "warrior";
+    throw new Error('Unsupported save format');
+  const classId: ClassId = data.classes ? classSchema.parse(data.classId) : 'warrior';
   const classes = Object.fromEntries(
     CLASS_IDS.map((id) => [
       id,
       classProgress(
-        data.classes?.[id] ?? (id === "warrior" && !data.classes ? data : freshProgress(id)),
+        data.classes?.[id] ?? (id === 'warrior' && !data.classes ? data : freshProgress(id)),
         id,
       ),
     ]),
@@ -66,21 +66,21 @@ export class CharacterStore {
     return getTableName(this.database.tables.users);
   }
   constructor(path: string) {
-    if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true });
+    if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
     this.db = new DatabaseSync(path);
     if (
       this.db
-        .prepare("PRAGMA table_info(characters)")
+        .prepare('PRAGMA table_info(characters)')
         .all()
-        .some((column) => column.name === "progress")
+        .some((column) => column.name === 'progress')
     ) {
       this.db.close();
       throw new Error(
-        "Legacy database detected. Stop the server and back up the database, then run pnpm import-save from the repository root. It writes a separate database and prints the SAVE_PATH_NEW setting needed before restarting. To choose paths explicitly: pnpm import-save <legacy-backup.sqlite> <new-destination.sqlite>.",
+        'Legacy database detected. Stop the server and back up the database, then run pnpm import-save from the repository root. It writes a separate database and prints the SAVE_PATH_NEW setting needed before restarting. To choose paths explicitly: pnpm import-save <legacy-backup.sqlite> <new-destination.sqlite>.',
       );
     }
-    this.db.exec("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;");
-    this.database = new GameDatabase({ db: drizzle({ client: this.db }), dialect: "sqlite" });
+    this.db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;');
+    this.database = new GameDatabase({ db: drizzle({ client: this.db }), dialect: 'sqlite' });
     this.ready = this.database
       .boot()
       .then(() => {
@@ -109,54 +109,54 @@ export class CharacterStore {
   }
   worlds() {
     return this.db
-      .prepare("SELECT * FROM worlds")
+      .prepare('SELECT * FROM worlds')
       .all()
       .map((row) => ({
         id: String(row.id),
         name: String(row.name),
         salt: String(row.salt),
-        hash: row.hash ? Buffer.from(String(row.hash), "hex") : undefined,
+        hash: row.hash ? Buffer.from(String(row.hash), 'hex') : undefined,
         permanent: !!row.permanent,
       }));
   }
   saveWorld(world: { id: string; name: string; salt: string; hash?: Buffer }, permanent = false) {
     this.db
       .prepare(
-        "INSERT INTO worlds VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name, salt=excluded.salt, hash=excluded.hash, permanent=excluded.permanent",
+        'INSERT INTO worlds VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name, salt=excluded.salt, hash=excluded.hash, permanent=excluded.permanent',
       )
       .run(
         world.id,
         world.name,
         world.salt,
-        world.hash?.toString("hex") ?? null,
+        world.hash?.toString('hex') ?? null,
         Number(permanent),
       );
   }
   deleteWorld(id: string) {
     this.transaction(() => {
-      this.db.prepare("DELETE FROM world_members WHERE world_id = ?").run(id);
-      this.db.prepare("DELETE FROM worlds WHERE id = ?").run(id);
+      this.db.prepare('DELETE FROM world_members WHERE world_id = ?').run(id);
+      this.db.prepare('DELETE FROM worlds WHERE id = ?').run(id);
     });
   }
   rememberWorld(characterId: string, worldId: string) {
     this.db
       .prepare(
-        "INSERT INTO world_members VALUES (?, ?) ON CONFLICT(character_id) DO UPDATE SET world_id=excluded.world_id",
+        'INSERT INTO world_members VALUES (?, ?) ON CONFLICT(character_id) DO UPDATE SET world_id=excluded.world_id',
       )
       .run(characterId, worldId);
   }
   forgetWorld(characterId: string) {
-    this.db.prepare("DELETE FROM world_members WHERE character_id = ?").run(characterId);
+    this.db.prepare('DELETE FROM world_members WHERE character_id = ?').run(characterId);
   }
   canResume(characterId: string, worldId: string) {
     return !!this.db
-      .prepare("SELECT 1 FROM world_members WHERE character_id = ? AND world_id = ?")
+      .prepare('SELECT 1 FROM world_members WHERE character_id = ? AND world_id = ?')
       .get(characterId, worldId);
   }
   load(token: string) {
-    const hash = createHash("sha256").update(token).digest("hex");
-    const identity = this.db.prepare("SELECT id FROM characters WHERE token_hash=?").get(hash);
-    if (!identity) throw new Error("Character save not found.");
+    const hash = createHash('sha256').update(token).digest('hex');
+    const identity = this.db.prepare('SELECT id FROM characters WHERE token_hash=?').get(hash);
+    if (!identity) throw new Error('Character save not found.');
     return this.loadById(String(identity.id));
   }
   loadById(id: string) {
@@ -167,18 +167,18 @@ export class CharacterStore {
       .get(id);
     if (!row)
       throw new Error(
-        "Character save not found. Check that you are connected to the correct server.",
+        'Character save not found. Check that you are connected to the correct server.',
       );
     const result = decodeProgress(String(row.data));
     this.versions.set(String(row.id), Number(row.version));
     return { id: String(row.id), name: String(row.name), ...result };
   }
   create(name: string) {
-    const token = randomBytes(32).toString("hex"),
+    const token = randomBytes(32).toString('hex'),
       id = randomUUID();
     this.importCharacter(
       id,
-      createHash("sha256").update(token).digest("hex"),
+      createHash('sha256').update(token).digest('hex'),
       name,
       JSON.stringify(freshProgress()),
     );
@@ -186,8 +186,8 @@ export class CharacterStore {
   }
   importCharacter(id: string, tokenHash: string, name: string, raw: string) {
     const { classId, classes } = decodeProgress(raw);
-    if (this.db.prepare("SELECT 1 FROM characters WHERE id=? OR token_hash=?").get(id, tokenHash))
-      throw new Error("Character already exists; refusing to overwrite progress");
+    if (this.db.prepare('SELECT 1 FROM characters WHERE id=? OR token_hash=?').get(id, tokenHash))
+      throw new Error('Character already exists; refusing to overwrite progress');
     this.transaction(() => {
       const now = Math.floor(Date.now() / 1000);
       this.db
@@ -195,7 +195,7 @@ export class CharacterStore {
           `INSERT INTO ${this.usersTable} (id, anonymous, created_at, updated_at) VALUES (?, 1, ?, ?)`,
         )
         .run(id, now, now);
-      this.db.prepare("INSERT INTO characters VALUES (?, ?, ?, ?)").run(id, tokenHash, name, now);
+      this.db.prepare('INSERT INTO characters VALUES (?, ?, ?, ?)').run(id, tokenHash, name, now);
       this.db
         .prepare(
           `INSERT INTO ${this.savesTable} (user_id, slot, version, data, created_at, updated_at) VALUES (?, 0, 1, ?, ?, ?)`,
@@ -205,19 +205,19 @@ export class CharacterStore {
     this.versions.set(id, 1);
   }
   merchant(worldId: string): Merchant {
-    const row = this.db.prepare("SELECT data FROM merchants WHERE world_id=?").get(worldId);
+    const row = this.db.prepare('SELECT data FROM merchants WHERE world_id=?').get(worldId);
     return row ? merchantSchema.parse(JSON.parse(String(row.data))) : freshMerchant();
   }
   save(
     id: string,
     name: string,
-    progress: CharacterProgress & Partial<Pick<Player, "classId" | "classes">>,
+    progress: CharacterProgress & Partial<Pick<Player, 'classId' | 'classes'>>,
     merchant?: { worldId: string; state: Merchant },
   ) {
     const row = this.db
       .prepare(`SELECT data, version FROM ${this.savesTable} WHERE user_id=? AND slot=0`)
       .get(id);
-    if (!row) throw new Error("Character save is missing.");
+    if (!row) throw new Error('Character save is missing.');
     const previous = decodeProgress(String(row.data));
     const classId = classSchema.parse(progress.classId ?? previous.classId);
     const classes = {
@@ -242,19 +242,19 @@ export class CharacterStore {
       if (merchant)
         this.db
           .prepare(
-            "INSERT INTO merchants VALUES (?, ?) ON CONFLICT(world_id) DO UPDATE SET data=excluded.data",
+            'INSERT INTO merchants VALUES (?, ?) ON CONFLICT(world_id) DO UPDATE SET data=excluded.data',
           )
           .run(merchant.worldId, JSON.stringify(merchantSchema.parse(merchant.state)));
       this.db
         .prepare(
-          "UPDATE characters SET name=COALESCE((SELECT nickname FROM steam_accounts WHERE character_id=characters.id), ?), updated_at=? WHERE id=?",
+          'UPDATE characters SET name=COALESCE((SELECT nickname FROM steam_accounts WHERE character_id=characters.id), ?), updated_at=? WHERE id=?',
         )
         .run(name, Date.now(), id);
     });
     this.versions.set(id, version + 1);
   }
   selectClass(id: string, player: Player, classId: ClassId) {
-    const previousId = player.classId ?? "warrior";
+    const previousId = player.classId ?? 'warrior';
     const classes = { ...player.classes, [previousId]: progressSchema.parse(player) } as Record<
       ClassId,
       CharacterProgress
@@ -274,7 +274,7 @@ export class CharacterStore {
     Object.assign(player, updated);
   }
   steamAccount(steamId: string) {
-    const row = this.db.prepare("SELECT * FROM steam_accounts WHERE steam_id=?").get(steamId);
+    const row = this.db.prepare('SELECT * FROM steam_accounts WHERE steam_id=?').get(steamId);
     if (!row) return undefined;
     return {
       steamId,
@@ -286,13 +286,13 @@ export class CharacterStore {
   loginSteam(steamId: string, steamName: string) {
     return this.transaction(() => {
       if (!this.steamAccount(steamId)) {
-        const character = this.create("Wanderer");
+        const character = this.create('Wanderer');
         this.db
-          .prepare("INSERT INTO steam_accounts VALUES (?, ?, NULL, ?)")
+          .prepare('INSERT INTO steam_accounts VALUES (?, ?, NULL, ?)')
           .run(steamId, character.id, steamName);
       } else if (steamName) {
         this.db
-          .prepare("UPDATE steam_accounts SET steam_name=? WHERE steam_id=?")
+          .prepare('UPDATE steam_accounts SET steam_name=? WHERE steam_id=?')
           .run(steamName, steamId);
       }
       return this.steamAccount(steamId)!;
@@ -301,34 +301,34 @@ export class CharacterStore {
   renameSteam(steamId: string, nickname: string) {
     return this.transaction(() => {
       const account = this.steamAccount(steamId);
-      if (!account) throw new Error("Account not found");
+      if (!account) throw new Error('Account not found');
       this.db
-        .prepare("UPDATE steam_accounts SET nickname=? WHERE steam_id=?")
+        .prepare('UPDATE steam_accounts SET nickname=? WHERE steam_id=?')
         .run(nickname, steamId);
       this.db
-        .prepare("UPDATE characters SET name=?, updated_at=? WHERE id=?")
+        .prepare('UPDATE characters SET name=?, updated_at=? WHERE id=?')
         .run(nickname, Date.now(), account.characterId);
       return this.steamAccount(steamId)!;
     });
   }
   createSession(steamId: string, expiresAt: number) {
-    const token = randomBytes(32).toString("hex");
-    this.db.prepare("DELETE FROM account_sessions WHERE expires_at<=?").run(Date.now());
+    const token = randomBytes(32).toString('hex');
+    this.db.prepare('DELETE FROM account_sessions WHERE expires_at<=?').run(Date.now());
     this.db
-      .prepare("INSERT INTO account_sessions VALUES (?, ?, ?)")
-      .run(createHash("sha256").update(token).digest("hex"), steamId, expiresAt);
+      .prepare('INSERT INTO account_sessions VALUES (?, ?, ?)')
+      .run(createHash('sha256').update(token).digest('hex'), steamId, expiresAt);
     return token;
   }
   session(token: string) {
     const row = this.db
-      .prepare("SELECT steam_id FROM account_sessions WHERE token_hash=? AND expires_at>?")
-      .get(createHash("sha256").update(token).digest("hex"), Date.now());
+      .prepare('SELECT steam_id FROM account_sessions WHERE token_hash=? AND expires_at>?')
+      .get(createHash('sha256').update(token).digest('hex'), Date.now());
     return row ? this.steamAccount(String(row.steam_id)) : undefined;
   }
   revokeSession(token: string) {
     this.db
-      .prepare("DELETE FROM account_sessions WHERE token_hash=?")
-      .run(createHash("sha256").update(token).digest("hex"));
+      .prepare('DELETE FROM account_sessions WHERE token_hash=?')
+      .run(createHash('sha256').update(token).digest('hex'));
   }
   private transactionId = 0;
   private transaction<T>(operation: () => T): T {

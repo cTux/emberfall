@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChoiceCard } from "../index";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { ChoiceCard } from '../index';
 const meta = {
-  title: "Components/ChoiceCard",
+  title: 'Components/ChoiceCard',
   component: ChoiceCard,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   args: {
-    title: "Druid",
-    description: "Roots · Bear companion",
+    title: 'Druid',
+    description: 'Roots · Bear companion',
     selected: true,
     disabled: false,
     onSelect: () => {},

@@ -1,9 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PerformanceMonitor } from "../index";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { PerformanceMonitor } from '../index';
 const meta = {
-  title: "Components/PerformanceMonitor",
+  title: 'Components/PerformanceMonitor',
   component: PerformanceMonitor,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   args: {
     samples: [
       { fps: 60, latency: 30 },

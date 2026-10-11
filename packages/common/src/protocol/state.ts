@@ -1,13 +1,13 @@
-import { schema, t, type SchemaType } from "@colyseus/schema";
-import type { WorldState, SceneState } from "../index.ts";
+import { schema, t, type SchemaType } from '@colyseus/schema';
+import type { WorldState, SceneState } from '../index.ts';
 const HOT_SCALARS = [
-  "x",
-  "y",
-  "angle",
-  "attackAngle",
-  "inputSeq",
-  "inputElapsed",
-  "inputAt",
+  'x',
+  'y',
+  'angle',
+  'attackAngle',
+  'inputSeq',
+  'inputElapsed',
+  'inputAt',
 ] as const;
 export const EntityState = schema(
   {
@@ -22,22 +22,22 @@ export const EntityState = schema(
     order: t.uint16(),
     payload: t.string(),
   },
-  "EntityState",
+  'EntityState',
 );
 export type EntityState = SchemaType<typeof EntityState>;
 export const SessionState = schema(
   { header: t.string(), entities: t.map(EntityState), serverNow: t.float64() },
-  "SessionState",
+  'SessionState',
 );
 export type SessionState = SchemaType<typeof SessionState>;
 const collections = [
-  "enemies",
-  "damage",
-  "playerShots",
-  "explosions",
-  "drops",
-  "spawns",
-  "projectiles",
+  'enemies',
+  'damage',
+  'playerShots',
+  'explosions',
+  'drops',
+  'spawns',
+  'projectiles',
 ] as const;
 type ProjectedEntity = Record<(typeof HOT_SCALARS)[number], number> & {
   key: string;
@@ -57,7 +57,7 @@ export function prepareState(source: WorldState) {
     let fields = 0;
     HOT_SCALARS.forEach((field, bit) => {
       const scalar = scalars[field];
-      if (typeof scalar === "number") {
+      if (typeof scalar === 'number') {
         fields |= 1 << bit;
         record![field] = scalar;
       } else record![field] = 0;
@@ -83,8 +83,8 @@ export function prepareState(source: WorldState) {
   return {
     header: JSON.stringify({
       ...header,
-      scene: sceneHeader(scene, "scene"),
-      training: sceneHeader(training, "training"),
+      scene: sceneHeader(scene, 'scene'),
+      training: sceneHeader(training, 'training'),
     }),
     entities,
     serverNow: serverNow ?? 0,
@@ -127,10 +127,10 @@ export function materializeState(state: SessionState): WorldState | undefined {
     HOT_SCALARS.forEach((field, bit) => {
       if (record.fields & (1 << bit)) value[field] = record[field];
     });
-    if (key.startsWith("player:")) world.players.push(value);
+    if (key.startsWith('player:')) world.players.push(value);
     else {
-      const [prefix, collection] = key.split(":");
-      const scene = prefix === "scene" ? world.scene : world.training;
+      const [prefix, collection] = key.split(':');
+      const scene = prefix === 'scene' ? world.scene : world.training;
       if (scene && collections.includes(collection as (typeof collections)[number]))
         (scene[collection as (typeof collections)[number]] as unknown[]).push(value);
     }

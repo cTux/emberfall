@@ -1,12 +1,12 @@
-import type { Preferences } from "./preferences";
+import type { Preferences } from './preferences';
 
 let audioUnlocked = false;
 
 export function gameAudio(preferences: () => Preferences) {
   const tracks = {
-    start: ["Intro", "Theme_001"],
-    lobby: ["In_The_Woods", "Adventure"],
-    combat: ["Trials", "Wastelands"],
+    start: ['Intro', 'Theme_001'],
+    lobby: ['In_The_Woods', 'Adventure'],
+    combat: ['Trials', 'Wastelands'],
   };
   const selected = { start: 0, lobby: 0, combat: 0 };
   const music = Object.fromEntries(
@@ -14,9 +14,9 @@ export function gameAudio(preferences: () => Preferences) {
       zone,
       names.map((name, index) => {
         const audio = new Audio(`/audio/${name}.mp3`);
-        audio.preload = "auto";
+        audio.preload = 'auto';
         audio.volume = 0;
-        audio.addEventListener("ended", () => {
+        audio.addEventListener('ended', () => {
           started.delete(audio);
           audio.currentTime = 0;
           const key = zone as keyof typeof tracks;
@@ -27,16 +27,16 @@ export function gameAudio(preferences: () => Preferences) {
     ]),
   );
   const sounds = Object.fromEntries(
-    ["slash", "hit", "warning"].map((name) => [
+    ['slash', 'hit', 'warning'].map((name) => [
       name,
       Array.from({ length: 4 }, () => {
         const audio = new Audio(`/audio/${name}.wav`);
-        audio.preload = "auto";
+        audio.preload = 'auto';
         return audio;
       }),
     ]),
   );
-  let area: keyof typeof tracks = "start",
+  let area: keyof typeof tracks = 'start',
     unlocked = audioUnlocked,
     lastTime = 0;
   const started = new Set<HTMLAudioElement>();
@@ -50,15 +50,15 @@ export function gameAudio(preferences: () => Preferences) {
     unlocked = true;
     if (preferences().music && !document.hidden) start(music[area][selected[area]]);
   };
-  window.addEventListener("pointerdown", unlock);
-  window.addEventListener("keydown", unlock);
+  window.addEventListener('pointerdown', unlock);
+  window.addEventListener('keydown', unlock);
   const silence = () => {
     if (!document.hidden) return;
     for (const audio of [...Object.values(music).flat(), ...Object.values(sounds).flat()])
       audio.pause();
     started.clear();
   };
-  document.addEventListener("visibilitychange", silence);
+  document.addEventListener('visibilitychange', silence);
   return {
     update(nextArea: keyof typeof tracks, now: number) {
       area = nextArea;
@@ -81,7 +81,7 @@ export function gameAudio(preferences: () => Preferences) {
       if (!prefs.sound)
         for (const pool of Object.values(sounds)) for (const audio of pool) audio.pause();
     },
-    play(name: "slash" | "hit" | "warning") {
+    play(name: 'slash' | 'hit' | 'warning') {
       const prefs = preferences();
       if (!unlocked || !prefs.sound || document.hidden || prefs.volume === 0) return;
       const audio = sounds[name].find((voice) => voice.paused || voice.ended);
@@ -91,12 +91,12 @@ export function gameAudio(preferences: () => Preferences) {
       void audio.play().catch(() => {});
     },
     dispose() {
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
-      document.removeEventListener("visibilitychange", silence);
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+      document.removeEventListener('visibilitychange', silence);
       for (const audio of [...Object.values(music).flat(), ...Object.values(sounds).flat()]) {
         audio.pause();
-        audio.removeAttribute("src");
+        audio.removeAttribute('src');
         audio.load();
       }
     },

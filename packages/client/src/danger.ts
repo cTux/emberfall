@@ -1,4 +1,4 @@
-import type { SceneState } from "@emberfall/common";
+import type { SceneState } from '@emberfall/common';
 
 /** Gameplay warnings deliberately remain visible at every graphics preset. */
 export function drawDanger(
@@ -12,18 +12,18 @@ export function drawDanger(
   const zone = (x: number, y: number, radius: number, progress: number, spawn = false) => {
     const p = near(x, y + 15);
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "#ff344c";
-    ctx.fillStyle = "#ff18352b";
+    ctx.strokeStyle = '#ff344c';
+    ctx.fillStyle = '#ff18352b';
     ctx.beginPath();
     ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
-    ctx.fillStyle = spawn ? "#ff344c70" : "#ff18358c";
+    ctx.fillStyle = spawn ? '#ff344c70' : '#ff18358c';
     ctx.beginPath();
     ctx.arc(p.x, p.y, radius * Math.sqrt(Math.max(0, Math.min(1, progress))), 0, Math.PI * 2);
     ctx.fill();
     if (!spawn && progress > 0.65) {
-      ctx.fillStyle = "#ff8790";
+      ctx.fillStyle = '#ff8790';
       for (let i = 0; i < 8; i++) {
         const angle = (i * Math.PI) / 4 + progress * 2;
         ctx.fillRect(
@@ -47,7 +47,7 @@ export function drawDanger(
     zone(
       spawn.x,
       spawn.y,
-      spawn.kind === "boss" ? 42 : 26,
+      spawn.kind === 'boss' ? 42 : 26,
       (now - spawn.warnedAt) / (spawn.spawnsAt - spawn.warnedAt),
       true,
     );
@@ -63,7 +63,7 @@ export function drawDanger(
     if (attack.ranged) {
       const from = near(enemy.x, enemy.y + 15),
         to = near(attack.x, attack.y + 15);
-      ctx.strokeStyle = "#ff344c";
+      ctx.strokeStyle = '#ff344c';
       ctx.setLineDash([5, 5]);
       ctx.beginPath();
       ctx.moveTo(from.x, from.y);
@@ -74,17 +74,17 @@ export function drawDanger(
   }
   for (const shot of projectilesOnly ? (scene.projectiles ?? []) : []) {
     const p = near(shot.x, shot.y + 15);
-    ctx.strokeStyle = "#ff344c";
+    ctx.strokeStyle = '#ff344c';
     ctx.lineWidth = 5;
     ctx.beginPath();
     ctx.moveTo(p.x - shot.vx * 0.06, p.y - shot.vy * 0.06);
     ctx.lineTo(p.x, p.y);
     ctx.stroke();
-    ctx.fillStyle = "#ff1835";
+    ctx.fillStyle = '#ff1835';
     ctx.beginPath();
     ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = "#ffe1d9";
+    ctx.fillStyle = '#ffe1d9';
     ctx.beginPath();
     ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
     ctx.fill();

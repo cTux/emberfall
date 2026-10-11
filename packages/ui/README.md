@@ -27,15 +27,15 @@ One dark forest theme: green-black surfaces, parchment text, warm ember primary 
 The client depends on `@emberfall/ui: workspace:*` and the MUI/React dependencies it imports. It mounts `GameUiProvider` once, composes these components around its existing game state and server actions, and serves the bundled fonts at `/fonts`.
 
 ```tsx
-import { GameUiProvider, PartyCard } from "@emberfall/ui";
-import { Button, Stack } from "@mui/material";
+import { GameUiProvider, PartyCard } from '@emberfall/ui';
+import { Button, Stack } from '@mui/material';
 
 function GameInterface() {
   return (
     <GameUiProvider>
       <Stack spacing={2}>
-        <PartyCard name="Astrid" level={1} health={80} maxHealth={100} local />
-        <Button variant="contained">Enter forest</Button>
+        <PartyCard name='Astrid' level={1} health={80} maxHealth={100} local />
+        <Button variant='contained'>Enter forest</Button>
       </Stack>
     </GameUiProvider>
   );

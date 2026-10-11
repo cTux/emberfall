@@ -1,9 +1,9 @@
-import { bearArt as image } from "./art";
-import { PLAYER_ATTACK_DURATION } from "@emberfall/common";
-import { BEAR_DEFINITION } from "@emberfall/common/definitions/entities/companions";
-import type { Bear } from "@emberfall/common";
-import { drawPlayerHealth, drawTargetHit } from "./effects";
-import { spriteMask } from "./lighting";
+import { bearArt as image } from './art';
+import { PLAYER_ATTACK_DURATION } from '@emberfall/common';
+import { BEAR_DEFINITION } from '@emberfall/common/definitions/entities/companions';
+import type { Bear } from '@emberfall/common';
+import { drawPlayerHealth, drawTargetHit } from './effects';
+import { spriteMask } from './lighting';
 
 function companionFrame(bear: Bear, now: number) {
   const age = now - (bear.attackAt ?? -Infinity);
@@ -39,7 +39,7 @@ export function drawCompanion(
 ) {
   ctx.save();
   if (!shadows) {
-    ctx.fillStyle = "#06181080";
+    ctx.fillStyle = '#06181080';
     ctx.beginPath();
     ctx.ellipse(x, y + 15, 15, 6, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -81,7 +81,7 @@ export function drawCompanion(
     y - 38,
     bear.hitpoints,
     bear.maxHitpoints,
-    dead ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s` : "Bear",
+    dead ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s` : 'Bear',
   );
   const age = now - (bear.attackAt ?? -Infinity);
   if (!dead && !bear.returning && age >= 0 && age < PLAYER_ATTACK_DURATION) {

@@ -1,12 +1,12 @@
-import { movementFacing } from "../../client/src/facing.ts";
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { LocalMovement } from "../../client/src/local-movement.ts";
-import { ARENA, FOREST, movePlayer, wrappedDelta } from "@emberfall/common";
-import type { WorldState, Player, ClientMessage } from "@emberfall/common";
+import { movementFacing } from '../../client/src/facing.ts';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { LocalMovement } from '../../client/src/local-movement.ts';
+import { ARENA, FOREST, movePlayer, wrappedDelta } from '@emberfall/common';
+import type { WorldState, Player, ClientMessage } from '@emberfall/common';
 const hero: Player = {
-  id: "p",
-  name: "P",
+  id: 'p',
+  name: 'P',
   x: 420,
   y: 340,
   color: 0,
@@ -17,20 +17,20 @@ const hero: Player = {
   playtimeSeconds: 0,
 };
 const world = (player = hero, time = 10000): WorldState => ({
-  id: "room",
-  name: "R",
-  hostId: "p",
+  id: 'room',
+  name: 'R',
+  hostId: 'p',
   players: [{ ...player }],
   serverNow: time,
 });
 
-test("lobby prediction and reconciliation cross both seams by the shortest path", async () => {
-  for (const axis of ["x", "y"] as const) {
-    const size = axis === "x" ? ARENA.width : ARENA.height;
+test('lobby prediction and reconciliation cross both seams by the shortest path', async () => {
+  for (const axis of ['x', 'y'] as const) {
+    const size = axis === 'x' ? ARENA.width : ARENA.height;
     const initial = world({ ...hero, [axis]: size - 2 });
-    const movement = new LocalMovement("p", () => {});
+    const movement = new LocalMovement('p', () => {});
     movement.render(initial, 0);
-    movement.input(axis === "x" ? 1 : 0, axis === "y" ? 1 : 0, 0);
+    movement.input(axis === 'x' ? 1 : 0, axis === 'y' ? 1 : 0, 0);
     const predicted = movement.render(initial, 50)!;
     assert(Math.abs(predicted[axis] - 7) < 1e-9);
     const acknowledged = world(
@@ -42,16 +42,16 @@ test("lobby prediction and reconciliation cross both seams by the shortest path"
   }
 });
 
-test("local input is instant and partial acknowledgements replay exactly the remaining duration", async () => {
+test('local input is instant and partial acknowledgements replay exactly the remaining duration', async () => {
   const sent: ClientMessage[] = [];
-  const movement = new LocalMovement("p", (m) => sent.push(m));
+  const movement = new LocalMovement('p', (m) => sent.push(m));
   const initial = world();
   movement.render(initial, 0);
   movement.input(1, 0, 0);
   assert.equal(movement.render(initial, 10)!.x, 421.8);
   assert.equal(movement.render(initial, 100)!.x, 438);
   assert.equal(sent.length, 2);
-  assert.equal(movement.inputDelay(190), 90, "pending input age grows independently of ping");
+  assert.equal(movement.inputDelay(190), 90, 'pending input age grows independently of ping');
   const partial = world({ ...hero, x: 424.5, inputSeq: 1, inputElapsed: 25 }, 10050);
   assert.equal(movement.render(partial, 100)!.x, 438);
   const confirmed = world({ ...hero, x: 438, inputSeq: 2, inputElapsed: 50 }, 10100);
@@ -59,16 +59,16 @@ test("local input is instant and partial acknowledgements replay exactly the rem
   assert.equal(
     movement.inputDelay(100),
     0,
-    "the latest consumed command records acknowledgement delay",
+    'the latest consumed command records acknowledgement delay',
   );
   movement.input(0, 0, 100);
   assert.equal(movement.render(confirmed, 110)!.x, 438);
-  assert.equal(hero.x, 420, "source state stays immutable");
+  assert.equal(hero.x, 420, 'source state stays immutable');
 });
 
-test("interleaved event and RAF timestamps cannot manufacture movement time or input backlog", () => {
+test('interleaved event and RAF timestamps cannot manufacture movement time or input backlog', () => {
   const sent: ClientMessage[] = [];
-  const movement = new LocalMovement("p", (message) => sent.push(message));
+  const movement = new LocalMovement('p', (message) => sent.push(message));
   const initial = world();
   movement.render(initial, 0);
   movement.input(1, 0, 0);
@@ -80,7 +80,7 @@ test("interleaved event and RAF timestamps cannot manufacture movement time or i
     const next = structuredClone(current);
     movePlayer(next.players[0], 1, 0, 0.05);
     next.serverNow = 10000 + now;
-    const last = sent.filter((m) => m.type === "move").at(-1)!;
+    const last = sent.filter((m) => m.type === 'move').at(-1)!;
     next.players[0].inputSeq = last.seq;
     next.players[0].inputElapsed = last.durationMs;
     const rendered = movement.render(next, now)!;
@@ -88,14 +88,14 @@ test("interleaved event and RAF timestamps cannot manufacture movement time or i
     current = next;
   }
   const duration = sent.reduce(
-    (total, message) => total + (message.type === "move" ? (message.durationMs ?? 0) : 0),
+    (total, message) => total + (message.type === 'move' ? (message.durationMs ?? 0) : 0),
     0,
   );
-  assert.equal(duration, 10000, "ten seconds of real time sends exactly ten seconds of movement");
+  assert.equal(duration, 10000, 'ten seconds of real time sends exactly ten seconds of movement');
 });
 
-test("small visual errors stay still, accumulated error converges, large corrections and death snap", async () => {
-  const movement = new LocalMovement("p", () => {});
+test('small visual errors stay still, accumulated error converges, large corrections and death snap', async () => {
+  const movement = new LocalMovement('p', () => {});
   movement.render(world(), 0);
   assert.equal(movement.render(world({ ...hero, x: 419 }, 10050), 50)!.x, 420);
   assert.equal(movement.render(world({ ...hero, x: 418 }, 10100), 100)!.x, 420);
@@ -108,10 +108,10 @@ test("small visual errors stay still, accumulated error converges, large correct
   assert.equal(movement.render(world({ ...hero, x: 345, hitpoints: 0 }, 10250), 750)!.x, 345);
 });
 
-test("prediction passes through scenery and stops movement and animation on missing replies", async () => {
+test('prediction passes through scenery and stops movement and animation on missing replies', async () => {
   const start = { ...hero, x: 440, y: 380 };
   const initial = world(start);
-  const movement = new LocalMovement("p", () => {});
+  const movement = new LocalMovement('p', () => {});
   movement.render(initial, 0);
   movement.input(0, 1, 0);
   let player = start;
@@ -125,28 +125,28 @@ test("prediction passes through scenery and stops movement and animation on miss
   assert.equal(still.y, player.y);
 });
 
-test("forest prediction wraps and resets on area changes without predicting damage", async () => {
-  const forest = world({ ...hero, scene: "forest", x: FOREST.width - 4, y: 1280 });
-  forest.scene = { id: "forest", phase: "active", enemies: [] } as unknown as NonNullable<
-    WorldState["scene"]
+test('forest prediction wraps and resets on area changes without predicting damage', async () => {
+  const forest = world({ ...hero, scene: 'forest', x: FOREST.width - 4, y: 1280 });
+  forest.scene = { id: 'forest', phase: 'active', enemies: [] } as unknown as NonNullable<
+    WorldState['scene']
   >;
-  const movement = new LocalMovement("p", () => {});
+  const movement = new LocalMovement('p', () => {});
   movement.render(forest, 0);
   movement.input(1, 0, 0);
   const p = movement.render(forest, 50)!;
   assert.equal(p.x, 5);
   assert.equal(p.hitpoints, 100);
   movement.animateAttack(p, forest, 50);
-  assert.equal(p.attackAt, undefined, "entry without a confirmed attack must not invent a swing");
+  assert.equal(p.attackAt, undefined, 'entry without a confirmed attack must not invent a swing');
   assert.equal(movement.render(world(), 100)!.x, 420);
 });
 
-test("stale movement stops walking animation and fresh acknowledgements restore it", async () => {
-  const initial = world({ ...hero, scene: "forest", x: 2400, y: 1280 });
-  initial.scene = { id: "forest", phase: "active", enemies: [] } as unknown as NonNullable<
-    WorldState["scene"]
+test('stale movement stops walking animation and fresh acknowledgements restore it', async () => {
+  const initial = world({ ...hero, scene: 'forest', x: 2400, y: 1280 });
+  initial.scene = { id: 'forest', phase: 'active', enemies: [] } as unknown as NonNullable<
+    WorldState['scene']
   >;
-  const movement = new LocalMovement("p", () => {});
+  const movement = new LocalMovement('p', () => {});
   movement.render(initial, 0);
   movement.input(1, 0, 0);
   for (let now = 50; now <= 1000; now += 50) movement.render(initial, now);
@@ -163,7 +163,7 @@ test("stale movement stops walking animation and fresh acknowledgements restore 
   assert(movement.render(fresh, 2050)!.x > stopped.x);
 });
 
-test("diagonal facing keeps its current axis despite floating-point noise and follows real direction changes", async () => {
+test('diagonal facing keeps its current axis despite floating-point noise and follows real direction changes', async () => {
   for (const start of [1, 2]) {
     let facing = start;
     for (let i = 0; i < 100; i++) {
@@ -177,39 +177,39 @@ test("diagonal facing keeps its current axis despite floating-point noise and fo
   assert.equal(movementFacing(0, 0, 3), 3);
 });
 
-test("attack aim follows a new nearest target before the next swing and uses server swing phase", async () => {
-  const initial = world({ ...hero, scene: "forest", x: 2400, y: 1280, attackAt: 9900 });
+test('attack aim follows a new nearest target before the next swing and uses server swing phase', async () => {
+  const initial = world({ ...hero, scene: 'forest', x: 2400, y: 1280, attackAt: 9900 });
   initial.scene = {
-    id: "aim",
-    phase: "active",
+    id: 'aim',
+    phase: 'active',
     enemies: [
       { id: 1, x: 2440, y: 1280, hitpoints: 10, angle: 0 },
       { id: 2, x: 2300, y: 1280, hitpoints: 10, angle: 0 },
     ],
-  } as unknown as NonNullable<WorldState["scene"]>;
-  const movement = new LocalMovement("p", () => {});
+  } as unknown as NonNullable<WorldState['scene']>;
+  const movement = new LocalMovement('p', () => {});
   const player = movement.render(initial, 0)!;
   assert.equal(movement.animateAttack(player, initial, 0), true);
   assert.equal(player.attackAngle, 0);
-  assert.equal(player.attackAt, -100, "render the server swing age, not a fresh local swing");
+  assert.equal(player.attackAt, -100, 'render the server swing age, not a fresh local swing');
   initial.scene.enemies[1].x = 2380;
   assert.equal(movement.animateAttack(player, initial, 16), false);
   assert(player.attackAngle! > 0 && player.attackAngle! < Math.PI);
   assert.equal(player.attackAt, -100);
 });
 
-test("local druid bounces retain server position and hit history without predicting damage", () => {
-  const p = { ...hero, classId: "druid" as const, scene: "forest" as const, attackAt: 9900 };
+test('local druid bounces retain server position and hit history without predicting damage', () => {
+  const p = { ...hero, classId: 'druid' as const, scene: 'forest' as const, attackAt: 9900 };
   const initial = world(p);
   initial.scene = {
-    id: "s",
-    phase: "active",
+    id: 's',
+    phase: 'active',
     enemies: [],
     playerShots: [
       {
         id: 1,
-        ownerId: "p",
-        kind: "roots",
+        ownerId: 'p',
+        kind: 'roots',
         castAt: 9900,
         x: 500,
         y: 340,
@@ -219,8 +219,8 @@ test("local druid bounces retain server position and hit history without predict
         targetId: 2,
       },
     ],
-  } as unknown as NonNullable<WorldState["scene"]>;
-  const movement = new LocalMovement("p", () => {});
+  } as unknown as NonNullable<WorldState['scene']>;
+  const movement = new LocalMovement('p', () => {});
   const player = movement.render(initial, 0)!;
   movement.animateProjectiles(player, initial, 0, false);
   assert.equal(initial.scene.playerShots!.length, 1);

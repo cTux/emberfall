@@ -1,9 +1,9 @@
-import { performance } from "node:perf_hooks";
-import { Encoder } from "@colyseus/schema";
-import { stepCombat, type Player, type SceneState } from "@emberfall/common";
-import { prepareState, applyState, SessionState } from "@emberfall/common/protocol";
-import { SimulationWorld } from "../src/ecs/simulation.ts";
-import { freshProgress } from "../src/characters.ts";
+import { performance } from 'node:perf_hooks';
+import { Encoder } from '@colyseus/schema';
+import { stepCombat, type Player, type SceneState } from '@emberfall/common';
+import { prepareState, applyState, SessionState } from '@emberfall/common/protocol';
+import { SimulationWorld } from '../src/ecs/simulation.ts';
+import { freshProgress } from '../src/characters.ts';
 
 Encoder.BUFFER_SIZE = 128 * 1024;
 const ecs = new SimulationWorld();
@@ -14,19 +14,19 @@ const players: Player[] = Array.from({ length: 8 }, (_, i) => ({
   color: i,
   x: 2400 + i * 25,
   y: 1280,
-  scene: "forest",
+  scene: 'forest',
   autoAttack: true,
   autoTarget: true,
   hitpoints: 1e8,
   maxHitpoints: 1e8,
-  classId: "warrior",
+  classId: 'warrior',
 }));
 for (const player of players) ecs.players.set(player.id, player);
 const scene: SceneState = {
-  id: "benchmark",
-  type: "Forest",
-  difficulty: "Easy",
-  phase: "active",
+  id: 'benchmark',
+  type: 'Forest',
+  difficulty: 'Easy',
+  phase: 'active',
   ready: [],
   countdownAt: null,
   endsAt: 1e12,
@@ -42,7 +42,7 @@ const scene: SceneState = {
     hitpoints: 1e8,
     maxHitpoints: 1e8,
     angle: 0,
-    archetype: (["skeleton", "runner", "brute", "caster"] as const)[i % 4],
+    archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[i % 4],
   })),
 };
 ecs.bind(scene);
@@ -60,9 +60,9 @@ for (let tick = 0; tick < 500; tick++) {
   stepCombat(scene, players, now, 0.05);
   const simulated = performance.now();
   const projection = prepareState({
-    id: "world",
-    name: "Benchmark",
-    hostId: "p0",
+    id: 'world',
+    name: 'Benchmark',
+    hostId: 'p0',
     players,
     scene,
     serverNow: now,
@@ -90,7 +90,7 @@ const summary = (values: number[]) => {
 console.log(
   JSON.stringify(
     {
-      scenario: "8 stationary players, 160 mixed enemies, 20 Hz; 100 warmup and 400 measured ticks",
+      scenario: '8 stationary players, 160 mixed enemies, 20 Hz; 100 warmup and 400 measured ticks',
       simulation: summary(simulation),
       replicationForEightClients: summary(replication),
       totalPatchBytesPerSecond: bytes / (400 * 0.05),

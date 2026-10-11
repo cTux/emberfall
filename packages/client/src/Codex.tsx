@@ -1,14 +1,14 @@
-import { useState } from "react";
-import { ChapterTabs } from "@emberfall/ui";
-import { Box } from "@mui/material";
-import { statusSrc } from "./combat-assets";
+import { useState } from 'react';
+import { ChapterTabs } from '@emberfall/ui';
+import { Box } from '@mui/material';
+import { statusSrc } from './combat-assets';
 
 const chapters = [
   {
-    title: "Controls",
+    title: 'Controls',
     content: (
       <>
-        {" "}
+        {' '}
         <p>
           Move with WASD or arrow keys. F toggles auto-attack; G toggles auto-target. Both start
           enabled. With auto-attack off, hold LMB to cast on cooldown. With auto-target off, aim
@@ -19,15 +19,15 @@ const chapters = [
           confirmation; Escape inside a window closes it. Drag window titles to move them. Press I
           to open your inventory and character stats, or press it again to close the window.
           Movement and equipment hotkeys follow physical keys across keyboard layouts.
-        </p>{" "}
+        </p>{' '}
       </>
     ),
   },
   {
-    title: "Worlds & party",
+    title: 'Worlds & party',
     content: (
       <>
-        {" "}
+        {' '}
         <p>
           Playtest Default is always open to everyone, with room for 32 players. World creation is
           disabled. Other worlds disappear when everyone leaves. Your character is saved on the
@@ -37,15 +37,15 @@ const chapters = [
           to join or rejoin the running scene until the boss dies and return portals open. After
           that, everyone must return before creating a new scene. Party members in another dimension
           appear dimmed.
-        </p>{" "}
+        </p>{' '}
       </>
     ),
   },
   {
-    title: "Combat",
+    title: 'Combat',
     content: (
       <>
-        {" "}
+        {' '}
         <p>
           The forest wraps at every edge. Attacks are automatic. Starter weapons have a 5% chance to
           critically hit for 150% power. Warrior damage is physical, Mage fire, Ranger poison and
@@ -64,37 +64,37 @@ const chapters = [
           enemy HP by 1.75 and dropped XP by 1.2. Three players mean 3.0625 times HP and 1.44 times
           dropped XP. Red areas warn of spawns and enemy attacks. Dodge filled circles and red
           projectiles.
-        </p>{" "}
+        </p>{' '}
         <p>
-          <img className="combat-icon" src={statusSrc("bleed")} alt="Bleeding" /> Bleeding ·{" "}
-          <img className="combat-icon" src={statusSrc("poison")} alt="Poison" /> Poison ·{" "}
-          <img className="combat-icon" src={statusSrc("burn")} alt="Burning" /> Burning ·{" "}
-          <img className="combat-icon" src={statusSrc("roots")} alt="Roots" /> Roots. Compact icons
+          <img className='combat-icon' src={statusSrc('bleed')} alt='Bleeding' /> Bleeding ·{' '}
+          <img className='combat-icon' src={statusSrc('poison')} alt='Poison' /> Poison ·{' '}
+          <img className='combat-icon' src={statusSrc('burn')} alt='Burning' /> Burning ·{' '}
+          <img className='combat-icon' src={statusSrc('roots')} alt='Roots' /> Roots. Compact icons
           above enemy health bars show stacks; roots have no ground decoration.
         </p>
       </>
     ),
   },
   {
-    title: "The Warden",
+    title: 'The Warden',
     content: (
       <>
-        {" "}
+        {' '}
         <p>
           When time runs out, a boss with 200 HP and a purple health bar arrives. Enemies keep
           spawning until it falls. Defeat it to clear the remaining enemies and open blue return
           portals near every player. Death lets you return immediately while your party continues.
           Returning restores health. Players joining during a run wait in the village. A new scene
           can be created once everyone has returned.
-        </p>{" "}
+        </p>{' '}
       </>
     ),
   },
   {
-    title: "Your character",
+    title: 'Your character',
     content: (
       <>
-        {" "}
+        {' '}
         <p>
           Damage briefly outlines targets in red and tints them white, including training dummies
           and companions. Other players do not flash. Your screen flashes red when you are hit. Your
@@ -104,12 +104,12 @@ const chapters = [
           account; change it in Settings → Account. Server saves include XP, health and playtime.
           Sign in through the same Steam account to recover your character on another browser. No
           offline mode.
-        </p>{" "}
+        </p>{' '}
       </>
     ),
   },
   {
-    title: "Classes",
+    title: 'Classes',
     content: (
       <>
         <p>
@@ -139,7 +139,7 @@ const chapters = [
     ),
   },
   {
-    title: "Credits",
+    title: 'Credits',
     content: (
       <>
         <p>
@@ -150,38 +150,38 @@ const chapters = [
         </p>
         <p>Original art and characters: Ninja Adventure asset pack by Pixel-boy & AAA.</p>
         <a
-          href="https://pixel-boy.itch.io/ninja-adventure-asset-pack"
-          target="_blank"
-          rel="noreferrer"
+          href='https://pixel-boy.itch.io/ninja-adventure-asset-pack'
+          target='_blank'
+          rel='noreferrer'
         >
           Art: Pixel-boy & AAA ↗
         </a>
         <p>Music by TimberwolfGames. Audio credits and licenses are included with the game.</p>
         <p>
-          Original village lamp posts:{" "}
-          <a href="https://karsiori.itch.io/free-pixel-art-lantern-pack">Karsiori</a>,{" "}
-          <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>. Bronze post and
+          Original village lamp posts:{' '}
+          <a href='https://karsiori.itch.io/free-pixel-art-lantern-pack'>Karsiori</a>,{' '}
+          <a href='https://creativecommons.org/publicdomain/zero/1.0/'>CC0</a>. Bronze post and
           orange lantern from the FREE Pixel Art Lantern Pack.
         </p>
         <p>
-          Wardrobe:{" "}
-          <a href="https://opengameart.org/content/lpc-wooden-furniture">LPC Wooden Furniture</a> by
+          Wardrobe:{' '}
+          <a href='https://opengameart.org/content/lpc-wooden-furniture'>LPC Wooden Furniture</a> by
           bluecarrot16, Baŝto, Lanea Zimmerman (Sharm), William Thompson, Tuomo Untinen (Reemax),
-          and Janna/Lilius/Jannax. Original crop used as the reference for the regenerated wardrobe;{" "}
-          <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.{" "}
-          <a href="/assets/LPC-CREDITS.txt">Full credits</a> and{" "}
-          <a href="/assets/LPC-LICENSE.txt">license</a>.
+          and Janna/Lilius/Jannax. Original crop used as the reference for the regenerated wardrobe;{' '}
+          <a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC BY-SA 3.0</a>.{' '}
+          <a href='/assets/LPC-CREDITS.txt'>Full credits</a> and{' '}
+          <a href='/assets/LPC-LICENSE.txt'>license</a>.
         </p>
         <p>
-          Original weapons:{" "}
-          <a href="https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack">Kyrise</a>,{" "}
-          <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Unmodified sprites
+          Original weapons:{' '}
+          <a href='https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack'>Kyrise</a>,{' '}
+          <a href='https://creativecommons.org/licenses/by/4.0/'>CC BY 4.0</a>. Unmodified sprites
           from Kyrise's Free 16x16 RPG Icon Pack.
         </p>
         <p>
-          Original status and spell icons:{" "}
-          <a href="https://game-icons.net/">Lorc and Delapouite / Game-icons.net</a>,{" "}
-          <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>. Colors adapted for
+          Original status and spell icons:{' '}
+          <a href='https://game-icons.net/'>Lorc and Delapouite / Game-icons.net</a>,{' '}
+          <a href='https://creativecommons.org/licenses/by/3.0/'>CC BY 3.0</a>. Colors adapted for
           Emberfall.
         </p>
       </>
@@ -190,16 +190,16 @@ const chapters = [
 ];
 
 export function Codex() {
-  const [chapter, setChapter] = useState("Controls");
+  const [chapter, setChapter] = useState('Controls');
   return (
     <Box
       sx={{
-        "& p": { typography: "body1", color: "text.secondary" },
-        "& a": { color: "primary.main" },
+        '& p': { typography: 'body1', color: 'text.secondary' },
+        '& a': { color: 'primary.main' },
       }}
     >
       <ChapterTabs
-        label="Codex chapters"
+        label='Codex chapters'
         value={chapter}
         onChange={setChapter}
         chapters={chapters.map((entry) => ({ ...entry, id: entry.title }))}

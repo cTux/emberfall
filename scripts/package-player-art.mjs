@@ -1,17 +1,17 @@
-import { chromium } from "@playwright/test";
-import { readFile, writeFile } from "node:fs/promises";
+import { chromium } from '@playwright/test';
+import { readFile, writeFile } from 'node:fs/promises';
 
 // Art and handedness are authored in the sources; packaging locks walk colors
 // to the standing pose so separately generated sheets cannot change materials.
-const root = "packages/client/public/assets/wardrobe-style";
+const root = 'packages/client/public/assets/wardrobe-style';
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
-  for (const name of ["warrior", "ranger", "mage", "druid"]) {
+  for (const name of ['warrior', 'ranger', 'mage', 'druid']) {
     const source = await readFile(`${root}/${name}-complete.png`);
     const stride = await readFile(`${root}/${name}-stride.png`);
     const repair = await readFile(`${root}/${name}-stride-revised.png`);
-    const extra = ["warrior", "mage", "druid"].includes(name)
+    const extra = ['warrior', 'mage', 'druid'].includes(name)
       ? await readFile(`${root}/${name}-extra.png`)
       : null;
     const packed = await page.evaluate(
@@ -25,22 +25,22 @@ try {
           const rowCount = isStride
             ? 6
             : sourceIndex
-              ? name === "warrior"
+              ? name === 'warrior'
                 ? 3
-                : name === "druid"
+                : name === 'druid'
                   ? 10
                   : 1
-              : name === "warrior"
+              : name === 'warrior'
                 ? 9
                 : 10;
           const image = new Image();
           image.src = `data:image/png;base64,${sources[sourceIndex]}`;
           await image.decode();
           images.push(image);
-          const input = document.createElement("canvas");
+          const input = document.createElement('canvas');
           input.width = image.width;
           input.height = image.height;
-          const ctx = input.getContext("2d", { willReadFrequently: true });
+          const ctx = input.getContext('2d', { willReadFrequently: true });
           ctx.drawImage(image, 0, 0);
           const pixels = ctx.getImageData(0, 0, image.width, image.height).data;
           const visited = new Uint8Array(image.width * image.height);
@@ -90,13 +90,13 @@ try {
           }
           // The revised druid's last two fallen poses touch; source them from the
           // earlier sheet instead of slicing through their shared pixels.
-          if (name === "druid" && sourceIndex === 0 && components.length === 39) {
+          if (name === 'druid' && sourceIndex === 0 && components.length === 39) {
             const merged = components.findIndex(
               (f) => f.top > image.height * 0.9 && f.width > image.width / 3,
             );
             if (merged >= 0) components.splice(merged, 1);
           }
-          if (components.length !== (name === "druid" && sourceIndex === 0 ? 38 : rowCount * 4))
+          if (components.length !== (name === 'druid' && sourceIndex === 0 ? 38 : rowCount * 4))
             throw new Error(
               `${name} source ${sourceIndex}: expected ${rowCount * 4} isolated sprites, got ${components.length}; ${JSON.stringify(components)}`,
             );
@@ -109,7 +109,7 @@ try {
           allFrames.push(...frames.map((frame) => ({ ...frame, isStride })));
         }
         let frames = allFrames.filter((f) => f.sourceIndex === 0);
-        if (name === "warrior") {
+        if (name === 'warrior') {
           frames = frames
             .filter((f) => f.row < 6 || f.row === 8)
             .map((f) => ({ ...f, row: f.row === 8 ? 9 : f.row }));
@@ -119,15 +119,15 @@ try {
               .map((f) => ({ ...f, row: f.row + 6 })),
           );
         }
-        if (name === "druid")
+        if (name === 'druid')
           frames.push(...allFrames.filter((f) => f.sourceIndex === 1 && f.row === 9 && f.col >= 2));
-        if (name === "mage") {
+        if (name === 'mage') {
           frames = frames.filter((f) => f.row !== 0);
           frames.push(...allFrames.filter((f) => f.sourceIndex === 1));
         }
         // Side-on casts retain the far weapon arm; do not use a source pose
         // that transfers the staff to the visible, anatomical left hand.
-        if (name === "mage" || name === "druid") {
+        if (name === 'mage' || name === 'druid') {
           const safe = frames.find((f) => f.col === 2 && f.row === 6);
           frames = frames.map((f) =>
             f.col === 2 && (f.row === 7 || f.row === 8) ? { ...safe, row: f.row } : f,
@@ -147,10 +147,10 @@ try {
           58 / Math.max(...frames.map((f) => f.width * f.unitScale)),
           56 / Math.max(...frames.map((f) => f.height * f.unitScale)),
         );
-        const output = document.createElement("canvas");
+        const output = document.createElement('canvas');
         output.width = 256;
         output.height = 640;
-        const out = output.getContext("2d");
+        const out = output.getContext('2d');
         out.imageSmoothingEnabled = false;
         const rows = [0, 1, 2, 3, 4, 8, 9, 5, 6, 7];
         for (const f of frames) {
@@ -172,7 +172,7 @@ try {
         const revisedStrides = allFrames.filter((f) => f.sourceIndex === strideIndex + 1);
         // Preserve explicitly accepted directions byte-for-byte, including their
         // original normalization; a revised sheet must not rescale those cells.
-        const approved = name === "warrior" ? [2, 3] : name === "ranger" ? [0] : [];
+        const approved = name === 'warrior' ? [2, 3] : name === 'ranger' ? [0] : [];
         const strides = [
           ...originalStrides.filter((f) => approved.includes(f.col)),
           ...revisedStrides.filter((f) => !approved.includes(f.col)),
@@ -215,7 +215,7 @@ try {
               const i = (y * output.width + x) * 4;
               if (pixels[i + 3] < 128) continue;
               const rgb = [pixels[i], pixels[i + 1], pixels[i + 2]];
-              palette.set(rgb.join(","), rgb);
+              palette.set(rgb.join(','), rgb);
             }
           if (!palette.size) throw new Error(`${name} direction ${col}: empty idle palette`);
           const colors = [...palette.values()];
@@ -251,7 +251,7 @@ try {
                 const i = (y * output.width + x) * 4;
                 if (!pixels[i + 3]) continue;
                 const rgb = [pixels[i], pixels[i + 1], pixels[i + 2]];
-                const key = rgb.join(",");
+                const key = rgb.join(',');
                 let match = matches.get(key);
                 if (!match) {
                   const tone = rgb.map((value, channel) => tones[channel][value]);
@@ -273,7 +273,7 @@ try {
         }
         out.putImageData(atlas, 0, 0);
         return {
-          png: output.toDataURL().split(",")[1],
+          png: output.toDataURL().split(',')[1],
           frames,
           scale,
           strides,
@@ -282,14 +282,14 @@ try {
         };
       },
       {
-        source: source.toString("base64"),
+        source: source.toString('base64'),
         name,
-        extra: extra?.toString("base64"),
-        stride: stride.toString("base64"),
-        repair: repair.toString("base64"),
+        extra: extra?.toString('base64'),
+        stride: stride.toString('base64'),
+        repair: repair.toString('base64'),
       },
     );
-    await writeFile(`${root}/${name}-atlas.png`, Buffer.from(packed.png, "base64"));
+    await writeFile(`${root}/${name}-atlas.png`, Buffer.from(packed.png, 'base64'));
     await writeFile(
       `${root}/${name}-atlas.json`,
       JSON.stringify(
@@ -302,7 +302,7 @@ try {
         },
         null,
         2,
-      ) + "\n",
+      ) + '\n',
     );
     console.log(`${name}: ${packed.frames.length} isolated frames, scale ${packed.scale}`);
   }

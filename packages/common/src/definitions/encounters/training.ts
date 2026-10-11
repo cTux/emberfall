@@ -1,6 +1,6 @@
 export const TRAINING_DEFINITION = {
-  id: "training",
-  dummyName: "Training dummy",
+  id: 'training',
+  dummyName: 'Training dummy',
   hitpoints: 1000000000,
   refreshMs: 1000,
   triangleRows: 3,

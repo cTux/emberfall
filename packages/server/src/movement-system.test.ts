@@ -1,18 +1,18 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { stepMovement, type MovementInput } from "./systems/movement.ts";
-import { freshProgress } from "./characters.ts";
-import type { Player } from "@emberfall/common";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { stepMovement, type MovementInput } from './systems/movement.ts';
+import { freshProgress } from './characters.ts';
+import type { Player } from '@emberfall/common';
 
-test("untimed heartbeat movement includes age 250ms and stops immediately after it", () => {
+test('untimed heartbeat movement includes age 250ms and stops immediately after it', () => {
   for (const phase of [0, 49]) {
-    const player: Player = { ...freshProgress(), id: "p", name: "p", x: 420, y: 340, color: 0 };
+    const player: Player = { ...freshProgress(), id: 'p', name: 'p', x: 420, y: 340, color: 0 };
     const input: MovementInput = {
       x: 1,
       y: 0,
       inputAt: 1000,
       lastSeq: 1,
-      epoch: "lobby",
+      epoch: 'lobby',
       inputs: [],
     };
     for (let age = phase; age <= 250; age += 50) stepMovement(input, player, undefined, 1000 + age);
@@ -25,8 +25,8 @@ test("untimed heartbeat movement includes age 250ms and stops immediately after 
   }
 });
 
-test("a fixed tick consumes partial commands once and bounds a queued burst", () => {
-  const player: Player = { ...freshProgress(), id: "p", name: "p", x: 420, y: 340, color: 0 };
+test('a fixed tick consumes partial commands once and bounds a queued burst', () => {
+  const player: Player = { ...freshProgress(), id: 'p', name: 'p', x: 420, y: 340, color: 0 };
   const input: MovementInput = {
     timed: true,
     x: 0,
@@ -34,8 +34,8 @@ test("a fixed tick consumes partial commands once and bounds a queued burst", ()
     inputAt: 1000,
     lastSeq: 2,
     inputs: [
-      { seq: 1, epoch: "lobby", x: 1, y: 0, durationMs: 20 },
-      { seq: 2, epoch: "lobby", x: 1, y: 0, durationMs: 40 },
+      { seq: 1, epoch: 'lobby', x: 1, y: 0, durationMs: 20 },
+      { seq: 2, epoch: 'lobby', x: 1, y: 0, durationMs: 40 },
     ],
   };
   stepMovement(input, player, undefined, 1000);
@@ -48,7 +48,7 @@ test("a fixed tick consumes partial commands once and bounds a queued burst", ()
   assert.equal(player.x, 430.8);
   input.inputs = Array.from({ length: 100 }, (_, seq) => ({
     seq: seq + 3,
-    epoch: "lobby",
+    epoch: 'lobby',
     x: 1,
     y: 0,
     durationMs: 50,

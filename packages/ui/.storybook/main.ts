@@ -1,11 +1,11 @@
-import type { StorybookConfig } from "@storybook/react-vite";
-import { mergeConfig } from "vite";
+import type { StorybookConfig } from '@storybook/react-vite';
+import { mergeConfig } from 'vite';
 
 const config: StorybookConfig = {
-  stories: ["../src/**/*.mdx", "../src/**/*.stories.tsx"],
-  addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
-  framework: "@storybook/react-vite",
-  staticDirs: ["../public"],
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.tsx'],
+  addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
+  framework: '@storybook/react-vite',
+  staticDirs: ['../public'],
   viteFinal: (config) =>
     mergeConfig(config, {
       build: {

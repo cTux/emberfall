@@ -6,9 +6,9 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-} from "@mui/material";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faLock } from "@fortawesome/free-solid-svg-icons/faLock";
+} from '@mui/material';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faLock } from '@fortawesome/free-solid-svg-icons/faLock';
 export interface WorldEntry {
   id: string;
   name: string;
@@ -26,12 +26,12 @@ export interface WorldListProps {
 export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: WorldListProps) {
   return (
     <TableContainer>
-      <Table aria-label="Available servers" size="small" sx={{ tableLayout: "fixed" }}>
+      <Table aria-label='Available servers' size='small' sx={{ tableLayout: 'fixed' }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ width: "50%" }}>Name</TableCell>
-            <TableCell align="right">Latency</TableCell>
-            <TableCell align="right">Players</TableCell>
+            <TableCell sx={{ width: '50%' }}>Name</TableCell>
+            <TableCell align='right'>Latency</TableCell>
+            <TableCell align='right'>Players</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -45,30 +45,30 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
                 onClick={() => {
                   if (!joinDisabled) onJoin(world);
                 }}
-                sx={{ cursor: joinDisabled ? "default" : "pointer" }}
+                sx={{ cursor: joinDisabled ? 'default' : 'pointer' }}
               >
-                <TableCell sx={{ overflowWrap: "anywhere" }}>
+                <TableCell sx={{ overflowWrap: 'anywhere' }}>
                   <Button
                     disabled={joinDisabled}
                     onClick={(event) => {
                       event.stopPropagation();
                       onJoin(world);
                     }}
-                    sx={{ justifyContent: "flex-start", textAlign: "left", minWidth: 0, px: 0 }}
-                    aria-label={`Join ${world.name}${world.locked ? ", password protected" : ""}${world.players >= world.capacity ? ", full" : ""}, ${world.players}/${world.capacity}`}
+                    sx={{ justifyContent: 'flex-start', textAlign: 'left', minWidth: 0, px: 0 }}
+                    aria-label={`Join ${world.name}${world.locked ? ', password protected' : ''}${world.players >= world.capacity ? ', full' : ''}, ${world.players}/${world.capacity}`}
                     startIcon={
                       world.locked ? (
-                        <FontAwesomeIcon icon={faLock} aria-hidden="true" />
+                        <FontAwesomeIcon icon={faLock} aria-hidden='true' />
                       ) : undefined
                     }
                   >
                     {world.name}
                   </Button>
                 </TableCell>
-                <TableCell align="right">
-                  {latency == null ? "—" : `${Math.round(latency)} ms`}
+                <TableCell align='right'>
+                  {latency == null ? '—' : `${Math.round(latency)} ms`}
                 </TableCell>
-                <TableCell align="right">
+                <TableCell align='right'>
                   {world.players}/{world.capacity}
                 </TableCell>
               </TableRow>
@@ -76,7 +76,7 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
           })}
           {!worlds.length && (
             <TableRow>
-              <TableCell colSpan={3} align="center" sx={{ py: 4 }}>
+              <TableCell colSpan={3} align='center' sx={{ py: 4 }}>
                 No servers available.
               </TableCell>
             </TableRow>

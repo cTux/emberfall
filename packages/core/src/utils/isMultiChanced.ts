@@ -1,4 +1,4 @@
-import { isChanced } from "./isChanced.ts";
+import { isChanced } from './isChanced.ts';
 
 export function isMultiChanced(percent: number): number {
   if (percent <= 0 || Number.isNaN(percent)) return 0;

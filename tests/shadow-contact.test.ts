@@ -1,14 +1,14 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { makeMask, castShadow } from "../packages/client/src/lighting.ts";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { makeMask, castShadow } from '../packages/client/src/lighting.ts';
 
-test("padded scenery shadows meet the visible base under sunlight and nearby lamps", () => {
-  const previous = Object.getOwnPropertyDescriptor(globalThis, "document");
+test('padded scenery shadows meet the visible base under sunlight and nearby lamps', () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
   const pixels = new Uint8ClampedArray(16 * 16 * 4);
   // Visible building/root edge ends at row 12, leaving four transparent rows.
   pixels[(11 * 16 + 8) * 4 + 3] = 255;
   const maskContext = { drawImage() {}, fillRect() {}, getImageData: () => ({ data: pixels }) };
-  Object.defineProperty(globalThis, "document", {
+  Object.defineProperty(globalThis, 'document', {
     configurable: true,
     value: {
       createElement: () => ({ width: 0, height: 0, getContext: () => maskContext }),
@@ -38,17 +38,17 @@ test("padded scenery shadows meet the visible base under sunlight and nearby lam
             drawY = y;
           },
         } as unknown as CanvasRenderingContext2D;
-        castShadow(context, { id: "scenery", x: 50, y: 100, width: 64, height, mask }, light);
+        castShadow(context, { id: 'scenery', x: 50, y: 100, width: 64, height, mask }, light);
         const visibleBottom = drawY + (height * 12) / 16;
-        assert.equal(tx + shear * visibleBottom, 50, "contact must not slide sideways");
+        assert.equal(tx + shear * visibleBottom, 50, 'contact must not slide sideways');
         assert.equal(
           ty + sy * visibleBottom,
           100 - (height * 4) / 16,
-          "shadow and visible base must touch",
+          'shadow and visible base must touch',
         );
       }
   } finally {
-    if (previous) Object.defineProperty(globalThis, "document", previous);
-    else Reflect.deleteProperty(globalThis, "document");
+    if (previous) Object.defineProperty(globalThis, 'document', previous);
+    else Reflect.deleteProperty(globalThis, 'document');
   }
 });

@@ -1,6 +1,6 @@
-import { loadArt, drawArt } from "./art";
+import { loadArt, drawArt } from './art';
 
-export const portalArt = loadArt("portal-stone", 1, 1, 128, true);
+export const portalArt = loadArt('portal-stone', 1, 1, 128, true);
 export const chimneyAnchors = [
   { x: 0.68, y: 0.055 },
   { x: 0.75, y: 0.055 },
@@ -9,18 +9,18 @@ export const chimneyAnchors = [
 
 // Small reusable textures, not per-frame canvas uploads or blur filters.
 function puff(color: string) {
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = canvas.height = 32;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext('2d')!;
   const gradient = ctx.createRadialGradient(16, 16, 1, 16, 16, 16);
   gradient.addColorStop(0, color);
-  gradient.addColorStop(1, "#0000");
+  gradient.addColorStop(1, '#0000');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 32, 32);
   return canvas;
 }
-const smoke = puff("#d6cfc1");
-const energy = puff("#3eacff");
+const smoke = puff('#d6cfc1');
+const energy = puff('#3eacff');
 
 /** Only the aperture animates. Stone, silhouette and footprint are immutable. */
 export function drawStonePortal(

@@ -5,14 +5,14 @@ import {
   moveActor,
   moveForestActor,
   ENEMY_STATS,
-} from "@emberfall/common";
-import type { WorldState } from "@emberfall/common";
+} from '@emberfall/common';
+import type { WorldState } from '@emberfall/common';
 
 /** Interpolate confirmed states on a monotonic clock. No input prediction or rollback. */
 export class SnapshotBuffer {
   private history: WorldState[] = [];
   private latest: WorldState | null = null;
-  private epoch = "";
+  private epoch = '';
   private clock = 0;
   private renderedAt = 0;
   private receivedAt = 0;
@@ -24,7 +24,7 @@ export class SnapshotBuffer {
   push(world: WorldState, now: number) {
     if (world === this.latest) return;
     const me = world.players.find((p) => p.id === this.playerId);
-    const epoch = `${world.id}:${me?.scene === "forest" ? world.scene?.id : "lobby"}`;
+    const epoch = `${world.id}:${me?.scene === 'forest' ? world.scene?.id : 'lobby'}`;
     const time = world.serverNow ?? 0;
     if (epoch !== this.epoch) {
       this.history = [];
@@ -77,7 +77,7 @@ export class SnapshotBuffer {
     const players = older.players.map((a) => {
       const b = newer.players.find((p) => p.id === a.id);
       if (!b || a.scene !== b.scene) return { ...a, inputX: 0, inputY: 0 };
-      const point = interpolate(a, b, a.scene === "forest", 12, false);
+      const point = interpolate(a, b, a.scene === 'forest', 12, false);
       // Corrections with no movement intent must not trigger a walking animation.
       return {
         ...a,
@@ -106,7 +106,7 @@ export class SnapshotBuffer {
           enemy,
           b,
           true,
-          ENEMY_STATS[enemy.archetype ?? "skeleton"].radius,
+          ENEMY_STATS[enemy.archetype ?? 'skeleton'].radius,
         );
         enemy.x = point.x;
         enemy.y = point.y;
@@ -137,7 +137,7 @@ export class SnapshotBuffer {
     for (const player of players) {
       const next = newer.players.find((p) => p.id === player.id)?.bear;
       if (!player.bear || !next || player.bear.hitpoints <= 0 || next.hitpoints <= 0) continue;
-      const point = interpolate(player.bear, next, player.scene === "forest", 8);
+      const point = interpolate(player.bear, next, player.scene === 'forest', 8);
       player.bear.x = point.x;
       player.bear.y = point.y;
       player.bear.moving = Math.hypot(point.dx, point.dy) > 0.001;

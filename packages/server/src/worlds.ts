@@ -1,26 +1,26 @@
-import type { ServerMessage } from "@emberfall/common";
-import { Encoder } from "@colyseus/schema";
-import { RUNTIME } from "@emberfall/common/definitions/runtime";
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
-import { once } from "node:events";
-import { createServer as createSecureServer, type ServerOptions } from "node:https";
-import { Server, Room, ServerError, type Client } from "@colyseus/core";
-import { WebSocketTransport, type WebSocketClient } from "@colyseus/ws-transport";
+import type { ServerMessage } from '@emberfall/common';
+import { Encoder } from '@colyseus/schema';
+import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { once } from 'node:events';
+import { createServer as createSecureServer, type ServerOptions } from 'node:https';
+import { Server, Room, ServerError, type Client } from '@colyseus/core';
+import { WebSocketTransport, type WebSocketClient } from '@colyseus/ws-transport';
 import {
   SessionState,
   prepareState,
   applyState,
   type PreparedState,
-} from "@emberfall/common/protocol";
-import { createRuntime } from "./runtime.ts";
-import { Peer } from "./network/peer.ts";
-import { staticHandler } from "./http/static.ts";
-import { Accounts, type SteamOptions } from "./accounts.ts";
+} from '@emberfall/common/protocol';
+import { createRuntime } from './runtime.ts';
+import { Peer } from './network/peer.ts';
+import { staticHandler } from './http/static.ts';
+import { Accounts, type SteamOptions } from './accounts.ts';
 
 /** Private session rooms preserve world browsing and transfers on one SDK connection. */
 export async function createGameServer(
   staticRoot?: string,
-  savePath = ":memory:",
+  savePath = ':memory:',
   tls?: ServerOptions,
   steam?: SteamOptions,
 ) {
@@ -34,7 +34,7 @@ export async function createGameServer(
   const projections = new WeakMap<object, PreparedState>();
   function replicate(
     state: SessionState,
-    message: Extract<ServerMessage, { type: "state" | "joined" }>,
+    message: Extract<ServerMessage, { type: 'state' | 'joined' }>,
   ) {
     let projection = projections.get(message);
     if (!projection) {
@@ -49,32 +49,32 @@ export async function createGameServer(
     private peer?: Peer;
     onAuth(_client: Client, options: { ticket?: string }, context: { headers: Headers }) {
       if (!accounts) return true;
-      if (context.headers.get("origin") !== accounts.origin)
-        throw new ServerError(401, "Invalid origin");
+      if (context.headers.get('origin') !== accounts.origin)
+        throw new ServerError(401, 'Invalid origin');
       const token = accounts.consumeTicket(options.ticket);
-      if (!token) throw new ServerError(401, "Please sign in again");
+      if (!token) throw new ServerError(401, 'Please sign in again');
       return token;
     }
     onCreate(options: { protocolVersion?: number }) {
       if (options.protocolVersion !== RUNTIME.protocolVersion)
-        throw new ServerError(4002, "Client protocol version is incompatible. Reload the game.");
+        throw new ServerError(4002, 'Client protocol version is incompatible. Reload the game.');
       this.setPrivate(true);
       this.setPatchRate(50);
-      this.onMessage("command", (_client, command) => this.peer?.receive(command));
+      this.onMessage('command', (_client, command) => this.peer?.receive(command));
     }
     onJoin(client: Client) {
-      if (accounts && (typeof client.auth !== "string" || !accounts.valid(client.auth)))
-        throw new ServerError(401, "Please sign in again");
+      if (accounts && (typeof client.auth !== 'string' || !accounts.valid(client.auth)))
+        throw new ServerError(401, 'Please sign in again');
       this.peer = new Peer(
         (message) => {
-          if (message.type === "state") replicate(this.state, message);
+          if (message.type === 'state') replicate(this.state, message);
           else {
-            if (message.type === "joined") replicate(this.state, message);
-            if (message.type === "left") {
-              this.state.header = "";
+            if (message.type === 'joined') replicate(this.state, message);
+            if (message.type === 'left') {
+              this.state.header = '';
               this.state.entities.clear();
             }
-            client.send("event", message);
+            client.send('event', message);
           }
         },
         (code) => client.leave(code === 1006 ? 4001 : code),
@@ -97,14 +97,14 @@ export async function createGameServer(
     pingInterval: 15000,
     pingMaxRetries: 1,
     beforeUpgrade: (request) => {
-      const origin = request.headers.get("origin");
+      const origin = request.headers.get('origin');
       try {
         if (accounts && origin !== accounts.origin)
-          return new Response("Forbidden", { status: 403 });
-        if (!accounts && origin && new URL(origin).host !== request.headers.get("host"))
-          return new Response("Forbidden", { status: 403 });
+          return new Response('Forbidden', { status: 403 });
+        if (!accounts && origin && new URL(origin).host !== request.headers.get('host'))
+          return new Response('Forbidden', { status: 403 });
       } catch {
-        return new Response("Forbidden", { status: 403 });
+        return new Response('Forbidden', { status: 403 });
       }
     },
   });
@@ -121,28 +121,28 @@ export async function createGameServer(
               if (!handled) next();
             })
             .catch(next);
-        else if (req.url === "/api/account") {
-          res.setHeader("Content-Type", "application/json");
+        else if (req.url === '/api/account') {
+          res.setHeader('Content-Type', 'application/json');
           res.end(
-            JSON.stringify({ mode: "legacy", authenticated: false, nickname: null, steamName: "" }),
+            JSON.stringify({ mode: 'legacy', authenticated: false, nickname: null, steamName: '' }),
           );
         } else next();
       });
-      app.get("/", handler);
+      app.get('/', handler);
       app.use(handler);
     },
   });
-  game.define("session", SessionRoom);
+  game.define('session', SessionRoom);
 
   return {
     server,
     runtime,
-    async listen(port: number, host = "127.0.0.1") {
+    async listen(port: number, host = '127.0.0.1') {
       if (port !== 0) return game.listen(port, host);
       // The ws transport treats zero as its default port. Bind through the public
       // externally-hosted-server API so tests get a real OS-assigned free port.
       await game.serverless();
-      const listening = once(server, "listening");
+      const listening = once(server, 'listening');
       server.listen(0, host);
       await listening;
     },

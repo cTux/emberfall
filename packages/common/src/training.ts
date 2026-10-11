@@ -1,10 +1,10 @@
-import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
-import { TRAINING_DEFINITION } from "./definitions/encounters/training.ts";
-import { TRAINING_ZONES, inTrainingZone } from "./world.ts";
-import { tickCompanion, tickPlayerCombat } from "./simulation.ts";
-import { damagePerSecond, tickDebuffs } from "./class-combat.ts";
-import type { Player } from "./index.ts";
-import type { SceneState } from "./scene.ts";
+import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
+import { TRAINING_DEFINITION } from './definitions/encounters/training.ts';
+import { TRAINING_ZONES, inTrainingZone } from './world.ts';
+import { tickCompanion, tickPlayerCombat } from './simulation.ts';
+import { damagePerSecond, tickDebuffs } from './class-combat.ts';
+import type { Player } from './index.ts';
+import type { SceneState } from './scene.ts';
 
 export function tickTraining(
   scene: SceneState | undefined,
@@ -33,11 +33,11 @@ export function tickTraining(
 
 export function createTrainingScene(now: number): SceneState {
   return {
-    id: "lobby-training",
+    id: 'lobby-training',
     training: true,
-    type: "Forest",
-    difficulty: "Easy",
-    phase: "active",
+    type: 'Forest',
+    difficulty: 'Easy',
+    phase: 'active',
     ready: [],
     countdownAt: null,
     endsAt: null,
@@ -57,7 +57,7 @@ export function createTrainingScene(now: number): SceneState {
       ...position,
       id: index + 1,
       name: TRAINING_DEFINITION.dummyName,
-      archetype: "skeleton" as const,
+      archetype: 'skeleton' as const,
       angle: 0,
       hitpoints: TRAINING_DEFINITION.hitpoints,
       maxHitpoints: TRAINING_DEFINITION.hitpoints,

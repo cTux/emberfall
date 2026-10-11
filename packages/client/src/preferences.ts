@@ -26,22 +26,22 @@ export function loadPreferences(): Preferences {
     volume: 0.35,
   };
   try {
-    const saved = JSON.parse(localStorage.getItem("emberfall-new.preferences") ?? "{}");
+    const saved = JSON.parse(localStorage.getItem('emberfall-new.preferences') ?? '{}');
     for (const key of [
-      "autoAttack",
-      "autoTarget",
-      "bloodPuddles",
-      "damageNumbers",
-      "fps",
-      "latency",
-      "debugHitboxes",
-      "sound",
-      "music",
+      'autoAttack',
+      'autoTarget',
+      'bloodPuddles',
+      'damageNumbers',
+      'fps',
+      'latency',
+      'debugHitboxes',
+      'sound',
+      'music',
     ] as const)
-      if (typeof saved?.[key] === "boolean") result[key] = saved[key];
-    if (typeof saved?.musicVolume === "number" && Number.isFinite(saved.musicVolume))
+      if (typeof saved?.[key] === 'boolean') result[key] = saved[key];
+    if (typeof saved?.musicVolume === 'number' && Number.isFinite(saved.musicVolume))
       result.musicVolume = Math.max(0, Math.min(1, saved.musicVolume));
-    if (typeof saved?.volume === "number" && Number.isFinite(saved.volume))
+    if (typeof saved?.volume === 'number' && Number.isFinite(saved.volume))
       result.volume = Math.max(0, Math.min(1, saved.volume));
   } catch {
     /* Defaults work without browser storage. */

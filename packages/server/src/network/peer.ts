@@ -1,5 +1,5 @@
-import { EventEmitter } from "node:events";
-import type { ServerMessage } from "@emberfall/common";
+import { EventEmitter } from 'node:events';
+import type { ServerMessage } from '@emberfall/common';
 
 /** Transport-neutral connection consumed by the authoritative application. */
 export class Peer extends EventEmitter {
@@ -26,16 +26,16 @@ export class Peer extends EventEmitter {
     if (this.readyState === Peer.OPEN) this.deliver(message);
   }
   receive(data: unknown) {
-    this.emit("command", data);
+    this.emit('command', data);
   }
   ping() {
-    this.emit("pong");
+    this.emit('pong');
   }
   close(code = 1000, _reason?: string) {
     if (this.readyState === Peer.CLOSED) return;
     this.readyState = Peer.CLOSED;
     this.disconnect(code);
-    this.emit("close", code);
+    this.emit('close', code);
   }
   terminate() {
     this.close(1006);
@@ -43,6 +43,6 @@ export class Peer extends EventEmitter {
   detached(code = 1006) {
     if (this.readyState === Peer.CLOSED) return;
     this.readyState = Peer.CLOSED;
-    this.emit("close", code);
+    this.emit('close', code);
   }
 }

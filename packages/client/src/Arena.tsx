@@ -1,23 +1,23 @@
-import { alignLocalPickups } from "./pickup-presentation";
-import { drawHitboxes } from "./hitboxes";
-import { PixiContext } from "./rendering/pixi-context";
-import { PresentationWorld } from "./presentation/world";
-import { villageImages, villageBackground, drawVillageBackground } from "./village-background";
-import { characterImages } from "./characters";
-import { ACTOR_CELL, playerFrame, idleBreath } from "./animation";
-import { actorArt, environmentArt, wardrobeArt, drawArt } from "./art";
-import { drawChimneySmoke } from "./ambient-art";
-import { companionCaster, drawCompanion } from "./companion";
-import { critterCaster, crittersAt, drawCritter } from "./critters";
-import { drawNavigation } from "./navigation";
-import { useDraggable } from "@emberfall/ui";
-import { PerformanceGraph } from "./PerformanceGraph";
-import { movementFacing } from "./facing";
-import { LocalMovement } from "./local-movement";
-import { gameAudio } from "./audio";
-import { useEffect, useRef, useState } from "react";
-import type { RefObject } from "react";
-import { SnapshotBuffer } from "./snapshots";
+import { alignLocalPickups } from './pickup-presentation';
+import { drawHitboxes } from './hitboxes';
+import { PixiContext } from './rendering/pixi-context';
+import { PresentationWorld } from './presentation/world';
+import { villageImages, villageBackground, drawVillageBackground } from './village-background';
+import { characterImages } from './characters';
+import { ACTOR_CELL, playerFrame, idleBreath } from './animation';
+import { actorArt, environmentArt, wardrobeArt, drawArt } from './art';
+import { drawChimneySmoke } from './ambient-art';
+import { companionCaster, drawCompanion } from './companion';
+import { critterCaster, crittersAt, drawCritter } from './critters';
+import { drawNavigation } from './navigation';
+import { useDraggable } from '@emberfall/ui';
+import { PerformanceGraph } from './PerformanceGraph';
+import { movementFacing } from './facing';
+import { LocalMovement } from './local-movement';
+import { gameAudio } from './audio';
+import { useEffect, useRef, useState } from 'react';
+import type { RefObject } from 'react';
+import { SnapshotBuffer } from './snapshots';
 import {
   drawPlayerHealth,
   drawTargetHit,
@@ -29,8 +29,8 @@ import {
   drawAtmosphere,
   obstacleOpacity,
   drawVegetation,
-} from "./effects";
-import type { Interaction } from "./effects";
+} from './effects';
+import type { Interaction } from './effects';
 import {
   ARENA,
   FOREST,
@@ -40,25 +40,25 @@ import {
   TICK_MS,
   nearbyInteraction,
   inTrainingZone,
-} from "@emberfall/common";
-import type { ClientMessage, WorldState } from "@emberfall/common";
-import type { GraphicsSettings } from "./graphics";
-import { castShadow, makeMask, spriteMask } from "./lighting";
-import type { Caster, Light } from "./lighting";
-import { TORCH_LIGHTS, lightTexture, drawTorchFire } from "./village";
-import { forestRenderer, drawFog, drawPortal, drawPlayerDetails } from "./forest";
-import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from "./combat-effects";
-import type { Preferences } from "./preferences";
+} from '@emberfall/common';
+import type { ClientMessage, WorldState } from '@emberfall/common';
+import type { GraphicsSettings } from './graphics';
+import { castShadow, makeMask, spriteMask } from './lighting';
+import type { Caster, Light } from './lighting';
+import { TORCH_LIGHTS, lightTexture, drawTorchFire } from './village';
+import { forestRenderer, drawFog, drawPortal, drawPlayerDetails } from './forest';
+import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from './combat-effects';
+import type { Preferences } from './preferences';
 
 const colors = [
-  "#efd086",
-  "#86d9b6",
-  "#99b9ef",
-  "#ef99b3",
-  "#c8a4ed",
-  "#edaa79",
-  "#a4cf7b",
-  "#ddd",
+  '#efd086',
+  '#86d9b6',
+  '#99b9ef',
+  '#ef99b3',
+  '#c8a4ed',
+  '#edaa79',
+  '#a4cf7b',
+  '#ddd',
 ];
 export function Arena({
   world,
@@ -83,7 +83,7 @@ export function Arena({
     ref: dpsRef,
     style: dpsStyle,
     handleProps: dpsHandle,
-  } = useDraggable("panel.dps", !!world);
+  } = useDraggable('panel.dps', !!world);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [renderError, setRenderError] = useState(false);
   const latest = useRef(world);
@@ -116,7 +116,7 @@ export function Arena({
     const ctx = renderer as unknown as CanvasRenderingContext2D;
     const knight = characterImages.warrior.walk;
     const { nature } = villageImages;
-    const skeleton = actorArt("skeleton");
+    const skeleton = actorArt('skeleton');
     const drawForest = forestRenderer(nature, knight, skeleton);
     const audio = gameAudio(() => prefs.current);
     let lastSlashAt = -Infinity,
@@ -132,10 +132,10 @@ export function Arena({
       }
       const index = frame * 4 + facing;
       if (!masks[index]) {
-        const tile = document.createElement("canvas");
+        const tile = document.createElement('canvas');
         tile.width = tile.height = ACTOR_CELL;
         tile
-          .getContext("2d")!
+          .getContext('2d')!
           .drawImage(
             image,
             facing * ACTOR_CELL,
@@ -153,11 +153,11 @@ export function Arena({
     };
     const snapshots = new SnapshotBuffer(playerId);
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
-    let previousHp = "";
+    let previousHp = '';
     const keys = new Set<string>();
     let pointer: { x: number; y: number } | undefined;
     let held = false;
-    let combat: Extract<ClientMessage, { type: "combatInput" }> | undefined;
+    let combat: Extract<ClientMessage, { type: 'combatInput' }> | undefined;
     let inputCamera: { x: number; y: number; width: number; height: number } = {
       x: 0,
       y: 0,
@@ -187,10 +187,10 @@ export function Arena({
       held = false;
       sendMovement();
     };
-    element.addEventListener("pointermove", pointerMove);
-    element.addEventListener("pointerdown", pointerDown);
-    window.addEventListener("pointerup", pointerUp);
-    window.addEventListener("pointercancel", pointerUp);
+    element.addEventListener('pointermove', pointerMove);
+    element.addEventListener('pointerdown', pointerDown);
+    window.addEventListener('pointerup', pointerUp);
+    window.addEventListener('pointercancel', pointerUp);
     const positions = new Map<string, { x: number; y: number; facing: number }>();
     const key = (event: KeyboardEvent, down: boolean) => {
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
@@ -199,14 +199,14 @@ export function Arena({
       const value = event.code;
       if (
         ![
-          "KeyW",
-          "KeyA",
-          "KeyS",
-          "KeyD",
-          "ArrowUp",
-          "ArrowLeft",
-          "ArrowDown",
-          "ArrowRight",
+          'KeyW',
+          'KeyA',
+          'KeyS',
+          'KeyD',
+          'ArrowUp',
+          'ArrowLeft',
+          'ArrowDown',
+          'ArrowRight',
         ].includes(value)
       )
         return;
@@ -223,17 +223,17 @@ export function Arena({
       held = false;
       sendMovement();
     };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    window.addEventListener("blur", reset);
-    document.addEventListener("visibilitychange", reset);
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', reset);
+    document.addEventListener('visibilitychange', reset);
     const movement = () => ({
       x:
-        Number(keys.has("KeyD") || keys.has("ArrowRight")) -
-        Number(keys.has("KeyA") || keys.has("ArrowLeft")),
+        Number(keys.has('KeyD') || keys.has('ArrowRight')) -
+        Number(keys.has('KeyA') || keys.has('ArrowLeft')),
       y:
-        Number(keys.has("KeyS") || keys.has("ArrowDown")) -
-        Number(keys.has("KeyW") || keys.has("ArrowUp")),
+        Number(keys.has('KeyS') || keys.has('ArrowDown')) -
+        Number(keys.has('KeyW') || keys.has('ArrowUp')),
     });
     function sendMovement() {
       const current = latest.current;
@@ -266,13 +266,13 @@ export function Arena({
       renderer.resize(Math.round(innerWidth * ratio), Math.round(innerHeight * ratio));
     };
     resize();
-    window.addEventListener("resize", resize);
+    window.addEventListener('resize', resize);
     let previousSettings = quality.current;
     let previousScene: string | undefined;
     let fpsAt = performance.now(),
       fpsFrames = 0;
     function draw(now: number) {
-      const openWardrobe = interaction.current?.id === "wardrobe";
+      const openWardrobe = interaction.current?.id === 'wardrobe';
       if (openWardrobe && !wardrobeActive) wardrobeOpenedAt = now;
       wardrobeActive = openWardrobe;
       if (!renderer.initialized) {
@@ -337,7 +337,7 @@ export function Arena({
         const aimX = inputCamera.x + (pointer?.x ?? 0.5) * width;
         const aimY = inputCamera.y + (pointer?.y ?? 0.5) * height;
         combat = {
-          type: "combatInput",
+          type: 'combatInput',
           autoAttack: prefs.current.autoAttack,
           autoTarget: prefs.current.autoTarget,
           attacking: held && !blocked(),
@@ -355,17 +355,17 @@ export function Arena({
         snapshotAge: snapshots.age(now),
       };
       audio.update(
-        local?.scene === "forest" && view?.scene?.phase === "active"
-          ? "combat"
+        local?.scene === 'forest' && view?.scene?.phase === 'active'
+          ? 'combat'
           : view
-            ? "lobby"
-            : "start",
+            ? 'lobby'
+            : 'start',
         now,
       );
       const warning = view?.scene?.spawns?.at(-1)?.id ?? 0;
       if (warning && warning !== lastWarning) {
         lastWarning = warning;
-        audio.play("warning");
+        audio.play('warning');
       }
       const hp = Object.fromEntries((view?.players ?? []).map((p) => [p.id, p.hitpoints]));
       const hpKey = JSON.stringify(hp);
@@ -378,7 +378,7 @@ export function Arena({
       interaction.current = player
         ? nearbyInteraction(
             player,
-            authoritative?.scene?.phase === "ended",
+            authoritative?.scene?.phase === 'ended',
             authoritative?.scene?.portals,
           )
         : null;
@@ -394,14 +394,14 @@ export function Arena({
       }
       if (localSwing && now - lastSlashAt >= 500) {
         lastSlashAt = now;
-        audio.play("slash");
+        audio.play('slash');
       }
       const hit = view?.scene?.damage.at(-1);
-      if (local?.scene === "forest" && hit && hit.id !== lastHit) {
+      if (local?.scene === 'forest' && hit && hit.id !== lastHit) {
         lastHit = hit.id;
-        audio.play("hit");
+        audio.play('hit');
       }
-      if (!view || local?.scene === "forest") {
+      if (!view || local?.scene === 'forest') {
         drawForest(
           ctx,
           view,
@@ -446,7 +446,7 @@ export function Arena({
       if (prepared)
         drawVillageBackground(ctx, prepared.background, cameraX, cameraY, viewWidth, viewHeight);
       else {
-        ctx.fillStyle = "#25392f";
+        ctx.fillStyle = '#25392f';
         ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
       }
       const training = view.training
@@ -498,7 +498,7 @@ export function Arena({
             pos.facing,
           );
         const mask = characterMask(
-          characterImages[player.classId ?? "warrior"].walk,
+          characterImages[player.classId ?? 'warrior'].walk,
           frame,
           pos.facing,
         );
@@ -512,7 +512,7 @@ export function Arena({
             mask,
           });
       }
-      const critters = crittersAt("village", view.serverNow ?? now, {
+      const critters = crittersAt('village', view.serverNow ?? now, {
         x: cameraX,
         y: cameraY,
         width: viewWidth,
@@ -620,9 +620,9 @@ export function Arena({
               );
           }
           ctx.globalAlpha = 1;
-          ctx.fillStyle = "#152018";
+          ctx.fillStyle = '#152018';
           ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
-          ctx.fillStyle = "#df7765";
+          ctx.fillStyle = '#df7765';
           ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
           drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
 
@@ -635,8 +635,8 @@ export function Arena({
             portal.y,
             now,
             quality.current.bloom,
-            "Forest portal",
-            interaction.current?.id === "portal",
+            'Forest portal',
+            interaction.current?.id === 'portal',
             quality.current.shadows,
             quality.current.wavingVegetation,
             obstacleOpacity({ x: portal.x, y: portal.y + 8, width: 64, height: 80 }, local),
@@ -667,7 +667,7 @@ export function Arena({
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = obstacleOpacity(object, local);
-          const vegetation = object.id.startsWith("tree:");
+          const vegetation = object.id.startsWith('tree:');
           if (vegetation)
             drawVegetation(
               ctx,
@@ -679,8 +679,8 @@ export function Arena({
               now,
               quality.current.wavingVegetation,
             );
-          else if (object.id === "building:wardrobe") {
-            const open = interaction.current?.id === "wardrobe";
+          else if (object.id === 'building:wardrobe') {
+            const open = interaction.current?.id === 'wardrobe';
             drawArt(
               ctx,
               wardrobeArt,
@@ -692,7 +692,7 @@ export function Arena({
               object.height,
               128,
             );
-          } else if (object.id.startsWith("torch:"))
+          } else if (object.id.startsWith('torch:'))
             drawTorchFire(
               ctx,
               object.x,
@@ -712,14 +712,14 @@ export function Arena({
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
-          if (object.name && object.id === "npc:innkeeper")
+          if (object.name && object.id === 'npc:innkeeper')
             drawCharacterName(
               ctx,
               object.x,
               object.y - object.height - 9,
               object.name,
               undefined,
-              interaction.current?.id === "innkeeper",
+              interaction.current?.id === 'innkeeper',
             );
           else if (object.name)
             drawNameBadge(
@@ -732,7 +732,7 @@ export function Arena({
           continue;
         }
         const player = layer.player!;
-        const knight = characterImages[player.classId ?? "warrior"].walk;
+        const knight = characterImages[player.classId ?? 'warrior'].walk;
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
         const dx = wrappedDelta(player.x, pos.x, ARENA.width);
         const dy = wrappedDelta(player.y, pos.y, ARENA.height);
@@ -761,7 +761,7 @@ export function Arena({
             ? 1
             : obstacleOpacity({ x: pos.x, y: pos.y + 15, width: 48, height: 48 }, local);
         ctx.globalAlpha = opacity;
-        renderer.spriteTint = player.reconnecting ? "#ff5555" : "#ffffff";
+        renderer.spriteTint = player.reconnecting ? '#ff5555' : '#ffffff';
         if (knight.complete && knight.naturalWidth) {
           if (quality.current.motionBlur && moving) {
             // Sprite-only temporal samples keep HUD text and the world sharp.
@@ -793,7 +793,7 @@ export function Arena({
             48 * idleBreath(now, spriteRow),
           );
         }
-        renderer.spriteTint = "#ffffff";
+        renderer.spriteTint = '#ffffff';
         ctx.globalAlpha = 1;
         drawPlayerHealth(
           ctx,
@@ -823,9 +823,9 @@ export function Arena({
       }
       if (quality.current.lighting) {
         ctx.save();
-        ctx.fillStyle = "#f3ca7a09";
+        ctx.fillStyle = '#f3ca7a09';
         ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
-        ctx.globalCompositeOperation = "screen";
+        ctx.globalCompositeOperation = 'screen';
         for (let i = 0; i < TORCH_LIGHTS.length; i++) {
           const source = TORCH_LIGHTS[i];
           const light = { ...source, ...project(source.x, source.y) };
@@ -891,15 +891,15 @@ export function Arena({
       disposed = true;
       cancelAnimationFrame(frame);
       clearInterval(input);
-      window.removeEventListener("resize", resize);
-      element.removeEventListener("pointermove", pointerMove);
-      element.removeEventListener("pointerdown", pointerDown);
-      window.removeEventListener("pointerup", pointerUp);
-      window.removeEventListener("pointercancel", pointerUp);
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-      window.removeEventListener("blur", reset);
-      document.removeEventListener("visibilitychange", reset);
+      window.removeEventListener('resize', resize);
+      element.removeEventListener('pointermove', pointerMove);
+      element.removeEventListener('pointerdown', pointerDown);
+      window.removeEventListener('pointerup', pointerUp);
+      window.removeEventListener('pointercancel', pointerUp);
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', reset);
+      document.removeEventListener('visibilitychange', reset);
 
       renderer.destroy();
       presentation.clear();
@@ -909,7 +909,7 @@ export function Arena({
   return (
     <>
       {renderError && (
-        <p role="alert">
+        <p role='alert'>
           The game renderer could not start. Enable browser hardware acceleration and reload.
         </p>
       )}
@@ -919,10 +919,10 @@ export function Arena({
         height={ARENA.height}
         aria-label={
           world
-            ? world.players.find((p) => p.id === playerId)?.scene === "forest"
-              ? "Forest combat scene."
-              : "Shared village. Move with WASD or arrow keys."
-            : "Forest preview"
+            ? world.players.find((p) => p.id === playerId)?.scene === 'forest'
+              ? 'Forest combat scene.'
+              : 'Shared village. Move with WASD or arrow keys.'
+            : 'Forest preview'
         }
       />
       <PerformanceGraph
@@ -934,12 +934,12 @@ export function Arena({
       />
       {world && (
         <aside
-          className="dps-meter"
+          className='dps-meter'
           ref={dpsRef}
           style={dpsStyle}
           {...dpsHandle}
-          aria-label="Damage per second"
-          title="Your damage over the last 5 seconds, including ailments and your companion"
+          aria-label='Damage per second'
+          title='Your damage over the last 5 seconds, including ailments and your companion'
         >
           <strong>
             {Math.round(world.players.find((player) => player.id === playerId)?.dps ?? 0)} DPS
@@ -950,4 +950,4 @@ export function Arena({
     </>
   );
 }
-import { drawDamageNumbers } from "./damage-text";
+import { drawDamageNumbers } from './damage-text';

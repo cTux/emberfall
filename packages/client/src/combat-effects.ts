@@ -1,11 +1,11 @@
-import { TRANSIENT_EFFECTS } from "@emberfall/common/definitions/effects/transient";
-import { statusImages } from "./combat-assets";
-import { effectsArt, pickupArt, drawArt } from "./art";
-import { hitOutline } from "./effects";
-import type { SceneState, LootDrop, Enemy, DamageEvent } from "@emberfall/common";
+import { TRANSIENT_EFFECTS } from '@emberfall/common/definitions/effects/transient';
+import { statusImages } from './combat-assets';
+import { effectsArt, pickupArt, drawArt } from './art';
+import { hitOutline } from './effects';
+import type { SceneState, LootDrop, Enemy, DamageEvent } from '@emberfall/common';
 
 export function bloodPuddleRenderer() {
-  const puddles = new Map<number, Pick<DamageEvent, "id" | "x" | "y" | "at">>();
+  const puddles = new Map<number, Pick<DamageEvent, 'id' | 'x' | 'y' | 'at'>>();
   let sceneId: string | undefined;
   return (
     ctx: CanvasRenderingContext2D,
@@ -22,7 +22,7 @@ export function bloodPuddleRenderer() {
     for (const hit of scene?.damage ?? [])
       if (
         hit.killed &&
-        hit.target.startsWith("enemy:") &&
+        hit.target.startsWith('enemy:') &&
         now - hit.at < TRANSIENT_EFFECTS.blood.lifetimeMs &&
         !puddles.has(hit.id)
       )
@@ -31,7 +31,7 @@ export function bloodPuddleRenderer() {
       if (now - puddle.at >= TRANSIENT_EFFECTS.blood.lifetimeMs) puddles.delete(puddle.id);
     if (!enabled) return;
     ctx.save();
-    ctx.fillStyle = "#8c1728";
+    ctx.fillStyle = '#8c1728';
     for (const puddle of puddles.values()) {
       ctx.globalAlpha =
         0.5 * (1 - Math.max(0, now - puddle.at) / TRANSIENT_EFFECTS.blood.lifetimeMs);
@@ -75,26 +75,26 @@ export function bloodPuddleRenderer() {
   };
 }
 
-const lootSprites = new Map<LootDrop["kind"], HTMLCanvasElement>();
-function lootSprite(kind: LootDrop["kind"]) {
+const lootSprites = new Map<LootDrop['kind'], HTMLCanvasElement>();
+function lootSprite(kind: LootDrop['kind']) {
   let sprite = lootSprites.get(kind);
   if (sprite) return sprite;
-  sprite = document.createElement("canvas");
+  sprite = document.createElement('canvas');
   sprite.width = sprite.height = 40;
-  const ctx = sprite.getContext("2d")!;
+  const ctx = sprite.getContext('2d')!;
   const glow = ctx.createRadialGradient(20, 20, 1, 20, 20, 18);
-  glow.addColorStop(0, kind === "gold" ? "#ffca5599" : "#68ffc399");
-  glow.addColorStop(1, "#0000");
+  glow.addColorStop(0, kind === 'gold' ? '#ffca5599' : '#68ffc399');
+  glow.addColorStop(1, '#0000');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, 40, 40);
-  ctx.fillStyle = kind === "gold" ? "#ffc74e" : "#72ffd0";
+  ctx.fillStyle = kind === 'gold' ? '#ffc74e' : '#72ffd0';
   ctx.beginPath();
-  ctx.ellipse(20, 20, kind === "gold" ? 4 : 3.5, 5, 0, 0, Math.PI * 2);
+  ctx.ellipse(20, 20, kind === 'gold' ? 4 : 3.5, 5, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = kind === "gold" ? "#fff0a5" : "#e7fff8";
+  ctx.fillStyle = kind === 'gold' ? '#fff0a5' : '#e7fff8';
   ctx.fillRect(18, 17, 2, 3);
-  if (kind === "gold") {
-    ctx.strokeStyle = "#ad7420";
+  if (kind === 'gold') {
+    ctx.strokeStyle = '#ad7420';
     ctx.strokeRect(19, 18, 2, 5);
   }
   lootSprites.set(kind, sprite);
@@ -119,21 +119,21 @@ export function drawLootAndBlood(
     if (!visible(p)) continue;
     const age = Math.max(0, now - drop.at);
     const jump = Math.abs(Math.sin(age / 190 + drop.id * 0.7)) * (4 + 7 * Math.exp(-age / 650));
-    ctx.fillStyle = "#06181080";
+    ctx.fillStyle = '#06181080';
     ctx.beginPath();
     ctx.ellipse(p.x, p.y + 2, 5, 2, 0, 0, Math.PI * 2);
     ctx.fill();
-    if (drop.kind === "item") {
-      ctx.fillStyle = "#c3a6e8";
+    if (drop.kind === 'item') {
+      ctx.fillStyle = '#c3a6e8';
       ctx.fillRect(p.x - 7, p.y - 14 - jump, 14, 14);
-      ctx.strokeStyle = "#f2dcff";
+      ctx.strokeStyle = '#f2dcff';
       ctx.strokeRect(p.x - 7, p.y - 14 - jump, 14, 14);
     } else if (pickupArt.naturalWidth)
       drawArt(
         ctx,
         pickupArt,
         Math.floor((now + drop.id * 70) / 170) % 4,
-        drop.kind === "gold" ? 1 : 2,
+        drop.kind === 'gold' ? 1 : 2,
         p.x - 10,
         p.y - 16 - jump,
         20,
@@ -151,7 +151,7 @@ export function drawLootAndBlood(
     for (let i = 0; i < 12; i++) {
       const angle = i * 2.399963 + hit.id;
       const speed = 20 + ((i * 13) % 43);
-      ctx.fillStyle = i % 3 ? "#bd283b" : "#f45561";
+      ctx.fillStyle = i % 3 ? '#bd283b' : '#f45561';
       ctx.fillRect(
         p.x + Math.cos(angle) * speed * age,
         p.y - 5 + Math.sin(angle) * speed * age - 30 * age + 65 * age * age,
@@ -166,35 +166,35 @@ export function drawLootAndBlood(
 const projectileOutlines = new Map<string, HTMLCanvasElement>();
 function drawProjectileArt(
   ctx: CanvasRenderingContext2D,
-  kind: "arrow" | "fireball" | "roots",
+  kind: 'arrow' | 'fireball' | 'roots',
   now: number,
 ) {
-  const arrow = kind === "arrow";
+  const arrow = kind === 'arrow';
   const image = arrow ? pickupArt : effectsArt;
-  if (!image.naturalWidth || image.dataset.artReady !== "true") return false;
+  if (!image.naturalWidth || image.dataset.artReady !== 'true') return false;
   const column = Math.floor(now / 100) % (arrow ? 4 : 3);
-  const size = arrow ? 44 : kind === "roots" ? 24 : 48;
+  const size = arrow ? 44 : kind === 'roots' ? 24 : 48;
   const key = `${kind}:${column}`;
   let outlined = projectileOutlines.get(key);
   if (!outlined) {
-    const sprite = document.createElement("canvas");
+    const sprite = document.createElement('canvas');
     sprite.width = sprite.height = size;
-    const spriteContext = sprite.getContext("2d")!;
+    const spriteContext = sprite.getContext('2d')!;
     spriteContext.imageSmoothingEnabled = false;
     drawArt(
       spriteContext,
       image,
       column,
-      arrow ? 0 : kind === "roots" ? 3 : 2,
+      arrow ? 0 : kind === 'roots' ? 3 : 2,
       0,
       0,
       size,
       size,
       arrow ? 64 : 128,
     );
-    outlined = hitOutline(sprite, "#baffaa", 1);
-    const outlineContext = outlined.getContext("2d")!;
-    outlineContext.globalCompositeOperation = "source-over";
+    outlined = hitOutline(sprite, '#baffaa', 1);
+    const outlineContext = outlined.getContext('2d')!;
+    outlineContext.globalCompositeOperation = 'source-over';
     outlineContext.drawImage(sprite, 1, 1);
     projectileOutlines.set(key, outlined);
   }
@@ -218,21 +218,21 @@ export function drawClassProjectiles(
       ctx.restore();
       continue;
     }
-    if (shot.kind === "roots") ctx.scale(0.5, 0.5);
-    ctx.strokeStyle = "#baffaa";
-    ctx.lineWidth = shot.kind === "roots" ? 2 : 1;
-    if (shot.kind === "arrow") {
+    if (shot.kind === 'roots') ctx.scale(0.5, 0.5);
+    ctx.strokeStyle = '#baffaa';
+    ctx.lineWidth = shot.kind === 'roots' ? 2 : 1;
+    if (shot.kind === 'arrow') {
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(-22, 0);
       ctx.lineTo(9, 0);
       ctx.stroke();
-      ctx.strokeStyle = "#92d89c";
+      ctx.strokeStyle = '#92d89c';
       ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.strokeStyle = "#baffaa";
+      ctx.strokeStyle = '#baffaa';
       ctx.lineWidth = 1;
-      ctx.fillStyle = "#edffe7";
+      ctx.fillStyle = '#edffe7';
       ctx.beginPath();
       ctx.moveTo(13, 0);
       ctx.lineTo(5, -4);
@@ -241,16 +241,16 @@ export function drawClassProjectiles(
       ctx.fill();
       ctx.stroke();
     } else {
-      ctx.fillStyle = shot.kind === "roots" ? "#56bc7277" : "#ef722977";
+      ctx.fillStyle = shot.kind === 'roots' ? '#56bc7277' : '#ef722977';
       ctx.beginPath();
       ctx.ellipse(-8, 0, 20, 7, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = shot.kind === "roots" ? "#79db87" : "#ff9d36";
+      ctx.fillStyle = shot.kind === 'roots' ? '#79db87' : '#ff9d36';
       ctx.beginPath();
       ctx.arc(0, 0, 8, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = shot.kind === "roots" ? "#d5ffd0" : "#fff1a6";
+      ctx.fillStyle = shot.kind === 'roots' ? '#d5ffd0' : '#fff1a6';
       ctx.beginPath();
       ctx.arc(2, -1, 4, 0, Math.PI * 2);
       ctx.fill();
@@ -262,8 +262,8 @@ export function drawClassProjectiles(
     if (age >= 1) continue;
     const p = near(explosion.x, explosion.y);
     ctx.globalAlpha = 1 - age;
-    ctx.fillStyle = "#ffb53d44";
-    ctx.strokeStyle = "#ffcb6b";
+    ctx.fillStyle = '#ffb53d44';
+    ctx.strokeStyle = '#ffcb6b';
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.arc(p.x, p.y, 100 * (0.3 + age * 0.7), 0, Math.PI * 2);
@@ -283,17 +283,17 @@ export function drawDebuffs(
   const debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now) ?? [];
   ctx.save();
   ctx.font = 'bold 8px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "right";
-  ctx.lineJoin = "round";
+  ctx.textAlign = 'right';
+  ctx.lineJoin = 'round';
   ctx.lineWidth = 2;
   ctx.imageSmoothingEnabled = false;
   debuffs.forEach((debuff, index) => {
     const px = x + index * 14;
     const image = statusImages[debuff.kind];
     if (image.naturalWidth) ctx.drawImage(image, px, y - 12, 12, 12);
-    ctx.strokeStyle = "#101817";
+    ctx.strokeStyle = '#101817';
     ctx.strokeText(String(debuff.stacks), px + 11, y - 1);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = '#ffffff';
     ctx.fillText(String(debuff.stacks), px + 11, y - 1);
   });
   ctx.restore();

@@ -1,5 +1,5 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
 import {
   ARENA,
   BUILDINGS,
@@ -13,18 +13,18 @@ import {
   moveForestActor,
   tickCompanion,
   forestDistance,
-} from "@emberfall/common";
-import type { Player, WorldState } from "@emberfall/common";
-import { LocalMovement } from "../../client/src/local-movement.ts";
-import { SnapshotBuffer } from "../../client/src/snapshots.ts";
+} from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/common';
+import { LocalMovement } from '../../client/src/local-movement.ts';
+import { SnapshotBuffer } from '../../client/src/snapshots.ts';
 
-test("server movement, prediction and interpolation pass through every scenery kind", async () => {
+test('server movement, prediction and interpolation pass through every scenery kind', async () => {
   const obstacles = [
     ...BUILDINGS,
     ...TORCHES,
     WARDROBE,
     ...TREES.map((tree) => ({ ...tree, y: tree.y - 8 })),
-    ...forestTrees(400, 400, 100).map((tree) => ({ ...tree, scene: "forest" })),
+    ...forestTrees(400, 400, 100).map((tree) => ({ ...tree, scene: 'forest' })),
   ];
   for (const obstacle of obstacles) {
     for (const [dx, dy] of [
@@ -34,11 +34,11 @@ test("server movement, prediction and interpolation pass through every scenery k
       [0, -90],
     ]) {
       const player = {
-        id: "p",
+        id: 'p',
         x: obstacle.x - dx / 2,
         y: obstacle.y - 15 - dy / 2,
         hitpoints: 100,
-        scene: "scene" in obstacle ? obstacle.scene : undefined,
+        scene: 'scene' in obstacle ? obstacle.scene : undefined,
       } as Player;
       if (
         !player.scene &&
@@ -49,17 +49,17 @@ test("server movement, prediction and interpolation pass through every scenery k
       )
         continue;
       const world: WorldState = {
-        id: "room",
-        name: "Pass-through",
-        hostId: "p",
+        id: 'room',
+        name: 'Pass-through',
+        hostId: 'p',
         serverNow: 10000,
         players: [player],
         scene: player.scene
           ? {
-              id: "forest",
-              type: "Forest",
-              difficulty: "Easy",
-              phase: "active",
+              id: 'forest',
+              type: 'Forest',
+              difficulty: 'Easy',
+              phase: 'active',
               enemies: [],
               portals: [],
               damage: [],
@@ -76,14 +76,14 @@ test("server movement, prediction and interpolation pass through every scenery k
       movePlayer(server, dx / 90, dy / 90, 0.5);
       assert(Math.abs(server.x - expected.x) < 1e-9);
       assert(Math.abs(server.y - expected.y) < 1e-9);
-      const local = new LocalMovement("p", () => {});
+      const local = new LocalMovement('p', () => {});
       local.render(world, 0);
       local.input(dx / 90, dy / 90, 0);
       for (let now = 50; now <= 500; now += 50) local.render(world, now);
       const predicted = local.render(world, 500)!;
       assert(Math.abs(predicted.x - expected.x) < 1e-9);
       assert(Math.abs(predicted.y - expected.y) < 1e-9);
-      const buffer = new SnapshotBuffer("p");
+      const buffer = new SnapshotBuffer('p');
       buffer.push(world, 0);
       buffer.render(0);
       buffer.push({ ...world, serverNow: 10100, players: [server] }, 100);
@@ -99,7 +99,7 @@ test("server movement, prediction and interpolation pass through every scenery k
   }
 });
 
-test("pass-through preserves wrapping in both areas, speed and death rules", async () => {
+test('pass-through preserves wrapping in both areas, speed and death rules', async () => {
   const player = { x: 420, y: 340, hitpoints: 100 } as Player;
   movePlayer(player, 1, 1, 0.1);
   assert(Math.abs(Math.hypot(player.x - 420, player.y - 340) - ARENA.speed * 0.1) < 1e-9);
@@ -109,7 +109,7 @@ test("pass-through preserves wrapping in both areas, speed and death rules", asy
   movePlayer(player, -1, -1, 100);
   assert(Math.abs(player.x - (420 + 18 / Math.sqrt(2))) < 1e-9);
   assert(Math.abs(player.y - (340 + 18 / Math.sqrt(2))) < 1e-9);
-  for (const scene of [undefined, "forest"] as const) {
+  for (const scene of [undefined, 'forest'] as const) {
     player.scene = scene;
     for (const [x, y, dx, dy] of [
       [2, 1280, -1, 0],
@@ -129,33 +129,33 @@ test("pass-through preserves wrapping in both areas, speed and death rules", asy
   assert.deepEqual(player, dead);
 });
 
-test("companion escapes owner-position spawns inside trees without disabling tree collision", () => {
+test('companion escapes owner-position spawns inside trees without disabling tree collision', () => {
   for (const forest of [false, true]) {
     const tree = forest ? forestTrees(400, 400, 100)[0] : TREES[0];
     const cy = forest ? tree.y : tree.y - 8;
     const move = forest ? moveForestActor : moveActor;
     const center = { x: tree.x, y: cy };
     const escaped = move(center, 80, 0, 12);
-    assert(escaped.x > center.x + tree.radius + 12, "initial overlap must allow escape");
+    assert(escaped.x > center.x + tree.radius + 12, 'initial overlap must allow escape');
     const blocked = move({ x: center.x - 80, y: cy }, 160, 0, 12);
-    assert(blocked.x <= center.x - tree.radius - 12, "new entry must remain blocked");
+    assert(blocked.x <= center.x - tree.radius - 12, 'new entry must remain blocked');
     const p = {
-      id: "druid",
-      classId: "druid",
+      id: 'druid',
+      classId: 'druid',
       x: center.x,
       y: cy - 15,
       hitpoints: 100,
       maxHitpoints: 100,
-      scene: forest ? "forest" : undefined,
+      scene: forest ? 'forest' : undefined,
     } as Player;
     tickCompanion(p, undefined, 10000, 0);
     p.x += 600;
     tickCompanion(p, undefined, 10050, 0);
     p.x = center.x;
     tickCompanion(p, undefined, 10100, 0);
-    assert.equal(p.bear!.x, center.x, "teleport must use the owner position");
+    assert.equal(p.bear!.x, center.x, 'teleport must use the owner position');
     p.x += 60;
     for (let now = 10150; now <= 14100; now += 50) tickCompanion(p, undefined, now, 0.05);
-    assert(forestDistance(p.bear!, p) <= 20.01, "teleported companion must resume following");
+    assert(forestDistance(p.bear!, p) <= 20.01, 'teleported companion must resume following');
   }
 });

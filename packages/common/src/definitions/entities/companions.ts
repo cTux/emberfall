@@ -1,9 +1,9 @@
 export const BEAR_DEFINITION = {
-  id: "bear",
-  name: "Bear",
-  sprite: "/assets/companion-boar.png",
+  id: 'bear',
+  name: 'Bear',
+  sprite: '/assets/companion-boar.png',
   healthMultiplier: 1.5,
-  damageType: "physical",
+  damageType: 'physical',
   range: 75,
   huntRadius: 200,
   spacing: 80,
@@ -11,5 +11,5 @@ export const BEAR_DEFINITION = {
   teleportRadius: 500,
   decisionMs: 1000,
   resurrectionMs: 5000,
-  attack: "slash",
+  attack: 'slash',
 } as const;

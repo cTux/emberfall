@@ -1,8 +1,8 @@
-import { WARDROBE, BUILDINGS, TORCHES, TREES, INNKEEPER } from "@emberfall/common";
-import { makeMask, castShadow } from "./lighting";
-import type { Caster, Light } from "./lighting";
-import { environmentArt, wardrobeArt, innkeeperArt } from "./art";
-import { chimneyAnchors } from "./ambient-art";
+import { WARDROBE, BUILDINGS, TORCHES, TREES, INNKEEPER } from '@emberfall/common';
+import { makeMask, castShadow } from './lighting';
+import type { Caster, Light } from './lighting';
+import { environmentArt, wardrobeArt, innkeeperArt } from './art';
+import { chimneyAnchors } from './ambient-art';
 
 export interface Scenery extends Caster {
   sprite: HTMLCanvasElement;
@@ -42,10 +42,10 @@ export function villageSprites(
       const key = `${sx + i * sw}:${sy}:${sw}:${sh}`;
       let frame = frames.get(key);
       if (!frame) {
-        const sprite = document.createElement("canvas");
+        const sprite = document.createElement('canvas');
         sprite.width = sw;
         sprite.height = sh;
-        sprite.getContext("2d")!.drawImage(source, sx + i * sw, sy, sw, sh, 0, 0, sw, sh);
+        sprite.getContext('2d')!.drawImage(source, sx + i * sw, sy, sw, sh, 0, 0, sw, sh);
         frame = { sprite, mask: makeMask(sprite) };
         frames.set(key, frame);
       }
@@ -80,14 +80,14 @@ export function villageSprites(
         0,
         128,
         128,
-        b.id === "inn" ? undefined : b.name,
+        b.id === 'inn' ? undefined : b.name,
       );
       const anchor = chimneyAnchors[i % 3];
       objects.at(-1)!.chimney = { x: (anchor.x - 0.5) * b.sourceWidth * 2, y: (anchor.y - 1) * 96 };
     });
   if (wardrobeArt.naturalWidth)
     add(
-      "building:wardrobe",
+      'building:wardrobe',
       WARDROBE.x,
       WARDROBE.y,
       60,
@@ -97,11 +97,11 @@ export function villageSprites(
       0,
       128,
       128,
-      "Wardrobe",
+      'Wardrobe',
     );
   if (innkeeperArt.naturalWidth)
     add(
-      "npc:innkeeper",
+      'npc:innkeeper',
       INNKEEPER.x,
       INNKEEPER.y,
       48,
@@ -143,14 +143,14 @@ export function drawTorchFire(
 ) {
   if (!environmentArt.naturalWidth) return;
   if (!hangingLamp) {
-    const post = document.createElement("canvas");
+    const post = document.createElement('canvas');
     post.width = post.height = 128;
-    const paint = post.getContext("2d")!;
+    const paint = post.getContext('2d')!;
     paint.drawImage(environmentArt, 0, 256, 128, 128, 0, 0, 128, 128);
-    const lamp = document.createElement("canvas");
+    const lamp = document.createElement('canvas');
     lamp.width = 27;
     lamp.height = 46;
-    lamp.getContext("2d")!.drawImage(post, 69, 28, 27, 46, 0, 0, 27, 46);
+    lamp.getContext('2d')!.drawImage(post, 69, 28, 27, 46, 0, 0, 27, 46);
     paint.clearRect(69, 28, 27, 46);
     hangingLamp = { post, lamp };
   }
@@ -164,12 +164,12 @@ export function drawTorchFire(
   ctx.drawImage(hangingLamp.lamp, -13, 0);
   const opacity = ctx.globalAlpha;
   ctx.globalAlpha = opacity * (0.08 + Math.sin(now / 113) * 0.035);
-  ctx.fillStyle = "#ffd477";
+  ctx.fillStyle = '#ffd477';
   ctx.fillRect(-3, 26, 6, 10);
   if (particles) {
     if (bloom) {
       ctx.shadowBlur = 3;
-      ctx.shadowColor = "#ff8b32";
+      ctx.shadowColor = '#ff8b32';
     }
     for (let i = 0; i < 4; i++) {
       const age = ((now + i * 450) % 1800) / 1800;
@@ -196,7 +196,7 @@ export function lightTexture(
   shadows: boolean,
   base?: HTMLCanvasElement,
 ) {
-  const key = `${base ? "occlusion" : "glow"}:${light.owner ?? `${light.x}:${light.y}`}`;
+  const key = `${base ? 'occlusion' : 'glow'}:${light.owner ?? `${light.x}:${light.y}`}`;
   const blockers = shadows
     ? casters.filter(
         (caster) =>
@@ -214,7 +214,7 @@ export function lightTexture(
       .map(
         (caster) => `${caster.x - light.x},${caster.y - light.y},${caster.width},${caster.height}`,
       )
-      .join(";");
+      .join(';');
   let entry = lightCanvases.get(key);
   if (
     entry?.signature === signature &&
@@ -222,22 +222,22 @@ export function lightTexture(
     blockers.every((caster, index) => caster.mask === entry!.masks[index])
   )
     return entry.canvas;
-  const canvas = entry?.canvas ?? document.createElement("canvas");
+  const canvas = entry?.canvas ?? document.createElement('canvas');
   entry = { canvas, signature, masks: blockers.map((caster) => caster.mask), base };
   lightCanvases.set(key, entry);
   if (lightCanvases.size > 64) lightCanvases.delete(lightCanvases.keys().next().value!);
   if (canvas.width !== light.radius * 2) canvas.width = canvas.height = light.radius * 2;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext('2d')!;
   ctx.resetTransform();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.globalCompositeOperation = "source-over";
+  ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
   if (base) ctx.drawImage(base, 0, 0);
   ctx.translate(light.radius - light.x, light.radius - light.y);
   if (!base) {
     const glow = ctx.createRadialGradient(light.x, light.y, 4, light.x, light.y, light.radius);
     glow.addColorStop(0, `rgba(255, 190, 95, ${light.strength})`);
-    glow.addColorStop(1, "rgba(255, 160, 65, 0)");
+    glow.addColorStop(1, 'rgba(255, 160, 65, 0)');
     ctx.fillStyle = glow;
     ctx.fillRect(
       light.x - light.radius,
@@ -247,7 +247,7 @@ export function lightTexture(
     );
   }
   if (shadows) {
-    ctx.globalCompositeOperation = "destination-out";
+    ctx.globalCompositeOperation = 'destination-out';
     for (const caster of blockers) castShadow(ctx, caster, light);
   }
   const dynamic = canvas as HTMLCanvasElement & { textureRevision?: number };

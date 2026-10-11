@@ -1,12 +1,12 @@
-import { validateDefinitions } from "@emberfall/common/definitions/index";
-import { RUNTIME } from "@emberfall/common/definitions/runtime";
-import { VILLAGE_DEFINITION } from "@emberfall/common/definitions/worlds/village";
-import { stepMovement } from "./systems/movement.ts";
-import { randomUUID, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
-import { promisify } from "node:util";
-import { EventEmitter } from "node:events";
-import { Peer as WebSocket } from "./network/peer.ts";
-import { createPlayers } from "./ecs/simulation.ts";
+import { validateDefinitions } from '@emberfall/common/definitions/index';
+import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { VILLAGE_DEFINITION } from '@emberfall/common/definitions/worlds/village';
+import { stepMovement } from './systems/movement.ts';
+import { randomUUID, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
+import { EventEmitter } from 'node:events';
+import { Peer as WebSocket } from './network/peer.ts';
+import { createPlayers } from './ecs/simulation.ts';
 import {
   MAX_PLAYERS,
   clientMessage,
@@ -17,7 +17,7 @@ import {
   useBackpackItem,
   unequipItem,
   tradeItem,
-} from "@emberfall/common";
+} from '@emberfall/common';
 import type {
   ChatMessage,
   Player,
@@ -25,11 +25,11 @@ import type {
   WorldState,
   SceneState,
   Merchant,
-} from "@emberfall/common";
-import { CharacterStore } from "./characters.ts";
-import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from "./scenes.ts";
-import type { Scene } from "./scenes.ts";
-import { addChat } from "./chat.ts";
+} from '@emberfall/common';
+import { CharacterStore } from './characters.ts';
+import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from './scenes.ts';
+import type { Scene } from './scenes.ts';
+import { addChat } from './chat.ts';
 
 const derive = promisify(scrypt);
 type AccountIdentity = () => { characterId: string; nickname: string | null } | undefined;
@@ -74,7 +74,7 @@ interface Session {
   reconnectTimer?: ReturnType<typeof setTimeout>;
 }
 
-export async function createRuntime(savePath = ":memory:") {
+export async function createRuntime(savePath = ':memory:') {
   validateDefinitions();
   const characters = new CharacterStore(savePath);
   await characters.ready;
@@ -82,11 +82,11 @@ export async function createRuntime(savePath = ":memory:") {
   const restoredWorlds = characters.worlds();
   const permanentWorld: World = {
     id: randomUUID(),
-    hostId: "",
-    salt: "",
+    hostId: '',
+    salt: '',
     players: createPlayers(),
     ...restoredWorlds.find((world) => world.permanent),
-    name: "Playtest Default",
+    name: 'Playtest Default',
   };
   characters.saveWorld(permanentWorld, true);
   const worlds = new Map<string, World>(
@@ -94,7 +94,7 @@ export async function createRuntime(savePath = ":memory:") {
       world.id,
       {
         ...world,
-        hostId: "",
+        hostId: '',
         players: createPlayers(),
       },
     ]),
@@ -124,7 +124,7 @@ export async function createRuntime(savePath = ":memory:") {
     merchant: (world.merchant ??= characters.merchant(world.id)),
   });
   const list = () => ({
-    type: "worlds" as const,
+    type: 'worlds' as const,
     worlds: [...worlds.values()].map((w) => ({
       id: w.id,
       name: w.name,
@@ -138,7 +138,7 @@ export async function createRuntime(savePath = ":memory:") {
     for (const ws of sessions.keys()) send(ws, message);
   };
   function leave(session: Session) {
-    const world = worlds.get(session.worldId ?? "");
+    const world = worlds.get(session.worldId ?? '');
     if (world) {
       const player = world.players.get(session.id);
       if (player && session.characterId) characters.save(session.characterId, player.name, player);
@@ -160,7 +160,7 @@ export async function createRuntime(savePath = ":memory:") {
           characters.deleteWorld(world.id);
           worlds.delete(world.id);
         }
-        world.hostId = "";
+        world.hostId = '';
         world.scene = undefined;
         world.chat = [];
       } else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
@@ -173,9 +173,9 @@ export async function createRuntime(savePath = ":memory:") {
     session.x = 0;
     session.y = 0;
   }
-  wss.on("connection", (ws: WebSocket, account?: AccountIdentity) => {
+  wss.on('connection', (ws: WebSocket, account?: AccountIdentity) => {
     if (sessions.size >= 256) {
-      ws.close(1008, "Server is full");
+      ws.close(1008, 'Server is full');
       return;
     }
     const session: Session = {
@@ -194,11 +194,11 @@ export async function createRuntime(savePath = ":memory:") {
     };
     sessions.set(ws, session);
     send(ws, list());
-    ws.on("error", () => ws.terminate());
-    ws.on("pong", () => {
+    ws.on('error', () => ws.terminate());
+    ws.on('pong', () => {
       session.alive = true;
     });
-    ws.on("close", (code: number) => {
+    ws.on('close', (code: number) => {
       if (shuttingDown) {
         sessions.delete(ws);
         return;
@@ -219,7 +219,7 @@ export async function createRuntime(savePath = ":memory:") {
             sessions.delete(ws);
             broadcastList();
           } catch (error) {
-            console.error("Character save failed on reconnect expiry; autosave will retry:", error);
+            console.error('Character save failed on reconnect expiry; autosave will retry:', error);
           }
         }, RUNTIME.reconnectMs);
         if (player?.attacking) player.attacking = false;
@@ -227,14 +227,14 @@ export async function createRuntime(savePath = ":memory:") {
           if (player && session.characterId)
             characters.save(session.characterId, player.name, player);
         } catch (error) {
-          console.error("Character save failed on disconnect; autosave will retry:", error);
+          console.error('Character save failed on disconnect; autosave will retry:', error);
         }
         return;
       }
       try {
         leave(session);
       } catch (error) {
-        console.error("Character save failed on disconnect:", error);
+        console.error('Character save failed on disconnect:', error);
         // Keep the session in memory for the autosave retry; it cannot move.
         session.x = 0;
         session.y = 0;
@@ -243,25 +243,25 @@ export async function createRuntime(savePath = ":memory:") {
       sessions.delete(ws);
       broadcastList();
     });
-    ws.on("command", async (command: unknown) => {
-      const error = (message: string) => send(ws, { type: "error", message });
+    ws.on('command', async (command: unknown) => {
+      const error = (message: string) => send(ws, { type: 'error', message });
       const authenticated = account?.();
       if (account && !authenticated?.nickname) {
-        ws.close(1008, "Please sign in again");
+        ws.close(1008, 'Please sign in again');
         return;
       }
       if (
         authenticated &&
         command &&
-        typeof command === "object" &&
-        "type" in command &&
-        ["join", "create", "resume"].includes(String(command.type))
+        typeof command === 'object' &&
+        'type' in command &&
+        ['join', 'create', 'resume'].includes(String(command.type))
       ) {
         // Wire credentials cannot select or rename a Steam-owned character.
         command = {
           ...command,
           playerName: authenticated.nickname,
-          characterToken: "0".repeat(64),
+          characterToken: '0'.repeat(64),
         };
       }
       const now = Date.now();
@@ -270,46 +270,46 @@ export async function createRuntime(savePath = ":memory:") {
         session.messages = 0;
       }
       if (++session.messages > 80) {
-        ws.close(1008, "Too many messages");
+        ws.close(1008, 'Too many messages');
         return;
       }
       let parsed;
       try {
         parsed = clientMessage.safeParse(command);
       } catch {
-        error("Invalid message.");
+        error('Invalid message.');
         return;
       }
       if (!parsed.success) {
-        error("Invalid message.");
+        error('Invalid message.');
         return;
       }
       const message = parsed.data;
-      if (message.type === "ping") {
-        send(ws, { type: "pong", id: message.id });
+      if (message.type === 'ping') {
+        send(ws, { type: 'pong', id: message.id });
         return;
       }
-      if (message.type === "combatInput") {
-        const player = worlds.get(session.worldId ?? "")?.players.get(session.id);
+      if (message.type === 'combatInput') {
+        const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
         if (player) {
           const { type: _, ...controls } = message;
           Object.assign(player, controls, { combatInputAt: now });
         }
         return;
       }
-      if (message.type === "cast") {
-        const world = worlds.get(session.worldId ?? "");
+      if (message.type === 'cast') {
+        const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (player)
           requestPlayerCast(
-            player.scene === "forest" ? world!.scene : world!.training,
+            player.scene === 'forest' ? world!.scene : world!.training,
             player,
             message,
             now,
           );
         return;
       }
-      if (message.type === "move") {
+      if (message.type === 'move') {
         if (session.worldId) {
           if (message.seq !== undefined) {
             if (message.seq <= session.lastSeq) return;
@@ -337,36 +337,36 @@ export async function createRuntime(savePath = ":memory:") {
         return;
       }
       if (session.busy) {
-        error("Please wait for your previous request.");
+        error('Please wait for your previous request.');
         return;
       }
-      if (message.type === "useItem" || message.type === "unequip" || message.type === "trade") {
-        const world = worlds.get(session.worldId ?? "");
+      if (message.type === 'useItem' || message.type === 'unequip' || message.type === 'trade') {
+        const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!world || !player || !session.characterId || player.hitpoints <= 0) {
-          error("Join a world with a living character first.");
+          error('Join a world with a living character first.');
           return;
         }
         if (
-          message.type === "trade" &&
-          (player.scene || nearbyInteraction(player)?.id !== "innkeeper")
+          message.type === 'trade' &&
+          (player.scene || nearbyInteraction(player)?.id !== 'innkeeper')
         ) {
-          error("Trade near Marta the Innkeeper in the village.");
+          error('Trade near Marta the Innkeeper in the village.');
           return;
         }
         let saving = false;
         try {
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
-          if (message.type === "trade") tradeItem(next, merchant, message.id, message.buying);
-          else if (message.type === "unequip") unequipItem(next, message.slot);
+          if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
+          else if (message.type === 'unequip') unequipItem(next, message.slot);
           else useBackpackItem(next, message.id);
           saving = true;
           characters.save(
             session.characterId,
             next.name,
             next,
-            message.type === "trade" ? { worldId: world.id, state: merchant } : undefined,
+            message.type === 'trade' ? { worldId: world.id, state: merchant } : undefined,
           );
           Object.assign(player, {
             backpack: next.backpack,
@@ -375,80 +375,80 @@ export async function createRuntime(savePath = ":memory:") {
             hitpoints: next.hitpoints,
             maxHitpoints: next.maxHitpoints,
           });
-          if (message.type === "trade") world.merchant = merchant;
-          send(ws, { type: "state", world: state(world) });
+          if (message.type === 'trade') world.merchant = merchant;
+          send(ws, { type: 'state', world: state(world) });
         } catch (failure) {
           error(
             !saving && failure instanceof Error
               ? failure.message
-              : "Unable to save item action. Please retry.",
+              : 'Unable to save item action. Please retry.',
           );
         }
         return;
       }
-      if (message.type === "chat") {
-        const world = worlds.get(session.worldId ?? "");
+      if (message.type === 'chat') {
+        const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!world || !player) {
-          error("Join a world first.");
+          error('Join a world first.');
           return;
         }
         if (now - (session.chatAt ?? 0) < 500) {
-          error("Please wait a moment before sending another chat message.");
+          error('Please wait a moment before sending another chat message.');
           return;
         }
         session.chatAt = now;
         player.chat = message.text;
         addChat(world, message.text, player);
-        const update: ServerMessage = { type: "state", world: state(world, now) };
+        const update: ServerMessage = { type: 'state', world: state(world, now) };
         for (const [peer, member] of sessions) if (member.worldId === world.id) send(peer, update);
         return;
       }
-      if (message.type === "leave") {
+      if (message.type === 'leave') {
         try {
           leave(session);
           if (session.characterId) characters.forgetWorld(session.characterId);
         } catch {
-          error("Save failed. Your character is still in this world; please retry.");
+          error('Save failed. Your character is still in this world; please retry.');
           return;
         }
-        send(ws, { type: "saved", savedAt: Date.now() });
-        send(ws, { type: "left" });
+        send(ws, { type: 'saved', savedAt: Date.now() });
+        send(ws, { type: 'left' });
         broadcastList();
         return;
       }
-      if (message.type === "selectClass") {
-        const world = worlds.get(session.worldId ?? "");
+      if (message.type === 'selectClass') {
+        const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (
           !player ||
           !session.characterId ||
           player.scene ||
-          world?.scene?.phase === "countdown" ||
-          nearbyInteraction(player)?.id !== "wardrobe"
+          world?.scene?.phase === 'countdown' ||
+          nearbyInteraction(player)?.id !== 'wardrobe'
         ) {
-          error("Use the village wardrobe before the departure countdown to change class.");
+          error('Use the village wardrobe before the departure countdown to change class.');
           return;
         }
         try {
           characters.selectClass(session.characterId, player, message.classId);
-          send(ws, { type: "state", world: state(world!) });
+          send(ws, { type: 'state', world: state(world!) });
         } catch {
-          error("Unable to save class change. Your current class has been kept.");
+          error('Unable to save class change. Your current class has been kept.');
         }
         return;
       }
       if (
-        message.type === "createScene" ||
-        message.type === "joinScene" ||
-        message.type === "ready" ||
-        message.type === "returnLobby" ||
-        message.type === "leaveScene"
+        message.type === 'createScene' ||
+        message.type === 'joinScene' ||
+        message.type === 'ready' ||
+        message.type === 'returnLobby' ||
+        message.type === 'leaveScene'
       ) {
-        const world = worlds.get(session.worldId ?? "");
+        const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!world || !player) {
-          error("Join a world first.");
+          error('Join a world first.');
           return;
         }
         try {
@@ -461,7 +461,7 @@ export async function createRuntime(savePath = ":memory:") {
         return;
       }
       if (session.worldId) {
-        error("Leave your current world first.");
+        error('Leave your current world first.');
         return;
       }
       if (now - session.actionAt > 10_000) {
@@ -469,7 +469,7 @@ export async function createRuntime(savePath = ":memory:") {
         session.actions = 0;
       }
       if (++session.actions > 5 || hashing >= 8) {
-        error("Too many attempts. Try again in a moment.");
+        error('Too many attempts. Try again in a moment.');
         return;
       }
       session.busy = true;
@@ -483,11 +483,11 @@ export async function createRuntime(savePath = ":memory:") {
         const active = () =>
           existingCharacter &&
           [...sessions.values()].some((s) => s.worldId && s.characterId === existingCharacter.id);
-        if (message.type !== "resume" && active()) {
-          error("This character is already playing in another tab. Leave that world first.");
+        if (message.type !== 'resume' && active()) {
+          error('This character is already playing in another tab. Leave that world first.');
           return;
         }
-        if (message.type === "resume") {
+        if (message.type === 'resume') {
           const retained = [...sessions.entries()].find(
             ([oldWs, old]) =>
               oldWs.readyState === WebSocket.CLOSED &&
@@ -502,7 +502,7 @@ export async function createRuntime(savePath = ":memory:") {
             (active() && !retained) ||
             (!retained && !characters.canResume(existingCharacter.id, message.worldId))
           ) {
-            error("Your previous session is no longer available. Join or create a world again.");
+            error('Your previous session is no longer available. Join or create a world again.');
             return;
           }
           if (retained) {
@@ -518,21 +518,21 @@ export async function createRuntime(savePath = ":memory:") {
             player.inputX = player.inputY = 0;
             sessions.delete(oldWs);
             send(ws, {
-              type: "joined",
+              type: 'joined',
               playerId: session.id,
               world: state(world),
-              characterToken: authenticated ? "" : message.characterToken,
+              characterToken: authenticated ? '' : message.characterToken,
             });
             return;
           }
         }
         let world: World;
-        if (message.type === "create") {
+        if (message.type === 'create') {
           if (worlds.size >= 64) {
-            error("The server is full. Try again later.");
+            error('The server is full. Try again later.');
             return;
           }
-          const salt = randomBytes(16).toString("hex");
+          const salt = randomBytes(16).toString('hex');
           let hash: Buffer | undefined;
           if (message.password) {
             hashing++;
@@ -544,7 +544,7 @@ export async function createRuntime(savePath = ":memory:") {
           }
           if (ws.readyState !== WebSocket.OPEN) return;
           if (worlds.size >= 64) {
-            error("The server is full.");
+            error('The server is full.');
             return;
           }
           world = {
@@ -561,11 +561,11 @@ export async function createRuntime(savePath = ":memory:") {
         } else {
           const existing = worlds.get(message.worldId);
           if (!existing) {
-            error("This world has closed.");
+            error('This world has closed.');
             return;
           }
           world = existing;
-          if (world.hash && message.type !== "resume") {
+          if (world.hash && message.type !== 'resume') {
             hashing++;
             let hash: Buffer;
             try {
@@ -574,22 +574,22 @@ export async function createRuntime(savePath = ":memory:") {
               hashing--;
             }
             if (!timingSafeEqual(hash, world.hash)) {
-              error("Incorrect world password.");
+              error('Incorrect world password.');
               return;
             }
           }
           if (ws.readyState !== WebSocket.OPEN) return;
           if (!worlds.has(world.id)) {
-            error("This world has closed.");
+            error('This world has closed.');
             return;
           }
           if (world.players.size >= (world === permanentWorld ? 32 : MAX_PLAYERS)) {
-            error("This world is full.");
+            error('This world is full.');
             return;
           }
         }
         if (active()) {
-          error("This character is already playing in another tab.");
+          error('This character is already playing in another tab.');
           return;
         }
         // Password hashing yields; refresh after it so a recent save cannot be overwritten.
@@ -599,17 +599,17 @@ export async function createRuntime(savePath = ":memory:") {
           : message.characterToken
             ? characters.load(message.characterToken)
             : undefined;
-        let token = authenticated ? "" : message.characterToken;
+        let token = authenticated ? '' : message.characterToken;
         if (!character) {
           const created = characters.create(
-            message.type === "resume" ? existingCharacter!.name : message.playerName,
+            message.type === 'resume' ? existingCharacter!.name : message.playerName,
           );
           character = created;
           token = created.token;
         }
         const playerName = authenticated
           ? account!()!.nickname!
-          : message.type === "resume"
+          : message.type === 'resume'
             ? existingCharacter!.name
             : message.playerName;
         characters.save(character.id, playerName, {
@@ -638,17 +638,17 @@ export async function createRuntime(savePath = ":memory:") {
         addChat(world, `${playerName} joined.`, undefined, session.id);
         reconcileVote(world, Date.now());
         send(ws, {
-          type: "joined",
+          type: 'joined',
           playerId: session.id,
           world: state(world),
           characterToken: token!,
         });
-        send(ws, { type: "saved", savedAt: Date.now() });
+        send(ws, { type: 'saved', savedAt: Date.now() });
         broadcastList();
       } catch (cause) {
-        console.error("Unable to load character:", cause);
+        console.error('Unable to load character:', cause);
         error(
-          "Unable to load or save your character. Check the server and retry; existing progress has not been reset.",
+          'Unable to load or save your character. Check the server and retry; existing progress has not been reset.',
         );
       } finally {
         if (createdWorld && !createdWorld.players.size) {
@@ -667,7 +667,7 @@ export async function createRuntime(savePath = ":memory:") {
       simulationAt += TICK_MS;
       const now = simulationAt;
       for (const session of sessions.values()) {
-        const world = worlds.get(session.worldId ?? "");
+        const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!player) continue;
         stepMovement(session, player, world?.scene?.id, now, wallTime);
@@ -675,7 +675,7 @@ export async function createRuntime(savePath = ":memory:") {
       for (const world of worlds.values()) {
         for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);
-        const message: ServerMessage = { type: "state", world: state(world, now) };
+        const message: ServerMessage = { type: 'state', world: state(world, now) };
         for (const [ws, session] of sessions) if (session.worldId === world.id) send(ws, message);
       }
     }
@@ -693,17 +693,17 @@ export async function createRuntime(savePath = ":memory:") {
   }, 15_000);
   const progressTick = setInterval(() => {
     for (const [ws, session] of sessions) {
-      const player = worlds.get(session.worldId ?? "")?.players.get(session.id);
+      const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
       if (player && ws.readyState === WebSocket.OPEN) player.playtimeSeconds++;
     }
   }, 1000);
   const autosave = setInterval(() => {
     for (const [ws, session] of sessions) {
-      const player = worlds.get(session.worldId ?? "")?.players.get(session.id);
+      const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
       if (!player || !session.characterId) continue;
       try {
         characters.save(session.characterId, player.name, player);
-        send(ws, { type: "saved", savedAt: Date.now() });
+        send(ws, { type: 'saved', savedAt: Date.now() });
         if (ws.readyState === WebSocket.CLOSED && (session.reconnectUntil ?? 0) <= Date.now()) {
           leave(session);
           sessions.delete(ws);
@@ -711,8 +711,8 @@ export async function createRuntime(savePath = ":memory:") {
         }
       } catch {
         send(ws, {
-          type: "error",
-          message: "Character autosave failed. Retrying; keep this session open.",
+          type: 'error',
+          message: 'Character autosave failed. Retrying; keep this session open.',
         });
       }
     }
@@ -735,17 +735,17 @@ export async function createRuntime(savePath = ":memory:") {
     for (const ws of sessions.keys()) ws.terminate();
     characters.close();
     if (failures.length)
-      throw new AggregateError(failures, "Some characters could not be saved during shutdown");
+      throw new AggregateError(failures, 'Some characters could not be saved during shutdown');
   }
   function renameCharacter(characterId: string, nickname: string) {
     for (const session of sessions.values()) {
       if (session.characterId !== characterId) continue;
-      const player = worlds.get(session.worldId ?? "")?.players.get(session.id);
+      const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
       if (player) player.name = nickname;
     }
   }
   return {
-    connect: (peer: WebSocket, account?: AccountIdentity) => wss.emit("connection", peer, account),
+    connect: (peer: WebSocket, account?: AccountIdentity) => wss.emit('connection', peer, account),
     renameCharacter,
     close,
     characters,

@@ -6,9 +6,9 @@ import {
   TORCHES,
   PATH_CURVES,
   VILLAGE_DEFINITION,
-} from "./definitions/worlds/village.ts";
+} from './definitions/worlds/village.ts';
 export { ARENA, WARDROBE, TRAINING_ZONES, BUILDINGS, TORCHES };
-import { wrap, wrappedDelta } from "./scene.ts";
+import { wrap, wrappedDelta } from './scene.ts';
 
 export const inTrainingZone = (player: { x: number; y: number }) =>
   TRAINING_ZONES.some(

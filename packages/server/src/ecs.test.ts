@@ -1,59 +1,59 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { SimulationWorld } from "./ecs/simulation.ts";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { SimulationWorld } from './ecs/simulation.ts';
 import {
   appendSceneEntities,
   createTrainingScene,
   stepCombat,
   type Player,
   type SceneState,
-} from "@emberfall/common";
-import { freshProgress } from "./characters.ts";
+} from '@emberfall/common';
+import { freshProgress } from './characters.ts';
 
-test("ECS collections preserve identity and explicit order across removal and scene disposal", () => {
+test('ECS collections preserve identity and explicit order across removal and scene disposal', () => {
   const world = new SimulationWorld();
   const scene = createTrainingScene(0);
   world.bind(scene);
   const first = scene.enemies[0],
     last = scene.enemies.at(-1)!;
-  assert.equal(world.ecs.with("enemies").size, 7);
+  assert.equal(world.ecs.with('enemies').size, 7);
   scene.enemies = scene.enemies.filter((enemy) => enemy !== first);
   assert.equal(scene.enemies.at(-1), last);
   last.hitpoints = 12;
   assert.equal(
-    [...world.ecs.with("enemies")].find((e) => e.enemies === last)!.enemies.hitpoints,
+    [...world.ecs.with('enemies')].find((e) => e.enemies === last)!.enemies.hitpoints,
     12,
   );
-  appendSceneEntities(scene, "enemies", first);
+  appendSceneEntities(scene, 'enemies', first);
   assert.equal(scene.enemies.at(-1), first);
   assert.throws(
     () => scene.enemies.push(first),
     TypeError,
-    "membership is changed through the collection boundary",
+    'membership is changed through the collection boundary',
   );
   world.retain([]);
   assert.equal(world.ecs.size, 0);
   assert.equal(scene.enemies.length, 7);
-  assert(!Object.isFrozen(scene.enemies), "disposed snapshots are ordinary data again");
+  assert(!Object.isFrozen(scene.enemies), 'disposed snapshots are ordinary data again');
 });
 
-test("ECS-backed and plain-object combat produce the same state through spawns, hits and cleanup", () => {
+test('ECS-backed and plain-object combat produce the same state through spawns, hits and cleanup', () => {
   const entityWorld = new SimulationWorld();
   const player: Player = {
     ...freshProgress(),
-    id: "p",
-    name: "p",
+    id: 'p',
+    name: 'p',
     color: 0,
     x: 2400,
     y: 1280,
-    scene: "forest",
-    classId: "mage",
+    scene: 'forest',
+    classId: 'mage',
     autoTarget: true,
   };
   const scene: SceneState = {
     ...createTrainingScene(0),
     training: false,
-    id: "forest",
+    id: 'forest',
     endsAt: 8000,
     nextSpawn: 0,
     enemies: [],

@@ -1,7 +1,7 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { Encoder, Decoder } from "@colyseus/schema";
-import { SessionState, projectState, materializeState } from "@emberfall/common/protocol";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { Encoder, Decoder } from '@colyseus/schema';
+import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
 import {
   CLASS_IDS,
   GEAR_DEFINITIONS,
@@ -21,23 +21,23 @@ import {
   stepCombat,
   clientMessage,
   swordOverlapsEnemy,
-} from "@emberfall/common";
-import { enemyHitbox } from "../../common/src/hitboxes.ts";
-import type { Player, ClassId, GearDefinition, WorldState, Enemy } from "@emberfall/common";
+} from '@emberfall/common';
+import { enemyHitbox } from '../../common/src/hitboxes.ts';
+import type { Player, ClassId, GearDefinition, WorldState, Enemy } from '@emberfall/common';
 import {
   hitWithWeapon,
   tickDebuffs,
   tickPlayerShots,
   fireClassAttack,
-} from "../../common/src/class-combat.ts";
-import { CharacterStore, decodeProgress, freshProgress } from "./characters.ts";
-import { drawDamageNumber, DAMAGE_COLORS } from "../../client/src/damage-text.ts";
+} from '../../common/src/class-combat.ts';
+import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
+import { drawDamageNumber, DAMAGE_COLORS } from '../../client/src/damage-text.ts';
 
-const hero = (classId: ClassId = "warrior"): Player => ({
+const hero = (classId: ClassId = 'warrior'): Player => ({
   ...freshProgress(classId),
   classId,
-  id: "p",
-  name: "Hero",
+  id: 'p',
+  name: 'Hero',
   x: 2400,
   y: 1280,
   color: 0,
@@ -46,15 +46,15 @@ const target = (): Enemy => ({ id: 1, x: 2420, y: 1280, hitpoints: 100, angle: 0
 const scene = (training = true) => ({
   ...createTrainingScene(0),
   training,
-  id: "s",
+  id: 's',
   enemies: [target()],
   nextSpawn: 1e9,
   endsAt: 1e9,
 });
 
-test("Warrior and Bear use 75-unit melee geometry, including wrapped model boundaries", () => {
+test('Warrior and Bear use 75-unit melee geometry, including wrapped model boundaries', () => {
   const player = hero();
-  const ranges = [defaultSpellRange(player), companionStats(hero("druid")).range];
+  const ranges = [defaultSpellRange(player), companionStats(hero('druid')).range];
   for (const range of ranges) {
     assert.equal(range, 75);
     for (const wrapped of [false, true]) {
@@ -69,26 +69,26 @@ test("Warrior and Bear use 75-unit melee geometry, including wrapped model bound
   }
 });
 
-test("Bear inherits gear stats with physical damage, fixed range, health and bleed overrides", (t) => {
+test('Bear inherits gear stats with physical damage, fixed range, health and bleed overrides', (t) => {
   const gear: GearDefinition = {
-    id: "bear-test-ring",
-    name: "Test ring",
-    gearType: "ring",
+    id: 'bear-test-ring',
+    name: 'Test ring',
+    gearType: 'ring',
     stats: { power: 10, attacksPerSecond: 1, armor: 100, maxHitpoints: 20 },
   };
   GEAR_DEFINITIONS[gear.id] = gear;
   t.after(() => delete GEAR_DEFINITIONS[gear.id]);
-  t.mock.method(Math, "random", () => 0.5);
+  t.mock.method(Math, 'random', () => 0.5);
   for (const training of [true, false]) {
-    const player = hero("druid");
+    const player = hero('druid');
     player.equipment!.ring = gear.id;
     player.autoAttack = false;
-    if (!training) player.scene = "forest";
+    if (!training) player.scene = 'forest';
     syncEquipmentVitals(player);
     const stats = companionStats(player);
     assert.deepEqual(stats, {
       ...characterStats(player),
-      damageType: "physical",
+      damageType: 'physical',
       range: 75,
       manualRange: 75,
       maxHitpoints: 180,
@@ -99,14 +99,14 @@ test("Bear inherits gear stats with physical damage, fixed range, health and ble
     tickCompanion(player, arena, 1000, 0);
     assert.equal(player.bear!.maxHitpoints, 180);
     assert.equal(arena.damage[0].amount, 13);
-    assert.equal(arena.damage[0].damageType, "physical");
+    assert.equal(arena.damage[0].damageType, 'physical');
     assert.equal(arena.damage[0].ownerId, player.id);
     tickCompanion(player, arena, 1259, 0);
-    assert.equal(arena.damage.length, 1, "no duplicate hit during a swing");
+    assert.equal(arena.damage.length, 1, 'no duplicate hit during a swing');
     tickCompanion(player, arena, 1499, 0);
     assert.equal(arena.damage.length, 1);
     tickCompanion(player, arena, 1500, 0);
-    assert.equal(arena.damage.length, 2, "inherits the 500ms gear cadence");
+    assert.equal(arena.damage.length, 2, 'inherits the 500ms gear cadence');
     if (!training) {
       arena.enemies[0].x = player.x - 100;
       player.bear!.x = player.x - 100;
@@ -119,7 +119,7 @@ test("Bear inherits gear stats with physical damage, fixed range, health and ble
         ranged: false,
       };
       stepCombat(arena, [player], 2000, 0);
-      assert.equal(player.bear!.hitpoints, 175, "owner armor halves incoming damage");
+      assert.equal(player.bear!.hitpoints, 175, 'owner armor halves incoming damage');
     }
     player.equipment = {};
     tickCompanion(player, arena, 3000, 0);
@@ -127,22 +127,22 @@ test("Bear inherits gear stats with physical damage, fixed range, health and ble
   }
 });
 
-test("Bear critical and 10% bleed boundaries work in forest and training across a seam", (t) => {
+test('Bear critical and 10% bleed boundaries work in forest and training across a seam', (t) => {
   for (const training of [true, false]) {
     for (const roll of [0, 0.049999, 0.05, 0.099999, 0.1]) {
-      const random = t.mock.method(Math, "random", () => roll);
-      const player = hero("druid");
-      if (!training) player.scene = "forest";
+      const random = t.mock.method(Math, 'random', () => roll);
+      const player = hero('druid');
+      if (!training) player.scene = 'forest';
       player.x = 5;
       const arena = scene(training);
       arena.enemies[0].x = 4800 - 65;
       tickCompanion(player, arena, 1000, 0);
       assert.equal(arena.damage[0].critical, roll < 0.05);
       assert.equal(arena.damage[0].amount, roll < 0.05 ? 4.5 : 3);
-      assert.equal(arena.damage[0].damageType, "physical");
+      assert.equal(arena.damage[0].damageType, 'physical');
       assert.equal(arena.enemies[0].debuffs?.length ?? 0, roll < 0.1 ? 1 : 0);
       if (roll < 0.1) {
-        assert.equal(arena.enemies[0].debuffs![0].kind, "bleed");
+        assert.equal(arena.enemies[0].debuffs![0].kind, 'bleed');
         tickDebuffs(arena, [player], 2000);
         assert.equal(arena.damage.at(-1)!.amount, 1);
         assert.equal(arena.damage.at(-1)!.ownerId, player.id);
@@ -152,16 +152,16 @@ test("Bear critical and 10% bleed boundaries work in forest and training across 
   }
 });
 
-test("every class starts with exactly its compatible weapon and preserves base stats", () => {
+test('every class starts with exactly its compatible weapon and preserves base stats', () => {
   const expected = {
-    warrior: [5, 75, "physical"],
-    ranger: [5, 1000, "poison"],
-    mage: [3, 250, "fire"],
-    druid: [3, 250, "nature"],
+    warrior: [5, 75, 'physical'],
+    ranger: [5, 1000, 'poison'],
+    mage: [3, 250, 'fire'],
+    druid: [3, 250, 'nature'],
   };
   for (const classId of CLASS_IDS) {
     const player = hero(classId);
-    assert.deepEqual(Object.keys(player.equipment!), ["weapon"]);
+    assert.deepEqual(Object.keys(player.equipment!), ['weapon']);
     const stats = characterStats(player);
     assert.deepEqual([stats.power, stats.range, stats.damageType], expected[classId]);
     assert.equal(stats.attackIntervalMs, 1000);
@@ -169,27 +169,27 @@ test("every class starts with exactly its compatible weapon and preserves base s
     assert.equal(stats.criticalMultiplier, 1.5);
     assert.deepEqual(validateClassEquipment(player.equipment!, classId), player.equipment);
   }
-  assert.throws(() => validateClassEquipment({ weapon: "mage-staff" }, "warrior"));
-  assert.throws(() => validateClassEquipment({ ring: "warrior-sword" }, "warrior"));
-  assert.throws(() => validateClassEquipment({ weapon: "forged-item" }, "warrior"));
-  assert.throws(() => validateClassEquipment({ unknown: "warrior-sword" } as never, "warrior"));
+  assert.throws(() => validateClassEquipment({ weapon: 'mage-staff' }, 'warrior'));
+  assert.throws(() => validateClassEquipment({ ring: 'warrior-sword' }, 'warrior'));
+  assert.throws(() => validateClassEquipment({ weapon: 'forged-item' }, 'warrior'));
+  assert.throws(() => validateClassEquipment({ unknown: 'warrior-sword' } as never, 'warrior'));
   for (const [gearType, allowed] of [
-    ["shield", "warrior"],
-    ["quiver", "ranger"],
-    ["orb", "mage"],
-    ["natureFocus", "druid"],
+    ['shield', 'warrior'],
+    ['quiver', 'ranger'],
+    ['orb', 'mage'],
+    ['natureFocus', 'druid'],
   ] as const) {
-    const item: GearDefinition = { id: "test", name: "Off-hand", gearType, stats: {} };
+    const item: GearDefinition = { id: 'test', name: 'Off-hand', gearType, stats: {} };
     for (const classId of CLASS_IDS)
-      assert.equal(canEquip("offHand", item, classId), classId === allowed);
+      assert.equal(canEquip('offHand', item, classId), classId === allowed);
   }
 });
 
-test("all class base attacks wait a full second in training and forest", () => {
+test('all class base attacks wait a full second in training and forest', () => {
   for (const training of [true, false]) {
     for (const classId of CLASS_IDS) {
       const player = hero(classId);
-      if (!training) player.scene = "forest";
+      if (!training) player.scene = 'forest';
       else Object.assign(player, { x: 140, y: 340 });
       const arena = scene(training);
       tickPlayerCombat(arena, [player], 1000, 0);
@@ -203,10 +203,10 @@ test("all class base attacks wait a full second in training and forest", () => {
   }
 });
 
-test("all nine slots aggregate and gear controls real power, range, cadence and defense", (t) => {
-  t.mock.method(Math, "random", () => 0.5);
+test('all nine slots aggregate and gear controls real power, range, cadence and defense', (t) => {
+  t.mock.method(Math, 'random', () => 0.5);
   const player = hero();
-  for (const slot of EQUIPMENT_SLOTS.filter((slot) => slot !== "weapon")) {
+  for (const slot of EQUIPMENT_SLOTS.filter((slot) => slot !== 'weapon')) {
     const id = `test-${slot}`;
     GEAR_DEFINITIONS[id] = {
       id,
@@ -233,10 +233,10 @@ test("all nine slots aggregate and gear controls real power, range, cadence and 
   syncEquipmentVitals(player);
   assert.equal(player.maxHitpoints, 140);
   const arena = scene(false);
-  player.scene = "forest";
+  player.scene = 'forest';
   arena.enemies[0].x = player.x + 97;
   tickPlayerCombat(arena, [player], 1000, 0.05);
-  assert.equal(arena.enemies[0].hitpoints, 87, "extended sword range and summed power apply");
+  assert.equal(arena.enemies[0].hitpoints, 87, 'extended sword range and summed power apply');
   const interval = stats.attackIntervalMs;
   tickPlayerCombat(arena, [player], 1000 + interval - 1, 0.05);
   assert.equal(arena.enemies[0].hitpoints, 87);
@@ -248,15 +248,15 @@ test("all nine slots aggregate and gear controls real power, range, cadence and 
     attack: { startedAt: 0, endsAt: 2000, x: player.x, y: player.y, radius: 100, ranged: false },
   });
   stepCombat(arena, [player], 2000, 0.05);
-  assert.equal(player.hitpoints, 95, "100 armor halves a 10 damage enemy attack");
+  assert.equal(player.hitpoints, 95, '100 armor halves a 10 damage enemy attack');
 });
 
-test("critical boundary is exactly five percent, with fractional 150% power in both areas", (t) => {
+test('critical boundary is exactly five percent, with fractional 150% power in both areas', (t) => {
   for (const training of [true, false])
     for (const classId of CLASS_IDS) {
       const player = hero(classId);
       for (const roll of [0, 0.049999, 0.05, 0.99]) {
-        const random = t.mock.method(Math, "random", () => roll);
+        const random = t.mock.method(Math, 'random', () => roll);
         const arena = scene(training);
         hitWithWeapon(arena, arena.enemies[0], player, 1000);
         const hit = arena.damage[0];
@@ -269,9 +269,9 @@ test("critical boundary is exactly five percent, with fractional 150% power in b
     }
 });
 
-test("projectile and splash hits carry weapon metadata; ailments never critically hit", (t) => {
-  t.mock.method(Math, "random", () => 0);
-  for (const classId of ["ranger", "mage", "druid"] as const) {
+test('projectile and splash hits carry weapon metadata; ailments never critically hit', (t) => {
+  t.mock.method(Math, 'random', () => 0);
+  for (const classId of ['ranger', 'mage', 'druid'] as const) {
     const player = hero(classId);
     const arena = scene();
     arena.enemies.push({ ...target(), id: 2, y: 1310 });
@@ -286,15 +286,15 @@ test("projectile and splash hits carry weapon metadata; ailments never criticall
           hit.damageType === characterStats(player).damageType,
       ),
     );
-    if (classId === "mage") assert(arena.damage.some((hit) => hit.amount === 1.5));
+    if (classId === 'mage') assert(arena.damage.some((hit) => hit.amount === 1.5));
     const before = arena.damage.length;
     tickDebuffs(arena, [player], 2050);
     assert(arena.damage.slice(before).every((hit) => hit.critical === false));
   }
 });
 
-test("empty weapons cannot attack, while client messages cannot inject equipment", () => {
-  const player = { ...hero(), equipment: {}, scene: "forest" as const };
+test('empty weapons cannot attack, while client messages cannot inject equipment', () => {
+  const player = { ...hero(), equipment: {}, scene: 'forest' as const };
   const arena = scene(false);
   tickPlayerCombat(arena, [player], 1000, 0.05);
   assert.equal(arena.damage.length, 0);
@@ -304,10 +304,10 @@ test("empty weapons cannot attack, while client messages cannot inject equipment
       arena,
       player,
       {
-        type: "cast",
+        type: 'cast',
         id: 1,
-        epoch: "s",
-        classId: "warrior",
+        epoch: 's',
+        classId: 'warrior',
         autoTarget: true,
         aimX: 2400,
         aimY: 1280,
@@ -317,36 +317,36 @@ test("empty weapons cannot attack, while client messages cannot inject equipment
     false,
   );
   const parsed = clientMessage.parse({
-    type: "selectClass",
-    classId: "mage",
-    equipment: { weapon: "warrior-sword" },
+    type: 'selectClass',
+    classId: 'mage',
+    equipment: { weapon: 'warrior-sword' },
     power: 9999,
   });
-  assert.deepEqual(parsed, { type: "selectClass", classId: "mage" });
+  assert.deepEqual(parsed, { type: 'selectClass', classId: 'mage' });
 });
 
-test("legacy saves acquire class-specific equipment; empty loadouts and class switching persist", async () => {
+test('legacy saves acquire class-specific equipment; empty loadouts and class switching persist', async () => {
   const legacy = decodeProgress(
     JSON.stringify({
-      classId: "mage",
+      classId: 'mage',
       classes: Object.fromEntries(CLASS_IDS.map((id) => [id, freshProgress()])),
     }),
   );
   for (const id of CLASS_IDS) assert.deepEqual(legacy.classes[id].equipment, starterEquipment(id));
-  const store = new CharacterStore(":memory:");
+  const store = new CharacterStore(':memory:');
   await store.ready;
   try {
-    const created = store.create("Hero");
+    const created = store.create('Hero');
     const player = { ...hero(), ...created.progress, classes: created.classes };
     player.equipment = {};
     store.save(created.id, player.name, player);
-    store.selectClass(created.id, player, "mage");
-    assert.deepEqual(player.equipment, starterEquipment("mage"));
-    store.selectClass(created.id, player, "warrior");
+    store.selectClass(created.id, player, 'mage');
+    assert.deepEqual(player.equipment, starterEquipment('mage'));
+    store.selectClass(created.id, player, 'warrior');
     assert.deepEqual(player.equipment, {});
     assert.deepEqual(store.load(created.token).progress.equipment, {});
     assert.throws(() =>
-      store.save(created.id, player.name, { ...player, equipment: { weapon: "mage-staff" } }),
+      store.save(created.id, player.name, { ...player, equipment: { weapon: 'mage-staff' } }),
     );
     assert.deepEqual(store.load(created.token).progress.equipment, {});
   } finally {
@@ -354,24 +354,24 @@ test("legacy saves acquire class-specific equipment; empty loadouts and class sw
   }
 });
 
-test("native protocol patches retain equipment and typed critical damage in detached snapshots", () => {
+test('native protocol patches retain equipment and typed critical damage in detached snapshots', () => {
   const world: WorldState = {
-    id: "w",
-    name: "World",
-    hostId: "p",
-    players: [hero("mage")],
+    id: 'w',
+    name: 'World',
+    hostId: 'p',
+    players: [hero('mage')],
     training: scene(),
   };
   world.training!.damage = [
     {
       id: 50,
-      target: "enemy:1",
+      target: 'enemy:1',
       x: 2420,
       y: 1280,
       at: 1000,
       amount: 4.5,
-      ownerId: "p",
-      damageType: "fire",
+      ownerId: 'p',
+      damageType: 'fire',
       critical: true,
     },
   ];
@@ -383,40 +383,40 @@ test("native protocol patches retain equipment and typed critical damage in deta
   decoder.decode(encoder.encodeAll());
   encoder.discardChanges();
   const first = materializeState(received)!;
-  assert.deepEqual(first.players[0].equipment, starterEquipment("mage"));
+  assert.deepEqual(first.players[0].equipment, starterEquipment('mage'));
   assert.deepEqual(first.training!.damage, world.training!.damage);
   world.players[0].equipment = {};
   projectState(state, world);
   decoder.decode(encoder.encode());
   assert.deepEqual(materializeState(received)!.players[0].equipment, {});
-  assert.deepEqual(first.players[0].equipment, starterEquipment("mage"));
+  assert.deepEqual(first.players[0].equipment, starterEquipment('mage'));
 });
 
-test("damage text uses type colors, with white fill over a thick red critical outline", () => {
+test('damage text uses type colors, with white fill over a thick red critical outline', () => {
   const calls: { operation: string; color: unknown; width?: number }[] = [];
   const ctx = {
-    fillStyle: "",
-    strokeStyle: "",
+    fillStyle: '',
+    strokeStyle: '',
     lineWidth: 1,
     save() {},
     restore() {},
     fillText(this: CanvasRenderingContext2D) {
-      calls.push({ operation: "fill", color: this.fillStyle });
+      calls.push({ operation: 'fill', color: this.fillStyle });
     },
     strokeText(this: CanvasRenderingContext2D) {
-      calls.push({ operation: "stroke", color: this.strokeStyle, width: this.lineWidth });
+      calls.push({ operation: 'stroke', color: this.strokeStyle, width: this.lineWidth });
     },
   } as unknown as CanvasRenderingContext2D;
-  for (const damageType of ["physical", "fire", "poison", "nature"] as const) {
-    const hit = { id: 1, amount: 4.5, x: 0, y: 0, at: 1000, target: "enemy:1", damageType };
+  for (const damageType of ['physical', 'fire', 'poison', 'nature'] as const) {
+    const hit = { id: 1, amount: 4.5, x: 0, y: 0, at: 1000, target: 'enemy:1', damageType };
     calls.length = 0;
     drawDamageNumber(ctx, hit, { x: 0, y: 0 }, 1000);
-    assert.deepEqual(calls, [{ operation: "fill", color: DAMAGE_COLORS[damageType] }]);
+    assert.deepEqual(calls, [{ operation: 'fill', color: DAMAGE_COLORS[damageType] }]);
     calls.length = 0;
     drawDamageNumber(ctx, { ...hit, critical: true }, { x: 0, y: 0 }, 1000);
     assert.deepEqual(calls, [
-      { operation: "stroke", color: "#d52b3f", width: 4 },
-      { operation: "fill", color: "#ffffff" },
+      { operation: 'stroke', color: '#d52b3f', width: 4 },
+      { operation: 'fill', color: '#ffffff' },
     ]);
   }
 });

@@ -1,17 +1,17 @@
-import { edgeArrow } from "../../client/src/navigation.ts";
-import { swordOverlapsEnemy, smoothAttackAngle } from "@emberfall/common";
-import { test, beforeEach } from "node:test";
-import assert from "node:assert/strict";
-import { SnapshotBuffer } from "../../client/src/snapshots.ts";
-import { FOREST, stepCombat } from "@emberfall/common";
-import type { WorldState, Player, SceneState } from "@emberfall/common";
+import { edgeArrow } from '../../client/src/navigation.ts';
+import { swordOverlapsEnemy, smoothAttackAngle } from '@emberfall/common';
+import { test, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { SnapshotBuffer } from '../../client/src/snapshots.ts';
+import { FOREST, stepCombat } from '@emberfall/common';
+import type { WorldState, Player, SceneState } from '@emberfall/common';
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
-  if ("mock" in t) t.mock.method(Math, "random", () => 0.5);
+  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
 });
 const hero: Player = {
-  id: "p",
-  name: "P",
+  id: 'p',
+  name: 'P',
   x: 420,
   y: 340,
   color: 0,
@@ -22,17 +22,17 @@ const hero: Player = {
   playtimeSeconds: 0,
 };
 const snapshot = (time: number, x: number): WorldState => ({
-  id: "room",
-  name: "Room",
-  hostId: "p",
+  id: 'room',
+  name: 'Room',
+  hostId: 'p',
   serverNow: time,
   players: [{ ...hero, x, inputX: 1 }],
 });
 
-test("remote lobby players interpolate across seams instead of crossing the whole map", async () => {
-  for (const axis of ["x", "y"] as const) {
-    const size = axis === "x" ? FOREST.width : FOREST.height;
-    const buffer = new SnapshotBuffer("p");
+test('remote lobby players interpolate across seams instead of crossing the whole map', async () => {
+  for (const axis of ['x', 'y'] as const) {
+    const size = axis === 'x' ? FOREST.width : FOREST.height;
+    const buffer = new SnapshotBuffer('p');
     buffer.push({ ...snapshot(10000, 420), players: [{ ...hero, [axis]: size - 4 }] }, 0);
     buffer.render(0);
     buffer.push({ ...snapshot(10200, 420), players: [{ ...hero, [axis]: 4 }] }, 200);
@@ -40,8 +40,8 @@ test("remote lobby players interpolate across seams instead of crossing the whol
     assert(point < 4 || point > size - 4);
   }
 });
-test("confirmed movement interpolates, never extrapolates, and holds through packet gaps", async () => {
-  const buffer = new SnapshotBuffer("p");
+test('confirmed movement interpolates, never extrapolates, and holds through packet gaps', async () => {
+  const buffer = new SnapshotBuffer('p');
   const base = snapshot(10000, 420);
   buffer.push(base, 0);
   assert.equal(buffer.render(0)!.players[0].x, 420);
@@ -56,14 +56,14 @@ test("confirmed movement interpolates, never extrapolates, and holds through pac
   assert.equal(buffer.render(3000)!.players[0].inputX, 0);
   assert.equal(base.players[0].x, 420);
   buffer.push(snapshot(10050, 100), 3100);
-  assert.equal(buffer.render(3100)!.players[0].x, 456, "stale packets must not rewind playback");
+  assert.equal(buffer.render(3100)!.players[0].x, 456, 'stale packets must not rewind playback');
 });
-test("Bear animation follows confirmed movement, stops during packet gaps, and snaps teleports", async () => {
-  const buffer = new SnapshotBuffer("p");
+test('Bear animation follows confirmed movement, stops during packet gaps, and snaps teleports', async () => {
+  const buffer = new SnapshotBuffer('p');
   const base = snapshot(10000, 420);
   base.players[0].bear = {
-    id: "bear:p",
-    name: "Bear",
+    id: 'bear:p',
+    name: 'Bear',
     x: 420,
     y: 340,
     hitpoints: 150,
@@ -92,12 +92,12 @@ test("Bear animation follows confirmed movement, stops during packet gaps, and s
   assert.equal(base.players[0].bear!.x, 420);
 });
 
-test("snapshot playback wraps edges, snaps area transfers, and does not predict damage", async () => {
-  const buffer = new SnapshotBuffer("p");
+test('snapshot playback wraps edges, snaps area transfers, and does not predict damage', async () => {
+  const buffer = new SnapshotBuffer('p');
   const forest = snapshot(10000, FOREST.width - 4);
-  forest.players[0].scene = "forest";
+  forest.players[0].scene = 'forest';
   forest.players[0].y = 1280;
-  forest.scene = { id: "run", enemies: [], phase: "active" } as unknown as SceneState;
+  forest.scene = { id: 'run', enemies: [], phase: 'active' } as unknown as SceneState;
   buffer.push(forest, 0);
   buffer.render(0);
   const next = structuredClone(forest);
@@ -111,17 +111,17 @@ test("snapshot playback wraps edges, snaps area transfers, and does not predict 
   buffer.push(snapshot(10100, 480), 150);
   assert.equal(buffer.render(150)!.players[0].x, 480);
 });
-test("boss defeat puts fixed return portals within reach of all scattered players", async () => {
+test('boss defeat puts fixed return portals within reach of all scattered players', async () => {
   const players = [
-    { ...hero, scene: "forest" as const, x: 12, y: 1200 },
-    { ...hero, id: "q", scene: "forest" as const, x: 4300, y: 200 },
+    { ...hero, scene: 'forest' as const, x: 12, y: 1200 },
+    { ...hero, id: 'q', scene: 'forest' as const, x: 4300, y: 200 },
   ];
   const scene: SceneState = {
-    id: "run",
+    id: 'run',
     playerCount: players.length,
-    type: "Forest" as const,
-    difficulty: "Easy" as const,
-    phase: "active" as const,
+    type: 'Forest' as const,
+    difficulty: 'Easy' as const,
+    phase: 'active' as const,
     ready: [],
     countdownAt: null,
     bossId: 99,
@@ -129,7 +129,7 @@ test("boss defeat puts fixed return portals within reach of all scattered player
     nextSpawn: 20000,
     sequence: 0,
     damage: [],
-    enemies: [{ id: 99, kind: "boss", x: 50, y: 1200, hitpoints: 5, angle: 0 }],
+    enemies: [{ id: 99, kind: 'boss', x: 50, y: 1200, hitpoints: 5, angle: 0 }],
     portals: [],
   };
   stepCombat(scene, players, 10000, 0.05);
@@ -138,16 +138,16 @@ test("boss defeat puts fixed return portals within reach of all scattered player
     { x: 4300, y: 215 },
   ]);
   players[0].x = 500;
-  assert.equal(scene.portals[0].x, 12, "portal must stay in the scene, not follow a player");
+  assert.equal(scene.portals[0].x, 12, 'portal must stay in the scene, not follow a player');
 });
 
-test("sword reaches 75 units in its forward semicircle, with unchanged damage", async () => {
-  const player = { ...hero, scene: "forest" as const, x: 2400, y: 1280 };
+test('sword reaches 75 units in its forward semicircle, with unchanged damage', async () => {
+  const player = { ...hero, scene: 'forest' as const, x: 2400, y: 1280 };
   const scene: SceneState = {
-    id: "range",
-    type: "Forest",
-    difficulty: "Easy",
-    phase: "active",
+    id: 'range',
+    type: 'Forest',
+    difficulty: 'Easy',
+    phase: 'active',
     ready: [],
     countdownAt: null,
     endsAt: 120000,
@@ -169,8 +169,8 @@ test("sword reaches 75 units in its forward semicircle, with unchanged damage", 
   );
 });
 
-test("sword body overlap includes arc and diameter edges, and wraps across the forest seam", async () => {
-  const p = { ...hero, scene: "forest" as const, x: 2400, y: 1280, attackAngle: 0 };
+test('sword body overlap includes arc and diameter edges, and wraps across the forest seam', async () => {
+  const p = { ...hero, scene: 'forest' as const, x: 2400, y: 1280, attackAngle: 0 };
   const enemy = { id: 1, x: p.x + 99, y: p.y + 6, hitpoints: 10, angle: 0 };
   assert(swordOverlapsEnemy(p, enemy));
   enemy.x += 1;
@@ -186,13 +186,13 @@ test("sword body overlap includes arc and diameter edges, and wraps across the f
   assert(swordOverlapsEnemy(p, enemy));
 });
 
-test("every enemy overlapping during a swing is hit once, including late entrants and retargets", async () => {
-  const player = { ...hero, scene: "forest" as const, x: 2400, y: 1280 };
+test('every enemy overlapping during a swing is hit once, including late entrants and retargets', async () => {
+  const player = { ...hero, scene: 'forest' as const, x: 2400, y: 1280 };
   const scene: SceneState = {
-    id: "sweep",
-    type: "Forest",
-    difficulty: "Easy",
-    phase: "active",
+    id: 'sweep',
+    type: 'Forest',
+    difficulty: 'Easy',
+    phase: 'active',
     ready: [],
     countdownAt: null,
     endsAt: 120000,
@@ -226,7 +226,7 @@ test("every enemy overlapping during a swing is hit once, including late entrant
   );
   scene.enemies.push({ id: 4, x: 2460, y: 1280, hitpoints: 50, angle: 0 });
   stepCombat(scene, [player], 10300, 0);
-  assert.equal(scene.enemies[3].hitpoints, 50, "no hits after the active window");
+  assert.equal(scene.enemies[3].hitpoints, 50, 'no hits after the active window');
   for (const enemy of scene.enemies) enemy.debuffs = undefined;
   stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
@@ -235,7 +235,7 @@ test("every enemy overlapping during a swing is hit once, including late entrant
   );
 });
 
-test("attack rotation takes the short path and is consistent at server and display frame rates", async () => {
+test('attack rotation takes the short path and is consistent at server and display frame rates', async () => {
   const degrees = Math.PI / 180;
   const angle = smoothAttackAngle(179 * degrees, -179 * degrees, 0.016);
   assert(angle > 179 * degrees && angle < Math.PI);
@@ -249,15 +249,15 @@ test("attack rotation takes the short path and is consistent at server and displ
   assert.equal(smoothAttackAngle(0.5, 1.2, 0), 0.5);
 });
 
-test("kills drop experience and 10-percent coins; experience pickups reward players and expire", (t) => {
+test('kills drop experience and 10-percent coins; experience pickups reward players and expire', (t) => {
   let roll = 0.099;
-  t.mock.method(Math, "random", () => roll);
-  const player = { ...hero, scene: "forest" as const, x: 2400, y: 1280 };
+  t.mock.method(Math, 'random', () => roll);
+  const player = { ...hero, scene: 'forest' as const, x: 2400, y: 1280 };
   const scene: SceneState = {
-    id: "loot",
-    type: "Forest",
-    difficulty: "Easy",
-    phase: "active",
+    id: 'loot',
+    type: 'Forest',
+    difficulty: 'Easy',
+    phase: 'active',
     ready: [],
     countdownAt: null,
     endsAt: 120000,
@@ -270,29 +270,29 @@ test("kills drop experience and 10-percent coins; experience pickups reward play
   stepCombat(scene, [player], 10000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ["experience", "gold", "item"],
+    ['experience', 'gold', 'item'],
   );
   const experience = player.experience;
   player.x = 2440;
   stepCombat(scene, [player], 10200, 0);
-  assert.equal(scene.drops!.length, 3, "initial hop is visible before pickup");
+  assert.equal(scene.drops!.length, 3, 'initial hop is visible before pickup');
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.drops!.length, 0);
-  assert.equal(player.experience, experience + 1, "collection grants one extra experience");
-  assert.equal(player.coins, 1, "gold grants one saved coin to its collector");
+  assert.equal(player.experience, experience + 1, 'collection grants one extra experience');
+  assert.equal(player.coins, 1, 'gold grants one saved coin to its collector');
   roll = 0.1;
   scene.enemies = [{ id: 2, x: 2480, y: 1280, hitpoints: 5, angle: 0 }];
   stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ["experience", "item"],
+    ['experience', 'item'],
   );
-  scene.phase = "ended";
+  scene.phase = 'ended';
   stepCombat(scene, [player], 71000, 0);
   assert.equal(scene.drops!.length, 0);
 });
 
-test("edge indicators stay inset, point toward offscreen targets, and hide onscreen", async () => {
+test('edge indicators stay inset, point toward offscreen targets, and hide onscreen', async () => {
   assert.equal(edgeArrow(300, 200, 800, 600), null);
   assert.deepEqual(edgeArrow(1200, 300, 800, 600), { x: 772, y: 300, angle: 0 });
   const corner = edgeArrow(-900, -1200, 800, 600)!;
@@ -300,12 +300,12 @@ test("edge indicators stay inset, point toward offscreen targets, and hide onscr
   assert(corner.angle < -Math.PI / 2);
 });
 
-test("loot attracts across the seam and rewards every living scene player exactly once", async () => {
+test('loot attracts across the seam and rewards every living scene player exactly once', async () => {
   const scene: SceneState = {
-    id: "magnet",
-    type: "Forest",
-    difficulty: "Easy",
-    phase: "ended",
+    id: 'magnet',
+    type: 'Forest',
+    difficulty: 'Easy',
+    phase: 'ended',
     ready: [],
     countdownAt: null,
     endsAt: 0,
@@ -315,15 +315,15 @@ test("loot attracts across the seam and rewards every living scene player exactl
     damage: [],
     portals: [],
     drops: [
-      { id: 1, kind: "experience", x: FOREST.width - 80, y: 500, at: 0 },
-      { id: 2, kind: "gold", x: FOREST.width - 80, y: 500, at: 0 },
+      { id: 1, kind: 'experience', x: FOREST.width - 80, y: 500, at: 0 },
+      { id: 2, kind: 'gold', x: FOREST.width - 80, y: 500, at: 0 },
     ],
   };
-  const player = { ...hero, scene: "forest" as const, x: 10, y: 500 };
-  const dead = { ...player, id: "dead", x: FOREST.width - 70, hitpoints: 0 };
-  const lobby = { ...hero, id: "lobby", x: FOREST.width - 70, y: 500 };
-  const teammate = { ...player, id: "teammate", x: 2000, y: 1000, experience: 7 };
-  const nearby = { ...player, id: "nearby", x: 11 };
+  const player = { ...hero, scene: 'forest' as const, x: 10, y: 500 };
+  const dead = { ...player, id: 'dead', x: FOREST.width - 70, hitpoints: 0 };
+  const lobby = { ...hero, id: 'lobby', x: FOREST.width - 70, y: 500 };
+  const teammate = { ...player, id: 'teammate', x: 2000, y: 1000, experience: 7 };
+  const nearby = { ...player, id: 'nearby', x: 11 };
   const players = [dead, lobby, player, teammate, nearby];
   stepCombat(scene, players, 400, 0.05);
   assert.equal(scene.drops![0].x, FOREST.width - 66);
@@ -339,41 +339,41 @@ test("loot attracts across the seam and rewards every living scene player exactl
     players.map((p) => p.experience),
     [0, 0, 1, 8, 1],
   );
-  scene.drops = [{ id: 4, kind: "experience", x: player.x, y: player.y, at: 700 }];
+  scene.drops = [{ id: 4, kind: 'experience', x: player.x, y: player.y, at: 700 }];
   stepCombat(scene, players, 999, 0);
   assert.deepEqual(
     players.map((p) => p.experience),
     [0, 0, 1, 8, 1],
-    "hop grants no XP",
+    'hop grants no XP',
   );
   stepCombat(scene, players, 1000, 0);
   stepCombat(scene, players, 1050, 0);
-  assert.equal(player.coins, 1, "removed coins cannot reward twice");
+  assert.equal(player.coins, 1, 'removed coins cannot reward twice');
   assert.equal(scene.drops.length, 0);
   assert.deepEqual(
     players.map((p) => p.experience),
     [0, 0, 2, 9, 2],
   );
-  scene.drops = [{ id: 5, kind: "experience", x: player.x, y: player.y, at: 0 }];
+  scene.drops = [{ id: 5, kind: 'experience', x: player.x, y: player.y, at: 0 }];
   stepCombat(scene, players, 60000, 0);
   assert.equal(scene.drops.length, 0);
   assert.deepEqual(
     players.map((p) => p.experience),
     [0, 0, 2, 9, 2],
-    "expiry grants no XP",
+    'expiry grants no XP',
   );
-  scene.drops = [{ id: 6, kind: "gold", x: 500, y: 500, at: 60000 }];
+  scene.drops = [{ id: 6, kind: 'gold', x: 500, y: 500, at: 60000 }];
   stepCombat(scene, players, 60050, 0.05);
-  assert.equal(scene.drops[0].x, 500, "distant drops stay put");
+  assert.equal(scene.drops[0].x, 500, 'distant drops stay put');
 });
 
-test("fatal hits retain each enemy appearance for its death animation", async () => {
-  for (const archetype of ["skeleton", "runner", "brute", "caster"] as const) {
+test('fatal hits retain each enemy appearance for its death animation', async () => {
+  for (const archetype of ['skeleton', 'runner', 'brute', 'caster'] as const) {
     const scene: SceneState = {
       id: archetype,
-      type: "Forest",
-      difficulty: "Easy",
-      phase: "active",
+      type: 'Forest',
+      difficulty: 'Easy',
+      phase: 'active',
       ready: [],
       countdownAt: null,
       endsAt: 120000,
@@ -381,22 +381,22 @@ test("fatal hits retain each enemy appearance for its death animation", async ()
       nextSpawn: 1e9,
       damage: [],
       portals: [],
-      enemies: [{ id: 1, archetype, kind: "elite", x: 2440, y: 1280, hitpoints: 5, angle: 1 }],
+      enemies: [{ id: 1, archetype, kind: 'elite', x: 2440, y: 1280, hitpoints: 5, angle: 1 }],
     };
-    stepCombat(scene, [{ ...hero, scene: "forest", x: 2400, y: 1280 }], 10000, 0);
+    stepCombat(scene, [{ ...hero, scene: 'forest', x: 2400, y: 1280 }], 10000, 0);
     assert.equal(scene.enemies.length, 0);
-    assert.deepEqual(scene.damage[0].enemy, { archetype, kind: "elite", angle: 1 });
+    assert.deepEqual(scene.damage[0].enemy, { archetype, kind: 'elite', angle: 1 });
   }
 });
 
-test("moving loot interpolates across the seam without mutating server snapshots", async () => {
+test('moving loot interpolates across the seam without mutating server snapshots', async () => {
   const first = snapshot(10000, 10);
-  first.players[0].scene = "forest";
+  first.players[0].scene = 'forest';
   first.scene = {
-    id: "drops",
-    type: "Forest",
-    difficulty: "Easy",
-    phase: "ended",
+    id: 'drops',
+    type: 'Forest',
+    difficulty: 'Easy',
+    phase: 'ended',
     ready: [],
     countdownAt: null,
     endsAt: 0,
@@ -405,21 +405,21 @@ test("moving loot interpolates across the seam without mutating server snapshots
     portals: [],
     sequence: 0,
     nextSpawn: 0,
-    drops: [{ id: 1, kind: "gold", x: FOREST.width - 10, y: 500, at: 0 }],
+    drops: [{ id: 1, kind: 'gold', x: FOREST.width - 10, y: 500, at: 0 }],
   };
   const second = structuredClone(first);
   second.serverNow = 10100;
   second.scene!.drops![0].x = 10;
-  const buffer = new SnapshotBuffer("p");
+  const buffer = new SnapshotBuffer('p');
   buffer.push(first, 0);
   buffer.push(second, 100);
   const x = buffer.render(150)!.scene!.drops![0].x;
-  assert(x < 10 || x > FOREST.width - 10, "interpolation takes the short path");
+  assert(x < 10 || x > FOREST.width - 10, 'interpolation takes the short path');
   assert.equal(first.scene.drops![0].x, FOREST.width - 10);
 });
 
-test("snapshot age includes interpolation and packet gaps without depending on server clock", async () => {
-  const buffer = new SnapshotBuffer("p");
+test('snapshot age includes interpolation and packet gaps without depending on server clock', async () => {
+  const buffer = new SnapshotBuffer('p');
   assert.equal(buffer.age(0), null);
   buffer.push(snapshot(1_000_000, 420), 0);
   assert.equal(buffer.age(0), 100);

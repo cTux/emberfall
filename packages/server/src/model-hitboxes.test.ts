@@ -1,15 +1,15 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { FOREST, ENEMY_STATS, type Player, type SceneState } from "@emberfall/common";
-import { INITIAL_PROGRESS } from "../../common/src/definitions/entities/players.ts";
-import { enemyHitbox } from "../../common/src/hitboxes.ts";
-import { tickPlayerShots } from "../../common/src/class-combat.ts";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { FOREST, ENEMY_STATS, type Player, type SceneState } from '@emberfall/common';
+import { INITIAL_PROGRESS } from '../../common/src/definitions/entities/players.ts';
+import { enemyHitbox } from '../../common/src/hitboxes.ts';
+import { tickPlayerShots } from '../../common/src/class-combat.ts';
 
-test("projectiles hit heads and feet of every model in forest and training, across both seams", (t) => {
-  t.mock.method(Math, "random", () => 0.5);
+test('projectiles hit heads and feet of every model in forest and training, across both seams', (t) => {
+  t.mock.method(Math, 'random', () => 0.5);
   for (const training of [false, true])
     for (const archetype of Object.keys(ENEMY_STATS) as (keyof typeof ENEMY_STATS)[])
-      for (const kind of ["arrow", "fireball", "roots"] as const)
+      for (const kind of ['arrow', 'fireball', 'roots'] as const)
         for (const wrapped of [false, true])
           for (const edge of [-1, 1])
             for (const outside of [false, true]) {
@@ -24,19 +24,19 @@ test("projectiles hit heads and feet of every model in forest and training, acro
               const body = enemyHitbox(target);
               const owner: Player = {
                 ...INITIAL_PROGRESS,
-                id: "p",
-                name: "Hero",
+                id: 'p',
+                name: 'Hero',
                 color: 0,
                 x: 2400,
                 y: 1280,
-                classId: kind === "arrow" ? "ranger" : kind === "roots" ? "druid" : "mage",
-                scene: training ? undefined : "forest",
+                classId: kind === 'arrow' ? 'ranger' : kind === 'roots' ? 'druid' : 'mage',
+                scene: training ? undefined : 'forest',
               };
               const scene: SceneState = {
-                id: "models",
-                type: "Forest",
-                difficulty: "Easy",
-                phase: "active",
+                id: 'models',
+                type: 'Forest',
+                difficulty: 'Easy',
+                phase: 'active',
                 ready: [],
                 countdownAt: null,
                 endsAt: 1e9,
@@ -49,7 +49,7 @@ test("projectiles hit heads and feet of every model in forest and training, acro
                 playerShots: [
                   {
                     id: 2,
-                    ownerId: "p",
+                    ownerId: 'p',
                     kind,
                     x: wrapped ? body.x + FOREST.width : body.x,
                     y:
@@ -74,7 +74,7 @@ test("projectiles hit heads and feet of every model in forest and training, acro
                 assert.equal(
                   target.hitpoints,
                   hp,
-                  "one projectile cannot damage the same enemy twice",
+                  'one projectile cannot damage the same enemy twice',
                 );
                 assert.equal(owner.experience, 0);
               }

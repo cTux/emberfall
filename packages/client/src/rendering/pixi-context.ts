@@ -9,21 +9,21 @@ import {
   Text,
   Color,
   BlurFilter,
-} from "pixi.js";
-import type { Renderer, GradientOptions, LinearGradientOptions } from "pixi.js";
-import "./soft-light";
-import { World } from "miniplex";
+} from 'pixi.js';
+import type { Renderer, GradientOptions, LinearGradientOptions } from 'pixi.js';
+import './soft-light';
+import { World } from 'miniplex';
 
 type Paint = string | Gradient;
 type PathCommand = {
   method:
-    | "moveTo"
-    | "lineTo"
-    | "quadraticCurveTo"
-    | "bezierCurveTo"
-    | "arc"
-    | "ellipse"
-    | "closePath";
+    | 'moveTo'
+    | 'lineTo'
+    | 'quadraticCurveTo'
+    | 'bezierCurveTo'
+    | 'arc'
+    | 'ellipse'
+    | 'closePath';
   args: number[];
 };
 type State = {
@@ -46,7 +46,7 @@ type State = {
 };
 type Visual = {
   object: Container;
-  kind: "sprite" | "graphics" | "text";
+  kind: 'sprite' | 'graphics' | 'text';
   active: boolean;
   blur?: BlurFilter;
   styleKey?: string;
@@ -74,7 +74,7 @@ export class PixiContext {
   private width = 1;
   private height = 1;
   readonly ready: Promise<void>;
-  private pools: Record<Visual["kind"], Visual[]> = { sprite: [], graphics: [], text: [] };
+  private pools: Record<Visual['kind'], Visual[]> = { sprite: [], graphics: [], text: [] };
   private cursors = { sprite: 0, graphics: 0, text: 0 };
   private childCursors = new Map<Container, number>();
   private colors = new Map<string, Color>();
@@ -92,24 +92,24 @@ export class PixiContext {
   private stack: State[] = [];
   private stackDepth = 0;
   private path: PathCommand[] = [];
-  private metrics = document.createElement("canvas").getContext("2d")!;
+  private metrics = document.createElement('canvas').getContext('2d')!;
   private state: State = this.defaults();
   imageSmoothingEnabled = false;
   private defaults(): State {
     return {
       matrix: new Matrix(),
-      fillStyle: "#000",
-      strokeStyle: "#000",
+      fillStyle: '#000',
+      strokeStyle: '#000',
       globalAlpha: 1,
-      globalCompositeOperation: "source-over",
+      globalCompositeOperation: 'source-over',
       lineWidth: 1,
-      lineJoin: "miter",
-      font: "10px sans-serif",
-      textAlign: "start",
-      textBaseline: "alphabetic",
+      lineJoin: 'miter',
+      font: '10px sans-serif',
+      textAlign: 'start',
+      textBaseline: 'alphabetic',
       shadowBlur: 0,
-      spriteTint: "#ffffff",
-      shadowColor: "transparent",
+      spriteTint: '#ffffff',
+      shadowColor: 'transparent',
       shadowOffsetY: 0,
       mask: null,
       dash: [],
@@ -117,10 +117,10 @@ export class PixiContext {
   }
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.stage.eventMode = "none";
+    this.stage.eventMode = 'none';
     this.ready = autoDetectRenderer({
       canvas,
-      preference: ["webgl"],
+      preference: ['webgl'],
       // Soft-light grading needs the scene behind it; without this Pixi skips
       // the blend filter and paints a flat translucent wash over the world.
       useBackBuffer: true,
@@ -134,7 +134,7 @@ export class PixiContext {
       else {
         this.renderer = renderer;
         renderer.resize(this.width, this.height);
-        this.canvas.dataset.renderer = "pixijs-webgl";
+        this.canvas.dataset.renderer = 'pixijs-webgl';
       }
     });
   }
@@ -180,7 +180,7 @@ export class PixiContext {
           entry.texture.destroy(true);
           this.sources.delete(key);
         }
-      for (const kind of ["sprite", "graphics", "text"] as const) {
+      for (const kind of ['sprite', 'graphics', 'text'] as const) {
         const pool = this.pools[kind];
         const keep = Math.max(this.cursors[kind] + 32, Math.ceil(pool.length * 0.75));
         while (pool.length > keep) {
@@ -195,7 +195,7 @@ export class PixiContext {
   }
   stats() {
     return {
-      renderer: "pixijs-webgl",
+      renderer: 'pixijs-webgl',
       visuals: this.ecs.size,
       textures: this.sources.size,
       gradients: this.gradients.size,
@@ -222,17 +222,17 @@ export class PixiContext {
     this.colors.clear();
     this.childCursors.clear();
   }
-  private visual(kind: Visual["kind"]): Visual {
+  private visual(kind: Visual['kind']): Visual {
     const index = this.cursors[kind]++;
     let entity = this.pools[kind][index];
     if (!entity) {
       const object =
-        kind === "sprite"
+        kind === 'sprite'
           ? new Sprite()
-          : kind === "graphics"
+          : kind === 'graphics'
             ? new Graphics()
-            : new Text({ text: "", resolution: 4, textureStyle: { scaleMode: "nearest" } });
-      object.eventMode = "none";
+            : new Text({ text: '', resolution: 4, textureStyle: { scaleMode: 'nearest' } });
+      object.eventMode = 'none';
       entity = this.ecs.add({ object, kind, active: true });
       this.pools[kind].push(entity);
     }
@@ -241,17 +241,17 @@ export class PixiContext {
     object.visible = true;
     object.alpha = this.state.globalAlpha;
     // Sprites and text receive their final transform at the draw call below.
-    if (kind === "graphics") object.setFromMatrix(this.state.matrix);
+    if (kind === 'graphics') object.setFromMatrix(this.state.matrix);
     object.blendMode =
       (
         {
-          "source-over": "normal",
-          lighter: "add",
-          screen: "screen",
-          multiply: "multiply",
-          "soft-light": "soft-light",
+          'source-over': 'normal',
+          lighter: 'add',
+          screen: 'screen',
+          multiply: 'multiply',
+          'soft-light': 'soft-light',
         } as const
-      )[this.state.globalCompositeOperation as "source-over"] ?? "normal";
+      )[this.state.globalCompositeOperation as 'source-over'] ?? 'normal';
     object.mask = null;
     if (this.shadowPass && this.shadowStrength > 0) {
       entity.blur ??= new BlurFilter({ quality: 2, resolution: 0.5 });
@@ -325,14 +325,14 @@ export class PixiContext {
     const blur = this.state.shadowBlur,
       padding = Math.ceil(blur * 3 + 2);
     const opacity =
-      typeof this.state.fillStyle === "string" ? this.color(this.state.fillStyle).alpha : 1;
+      typeof this.state.fillStyle === 'string' ? this.color(this.state.fillStyle).alpha : 1;
     const key = `${width}:${height}:${blur}:${opacity}:${this.state.shadowColor}`;
     let canvas = this.shadowRects.get(key);
     if (!canvas) {
-      canvas = document.createElement("canvas");
+      canvas = document.createElement('canvas');
       canvas.width = Math.ceil(Math.abs(width) + padding * 2);
       canvas.height = Math.ceil(Math.abs(height) + padding * 2);
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext('2d')!;
       // Bake a reusable glow primitive. The solid source is moved outside the
       // image so only its shadow remains; no per-particle GPU filter passes.
       ctx.shadowBlur = blur;
@@ -347,7 +347,7 @@ export class PixiContext {
     this.save();
     this.shadowPass = true;
     this.shadowStrength = 0;
-    this.state.shadowColor = "#ffffff";
+    this.state.shadowColor = '#ffffff';
     this.drawImage(
       canvas,
       Math.min(x, x + width) - padding,
@@ -358,20 +358,20 @@ export class PixiContext {
   }
   private paint(
     value: Paint,
-  ): string | { texture: Texture; matrix: Matrix; textureSpace: "global" } {
-    if (typeof value === "string") return value;
+  ): string | { texture: Texture; matrix: Matrix; textureSpace: 'global' } {
+    if (typeof value === 'string') return value;
     const options = value.options;
     // Texture ramps depend on color stops and relative shape, not world position.
     // Moving the camera or a light only changes its matrix, never allocates a ramp.
     let normalized: GradientOptions;
     let matrix: Matrix;
-    if (options.type === "radial") {
+    if (options.type === 'radial') {
       const outer = options.outerCenter!,
         center = options.center!,
         radius = Math.max(0.0001, options.outerRadius!);
       normalized = {
-        type: "radial",
-        textureSpace: "global",
+        type: 'radial',
+        textureSpace: 'global',
         center: { x: (center.x - outer.x) / radius, y: (center.y - outer.y) / radius },
         outerCenter: { x: 0, y: 0 },
         innerRadius: options.innerRadius! / radius,
@@ -394,8 +394,8 @@ export class PixiContext {
         dy = end.y - start.y;
       const distance = Math.max(0.0001, Math.hypot(dx, dy));
       normalized = {
-        type: "linear",
-        textureSpace: "global",
+        type: 'linear',
+        textureSpace: 'global',
         start: { x: 0, y: 0 },
         end: { x: 1, y: 0 },
         colorStops: options.colorStops,
@@ -407,12 +407,12 @@ export class PixiContext {
     if (!entry) {
       // Bake only the reusable ramp, on a transparent surface. FillGradient's
       // radial builder pre-fills the outer stop, making transparent centers opaque.
-      const canvas = document.createElement("canvas");
+      const canvas = document.createElement('canvas');
       canvas.width = 256;
-      canvas.height = normalized.type === "radial" ? 256 : 1;
-      const ctx = canvas.getContext("2d")!;
+      canvas.height = normalized.type === 'radial' ? 256 : 1;
+      const ctx = canvas.getContext('2d')!;
       const ramp =
-        normalized.type === "radial"
+        normalized.type === 'radial'
           ? ctx.createRadialGradient(
               (normalized.center!.x + 1) * 128,
               (normalized.center!.y + 1) * 128,
@@ -426,26 +426,26 @@ export class PixiContext {
       ctx.fillStyle = ramp;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       const texture = Texture.from(canvas, true);
-      texture.source.addressMode = "clamp-to-edge";
+      texture.source.addressMode = 'clamp-to-edge';
       entry = { texture, used: this.frame };
       this.gradients.set(key, entry);
     }
     entry.used = this.frame;
-    return { texture: entry.texture, matrix, textureSpace: "global" };
+    return { texture: entry.texture, matrix, textureSpace: 'global' };
   }
   private strokePaint() {
     const paint = this.paint(this.state.strokeStyle);
-    return typeof paint === "string" ? { color: paint } : paint;
+    return typeof paint === 'string' ? { color: paint } : paint;
   }
   private geometry(): Graphics {
-    const graphics = this.visual("graphics").object as Graphics;
+    const graphics = this.visual('graphics').object as Graphics;
     graphics.clear();
     let penX = 0,
       penY = 0,
       dashAt = 0;
     const dash = this.state.dash.filter((n) => n > 0);
     for (const { method, args } of this.path) {
-      if (method === "ellipse") {
+      if (method === 'ellipse') {
         const [x, y, rx, ry, rotation, start, end, ccw] = args;
         // Flatten rotated/partial ellipses into a short polygon in local coordinates.
         const sweep = ccw
@@ -461,14 +461,14 @@ export class PixiContext {
           if (i === 0) graphics.moveTo(tx, ty);
           else graphics.lineTo(tx, ty);
         }
-      } else if (method === "arc")
+      } else if (method === 'arc')
         graphics.arc(args[0], args[1], args[2], args[3], args[4], !!args[5]);
-      else if (method === "moveTo") {
+      else if (method === 'moveTo') {
         graphics.moveTo(args[0], args[1]);
         penX = args[0];
         penY = args[1];
         dashAt = 0;
-      } else if (method === "lineTo") {
+      } else if (method === 'lineTo') {
         if (dash.length) {
           const dx = args[0] - penX,
             dy = args[1] - penY,
@@ -492,9 +492,9 @@ export class PixiContext {
         } else graphics.lineTo(args[0], args[1]);
         penX = args[0];
         penY = args[1];
-      } else if (method === "quadraticCurveTo")
+      } else if (method === 'quadraticCurveTo')
         graphics.quadraticCurveTo(args[0], args[1], args[2], args[3]);
-      else if (method === "bezierCurveTo")
+      else if (method === 'bezierCurveTo')
         graphics.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
       else graphics.closePath();
     }
@@ -528,14 +528,14 @@ export class PixiContext {
         image instanceof HTMLImageElement &&
         /\.svg(?:[?#]|$)|^data:image\/svg\+xml/i.test(image.currentSrc || image.src)
       ) {
-        const raster = document.createElement("canvas");
+        const raster = document.createElement('canvas');
         raster.width = iw;
         raster.height = ih;
-        raster.getContext("2d")!.drawImage(image, 0, 0, iw, ih);
+        raster.getContext('2d')!.drawImage(image, 0, 0, iw, ih);
         resource = raster;
       }
       const texture = Texture.from(resource, true);
-      texture.source.scaleMode = "nearest";
+      texture.source.scaleMode = 'nearest';
       entry = { texture, used: this.frame };
       this.sources.set(source, entry);
     }
@@ -547,7 +547,7 @@ export class PixiContext {
       (entry as typeof entry & { revision?: number }).revision = revision;
     }
     entry.used = this.frame;
-    const entity = this.visual("sprite");
+    const entity = this.visual('sprite');
     const sprite = entity.object as Sprite;
     let texture = entity.frameTexture;
     if (!texture)
@@ -577,12 +577,12 @@ export class PixiContext {
   }
   fillRect(x: number, y: number, width: number, height: number) {
     this.rectangleShadow(x, y, width, height);
-    if (typeof this.state.fillStyle !== "string") {
-      const g = this.visual("graphics").object as Graphics;
+    if (typeof this.state.fillStyle !== 'string') {
+      const g = this.visual('graphics').object as Graphics;
       g.clear().rect(x, y, width, height).fill(this.paint(this.state.fillStyle));
       return;
     }
-    const sprite = this.visual("sprite").object as Sprite;
+    const sprite = this.visual('sprite').object as Sprite;
     const color = this.color(this.state.fillStyle);
     sprite.texture = Texture.WHITE;
     sprite.tint = color.toNumber();
@@ -591,7 +591,7 @@ export class PixiContext {
   }
   strokeRect(x: number, y: number, width: number, height: number) {
     this.shadow(() => this.strokeRect(x, y, width, height));
-    const g = this.visual("graphics").object as Graphics;
+    const g = this.visual('graphics').object as Graphics;
     g.clear()
       .rect(x, y, width, height)
       .stroke({ ...this.strokePaint(), width: this.state.lineWidth });
@@ -603,22 +603,22 @@ export class PixiContext {
     this.path = [];
   }
   closePath() {
-    this.path.push({ method: "closePath", args: [] });
+    this.path.push({ method: 'closePath', args: [] });
   }
   moveTo(...args: number[]) {
-    this.path.push({ method: "moveTo", args });
+    this.path.push({ method: 'moveTo', args });
   }
   lineTo(...args: number[]) {
-    this.path.push({ method: "lineTo", args });
+    this.path.push({ method: 'lineTo', args });
   }
   quadraticCurveTo(...args: number[]) {
-    this.path.push({ method: "quadraticCurveTo", args });
+    this.path.push({ method: 'quadraticCurveTo', args });
   }
   bezierCurveTo(...args: number[]) {
-    this.path.push({ method: "bezierCurveTo", args });
+    this.path.push({ method: 'bezierCurveTo', args });
   }
   arc(x: number, y: number, r: number, start: number, end: number, ccw = false) {
-    this.path.push({ method: "arc", args: [x, y, r, start, end, Number(ccw)] });
+    this.path.push({ method: 'arc', args: [x, y, r, start, end, Number(ccw)] });
   }
   ellipse(
     x: number,
@@ -630,7 +630,7 @@ export class PixiContext {
     end: number,
     ccw = false,
   ) {
-    this.path.push({ method: "ellipse", args: [x, y, rx, ry, rotation, start, end, Number(ccw)] });
+    this.path.push({ method: 'ellipse', args: [x, y, rx, ry, rotation, start, end, Number(ccw)] });
   }
   fill() {
     this.shadow(() => this.fill());
@@ -687,16 +687,16 @@ export class PixiContext {
   }
   createLinearGradient(x0: number, y0: number, x1: number, y1: number) {
     return new Gradient({
-      type: "linear",
-      textureSpace: "global",
+      type: 'linear',
+      textureSpace: 'global',
       start: { x: x0, y: y0 },
       end: { x: x1, y: y1 },
     });
   }
   createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number) {
     return new Gradient({
-      type: "radial",
-      textureSpace: "global",
+      type: 'radial',
+      textureSpace: 'global',
       center: { x: x0, y: y0 },
       innerRadius: r0,
       outerCenter: { x: x1, y: y1 },
@@ -709,14 +709,14 @@ export class PixiContext {
   }
   private text(value: string, x: number, y: number, stroke: boolean) {
     this.shadow(() => this.text(value, x, y, stroke));
-    const entity = this.visual("text"),
+    const entity = this.visual('text'),
       text = entity.object as Text;
     const match = this.state.font.match(/(?:(bold|[1-9]00)\s+)?([\d.]+)px\s+(.+)/);
     const style = {
-      fontFamily: match?.[3] ?? "sans-serif",
+      fontFamily: match?.[3] ?? 'sans-serif',
       fontSize: Number(match?.[2] ?? 10),
-      fontWeight: (match?.[1] ?? "normal") as "normal" | "bold",
-      fill: stroke ? "transparent" : this.paint(this.state.fillStyle),
+      fontWeight: (match?.[1] ?? 'normal') as 'normal' | 'bold',
+      fill: stroke ? 'transparent' : this.paint(this.state.fillStyle),
       stroke: stroke
         ? { ...this.strokePaint(), width: this.state.lineWidth, join: this.state.lineJoin }
         : undefined,
@@ -728,16 +728,16 @@ export class PixiContext {
     }
     if (text.text !== value) text.text = value;
     text.anchor.set(
-      this.state.textAlign === "center"
+      this.state.textAlign === 'center'
         ? 0.5
-        : ["right", "end"].includes(this.state.textAlign)
+        : ['right', 'end'].includes(this.state.textAlign)
           ? 1
           : 0,
-      this.state.textBaseline === "middle"
+      this.state.textBaseline === 'middle'
         ? 0.5
-        : ["top", "hanging"].includes(this.state.textBaseline)
+        : ['top', 'hanging'].includes(this.state.textBaseline)
           ? 0
-          : this.state.textBaseline === "alphabetic"
+          : this.state.textBaseline === 'alphabetic'
             ? 0.8
             : 1,
     );

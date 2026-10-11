@@ -1,11 +1,11 @@
-import { Box, styled } from "@mui/material";
+import { Box, styled } from '@mui/material';
 
 export const WindowTitleStyled = styled(Box)(({ theme }) => ({
-  display: "flex",
+  display: 'flex',
   flexShrink: 0,
-  alignItems: "center",
-  justifyContent: "space-between",
+  alignItems: 'center',
+  justifyContent: 'space-between',
   paddingRight: theme.spacing(1),
-  cursor: "move",
-  touchAction: "none",
+  cursor: 'move',
+  touchAction: 'none',
 }));

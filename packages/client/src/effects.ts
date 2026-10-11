@@ -1,15 +1,15 @@
-import { nearbyInteraction } from "@emberfall/common";
-import type { WorldState } from "@emberfall/common";
+import { nearbyInteraction } from '@emberfall/common';
+import type { WorldState } from '@emberfall/common';
 
 export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {
   if (!text) return;
   ctx.save();
   ctx.font = '13px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  const lines = [""];
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const lines = [''];
   for (const character of text) {
-    if (ctx.measureText(lines.at(-1)! + character).width > 200) lines.push("");
+    if (ctx.measureText(lines.at(-1)! + character).width > 200) lines.push('');
     lines[lines.length - 1] += character;
   }
   const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 20;
@@ -18,10 +18,10 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   const left = x - width / 2;
   const right = x + width / 2;
   const top = bottom - height;
-  ctx.fillStyle = "#15211eee";
-  ctx.strokeStyle = "#b9c9b65c";
+  ctx.fillStyle = '#15211eee';
+  ctx.strokeStyle = '#b9c9b65c';
   ctx.lineWidth = 1;
-  ctx.shadowColor = "#00000055";
+  ctx.shadowColor = '#00000055';
   ctx.shadowBlur = 8;
   ctx.shadowOffsetY = 3;
   ctx.beginPath();
@@ -36,9 +36,9 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.quadraticCurveTo(left, top, left + 8, top);
   ctx.closePath();
   ctx.fill();
-  ctx.shadowColor = "transparent";
+  ctx.shadowColor = 'transparent';
   ctx.stroke();
-  ctx.fillStyle = "#f4ecd6";
+  ctx.fillStyle = '#f4ecd6';
   lines.forEach((line, i) => ctx.fillText(line, x, top + 15.5 + i * 17));
   ctx.restore();
 }
@@ -100,7 +100,7 @@ export function drawParticles(
   now: number,
 ) {
   ctx.save();
-  ctx.fillStyle = "#eed389";
+  ctx.fillStyle = '#eed389';
   for (let row = Math.floor((y - 40) / 160); row <= Math.ceil((y + height + 40) / 160); row++)
     for (let col = Math.floor((x - 40) / 160); col <= Math.ceil((x + width + 40) / 160); col++) {
       const seed = (((col % 30) + 30) % 30) * 179 + (((row % 16) + 16) % 16) * 83;
@@ -130,16 +130,16 @@ export function drawVignette(
     y + height / 2,
     radius,
   );
-  gradient.addColorStop(0, "#08131000");
-  gradient.addColorStop(1, "#081310aa");
+  gradient.addColorStop(0, '#08131000');
+  gradient.addColorStop(1, '#081310aa');
   ctx.fillStyle = gradient;
   ctx.fillRect(x, y, width, height);
 }
-export function hitOutline(mask: HTMLCanvasElement, color = "#ff3737", radius = 2) {
-  const outline = document.createElement("canvas");
+export function hitOutline(mask: HTMLCanvasElement, color = '#ff3737', radius = 2) {
+  const outline = document.createElement('canvas');
   outline.width = mask.width + radius * 2;
   outline.height = mask.height + radius * 2;
-  const c = outline.getContext("2d")!;
+  const c = outline.getContext('2d')!;
   for (const [x, y] of [
     [0, 2],
     [4, 2],
@@ -151,10 +151,10 @@ export function hitOutline(mask: HTMLCanvasElement, color = "#ff3737", radius = 
     [3, 1],
   ])
     c.drawImage(mask, (x * radius) / 2, (y * radius) / 2);
-  c.globalCompositeOperation = "source-in";
+  c.globalCompositeOperation = 'source-in';
   c.fillStyle = color;
   c.fillRect(0, 0, outline.width, outline.height);
-  c.globalCompositeOperation = "destination-out";
+  c.globalCompositeOperation = 'destination-out';
   c.drawImage(mask, radius, radius);
   return outline;
 }
@@ -174,13 +174,13 @@ export function drawTargetHit(
   if (age < 0 || age >= 220) return;
   let sprites = hitSprites.get(mask);
   if (!sprites) {
-    const tint = document.createElement("canvas");
+    const tint = document.createElement('canvas');
     tint.width = mask.width;
     tint.height = mask.height;
-    const c = tint.getContext("2d")!;
+    const c = tint.getContext('2d')!;
     c.drawImage(mask, 0, 0);
-    c.globalCompositeOperation = "source-in";
-    c.fillStyle = "#ffffff";
+    c.globalCompositeOperation = 'source-in';
+    c.fillStyle = '#ffffff';
     c.fillRect(0, 0, tint.width, tint.height);
     sprites = { outline: hitOutline(mask), tint };
     hitSprites.set(mask, sprites);
@@ -213,23 +213,23 @@ export function drawCharacterName(
   x: number,
   y: number,
   name: string,
-  color = "#ffffff",
+  color = '#ffffff',
   active = false,
 ) {
   ctx.save();
   ctx.font = '8px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
   const label = active ? `(E) ${name}` : name;
   const metrics = ctx.measureText(label);
   if (active) {
     const width = Math.ceil(metrics.width) + 12;
-    ctx.fillStyle = "#786747";
+    ctx.fillStyle = '#786747';
     ctx.fillRect(x - width / 2, y - 2, width, 13);
   }
-  ctx.strokeStyle = "#101817";
+  ctx.strokeStyle = '#101817';
   ctx.lineWidth = 2;
-  ctx.lineJoin = "round";
+  ctx.lineJoin = 'round';
   ctx.strokeText(label, x, y + metrics.actualBoundingBoxAscent);
   ctx.fillStyle = color;
   ctx.fillText(label, x, y + metrics.actualBoundingBoxAscent);
@@ -245,12 +245,12 @@ export function drawNameBadge(
 ) {
   ctx.save();
   ctx.font = '9px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "center";
+  ctx.textAlign = 'center';
   const label = active ? `(E) ${name}` : name;
   const width = ctx.measureText(label).width + 12;
-  ctx.fillStyle = active ? "#786747" : "#302d20";
+  ctx.fillStyle = active ? '#786747' : '#302d20';
   ctx.fillRect(x - width / 2, y - 20, width, 13);
-  ctx.fillStyle = "#e0c995";
+  ctx.fillStyle = '#e0c995';
   ctx.fillText(label, x, y - 10);
   ctx.restore();
 }
@@ -266,12 +266,12 @@ export function drawAtmosphere(
 ) {
   ctx.save();
   if (settings.colorGrading) {
-    ctx.globalCompositeOperation = "soft-light";
-    ctx.fillStyle = "#bea26f25";
+    ctx.globalCompositeOperation = 'soft-light';
+    ctx.fillStyle = '#bea26f25';
     ctx.fillRect(x, y, width, height);
   }
   if (settings.lightShafts) {
-    ctx.globalCompositeOperation = "screen";
+    ctx.globalCompositeOperation = 'screen';
     const slope = 0.6;
     const beamWidth = 160;
     // Anchor parallel beams to the world, rather than restarting at the viewport top.
@@ -282,11 +282,11 @@ export function drawAtmosphere(
       // Fade across the beam's perpendicular axis so both long edges are transparent.
       const cross = beamWidth / (1 + slope * slope);
       const gradient = ctx.createLinearGradient(base, y, base + cross, y - slope * cross);
-      gradient.addColorStop(0, "#ffe6a800");
-      gradient.addColorStop(0.2, "#ffe6a803");
-      gradient.addColorStop(0.5, "#ffe6a80c");
-      gradient.addColorStop(0.8, "#ffe6a803");
-      gradient.addColorStop(1, "#ffe6a800");
+      gradient.addColorStop(0, '#ffe6a800');
+      gradient.addColorStop(0.2, '#ffe6a803');
+      gradient.addColorStop(0.5, '#ffe6a80c');
+      gradient.addColorStop(0.8, '#ffe6a803');
+      gradient.addColorStop(1, '#ffe6a800');
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.moveTo(base, y);
@@ -307,19 +307,19 @@ export function drawPlayerHealth(
   hp: number,
   max: number,
   name: string,
-  color = "#ffffff",
+  color = '#ffffff',
   boss = false,
 ) {
   ctx.save();
   ctx.font = '8px "Alegreya Sans", sans-serif';
-  ctx.textAlign = "center";
-  ctx.textBaseline = "alphabetic";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
   const metrics = ctx.measureText(name);
   const width = Math.max(boss ? 64 : 40, Math.ceil(metrics.width) + 12);
   const height = boss ? 9 : 7;
-  ctx.fillStyle = "#101817";
+  ctx.fillStyle = '#101817';
   ctx.fillRect(x - width / 2, y, width, height);
-  ctx.fillStyle = boss ? "#c084fc" : "#86d9a2";
+  ctx.fillStyle = boss ? '#c084fc' : '#86d9a2';
   ctx.fillRect(
     x - width / 2 + 1,
     y + 1,
