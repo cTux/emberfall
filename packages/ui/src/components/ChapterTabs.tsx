@@ -1,5 +1,5 @@
-import { useId, type ReactNode } from "react";
-import { Box, Stack, Tab, Tabs, Typography } from "@mui/material";
+import { useId, type ReactNode } from 'react';
+import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 
 export interface Chapter {
   id: string;
@@ -44,7 +44,7 @@ export function ChapterTabs({
       {chapters.map((chapter) => (
         <Box
           key={chapter.id}
-          role="tabpanel"
+          role='tabpanel'
           hidden={value !== chapter.id || chapter.disabled}
           id={`${id}-panel-${chapter.id}`}
           aria-labelledby={`${id}-${chapter.id}`}
@@ -53,7 +53,7 @@ export function ChapterTabs({
           {value === chapter.id && !chapter.disabled && (
             <>
               {showHeading && (
-                <Typography component="h3" variant="h3" gutterBottom>
+                <Typography component='h3' variant='h3' gutterBottom>
                   {chapter.title}
                 </Typography>
               )}

@@ -4,13 +4,13 @@ import {
   FOREST_PORTAL,
   INTERACTION_RADIUS,
   FOREST_DEFINITION,
-} from "./definitions/worlds/forest.ts";
+} from './definitions/worlds/forest.ts';
 export { FOREST, LOBBY_PORTAL, FOREST_PORTAL, INTERACTION_RADIUS };
-import { BUILDINGS, WARDROBE } from "./world.ts";
-import { INNKEEPER } from "./definitions/worlds/village.ts";
+import { BUILDINGS, WARDROBE } from './world.ts';
+import { INNKEEPER } from './definitions/worlds/village.ts';
 export { INNKEEPER };
 
-export { WARDROBE } from "./world.ts";
+export { WARDROBE } from './world.ts';
 
 export const wrap = (n: number, size: number) =>
   n >= 0 && n < size ? n : ((n % size) + size) % size;
@@ -84,24 +84,24 @@ export function nearbyInteraction(
   portals: { x: number; y: number }[] = [FOREST_PORTAL],
 ) {
   if (player.hitpoints <= 0) return null;
-  if (player.scene === "forest") {
+  if (player.scene === 'forest') {
     const portal = portals.find((p) => forestDistance(player, p) < INTERACTION_RADIUS);
-    return ended && portal ? { id: "return", name: "Return to village", ...portal } : null;
+    return ended && portal ? { id: 'return', name: 'Return to village', ...portal } : null;
   }
   const distance = (point: { x: number; y: number }) =>
     forestDistance({ x: player.x, y: player.y + 15 }, point);
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
-    return { id: "portal", name: "Forest portal", ...LOBBY_PORTAL };
-  if (distance(WARDROBE) < 55) return { id: "wardrobe", name: "Wardrobe", ...WARDROBE };
+    return { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL };
+  if (distance(WARDROBE) < 55) return { id: 'wardrobe', name: 'Wardrobe', ...WARDROBE };
   if (distance(INNKEEPER) < INTERACTION_RADIUS) return { ...INNKEEPER };
   const building = BUILDINGS.find(
-    (b) => b.id !== "inn" && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
+    (b) => b.id !== 'inn' && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
   );
   return building
     ? { id: building.id, name: building.name, x: building.doorX, y: building.y }
     : null;
 }
-export type DebuffKind = "bleed" | "poison" | "burn" | "roots";
+export type DebuffKind = 'bleed' | 'poison' | 'burn' | 'roots';
 export interface Debuff {
   kind: DebuffKind;
   stacks: number;
@@ -114,7 +114,7 @@ export interface PlayerShot {
   castAt?: number;
   castId?: number;
   ownerId: string;
-  kind: "arrow" | "fireball" | "roots";
+  kind: 'arrow' | 'fireball' | 'roots';
   x: number;
   y: number;
   angle: number;
@@ -128,7 +128,7 @@ export interface Enemy {
   maxHitpoints?: number;
   debuffs?: Debuff[];
   name?: string;
-  archetype?: "skeleton" | "runner" | "brute" | "caster";
+  archetype?: 'skeleton' | 'runner' | 'brute' | 'caster';
   attack?: {
     startedAt: number;
     endsAt: number;
@@ -138,7 +138,7 @@ export interface Enemy {
     ranged: boolean;
   };
   cooldownUntil?: number;
-  kind?: "normal" | "elite" | "boss";
+  kind?: 'normal' | 'elite' | 'boss';
   id: number;
   x: number;
   y: number;
@@ -147,9 +147,9 @@ export interface Enemy {
 }
 export interface DamageEvent {
   ownerId?: string;
-  damageType?: import("./definitions/equipment.ts").DamageType;
+  damageType?: import('./definitions/equipment.ts').DamageType;
   critical?: boolean;
-  enemy?: Pick<Enemy, "archetype" | "kind" | "angle">;
+  enemy?: Pick<Enemy, 'archetype' | 'kind' | 'angle'>;
   killed?: boolean;
   id: number;
   x: number;
@@ -163,7 +163,7 @@ export interface LootDrop {
   collectorId?: string;
   amount?: number;
   id: number;
-  kind: "experience" | "gold" | "item";
+  kind: 'experience' | 'gold' | 'item';
   itemId?: string;
   x: number;
   y: number;
@@ -184,9 +184,9 @@ export interface SceneState {
   sequence: number;
   nextSpawn: number;
   id: string;
-  type: "Forest";
-  difficulty: "Easy";
-  phase: "voting" | "countdown" | "active" | "ended";
+  type: 'Forest';
+  difficulty: 'Easy';
+  phase: 'voting' | 'countdown' | 'active' | 'ended';
   ready: string[];
   countdownAt: number | null;
   endsAt: number | null;
@@ -194,5 +194,5 @@ export interface SceneState {
   damage: DamageEvent[];
 }
 export function hasLivingScenePlayers(players: Iterable<{ scene?: string; hitpoints: number }>) {
-  return [...players].some((p) => p.scene === "forest" && p.hitpoints > 0);
+  return [...players].some((p) => p.scene === 'forest' && p.hitpoints > 0);
 }

@@ -1,10 +1,10 @@
-import { BlendModeFilter, extensions, ExtensionType } from "pixi.js";
+import { BlendModeFilter, extensions, ExtensionType } from 'pixi.js';
 
 /** Canvas-compatible soft light. Pixi textures contain premultiplied colors;
  * the blend equation must use straight colors before compositing their alpha.
  */
 class SoftLight extends BlendModeFilter {
-  static extension = { name: "soft-light", type: ExtensionType.BlendMode };
+  static extension = { name: 'soft-light', type: ExtensionType.BlendMode };
   constructor() {
     super({
       gl: {

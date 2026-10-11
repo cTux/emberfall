@@ -1,23 +1,23 @@
-import { test, expect } from "./fixtures";
-test.use({ graphicsPreset: "High" });
+import { test, expect } from './fixtures';
+test.use({ graphicsPreset: 'High' });
 
-test("High graphics uses viewport-sized WebGL with bounded cached resources", async ({
+test('High graphics uses viewport-sized WebGL with bounded cached resources', async ({
   page,
   browser,
 }, testInfo) => {
   const session = await browser.newBrowserCDPSession();
-  const system = await session.send("SystemInfo.getInfo");
+  const system = await session.send('SystemInfo.getInfo');
   await session.detach();
   const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/");
-  const canvas = page.locator("canvas");
-  await expect(canvas).toHaveAttribute("data-renderer", "pixijs-webgl");
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/');
+  const canvas = page.locator('canvas');
+  await expect(canvas).toHaveAttribute('data-renderer', 'pixijs-webgl');
   expect(
     await canvas.evaluate((canvas: HTMLCanvasElement) => ({
       width: canvas.width,
       height: canvas.height,
-      canvas2d: !!canvas.getContext("2d"),
+      canvas2d: !!canvas.getContext('2d'),
     })),
   ).toEqual({ width: 2160, height: 1500, canvas2d: false });
   await page.waitForTimeout(3000);
@@ -43,19 +43,19 @@ test("High graphics uses viewport-sized WebGL with bounded cached resources", as
         requestAnimationFrame(frame);
       }),
   );
-  const stats = JSON.parse((await canvas.getAttribute("data-render-stats"))!);
+  const stats = JSON.parse((await canvas.getAttribute('data-render-stats'))!);
   expect(stats.textures).toBeLessThan(150);
   expect(stats.gradients).toBeLessThan(150);
   expect(stats.visuals).toBeLessThan(5000);
   expect(timing.frames).toBeGreaterThan(5);
-  console.log("High preview renderer measurement", JSON.stringify({ timing, stats }));
-  await testInfo.attach("renderer-measurement", {
+  console.log('High preview renderer measurement', JSON.stringify({ timing, stats }));
+  await testInfo.attach('renderer-measurement', {
     body: JSON.stringify(
       {
         browser: browser.version(),
         gpu: system.gpu,
         viewport: page.viewportSize(),
-        preset: "High",
+        preset: 'High',
         warmupMs: 3000,
         sampleMs: 3000,
         timing,
@@ -64,8 +64,8 @@ test("High graphics uses viewport-sized WebGL with bounded cached resources", as
       null,
       2,
     ),
-    contentType: "application/json",
+    contentType: 'application/json',
   });
-  await page.screenshot({ path: "test-results/new-pixi-high-preview.png" });
+  await page.screenshot({ path: 'test-results/new-pixi-high-preview.png' });
   expect(errors).toEqual([]);
 });

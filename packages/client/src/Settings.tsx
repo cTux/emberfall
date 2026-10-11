@@ -1,9 +1,9 @@
-import type { Dispatch, SetStateAction } from "react";
-import { ChapterTabs, SettingToggle, VolumeControl } from "@emberfall/ui";
-import { Button, Link, MenuItem, Stack, TextField, Typography } from "@mui/material";
-import type { Preferences } from "./preferences";
-import { GRAPHICS_LABELS, GRAPHICS_PRESETS, type GraphicsSettings } from "./graphics";
-import type { AccountView } from "@emberfall/common";
+import type { Dispatch, SetStateAction } from 'react';
+import { ChapterTabs, SettingToggle, VolumeControl } from '@emberfall/ui';
+import { Button, Link, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import type { Preferences } from './preferences';
+import { GRAPHICS_LABELS, GRAPHICS_PRESETS, type GraphicsSettings } from './graphics';
+import type { AccountView } from '@emberfall/common';
 
 export function Settings({
   tab,
@@ -28,15 +28,15 @@ export function Settings({
 }) {
   const toggle = (
     key:
-      | "autoAttack"
-      | "autoTarget"
-      | "bloodPuddles"
-      | "damageNumbers"
-      | "fps"
-      | "latency"
-      | "debugHitboxes"
-      | "sound"
-      | "music",
+      | 'autoAttack'
+      | 'autoTarget'
+      | 'bloodPuddles'
+      | 'damageNumbers'
+      | 'fps'
+      | 'latency'
+      | 'debugHitboxes'
+      | 'sound'
+      | 'music',
     label: string,
   ) => (
     <SettingToggle
@@ -48,16 +48,16 @@ export function Settings({
   );
   return (
     <ChapterTabs
-      label="Settings areas"
+      label='Settings areas'
       value={tab}
       onChange={onTab}
       showHeading={false}
       chapters={[
-        ...(account.mode === "steam"
+        ...(account.mode === 'steam'
           ? [
               {
-                id: "account",
-                title: "Account",
+                id: 'account',
+                title: 'Account',
                 content: (
                   <Stack spacing={2}>
                     <Typography>Nickname: {account.nickname}</Typography>
@@ -69,18 +69,18 @@ export function Settings({
             ]
           : []),
         {
-          id: "gameplay",
-          title: "Gameplay",
+          id: 'gameplay',
+          title: 'Gameplay',
           content: (
             <Stack>
-              {toggle("autoAttack", "Auto-attack (F)")}
-              {toggle("autoTarget", "Auto-target (G)")}
-              {toggle("bloodPuddles", "Blood puddles")}
-              {toggle("damageNumbers", "Floating damage numbers")}
-              {toggle("fps", "FPS graph")}
-              {toggle("latency", "Latency graph")}
-              {toggle("debugHitboxes", "Debug mode: show hitboxes")}
-              <Typography variant="caption" color="text.secondary">
+              {toggle('autoAttack', 'Auto-attack (F)')}
+              {toggle('autoTarget', 'Auto-target (G)')}
+              {toggle('bloodPuddles', 'Blood puddles')}
+              {toggle('damageNumbers', 'Floating damage numbers')}
+              {toggle('fps', 'FPS graph')}
+              {toggle('latency', 'Latency graph')}
+              {toggle('debugHitboxes', 'Debug mode: show hitboxes')}
+              <Typography variant='caption' color='text.secondary'>
                 Body hitboxes, scenery collisions and labeled interaction ranges. Decorative
                 entities have no hitboxes. Overlays follow displayed positions; the server decides
                 hits. Cyan: whole-model bodies. Magenta: projectiles. Yellow: scenery. Orange:
@@ -90,16 +90,16 @@ export function Settings({
           ),
         },
         {
-          id: "graphics",
-          title: "Graphics",
+          id: 'graphics',
+          title: 'Graphics',
           content: (
             <Stack spacing={2}>
-              <Stack direction="row" spacing={1}>
+              <Stack direction='row' spacing={1}>
                 {Object.entries(GRAPHICS_PRESETS).map(([preset, values]) => (
                   <Button
                     key={preset}
                     variant={
-                      JSON.stringify(graphics) === JSON.stringify(values) ? "contained" : "outlined"
+                      JSON.stringify(graphics) === JSON.stringify(values) ? 'contained' : 'outlined'
                     }
                     aria-pressed={JSON.stringify(graphics) === JSON.stringify(values)}
                     onClick={() => setGraphics({ ...values })}
@@ -120,7 +120,7 @@ export function Settings({
               </Stack>
               <TextField
                 select
-                label="Frame rate limit"
+                label='Frame rate limit'
                 value={graphics.frameLimit}
                 onChange={(e) => setGraphics((p) => ({ ...p, frameLimit: Number(e.target.value) }))}
               >
@@ -133,7 +133,7 @@ export function Settings({
               </TextField>
               <TextField
                 select
-                label="Render resolution"
+                label='Render resolution'
                 value={graphics.resolution}
                 onChange={(e) => setGraphics((p) => ({ ...p, resolution: Number(e.target.value) }))}
               >
@@ -145,27 +145,27 @@ export function Settings({
           ),
         },
         {
-          id: "sound",
-          title: "Sound",
+          id: 'sound',
+          title: 'Sound',
           content: (
             <Stack spacing={2}>
-              {toggle("sound", "Sound effects")}
+              {toggle('sound', 'Sound effects')}
               <VolumeControl
-                label="Effects volume"
+                label='Effects volume'
                 value={preferences.volume}
                 disabled={!preferences.sound}
                 onChange={(volume) => setPreferences((p) => ({ ...p, volume }))}
               />
-              {toggle("music", "Music")}
+              {toggle('music', 'Music')}
               <VolumeControl
-                label="Music volume"
+                label='Music volume'
                 value={preferences.musicVolume}
                 disabled={!preferences.music}
                 onChange={(musicVolume) => setPreferences((p) => ({ ...p, musicVolume }))}
               />
-              <Typography variant="caption" color="text.secondary">
-                Music: TimberwolfGames · Sound effects: Ninja Adventure.{" "}
-                <Link href="/audio/CREDITS.txt" target="_blank" rel="noreferrer">
+              <Typography variant='caption' color='text.secondary'>
+                Music: TimberwolfGames · Sound effects: Ninja Adventure.{' '}
+                <Link href='/audio/CREDITS.txt' target='_blank' rel='noreferrer'>
                   Audio credits
                 </Link>
               </Typography>

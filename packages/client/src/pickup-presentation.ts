@@ -1,10 +1,10 @@
-import { FOREST, wrap, wrappedDelta } from "@emberfall/common";
-import { PICKUP_RULES } from "@emberfall/common/definitions/entities/pickups";
-import type { Player, WorldState } from "@emberfall/common";
+import { FOREST, wrap, wrappedDelta } from '@emberfall/common';
+import { PICKUP_RULES } from '@emberfall/common/definitions/entities/pickups';
+import type { Player, WorldState } from '@emberfall/common';
 
 /** Adjust detached render drops only. Selection, removal and rewards stay authoritative. */
 export function alignLocalPickups(view: WorldState, local: Player) {
-  if (local.scene !== "forest" || local.hitpoints <= 0) return;
+  if (local.scene !== 'forest' || local.hitpoints <= 0) return;
   const buffered = view.players.find((p) => p.id === local.id);
   if (!buffered || buffered.scene !== local.scene) return;
   const dx = wrappedDelta(local.x, buffered.x, FOREST.width);

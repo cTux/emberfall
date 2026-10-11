@@ -1,13 +1,13 @@
-import type { SceneState } from "./scene.ts";
+import type { SceneState } from './scene.ts';
 
 export const SCENE_COLLECTIONS = [
-  "enemies",
-  "damage",
-  "playerShots",
-  "explosions",
-  "drops",
-  "spawns",
-  "projectiles",
+  'enemies',
+  'damage',
+  'playerShots',
+  'explosions',
+  'drops',
+  'spawns',
+  'projectiles',
 ] as const;
 export type SceneCollection = (typeof SCENE_COLLECTIONS)[number];
 export type SceneEntity<K extends SceneCollection> = NonNullable<SceneState[K]>[number];

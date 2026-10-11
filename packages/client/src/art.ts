@@ -1,4 +1,4 @@
-import { ACTOR_CELL } from "./animation";
+import { ACTOR_CELL } from './animation';
 
 export const artUrl = (name: string) => `/assets/wardrobe-style/${name}.png`;
 export const artImages: HTMLImageElement[] = [];
@@ -10,9 +10,9 @@ const loadedArt = new Map<string, HTMLImageElement>();
  */
 function actorOrientation(name: string, row: number, col: number) {
   const flip =
-    (col === 0 && (["caster", "warden"].includes(name) || (name === "brute" && row !== 6))) ||
-    (col === 1 && ((name === "caster" && row === 6) || (name === "warden" && row !== 5))) ||
-    (col === 2 && name === "caster");
+    (col === 0 && (['caster', 'warden'].includes(name) || (name === 'brute' && row !== 6))) ||
+    (col === 1 && ((name === 'caster' && row === 6) || (name === 'warden' && row !== 5))) ||
+    (col === 2 && name === 'caster');
   return { col, flip };
 }
 
@@ -26,10 +26,10 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
   const source = new Image();
   artImages.push(result);
   source.onload = async () => {
-    const input = document.createElement("canvas");
+    const input = document.createElement('canvas');
     input.width = source.naturalWidth;
     input.height = source.naturalHeight;
-    const inputContext = input.getContext("2d", { willReadFrequently: true })!;
+    const inputContext = input.getContext('2d', { willReadFrequently: true })!;
     inputContext.drawImage(source, 0, 0);
     const pixels = inputContext.getImageData(0, 0, input.width, input.height).data;
     // Some generated sheets contain three walking poses. Explicit row boundaries
@@ -57,11 +57,11 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
       Array.from({ length: columns }, (_, col) => {
         const animalColumns = [0, 309, 535, 735, 1024];
         const x0 =
-          name === "animals"
+          name === 'animals'
             ? Math.round((animalColumns[col] * input.width) / 1024)
             : Math.round((col * input.width) / columns);
         const x1 =
-          name === "animals"
+          name === 'animals'
             ? Math.round((animalColumns[col + 1] * input.width) / 1024)
             : Math.round(((col + 1) * input.width) / columns);
         const y0 = boundaries
@@ -88,24 +88,24 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
     const maxHeight = Math.max(...frames.map((f) => f.height));
     const maxWidth = Math.max(...frames.map((f) => f.width));
     const scale = Math.min((cell - 4) / maxWidth, (cell - 6) / maxHeight);
-    const output = document.createElement("canvas");
+    const output = document.createElement('canvas');
     output.width = columns * cell;
     output.height = rows * cell;
-    const ctx = output.getContext("2d")!;
+    const ctx = output.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
     frames.forEach((_, i) => {
       const row = Math.floor(i / columns),
         col = i % columns;
       const orientation = actorOrientation(name, row, col);
       const f = frames[row * columns + orientation.col];
-      const standing = ["warrior", "ranger", "mage", "druid"].includes(name) && i < columns * 5;
+      const standing = ['warrior', 'ranger', 'mage', 'druid'].includes(name) && i < columns * 5;
       const frameScale =
-        name === "environment"
+        name === 'environment'
           ? Math.min((cell - 4) / f.width, (cell - 6) / f.height)
           : standing
             ? Math.min(
                 (cell - 4) / f.width,
-                (name === "druid" ? 58 : 52) /
+                (name === 'druid' ? 58 : 52) /
                   Math.max(...frames.slice(0, columns * 5).map((f) => f.height)),
               )
             : scale;
@@ -128,14 +128,14 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
       ctx.restore();
     });
     result.src = output.toDataURL();
-    result.dataset.artReady = "true";
+    result.dataset.artReady = 'true';
   };
   source.src = artUrl(name);
   return result;
 }
 
 export const actorArt = (name: string) => {
-  if (!["warrior", "ranger", "mage", "druid"].includes(name))
+  if (!['warrior', 'ranger', 'mage', 'druid'].includes(name))
     return loadArt(name, 4, 8, ACTOR_CELL, true);
   const key = `${name}:player-atlas`;
   const cached = loadedArt.get(key);
@@ -144,28 +144,28 @@ export const actorArt = (name: string) => {
   loadedArt.set(key, image);
   artImages.push(image);
   image.onload = () => {
-    image.dataset.artReady = "true";
+    image.dataset.artReady = 'true';
   };
   image.src = artUrl(`${name}-atlas`);
   return image;
 };
-export const environmentArt = loadArt("environment", 3, 3, 128, true);
-export const wardrobeArt = loadArt("wardrobe", 4, 1, 128, true);
-export const innkeeperArt = loadArt("innkeeper", 4, 1, 64, true);
-export const animalArt = loadArt("animals", 4, 6, 64, true);
-export const bearArt = loadArt("bear-cub", 4, 2, 64, true);
-export const effectsArt = loadArt("effects", 4, 4, 128);
-export const pickupArt = loadArt("pickups", 4, 3, 64);
+export const environmentArt = loadArt('environment', 3, 3, 128, true);
+export const wardrobeArt = loadArt('wardrobe', 4, 1, 128, true);
+export const innkeeperArt = loadArt('innkeeper', 4, 1, 64, true);
+export const animalArt = loadArt('animals', 4, 6, 64, true);
+export const bearArt = loadArt('bear-cub', 4, 2, 64, true);
+export const effectsArt = loadArt('effects', 4, 4, 128);
+export const pickupArt = loadArt('pickups', 4, 3, 64);
 export const terrainArt = new Image();
-terrainArt.src = artUrl("terrain");
+terrainArt.src = artUrl('terrain');
 const terrainTiles = new Map<string, HTMLCanvasElement>();
 export function terrainTile(column: number, size = 320) {
   const key = `${column}:${size}`;
   const cached = terrainTiles.get(key);
   if (cached) return cached;
-  const tile = document.createElement("canvas");
+  const tile = document.createElement('canvas');
   tile.width = tile.height = size;
-  const ctx = tile.getContext("2d")!;
+  const ctx = tile.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
   // PNG dimensions are available before its pixels finish loading. Caching a
   // draw at that point permanently retains an empty tile, even after onload.
@@ -189,6 +189,6 @@ export function drawArt(
   height: number,
   cell = 64,
 ) {
-  if (!image.naturalWidth || image.dataset.artReady !== "true") return;
+  if (!image.naturalWidth || image.dataset.artReady !== 'true') return;
   ctx.drawImage(image, column * cell, row * cell, cell, cell, x, y, width, height);
 }

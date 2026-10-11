@@ -1,7 +1,7 @@
-import { useRef, useState, type ReactNode } from "react";
-import { Box, ButtonBase, Stack, Typography } from "@mui/material";
-import { GearTooltipStyled, GearBadgeStyled, GearBadgeValueStyled } from "./equipment.styles";
-import badgeAtlas from "../assets/gear-badges.png";
+import { useRef, useState, type ReactNode } from 'react';
+import { Box, ButtonBase, Stack, Typography } from '@mui/material';
+import { GearTooltipStyled, GearBadgeStyled, GearBadgeValueStyled } from './equipment.styles';
+import badgeAtlas from '../assets/gear-badges.png';
 
 const BADGE_CELLS = {
   power: 0,
@@ -56,18 +56,18 @@ export interface EquipmentPanelProps {
 function StatRows({ stats }: { stats: EquipmentStatView[] }) {
   return (
     <Box
-      component="dl"
-      sx={{ m: 0, display: "grid", gridTemplateColumns: "1fr auto", columnGap: 2, rowGap: 0.25 }}
+      component='dl'
+      sx={{ m: 0, display: 'grid', gridTemplateColumns: '1fr auto', columnGap: 2, rowGap: 0.25 }}
     >
       {stats.map(({ label, value }) => (
-        <Box key={label} sx={{ display: "contents" }}>
-          <Typography component="dt" variant="body2" color="text.secondary">
+        <Box key={label} sx={{ display: 'contents' }}>
+          <Typography component='dt' variant='body2' color='text.secondary'>
             {label}
           </Typography>
           <Typography
-            component="dd"
-            variant="body2"
-            sx={{ m: 0, textAlign: "right", fontVariantNumeric: "tabular-nums" }}
+            component='dd'
+            variant='body2'
+            sx={{ m: 0, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}
           >
             {value}
           </Typography>
@@ -86,23 +86,23 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
     <Box
       ref={panelRef}
       sx={{
-        display: "grid",
-        gridTemplateColumns: "1fr",
+        display: 'grid',
+        gridTemplateColumns: '1fr',
         gap: 1,
-        alignItems: "start",
+        alignItems: 'start',
       }}
     >
       <Box
-        aria-label="Equipment slots"
+        aria-label='Equipment slots'
         sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-          gridTemplateRows: "repeat(4, 44px)",
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+          gridTemplateRows: 'repeat(4, 44px)',
           gap: 0.5,
-          justifyContent: "center",
+          justifyContent: 'center',
           maxWidth: 160,
-          width: "100%",
-          mx: "auto",
+          width: '100%',
+          mx: 'auto',
         }}
       >
         {slots.map((slot) => (
@@ -121,16 +121,16 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
             leaveDelay={250}
             slotProps={{
               popper: {
-                container: () => panelRef.current?.closest(".MuiDialog-container") ?? document.body,
+                container: () => panelRef.current?.closest('.MuiDialog-container') ?? document.body,
               },
             }}
             title={
               <Stack spacing={1}>
-                <Typography variant="subtitle2">
+                <Typography variant='subtitle2'>
                   {slot.item?.name ?? `Empty ${slot.label.toLowerCase()}`}
                 </Typography>
                 {slot.item ? (
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {slot.item.badges.map((badge, index) => {
                       const cell = BADGE_CELLS[badge.icon];
                       return (
@@ -145,25 +145,25 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                           describeChild
                           title={
                             <>
-                              <Typography variant="subtitle2">{badge.label}</Typography>
-                              <Typography variant="body2">{badge.explanation}</Typography>
+                              <Typography variant='subtitle2'>{badge.label}</Typography>
+                              <Typography variant='body2'>{badge.explanation}</Typography>
                             </>
                           }
                           enterTouchDelay={0}
-                          placement="bottom"
+                          placement='bottom'
                           slotProps={{
                             popper: {
                               container: () =>
-                                panelRef.current?.closest(".MuiDialog-container") ?? document.body,
+                                panelRef.current?.closest('.MuiDialog-container') ?? document.body,
                             },
                           }}
                         >
                           <GearBadgeStyled
-                            aria-label={`${badge.label}${badge.value ? `: ${badge.value}` : ""}`}
+                            aria-label={`${badge.label}${badge.value ? `: ${badge.value}` : ''}`}
                             data-equipment-badge={badge.icon}
                             onClick={() => setOpenBadge(badge.label)}
                             onKeyDown={(event) => {
-                              if (index !== 0 || event.key !== "Tab" || !event.shiftKey) return;
+                              if (index !== 0 || event.key !== 'Tab' || !event.shiftKey) return;
                               const slotButton = panelRef.current?.querySelector<HTMLButtonElement>(
                                 `[data-equipment-slot="${CSS.escape(slot.id)}"]`,
                               );
@@ -174,18 +174,18 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                             }}
                           >
                             <Box
-                              aria-hidden="true"
+                              aria-hidden='true'
                               sx={{
                                 width: 40,
                                 height: 40,
                                 backgroundImage: `url(${badgeAtlas})`,
-                                backgroundSize: "400% 400%",
+                                backgroundSize: '400% 400%',
                                 backgroundPosition: `${((cell % 4) * 100) / 3}% ${(Math.floor(cell / 4) * 100) / 3}%`,
-                                imageRendering: "pixelated",
+                                imageRendering: 'pixelated',
                               }}
                             />
                             {badge.value && (
-                              <GearBadgeValueStyled aria-hidden="true">
+                              <GearBadgeValueStyled aria-hidden='true'>
                                 {badge.value}
                               </GearBadgeValueStyled>
                             )}
@@ -195,11 +195,11 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                     })}
                   </Box>
                 ) : (
-                  <Typography variant="body2">Accepts: {slot.accepts}</Typography>
+                  <Typography variant='body2'>Accepts: {slot.accepts}</Typography>
                 )}
-                {slot.item?.details && <Typography variant="body2">{slot.item.details}</Typography>}
+                {slot.item?.details && <Typography variant='body2'>{slot.item.details}</Typography>}
                 {slot.item && (
-                  <Typography variant="body2" color="primary.main">
+                  <Typography variant='body2' color='primary.main'>
                     {slot.item.price ?? 1} gold
                   </Typography>
                 )}
@@ -207,7 +207,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
             }
           >
             <ButtonBase
-              aria-label={`${slot.label}: ${slot.item?.name ?? "Empty"}`}
+              aria-label={`${slot.label}: ${slot.item?.name ?? 'Empty'}`}
               data-equipment-slot={slot.id}
               data-equipped={!!slot.item}
               onClick={() => setOpenSlot(slot.id)}
@@ -217,16 +217,16 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                 setOpenSlot(null);
               }}
               onKeyDown={(event) => {
-                if ((event.key === "Enter" || event.key === " ") && slot.onUnequip) {
+                if ((event.key === 'Enter' || event.key === ' ') && slot.onUnequip) {
                   event.preventDefault();
                   slot.onUnequip();
                   setOpenSlot(null);
                   return;
                 }
-                if (event.key !== "Tab" || event.shiftKey || openSlot !== slot.id) return;
-                const tooltipId = event.currentTarget.getAttribute("aria-describedby");
+                if (event.key !== 'Tab' || event.shiftKey || openSlot !== slot.id) return;
+                const tooltipId = event.currentTarget.getAttribute('aria-describedby');
                 const badge = tooltipId
-                  ? document.getElementById(tooltipId)?.querySelector<HTMLButtonElement>("button")
+                  ? document.getElementById(tooltipId)?.querySelector<HTMLButtonElement>('button')
                   : null;
                 if (badge) {
                   event.preventDefault();
@@ -236,33 +236,33 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               sx={{
                 gridColumn: slot.position.column,
                 gridRow: slot.position.row,
-                flexDirection: "column",
+                flexDirection: 'column',
                 gap: 0.5,
                 p: 0.5,
                 border: 0,
                 borderRadius: 1,
-                "&:hover": { bgcolor: "action.hover" },
-                "&.Mui-focusVisible": {
-                  outline: "2px solid",
-                  outlineColor: "primary.main",
+                '&:hover': { bgcolor: 'action.hover' },
+                '&.Mui-focusVisible': {
+                  outline: '2px solid',
+                  outlineColor: 'primary.main',
                   outlineOffset: 2,
                 },
               }}
             >
               <Box
-                aria-hidden="true"
+                aria-hidden='true'
                 sx={{
                   width: { xs: 32, sm: 44 },
                   height: { xs: 32, sm: 44 },
-                  display: "grid",
-                  placeItems: "center",
+                  display: 'grid',
+                  placeItems: 'center',
                   opacity: slot.item ? 1 : 0.25,
-                  color: "text.secondary",
-                  "& img, & svg": {
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                    imageRendering: "pixelated",
+                  color: 'text.secondary',
+                  '& img, & svg': {
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    imageRendering: 'pixelated',
                   },
                 }}
               >
@@ -272,7 +272,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
           </GearTooltipStyled>
         ))}
       </Box>
-      <Stack component="section" aria-label="Character stats" spacing={1} sx={{ minWidth: 0 }}>
+      <Stack component='section' aria-label='Character stats' spacing={1} sx={{ minWidth: 0 }}>
         <StatRows stats={stats} />
       </Stack>
     </Box>

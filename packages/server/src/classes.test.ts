@@ -1,9 +1,9 @@
-import { test, beforeEach } from "node:test";
-import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { CharacterStore, freshProgress } from "./characters.ts";
+import { test, beforeEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { CharacterStore, freshProgress } from './characters.ts';
 import {
   spawnArchetype,
   enemyMaxHealth,
@@ -15,28 +15,28 @@ import {
   clientMessage,
   tickCompanion,
   forestDistance,
-} from "@emberfall/common";
+} from '@emberfall/common';
 import {
   hitEnemy,
   tickDebuffs,
   fireClassAttack,
   tickPlayerShots,
   projectileAngle,
-} from "../../common/src/class-combat.ts";
-import type { Player, SceneState, Enemy } from "@emberfall/common";
-import { moveEnemies } from "../../common/src/enemies.ts";
+} from '../../common/src/class-combat.ts';
+import type { Player, SceneState, Enemy } from '@emberfall/common';
+import { moveEnemies } from '../../common/src/enemies.ts';
 // Base-damage scenarios exclude random criticals; equipment.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ("mock" in t) t.mock.method(Math, "random", () => 0.5);
+  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
 });
 const hero = (): Player => ({
   ...freshProgress(),
-  id: "p",
-  name: "Hero",
+  id: 'p',
+  name: 'Hero',
   x: 2400,
   y: 1280,
   color: 0,
-  scene: "forest",
+  scene: 'forest',
 });
 const enemy = (id: number, x = 2480, hp = 100): Enemy => ({
   id,
@@ -46,10 +46,10 @@ const enemy = (id: number, x = 2480, hp = 100): Enemy => ({
   angle: 0,
 });
 const scene = (): SceneState => ({
-  id: "s",
-  type: "Forest",
-  difficulty: "Easy",
-  phase: "active",
+  id: 's',
+  type: 'Forest',
+  difficulty: 'Easy',
+  phase: 'active',
   ready: [],
   countdownAt: null,
   endsAt: 1e9,
@@ -60,14 +60,14 @@ const scene = (): SceneState => ({
   portals: [],
 });
 
-test("class records migrate legacy progress, save independently, and survive restart", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "emberfall-classes-"));
-  const file = join(directory, "save.sqlite");
+test('class records migrate legacy progress, save independently, and survive restart', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'emberfall-classes-'));
+  const file = join(directory, 'save.sqlite');
   let store = new CharacterStore(file);
   await store.ready;
   try {
-    const created = store.create("Hero");
-    store.save(created.id, "Hero", {
+    const created = store.create('Hero');
+    store.save(created.id, 'Hero', {
       ...created.progress,
       level: 4,
       experience: 234,
@@ -75,22 +75,22 @@ test("class records migrate legacy progress, save independently, and survive res
       talents: { strength: 2 },
     });
     const old = store.load(created.token);
-    assert.equal(old.classId, "warrior");
+    assert.equal(old.classId, 'warrior');
     const player = { ...hero(), ...old.progress, classId: old.classId, classes: old.classes };
-    store.selectClass(old.id, player, "ranger");
+    store.selectClass(old.id, player, 'ranger');
     assert.equal(player.level, 1);
     assert.equal(player.coins, 0);
     assert.deepEqual(player.talents, {});
     player.experience = 17;
     player.coins = 3;
-    store.selectClass(old.id, player, "mage");
+    store.selectClass(old.id, player, 'mage');
     player.experience = 9;
     store.save(old.id, player.name, player);
     store.close();
     store = new CharacterStore(file);
     await store.ready;
     const restored = store.load(created.token);
-    assert.equal(restored.classId, "mage");
+    assert.equal(restored.classId, 'mage');
     assert.equal(restored.progress.experience, 9);
     assert.equal(restored.classes.ranger.experience, 17);
     assert.equal(restored.classes.ranger.coins, 3);
@@ -98,11 +98,11 @@ test("class records migrate legacy progress, save independently, and survive res
     assert.equal(restored.classes.warrior.experience, 234);
     assert.deepEqual(restored.classes.warrior.talents, { strength: 2 });
     assert.equal(restored.classes.druid.maxHitpoints, 100);
-    store.selectClass(old.id, player, "druid");
+    store.selectClass(old.id, player, 'druid');
     player.experience = 42;
     store.save(old.id, player.name, player);
     assert.equal(store.load(created.token).classes.druid.experience, 42);
-    store.selectClass(old.id, player, "warrior");
+    store.selectClass(old.id, player, 'warrior');
     assert.equal(player.level, 4);
     assert.equal(player.experience, 234);
     assert.equal(player.coins, 13);
@@ -112,10 +112,10 @@ test("class records migrate legacy progress, save independently, and survive res
   }
 });
 
-test("one root projectile bounces three times at full power without repeating targets", () => {
+test('one root projectile bounces three times at full power without repeating targets', () => {
   for (const training of [false, true]) {
     const s = scene(),
-      p = { ...hero(), classId: "druid" as const };
+      p = { ...hero(), classId: 'druid' as const };
     if (training) {
       s.training = true;
       delete p.scene;
@@ -133,7 +133,7 @@ test("one root projectile bounces three times at full power without repeating ta
     const shot = s.playerShots![0];
     tickPlayerShots(s, [p], 10050, 0.05);
     for (let i = 1; i < 4; i++) {
-      assert.equal(s.playerShots![0], shot, "retain the same projectile through every bounce");
+      assert.equal(s.playerShots![0], shot, 'retain the same projectile through every bounce');
       assert.equal(shot.targetId, i + 1);
       tickPlayerShots(s, [p], 10050 + i * 200, 0.2);
     }
@@ -160,10 +160,10 @@ test("one root projectile bounces three times at full power without repeating ta
   }
 });
 
-test("root bounce radius includes 250 units and excludes targets just beyond it", () => {
+test('root bounce radius includes 250 units and excludes targets just beyond it', () => {
   for (const distance of [250, 250.01]) {
     const s = scene(),
-      p = { ...hero(), classId: "druid" as const };
+      p = { ...hero(), classId: 'druid' as const };
     s.enemies = [enemy(1, 2420), enemy(2, 2420 + distance)];
     fireClassAttack(s, p, 1000);
     tickPlayerShots(s, [p], 1050, 0.05);
@@ -175,14 +175,14 @@ test("root bounce radius includes 250 units and excludes targets just beyond it"
   }
 });
 
-test("root slow reduces ordinary speed by exactly ten percent and expires at its deadline", () => {
-  for (const kind of ["normal", "boss"] as const) {
+test('root slow reduces ordinary speed by exactly ten percent and expires at its deadline', () => {
+  for (const kind of ['normal', 'boss'] as const) {
     const plain = { ...enemy(1), kind },
       rooted = {
         ...enemy(1),
         kind,
         debuffs: [
-          { kind: "roots" as const, stacks: 1, expiresAt: 5000, nextTick: 1000, ownerId: "p" },
+          { kind: 'roots' as const, stacks: 1, expiresAt: 5000, nextTick: 1000, ownerId: 'p' },
         ],
       };
     const p = hero();
@@ -191,7 +191,7 @@ test("root slow reduces ordinary speed by exactly ten percent and expires at its
     assert(
       Math.abs(
         forestDistance(rooted, enemy(1)) / forestDistance(plain, enemy(1)) -
-          (kind === "boss" ? 1 : 0.9),
+          (kind === 'boss' ? 1 : 0.9),
       ) < 1e-9,
     );
     const expired = { ...enemy(1), kind, debuffs: rooted.debuffs };
@@ -200,9 +200,9 @@ test("root slow reduces ordinary speed by exactly ten percent and expires at its
   }
 });
 
-test("root bounce selects across seams, excludes dead targets, and stops when its target dies", () => {
+test('root bounce selects across seams, excludes dead targets, and stops when its target dies', () => {
   const s = scene(),
-    p = { ...hero(), classId: "druid" as const, x: 20 };
+    p = { ...hero(), classId: 'druid' as const, x: 20 };
   s.enemies = [enemy(1, 30), enemy(2, FOREST.width - 20), enemy(3, 130), enemy(4, 32, 0)];
   fireClassAttack(s, p, 1000);
   tickPlayerShots(s, [p], 1050, 0.05);
@@ -220,9 +220,9 @@ test("root bounce selects across seams, excludes dead targets, and stops when it
   assert.equal(s.enemies[2].hitpoints, 100);
 });
 
-test("roots damage a lone enemy only once per projectile and never bounce back", () => {
+test('roots damage a lone enemy only once per projectile and never bounce back', () => {
   const s = scene(),
-    p = { ...hero(), classId: "druid" as const };
+    p = { ...hero(), classId: 'druid' as const };
   s.enemies = [enemy(1, 2420)];
   fireClassAttack(s, p, 1000);
   tickPlayerShots(s, [p], 1050, 0.05);
@@ -231,7 +231,7 @@ test("roots damage a lone enemy only once per projectile and never bounce back",
   assert.equal(s.playerShots!.length, 0);
 });
 
-test("projectile spread centers odd and even counts with six-degree spacing", async () => {
+test('projectile spread centers odd and even counts with six-degree spacing', async () => {
   for (const [count, degrees] of [
     [1, [0]],
     [2, [-3, 3]],
@@ -247,18 +247,18 @@ test("projectile spread centers odd and even counts with six-degree spacing", as
   }
 });
 
-test("ranged classes launch their configured straight projectiles in both aiming modes", async () => {
-  const { advancePlayerShot } = await import("@emberfall/common");
-  for (const classId of ["mage", "ranger", "druid"] as const) {
+test('ranged classes launch their configured straight projectiles in both aiming modes', async () => {
+  const { advancePlayerShot } = await import('@emberfall/common');
+  for (const classId of ['mage', 'ranger', 'druid'] as const) {
     for (const autoTarget of [false, true]) {
       const p = { ...hero(), classId, autoTarget, aimX: 2600, aimY: 1280 };
       const s = scene();
       s.enemies = [enemy(1)];
       fireClassAttack(s, p, 1000);
-      assert.equal(s.playerShots!.length, classId === "druid" ? 1 : 2);
+      assert.equal(s.playerShots!.length, classId === 'druid' ? 1 : 2);
       assert.deepEqual(
         s.playerShots!.map((shot) => shot.angle),
-        classId === "druid" ? [0] : [-Math.PI / 60, Math.PI / 60],
+        classId === 'druid' ? [0] : [-Math.PI / 60, Math.PI / 60],
       );
       s.enemies[0].y += 100;
       for (const shot of s.playerShots!) {
@@ -270,11 +270,11 @@ test("ranged classes launch their configured straight projectiles in both aiming
   }
 });
 
-test("roots slow ordinary enemies, bosses are immune, and root kills complete the boss", async () => {
+test('roots slow ordinary enemies, bosses are immune, and root kills complete the boss', async () => {
   const s = scene(),
-    p = { ...hero(), classId: "druid" as const, attackAt: 10000 };
+    p = { ...hero(), classId: 'druid' as const, attackAt: 10000 };
   const normal = enemy(1),
-    boss = { ...enemy(2, 2300), kind: "boss" as const };
+    boss = { ...enemy(2, 2300), kind: 'boss' as const };
   s.enemies = [normal, boss];
   s.bossId = boss.id;
   fireClassAttack(s, p, 10000);
@@ -291,18 +291,18 @@ test("roots slow ordinary enemies, bosses are immune, and root kills complete th
   tickPlayerShots(s, [p], 10200, 0);
   p.x = 2000;
   stepCombat(s, [p], 11000, 0);
-  assert.equal(s.phase, "ended");
+  assert.equal(s.phase, 'ended');
   assert.equal(p.experience, 1);
   assert(s.drops?.length);
 });
 
-test("bear swipes once per enemy per cycle for owner power, leashes, returns and resumes", async () => {
+test('bear swipes once per enemy per cycle for owner power, leashes, returns and resumes', async () => {
   const s = scene(),
-    p: Player = { ...hero(), classId: "druid" };
+    p: Player = { ...hero(), classId: 'druid' };
   s.enemies = [enemy(1, 2440), enemy(2, 2460)];
   tickCompanion(p, s, 10000, 0);
   const bear = p.bear!;
-  assert.equal(bear.name, "Bear");
+  assert.equal(bear.name, 'Bear');
   assert.equal(bear.maxHitpoints, 150);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
@@ -343,7 +343,7 @@ test("bear swipes once per enemy per cycle for owner power, leashes, returns and
 
 test("bear only targets and chases inside the owner's 200-unit radius, including wrapped edges", async () => {
   const s = scene(),
-    p: Player = { ...hero(), classId: "druid" };
+    p: Player = { ...hero(), classId: 'druid' };
   const e = enemy(1, p.x + 201);
   s.enemies = [e];
   tickCompanion(p, s, 10000, 0.05);
@@ -377,9 +377,9 @@ test("bear only targets and chases inside the owner's 200-unit radius, including
   assert.equal(bear.attackAt, 13000);
 });
 
-test("Bear stops in claw range, backs away from close enemies, and preserves spacing across seams", async () => {
+test('Bear stops in claw range, backs away from close enemies, and preserves spacing across seams', async () => {
   const s = scene(),
-    p: Player = { ...hero(), classId: "druid", x: 2300 };
+    p: Player = { ...hero(), classId: 'druid', x: 2300 };
   const e = enemy(1, 2480);
   s.enemies = [e];
   tickCompanion(p, s, 10000, 1);
@@ -392,7 +392,7 @@ test("Bear stops in claw range, backs away from close enemies, and preserves spa
   assert.equal(bear.moving, false);
   e.x = bear.x + 20;
   tickCompanion(p, s, 10999, 0.05);
-  assert.equal(bear.x, stoppedX, "hold the destination until one second has elapsed");
+  assert.equal(bear.x, stoppedX, 'hold the destination until one second has elapsed');
   tickCompanion(p, s, 11000, 0.4);
   assert.equal(forestDistance(bear, e), 80);
   assert(bear.x < stoppedX);
@@ -405,12 +405,12 @@ test("Bear stops in claw range, backs away from close enemies, and preserves spa
   assert.equal(e.hitpoints, 91);
 });
 
-test("Bear moves at player speed in forest and village", async () => {
+test('Bear moves at player speed in forest and village', async () => {
   for (const forest of [true, false]) {
     const p: Player = {
       ...hero(),
-      classId: "druid",
-      scene: forest ? "forest" : undefined,
+      classId: 'druid',
+      scene: forest ? 'forest' : undefined,
       x: forest ? 2400 : 480,
       y: forest ? 1280 : 360,
     };
@@ -424,9 +424,9 @@ test("Bear moves at player speed in forest and village", async () => {
   }
 });
 
-test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", async () => {
+test('Bear dodges telegraphed attacks and sidesteps incoming projectiles', async () => {
   const s = scene(),
-    p: Player = { ...hero(), classId: "druid" };
+    p: Player = { ...hero(), classId: 'druid' };
   tickCompanion(p, s, 10000, 0);
   const bear = p.bear!,
     e = enemy(1, 2460);
@@ -439,7 +439,7 @@ test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", async
   tickCompanion(p, s, 11999, 0.05);
   assert(
     Math.abs(bear.x - safeX) < 1e-6,
-    "do not strafe back to the attack point between decisions",
+    'do not strafe back to the attack point between decisions',
   );
   assert.equal(bear.moving, false);
   bear.x = p.x;
@@ -454,10 +454,10 @@ test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", async
   assert(s.projectiles.some((shot) => shot.x > 2400));
 });
 
-test("Bear repositions on its reaction interval while continuing to damage melee enemies", async () => {
-  for (const archetype of ["skeleton", "runner", "brute"] as const) {
+test('Bear repositions on its reaction interval while continuing to damage melee enemies', async () => {
+  for (const archetype of ['skeleton', 'runner', 'brute'] as const) {
     const s = scene(),
-      p: Player = { ...hero(), classId: "druid", x: 2300, attackAt: 1e6 };
+      p: Player = { ...hero(), classId: 'druid', x: 2300, attackAt: 1e6 };
     const e = { ...enemy(1, 2480, 1000), archetype };
     s.enemies = [e];
     tickCompanion(p, s, 10000, 1);
@@ -469,12 +469,12 @@ test("Bear repositions on its reaction interval while continuing to damage melee
   }
 });
 
-test("Bear teleports only beyond 500 pixels, using wrapped forest distance, without bypassing death", async () => {
+test('Bear teleports only beyond 500 pixels, using wrapped forest distance, without bypassing death', async () => {
   for (const forest of [true, false]) {
     const p: Player = {
       ...hero(),
-      classId: "druid",
-      scene: forest ? "forest" : undefined,
+      classId: 'druid',
+      scene: forest ? 'forest' : undefined,
       x: forest ? 2400 : 100,
       y: forest ? 1280 : 360,
     };
@@ -497,19 +497,19 @@ test("Bear teleports only beyond 500 pixels, using wrapped forest distance, with
     assert.equal(bear.x, p.x + 501);
     assert.equal(bear.resurrectAt, 15150);
   }
-  const p: Player = { ...hero(), classId: "druid", x: 5 };
+  const p: Player = { ...hero(), classId: 'druid', x: 5 };
   tickCompanion(p, undefined, 10000, 0);
   p.bear!.x = FOREST.width - 5;
   tickCompanion(p, undefined, 10050, 0);
-  assert.equal(p.bear!.x, FOREST.width - 5, "nearby seam neighbors must not teleport");
+  assert.equal(p.bear!.x, FOREST.width - 5, 'nearby seam neighbors must not teleport');
   p.bear!.x = FOREST.width - 496;
   tickCompanion(p, undefined, 10100, 0);
   assert.equal(p.bear!.x, p.x);
 });
 
-test("enemies damage Bear; death resurrects exactly five seconds later at its owner", async () => {
+test('enemies damage Bear; death resurrects exactly five seconds later at its owner', async () => {
   const s = scene(),
-    p: Player = { ...hero(), classId: "druid", attackAt: 10000 };
+    p: Player = { ...hero(), classId: 'druid', attackAt: 10000 };
   tickCompanion(p, s, 10000, 0);
   const bear = p.bear!;
   bear.x = 2470;
@@ -536,8 +536,8 @@ test("enemies damage Bear; death resurrects exactly five seconds later at its ow
   assert.equal(bear.hitpoints, hitpoints - 10);
 });
 
-test("bear wraps its leash and follows in the village; other classes remove companions", async () => {
-  const p: Player = { ...hero(), classId: "druid", x: 5 };
+test('bear wraps its leash and follows in the village; other classes remove companions', async () => {
+  const p: Player = { ...hero(), classId: 'druid', x: 5 };
   tickCompanion(p, scene(), 10000, 0);
   p.bear!.x = FOREST.width - 40;
   tickCompanion(p, scene(), 10050, 0);
@@ -549,14 +549,14 @@ test("bear wraps its leash and follows in the village; other classes remove comp
   p.bear!.y = 360;
   tickCompanion(p, undefined, 10100, 0.05);
   assert(p.bear!.x < 550);
-  p.classId = "mage";
+  p.classId = 'mage';
   tickCompanion(p, undefined, 10150, 0);
   assert.equal(p.bear, undefined);
 });
 
-test("Druid launches roots without instant melee damage, with zero or one target", async () => {
+test('Druid launches roots without instant melee damage, with zero or one target', async () => {
   const s = scene(),
-    p: Player = { ...hero(), classId: "druid" };
+    p: Player = { ...hero(), classId: 'druid' };
   tickCompanion(p, s, 10000, 0);
   p.bear!.hitpoints = 0;
   p.bear!.resurrectAt = 20000;
@@ -572,27 +572,27 @@ test("Druid launches roots without instant melee damage, with zero or one target
   assert.doesNotThrow(() => fireClassAttack(s, p, 10700));
 });
 
-test("class selection schema and wardrobe interaction reject invalid classes and dead players", async () => {
-  assert(!clientMessage.safeParse({ type: "selectClass", classId: "hacker" }).success);
+test('class selection schema and wardrobe interaction reject invalid classes and dead players', async () => {
+  assert(!clientMessage.safeParse({ type: 'selectClass', classId: 'hacker' }).success);
   const player = { ...hero(), scene: undefined, x: WARDROBE.x + 40, y: WARDROBE.y - 15 };
-  assert.equal(nearbyInteraction(player)?.id, "wardrobe");
+  assert.equal(nearbyInteraction(player)?.id, 'wardrobe');
   assert.equal(nearbyInteraction({ ...player, hitpoints: 0 }), null);
 });
 
-test("one spawn roll gives exactly ten percent big and ten percent ranged with health multipliers", async () => {
+test('one spawn roll gives exactly ten percent big and ten percent ranged with health multipliers', async () => {
   const types = Array.from({ length: 100 }, (_, i) => spawnArchetype(i / 100, i));
-  assert.equal(types.filter((a) => a === "brute").length, 10);
-  assert.equal(types.filter((a) => a === "caster").length, 10);
-  assert.equal(enemyMaxHealth({ archetype: "brute" }), 30);
-  assert.equal(enemyMaxHealth({ archetype: "caster" }), 7);
-  assert.equal(enemyMaxHealth({ archetype: "brute", kind: "elite" }), 150);
-  assert.equal(enemyMaxHealth({ archetype: "caster", kind: "elite" }), 35);
-  assert.equal(enemyMaxHealth({ archetype: "brute", kind: "boss" }), 200);
+  assert.equal(types.filter((a) => a === 'brute').length, 10);
+  assert.equal(types.filter((a) => a === 'caster').length, 10);
+  assert.equal(enemyMaxHealth({ archetype: 'brute' }), 30);
+  assert.equal(enemyMaxHealth({ archetype: 'caster' }), 7);
+  assert.equal(enemyMaxHealth({ archetype: 'brute', kind: 'elite' }), 150);
+  assert.equal(enemyMaxHealth({ archetype: 'caster', kind: 'elite' }), 35);
+  assert.equal(enemyMaxHealth({ archetype: 'brute', kind: 'boss' }), 200);
 });
 
-test("each ailment stacks, refreshes its timer, ticks once per second, and expires after five seconds", (t) => {
-  t.mock.method(Math, "random", () => 0.09);
-  for (const kind of ["bleed", "poison", "burn"] as const) {
+test('each ailment stacks, refreshes its timer, ticks once per second, and expires after five seconds', (t) => {
+  t.mock.method(Math, 'random', () => 0.09);
+  for (const kind of ['bleed', 'poison', 'burn'] as const) {
     const s = scene(),
       p = hero(),
       e = enemy(1, 2480, 10000);
@@ -618,32 +618,32 @@ test("each ailment stacks, refreshes its timer, ticks once per second, and expir
   }
 });
 
-test("proc boundary is ten percent; DOT kills use the same loot, XP and boss completion paths", (t) => {
-  t.mock.method(Math, "random", () => 0.1);
+test('proc boundary is ten percent; DOT kills use the same loot, XP and boss completion paths', (t) => {
+  t.mock.method(Math, 'random', () => 0.1);
   const s = scene(),
     p = hero(),
     e = enemy(1, 2480, 10);
   s.enemies = [e];
-  hitEnemy(s, e, 5, p, 0, "bleed");
+  hitEnemy(s, e, 5, p, 0, 'bleed');
   assert.equal(e.debuffs, undefined);
-  e.kind = "boss";
+  e.kind = 'boss';
   s.bossId = e.id;
-  e.debuffs = [{ kind: "burn", stacks: 5, expiresAt: 5000, nextTick: 1000, ownerId: p.id }];
+  e.debuffs = [{ kind: 'burn', stacks: 5, expiresAt: 5000, nextTick: 1000, ownerId: p.id }];
   p.x = 2000;
   p.attackAt = 2000;
   stepCombat(s, [p], 1000, 0);
-  assert.equal(s.phase, "ended");
+  assert.equal(s.phase, 'ended');
   assert.equal(p.experience, 1);
   assert.deepEqual(
     s.drops!.map((drop) => drop.kind),
-    ["experience", "item"],
+    ['experience', 'item'],
   );
 });
 
-test("ranger arrows pierce every target once, wrap, and expire at 1000 units", (t) => {
-  t.mock.method(Math, "random", () => 0.5);
+test('ranger arrows pierce every target once, wrap, and expire at 1000 units', (t) => {
+  t.mock.method(Math, 'random', () => 0.5);
   const s = scene(),
-    p = { ...hero(), classId: "ranger" as const, x: FOREST.width - 60 };
+    p = { ...hero(), classId: 'ranger' as const, x: FOREST.width - 60 };
   s.enemies = [enemy(1, FOREST.width - 20, 10), enemy(2, 30, 10), enemy(3, 960, 10)];
   fireClassAttack(s, p);
   assert.equal(s.playerShots!.length, 2);
@@ -655,9 +655,9 @@ test("ranger arrows pierce every target once, wrap, and expire at 1000 units", (
   assert.equal(s.playerShots!.length, 0);
 });
 
-test("mage fireballs target and travel up to 250 units, including wrapped edges", async () => {
+test('mage fireballs target and travel up to 250 units, including wrapped edges', async () => {
   const s = scene(),
-    p = { ...hero(), classId: "mage" as const };
+    p = { ...hero(), classId: 'mage' as const };
   s.enemies = [enemy(1, p.x + 250), enemy(2, p.x + 250.01), enemy(3, p.x + 249)];
   fireClassAttack(s, p);
   assert.deepEqual(
@@ -679,14 +679,14 @@ test("mage fireballs target and travel up to 250 units, including wrapped edges"
     [4, 4],
   );
   s.playerShots = [];
-  fireClassAttack(s, { ...p, classId: "ranger" });
+  fireClassAttack(s, { ...p, classId: 'ranger' });
   assert.equal(s.playerShots[0].remaining, 1000);
 });
 
-test("mage aims at the nearest target; each impact deals three direct and one splash damage", (t) => {
-  t.mock.method(Math, "random", () => 0.5);
+test('mage aims at the nearest target; each impact deals three direct and one splash damage', (t) => {
+  t.mock.method(Math, 'random', () => 0.5);
   const s = scene(),
-    p = { ...hero(), classId: "mage" as const };
+    p = { ...hero(), classId: 'mage' as const };
   s.enemies = [enemy(1, 2480), enemy(2, 2510), enemy(3, 2650)];
   fireClassAttack(s, p);
   assert.deepEqual(
@@ -704,10 +704,10 @@ test("mage aims at the nearest target; each impact deals three direct and one sp
   assert.equal(s.playerShots!.length, 2);
 });
 
-test("fireball damages the actual collision target only once and splashes across wrapped edges", (t) => {
-  t.mock.method(Math, "random", () => 0.5);
+test('fireball damages the actual collision target only once and splashes across wrapped edges', (t) => {
+  t.mock.method(Math, 'random', () => 0.5);
   const s = scene(),
-    p = { ...hero(), classId: "mage" as const, x: 5 };
+    p = { ...hero(), classId: 'mage' as const, x: 5 };
   const direct = enemy(1, FOREST.width - 5);
   s.enemies = [direct, enemy(2, 119), enemy(3, 119.01), enemy(4, FOREST.width - 200)];
   for (const target of s.enemies) target.y += 6; // Model centers align with the explosion.
@@ -727,9 +727,9 @@ test("fireball damages the actual collision target only once and splashes across
   assert.equal(s.explosions!.length, 1);
 });
 
-test("class attacks fire once per cycle and ranged classes never deal a melee slash", (t) => {
-  t.mock.method(Math, "random", () => 0.5);
-  for (const classId of ["ranger", "mage"] as const) {
+test('class attacks fire once per cycle and ranged classes never deal a melee slash', (t) => {
+  t.mock.method(Math, 'random', () => 0.5);
+  for (const classId of ['ranger', 'mage'] as const) {
     const s = scene(),
       p = { ...hero(), classId };
     s.enemies = [enemy(1, 2440)];
@@ -749,9 +749,9 @@ test("class attacks fire once per cycle and ranged classes never deal a melee sl
   }
 });
 
-test("manual cast requests acknowledge acceptance, cooldown rejection and duplicates without held-input repeats", async () => {
-  const { tickPlayerCombat, requestPlayerCast } = await import("@emberfall/common");
-  const player = { ...hero(), classId: "ranger" as const, autoAttack: false };
+test('manual cast requests acknowledge acceptance, cooldown rejection and duplicates without held-input repeats', async () => {
+  const { tickPlayerCombat, requestPlayerCast } = await import('@emberfall/common');
+  const player = { ...hero(), classId: 'ranger' as const, autoAttack: false };
   const arena = scene();
   arena.enemies = [enemy(1)];
   tickPlayerCombat(arena, [player], 1000, 0.05);
@@ -762,9 +762,9 @@ test("manual cast requests acknowledge acceptance, cooldown rejection and duplic
       arena,
       player,
       {
-        type: "cast",
+        type: 'cast',
         id,
-        classId: "ranger",
+        classId: 'ranger',
         epoch: arena.id,
         autoTarget: true,
         aimX: player.x,
@@ -789,7 +789,7 @@ test("manual cast requests acknowledge acceptance, cooldown rejection and duplic
   assert(cast(3, 2000));
   tickPlayerCombat(arena, [player], 2000, 0.05);
   assert.equal(player.attackAt, 2000);
-  assert.equal(cast(3, 3000), false, "a duplicate ID cannot fire twice");
+  assert.equal(cast(3, 3000), false, 'a duplicate ID cannot fire twice');
   tickPlayerCombat(arena, [player], 3000, 0.05);
   assert.equal(player.attackAt, 2000);
   player.autoAttack = true;
@@ -797,18 +797,18 @@ test("manual cast requests acknowledge acceptance, cooldown rejection and duplic
   assert.equal(player.attackAt, 3000);
 });
 
-test("slightly early held casts wait for cooldown and retain aim without duplicate launches", async () => {
-  const { requestPlayerCast, tickPlayerCombat } = await import("@emberfall/common");
-  for (const classId of ["mage", "ranger", "druid"] as const) {
+test('slightly early held casts wait for cooldown and retain aim without duplicate launches', async () => {
+  const { requestPlayerCast, tickPlayerCombat } = await import('@emberfall/common');
+  for (const classId of ['mage', 'ranger', 'druid'] as const) {
     const player: Player = { ...hero(), classId, autoAttack: false, autoTarget: false };
     const arena = scene();
-    const count = classId === "druid" ? 1 : 2;
+    const count = classId === 'druid' ? 1 : 2;
     const cast = (id: number, now: number) =>
       requestPlayerCast(
         arena,
         player,
         {
-          type: "cast",
+          type: 'cast',
           id,
           epoch: arena.id,
           classId,
@@ -820,10 +820,10 @@ test("slightly early held casts wait for cooldown and retain aim without duplica
       );
     assert(cast(1, 1000));
     tickPlayerCombat(arena, [player], 1000, 0);
-    assert.equal(cast(2, 1899), false, "requests beyond the buffer are rejected");
+    assert.equal(cast(2, 1899), false, 'requests beyond the buffer are rejected');
     assert(cast(3, 1900));
-    assert.equal(player.attackAt, 2000, "the server still enforces the full cooldown");
-    assert.equal(cast(4, 1950), false, "another request cannot replace the buffered cast");
+    assert.equal(player.attackAt, 2000, 'the server still enforces the full cooldown');
+    assert.equal(cast(4, 1950), false, 'another request cannot replace the buffered cast');
     player.aimY = player.y + 200;
     tickPlayerCombat(arena, [player], 1999, 0);
     assert.equal(arena.playerShots!.length, count);
@@ -832,33 +832,33 @@ test("slightly early held casts wait for cooldown and retain aim without duplica
     assert.equal(arena.playerShots![count].castId, 3);
     assert.equal(
       arena.playerShots![count].angle,
-      classId === "druid" ? 0 : -Math.PI / 60,
-      "buffered casts retain request aim",
+      classId === 'druid' ? 0 : -Math.PI / 60,
+      'buffered casts retain request aim',
     );
     tickPlayerCombat(arena, [player], 2050, 0);
-    assert.equal(arena.playerShots!.length, count * 2, "buffered casts fire once");
+    assert.equal(arena.playerShots!.length, count * 2, 'buffered casts fire once');
     for (let id = 5; id < 15; id++) {
       assert(cast(id, player.attackAt! + 950));
       tickPlayerCombat(arena, [player], player.attackAt!, 0);
       assert.equal(arena.playerShots!.at(-1)!.castId, id);
     }
-    assert.equal(player.attackAt, 12000, "repeated early arrivals never shorten cooldown");
+    assert.equal(player.attackAt, 12000, 'repeated early arrivals never shorten cooldown');
   }
 });
 
-test("accepted manual projectiles use request aim even if the cursor moves before the combat tick", async () => {
-  const { requestPlayerCast, tickPlayerCombat } = await import("@emberfall/common");
-  const player = { ...hero(), classId: "ranger" as const, autoAttack: false, autoTarget: false };
+test('accepted manual projectiles use request aim even if the cursor moves before the combat tick', async () => {
+  const { requestPlayerCast, tickPlayerCombat } = await import('@emberfall/common');
+  const player = { ...hero(), classId: 'ranger' as const, autoAttack: false, autoTarget: false };
   const arena = scene();
   assert(
     requestPlayerCast(
       arena,
       player,
       {
-        type: "cast",
+        type: 'cast',
         id: 1,
         epoch: arena.id,
-        classId: "ranger",
+        classId: 'ranger',
         autoTarget: false,
         aimX: 2600,
         aimY: 1280,
@@ -874,53 +874,53 @@ test("accepted manual projectiles use request aim even if the cursor moves befor
   assert.equal(arena.playerShots![0].targetX, 2600);
 });
 
-test("manual cast eligibility rejects stale areas/classes, death and inactive combat", async () => {
-  const { requestPlayerCast } = await import("@emberfall/common");
+test('manual cast eligibility rejects stale areas/classes, death and inactive combat', async () => {
+  const { requestPlayerCast } = await import('@emberfall/common');
   for (const reason of [
-    "area",
-    "class",
-    "dead",
-    "paused",
-    "ended",
-    "outside",
-    "missing",
+    'area',
+    'class',
+    'dead',
+    'paused',
+    'ended',
+    'outside',
+    'missing',
   ] as const) {
-    const player: Player = { ...hero(), classId: "mage", autoAttack: false };
+    const player: Player = { ...hero(), classId: 'mage', autoAttack: false };
     const arena = scene();
     const request = {
-      type: "cast" as const,
+      type: 'cast' as const,
       id: 1,
-      classId: "mage" as const,
+      classId: 'mage' as const,
       epoch: arena.id,
       autoTarget: false,
       aimX: 2600,
       aimY: 1280,
     };
-    if (reason === "area") request.epoch = "expired";
-    if (reason === "class") player.classId = "ranger";
-    if (reason === "dead") player.hitpoints = 0;
-    if (reason === "paused") arena.pausedAt = 1000;
-    if (reason === "ended") arena.phase = "ended";
-    if (reason === "outside") {
+    if (reason === 'area') request.epoch = 'expired';
+    if (reason === 'class') player.classId = 'ranger';
+    if (reason === 'dead') player.hitpoints = 0;
+    if (reason === 'paused') arena.pausedAt = 1000;
+    if (reason === 'ended') arena.phase = 'ended';
+    if (reason === 'outside') {
       player.scene = undefined;
-      request.epoch = "lobby";
+      request.epoch = 'lobby';
     }
     assert.equal(
-      requestPlayerCast(reason === "missing" ? undefined : arena, player, request, 1000),
+      requestPlayerCast(reason === 'missing' ? undefined : arena, player, request, 1000),
       false,
       reason,
     );
-    assert.equal(player.castSeq, 1, "rejected requests are acknowledged");
+    assert.equal(player.castSeq, 1, 'rejected requests are acknowledged');
     assert.equal(player.attackAt, undefined);
     assert.equal(player.attackId, undefined);
   }
-  for (const bad of [{ id: 0 }, { id: 1.5 }, { aimX: Infinity }, { classId: "unknown" }]) {
+  for (const bad of [{ id: 0 }, { id: 1.5 }, { aimX: Infinity }, { classId: 'unknown' }]) {
     assert.equal(
       clientMessage.safeParse({
-        type: "cast",
+        type: 'cast',
         id: 1,
-        epoch: "lobby",
-        classId: "mage",
+        epoch: 'lobby',
+        classId: 'mage',
         autoTarget: false,
         aimX: 0,
         aimY: 0,
@@ -931,9 +931,9 @@ test("manual cast eligibility rejects stale areas/classes, death and inactive co
   }
 });
 
-test("untargeted spells follow cast aim past the cursor and expire after 1000px", async () => {
-  const { advancePlayerShot, playerAimAngle } = await import("@emberfall/common");
-  for (const classId of ["mage", "ranger", "druid"] as const) {
+test('untargeted spells follow cast aim past the cursor and expire after 1000px', async () => {
+  const { advancePlayerShot, playerAimAngle } = await import('@emberfall/common');
+  for (const classId of ['mage', 'ranger', 'druid'] as const) {
     for (const autoAttack of [false, true]) {
       const player: Player = {
         ...hero(),
@@ -946,21 +946,21 @@ test("untargeted spells follow cast aim past the cursor and expire after 1000px"
       const arena = scene();
       arena.enemies = [enemy(1, 2440), enemy(2, 2580)];
       fireClassAttack(arena, player, 1000);
-      assert.equal(arena.playerShots?.length, classId === "druid" ? 1 : 2);
+      assert.equal(arena.playerShots?.length, classId === 'druid' ? 1 : 2);
       const shot = arena.playerShots![0];
       assert.equal(shot.targetId, undefined);
-      assert.equal(shot.angle, Math.PI / 2 - (classId === "druid" ? 0 : Math.PI / 60));
+      assert.equal(shot.angle, Math.PI / 2 - (classId === 'druid' ? 0 : Math.PI / 60));
       assert.equal(shot.remaining, 1000);
       assert(arena.enemies.every((e) => e.debuffs === undefined));
       player.aimX = 2600;
       player.aimY = 1280;
       assert.equal(advancePlayerShot(shot, arena.enemies, 1), false);
       assert(shot.x >= player.x);
-      assert(shot.y > 1300, "continues beyond cursor without turning");
+      assert(shot.y > 1300, 'continues beyond cursor without turning');
       tickPlayerShots(arena, [player], 4000, 10);
       assert.equal(arena.playerShots!.length, 0);
       assert(
-        Math.abs(shot.y - (player.y + 1000 * Math.cos(classId === "druid" ? 0 : Math.PI / 60))) <
+        Math.abs(shot.y - (player.y + 1000 * Math.cos(classId === 'druid' ? 0 : Math.PI / 60))) <
           0.001,
       );
       assert.equal(arena.explosions?.length, 0);
@@ -971,8 +971,8 @@ test("untargeted spells follow cast aim past the cursor and expire after 1000px"
     arena.enemies = [enemy(1, 2480)];
     fireClassAttack(arena, player, 1000);
     tickPlayerShots(arena, [player], 1500, 0.5);
-    if (classId === "druid") {
-      assert.equal(arena.enemies[0].debuffs?.[0].kind, "roots");
+    if (classId === 'druid') {
+      assert.equal(arena.enemies[0].debuffs?.[0].kind, 'roots');
       assert.equal(arena.playerShots!.length, 0);
     } else assert(arena.enemies[0].hitpoints < 100);
     player.x = FOREST.width - 10;
@@ -984,14 +984,14 @@ test("untargeted spells follow cast aim past the cursor and expire after 1000px"
     const shot = arena.playerShots![0];
     advancePlayerShot(shot, [], 10);
     assert(
-      Math.abs(shot.x - (1000 * Math.cos(classId === "druid" ? 0 : Math.PI / 60) - 10)) < 0.001,
-      "range is distance travelled across wrapped edges",
+      Math.abs(shot.x - (1000 * Math.cos(classId === 'druid' ? 0 : Math.PI / 60) - 10)) < 0.001,
+      'range is distance travelled across wrapped edges',
     );
   }
 });
 
-test("manual client prediction casts on hold, preserves release cooldown, and tracks cursor", async () => {
-  const { LocalMovement } = await import("../../client/src/local-movement.ts");
+test('manual client prediction casts on hold, preserves release cooldown, and tracks cursor', async () => {
+  const { LocalMovement } = await import('../../client/src/local-movement.ts');
   const player: Player = {
     ...hero(),
     autoAttack: false,
@@ -1001,14 +1001,14 @@ test("manual client prediction casts on hold, preserves release cooldown, and tr
   };
   const arena = scene();
   const world = {
-    id: "w",
-    name: "W",
-    hostId: "p",
+    id: 'w',
+    name: 'W',
+    hostId: 'p',
     players: [player],
     scene: arena,
     serverNow: 10000,
   };
-  const movement = new LocalMovement("p", () => {});
+  const movement = new LocalMovement('p', () => {});
   const displayed = movement.render(world, 0)!;
   assert.equal(movement.animateAttack(displayed, world, 0), false);
   assert.equal(displayed.attackAt, undefined);
@@ -1025,10 +1025,10 @@ test("manual client prediction casts on hold, preserves release cooldown, and tr
   assert.equal(movement.animateAttack(displayed, world, 1020), false);
 });
 
-test("root primary and bounce both use full critical weapon damage", (t) => {
-  t.mock.method(Math, "random", () => 0);
+test('root primary and bounce both use full critical weapon damage', (t) => {
+  t.mock.method(Math, 'random', () => 0);
   const s = scene(),
-    p = { ...hero(), classId: "druid" as const };
+    p = { ...hero(), classId: 'druid' as const };
   s.enemies = [enemy(1, 2420), enemy(2, 2480)];
   fireClassAttack(s, p, 1000);
   tickPlayerShots(s, [p], 1050, 0.05);
@@ -1038,13 +1038,13 @@ test("root primary and bounce both use full critical weapon damage", (t) => {
     [95.5, 95.5],
   );
   assert(
-    s.damage.every((hit) => hit.amount === 4.5 && hit.critical && hit.damageType === "nature"),
+    s.damage.every((hit) => hit.amount === 4.5 && hit.critical && hit.damageType === 'nature'),
   );
 });
 
-test("a lethal root impact still bounces and credits both kills through the shared path", () => {
+test('a lethal root impact still bounces and credits both kills through the shared path', () => {
   const s = scene(),
-    p = { ...hero(), classId: "druid" as const };
+    p = { ...hero(), classId: 'druid' as const };
   s.enemies = [enemy(1, 2420, 3), enemy(2, 2480, 3)];
   fireClassAttack(s, p, 1000);
   tickPlayerShots(s, [p], 1050, 0.05);
@@ -1052,6 +1052,6 @@ test("a lethal root impact still bounces and credits both kills through the shar
   assert(s.enemies.every((e) => e.hitpoints === 0));
   tickPlayerShots(s, [p], 2300, 1);
   assert.equal(p.experience, 2);
-  assert.equal(s.drops!.filter((drop) => drop.kind === "experience").length, 2);
+  assert.equal(s.drops!.filter((drop) => drop.kind === 'experience').length, 2);
   assert.equal(s.playerShots!.length, 0);
 });

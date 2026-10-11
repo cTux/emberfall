@@ -1,24 +1,24 @@
 export const ARENA = { width: 4800, height: 2560, speed: 180 } as const;
 export const WARDROBE = { x: 350, y: 365 };
-export const INNKEEPER = { id: "innkeeper", name: "Marta the Innkeeper", x: 300, y: 238 } as const;
+export const INNKEEPER = { id: 'innkeeper', name: 'Marta the Innkeeper', x: 300, y: 238 } as const;
 export const TRAINING_ZONES = [
   { x: 140, y: 355, radius: 270, clearingRadius: 135 },
   { x: 820, y: 355, radius: 270, clearingRadius: 135 },
 ] as const;
 export const BUILDINGS = [
-  { id: "inn", name: "Inn", x: 235, y: 225, doorX: 219, sourceX: 0, sourceWidth: 64 },
-  { id: "hall", name: "Hall", x: 485, y: 170, doorX: 469, sourceX: 192, sourceWidth: 64 },
-  { id: "workshop", name: "Workshop", x: 735, y: 235, doorX: 751, sourceX: 304, sourceWidth: 64 },
+  { id: 'inn', name: 'Inn', x: 235, y: 225, doorX: 219, sourceX: 0, sourceWidth: 64 },
+  { id: 'hall', name: 'Hall', x: 485, y: 170, doorX: 469, sourceX: 192, sourceWidth: 64 },
+  { id: 'workshop', name: 'Workshop', x: 735, y: 235, doorX: 751, sourceX: 304, sourceWidth: 64 },
   {
-    id: "storehouse",
-    name: "Storehouse",
+    id: 'storehouse',
+    name: 'Storehouse',
     x: 240,
     y: 510,
     doorX: 224,
     sourceX: 128,
     sourceWidth: 64,
   },
-  { id: "lodge", name: "Lodge", x: 730, y: 510, doorX: 730, sourceX: 256, sourceWidth: 48 },
+  { id: 'lodge', name: 'Lodge', x: 730, y: 510, doorX: 730, sourceX: 256, sourceWidth: 48 },
 ] as const;
 export const TORCHES = [
   { x: 330, y: 249 },
@@ -74,7 +74,7 @@ export const PATH_CURVES = [
   ],
 ] as const;
 export const VILLAGE_DEFINITION = {
-  id: "village",
+  id: 'village',
   geometry: ARENA,
   wardrobe: WARDROBE,
   innkeeper: INNKEEPER,

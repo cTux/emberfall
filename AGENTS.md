@@ -4,6 +4,7 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 
 ## Project constraints
 
+- Use single quotes for code string literals and JSX attribute values. Follow Oxfmt's escape-minimizing exceptions; JSON retains double quotes.
 - Emberfall is an online-only cooperative browser game. The server owns movement validation, damage, health, deaths, rewards and saves; client prediction is presentation only.
 - Progression must not require a player choice or interrupt gameplay. Read [PROG-01](docs/specs/progression.md) before designing progression; no replacement system is selected yet.
 - Reuse shared simulation in forest and training. Preserve wrapped geometry in both areas. Keep UI presentation separate from client actions and server rules.

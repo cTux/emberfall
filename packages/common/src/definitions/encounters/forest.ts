@@ -1,6 +1,6 @@
 export const FOREST_ENCOUNTER = {
-  id: "forest",
-  boss: "hollowWarden",
+  id: 'forest',
+  boss: 'hollowWarden',
   spawnIntervalMs: 400,
   bossPlacementAttempts: 256,
   spawnRadius: 340,

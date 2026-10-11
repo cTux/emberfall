@@ -1,6 +1,6 @@
-import { randomUUID } from "node:crypto";
-import { CHAT_LIMIT } from "@emberfall/common";
-import type { ChatMessage, Player } from "@emberfall/common";
+import { randomUUID } from 'node:crypto';
+import { CHAT_LIMIT } from '@emberfall/common';
+import type { ChatMessage, Player } from '@emberfall/common';
 
 export function addChat(
   world: { chat?: ChatMessage[] },
@@ -12,8 +12,8 @@ export function addChat(
     ...(world.chat ?? []),
     {
       id: randomUUID(),
-      playerId: player?.id ?? "",
-      name: player?.name ?? "System",
+      playerId: player?.id ?? '',
+      name: player?.name ?? 'System',
       text,
       excludedPlayerId,
     },

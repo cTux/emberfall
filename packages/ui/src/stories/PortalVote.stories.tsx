@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PortalVote } from "../index";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { PortalVote } from '../index';
 const meta = {
-  title: "Components/PortalVote",
+  title: 'Components/PortalVote',
   component: PortalVote,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   args: {
-    scene: "Forest",
-    difficulty: "Easy",
+    scene: 'Forest',
+    difficulty: 'Easy',
     ready: 1,
     total: 2,
     voted: false,

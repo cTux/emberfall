@@ -1,5 +1,5 @@
-import { Button, Stack, Typography } from "@mui/material";
-import { PortalVoteStyled } from "./styles";
+import { Button, Stack, Typography } from '@mui/material';
+import { PortalVoteStyled } from './styles';
 
 export interface PortalVoteProps {
   scene: string;
@@ -22,14 +22,14 @@ export function PortalVote({
   onVote,
 }: PortalVoteProps) {
   return (
-    <PortalVoteStyled as="section" aria-label="Departure vote">
+    <PortalVoteStyled as='section' aria-label='Departure vote'>
       <Stack spacing={2}>
-        <Typography variant="h3" component="h3" aria-live="polite">
+        <Typography variant='h3' component='h3' aria-live='polite'>
           {scene} · {difficulty} ({ready}/{total} ready)
         </Typography>
-        {countdown !== undefined && <Typography role="status">Departing in {countdown}</Typography>}
-        <Button variant={voted ? "outlined" : "contained"} disabled={disabled} onClick={onVote}>
-          {voted ? "Retract ready vote" : "I'm ready"}
+        {countdown !== undefined && <Typography role='status'>Departing in {countdown}</Typography>}
+        <Button variant={voted ? 'outlined' : 'contained'} disabled={disabled} onClick={onVote}>
+          {voted ? 'Retract ready vote' : "I'm ready"}
         </Button>
       </Stack>
     </PortalVoteStyled>

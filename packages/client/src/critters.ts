@@ -1,7 +1,7 @@
-import { crittersAt } from "./critter-motion.ts";
-export { crittersAt } from "./critter-motion.ts";
-import { spriteMask } from "./lighting.ts";
-import { animalArt } from "./art";
+import { crittersAt } from './critter-motion.ts';
+export { crittersAt } from './critter-motion.ts';
+import { spriteMask } from './lighting.ts';
+import { animalArt } from './art';
 const animalColumn = { cat: 1, chicken: 2, raccoon: 3 };
 export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
   const mask = spriteMask(
@@ -34,7 +34,7 @@ export function drawCritter(
   ctx.save();
   ctx.translate(critter.x, critter.y);
   if (!shadows) {
-    ctx.fillStyle = "#06181050";
+    ctx.fillStyle = '#06181050';
     ctx.beginPath();
     ctx.ellipse(0, -2, 8, 3, 0, 0, Math.PI * 2);
     ctx.fill();

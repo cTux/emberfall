@@ -1,23 +1,23 @@
-import { PixiContext } from "../packages/client/src/rendering/pixi-context";
-import { drawVignette, drawAtmosphere } from "../packages/client/src/effects";
-import { drawDebuffs, drawClassProjectiles } from "../packages/client/src/combat-effects";
-import { pickupArt, effectsArt } from "../packages/client/src/art";
-import type { SceneState } from "../packages/common/src/index";
-import { statusImages } from "../packages/client/src/combat-assets";
-import { drawFog } from "../packages/client/src/forest";
-import { lightTexture } from "../packages/client/src/village";
-import { drawDamageNumber, drawDamageNumbers } from "../packages/client/src/damage-text";
+import { PixiContext } from '../packages/client/src/rendering/pixi-context';
+import { drawVignette, drawAtmosphere } from '../packages/client/src/effects';
+import { drawDebuffs, drawClassProjectiles } from '../packages/client/src/combat-effects';
+import { pickupArt, effectsArt } from '../packages/client/src/art';
+import type { SceneState } from '../packages/common/src/index';
+import { statusImages } from '../packages/client/src/combat-assets';
+import { drawFog } from '../packages/client/src/forest';
+import { lightTexture } from '../packages/client/src/village';
+import { drawDamageNumber, drawDamageNumbers } from '../packages/client/src/damage-text';
 
 export async function compare() {
   await Promise.all(Object.values(statusImages).map((image) => image.decode()));
-  const gpu = document.createElement("canvas"),
-    reference = document.createElement("canvas");
+  const gpu = document.createElement('canvas'),
+    reference = document.createElement('canvas');
   document.body.append(gpu, reference);
   reference.width = reference.height = 256;
   const pixi = new PixiContext(gpu);
   pixi.resize(256, 256);
   await pixi.ready;
-  const canvas = reference.getContext("2d")!;
+  const canvas = reference.getContext('2d')!;
   const results: Record<string, { actual: number[]; expected: number[] }> = {};
   const icons: Record<string, number> = {};
   const compare = (
@@ -29,14 +29,14 @@ export async function compare() {
     pixi.begin();
     canvas.reset();
     for (const ctx of [pixi as unknown as CanvasRenderingContext2D, canvas]) {
-      ctx.fillStyle = "#809060";
+      ctx.fillStyle = '#809060';
       ctx.fillRect(0, 0, 256, 256);
       draw(ctx);
     }
     pixi.present();
-    const capture = document.createElement("canvas");
+    const capture = document.createElement('canvas');
     capture.width = capture.height = 256;
-    const ctx = capture.getContext("2d")!;
+    const ctx = capture.getContext('2d')!;
     ctx.drawImage(gpu, 0, 0);
     results[name] = {
       actual: [...ctx.getImageData(x, y, 1, 1).data],
@@ -54,11 +54,11 @@ export async function compare() {
       delete results[name];
     }
   };
-  compare("vignette center", (ctx) => drawVignette(ctx, 0, 0, 256, 256), 128, 128);
-  compare("fog blending", (ctx) => drawFog(ctx, 0, 0, 256, 256, 1000), 128, 128);
-  compare("vignette edge", (ctx) => drawVignette(ctx, 0, 0, 256, 256), 5, 128);
+  compare('vignette center', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 128, 128);
+  compare('fog blending', (ctx) => drawFog(ctx, 0, 0, 256, 256, 1000), 128, 128);
+  compare('vignette edge', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 5, 128);
   compare(
-    "translated vignette",
+    'translated vignette',
     (ctx) => {
       ctx.translate(-500, -200);
       drawVignette(ctx, 500, 200, 256, 256);
@@ -67,21 +67,21 @@ export async function compare() {
     128,
   );
   compare(
-    "color grading",
+    'color grading',
     (ctx) => drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: true, lightShafts: false }),
     128,
     128,
   );
   compare(
-    "light shafts",
+    'light shafts',
     (ctx) => drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: false, lightShafts: true }),
     10,
     5,
   );
   for (const [name, x] of [
-    ["shaft left feather", 62],
-    ["shaft center", 140],
-    ["shaft right feather", 218],
+    ['shaft left feather', 62],
+    ['shaft center', 140],
+    ['shaft right feather', 218],
   ] as const)
     compare(
       name,
@@ -90,7 +90,7 @@ export async function compare() {
       100,
     );
   compare(
-    "shaft after camera move",
+    'shaft after camera move',
     (ctx) => {
       ctx.translate(-50, -70);
       drawAtmosphere(ctx, 50, 70, 256, 256, 0, { colorGrading: false, lightShafts: true });
@@ -98,7 +98,7 @@ export async function compare() {
     90,
     30,
   );
-  for (const shade of ["#101817", "#b4cfdc"]) {
+  for (const shade of ['#101817', '#b4cfdc']) {
     compare(
       `grading ${shade}`,
       (ctx) => {
@@ -110,7 +110,7 @@ export async function compare() {
       128,
     );
   }
-  for (const kind of ["bleed", "poison", "burn", "roots"] as const) {
+  for (const kind of ['bleed', 'poison', 'burn', 'roots'] as const) {
     compare(
       kind,
       (ctx) =>
@@ -122,7 +122,7 @@ export async function compare() {
             y: 0,
             angle: 0,
             hitpoints: 100,
-            debuffs: [{ kind, stacks: 1, expiresAt: 1000, nextTick: 1000, ownerId: "p" }],
+            debuffs: [{ kind, stacks: 1, expiresAt: 1000, nextTick: 1000, ownerId: 'p' }],
           },
           80,
           100,
@@ -135,7 +135,7 @@ export async function compare() {
   // Shrinking/reordering a retained display list must not leave ghost sprites
   // or a previous frame's clip attached to a reused graphic.
   compare(
-    "clipped red",
+    'clipped red',
     (ctx) => {
       ctx.save();
       ctx.beginPath();
@@ -145,7 +145,7 @@ export async function compare() {
       ctx.lineTo(10, 30);
       ctx.closePath();
       ctx.clip();
-      ctx.fillStyle = "#ff0000";
+      ctx.fillStyle = '#ff0000';
       ctx.fillRect(0, 0, 80, 80);
       ctx.restore();
     },
@@ -153,9 +153,9 @@ export async function compare() {
     15,
   );
   compare(
-    "released clip",
+    'released clip',
     (ctx) => {
-      ctx.fillStyle = "#00ff00";
+      ctx.fillStyle = '#00ff00';
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.lineTo(80, 0);
@@ -167,34 +167,34 @@ export async function compare() {
     50,
     50,
   );
-  compare("removed visuals", () => {}, 15, 15);
+  compare('removed visuals', () => {}, 15, 15);
   compare(
-    "transformed sprite",
+    'transformed sprite',
     (ctx) => {
       ctx.translate(110, 100);
       ctx.rotate(0.3);
       ctx.scale(-2, 1.5);
-      ctx.fillStyle = "#ff0000";
+      ctx.fillStyle = '#ff0000';
       ctx.fillRect(-10, -10, 20, 20);
     },
     110,
     100,
   );
   compare(
-    "reset pooled transform",
+    'reset pooled transform',
     (ctx) => {
-      ctx.fillStyle = "#0000ff";
+      ctx.fillStyle = '#0000ff';
       ctx.fillRect(10, 10, 30, 30);
     },
     20,
     20,
   );
 
-  const light = { x: 100, y: 100, radius: 80, height: 100, strength: 0.3, owner: "test" };
-  const mask = document.createElement("canvas");
+  const light = { x: 100, y: 100, radius: 80, height: 100, strength: 0.3, owner: 'test' };
+  const mask = document.createElement('canvas');
   mask.width = mask.height = 16;
-  mask.getContext("2d")!.fillRect(0, 0, 16, 16);
-  const caster = { id: "blocker", x: 120, y: 100, width: 16, height: 16, mask };
+  mask.getContext('2d')!.fillRect(0, 0, 16, 16);
+  const caster = { id: 'blocker', x: 120, y: 100, width: 16, height: 16, mask };
   const revision = (canvas: HTMLCanvasElement) =>
     (canvas as HTMLCanvasElement & { textureRevision: number }).textureRevision;
   const first = revision(lightTexture(light, [caster], true));
@@ -205,17 +205,17 @@ export async function compare() {
   const lights = { first, reused, translated, moved, toggled };
 
   pixi.begin();
-  pixi.fillStyle = "#000000";
+  pixi.fillStyle = '#000000';
   pixi.fillRect(0, 0, 256, 256);
   pixi.scale(8, 8);
-  pixi.font = "12px sans-serif";
-  pixi.textBaseline = "top";
-  pixi.fillStyle = "#ffffff";
-  pixi.fillText("Pixels", 2, 2);
+  pixi.font = '12px sans-serif';
+  pixi.textBaseline = 'top';
+  pixi.fillStyle = '#ffffff';
+  pixi.fillText('Pixels', 2, 2);
   pixi.present();
-  const glyph = document.createElement("canvas");
+  const glyph = document.createElement('canvas');
   glyph.width = glyph.height = 256;
-  const glyphCtx = glyph.getContext("2d")!;
+  const glyphCtx = glyph.getContext('2d')!;
   glyphCtx.drawImage(gpu, 0, 0);
   const pixels = glyphCtx.getImageData(0, 0, 256, 256).data;
   // A 4x text texture at 8x world scale repeats each raster column twice. Linear filtering
@@ -224,11 +224,11 @@ export async function compare() {
   for (let y = 0; y < 100; y++)
     for (let x = 1; x < 220; x++)
       if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) edges[x % 2]++;
-  glyph.style.imageRendering = "pixelated";
+  glyph.style.imageRendering = 'pixelated';
   document.body.append(glyph);
   // Leave both renderers showing the same composited scene for visual inspection.
   compare(
-    "composite",
+    'composite',
     (ctx) => {
       for (const [i, image] of Object.values(statusImages).entries())
         ctx.drawImage(image, 20 + i * 55, 100, 40, 40);
@@ -238,23 +238,23 @@ export async function compare() {
     128,
   );
   pixi.begin();
-  pixi.fillStyle = "#17251d";
+  pixi.fillStyle = '#17251d';
   pixi.fillRect(0, 0, 256, 256);
-  for (const [index, damageType] of (["physical", "fire", "poison", "nature"] as const).entries()) {
+  for (const [index, damageType] of (['physical', 'fire', 'poison', 'nature'] as const).entries()) {
     for (const critical of [false, true])
       drawDamageNumber(
         pixi as unknown as CanvasRenderingContext2D,
-        { id: index, x: 0, y: 0, amount: 15, at: 1000, target: "enemy:1", damageType, critical },
+        { id: index, x: 0, y: 0, amount: 15, at: 1000, target: 'enemy:1', damageType, critical },
         { x: 32 + index * 64, y: critical ? 120 : 70 },
         1000,
       );
   }
   pixi.present();
-  const damagePreview = document.createElement("canvas");
+  const damagePreview = document.createElement('canvas');
   damagePreview.width = damagePreview.height = 256;
-  damagePreview.style.width = "512px";
-  damagePreview.style.imageRendering = "pixelated";
-  const damageContext = damagePreview.getContext("2d")!;
+  damagePreview.style.width = '512px';
+  damagePreview.style.imageRendering = 'pixelated';
+  const damageContext = damagePreview.getContext('2d')!;
   damageContext.drawImage(gpu, 0, 0);
   document.body.append(damagePreview);
   const damagePixels = Array.from({ length: 4 }, (_, index) => {
@@ -268,7 +268,7 @@ export async function compare() {
     return { white, red };
   });
   pixi.begin();
-  pixi.fillStyle = "#17251d";
+  pixi.fillStyle = '#17251d';
   pixi.fillRect(0, 0, 256, 256);
   const groupedLabels: string[] = [];
   const fillText = pixi.fillText.bind(pixi);
@@ -281,9 +281,9 @@ export async function compare() {
     [
       {
         id: 1,
-        ownerId: "mage",
-        target: "enemy:1",
-        damageType: "fire",
+        ownerId: 'mage',
+        target: 'enemy:1',
+        damageType: 'fire',
         amount: 3,
         at: 1000,
         x: 128,
@@ -291,9 +291,9 @@ export async function compare() {
       },
       {
         id: 2,
-        ownerId: "mage",
-        target: "enemy:1",
-        damageType: "fire",
+        ownerId: 'mage',
+        target: 'enemy:1',
+        damageType: 'fire',
         amount: 4.5,
         critical: true,
         at: 1010,
@@ -307,17 +307,17 @@ export async function compare() {
   pixi.fillText = fillText;
   pixi.present();
   while (
-    [pickupArt, effectsArt].some((image) => !image.complete || image.dataset.artReady !== "true")
+    [pickupArt, effectsArt].some((image) => !image.complete || image.dataset.artReady !== 'true')
   )
     await new Promise((resolve) => setTimeout(resolve, 20));
   const projectilePixels: number[] = [];
   for (const fallback of [false, true]) {
     pixi.begin();
-    pixi.fillStyle = "#17251d";
+    pixi.fillStyle = '#17251d';
     pixi.fillRect(0, 0, 256, 256);
-    if (fallback) for (const image of [pickupArt, effectsArt]) image.dataset.artReady = "false";
-    for (const [row, kind] of (["arrow", "fireball", "roots"] as const).entries()) {
-      for (let frame = 0; frame < (kind === "arrow" ? 4 : 3); frame++) {
+    if (fallback) for (const image of [pickupArt, effectsArt]) image.dataset.artReady = 'false';
+    for (const [row, kind] of (['arrow', 'fireball', 'roots'] as const).entries()) {
+      for (let frame = 0; frame < (kind === 'arrow' ? 4 : 3); frame++) {
         const x = 32 + frame * 64,
           y = 40 + row * 80;
         drawClassProjectiles(
@@ -332,15 +332,15 @@ export async function compare() {
       }
     }
     pixi.present();
-    const preview = document.createElement("canvas");
+    const preview = document.createElement('canvas');
     preview.width = preview.height = 256;
-    preview.style.width = "512px";
-    preview.style.imageRendering = "pixelated";
-    const c = preview.getContext("2d")!;
+    preview.style.width = '512px';
+    preview.style.imageRendering = 'pixelated';
+    const c = preview.getContext('2d')!;
     c.drawImage(gpu, 0, 0);
     document.body.append(preview);
-    for (const [row, kind] of (["arrow", "fireball", "roots"] as const).entries())
-      for (let frame = 0; frame < (kind === "arrow" ? 4 : 3); frame++) {
+    for (const [row, kind] of (['arrow', 'fireball', 'roots'] as const).entries())
+      for (let frame = 0; frame < (kind === 'arrow' ? 4 : 3); frame++) {
         const pixels = c.getImageData(frame * 64, row * 80 + 8, 64, 64).data;
         let green = 0;
         for (let i = 0; i < pixels.length; i += 4)
@@ -353,7 +353,7 @@ export async function compare() {
             green++;
         projectilePixels.push(green);
       }
-    if (fallback) for (const image of [pickupArt, effectsArt]) image.dataset.artReady = "true";
+    if (fallback) for (const image of [pickupArt, effectsArt]) image.dataset.artReady = 'true';
   }
   return { results, icons, lights, edges, damagePixels, groupedLabels, projectilePixels };
 }

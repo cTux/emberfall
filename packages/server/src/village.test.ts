@@ -1,5 +1,5 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
 import {
   BUILDINGS,
   PATHS,
@@ -10,10 +10,10 @@ import {
   ARENA,
   moveActor,
   nearbyInteraction,
-} from "@emberfall/common";
-import { shadowProjection, SUN } from "../../client/src/lighting.ts";
+} from '@emberfall/common';
+import { shadowProjection, SUN } from '../../client/src/lighting.ts';
 
-test("distant sun is directional; nearby lights cast opposite shadows with bounded reach", async () => {
+test('distant sun is directional; nearby lights cast opposite shadows with bounded reach', async () => {
   const body = { x: 400, y: 350, height: 48 };
   assert(SUN.x < -1000 && SUN.y < -1000);
   assert.deepEqual(shadowProjection(body), shadowProjection({ ...body, x: 800, y: 100 }));
@@ -30,12 +30,12 @@ test("distant sun is directional; nearby lights cast opposite shadows with bound
   assert(low && Number.isFinite(low.x) && Math.abs(low.x) <= 88);
 });
 
-test("village paths and door approaches are walkable while buildings and torch posts are solid", async () => {
+test('village paths and door approaches are walkable while buildings and torch posts are solid', async () => {
   for (const building of BUILDINGS) {
     const result = moveActor({ x: building.doorX, y: building.y + 30 }, 0, -80, 12);
     assert(result.y >= building.y + 12);
     assert(result.y < building.y + 30);
-    if (building.id === "inn") continue;
+    if (building.id === 'inn') continue;
     assert.deepEqual(nearbyInteraction({ x: building.doorX, y: building.y + 30, hitpoints: 100 }), {
       id: building.id,
       name: building.name,
@@ -70,13 +70,13 @@ test("village paths and door approaches are walkable while buildings and torch p
     }
 });
 
-test("Marta replaces the Inn interaction with living village-only wrapped proximity", () => {
+test('Marta replaces the Inn interaction with living village-only wrapped proximity', () => {
   const player = { x: INNKEEPER.x, y: INNKEEPER.y - 15, hitpoints: 100 };
   assert.deepEqual(nearbyInteraction(player), INNKEEPER);
   assert.deepEqual(nearbyInteraction({ ...player, x: player.x + ARENA.width }), INNKEEPER);
   assert.equal(nearbyInteraction({ ...player, hitpoints: 0 }), null);
-  assert.equal(nearbyInteraction({ ...player, scene: "forest" }), null);
+  assert.equal(nearbyInteraction({ ...player, scene: 'forest' }), null);
   assert.equal(nearbyInteraction({ ...player, x: player.x + INTERACTION_RADIUS }), null);
-  const inn = BUILDINGS.find((b) => b.id === "inn")!;
+  const inn = BUILDINGS.find((b) => b.id === 'inn')!;
   assert.equal(nearbyInteraction({ ...player, x: inn.doorX, y: inn.y + 9 }), null);
 });

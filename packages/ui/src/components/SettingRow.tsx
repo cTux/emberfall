@@ -1,4 +1,4 @@
-import { FormControlLabel, Slider, Stack, Switch, Typography } from "@mui/material";
+import { FormControlLabel, Slider, Stack, Switch, Typography } from '@mui/material';
 
 export interface SettingToggleProps {
   label: string;
@@ -33,7 +33,7 @@ export function VolumeControl({ label, value, disabled, onChange }: VolumeContro
         max={1}
         step={0.05}
         disabled={disabled}
-        valueLabelDisplay="auto"
+        valueLabelDisplay='auto'
         valueLabelFormat={(volume) => `${Math.round(volume * 100)}%`}
         getAriaValueText={(volume) => `${Math.round(volume * 100)}%`}
         onChange={(_, next) => onChange(next as number)}

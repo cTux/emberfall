@@ -1,6 +1,6 @@
-import { World } from "miniplex";
-import type { Player, SceneState } from "@emberfall/common";
-import { SCENE_COLLECTIONS, type SceneCollection, type SceneEntity } from "@emberfall/common";
+import { World } from 'miniplex';
+import type { Player, SceneState } from '@emberfall/common';
+import { SCENE_COLLECTIONS, type SceneCollection, type SceneEntity } from '@emberfall/common';
 
 type Entity = { scene?: SceneState; order: number; player?: Player } & {
   [K in SceneCollection]?: SceneEntity<K>;
@@ -35,7 +35,7 @@ class PlayerIndex extends Map<string, Player> {
  */
 export class SimulationWorld {
   readonly ecs = new World<Entity>();
-  readonly actors = this.ecs.with("player");
+  readonly actors = this.ecs.with('player');
   private scenes = new Map<SceneState, (() => void)[]>();
   readonly players = new PlayerIndex(this.ecs);
   /** Bind collections once. Pure shared systems read query views and commit

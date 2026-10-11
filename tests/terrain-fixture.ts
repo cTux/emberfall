@@ -1,1 +1,1 @@
-export { terrainArt, terrainTile } from "../packages/client/src/art";
+export { terrainArt, terrainTile } from '../packages/client/src/art';

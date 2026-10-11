@@ -1,7 +1,7 @@
-import { actorArt, artUrl } from "./art";
-import { CLASS_IDS } from "@emberfall/common";
-import type { ClassId } from "@emberfall/common";
-export const classSprite = (id: ClassId = "warrior") => artUrl(`${id}-portrait`);
+import { actorArt, artUrl } from './art';
+import { CLASS_IDS } from '@emberfall/common';
+import type { ClassId } from '@emberfall/common';
+export const classSprite = (id: ClassId = 'warrior') => artUrl(`${id}-portrait`);
 export const characterImages = Object.fromEntries(
   CLASS_IDS.map((id) => {
     const image = actorArt(id);

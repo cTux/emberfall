@@ -1,11 +1,11 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { PartyCard } from "../index";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { PartyCard } from '../index';
 const meta = {
-  title: "Components/PartyCard",
+  title: 'Components/PartyCard',
   component: PartyCard,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   args: {
-    name: "Astrid",
+    name: 'Astrid',
     level: 1,
     health: 75,
     maxHealth: 100,
@@ -20,8 +20,8 @@ export const HostAway: StoryObj<typeof meta> = { args: { away: true } };
 export const Thousands: StoryObj<typeof meta> = { args: { coins: 1000 } };
 export const Millions: StoryObj<typeof meta> = { args: { coins: 3000000 } };
 export const WithCompanion: StoryObj<typeof meta> = {
-  args: { companion: { name: "Bear", health: 75, maxHealth: 150, portrait: "🐻" } },
+  args: { companion: { name: 'Bear', health: 75, maxHealth: 150, portrait: '🐻' } },
 };
 export const DefeatedCompanion: StoryObj<typeof meta> = {
-  args: { companion: { name: "Bear", health: 0, maxHealth: 150, portrait: "🐻" } },
+  args: { companion: { name: 'Bear', health: 0, maxHealth: 150, portrait: '🐻' } },
 };

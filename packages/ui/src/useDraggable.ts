@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
   type PointerEvent,
-} from "react";
+} from 'react';
 
 export type PanelPosition = { x: number; y: number };
 export const PanelPositionContext = createContext<{
@@ -53,10 +53,10 @@ export function useDraggable(key: string, active = true) {
     const clamp = () => move(0, 0);
     const observer = new ResizeObserver(clamp);
     observer.observe(element);
-    window.addEventListener("resize", clamp);
+    window.addEventListener('resize', clamp);
     return () => {
       observer.disconnect();
-      window.removeEventListener("resize", clamp);
+      window.removeEventListener('resize', clamp);
     };
   }, [active, key, element]);
   const finish = () => {
@@ -69,7 +69,7 @@ export function useDraggable(key: string, active = true) {
     style: { transform: `translate(${offset.x}px, ${offset.y}px)` },
     handleProps: {
       onPointerDown(event: PointerEvent<HTMLElement>) {
-        if (event.button !== 0 || (event.target as HTMLElement).closest("button, input, a")) return;
+        if (event.button !== 0 || (event.target as HTMLElement).closest('button, input, a')) return;
         event.stopPropagation();
         drag.current = { x: event.clientX, y: event.clientY };
         event.currentTarget.setPointerCapture(event.pointerId);

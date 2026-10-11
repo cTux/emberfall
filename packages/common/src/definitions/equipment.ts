@@ -1,37 +1,37 @@
-import { ATTACK_DEFINITIONS } from "./abilities/attacks.ts";
-import type { ClassId } from "../index.ts";
+import { ATTACK_DEFINITIONS } from './abilities/attacks.ts';
+import type { ClassId } from '../index.ts';
 
 export const EQUIPMENT_SLOTS = [
-  "weapon",
-  "gloves",
-  "helmet",
-  "bodyArmor",
-  "leggings",
-  "boots",
-  "amulet",
-  "offHand",
-  "ring",
+  'weapon',
+  'gloves',
+  'helmet',
+  'bodyArmor',
+  'leggings',
+  'boots',
+  'amulet',
+  'offHand',
+  'ring',
 ] as const;
 export type EquipmentSlot = (typeof EQUIPMENT_SLOTS)[number];
 export const SLOT_GEAR_TYPES = {
-  weapon: ["sword", "bow", "fireStaff", "natureStaff"],
-  gloves: ["gloves"],
-  helmet: ["helmet"],
-  bodyArmor: ["bodyArmor"],
-  leggings: ["leggings"],
-  boots: ["boots"],
-  amulet: ["amulet"],
-  offHand: ["shield", "quiver", "orb", "natureFocus"],
-  ring: ["ring"],
+  weapon: ['sword', 'bow', 'fireStaff', 'natureStaff'],
+  gloves: ['gloves'],
+  helmet: ['helmet'],
+  bodyArmor: ['bodyArmor'],
+  leggings: ['leggings'],
+  boots: ['boots'],
+  amulet: ['amulet'],
+  offHand: ['shield', 'quiver', 'orb', 'natureFocus'],
+  ring: ['ring'],
 } as const satisfies Record<EquipmentSlot, readonly string[]>;
 export type GearType = (typeof SLOT_GEAR_TYPES)[EquipmentSlot][number];
 export const CLASS_GEAR_TYPES = {
-  warrior: ["sword", "shield"],
-  ranger: ["bow", "quiver"],
-  mage: ["fireStaff", "orb"],
-  druid: ["natureStaff", "natureFocus"],
+  warrior: ['sword', 'shield'],
+  ranger: ['bow', 'quiver'],
+  mage: ['fireStaff', 'orb'],
+  druid: ['natureStaff', 'natureFocus'],
 } as const satisfies Record<ClassId, readonly GearType[]>;
-export type DamageType = "physical" | "fire" | "poison" | "nature";
+export type DamageType = 'physical' | 'fire' | 'poison' | 'nature';
 export interface GearStats {
   power: number;
   attacksPerSecond: number;
@@ -54,11 +54,11 @@ export interface GearDefinition {
 const BASE_CRITICAL_STATS = { criticalChance: 0.05, criticalMultiplier: 1.5 };
 const BASE_ATTACK_SPEED = 1000 / ATTACK_DEFINITIONS.slash.intervalMs;
 export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
-  "warrior-sword": {
-    id: "warrior-sword",
+  'warrior-sword': {
+    id: 'warrior-sword',
     name: "Warrior's sword",
-    gearType: "sword",
-    damageType: "physical",
+    gearType: 'sword',
+    damageType: 'physical',
     stats: {
       ...BASE_CRITICAL_STATS,
       power: 5,
@@ -67,11 +67,11 @@ export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
       manualRange: ATTACK_DEFINITIONS.slash.range,
     },
   },
-  "ranger-bow": {
-    id: "ranger-bow",
+  'ranger-bow': {
+    id: 'ranger-bow',
     name: "Ranger's bow",
-    gearType: "bow",
-    damageType: "poison",
+    gearType: 'bow',
+    damageType: 'poison',
     stats: {
       ...BASE_CRITICAL_STATS,
       power: 5,
@@ -80,11 +80,11 @@ export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
       manualRange: 1000,
     },
   },
-  "mage-staff": {
-    id: "mage-staff",
+  'mage-staff': {
+    id: 'mage-staff',
     name: "Mage's fire staff",
-    gearType: "fireStaff",
-    damageType: "fire",
+    gearType: 'fireStaff',
+    damageType: 'fire',
     stats: {
       ...BASE_CRITICAL_STATS,
       power: 3,
@@ -93,11 +93,11 @@ export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
       manualRange: 1000,
     },
   },
-  "druid-staff": {
-    id: "druid-staff",
+  'druid-staff': {
+    id: 'druid-staff',
     name: "Druid's nature staff",
-    gearType: "natureStaff",
-    damageType: "nature",
+    gearType: 'natureStaff',
+    damageType: 'nature',
     stats: {
       ...BASE_CRITICAL_STATS,
       power: 3,
@@ -108,30 +108,30 @@ export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
   },
 };
 export const LOOT_GEAR_TYPES = [
-  "gloves",
-  "helmet",
-  "bodyArmor",
-  "leggings",
-  "boots",
-  "amulet",
-  "ring",
-  "shield",
-  "quiver",
-  "orb",
-  "natureFocus",
+  'gloves',
+  'helmet',
+  'bodyArmor',
+  'leggings',
+  'boots',
+  'amulet',
+  'ring',
+  'shield',
+  'quiver',
+  'orb',
+  'natureFocus',
 ] as const;
 const LOOT_NAMES = [
-  "Gloves",
-  "Helmet",
-  "Body armor",
-  "Leggings",
-  "Boots",
-  "Amulet",
-  "Ring",
-  "Shield",
-  "Quiver",
-  "Mage orb",
-  "Nature focus",
+  'Gloves',
+  'Helmet',
+  'Body armor',
+  'Leggings',
+  'Boots',
+  'Amulet',
+  'Ring',
+  'Shield',
+  'Quiver',
+  'Mage orb',
+  'Nature focus',
 ];
 for (const [index, gearType] of LOOT_GEAR_TYPES.entries()) {
   const id = `loot-${gearType}`;
@@ -139,10 +139,10 @@ for (const [index, gearType] of LOOT_GEAR_TYPES.entries()) {
 }
 export const LOOT_ITEM_IDS = LOOT_GEAR_TYPES.map((type) => `loot-${type}`);
 export const STARTER_WEAPONS = {
-  warrior: "warrior-sword",
-  ranger: "ranger-bow",
-  mage: "mage-staff",
-  druid: "druid-staff",
+  warrior: 'warrior-sword',
+  ranger: 'ranger-bow',
+  mage: 'mage-staff',
+  druid: 'druid-staff',
 } as const satisfies Record<ClassId, string>;
 export type Equipment = Partial<Record<EquipmentSlot, string | null>>;
 export const INNATE_STATS: GearStats = {

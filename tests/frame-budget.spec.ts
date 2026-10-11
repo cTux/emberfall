@@ -1,63 +1,59 @@
-import { test, expect } from "./fixtures";
-import { writeFileSync } from "node:fs";
-import {
-  TRAINING_ZONES,
-  LOBBY_PORTAL,
-  starterEquipment,
-} from "../packages/common/src/index.ts";
+import { test, expect } from './fixtures';
+import { writeFileSync } from 'node:fs';
+import { TRAINING_ZONES, LOBBY_PORTAL, starterEquipment } from '../packages/common/src/index.ts';
 
-test.use({ graphicsPreset: "High" });
+test.use({ graphicsPreset: 'High' });
 test.use({
   launchOptions: {
     args: [
-      ...(process.platform === "win32" ? ["--use-angle=d3d11"] : []),
-      "--disable-frame-rate-limit",
+      ...(process.platform === 'win32' ? ['--use-angle=d3d11'] : []),
+      '--disable-frame-rate-limit',
     ],
   },
 });
 
-test("profile village, training and forest frame budgets", async ({
+test('profile village, training and forest frame budgets', async ({
   page,
   browser,
   game,
 }, testInfo) => {
   test.skip(
     !process.env.PERF_NEW,
-    "Opt-in hardware measurement; not an FPS assertion on CI/software GPUs.",
+    'Opt-in hardware measurement; not an FPS assertion on CI/software GPUs.',
   );
   const profileCpu = !!process.env.PROFILE_NEW;
   const system = await browser.newBrowserCDPSession();
-  const { gpu } = await system.send("SystemInfo.getInfo");
+  const { gpu } = await system.send('SystemInfo.getInfo');
   await system.detach();
-  await page.goto("/");
-  const build = await (await page.request.get("/version.json")).json();
-  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
+  await page.goto('/');
+  const build = await (await page.request.get('/version.json')).json();
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   const session = await page.context().newCDPSession(page);
-  await session.send("Profiler.enable");
-  for (const scene of ["village", "training", "forest", "crowded"] as const) {
-    if (scene === "training") {
-      player.classId = "mage";
-      player.equipment = starterEquipment("mage");
+  await session.send('Profiler.enable');
+  for (const scene of ['village', 'training', 'forest', 'crowded'] as const) {
+    if (scene === 'training') {
+      player.classId = 'mage';
+      player.equipment = starterEquipment('mage');
       player.x = TRAINING_ZONES[0].x - 120;
       player.y = TRAINING_ZONES[0].y;
     }
-    if (scene === "forest") {
+    if (scene === 'forest') {
       player.x = LOBBY_PORTAL.x;
       player.y = LOBBY_PORTAL.y - 15;
-      const portal = page.getByRole("dialog", { name: "Forest portal" });
+      const portal = page.getByRole('dialog', { name: 'Forest portal' });
       await expect(async () => {
-        await page.keyboard.press("e");
+        await page.keyboard.press('e');
         await expect(portal).toBeVisible();
       }).toPass({ intervals: [200], timeout: 6000 });
-      await portal.getByRole("button", { name: "Create", exact: true }).click();
-      await portal.getByRole("button", { name: "I'm ready" }).click();
-      await expect(page.getByLabel("Forest combat scene.")).toBeVisible({ timeout: 10000 });
-      await page.keyboard.down("d");
+      await portal.getByRole('button', { name: 'Create', exact: true }).click();
+      await portal.getByRole('button', { name: "I'm ready" }).click();
+      await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
+      await page.keyboard.down('d');
     }
-    if (scene === "crowded") {
+    if (scene === 'crowded') {
       const forest = world.scene!;
       player.x = 2400;
       player.y = 1280;
@@ -71,12 +67,12 @@ test("profile village, training and forest frame budgets", async ({
         angle: 0,
         hitpoints: 100000,
         maxHitpoints: 100000,
-        kind: "normal" as const,
-        archetype: (["skeleton", "runner", "brute", "caster"] as const)[i % 4],
+        kind: 'normal' as const,
+        archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[i % 4],
       }));
     }
     await page.waitForTimeout(3000);
-    if (profileCpu) await session.send("Profiler.start");
+    if (profileCpu) await session.send('Profiler.start');
     const timing = await page.evaluate(
       () =>
         new Promise((resolve) => {
@@ -103,18 +99,18 @@ test("profile village, training and forest frame budgets", async ({
         }),
     );
     if (profileCpu) {
-      const { profile } = await session.send("Profiler.stop");
+      const { profile } = await session.send('Profiler.stop');
       writeFileSync(testInfo.outputPath(`${scene}.cpuprofile`), JSON.stringify(profile));
     }
-    await page.keyboard.up("d");
-    const stats = await page.locator("canvas").getAttribute("data-render-stats");
+    await page.keyboard.up('d');
+    const stats = await page.locator('canvas').getAttribute('data-render-stats');
     const measurement = {
       scene,
       build,
       browser: browser.version(),
       gpu,
       viewport: page.viewportSize(),
-      preset: "High",
+      preset: 'High',
       warmupMs: 3000,
       profileCpu,
       timing,

@@ -1,24 +1,24 @@
 import {
   VILLAGE_CRITTERS,
   type CritterKind,
-} from "@emberfall/common/definitions/entities/critters";
-import { ARENA, FOREST, forestTrees, wrap, wrappedDelta } from "@emberfall/common";
+} from '@emberfall/common/definitions/entities/critters';
+import { ARENA, FOREST, forestTrees, wrap, wrappedDelta } from '@emberfall/common';
 export function crittersAt(
-  area: "village" | "forest",
+  area: 'village' | 'forest',
   now: number,
   bounds: { x: number; y: number; width: number; height: number },
 ) {
   const cx = bounds.x + bounds.width / 2,
     cy = bounds.y + bounds.height / 2;
   const homes: { x: number; y: number; kind: CritterKind }[] =
-    area === "village"
+    area === 'village'
       ? VILLAGE_CRITTERS.map((home) => ({
           ...home,
           x: cx + wrappedDelta(home.x, cx, ARENA.width),
           y: cy + wrappedDelta(home.y, cy, ARENA.height),
         }))
       : [];
-  if (area === "forest") {
+  if (area === 'forest') {
     for (
       let row = Math.floor((bounds.y - 40) / 320);
       row <= (bounds.y + bounds.height + 40) / 320;
@@ -35,7 +35,7 @@ export function crittersAt(
         const x = col * 320 + 120,
           y = row * 320 + 180;
         if (forestTrees(x, y, 60).some((t) => Math.hypot(t.x - x, t.y - y) < 55)) continue;
-        homes.push({ x, y, kind: "raccoon" });
+        homes.push({ x, y, kind: 'raccoon' });
       }
   }
   return homes

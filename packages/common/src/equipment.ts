@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { BEAR_DEFINITION } from "./definitions/entities/companions.ts";
+import { z } from 'zod';
+import { BEAR_DEFINITION } from './definitions/entities/companions.ts';
 import {
   EQUIPMENT_SLOTS,
   SLOT_GEAR_TYPES,
@@ -7,21 +7,21 @@ import {
   GEAR_DEFINITIONS,
   STARTER_WEAPONS,
   INNATE_STATS,
-} from "./definitions/equipment.ts";
+} from './definitions/equipment.ts';
 import type {
   Equipment,
   EquipmentSlot,
   GearDefinition,
   GearStats,
   DamageType,
-} from "./definitions/equipment.ts";
-import type { ClassId, Player } from "./index.ts";
-export * from "./definitions/equipment.ts";
+} from './definitions/equipment.ts';
+import type { ClassId, Player } from './index.ts';
+export * from './definitions/equipment.ts';
 
 export function canEquip(slot: EquipmentSlot, item: GearDefinition, classId: ClassId) {
   return (
     (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(item.gearType) &&
-    ((slot !== "weapon" && slot !== "offHand") ||
+    ((slot !== 'weapon' && slot !== 'offHand') ||
       (CLASS_GEAR_TYPES[classId] as readonly string[]).includes(item.gearType))
   );
 }
@@ -37,7 +37,7 @@ export const equipmentSchema = z
               GEAR_DEFINITIONS[id].gearType,
             )),
       ),
-    "Unknown or incompatible equipment",
+    'Unknown or incompatible equipment',
   );
 export function starterEquipment(classId: ClassId): Equipment {
   return { weapon: STARTER_WEAPONS[classId] };
@@ -49,10 +49,10 @@ export function validateClassEquipment(equipment: Equipment, classId: ClassId) {
       ([slot, id]) => id === null || canEquip(slot as EquipmentSlot, GEAR_DEFINITIONS[id], classId),
     )
   )
-    throw new Error("Equipment is incompatible with this class");
+    throw new Error('Equipment is incompatible with this class');
   return parsed;
 }
-export type EquipmentOwner = Pick<Player, "classId" | "equipment">;
+export type EquipmentOwner = Pick<Player, 'classId' | 'equipment'>;
 export interface CharacterStats extends GearStats {
   damageType: DamageType;
   hasWeapon: boolean;
@@ -60,19 +60,19 @@ export interface CharacterStats extends GearStats {
   damageReduction: number;
 }
 export function equippedItems(player: EquipmentOwner) {
-  return player.equipment ?? starterEquipment(player.classId ?? "warrior");
+  return player.equipment ?? starterEquipment(player.classId ?? 'warrior');
 }
 /** Definitions are immutable content; only equipped IDs belong to character saves. */
 export function characterStats(player: EquipmentOwner): CharacterStats {
   const stats = { ...INNATE_STATS };
   const equipment = equippedItems(player);
-  const classId = player.classId ?? "warrior";
+  const classId = player.classId ?? 'warrior';
   let weapon: GearDefinition | undefined;
   for (const slot of EQUIPMENT_SLOTS) {
     const id = equipment[slot];
     const gear = id ? GEAR_DEFINITIONS[id] : undefined;
     if (!gear || !canEquip(slot, gear, classId)) continue;
-    if (slot === "weapon") weapon = gear;
+    if (slot === 'weapon') weapon = gear;
     for (const key of Object.keys(gear.stats) as (keyof GearStats)[])
       stats[key] += gear.stats[key] ?? 0;
   }
@@ -81,7 +81,7 @@ export function characterStats(player: EquipmentOwner): CharacterStats {
   stats.armor = Math.max(0, stats.armor);
   return {
     ...stats,
-    damageType: weapon?.damageType ?? "physical",
+    damageType: weapon?.damageType ?? 'physical',
     hasWeapon: !!weapon,
     attackIntervalMs:
       weapon && stats.attacksPerSecond > 0 ? 1000 / stats.attacksPerSecond : Infinity,

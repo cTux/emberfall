@@ -1,25 +1,25 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { FOREST, wrappedDelta, type WorldState } from "@emberfall/common";
-import { freshProgress } from "./characters.ts";
-import { alignLocalPickups } from "../../client/src/pickup-presentation.ts";
-import { createTrainingScene } from "@emberfall/common";
-import { SessionState, projectState, materializeState } from "@emberfall/common/protocol";
-import { Encoder, Decoder } from "@colyseus/schema";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { FOREST, wrappedDelta, type WorldState } from '@emberfall/common';
+import { freshProgress } from './characters.ts';
+import { alignLocalPickups } from '../../client/src/pickup-presentation.ts';
+import { createTrainingScene } from '@emberfall/common';
+import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import { Encoder, Decoder } from '@colyseus/schema';
 
-test("only server-selected pickups converge on the reconciled player across a seam without rewards", () => {
+test('only server-selected pickups converge on the reconciled player across a seam without rewards', () => {
   const source: WorldState = {
-    id: "w",
-    name: "W",
-    hostId: "p",
+    id: 'w',
+    name: 'W',
+    hostId: 'p',
     serverNow: 1000,
     players: [
       {
         ...freshProgress(),
-        id: "p",
-        name: "P",
+        id: 'p',
+        name: 'P',
         color: 0,
-        scene: "forest",
+        scene: 'forest',
         x: FOREST.width - 10,
         y: 500,
       },
@@ -28,9 +28,9 @@ test("only server-selected pickups converge on the reconciled player across a se
       ...createTrainingScene(1000),
       training: false,
       drops: [
-        { id: 1, kind: "experience", x: FOREST.width - 30, y: 500, at: 0, collectorId: "p" },
-        { id: 2, kind: "gold", x: FOREST.width - 30, y: 500, at: 0, collectorId: "remote" },
-        { id: 3, kind: "gold", x: FOREST.width - 30, y: 500, at: 0 },
+        { id: 1, kind: 'experience', x: FOREST.width - 30, y: 500, at: 0, collectorId: 'p' },
+        { id: 2, kind: 'gold', x: FOREST.width - 30, y: 500, at: 0, collectorId: 'remote' },
+        { id: 3, kind: 'gold', x: FOREST.width - 30, y: 500, at: 0 },
       ],
     },
   };

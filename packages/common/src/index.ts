@@ -1,12 +1,12 @@
-import { RUNTIME } from "./definitions/runtime.ts";
-export { nicknameSchema, type AccountView } from "./account.ts";
-import { CLASS_IDS, CLASS_LABELS } from "./definitions/entities/players.ts";
+import { RUNTIME } from './definitions/runtime.ts';
+export { nicknameSchema, type AccountView } from './account.ts';
+import { CLASS_IDS, CLASS_LABELS } from './definitions/entities/players.ts';
 export { CLASS_IDS, CLASS_LABELS };
-import { z } from "zod";
-import { backpackSchema, type Merchant } from "./inventory.ts";
-export * from "./inventory.ts";
-import { EQUIPMENT_SLOTS, equipmentSchema } from "./equipment.ts";
-export * from "./equipment.ts";
+import { z } from 'zod';
+import { backpackSchema, type Merchant } from './inventory.ts';
+export * from './inventory.ts';
+import { EQUIPMENT_SLOTS, equipmentSchema } from './equipment.ts';
+export * from './equipment.ts';
 export {
   ARENA,
   TREES,
@@ -17,14 +17,14 @@ export {
   inTrainingZone,
   onPath,
   moveActor,
-} from "./world.ts";
-export * from "./scene.ts";
-export * from "./simulation.ts";
-export * from "./training.ts";
-export { fireClassAttack, advancePlayerShot, defaultSpellRange } from "./class-combat.ts";
-export { ENEMY_HP, ENEMY_STATS, enemyMaxHealth, spawnArchetype } from "./enemies.ts";
-import { FOREST } from "./scene.ts";
-import type { SceneState } from "./scene.ts";
+} from './world.ts';
+export * from './scene.ts';
+export * from './simulation.ts';
+export * from './training.ts';
+export { fireClassAttack, advancePlayerShot, defaultSpellRange } from './class-combat.ts';
+export { ENEMY_HP, ENEMY_STATS, enemyMaxHealth, spawnArchetype } from './enemies.ts';
+import { FOREST } from './scene.ts';
+import type { SceneState } from './scene.ts';
 
 export const MAX_PLAYERS = RUNTIME.maxPlayers;
 export const CHAT_LIMIT = RUNTIME.chatLimit;
@@ -53,12 +53,12 @@ export const progressSchema = z
   })
   .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
-export const clientMessage = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("useItem"), id: z.string().min(1).max(64) }),
-  z.object({ type: z.literal("unequip"), slot: z.enum(EQUIPMENT_SLOTS) }),
-  z.object({ type: z.literal("trade"), id: z.string().min(1).max(64), buying: z.boolean() }),
+export const clientMessage = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('useItem'), id: z.string().min(1).max(64) }),
+  z.object({ type: z.literal('unequip'), slot: z.enum(EQUIPMENT_SLOTS) }),
+  z.object({ type: z.literal('trade'), id: z.string().min(1).max(64), buying: z.boolean() }),
   z.object({
-    type: z.literal("chat"),
+    type: z.literal('chat'),
     text: z
       .string()
       .trim()
@@ -66,22 +66,22 @@ export const clientMessage = z.discriminatedUnion("type", [
       .max(CHAT_MAX_LENGTH)
       .regex(/^[^\p{Cc}\p{Cf}]*$/u),
   }),
-  z.object({ type: z.literal("ping"), id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER) }),
-  z.object({ type: z.literal("create"), name, playerName: name, password, characterToken }),
+  z.object({ type: z.literal('ping'), id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER) }),
+  z.object({ type: z.literal('create'), name, playerName: name, password, characterToken }),
   z.object({
-    type: z.literal("join"),
+    type: z.literal('join'),
     worldId: z.string().uuid(),
     playerName: name,
     password,
     characterToken,
   }),
   z.object({
-    type: z.literal("resume"),
+    type: z.literal('resume'),
     worldId: z.string().uuid(),
     characterToken: characterToken.unwrap(),
   }),
   z.object({
-    type: z.literal("combatInput"),
+    type: z.literal('combatInput'),
     autoAttack: z.boolean(),
     autoTarget: z.boolean(),
     attacking: z.boolean(),
@@ -89,7 +89,7 @@ export const clientMessage = z.discriminatedUnion("type", [
     aimY: z.number().finite().min(0).max(FOREST.height),
   }),
   z.object({
-    type: z.literal("cast"),
+    type: z.literal('cast'),
     id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
     epoch: z.string().min(1).max(64),
     classId: classSchema,
@@ -97,19 +97,19 @@ export const clientMessage = z.discriminatedUnion("type", [
     aimX: z.number().finite().min(0).max(FOREST.width),
     aimY: z.number().finite().min(0).max(FOREST.height),
   }),
-  z.object({ type: z.literal("leave") }),
-  z.object({ type: z.literal("selectClass"), classId: classSchema }),
+  z.object({ type: z.literal('leave') }),
+  z.object({ type: z.literal('selectClass'), classId: classSchema }),
   z.object({
-    type: z.literal("createScene"),
-    scene: z.literal("Forest"),
-    difficulty: z.literal("Easy"),
+    type: z.literal('createScene'),
+    scene: z.literal('Forest'),
+    difficulty: z.literal('Easy'),
   }),
-  z.object({ type: z.literal("ready"), ready: z.boolean() }),
-  z.object({ type: z.literal("joinScene") }),
-  z.object({ type: z.literal("returnLobby") }),
-  z.object({ type: z.literal("leaveScene") }),
+  z.object({ type: z.literal('ready'), ready: z.boolean() }),
+  z.object({ type: z.literal('joinScene') }),
+  z.object({ type: z.literal('returnLobby') }),
+  z.object({ type: z.literal('leaveScene') }),
   z.object({
-    type: z.literal("move"),
+    type: z.literal('move'),
     seq: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER).optional(),
     epoch: z.string().max(64).optional(),
     durationMs: z.number().finite().positive().max(50).optional(),
@@ -130,7 +130,7 @@ export interface Player extends CharacterProgress {
   x: number;
   y: number;
   color: number;
-  scene?: "forest";
+  scene?: 'forest';
   attackAt?: number;
   /** Last processed manual request and the request that started the current attack. */
   castSeq?: number;
@@ -151,7 +151,7 @@ export interface Player extends CharacterProgress {
 }
 export interface Bear {
   id: string;
-  name: "Bear";
+  name: 'Bear';
   x: number;
   y: number;
   hitpoints: number;
@@ -189,14 +189,14 @@ export interface ChatMessage {
   text: string;
 }
 export type ServerMessage =
-  | { type: "pong"; id: number }
-  | { type: "worlds"; worlds: WorldSummary[] }
-  | { type: "joined"; playerId: string; world: WorldState; characterToken: string }
-  | { type: "saved"; savedAt: number }
-  | { type: "state"; world: WorldState }
-  | { type: "left" }
-  | { type: "error"; message: string };
+  | { type: 'pong'; id: number }
+  | { type: 'worlds'; worlds: WorldSummary[] }
+  | { type: 'joined'; playerId: string; world: WorldState; characterToken: string }
+  | { type: 'saved'; savedAt: number }
+  | { type: 'state'; world: WorldState }
+  | { type: 'left' }
+  | { type: 'error'; message: string };
 
-export { createTrainingScene } from "./training.ts";
-export { SCENE_COLLECTIONS, appendSceneEntities } from "./entities.ts";
-export type { SceneCollection, SceneEntity } from "./entities.ts";
+export { createTrainingScene } from './training.ts';
+export { SCENE_COLLECTIONS, appendSceneEntities } from './entities.ts';
+export type { SceneCollection, SceneEntity } from './entities.ts';

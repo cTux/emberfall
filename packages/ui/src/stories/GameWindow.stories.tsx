@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { GameWindow } from "../index";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { GameWindow } from '../index';
 const meta = {
-  title: "Components/GameWindow",
+  title: 'Components/GameWindow',
   component: GameWindow,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   args: {
-    title: "Forest portal",
+    title: 'Forest portal',
     open: true,
     modal: false,
-    children: "Drag this title. The host owns open state.",
+    children: 'Drag this title. The host owns open state.',
     onClose: () => {},
   },
 } satisfies Meta<typeof GameWindow>;

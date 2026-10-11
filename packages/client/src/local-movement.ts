@@ -5,7 +5,7 @@ import {
   inTrainingZone,
   fireClassAttack,
   advancePlayerShot,
-} from "@emberfall/common";
+} from '@emberfall/common';
 import {
   FOREST,
   movePlayer,
@@ -13,10 +13,10 @@ import {
   moveForestActor,
   wrap,
   wrappedDelta,
-} from "@emberfall/common";
-import type { Player, PlayerShot, WorldState, ClientMessage } from "@emberfall/common";
+} from '@emberfall/common';
+import type { Player, PlayerShot, WorldState, ClientMessage } from '@emberfall/common';
 
-type Move = Extract<ClientMessage, { type: "move" }> & {
+type Move = Extract<ClientMessage, { type: 'move' }> & {
   seq: number;
   durationMs: number;
   sentAt: number;
@@ -29,7 +29,7 @@ const TOLERANCE = 2,
 export class LocalMovement {
   private source: WorldState | null = null;
   private base?: Player;
-  private epoch = "";
+  private epoch = '';
   private pending: Move[] = [];
   private seq = 0;
   private at = 0;
@@ -75,7 +75,7 @@ export class LocalMovement {
   private flush(duration = this.unsent) {
     if (duration <= 0.0001 || !this.base) return;
     const command: Move = {
-      type: "move",
+      type: 'move',
       seq: ++this.seq,
       epoch: this.epoch,
       x: this.x,
@@ -111,7 +111,7 @@ export class LocalMovement {
     this.advance(now);
     const authoritative = world.players.find((p) => p.id === this.id);
     if (!authoritative) return;
-    const epoch = authoritative.scene === "forest" ? world.scene!.id : "lobby";
+    const epoch = authoritative.scene === 'forest' ? world.scene!.id : 'lobby';
     if (
       !this.base ||
       epoch !== this.epoch ||
@@ -143,7 +143,7 @@ export class LocalMovement {
       this.sourceAt = now;
       this.base = { ...authoritative };
       const shots =
-        authoritative.scene === "forest" ? world.scene?.playerShots : world.training?.playerShots;
+        authoritative.scene === 'forest' ? world.scene?.playerShots : world.training?.playerShots;
       for (const id of this.casts.keys()) {
         if (
           id <= (authoritative.castSeq ?? 0) &&
@@ -182,7 +182,7 @@ export class LocalMovement {
       this.offset.x *= decay;
       this.offset.y *= decay;
     }
-    const point = (predicted.scene === "forest" ? moveForestActor : moveActor)(
+    const point = (predicted.scene === 'forest' ? moveForestActor : moveActor)(
       { x: predicted.x, y: predicted.y + 15 },
       this.offset.x,
       this.offset.y,
@@ -200,12 +200,12 @@ export class LocalMovement {
     return { ...predicted, ...displayed, inputX: motion.x, inputY: motion.y };
   }
   animateAttack(player: Player, world: WorldState, now: number) {
-    const scene = player.scene === "forest" ? world.scene : world.training;
+    const scene = player.scene === 'forest' ? world.scene : world.training;
     const stats = characterStats(player);
     if (
       !stats.hasWeapon ||
       player.hitpoints <= 0 ||
-      scene?.phase !== "active" ||
+      scene?.phase !== 'active' ||
       scene.pausedAt !== undefined ||
       now - this.sourceAt > PREDICTION_LIMIT_MS ||
       (!player.scene && !inTrainingZone(player))
@@ -240,10 +240,10 @@ export class LocalMovement {
         // Keep completed IDs briefly so delayed confirmation cannot replay an expired visual.
         if (this.casts.size > 32) this.casts.delete(this.casts.keys().next().value!);
         this.send({
-          type: "cast",
+          type: 'cast',
           id: this.attackId,
           epoch: this.epoch,
-          classId: player.classId ?? "warrior",
+          classId: player.classId ?? 'warrior',
           autoTarget: player.autoTarget !== false,
           aimX: player.aimX ?? player.x,
           aimY: player.aimY ?? player.y,
@@ -280,18 +280,18 @@ export class LocalMovement {
     return started;
   }
   animateProjectiles(player: Player, world: WorldState, now: number, started: boolean) {
-    const scene = player.scene === "forest" ? world.scene : world.training;
-    const confirmed = player.scene === "forest" ? this.source?.scene : this.source?.training;
+    const scene = player.scene === 'forest' ? world.scene : world.training;
+    const confirmed = player.scene === 'forest' ? this.source?.scene : this.source?.training;
     // Apply the prediction offset once at adoption, never every frame. Retain
     // distance already flown, remaining range, heading and authoritative identity.
     const adopt = (shot: PlayerShot) => ({
       ...shot,
       x:
-        shot.kind === "roots" && shot.hitIds.length
+        shot.kind === 'roots' && shot.hitIds.length
           ? shot.x
           : wrap(shot.x + wrappedDelta(player.x, this.base!.x, FOREST.width), FOREST.width),
       y:
-        shot.kind === "roots" && shot.hitIds.length
+        shot.kind === 'roots' && shot.hitIds.length
           ? shot.y
           : wrap(shot.y + wrappedDelta(player.y, this.base!.y, FOREST.height), FOREST.height),
       confirmedId: shot.id,
@@ -305,9 +305,9 @@ export class LocalMovement {
     }
     if (
       player.hitpoints <= 0 ||
-      scene.phase !== "active" ||
+      scene.phase !== 'active' ||
       scene.pausedAt !== undefined ||
-      (player.classId !== "mage" && player.classId !== "ranger" && player.classId !== "druid") ||
+      (player.classId !== 'mage' && player.classId !== 'ranger' && player.classId !== 'druid') ||
       now - this.sourceAt > PREDICTION_LIMIT_MS
     ) {
       this.shots = [];
@@ -336,7 +336,7 @@ export class LocalMovement {
           shot.id = serverShot.id;
           shot.confirmedId = serverShot.id;
           // Keep the same visual through every server-confirmed turn.
-          if (serverShot.kind === "roots" && serverShot.hitIds.length > shot.hitIds.length) {
+          if (serverShot.kind === 'roots' && serverShot.hitIds.length > shot.hitIds.length) {
             Object.assign(shot, serverShot, { hitIds: [...serverShot.hitIds] });
           }
           shot.targetId = serverShot.targetId;

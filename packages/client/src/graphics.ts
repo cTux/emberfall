@@ -14,7 +14,7 @@ export interface GraphicsSettings {
   colorGrading: boolean;
   frameLimit: number;
 }
-export const GRAPHICS_PRESETS: Record<"Low" | "Balanced" | "High", GraphicsSettings> = {
+export const GRAPHICS_PRESETS: Record<'Low' | 'Balanced' | 'High', GraphicsSettings> = {
   Low: {
     adaptiveResolution: true,
     lightShafts: false,
@@ -65,29 +65,29 @@ export const GRAPHICS_PRESETS: Record<"Low" | "Balanced" | "High", GraphicsSetti
   },
 };
 export const GRAPHICS_LABELS: Record<
-  Exclude<keyof GraphicsSettings, "resolution" | "frameLimit">,
+  Exclude<keyof GraphicsSettings, 'resolution' | 'frameLimit'>,
   string
 > = {
-  adaptiveResolution: "Adaptive resolution",
-  lightShafts: "Sunlight shafts (2D)",
-  colorGrading: "Cinematic color grading",
-  vignette: "Vignette",
-  fog: "Volumetric fog (2D)",
-  ambientOcclusion: "Ambient occlusion (2D)",
-  shadows: "Soft shadows",
-  wavingVegetation: "Waving trees",
-  motionBlur: "Character motion blur",
-  lighting: "Dynamic lighting",
-  bloom: "Bloom",
-  particles: "Ambient particles",
+  adaptiveResolution: 'Adaptive resolution',
+  lightShafts: 'Sunlight shafts (2D)',
+  colorGrading: 'Cinematic color grading',
+  vignette: 'Vignette',
+  fog: 'Volumetric fog (2D)',
+  ambientOcclusion: 'Ambient occlusion (2D)',
+  shadows: 'Soft shadows',
+  wavingVegetation: 'Waving trees',
+  motionBlur: 'Character motion blur',
+  lighting: 'Dynamic lighting',
+  bloom: 'Bloom',
+  particles: 'Ambient particles',
 };
 export function loadGraphics(): GraphicsSettings {
   const settings = { ...GRAPHICS_PRESETS.High };
   try {
-    const value = JSON.parse(localStorage.getItem("emberfall-new.graphics") ?? "{}");
-    if (!value || typeof value !== "object") return settings;
+    const value = JSON.parse(localStorage.getItem('emberfall-new.graphics') ?? '{}');
+    if (!value || typeof value !== 'object') return settings;
     for (const key of Object.keys(GRAPHICS_LABELS) as (keyof typeof GRAPHICS_LABELS)[])
-      if (typeof value[key] === "boolean") settings[key] = value[key];
+      if (typeof value[key] === 'boolean') settings[key] = value[key];
     if ([0, 30, 60, 120, 144].includes(value.frameLimit)) settings.frameLimit = value.frameLimit;
     if ([0.75, 1, 1.5].includes(value.resolution)) settings.resolution = value.resolution;
   } catch {

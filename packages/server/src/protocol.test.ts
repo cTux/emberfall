@@ -1,19 +1,19 @@
-import { test } from "node:test";
-import assert from "node:assert/strict";
-import { Encoder, Decoder } from "@colyseus/schema";
-import { SessionState, projectState, materializeState } from "@emberfall/common/protocol";
-import { createTrainingScene, type WorldState } from "@emberfall/common";
-import { freshProgress } from "./characters.ts";
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { Encoder, Decoder } from '@colyseus/schema';
+import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import { createTrainingScene, type WorldState } from '@emberfall/common';
+import { freshProgress } from './characters.ts';
 
-test("native patches preserve positions, membership, ordering and detached snapshots", () => {
+test('native patches preserve positions, membership, ordering and detached snapshots', () => {
   const source: WorldState = {
-    id: "w",
-    name: "World",
-    hostId: "p",
+    id: 'w',
+    name: 'World',
+    hostId: 'p',
     serverNow: 1000,
     players: [
-      { ...freshProgress(), id: "p", name: "P", color: 0, x: 400, y: 300 },
-      { ...freshProgress(), id: "q", name: "Q", color: 1, x: 420, y: 300 },
+      { ...freshProgress(), id: 'p', name: 'P', color: 0, x: 400, y: 300 },
+      { ...freshProgress(), id: 'q', name: 'Q', color: 1, x: 420, y: 300 },
     ],
     training: createTrainingScene(1000),
   };
@@ -27,7 +27,7 @@ test("native patches preserve positions, membership, ordering and detached snaps
   encoder.discardChanges();
   const original = materializeState(received)!;
   projectState(state, source);
-  assert.equal(encoder.encode().length, 0, "unchanged state sends no delta");
+  assert.equal(encoder.encode().length, 0, 'unchanged state sends no delta');
   source.players[0].x += 9;
   source.serverNow = 1050;
   projectState(state, source);
@@ -42,7 +42,7 @@ test("native patches preserve positions, membership, ordering and detached snaps
   assert.equal(
     original.players[0].x,
     400,
-    "interpolation history cannot change under a later patch",
+    'interpolation history cannot change under a later patch',
   );
   Object.assign(source.players[0], {
     attackAngle: -0.5,
@@ -74,7 +74,7 @@ test("native patches preserve positions, membership, ordering and detached snaps
   encoder.discardChanges();
   assert.deepEqual(
     materializeState(received)!.players.map((p) => p.id),
-    ["q", "p"],
+    ['q', 'p'],
   );
   assert.equal(materializeState(received)!.training!.enemies.length, 4);
   source.training = undefined;

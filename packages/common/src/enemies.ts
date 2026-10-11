@@ -1,4 +1,4 @@
-import { AILMENT_DEFINITIONS } from "./definitions/effects/ailments.ts";
+import { AILMENT_DEFINITIONS } from './definitions/effects/ailments.ts';
 import {
   FOREST,
   forestDistance,
@@ -6,30 +6,30 @@ import {
   moveForestActor,
   wrap,
   wrappedDelta,
-} from "./scene.ts";
-import type { Enemy } from "./scene.ts";
+} from './scene.ts';
+import type { Enemy } from './scene.ts';
 
 import {
   ENEMY_HP,
   ENEMY_STATS,
   ENEMY_RULES,
   ENEMY_HEALTH_MULTIPLIERS,
-} from "./definitions/entities/enemies.ts";
+} from './definitions/entities/enemies.ts';
 export { ENEMY_HP, ENEMY_STATS };
-export function spawnArchetype(roll: number, count: number): NonNullable<Enemy["archetype"]> {
+export function spawnArchetype(roll: number, count: number): NonNullable<Enemy['archetype']> {
   return roll < ENEMY_RULES.bruteChance
-    ? "brute"
+    ? 'brute'
     : roll < ENEMY_RULES.bruteChance + ENEMY_RULES.casterChance
-      ? "caster"
+      ? 'caster'
       : count % 2
-        ? "skeleton"
-        : "runner";
+        ? 'skeleton'
+        : 'runner';
 }
-export function enemyMaxHealth(enemy: Pick<Enemy, "kind" | "archetype" | "maxHitpoints">) {
+export function enemyMaxHealth(enemy: Pick<Enemy, 'kind' | 'archetype' | 'maxHitpoints'>) {
   return (
     enemy.maxHitpoints ??
-    ENEMY_HP[enemy.kind ?? "normal"] *
-      (enemy.kind === "boss" ? 1 : ENEMY_HEALTH_MULTIPLIERS[enemy.archetype ?? "skeleton"])
+    ENEMY_HP[enemy.kind ?? 'normal'] *
+      (enemy.kind === 'boss' ? 1 : ENEMY_HEALTH_MULTIPLIERS[enemy.archetype ?? 'skeleton'])
   );
 }
 
@@ -50,7 +50,7 @@ export function moveEnemies(
   }
   for (const enemy of enemies) {
     if (enemy.attack) continue;
-    const stats = ENEMY_STATS[enemy.archetype ?? "skeleton"];
+    const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
     const target = players
       .filter((p) => p.hitpoints > 0)
       .reduce<(typeof players)[number] | undefined>(
@@ -59,10 +59,10 @@ export function moveEnemies(
       );
     if (!target) continue;
     const targetDistance = forestDistance(enemy, target);
-    if (enemy.archetype === "caster" && targetDistance < ENEMY_RULES.casterStopRange) continue;
+    if (enemy.archetype === 'caster' && targetDistance < ENEMY_RULES.casterStopRange) continue;
     cells.get(key(enemy.x, enemy.y))!.delete(enemy);
     const rooted =
-      enemy.kind !== "boss" && enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now);
+      enemy.kind !== 'boss' && enemy.debuffs?.some((d) => d.kind === 'roots' && d.expiresAt > now);
     const distance = Math.min(
       stats.speed * dt * (rooted ? 1 - AILMENT_DEFINITIONS.roots.slowFraction : 1),
       targetDistance,
@@ -121,7 +121,7 @@ export function moveEnemies(
             for (const other of cells.get(key(point.x + col * 40, point.y + row * 40)) ?? []) {
               if (
                 forestDistance(point, other) <
-                stats.radius + ENEMY_STATS[other.archetype ?? "skeleton"].radius
+                stats.radius + ENEMY_STATS[other.archetype ?? 'skeleton'].radius
               )
                 clear = false;
             }

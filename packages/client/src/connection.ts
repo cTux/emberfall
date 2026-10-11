@@ -1,7 +1,7 @@
-import { RUNTIME } from "@emberfall/common/definitions/runtime";
-import { Client, type Room } from "@colyseus/sdk";
-import { SessionState, materializeState } from "@emberfall/common/protocol";
-import type { ServerMessage, ClientMessage } from "@emberfall/common";
+import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { Client, type Room } from '@colyseus/sdk';
+import { SessionState, materializeState } from '@emberfall/common/protocol';
+import type { ServerMessage, ClientMessage } from '@emberfall/common';
 
 /** SDK adapter keeps application recovery separate from transport recovery. */
 export class GameConnection {
@@ -22,28 +22,28 @@ export class GameConnection {
   private async connect(url: string) {
     try {
       const endpoint = new URL(url);
-      endpoint.pathname = "/";
+      endpoint.pathname = '/';
       const options =
-        typeof location !== "undefined" && import.meta.env?.DEV
+        typeof location !== 'undefined' && import.meta.env?.DEV
           ? {
               urlBuilder: (url: URL) => {
-                if (url.protocol.startsWith("ws")) url.pathname = `/colyseus${url.pathname}`;
+                if (url.protocol.startsWith('ws')) url.pathname = `/colyseus${url.pathname}`;
                 return url.toString();
               },
             }
           : undefined;
       let ticket: string | undefined;
       if (this.steam) {
-        const response = await fetch("/api/account/ticket", {
-          method: "POST",
-          credentials: "same-origin",
+        const response = await fetch('/api/account/ticket', {
+          method: 'POST',
+          credentials: 'same-origin',
           signal: AbortSignal.timeout(10_000),
         });
-        if (!response.ok) throw new Error("Authentication required");
+        if (!response.ok) throw new Error('Authentication required');
         ticket = (await response.json()).ticket;
       }
       const room = await new Client(endpoint.toString(), options).create<SessionState>(
-        "session",
+        'session',
         { protocolVersion: RUNTIME.protocolVersion, ticket },
         SessionState,
       );
@@ -53,10 +53,10 @@ export class GameConnection {
         await room.leave();
         return;
       }
-      room.onMessage("event", (message: ServerMessage) => this.onmessage?.({ data: message }));
+      room.onMessage('event', (message: ServerMessage) => this.onmessage?.({ data: message }));
       room.onStateChange((state) => {
         const world = materializeState(state);
-        if (world) this.onmessage?.({ data: { type: "state", world } });
+        if (world) this.onmessage?.({ data: { type: 'state', world } });
       });
       room.onLeave(() => {
         this.readyState = GameConnection.CLOSED;
@@ -65,7 +65,7 @@ export class GameConnection {
       room.onError(() => this.onerror?.());
       this.readyState = GameConnection.OPEN;
       this.onopen?.();
-      room.send("command", { type: "ping", id: 1 });
+      room.send('command', { type: 'ping', id: 1 });
     } catch {
       if (!this.closed) {
         this.onerror?.();
@@ -75,7 +75,7 @@ export class GameConnection {
     }
   }
   send(data: ClientMessage) {
-    if (this.readyState === GameConnection.OPEN) this.room?.send("command", data);
+    if (this.readyState === GameConnection.OPEN) this.room?.send('command', data);
   }
   close(code = 1000, reason?: string) {
     this.closed = true;

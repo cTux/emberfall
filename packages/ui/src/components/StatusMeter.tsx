@@ -1,11 +1,11 @@
-import { Typography } from "@mui/material";
-import { StatusMeterStyled, StatusMeterProgressStyled, StatusMeterTextStyled } from "./styles";
+import { Typography } from '@mui/material';
+import { StatusMeterStyled, StatusMeterProgressStyled, StatusMeterTextStyled } from './styles';
 
 export interface StatusMeterProps {
   label: string;
   value: number;
   max: number;
-  color?: "success" | "info" | "warning" | "error" | "boss";
+  color?: 'success' | 'info' | 'warning' | 'error' | 'boss';
   centered?: boolean;
   compact?: boolean;
 }
@@ -14,7 +14,7 @@ export function StatusMeter({
   label,
   value,
   max,
-  color = "success",
+  color = 'success',
   centered = false,
   compact = false,
 }: StatusMeterProps) {
@@ -23,7 +23,7 @@ export function StatusMeter({
   return (
     <StatusMeterStyled>
       <StatusMeterProgressStyled
-        variant="determinate"
+        variant='determinate'
         value={limit ? (current / limit) * 100 : 0}
         color={color}
         compact={compact}
@@ -33,11 +33,11 @@ export function StatusMeter({
         aria-valuemax={limit || 1}
         aria-valuetext={`${Math.round(current)} / ${Math.round(limit)}`}
       />
-      <StatusMeterTextStyled centered={centered} aria-hidden="true">
-        <Typography variant="caption" noWrap>
+      <StatusMeterTextStyled centered={centered} aria-hidden='true'>
+        <Typography variant='caption' noWrap>
           {label}
         </Typography>
-        <Typography variant="caption" sx={{ flexShrink: 0 }}>
+        <Typography variant='caption' sx={{ flexShrink: 0 }}>
           {Math.round(current)} / {Math.round(limit)}
         </Typography>
       </StatusMeterTextStyled>

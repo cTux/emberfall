@@ -1,30 +1,30 @@
-import { Box, Chip, IconButton, Stack, Tooltip, Typography } from "@mui/material";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { StatusMeter } from "./StatusMeter";
-import { BossHealthStyled } from "./styles";
+import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import { StatusMeter } from './StatusMeter';
+import { BossHealthStyled } from './styles';
 
 export function ConnectionStatus({
   status,
 }: {
-  status: "connected" | "connecting" | "disconnected";
+  status: 'connected' | 'connecting' | 'disconnected';
 }) {
   return (
     <Box
-      component="span"
-      role="status"
-      aria-label={status === "connected" ? "World server online" : `World server ${status}`}
+      component='span'
+      role='status'
+      aria-label={status === 'connected' ? 'World server online' : `World server ${status}`}
       sx={{
-        display: "block",
+        display: 'block',
         width: 10,
         height: 10,
-        borderRadius: "50%",
+        borderRadius: '50%',
         bgcolor:
-          status === "connected"
-            ? "success.main"
-            : status === "connecting"
-              ? "warning.main"
-              : "error.main",
+          status === 'connected'
+            ? 'success.main'
+            : status === 'connecting'
+              ? 'warning.main'
+              : 'error.main',
       }}
     />
   );
@@ -38,7 +38,7 @@ export interface HudAction {
 }
 export function HudActions({ actions }: { actions: HudAction[] }) {
   return (
-    <Stack component="nav" aria-label="Game controls" direction="row" spacing={1}>
+    <Stack component='nav' aria-label='Game controls' direction='row' spacing={1}>
       {actions.map((action) => (
         <Tooltip title={action.label} key={action.id}>
           <span>
@@ -47,7 +47,7 @@ export function HudActions({ actions }: { actions: HudAction[] }) {
               disabled={action.disabled}
               onClick={action.onClick}
             >
-              <FontAwesomeIcon icon={action.icon} aria-hidden="true" />
+              <FontAwesomeIcon icon={action.icon} aria-hidden='true' />
             </IconButton>
           </span>
         </Tooltip>
@@ -65,16 +65,16 @@ export function BossHealth({
   maxHealth: number;
 }) {
   return (
-    <BossHealthStyled as="aside" aria-label="Boss health">
-      <Typography variant="h3" component="h3" gutterBottom>
+    <BossHealthStyled as='aside' aria-label='Boss health'>
+      <Typography variant='h3' component='h3' gutterBottom>
         {name}
       </Typography>
-      <StatusMeter label={`${name} HP`} value={health} max={maxHealth} color="boss" centered />
+      <StatusMeter label={`${name} HP`} value={health} max={maxHealth} color='boss' centered />
     </BossHealthStyled>
   );
 }
-export function InteractionPrompt({ action, keys = "E" }: { action: string; keys?: string }) {
-  return <Chip role="status" variant="outlined" label={`${keys} · ${action}`} />;
+export function InteractionPrompt({ action, keys = 'E' }: { action: string; keys?: string }) {
+  return <Chip role='status' variant='outlined' label={`${keys} · ${action}`} />;
 }
 export function SceneStatus({ label, seconds }: { label: string; seconds?: number }) {
   const time =
@@ -82,11 +82,11 @@ export function SceneStatus({ label, seconds }: { label: string; seconds?: numbe
       ? undefined
       : Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
   return (
-    <Typography role="status" color="primary">
+    <Typography role='status' color='primary'>
       {label}
       {time === undefined
-        ? ""
-        : ` · ${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`}
+        ? ''
+        : ` · ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')}`}
     </Typography>
   );
 }

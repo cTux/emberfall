@@ -1,12 +1,12 @@
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
-import { WorldList } from "../index";
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
+import { WorldList } from '../index';
 const meta = {
-  title: "Components/WorldList",
+  title: 'Components/WorldList',
   component: WorldList,
-  tags: ["autodocs"],
+  tags: ['autodocs'],
   args: {
-    worlds: [{ id: "1", name: "Northern grove", players: 3, capacity: 8, locked: true }],
+    worlds: [{ id: '1', name: 'Northern grove', players: 3, capacity: 8, locked: true }],
     disabled: false,
     onJoin: () => {},
     latency: 42,
@@ -21,14 +21,14 @@ export const RowInteraction: StoryObj<typeof meta> = {
     return (
       <>
         <WorldList {...args} onJoin={() => setJoins((count) => count + 1)} />
-        <p role="status">Joins: {joins}</p>
+        <p role='status'>Joins: {joins}</p>
       </>
     );
   },
   args: {
     worlds: [
-      { id: "open", name: "Northern grove", players: 3, capacity: 8, locked: true },
-      { id: "full", name: "Full world", players: 8, capacity: 8 },
+      { id: 'open', name: 'Northern grove', players: 3, capacity: 8, locked: true },
+      { id: 'full', name: 'Full world', players: 8, capacity: 8 },
     ],
   },
 };
@@ -41,7 +41,7 @@ export const Disabled: StoryObj<typeof meta> = {
 export const Empty: StoryObj<typeof meta> = { args: { worlds: [] } };
 export const Full: StoryObj<typeof meta> = {
   args: {
-    worlds: [{ id: "1", name: "Playtest Default", players: 32, capacity: 32 }],
+    worlds: [{ id: '1', name: 'Playtest Default', players: 32, capacity: 32 }],
     latency: null,
   },
 };

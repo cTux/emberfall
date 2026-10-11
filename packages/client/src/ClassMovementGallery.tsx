@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { actorArt, drawArt } from "./art";
-import { playerFrame } from "./animation";
+import { useEffect, useRef, useState } from 'react';
+import { actorArt, drawArt } from './art';
+import { playerFrame } from './animation';
 
-const classes = ["warrior", "ranger", "mage", "druid"];
-const directions = ["Down ↓", "Up ↑", "Left ←", "Right →"];
+const classes = ['warrior', 'ranger', 'mage', 'druid'];
+const directions = ['Down ↓', 'Up ↑', 'Left ←', 'Right →'];
 const images = classes.map(actorArt);
 
 /** Same atlas and gait selector as village/forest, without a world connection. */
@@ -16,7 +16,7 @@ export function ClassMovementGallery() {
   const [step, setStep] = useState(0);
   useEffect(() => {
     const element = canvas.current!;
-    const ctx = element.getContext("2d")!;
+    const ctx = element.getContext('2d')!;
     let request = 0;
     let previous = performance.now();
     function draw(now: number) {
@@ -24,21 +24,21 @@ export function ClassMovementGallery() {
       previous = now;
       const clock = paused ? step * 80 : elapsed.current;
       const row = playerFrame(clock, true, true);
-      ctx.fillStyle = "#18231f";
+      ctx.fillStyle = '#18231f';
       ctx.fillRect(0, 0, 1120, 920);
       ctx.imageSmoothingEnabled = false;
-      ctx.font = "18px sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#eddfc1";
+      ctx.font = '18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#eddfc1';
       directions.forEach((label, col) => ctx.fillText(label, 190 + col * 260, 30));
       images.forEach((image, index) => {
-        ctx.textAlign = "left";
-        ctx.fillStyle = "#eddfc1";
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#eddfc1';
         ctx.fillText(classes[index], 12, 80 + index * 215);
         for (let col = 0; col < 4; col++) {
           const x = 65 + col * 260;
           const y = 45 + index * 215;
-          ctx.strokeStyle = "#35493e";
+          ctx.strokeStyle = '#35493e';
           ctx.strokeRect(x, y, 250, 205);
           const distance = travel ? ((clock / 18) % 60) - 30 : 0;
           const dx = col === 2 ? -distance : col === 3 ? distance : 0;
@@ -60,22 +60,22 @@ export function ClassMovementGallery() {
   return (
     <main
       style={{
-        height: "100dvh",
-        overflow: "auto",
+        height: '100dvh',
+        overflow: 'auto',
         padding: 24,
-        boxSizing: "border-box",
-        background: "#101915",
-        color: "#eddfc1",
+        boxSizing: 'border-box',
+        background: '#101915',
+        color: '#eddfc1',
       }}
     >
       <h1>Class movement</h1>
       <p>Every class, every direction. Enlarged walkers with a game-size copy in each corner.</p>
       <div
         style={{
-          display: "flex",
+          display: 'flex',
           gap: 20,
-          flexWrap: "wrap",
-          alignItems: "center",
+          flexWrap: 'wrap',
+          alignItems: 'center',
           marginBottom: 16,
         }}
       >
@@ -86,7 +86,7 @@ export function ClassMovementGallery() {
             setPaused(!paused);
           }}
         >
-          {paused ? "Play" : "Pause"}
+          {paused ? 'Play' : 'Pause'}
         </button>
         <button
           onClick={() => {
@@ -99,16 +99,16 @@ export function ClassMovementGallery() {
         </button>
         <label>
           <input
-            type="checkbox"
+            type='checkbox'
             checked={travel}
             onChange={(event) => setTravel(event.target.checked)}
-          />{" "}
+          />{' '}
           Travel
         </label>
         <label>
-          Speed{" "}
+          Speed{' '}
           <select
-            aria-label="Speed"
+            aria-label='Speed'
             value={speed}
             onChange={(event) => setSpeed(Number(event.target.value))}
           >
@@ -117,10 +117,10 @@ export function ClassMovementGallery() {
             <option value={1}>Normal</option>
           </select>
         </label>
-        <a href="/?art-gallery" style={{ color: "#edc48a" }}>
+        <a href='/?art-gallery' style={{ color: '#edc48a' }}>
           All assets
         </a>
-        <a href="/" style={{ color: "#edc48a" }}>
+        <a href='/' style={{ color: '#edc48a' }}>
           Open game
         </a>
       </div>
@@ -128,14 +128,14 @@ export function ClassMovementGallery() {
         ref={canvas}
         width={1120}
         height={920}
-        aria-label="All classes walking in four directions"
+        aria-label='All classes walking in four directions'
         style={{
-          position: "static",
-          display: "block",
-          width: "100%",
+          position: 'static',
+          display: 'block',
+          width: '100%',
           maxWidth: 1120,
-          height: "auto",
-          imageRendering: "pixelated",
+          height: 'auto',
+          imageRendering: 'pixelated',
         }}
       />
     </main>
