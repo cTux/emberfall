@@ -76,7 +76,7 @@ export class CharacterStore {
     ) {
       this.db.close();
       throw new Error(
-        "Legacy database detected. Use import-save-new with a backup and a separate destination.",
+        "Legacy database detected. Use pnpm import-save with a backup and a separate destination.",
       );
     }
     this.db.exec("PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;");
