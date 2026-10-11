@@ -15,7 +15,7 @@
     "test:browser": "playwright test",
     "https:setup": "pwsh -NoProfile -File scripts/setup-https.ps1",
     "benchmark": "node packages/server/scripts/benchmark.ts",
-    "import-save": "node packages/server/scripts/import-save.ts"
+    "import-save": "node --env-file-if-exists=.env --env-file-if-exists=packages/server/.env packages/server/scripts/import-save.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",

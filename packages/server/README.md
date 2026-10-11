@@ -81,6 +81,17 @@ destination file:
 pnpm import-save path/to/legacy-backup.sqlite path/to/new-characters.sqlite
 ```
 
+For the startup error `Legacy database detected`, stop the server and back up
+the database, then run `pnpm import-save` from the repository root without
+arguments. It loads the same root/package `.env` files as server startup, reads
+`SAVE_PATH_NEW` (or the default `packages/server/data/characters.sqlite`), and
+writes `<source>.imported.sqlite`. Relative configured paths are resolved from
+`packages/server`, matching server startup. Explicit command arguments are
+resolved from the current directory. The command prints the absolute
+`SAVE_PATH_NEW` setting to put in the root `.env` before restarting. Update any
+shell or package `.env` override too; rerunning refuses to overwrite the imported
+file. The original database is preserved; migration is never performed in place.
+
 The importer opens the source read-only, validates every character, builds a
 temporary new database, and publishes it only after successful completion. It
 refuses existing destinations. It preserves token hashes, classes, world IDs
