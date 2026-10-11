@@ -1,10 +1,14 @@
 import { edgeArrow } from "../../client/src/navigation.ts";
 import { swordOverlapsEnemy, smoothAttackAngle } from "@emberfall/common";
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { SnapshotBuffer } from "../../client/src/snapshots.ts";
 import { FOREST, stepCombat } from "@emberfall/common";
 import type { WorldState, Player, SceneState } from "@emberfall/common";
+// These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
+beforeEach((t) => {
+  if ("mock" in t) t.mock.method(Math, "random", () => 0.5);
+});
 const hero: Player = {
   id: "p",
   name: "P",
@@ -25,7 +29,7 @@ const snapshot = (time: number, x: number): WorldState => ({
   players: [{ ...hero, x, inputX: 1 }],
 });
 
-test("remote lobby players interpolate across seams instead of crossing the whole map", () => {
+test("remote lobby players interpolate across seams instead of crossing the whole map", async () => {
   for (const axis of ["x", "y"] as const) {
     const size = axis === "x" ? FOREST.width : FOREST.height;
     const buffer = new SnapshotBuffer("p");
@@ -36,7 +40,7 @@ test("remote lobby players interpolate across seams instead of crossing the whol
     assert(point < 4 || point > size - 4);
   }
 });
-test("confirmed movement interpolates, never extrapolates, and holds through packet gaps", () => {
+test("confirmed movement interpolates, never extrapolates, and holds through packet gaps", async () => {
   const buffer = new SnapshotBuffer("p");
   const base = snapshot(10000, 420);
   buffer.push(base, 0);
@@ -54,7 +58,7 @@ test("confirmed movement interpolates, never extrapolates, and holds through pac
   buffer.push(snapshot(10050, 100), 3100);
   assert.equal(buffer.render(3100)!.players[0].x, 456, "stale packets must not rewind playback");
 });
-test("Bear animation follows confirmed movement, stops during packet gaps, and snaps teleports", () => {
+test("Bear animation follows confirmed movement, stops during packet gaps, and snaps teleports", async () => {
   const buffer = new SnapshotBuffer("p");
   const base = snapshot(10000, 420);
   base.players[0].bear = {
@@ -88,7 +92,7 @@ test("Bear animation follows confirmed movement, stops during packet gaps, and s
   assert.equal(base.players[0].bear!.x, 420);
 });
 
-test("snapshot playback wraps edges, snaps area transfers, and does not predict damage", () => {
+test("snapshot playback wraps edges, snaps area transfers, and does not predict damage", async () => {
   const buffer = new SnapshotBuffer("p");
   const forest = snapshot(10000, FOREST.width - 4);
   forest.players[0].scene = "forest";
@@ -107,7 +111,7 @@ test("snapshot playback wraps edges, snaps area transfers, and does not predict 
   buffer.push(snapshot(10100, 480), 150);
   assert.equal(buffer.render(150)!.players[0].x, 480);
 });
-test("boss defeat puts fixed return portals within reach of all scattered players", () => {
+test("boss defeat puts fixed return portals within reach of all scattered players", async () => {
   const players = [
     { ...hero, scene: "forest" as const, x: 12, y: 1200 },
     { ...hero, id: "q", scene: "forest" as const, x: 4300, y: 200 },
@@ -137,7 +141,7 @@ test("boss defeat puts fixed return portals within reach of all scattered player
   assert.equal(scene.portals[0].x, 12, "portal must stay in the scene, not follow a player");
 });
 
-test("sword reaches 88 units in its forward semicircle, with unchanged damage", () => {
+test("sword reaches 75 units in its forward semicircle, with unchanged damage", async () => {
   const player = { ...hero, scene: "forest" as const, x: 2400, y: 1280 };
   const scene: SceneState = {
     id: "range",
@@ -152,10 +156,10 @@ test("sword reaches 88 units in its forward semicircle, with unchanged damage", 
     damage: [],
     portals: [],
     enemies: [
-      { id: 1, x: 2480, y: 1280, hitpoints: 10, angle: 0 },
-      { id: 2, x: 2488, y: 1280, hitpoints: 10, angle: 0 },
-      { id: 3, x: 2499, y: 1280, hitpoints: 10, angle: 0 },
-      { id: 4, x: 2312, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 1, x: 2470, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 2, x: 2475, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 3, x: 2500, y: 1280, hitpoints: 10, angle: 0 },
+      { id: 4, x: 2325, y: 1280, hitpoints: 10, angle: 0 },
     ],
   };
   stepCombat(scene, [player], 10000, 0);
@@ -165,16 +169,16 @@ test("sword reaches 88 units in its forward semicircle, with unchanged damage", 
   );
 });
 
-test("sword body overlap includes arc and diameter edges, and wraps across the forest seam", () => {
+test("sword body overlap includes arc and diameter edges, and wraps across the forest seam", async () => {
   const p = { ...hero, scene: "forest" as const, x: 2400, y: 1280, attackAngle: 0 };
-  const enemy = { id: 1, x: p.x + 98, y: p.y, hitpoints: 10, angle: 0 };
+  const enemy = { id: 1, x: p.x + 99, y: p.y + 6, hitpoints: 10, angle: 0 };
   assert(swordOverlapsEnemy(p, enemy));
   enemy.x += 1;
   assert(!swordOverlapsEnemy(p, enemy));
-  enemy.x = p.x - 9;
-  enemy.y = p.y + 40;
+  enemy.x = p.x - 24;
+  enemy.y = p.y + 46;
   assert(swordOverlapsEnemy(p, enemy));
-  enemy.x = p.x - 11;
+  enemy.x = p.x - 24.01;
   assert(!swordOverlapsEnemy(p, enemy));
   p.x = FOREST.width - 5;
   enemy.x = 20;
@@ -182,7 +186,7 @@ test("sword body overlap includes arc and diameter edges, and wraps across the f
   assert(swordOverlapsEnemy(p, enemy));
 });
 
-test("every enemy overlapping during a swing is hit once, including late entrants and retargets", () => {
+test("every enemy overlapping during a swing is hit once, including late entrants and retargets", async () => {
   const player = { ...hero, scene: "forest" as const, x: 2400, y: 1280 };
   const scene: SceneState = {
     id: "sweep",
@@ -231,7 +235,7 @@ test("every enemy overlapping during a swing is hit once, including late entrant
   );
 });
 
-test("attack rotation takes the short path and is consistent at server and display frame rates", () => {
+test("attack rotation takes the short path and is consistent at server and display frame rates", async () => {
   const degrees = Math.PI / 180;
   const angle = smoothAttackAngle(179 * degrees, -179 * degrees, 0.016);
   assert(angle > 179 * degrees && angle < Math.PI);
@@ -266,28 +270,29 @@ test("kills drop experience and 10-percent coins; experience pickups reward play
   stepCombat(scene, [player], 10000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ["experience", "gold"],
+    ["experience", "gold", "item"],
   );
   const experience = player.experience;
   player.x = 2440;
   stepCombat(scene, [player], 10200, 0);
-  assert.equal(scene.drops!.length, 2, "initial hop is visible before pickup");
+  assert.equal(scene.drops!.length, 3, "initial hop is visible before pickup");
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.drops!.length, 0);
   assert.equal(player.experience, experience + 1, "collection grants one extra experience");
+  assert.equal(player.coins, 1, "gold grants one saved coin to its collector");
   roll = 0.1;
   scene.enemies = [{ id: 2, x: 2480, y: 1280, hitpoints: 5, angle: 0 }];
   stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ["experience"],
+    ["experience", "item"],
   );
   scene.phase = "ended";
   stepCombat(scene, [player], 71000, 0);
   assert.equal(scene.drops!.length, 0);
 });
 
-test("edge indicators stay inset, point toward offscreen targets, and hide onscreen", () => {
+test("edge indicators stay inset, point toward offscreen targets, and hide onscreen", async () => {
   assert.equal(edgeArrow(300, 200, 800, 600), null);
   assert.deepEqual(edgeArrow(1200, 300, 800, 600), { x: 772, y: 300, angle: 0 });
   const corner = edgeArrow(-900, -1200, 800, 600)!;
@@ -295,7 +300,7 @@ test("edge indicators stay inset, point toward offscreen targets, and hide onscr
   assert(corner.angle < -Math.PI / 2);
 });
 
-test("loot attracts across the seam and rewards every living scene player exactly once", () => {
+test("loot attracts across the seam and rewards every living scene player exactly once", async () => {
   const scene: SceneState = {
     id: "magnet",
     type: "Forest",
@@ -322,9 +327,14 @@ test("loot attracts across the seam and rewards every living scene player exactl
   const players = [dead, lobby, player, teammate, nearby];
   stepCombat(scene, players, 400, 0.05);
   assert.equal(scene.drops![0].x, FOREST.width - 66);
+  assert.equal(scene.drops![0].collectorId, player.id);
   assert.equal(scene.drops![1].x, FOREST.width - 66);
   for (let i = 0; i < 10; i++) stepCombat(scene, players, 450 + i * 50, 0.05);
   assert.equal(scene.drops!.length, 0);
+  assert.deepEqual(
+    players.map((p) => p.coins ?? 0),
+    [0, 0, 1, 0, 0],
+  );
   assert.deepEqual(
     players.map((p) => p.experience),
     [0, 0, 1, 8, 1],
@@ -338,6 +348,7 @@ test("loot attracts across the seam and rewards every living scene player exactl
   );
   stepCombat(scene, players, 1000, 0);
   stepCombat(scene, players, 1050, 0);
+  assert.equal(player.coins, 1, "removed coins cannot reward twice");
   assert.equal(scene.drops.length, 0);
   assert.deepEqual(
     players.map((p) => p.experience),
@@ -356,7 +367,7 @@ test("loot attracts across the seam and rewards every living scene player exactl
   assert.equal(scene.drops[0].x, 500, "distant drops stay put");
 });
 
-test("fatal hits retain each enemy appearance for its death animation", () => {
+test("fatal hits retain each enemy appearance for its death animation", async () => {
   for (const archetype of ["skeleton", "runner", "brute", "caster"] as const) {
     const scene: SceneState = {
       id: archetype,
@@ -378,7 +389,7 @@ test("fatal hits retain each enemy appearance for its death animation", () => {
   }
 });
 
-test("moving loot interpolates across the seam without mutating server snapshots", () => {
+test("moving loot interpolates across the seam without mutating server snapshots", async () => {
   const first = snapshot(10000, 10);
   first.players[0].scene = "forest";
   first.scene = {
@@ -407,7 +418,7 @@ test("moving loot interpolates across the seam without mutating server snapshots
   assert.equal(first.scene.drops![0].x, FOREST.width - 10);
 });
 
-test("snapshot age includes interpolation and packet gaps without depending on server clock", () => {
+test("snapshot age includes interpolation and packet gaps without depending on server clock", async () => {
   const buffer = new SnapshotBuffer("p");
   assert.equal(buffer.age(0), null);
   buffer.push(snapshot(1_000_000, 420), 0);

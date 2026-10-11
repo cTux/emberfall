@@ -3,6 +3,7 @@ import { ChapterTabs, SettingToggle, VolumeControl } from "@emberfall/ui";
 import { Button, Link, MenuItem, Stack, TextField, Typography } from "@mui/material";
 import type { Preferences } from "./preferences";
 import { GRAPHICS_LABELS, GRAPHICS_PRESETS, type GraphicsSettings } from "./graphics";
+import type { AccountView } from "@emberfall/common";
 
 export function Settings({
   tab,
@@ -11,6 +12,9 @@ export function Settings({
   setPreferences,
   graphics,
   setGraphics,
+  account,
+  onRename,
+  onLogout,
 }: {
   tab: string;
   onTab(tab: string): void;
@@ -18,6 +22,9 @@ export function Settings({
   setPreferences: Dispatch<SetStateAction<Preferences>>;
   graphics: GraphicsSettings;
   setGraphics: Dispatch<SetStateAction<GraphicsSettings>>;
+  account: AccountView;
+  onRename(): void;
+  onLogout(): void;
 }) {
   const toggle = (
     key:
@@ -27,6 +34,7 @@ export function Settings({
       | "damageNumbers"
       | "fps"
       | "latency"
+      | "debugHitboxes"
       | "sound"
       | "music",
     label: string,
@@ -45,6 +53,21 @@ export function Settings({
       onChange={onTab}
       showHeading={false}
       chapters={[
+        ...(account.mode === "steam"
+          ? [
+              {
+                id: "account",
+                title: "Account",
+                content: (
+                  <Stack spacing={2}>
+                    <Typography>Nickname: {account.nickname}</Typography>
+                    <Button onClick={onRename}>Change nickname</Button>
+                    <Button onClick={onLogout}>Sign out of Steam account</Button>
+                  </Stack>
+                ),
+              },
+            ]
+          : []),
         {
           id: "gameplay",
           title: "Gameplay",
@@ -56,6 +79,13 @@ export function Settings({
               {toggle("damageNumbers", "Floating damage numbers")}
               {toggle("fps", "FPS graph")}
               {toggle("latency", "Latency graph")}
+              {toggle("debugHitboxes", "Debug mode: show hitboxes")}
+              <Typography variant="caption" color="text.secondary">
+                Body hitboxes, scenery collisions and labeled interaction ranges. Decorative
+                entities have no hitboxes. Overlays follow displayed positions; the server decides
+                hits. Cyan: whole-model bodies. Magenta: projectiles. Yellow: scenery. Orange:
+                ranges.
+              </Typography>
             </Stack>
           ),
         },

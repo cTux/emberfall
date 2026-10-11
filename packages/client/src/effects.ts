@@ -135,10 +135,10 @@ export function drawVignette(
   ctx.fillStyle = gradient;
   ctx.fillRect(x, y, width, height);
 }
-export function hitOutline(mask: HTMLCanvasElement) {
+export function hitOutline(mask: HTMLCanvasElement, color = "#ff3737", radius = 2) {
   const outline = document.createElement("canvas");
-  outline.width = mask.width + 4;
-  outline.height = mask.height + 4;
+  outline.width = mask.width + radius * 2;
+  outline.height = mask.height + radius * 2;
   const c = outline.getContext("2d")!;
   for (const [x, y] of [
     [0, 2],
@@ -150,12 +150,12 @@ export function hitOutline(mask: HTMLCanvasElement) {
     [1, 3],
     [3, 1],
   ])
-    c.drawImage(mask, x, y);
+    c.drawImage(mask, (x * radius) / 2, (y * radius) / 2);
   c.globalCompositeOperation = "source-in";
-  c.fillStyle = "#ff3737";
+  c.fillStyle = color;
   c.fillRect(0, 0, outline.width, outline.height);
   c.globalCompositeOperation = "destination-out";
-  c.drawImage(mask, 2, 2);
+  c.drawImage(mask, radius, radius);
   return outline;
 }
 const hitSprites = new WeakMap<
@@ -208,6 +208,34 @@ export function drawDamageFlash(
   ctx.restore();
 }
 export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>>;
+export function drawCharacterName(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  name: string,
+  color = "#ffffff",
+  active = false,
+) {
+  ctx.save();
+  ctx.font = '8px "Alegreya Sans", sans-serif';
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  const label = active ? `(E) ${name}` : name;
+  const metrics = ctx.measureText(label);
+  if (active) {
+    const width = Math.ceil(metrics.width) + 12;
+    ctx.fillStyle = "#786747";
+    ctx.fillRect(x - width / 2, y - 2, width, 13);
+  }
+  ctx.strokeStyle = "#101817";
+  ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.strokeText(label, x, y + metrics.actualBoundingBoxAscent);
+  ctx.fillStyle = color;
+  ctx.fillText(label, x, y + metrics.actualBoundingBoxAscent);
+  ctx.restore();
+}
+
 export function drawNameBadge(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -244,17 +272,28 @@ export function drawAtmosphere(
   }
   if (settings.lightShafts) {
     ctx.globalCompositeOperation = "screen";
-    for (let col = Math.floor((x - height) / 420); col < (x + width) / 420; col++) {
-      const base = col * 420 + Math.sin(now / 12000 + col) * 12;
-      const gradient = ctx.createLinearGradient(base, y, base + height * 0.6, y + height);
-      gradient.addColorStop(0, "#ffe6a818");
+    const slope = 0.6;
+    const beamWidth = 160;
+    // Anchor parallel beams to the world, rather than restarting at the viewport top.
+    const first = Math.floor((x - slope * (y + height) - beamWidth - 12) / 420);
+    const last = Math.ceil((x + width - slope * y + 12) / 420);
+    for (let col = first; col <= last; col++) {
+      const base = col * 420 + Math.sin(now / 12000 + col) * 12 + slope * y;
+      // Fade across the beam's perpendicular axis so both long edges are transparent.
+      const cross = beamWidth / (1 + slope * slope);
+      const gradient = ctx.createLinearGradient(base, y, base + cross, y - slope * cross);
+      gradient.addColorStop(0, "#ffe6a800");
+      gradient.addColorStop(0.2, "#ffe6a803");
+      gradient.addColorStop(0.5, "#ffe6a80c");
+      gradient.addColorStop(0.8, "#ffe6a803");
       gradient.addColorStop(1, "#ffe6a800");
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.moveTo(base, y);
-      ctx.lineTo(base + 45, y);
-      ctx.lineTo(base + height * 0.6 + 100, y + height);
-      ctx.lineTo(base + height * 0.6, y + height);
+      ctx.lineTo(base + beamWidth, y);
+      ctx.lineTo(base + height * slope + beamWidth, y + height);
+      ctx.lineTo(base + height * slope, y + height);
+      ctx.closePath();
       ctx.fill();
     }
   }
@@ -287,13 +326,7 @@ export function drawPlayerHealth(
     (width - 2) * Math.max(0, Math.min(1, hp / Math.max(1, max))),
     height - 2,
   );
-  ctx.strokeStyle = "#101817";
-  ctx.lineWidth = 2;
-  ctx.lineJoin = "round";
-  const nameY = y + height + metrics.actualBoundingBoxAscent;
-  ctx.strokeText(name, x, nameY);
-  ctx.fillStyle = color;
-  ctx.fillText(name, x, nameY);
+  drawCharacterName(ctx, x, y + height, name, color);
   ctx.restore();
   return width;
 }

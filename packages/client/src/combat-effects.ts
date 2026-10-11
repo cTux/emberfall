@@ -1,4 +1,7 @@
+import { TRANSIENT_EFFECTS } from "@emberfall/common/definitions/effects/transient";
 import { statusImages } from "./combat-assets";
+import { effectsArt, pickupArt, drawArt } from "./art";
+import { hitOutline } from "./effects";
 import type { SceneState, LootDrop, Enemy, DamageEvent } from "@emberfall/common";
 
 export function bloodPuddleRenderer() {
@@ -20,16 +23,18 @@ export function bloodPuddleRenderer() {
       if (
         hit.killed &&
         hit.target.startsWith("enemy:") &&
-        now - hit.at < 30000 &&
+        now - hit.at < TRANSIENT_EFFECTS.blood.lifetimeMs &&
         !puddles.has(hit.id)
       )
         puddles.set(hit.id, { id: hit.id, x: hit.x, y: hit.y, at: hit.at });
-    for (const puddle of puddles.values()) if (now - puddle.at >= 30000) puddles.delete(puddle.id);
+    for (const puddle of puddles.values())
+      if (now - puddle.at >= TRANSIENT_EFFECTS.blood.lifetimeMs) puddles.delete(puddle.id);
     if (!enabled) return;
     ctx.save();
     ctx.fillStyle = "#8c1728";
     for (const puddle of puddles.values()) {
-      ctx.globalAlpha = 0.5 * (1 - Math.max(0, now - puddle.at) / 30000);
+      ctx.globalAlpha =
+        0.5 * (1 - Math.max(0, now - puddle.at) / TRANSIENT_EFFECTS.blood.lifetimeMs);
       const p = near(puddle.x, puddle.y + 15);
       if (
         p.x < view.x - 40 ||
@@ -118,7 +123,23 @@ export function drawLootAndBlood(
     ctx.beginPath();
     ctx.ellipse(p.x, p.y + 2, 5, 2, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.drawImage(lootSprite(drop.kind), p.x - 20, p.y - 24 - jump);
+    if (drop.kind === "item") {
+      ctx.fillStyle = "#c3a6e8";
+      ctx.fillRect(p.x - 7, p.y - 14 - jump, 14, 14);
+      ctx.strokeStyle = "#f2dcff";
+      ctx.strokeRect(p.x - 7, p.y - 14 - jump, 14, 14);
+    } else if (pickupArt.naturalWidth)
+      drawArt(
+        ctx,
+        pickupArt,
+        Math.floor((now + drop.id * 70) / 170) % 4,
+        drop.kind === "gold" ? 1 : 2,
+        p.x - 10,
+        p.y - 16 - jump,
+        20,
+        20,
+      );
+    else ctx.drawImage(lootSprite(drop.kind), p.x - 20, p.y - 24 - jump);
   }
   // Bound bursts independently of ambient-particle settings, so hits remain readable on Low.
   for (const hit of scene.damage.slice(-80)) {
@@ -142,6 +163,45 @@ export function drawLootAndBlood(
   ctx.restore();
 }
 
+const projectileOutlines = new Map<string, HTMLCanvasElement>();
+function drawProjectileArt(
+  ctx: CanvasRenderingContext2D,
+  kind: "arrow" | "fireball" | "roots",
+  now: number,
+) {
+  const arrow = kind === "arrow";
+  const image = arrow ? pickupArt : effectsArt;
+  if (!image.naturalWidth || image.dataset.artReady !== "true") return false;
+  const column = Math.floor(now / 100) % (arrow ? 4 : 3);
+  const size = arrow ? 44 : kind === "roots" ? 24 : 48;
+  const key = `${kind}:${column}`;
+  let outlined = projectileOutlines.get(key);
+  if (!outlined) {
+    const sprite = document.createElement("canvas");
+    sprite.width = sprite.height = size;
+    const spriteContext = sprite.getContext("2d")!;
+    spriteContext.imageSmoothingEnabled = false;
+    drawArt(
+      spriteContext,
+      image,
+      column,
+      arrow ? 0 : kind === "roots" ? 3 : 2,
+      0,
+      0,
+      size,
+      size,
+      arrow ? 64 : 128,
+    );
+    outlined = hitOutline(sprite, "#baffaa", 1);
+    const outlineContext = outlined.getContext("2d")!;
+    outlineContext.globalCompositeOperation = "source-over";
+    outlineContext.drawImage(sprite, 1, 1);
+    projectileOutlines.set(key, outlined);
+  }
+  ctx.drawImage(outlined, -size / 2 - 1, -size / 2 - 1);
+  return true;
+}
+
 export function drawClassProjectiles(
   ctx: CanvasRenderingContext2D,
   scene: SceneState,
@@ -154,14 +214,24 @@ export function drawClassProjectiles(
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(shot.angle);
+    if (drawProjectileArt(ctx, shot.kind, now)) {
+      ctx.restore();
+      continue;
+    }
     if (shot.kind === "roots") ctx.scale(0.5, 0.5);
+    ctx.strokeStyle = "#baffaa";
+    ctx.lineWidth = shot.kind === "roots" ? 2 : 1;
     if (shot.kind === "arrow") {
-      ctx.strokeStyle = "#92d89c";
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(-22, 0);
       ctx.lineTo(9, 0);
       ctx.stroke();
+      ctx.strokeStyle = "#92d89c";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.strokeStyle = "#baffaa";
+      ctx.lineWidth = 1;
       ctx.fillStyle = "#edffe7";
       ctx.beginPath();
       ctx.moveTo(13, 0);
@@ -169,11 +239,13 @@ export function drawClassProjectiles(
       ctx.lineTo(5, 4);
       ctx.closePath();
       ctx.fill();
+      ctx.stroke();
     } else {
       ctx.fillStyle = shot.kind === "roots" ? "#56bc7277" : "#ef722977";
       ctx.beginPath();
       ctx.ellipse(-8, 0, 20, 7, 0, 0, Math.PI * 2);
       ctx.fill();
+      ctx.stroke();
       ctx.fillStyle = shot.kind === "roots" ? "#79db87" : "#ff9d36";
       ctx.beginPath();
       ctx.arc(0, 0, 8, 0, Math.PI * 2);

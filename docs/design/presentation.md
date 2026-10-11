@@ -14,14 +14,14 @@ Use the existing theme → MUI defaults → colocated styled rules → small loc
 
 Wardrobe composes controlled `ClassCard` components in one four-column row inside a 600px `GameWindow`. Cards own layout and MUI tooltips; the client supplies portraits, weapon/spell descriptions, rounded class stats (level, XP, maximum HP and Power), selection state and callbacks. Only the selection button is disabled by selection, connection or countdown state. Tooltip buttons remain focusable. Window width is configurable without changing other dialogs. Matching Ninja Adventure facesets are shipped with the client and recorded in its asset notes.
 
-PartyCard displays nickname and level within a single HP meter, without a heading. Its portrait and meter share the same theme height. Accessible host (top-right crown) and away-dimension (top-left door) icons overlay the portrait. Both clients supply matching class facesets; the new client calculates Power from each class loadout through characterStats.
+PartyCard displays nickname and level within a single HP meter, without a heading. Its portrait and meter share the same theme height. Accessible host (top-right crown) and away-dimension (top-left door) icons overlay the portrait. The client supplies matching class facesets and calculates Power from each class loadout through characterStats.
 
-An optional controlled companion view adds a shorter, narrower HP row beneath the player inside PartyCard. Both clients supply the companion name, confirmed health and portrait from their existing companion sprite art. StatusMeter retains accessible health values at the compact size; no companion state or gameplay rules live in the UI package.
+An optional controlled companion view adds a shorter, narrower HP row beneath the player inside PartyCard. The client supplies the companion name, confirmed health and portrait from their existing companion sprite art. StatusMeter retains accessible health values at the compact size; no companion state or gameplay rules live in the UI package.
 
 ## Rendering pipeline and caches
 
 EquipmentPanel receives item badge labels, atlas keys, optional values and explanations
-from `client-new/equipment-view.tsx`, which derives them from shared equipment,
+from `client/equipment-view.tsx`, which derives them from shared equipment,
 attack and ailment definitions. The shared UI bundles a transparent generated icon
 atlas and presents 236px black translucent tooltips. Item popups and badge explanations portal into the modal container
 (or the page for nonmodal stories) to avoid scrolling-content clipping while
@@ -39,7 +39,7 @@ Drawing combines predicted local presentation with buffered remote actors. The c
 
 Cull offscreen actors before expensive sprite masks/shadows, share identical sprite/grass canvases, copy presentation positions instead of whole combat state, and index hit events once per frame. Full-map redraws and cache invalidation during world joins previously caused stalls; keep startup and re-entry coverage when changing cache lifetime.
 
-Player chat is drawn after world effects in both scenes. The rounded message box has no pointer; its bottom sits two world units above the health bar, overlaying the debuff area. Both renderers use the same placement and wrapping.
+Player chat is drawn after world effects in both scenes. The rounded message box has no pointer; its bottom sits two world units above the health bar, overlaying the debuff area. The renderer uses the same placement and wrapping.
 
 ## Preferences, diagnostics and audio
 
@@ -51,6 +51,6 @@ Player chat is drawn after world effects in both scenes. The rounded message box
 
 ## Verification and limits
 
-Use [startup performance](../../tests/startup-performance.spec.ts), [rendering/audio](../../tests/rendering.spec.ts), [graphics](../../tests/graphics.spec.ts), [lobby camera](../../tests/lobby-camera.spec.ts), [damage flash](../../tests/damage-flash.spec.ts), [latency](../../tests/latency.spec.ts) and the [UI suite](../../packages/ui/tests/ui.spec.ts), selecting cases relevant to the change. Validate desktop/narrow screens, keyboard focus and reduced motion for UI work.
+Use [rendering/audio](../../tests/rendering.spec.ts) and the [UI suite](../../packages/ui/tests/ui.spec.ts), selecting cases relevant to the change. Validate desktop/narrow screens, keyboard focus and reduced motion for UI work.
 
-`node scripts/benchmark-snapshots.ts` measures the snapshot presentation CPU path with 160 enemies and 300 warmed samples. It is not an end-to-end FPS result. High graphics defaults, a passing test and a successful launch do not establish hardware performance claims. A native renderer, DLSS, frame generation, depth-buffer SSAO and hardware ray tracing are outside the implemented Canvas 2D pipeline.
+For measured frame budgets use the opt-in browser scenario in [development](../development.md). The original snapshot benchmark is retired. Passing tests and builds do not establish hardware performance or subjective audio quality.

@@ -48,4 +48,4 @@ At timer expiry, regular spawning continues and one boss with 200 base HP before
 - After 120 seconds the boss spawns; regular spawning continues until boss death. Each participant receives a fixed nearby return portal.
 - Early scene exit retains world membership; village exit removes it. Buildings remain service placeholders.
 
-Evidence: [scenes.test.ts](../../packages/server/src/scenes.test.ts), [pass-through.test.ts](../../packages/server/src/pass-through.test.ts), [village.test.ts](../../packages/server/src/village.test.ts), [portal.spec.ts](../../tests/portal.spec.ts), [lobby-camera.spec.ts](../../tests/lobby-camera.spec.ts).
+Evidence: [scenes.test.ts](../../packages/server/src/scenes.test.ts), [pass-through.test.ts](../../packages/server/src/pass-through.test.ts), [village.test.ts](../../packages/server/src/village.test.ts).

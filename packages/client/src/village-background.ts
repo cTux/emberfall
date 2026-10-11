@@ -3,6 +3,7 @@ import type { GraphicsSettings } from "./graphics";
 import { drawVillagePaths } from "./paths";
 import { castShadow } from "./lighting";
 import { villageSprites, TORCH_LIGHTS, lightTexture } from "./village";
+import { environmentArt, wardrobeArt, innkeeperArt, terrainArt, terrainTile } from "./art";
 
 const nature = new Image();
 nature.src = "/assets/nature.png";
@@ -28,8 +29,16 @@ let cached:
 
 /** Shared across Arena remounts. Wait for all assets, including failed loads. */
 export function villageBackground(graphics: GraphicsSettings) {
+  if (
+    [environmentArt, wardrobeArt, innkeeperArt].some(
+      (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== "true",
+    ) ||
+    !terrainArt.complete ||
+    !terrainArt.naturalWidth
+  )
+    return undefined;
   if (Object.values(villageImages).some((image) => !image.complete)) return undefined;
-  const key = `${graphics.grass}:${graphics.shadows}:${graphics.ambientOcclusion}`;
+  const key = `${graphics.shadows}:${graphics.ambientOcclusion}`;
   if (cached?.key === key) return cached;
   const background = cached?.background ?? document.createElement("canvas");
   if (background.width !== ARENA.width) {
@@ -38,7 +47,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   }
   const ctx = background.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = "#25392f";
+  ctx.fillStyle = ctx.createPattern(terrainTile(0), "repeat")!;
   ctx.fillRect(0, 0, ARENA.width, ARENA.height);
   // Paint overflow into the opposite edge of the cached, repeating world tile.
   function wrapped(x: number, y: number, radius: number, paint: () => void) {
@@ -88,12 +97,12 @@ export function villageBackground(graphics: GraphicsSettings) {
     wrapped(x, y, width, () => ctx.fillRect(x, y, width, 1));
   }
   drawVillagePaths(ctx, floor);
-  const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern, graphics);
+  const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
   for (const object of scenery) {
     // Bounds include the full directional sun projection and contact shading.
     wrapped(object.x, object.y, object.width + object.height, () => {
-      if (graphics.shadows) castShadow(ctx, object);
-      if (graphics.ambientOcclusion && !object.id.startsWith("grass")) {
+      if (graphics.shadows && !object.frames) castShadow(ctx, object);
+      if (graphics.ambientOcclusion) {
         ctx.save();
         ctx.translate(object.x, object.y);
         ctx.scale(1, 0.3);
@@ -107,7 +116,15 @@ export function villageBackground(graphics: GraphicsSettings) {
       }
     });
   }
-  const torchTextures = TORCH_LIGHTS.map((light) => lightTexture(light, scenery, graphics.shadows));
+  const torchTextures = TORCH_LIGHTS.map((light) =>
+    lightTexture(
+      light,
+      scenery.filter((object) => !object.frames),
+      graphics.shadows,
+    ),
+  );
+  const texture = background as HTMLCanvasElement & { textureRevision?: number };
+  texture.textureRevision = (texture.textureRevision ?? 0) + 1;
   cached = { key, background, scenery, torchTextures };
   return cached;
 }

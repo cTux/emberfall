@@ -4,7 +4,7 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 
 ## UI-01 — HUD and windows
 
-The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Original-runtime nicknames persist in browser localStorage; when storage is blocked that session still works. New-runtime nicknames belong to Steam accounts; see CHAR-05.
+The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames belong to Steam accounts; see CHAR-05.
 
 Party cards show server-owned `Nickname, lvl N` inside the HP bar, with no heading. The class portrait matches the bar height; a crown marks the host in its top-right corner and a dimension icon marks players in another area in its top-left corner. Icons retain accessible labels and away players stay dimmed. Thin health bars also appear beneath player names.
 
@@ -12,7 +12,7 @@ When a player has a battle companion, their party card shows a smaller portrait 
 
 Party health bars use 60% of their previous width, including the companion row. In the new runtime, each player's confirmed coin balance appears immediately after their HP bar with a coin icon. Amounts use compact lowercase suffixes (13, 1k, 3m), at most one decimal, and an accessible label with the full amount.
 
-Wardrobe shows all four classes in one compact row. Each card has its matching character portrait above separate starting-weapon and base-spell squares, then level, XP, maximum HP, Power and a selection button. Power uses calculated class equipment stats in the new runtime and base attack damage in the original runtime. Weapon and spell details open on hover, keyboard focus or touch and explain the current attacks, range, cooldown and effects. There is no introductory or departure helper text. Class selection retains server validation, per-class progress and countdown restrictions; inspecting details remains available for selected or unavailable classes.
+Wardrobe shows all four classes in one compact row. Each card has its matching character portrait above separate starting-weapon and base-spell squares, then level, XP, maximum HP, Power and a selection button. Power uses calculated class equipment stats. Weapon and spell details open on hover, keyboard focus or touch and explain the current attacks, range, cooldown and effects. There is no introductory or departure helper text. Class selection retains server validation, per-class progress and countdown restrictions; inspecting details remains available for selected or unavailable classes.
 
 During an active boss fight, forest players see a fixed top-center boss HUD with the boss name (The Hollow Warden), orange health bar and current/max HP, even when the boss is offscreen. It replaces the boss objective label and disappears on defeat or returning to the lobby; the scene-complete message then appears.
 
@@ -38,7 +38,7 @@ New runtime: Settings → Account displays the saved game nickname and
 opens the same nickname dialog used after first Steam login. Account data is saved
 on the server, independently of local presentation preferences. See
 [CHAR-05](characters.md#char-05--steam-accounts-and-nickname) and the
-[account design](../design/steam-accounts.md). The original runtime retains the groups below.
+[account design](../design/steam-accounts.md). The remaining settings groups are described below.
 
 Settings groups are Gameplay, Graphics and Sound. Preferences persist locally; malformed or unavailable storage falls back to defaults. Gameplay includes auto-attack, auto-target, blood puddles, damage numbers and performance visibility. Audio has independent music/effects enable switches and volumes; defaults are 0.22 music and 0.35 effects.
 
@@ -106,4 +106,4 @@ training and forest; the existing damage-number preference applies.
 - Unlock audio with a gesture, transition through all three music areas, repeat playlists, mute independently and pause hidden tabs.
 - Check desktop/narrow layouts, reduced motion, non-Latin movement, large numbers and context-menu suppression.
 
-Evidence: [combat-controls.spec.ts](../../tests/combat-controls.spec.ts), [hud.spec.ts](../../tests/hud.spec.ts), [latency.spec.ts](../../tests/latency.spec.ts), [keyboard-layout.spec.ts](../../tests/keyboard-layout.spec.ts), [number-display.spec.ts](../../tests/number-display.spec.ts), [context-menu.spec.ts](../../tests/context-menu.spec.ts), [rendering.spec.ts](../../tests/rendering.spec.ts), [ui.spec.ts](../../packages/ui/tests/ui.spec.ts).
+Evidence: [hud.spec.ts](../../tests/hud.spec.ts), [keyboard-layout.spec.ts](../../tests/keyboard-layout.spec.ts), [rendering.spec.ts](../../tests/rendering.spec.ts), [ui.spec.ts](../../packages/ui/tests/ui.spec.ts).

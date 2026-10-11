@@ -1,243 +1,135 @@
 import { test, expect } from "./fixtures";
-import type { ServerMessage, WorldState } from "../packages/common/src/index.ts";
 
-test("failed connections retry automatically and interrupted lobby, vote and forest sessions resume", async ({
+test("an outage shows the server list and automatically restores the same player", async ({
   page,
-}) => {
-  test.setTimeout(45000);
-  let attempts = 0;
-  let joined: Extract<ServerMessage, { type: "joined" }> | undefined;
-  let state: WorldState | undefined;
+  game,
+}, info) => {
   const errors: string[] = [];
-  let unavailable = false;
-  let failedAttempts = 0;
   page.on("pageerror", (error) => errors.push(error.message));
   await page.addInitScript(() => {
-    const NativeWebSocket = window.WebSocket;
-    let attempts = 0;
-    window.WebSocket = class extends NativeWebSocket {
-      constructor(url: string | URL, protocols?: string | string[]) {
-        super(
-          ++attempts <= 2 || (window as unknown as { unavailable?: boolean }).unavailable
-            ? new URL("/unavailable", url)
-            : url,
-          protocols,
-        );
-        (window as unknown as { recoverySocket: WebSocket }).recoverySocket = this;
-      }
-    };
-  });
-  page.on("websocket", (socket) => {
-    attempts++;
-    if (unavailable) failedAttempts++;
-    socket.on("framereceived", ({ payload }) => {
-      const message = JSON.parse(String(payload)) as ServerMessage;
-      if (message.type === "joined") joined = message;
-      if (message.type === "state" || message.type === "joined") state = message.world;
-    });
-  });
-  await page.goto("/");
-  await expect(
-    page.getByRole("status", { name: "World server online", includeHidden: true }),
-  ).toBeVisible();
-  expect(attempts).toBe(3);
-  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
-  const id = joined!.playerId;
-  const worldId = joined!.world.id;
-  const interrupt = async () => {
-    const before = attempts;
-    joined = undefined;
-    unavailable = true;
-    failedAttempts = 0;
-    await page.evaluate(() => {
-      (window as unknown as { unavailable: boolean }).unavailable = true;
-    });
-    await page.evaluate(() =>
-      (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(
-        3001,
-        "Simulated transport failure",
-      ),
-    );
-    await expect(page.getByRole("region", { name: "Emberfall", exact: true })).toBeVisible();
-    await expect(page.getByRole("tab", { name: "Join a world" })).toHaveAttribute(
-      "aria-selected",
-      "true",
-    );
-    await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeHidden();
-    await expect.poll(() => failedAttempts).toBeGreaterThanOrEqual(2);
-    unavailable = false;
-    await page.evaluate(() => {
-      (window as unknown as { unavailable: boolean }).unavailable = false;
-    });
-    await expect.poll(() => attempts).toBeGreaterThan(before + 1);
-    await expect.poll(() => joined?.playerId).toBe(id);
-    expect(joined!.world.id).toBe(worldId);
-    expect(joined!.world.players).toHaveLength(1);
-    await expect(
-      page.getByRole("status", { name: "World server online", includeHidden: true }),
-    ).toBeVisible();
-    await expect(page.getByRole("alert")).toBeHidden();
-  };
-  await interrupt();
-  expect(joined!.world.players[0].scene).toBeUndefined();
-  await page.keyboard.down("d");
-  await expect.poll(() => state?.players[0].x).toBeGreaterThan(500);
-  await page.keyboard.up("d");
-  await page.keyboard.press("e");
-  await page.getByRole("button", { name: "Create", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Forest portal" })).toContainText("Vote here");
-  const sceneId = state!.scene!.id;
-  const x = state!.players[0].x;
-  await interrupt();
-  expect(joined!.world.scene!.id).toBe(sceneId);
-  expect(joined!.world.scene!.phase).toBe("voting");
-  expect(Math.abs(joined!.world.players[0].x - x)).toBeLessThan(10);
-  await expect(page.getByRole("dialog", { name: "Forest portal" })).toBeVisible();
-  await page.getByRole("button", { name: "I'm ready" }).click();
-  await expect(page.getByLabel("Forest combat scene.")).toBeVisible({ timeout: 8000 });
-  await interrupt();
-  expect(joined!.world.scene!.id).toBe(sceneId);
-  expect(joined!.world.players[0].scene).toBe("forest");
-  await expect(page.getByLabel("Forest combat scene.")).toBeVisible();
-  // A fresh movement stream must be accepted after restoration.
-  const forestX = state!.players[0].x;
-  await page.keyboard.down("d");
-  await expect.poll(() => state!.players[0].x).toBeGreaterThan(forestX + 10);
-  await page.keyboard.up("d");
-  // The permanent world survives a normal closure; recovery starts in its village.
-  joined = undefined;
-  await page.evaluate(() =>
-    (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(1000),
-  );
-  await expect(
-    page.getByRole("status", { name: "World server online", includeHidden: true }),
-  ).toBeVisible();
-  await expect.poll(() => joined?.world.id).toBe(worldId);
-  await expect(page.getByLabel("Shared village. Move with WASD or arrow keys.")).toBeVisible();
-  expect(joined!.world.players[0].scene).toBeUndefined();
-  expect(errors).toEqual([]);
-});
-
-test("page reload resumes the same world and deliberate leave clears its recovery target", async ({
-  page,
-}) => {
-  const network = await page.context().newCDPSession(page);
-  await network.send("Network.enable");
-  const vendorRequests = new Set<string>();
-  const vendorBytes: number[] = [];
-  network.on("Network.requestWillBeSent", ({ requestId, request }) => {
-    if (/\/vendors-[\w-]+\.js$/.test(request.url)) vendorRequests.add(requestId);
-  });
-  network.on("Network.loadingFinished", ({ requestId, encodedDataLength }) => {
-    if (vendorRequests.has(requestId)) vendorBytes.push(encodedDataLength);
-  });
-  let joined: Extract<ServerMessage, { type: "joined" }> | undefined;
-  page.on("websocket", (socket) =>
-    socket.on("framereceived", ({ payload }) => {
-      const message = JSON.parse(String(payload)) as ServerMessage;
-      if (message.type === "joined") joined = message;
-    }),
-  );
-  await page.goto("/");
-  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
-  const before = joined!;
-  joined = undefined;
-  await page.reload();
-  await expect.poll(() => joined?.world.id).toBe(before.world.id);
-  expect(joined!.playerId).toBe(before.playerId);
-  expect(joined!.characterToken).toBe(before.characterToken);
-  expect(joined!.world.players).toHaveLength(1);
-  expect(vendorBytes).toHaveLength(2);
-  expect(vendorBytes[0]).toBeGreaterThan(0);
-  expect(vendorBytes[1]).toBe(0);
-  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
-  await page.evaluate(() => {
-    // Use the public protocol to exercise explicit leave independently of the exit dialog.
-    const ws = (window as unknown as { recoverySocket: WebSocket }).recoverySocket;
-    ws.send(JSON.stringify({ type: "leave" }));
-  });
-  await expect
-    .poll(() => page.evaluate(() => sessionStorage.getItem("emberfall.world")))
-    .toBeNull();
-  await page.reload();
-  await expect(page.getByLabel("Your adventurer name")).toBeVisible();
-});
-
-test("a new deployment reloads once, fetches its app bundle, and resumes the remembered world", async ({
-  page,
-  request,
-}) => {
-  const html = await (await request.get("/")).text();
-  const entry = html.match(/\/assets\/index-[\w-]+\.js/)![0];
-  const app = await (await request.get(entry)).text();
-  const { buildId } = await (await request.get("/version.json")).json();
-  const nextBuildId = "next-test-build";
-  const nextEntry = "/assets/index-updated01.js";
-  // Fulfilled HTML has no network address; allow its connection to the real loopback server.
-  await page.context().grantPermissions(["local-network-access"]);
-  let deployed = false;
-  let navigations = 0;
-  let appDownloads = 0;
-  let updateChecks = 0;
-  let joined: Extract<ServerMessage, { type: "joined" }> | undefined;
-  page.on("framenavigated", (frame) => {
-    if (frame === page.mainFrame()) navigations++;
-  });
-  page.on("websocket", (socket) =>
-    socket.on("framereceived", ({ payload }) => {
-      const message = JSON.parse(String(payload)) as ServerMessage;
-      if (message.type === "joined") joined = message;
-    }),
-  );
-  await page.route("**/version.json", (route) => {
-    if (deployed && ++updateChecks === 1) return route.fulfill({ status: 503 });
-    if (deployed && updateChecks === 2) return route.fulfill({ json: { buildId: null } });
-    return route.fulfill({ json: { buildId: deployed ? nextBuildId : buildId } });
-  });
-  await page.route("**/", (route) =>
-    route.fulfill({
-      contentType: "text/html",
-      body: deployed ? html.replaceAll(entry, nextEntry) : html,
-    }),
-  );
-  await page.route(`**${nextEntry}`, (route) => {
-    appDownloads++;
-    return route.fulfill({
-      contentType: "text/javascript",
-      body: app.replaceAll(buildId, nextBuildId),
-    });
-  });
-  await page.goto("/");
-  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
-  const before = joined!;
-  joined = undefined;
-  deployed = true;
-  await page.evaluate(() =>
-    (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(3001),
-  );
-  await expect.poll(() => navigations).toBe(2);
-  await expect.poll(() => joined?.world.id).toBe(before.world.id);
-  await expect(page.getByRole("complementary", { name: /Playtest Default/ })).toBeVisible();
-  expect(appDownloads).toBe(1);
-  expect(updateChecks).toBeGreaterThanOrEqual(3);
-  expect(joined!.characterToken).toBe(before.characterToken);
-  expect(joined!.world.players).toHaveLength(1);
-  expect(navigations).toBe(2);
-  const vendor = html.match(/\/assets\/vendors-[\w-]+\.js/)![0];
-  expect(await page.locator(`link[href="${vendor}"]`).count()).toBe(1);
-});
-
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
-    const NativeWebSocket = window.WebSocket;
-    window.WebSocket = class extends NativeWebSocket {
+    const Native = window.WebSocket;
+    window.WebSocket = class extends Native {
       constructor(url: string | URL, protocols?: string | string[]) {
         super(url, protocols);
         (window as unknown as { recoverySocket: WebSocket }).recoverySocket = this;
       }
     };
   });
+  let unavailable = false;
+  let failedAttempts = 0;
+  await page.route("**/matchmake/**", (route) => {
+    if (unavailable) {
+      failedAttempts++;
+      return route.abort();
+    }
+    return route.continue();
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  const target = await page.evaluate(() => sessionStorage.getItem("emberfall-new.world"));
+  const browser = page.getByRole("region", { name: "Emberfall", exact: true });
+  // Recovery must replace the hidden browser and dismiss a gameplay modal.
+  await page.getByRole("button", { name: "Leave world" }).click();
+  await expect(page.getByRole("dialog", { name: "Leave?", exact: true })).toBeVisible();
+  unavailable = true;
+  await page.evaluate(() =>
+    (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(3001),
+  );
+  await expect(browser).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Join a world" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await expect(page.getByRole("dialog", { name: "Leave?", exact: true })).toBeHidden();
+  await expect(page.locator(".party")).toBeHidden();
+  await expect.poll(() => failedAttempts).toBeGreaterThanOrEqual(2);
+  expect(await page.evaluate(() => sessionStorage.getItem("emberfall-new.world"))).toBe(target);
+  await page.screenshot({ path: info.outputPath("disconnected-server-list.png") });
+  unavailable = false;
+  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
+  await expect(browser).toBeHidden();
+  await expect(page.getByRole("status", { name: "World server online" })).toBeVisible();
+  expect(world.players.size).toBe(1);
+  expect([...world.players.values()][0]).toBe(player);
+  await page.screenshot({ path: info.outputPath("reconnected-player.png") });
+  // Deliberate leave still revokes recovery, even after an outage.
+  await page.getByRole("button", { name: "Leave world" }).click();
+  await page.getByRole("button", { name: "Leave", exact: true }).click();
+  await expect(browser).toBeVisible();
+  expect(await page.evaluate(() => sessionStorage.getItem("emberfall-new.world"))).toBeNull();
+  await page.reload();
+  await expect(browser).toBeVisible();
+  await expect(page.getByRole("status", { name: "World server online" })).toBeVisible();
+  await expect(page.locator(".party")).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
+test("peers see a red reconnecting character in village and forest until recovery", async ({
+  page,
+  browser,
+  game,
+}, info) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  await context.addInitScript(() => {
+    const Native = window.WebSocket;
+    window.WebSocket = class extends Native {
+      constructor(url: string | URL, protocols?: string | string[]) {
+        super(url, protocols);
+        (window as unknown as { recoverySocket: WebSocket }).recoverySocket = this;
+      }
+    };
+  });
+  const guest = await context.newPage();
+  let unavailable = false;
+  await guest.route("**/matchmake/**", (route) => (unavailable ? route.abort() : route.continue()));
+  try {
+    await guest.goto(page.url());
+    await guest.getByRole("button", { name: /^Join Playtest Default/ }).click();
+    await expect(guest.getByRole("button", { name: "Leave world" })).toBeVisible();
+    const world = [...game.runtime.worlds.values()].find((w) => w.players.size === 2)!;
+    const [host, remote] = [...world.players.values()];
+    remote.x = host.x + 70;
+    remote.y = host.y;
+    for (const area of ["village", "forest"] as const) {
+      if (area === "forest") {
+        const { sceneAction, tickScene } = await import("../packages/server/src/scenes.ts");
+        const { LOBBY_PORTAL } = await import("../packages/common/src/index.ts");
+        for (const p of world.players.values()) {
+          p.x = LOBBY_PORTAL.x;
+          p.y = LOBBY_PORTAL.y - 15;
+        }
+        const now = Date.now();
+        sceneAction(world, host, { type: "createScene", scene: "Forest", difficulty: "Easy" }, now);
+        for (const p of world.players.values())
+          sceneAction(world, p, { type: "ready", ready: true }, now);
+        tickScene(world, now + 5000, 0);
+        world.scene!.nextSpawn = 1e12;
+        remote.x = host.x + 70;
+        remote.y = host.y;
+        await expect(page.getByLabel("Forest combat scene.")).toBeVisible();
+      }
+      unavailable = true;
+      await guest.evaluate(() =>
+        (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(3001),
+      );
+      await expect.poll(() => remote.reconnecting).toBe(true);
+      expect(world.players.size).toBe(2);
+      await page.waitForTimeout(500);
+      await page.screenshot({ path: info.outputPath(`reconnecting-${area}.png`) });
+      unavailable = false;
+      await expect(guest.getByRole("button", { name: "Leave world" })).toBeVisible();
+      await expect.poll(() => remote.reconnecting).toBeUndefined();
+      expect(world.players.get(remote.id)).toBe(remote);
+      await page.waitForTimeout(300);
+      await page.screenshot({ path: info.outputPath(`restored-${area}.png`) });
+    }
+  } finally {
+    await context.close();
+  }
 });

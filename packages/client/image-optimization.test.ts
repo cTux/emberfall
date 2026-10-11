@@ -8,7 +8,7 @@ import test from "node:test";
 import sharp from "sharp";
 import { build } from "vite";
 
-for (const client of ["client", "client-new"]) {
+for (const client of ["client"]) {
   test(`${client}: Vite optimizes public and bundled PNGs without changing pixels or sources`, async (t) => {
     const root = await mkdtemp(join(tmpdir(), "emberfall-vite-images-"));
     t.after(() => rm(root, { recursive: true, force: true }));

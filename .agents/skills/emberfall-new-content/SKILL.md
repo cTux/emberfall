@@ -1,15 +1,15 @@
 ---
 name: emberfall-new-content
-description: Develop or reuse Emberfall common-new definitions and shared simulation, including entities, abilities, worlds and training. Excludes changes confined to the original runtime or visual-only Pixi effects.
+description: Develop or reuse Emberfall common definitions and shared simulation, including entities, abilities, worlds and training. Excludes changes confined to the original runtime or visual-only Pixi effects.
 ---
 
 # New-runtime content and rules
 
-Read the [common-new guide](../../../packages/common-new/README.md), its AGENTS,
+Read the [common-new guide](../../../packages/common/README.md), its AGENTS,
 and the affected [game specification](../../../docs/README.md). Read
 [PROG-01](../../../docs/specs/progression.md) before changing progression.
 
-Start with a plain definition in `common-new/src/definitions`. Keep definition
+Start with a plain definition in `common/src/definitions`. Keep definition
 IDs, mutable instance state, and presentation assets distinct. Reuse existing
 systems for forest and training; add a new system only for distinct behavior.
 Keep original values when porting content. Do not import old runtime packages.

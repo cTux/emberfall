@@ -1,15 +1,15 @@
 ---
 name: emberfall-new-client
-description: Develop or test Emberfall client-new PixiJS rendering, presentation ECS, prediction, controls and shared UI composition. Excludes authoritative combat rules and work confined to the original Canvas client.
+description: Develop or test Emberfall client PixiJS rendering, presentation ECS, prediction, controls and shared UI composition. Excludes authoritative combat rules and work confined to the original Canvas client.
 ---
 
 # New client rendering and interaction
 
-Read the [client-new guide](../../../packages/client-new/README.md), its AGENTS,
+Read the [client-new guide](../../../packages/client/README.md), its AGENTS,
 and the affected graphics/interface requirement in the [documentation map](../../../docs/README.md).
 
 Keep received schemas, detached snapshots, predicted poses and Pixi resources
-separate. Use common-new geometry and rules. Camera, weapon, light and sound
+separate. Use common geometry and rules. Camera, weapon, light and sound
 must follow the same reconciled local action; replay must not duplicate effects.
 Health, damage, loot and saved progression require server confirmation.
 
@@ -40,7 +40,7 @@ Feet must alternate planted/lifted contact with visible knee/boot movement,
 including beneath robes. Torso bob, weapon changes and distinct whole-image
 hashes do not prove a working gait. Compare lower-leg silhouettes across the
 cycle, check the loop seam, transparent gutters, stable scale and weapon hands,
-and run `tests-new/player-art.spec.ts` plus affected village/forest scenarios.
+and run `tests/player-art.spec.ts` plus affected village/forest scenarios.
 Preserve approved class identities and non-walk poses when replacing walk art.
 When feedback accepts specific directions, preserve those cells and their scale
 exactly. Inspect both half-cycles: each leg must take its turn leading/supporting;

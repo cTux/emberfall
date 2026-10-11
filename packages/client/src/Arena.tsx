@@ -1,5 +1,12 @@
+import { alignLocalPickups } from "./pickup-presentation";
+import { drawHitboxes } from "./hitboxes";
+import { PixiContext } from "./rendering/pixi-context";
+import { PresentationWorld } from "./presentation/world";
 import { villageImages, villageBackground, drawVillageBackground } from "./village-background";
 import { characterImages } from "./characters";
+import { ACTOR_CELL, playerFrame, idleBreath } from "./animation";
+import { actorArt, environmentArt, wardrobeArt, drawArt } from "./art";
+import { drawChimneySmoke } from "./ambient-art";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
@@ -8,7 +15,7 @@ import { PerformanceGraph } from "./PerformanceGraph";
 import { movementFacing } from "./facing";
 import { LocalMovement } from "./local-movement";
 import { gameAudio } from "./audio";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { SnapshotBuffer } from "./snapshots";
 import {
@@ -18,6 +25,7 @@ import {
   drawParticles,
   drawVignette,
   drawNameBadge,
+  drawCharacterName,
   drawAtmosphere,
   obstacleOpacity,
   drawVegetation,
@@ -31,7 +39,6 @@ import {
   LOBBY_PORTAL,
   TICK_MS,
   nearbyInteraction,
-  TRAINING_ZONES,
   inTrainingZone,
 } from "@emberfall/common";
 import type { ClientMessage, WorldState } from "@emberfall/common";
@@ -78,6 +85,7 @@ export function Arena({
     handleProps: dpsHandle,
   } = useDraggable("panel.dps", !!world);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const [renderError, setRenderError] = useState(false);
   const latest = useRef(world);
   const sender = useRef(send);
   const quality = useRef(graphics);
@@ -95,20 +103,25 @@ export function Arena({
   }, [world, send, graphics, preferences]);
   useEffect(() => {
     const element = canvas.current!;
-    const ctx = element.getContext("2d", { alpha: false })!;
+    const renderer = new PixiContext(element);
+    let disposed = false;
+    void renderer.ready
+      .then(() => {
+        if (!disposed) setRenderError(false);
+      })
+      .catch(() => {
+        if (!disposed) setRenderError(true);
+      });
+    const presentation = new PresentationWorld();
+    const ctx = renderer as unknown as CanvasRenderingContext2D;
     const knight = characterImages.warrior.walk;
     const { nature } = villageImages;
-    const animatedLantern = new Image();
-    animatedLantern.src = "/assets/lanterns/lantern-animation.png";
-    const skeleton = new Image();
-    skeleton.src = "/assets/skeleton.png";
+    const skeleton = actorArt("skeleton");
     const drawForest = forestRenderer(nature, knight, skeleton);
     const audio = gameAudio(() => prefs.current);
     let lastSlashAt = -Infinity,
       lastHit = 0,
       lastWarning = 0;
-    const movingLight = document.createElement("canvas");
-    const lanternTexture = document.createElement("canvas");
     const playerMasks = new Map<HTMLImageElement, HTMLCanvasElement[]>();
     const characterMask = (image: HTMLImageElement, frame: number, facing: number) => {
       if (!image.naturalWidth) return undefined;
@@ -120,8 +133,20 @@ export function Arena({
       const index = frame * 4 + facing;
       if (!masks[index]) {
         const tile = document.createElement("canvas");
-        tile.width = tile.height = 16;
-        tile.getContext("2d")!.drawImage(image, facing * 16, frame * 16, 16, 16, 0, 0, 16, 16);
+        tile.width = tile.height = ACTOR_CELL;
+        tile
+          .getContext("2d")!
+          .drawImage(
+            image,
+            facing * ACTOR_CELL,
+            frame * ACTOR_CELL,
+            ACTOR_CELL,
+            ACTOR_CELL,
+            0,
+            0,
+            ACTOR_CELL,
+            ACTOR_CELL,
+          );
         masks[index] = makeMask(tile);
       }
       return masks[index];
@@ -229,6 +254,8 @@ export function Arena({
     }
     const input = setInterval(sendMovement, TICK_MS);
     let frame = 0;
+    let wardrobeOpenedAt = 0;
+    let wardrobeActive = false;
     let previous = performance.now();
     let resolutionScale = 1,
       budgetAt = performance.now(),
@@ -236,8 +263,7 @@ export function Arena({
       frameCount = 0;
     const resize = () => {
       const ratio = Math.min(devicePixelRatio * quality.current.resolution * resolutionScale, 3);
-      element.width = Math.round(innerWidth * ratio);
-      element.height = Math.round(innerHeight * ratio);
+      renderer.resize(Math.round(innerWidth * ratio), Math.round(innerHeight * ratio));
     };
     resize();
     window.addEventListener("resize", resize);
@@ -246,6 +272,13 @@ export function Arena({
     let fpsAt = performance.now(),
       fpsFrames = 0;
     function draw(now: number) {
+      const openWardrobe = interaction.current?.id === "wardrobe";
+      if (openWardrobe && !wardrobeActive) wardrobeOpenedAt = now;
+      wardrobeActive = openWardrobe;
+      if (!renderer.initialized) {
+        frame = requestAnimationFrame(draw);
+        return;
+      }
       const limit = quality.current.frameLimit;
       if (limit && now - previous + 0.5 < 1000 / limit) {
         frame = requestAnimationFrame(draw);
@@ -276,6 +309,7 @@ export function Arena({
         frameTotal = 0;
         frameCount = 0;
       }
+      renderer.begin();
       const delta = Math.min(0.1, (now - previous) / 1000);
       previous = now;
       if (previousSettings !== quality.current) {
@@ -313,10 +347,9 @@ export function Arena({
         Object.assign(local, combat);
         localSwing = localMovement.animateAttack(local, view, now);
         localMovement.animateProjectiles(local, view, now, localSwing);
-        view.players = view.players.map((player) =>
-          player.id === playerId ? { ...local, bear: player.bear } : player,
-        );
+        alignLocalPickups(view, local);
       }
+      presentation.update(view, playerId, local);
       networkTiming.current = {
         inputDelay: localMovement.inputDelay(now),
         snapshotAge: snapshots.age(now),
@@ -379,11 +412,15 @@ export function Arena({
           delta,
           interaction.current,
         );
+        renderer.present();
         frame = requestAnimationFrame(draw);
         return;
       }
       const prepared = villageBackground(quality.current);
       const scenery = prepared?.scenery ?? [];
+      for (const object of scenery)
+        if (object.frames)
+          Object.assign(object, object.frames[Math.floor(now / 400) % object.frames.length]);
       const torchTextures = prepared?.torchTextures ?? [];
       const focus = local ?? { x: 480, y: 320 };
       const viewWidth = el.width / scale;
@@ -412,16 +449,6 @@ export function Arena({
         ctx.fillStyle = "#25392f";
         ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
       }
-      for (const zone of TRAINING_ZONES) {
-        ctx.fillStyle = "#aa8b4930";
-        ctx.strokeStyle = "#c9a56380";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        const point = project(zone.x, zone.y);
-        ctx.ellipse(point.x, point.y, zone.radius, zone.radius * 0.85, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-      }
       const training = view.training
         ? {
             ...view.training,
@@ -433,28 +460,6 @@ export function Arena({
         : undefined;
       const serverTime = view.serverNow ?? now;
       if (training) {
-        const damageByTarget = new Map(training.damage.map((hit) => [hit.target, hit]));
-        for (const dummy of training.enemies) {
-          if (skeleton.naturalWidth) {
-            ctx.drawImage(skeleton, 0, 0, 16, 16, dummy.x - 24, dummy.y - 30, 48, 48);
-            const hit = damageByTarget.get(`enemy:${dummy.id}`);
-            if (hit)
-              drawTargetHit(
-                ctx,
-                spriteMask(skeleton, 0, 0)!,
-                dummy.x - 24,
-                dummy.y - 30,
-                48,
-                48,
-                serverTime - hit.at,
-              );
-          }
-          ctx.fillStyle = "#152018";
-          ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
-          ctx.fillStyle = "#df7765";
-          ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
-          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
-        }
         drawLootAndBlood(ctx, training, serverTime, project, {
           x: cameraX,
           y: cameraY,
@@ -473,12 +478,25 @@ export function Arena({
       for (const id of positions.keys()) if (!liveIds.has(id)) positions.delete(id);
       // Use the reconciled positions consistently for bodies, lanterns and shadows.
       const dynamic: Caster[] = [];
+      if (quality.current.shadows)
+        for (const object of visibleScenery) if (object.frames) castShadow(ctx, object);
       for (const player of players) {
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
         const ix = player.inputX ?? 0,
           iy = player.inputY ?? 0;
         if (Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
-        const frame = Math.hypot(ix, iy) > 0 ? Math.floor(now / 120) % 4 : 0;
+        const frame = playerFrame(
+          player.id === playerId ? now : serverTime,
+          Math.hypot(ix, iy) > 0,
+          player.hitpoints > 0,
+          player.attackAt,
+        );
+        if (frame === 5 || frame === 6)
+          pos.facing = movementFacing(
+            Math.cos(player.attackAngle ?? 0),
+            Math.sin(player.attackAngle ?? 0),
+            pos.facing,
+          );
         const mask = characterMask(
           characterImages[player.classId ?? "warrior"].walk,
           frame,
@@ -525,6 +543,7 @@ export function Arena({
           bear: null,
           critter: null,
           portal,
+          dummy: null,
         },
         ...visibleScenery.map((object) => ({
           y: object.y,
@@ -533,6 +552,7 @@ export function Arena({
           bear: null,
           critter: null,
           portal: null,
+          dummy: null,
         })),
         ...players.map((player) => ({
           y: player.y + 15,
@@ -541,17 +561,19 @@ export function Arena({
           bear: null,
           critter: null,
           portal: null,
+          dummy: null,
         })),
         ...players.flatMap((p) =>
           p.bear
             ? [
                 {
-                  y: p.bear.y + 15,
+                  y: p.bear.y + 18,
                   object: null,
                   player: null,
                   bear: p.bear,
                   critter: null,
                   portal: null,
+                  dummy: null,
                 },
               ]
             : [],
@@ -563,9 +585,49 @@ export function Arena({
           bear: null,
           critter,
           portal: null,
+          dummy: null,
+        })),
+        ...(training?.enemies ?? []).map((dummy) => ({
+          y: dummy.y + 15,
+          object: null,
+          player: null,
+          bear: null,
+          critter: null,
+          portal: null,
+          dummy,
         })),
       ].sort((a, b) => a.y - b.y);
+      const damageByTarget = new Map(training?.damage.map((hit) => [hit.target, hit]));
       for (const layer of layers) {
+        if (layer.dummy) {
+          const dummy = layer.dummy;
+          ctx.globalAlpha = obstacleOpacity(
+            { x: dummy.x, y: dummy.y + 15, width: 48, height: 48 },
+            local,
+          );
+          if (environmentArt.naturalWidth) {
+            drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
+            const hit = damageByTarget.get(`enemy:${dummy.id}`);
+            if (hit)
+              drawTargetHit(
+                ctx,
+                spriteMask(environmentArt, 1, 2, false, 128, false, 128)!,
+                dummy.x - 24,
+                dummy.y - 30,
+                48,
+                48,
+                serverTime - hit.at,
+              );
+          }
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = "#152018";
+          ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
+          ctx.fillStyle = "#df7765";
+          ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
+          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
+
+          continue;
+        }
         if (layer.portal) {
           drawPortal(
             ctx,
@@ -577,11 +639,14 @@ export function Arena({
             interaction.current?.id === "portal",
             quality.current.shadows,
             quality.current.wavingVegetation,
+            obstacleOpacity({ x: portal.x, y: portal.y + 8, width: 64, height: 80 }, local),
           );
           continue;
         }
         if (layer.critter) {
+          ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, local);
           drawCritter(ctx, layer.critter, quality.current.shadows);
+          ctx.globalAlpha = 1;
           continue;
         }
         if (layer.bear) {
@@ -592,13 +657,17 @@ export function Arena({
             layer.bear.y,
             view?.serverNow ?? now,
             quality.current.shadows,
+            obstacleOpacity(
+              { x: layer.bear.x, y: layer.bear.y + 18, width: 42.5, height: 40 },
+              local,
+            ),
           );
           continue;
         }
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = obstacleOpacity(object, local);
-          const vegetation = object.id.startsWith("tree:") || object.id.startsWith("grass:");
+          const vegetation = object.id.startsWith("tree:");
           if (vegetation)
             drawVegetation(
               ctx,
@@ -610,6 +679,28 @@ export function Arena({
               now,
               quality.current.wavingVegetation,
             );
+          else if (object.id === "building:wardrobe") {
+            const open = interaction.current?.id === "wardrobe";
+            drawArt(
+              ctx,
+              wardrobeArt,
+              open ? Math.min(3, Math.floor((now - wardrobeOpenedAt) / 100)) : 0,
+              0,
+              object.x - object.width / 2,
+              object.y - object.height,
+              object.width,
+              object.height,
+              128,
+            );
+          } else if (object.id.startsWith("torch:"))
+            drawTorchFire(
+              ctx,
+              object.x,
+              object.y,
+              now,
+              quality.current.particles,
+              quality.current.bloom,
+            );
           else
             ctx.drawImage(
               object.sprite,
@@ -618,18 +709,19 @@ export function Arena({
               object.width,
               object.height,
             );
-          if (object.id.startsWith("torch:"))
-            drawTorchFire(
-              ctx,
-              animatedLantern,
-              object.x,
-              object.y,
-              now,
-              quality.current.particles,
-              quality.current.bloom,
-            );
+          if (object.chimney && quality.current.particles)
+            drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
-          if (object.name)
+          if (object.name && object.id === "npc:innkeeper")
+            drawCharacterName(
+              ctx,
+              object.x,
+              object.y - object.height - 9,
+              object.name,
+              undefined,
+              interaction.current?.id === "innkeeper",
+            );
+          else if (object.name)
             drawNameBadge(
               ctx,
               object.x,
@@ -647,47 +739,62 @@ export function Arena({
         const ix = player.inputX ?? 0,
           iy = player.inputY ?? 0;
         const moving = Math.hypot(ix, iy) > 0;
-        // Sheet columns: down, up, left, right. Rows: the four walking frames.
+        const spriteRow = playerFrame(
+          player.id === playerId ? now : serverTime,
+          moving,
+          player.hitpoints > 0,
+          player.attackAt,
+        );
+        // Four directions share the same idle, walk, action and fallen rows.
         if (moving) pos.facing = movementFacing(ix, iy, pos.facing);
+        if (spriteRow === 5 || spriteRow === 6)
+          pos.facing = movementFacing(
+            Math.cos(player.attackAngle ?? 0),
+            Math.sin(player.attackAngle ?? 0),
+            pos.facing,
+          );
         pos.x = player.x;
         pos.y = player.y;
         positions.set(player.id, pos);
-        ctx.strokeStyle = colors[player.color];
-        ctx.lineWidth = player.id === playerId ? 2 : 1;
-        ctx.beginPath();
-        ctx.ellipse(pos.x, pos.y + 15, 18, 8, 0, 0, Math.PI * 2);
-        ctx.stroke();
+        const opacity =
+          player.id === playerId
+            ? 1
+            : obstacleOpacity({ x: pos.x, y: pos.y + 15, width: 48, height: 48 }, local);
+        ctx.globalAlpha = opacity;
+        renderer.spriteTint = player.reconnecting ? "#ff5555" : "#ffffff";
         if (knight.complete && knight.naturalWidth) {
           if (quality.current.motionBlur && moving) {
             // Sprite-only temporal samples keep HUD text and the world sharp.
             for (let sample = 3; sample > 0; sample--) {
-              ctx.globalAlpha = 0.09;
+              ctx.globalAlpha = 0.09 * opacity;
               ctx.drawImage(
                 knight,
-                pos.facing * 16,
-                (Math.floor(now / 120) % 4) * 16,
-                16,
-                16,
+                pos.facing * ACTOR_CELL,
+                spriteRow * ACTOR_CELL,
+                ACTOR_CELL,
+                ACTOR_CELL,
                 pos.x - 24 - dx * sample * 0.45,
                 pos.y - 30 - dy * sample * 0.45,
                 48,
                 48,
               );
             }
-            ctx.globalAlpha = 1;
+            ctx.globalAlpha = opacity;
           }
           ctx.drawImage(
             knight,
-            pos.facing * 16,
-            (moving ? Math.floor(now / 120) % 4 : 0) * 16,
-            16,
-            16,
+            pos.facing * ACTOR_CELL,
+            spriteRow * ACTOR_CELL,
+            ACTOR_CELL,
+            ACTOR_CELL,
             pos.x - 24,
-            pos.y - 30,
+            pos.y + 18 - 48 * idleBreath(now, spriteRow),
             48,
-            48,
+            48 * idleBreath(now, spriteRow),
           );
         }
+        renderer.spriteTint = "#ffffff";
+        ctx.globalAlpha = 1;
         drawPlayerHealth(
           ctx,
           pos.x,
@@ -712,18 +819,7 @@ export function Arena({
       if (training) {
         drawClassProjectiles(ctx, training, serverTime, project);
         if (prefs.current.damageNumbers)
-          for (const hit of training.damage) {
-            const age = serverTime - hit.at;
-            if (age < 0 || age > 750) continue;
-            ctx.save();
-            ctx.globalAlpha = 1 - age / 800;
-            ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
-            ctx.textAlign = "center";
-            ctx.fillStyle = "#fff0b1";
-            const point = project(hit.x, hit.y);
-            ctx.fillText(String(Math.round(hit.amount)), point.x, point.y - 45 - age / 30);
-            ctx.restore();
-          }
+          drawDamageNumbers(ctx, training.damage, project, serverTime);
       }
       if (quality.current.lighting) {
         ctx.save();
@@ -742,19 +838,12 @@ export function Arena({
             continue;
           const texture = torchTextures[i];
           if (!texture) continue;
-          // Cache the static blockers; update only the moving character shadows.
-          if (movingLight.width !== light.radius * 2)
-            movingLight.width = movingLight.height = light.radius * 2;
-          const lightCtx = movingLight.getContext("2d")!;
-          lightCtx.resetTransform();
-          lightCtx.clearRect(0, 0, movingLight.width, movingLight.height);
-          lightCtx.globalCompositeOperation = "source-over";
-          lightCtx.drawImage(texture, 0, 0);
-          if (quality.current.shadows) {
-            lightCtx.translate(light.radius - light.x, light.radius - light.y);
-            lightCtx.globalCompositeOperation = "destination-out";
-            for (const caster of dynamic) castShadow(lightCtx, caster, light);
-          }
+          const movingLight = lightTexture(
+            light,
+            [...dynamic, ...visibleScenery.filter((object) => object.frames)],
+            quality.current.shadows,
+            texture,
+          );
           ctx.globalAlpha = 0.9 + Math.sin(now / 190 + i) * 0.1;
           ctx.drawImage(movingLight, light.x - light.radius, light.y - light.radius);
         }
@@ -770,12 +859,7 @@ export function Arena({
             owner: player.id,
           };
           ctx.drawImage(
-            lightTexture(
-              lantern,
-              [...visibleScenery, ...dynamic],
-              quality.current.shadows,
-              lanternTexture,
-            ),
+            lightTexture(lantern, [...visibleScenery, ...dynamic], quality.current.shadows),
             lantern.x - lantern.radius,
             lantern.y - lantern.radius,
           );
@@ -789,10 +873,22 @@ export function Arena({
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawNavigation(ctx, view, playerId);
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
+      element.dataset.debugHitboxes = String(
+        prefs.current.debugHitboxes
+          ? drawHitboxes(ctx, view, false, {
+              x: cameraX,
+              y: cameraY,
+              width: viewWidth,
+              height: viewHeight,
+            })
+          : 0,
+      );
+      renderer.present();
       frame = requestAnimationFrame(draw);
     }
     frame = requestAnimationFrame(draw);
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener("resize", resize);
@@ -805,11 +901,18 @@ export function Arena({
       window.removeEventListener("blur", reset);
       document.removeEventListener("visibilitychange", reset);
 
+      renderer.destroy();
+      presentation.clear();
       audio.dispose();
     };
   }, [playerId, interaction, onHitpoints]);
   return (
     <>
+      {renderError && (
+        <p role="alert">
+          The game renderer could not start. Enable browser hardware acceleration and reload.
+        </p>
+      )}
       <canvas
         ref={canvas}
         width={ARENA.width}
@@ -847,3 +950,4 @@ export function Arena({
     </>
   );
 }
+import { drawDamageNumbers } from "./damage-text";

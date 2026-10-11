@@ -4,14 +4,13 @@ import { once } from "node:events";
 import { mkdtemp, writeFile, mkdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { WebSocket } from "ws";
+import { WebSocket } from "./testing/socket.ts";
 import type { ServerMessage } from "@emberfall/common";
 import { createGameServer } from "./worlds.ts";
 
 async function start(root?: string, savePath?: string) {
-  const app = createGameServer(root, savePath);
-  app.server.listen(0, "127.0.0.1");
-  await once(app.server, "listening");
+  const app = await createGameServer(root, savePath);
+  await app.listen(0, "127.0.0.1");
   const address = app.server.address();
   assert(address && typeof address !== "string");
   return { ...app, url: `http://127.0.0.1:${address.port}` };

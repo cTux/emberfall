@@ -1,11 +1,11 @@
 ---
 name: emberfall-reconciliation
-description: Diagnose or change Emberfall client-new prediction, snapshot interpolation, reconciliation and local effect alignment. Use for stale projectile origins, pickup destinations or movement desync; excludes combat balance, transport-only setup and sprite artwork alone.
+description: Diagnose or change Emberfall client prediction, snapshot interpolation, reconciliation and local effect alignment. Use for stale projectile origins, pickup destinations or movement desync; excludes combat balance, transport-only setup and sprite artwork alone.
 ---
 
 # One displayed local pose
 
-Read the [client guide](../../../packages/client-new/README.md),
+Read the [client guide](../../../packages/client/README.md),
 [movement design](../../../docs/design/movement.md) and
 [new-runtime design](../../../docs/design/new-runtime.md). Trace source timestamps
 and ownership through `snapshots.ts`, `local-movement.ts`, `Arena.tsx` and
@@ -37,7 +37,7 @@ reset, pauses, stale replies and reconnects as applicable. Assert source immutab
 unchanged rewards, no duplicates, continued flight and bounded prediction.
 Existing entry points are `local-movement.test.ts`, `local-projectiles.test.ts`,
 `snapshots.test.ts`, `pickup-presentation.test.ts` and `protocol.test.ts` under
-`packages/server-new/src`. For wire changes verify native protocol round trips.
+`packages/server/src`. For wire changes verify native protocol round trips.
 
 Build and run the affected real-Colyseus browser case, then inspect movement,
 projectiles and pickups visually. Report which latencies and scenarios were

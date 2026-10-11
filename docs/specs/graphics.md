@@ -1,12 +1,12 @@
 # Graphics and visual feedback
 
-Status: implemented visual baseline. Goal: a readable pixel-art world. The original runtime uses Canvas 2D; the independent `client-new` uses native PixiJS WebGL with the same graphics controls and visual requirements. See the [original technical design](../design/presentation.md) and [new runtime design](../design/new-runtime.md).
+Status: implemented visual baseline. Goal: a readable pixel-art world. The client uses native PixiJS WebGL. See the [presentation design](../design/presentation.md) and [new runtime design](../design/new-runtime.md).
 
 ## GRAPHICS-01 — Presets and renderer
 
 Settings contains Low, Balanced and High (default) presets, plus persistent individual toggles. High enables soft projected tree shadows, 2D contact ambient occlusion, dense grass clusters, sprite-only motion blur, flickering campfire/player lighting, bloom, and ambient particles. Resolution options are 75%, native and 150% supersampling, with backing pixel density capped at 3x. Changes apply immediately and do not change server simulation or collision geometry.
 
-Settings include sunlight shafts, soft-light color grading, adaptive resolution and frame caps (display refresh, 30/60/120/144 FPS). Adaptive resolution adjusts the selected render scale between 50% and 100% every two seconds based on frame time; it never changes world size, input cadence or collision geometry. Low/Balanced enable adaptation; High prioritizes fixed resolution. Red gameplay warnings remain enabled at every preset. Native DLSS, frame generation, hardware ray tracing, depth-buffer SSAO and HDR output are not advertised as supported. The separate PixiJS runtime preserves these settings; it does not introduce those native rendering features.
+Settings include sunlight shafts, soft-light color grading, adaptive resolution and frame caps (display refresh, 30/60/120/144 FPS). Adaptive resolution adjusts the selected render scale between 50% and 100% every two seconds based on frame time; it never changes world size, input cadence or collision geometry. Low/Balanced enable adaptation; High prioritizes fixed resolution. Red gameplay warnings remain enabled at every preset. Native DLSS, frame generation, hardware ray tracing, depth-buffer SSAO and HDR output are not advertised as supported. PixiJS does not introduce those native rendering features.
 
 High defaults to 150% supersampling and display-refresh frame pacing. Low uses native scale with adaptive resolution; Balanced uses native scale with adaptation, shadows, contact occlusion, dynamic lighting, vignette, color grading, particles and vegetation sway. Preferences can be adjusted individually.
 
@@ -18,7 +18,7 @@ Static sun shadows and static torch occlusion are cached; dynamic character bloc
 
 ## GRAPHICS-03 — Scenery and atmosphere
 
-Fog is animated, seamlessly tiled and layered; it is disabled by default in every preset and can be enabled individually. Saved individual fog preferences remain in effect on reload. Fog and flying particles use world coordinates with seamless repetition. Dense grass, paths and scenery share depth ordering with actors. The original renderer uses Canvas 2D; the new renderer draws the same baked fog sources with native Pixi sprites.
+Fog is animated, seamlessly tiled and layered; it is disabled by default in every preset and can be enabled individually. Saved individual fog preferences remain in effect on reload. Fog and flying particles use world coordinates with seamless repetition. Dense grass, paths and scenery share depth ordering with actors. The renderer draws baked fog sources with native Pixi sprites.
 
 Scenery covering the local player's sprite fades to 20% opacity (80% transparent) when the player is behind it, then returns to full opacity once the player moves clear or in front. This applies to village trees, buildings, wardrobe and torch posts, and forest trees. Players can walk through all scenery; shadows remain unchanged. In the new runtime, training dummies, enemies, other players, companions and decorative animals share this foot-position depth ordering and fade when covering the local player. Player ground identification rings are not drawn; sprite sizes stay unchanged.
 
@@ -96,7 +96,7 @@ planted and lifted feet, including beneath robes. Torso changes alone do not cou
 Animation selection follows the existing movement and confirmed/predicted action
 timestamps, never changes simulation timing, and uses the same frame for sprite
 and shadow/hit masks. Direction changes must not crop sprites or expose another
-atlas cell. Keep the original runtime and its credited assets intact.
+atlas cell. Preserve retained original assets and their credits.
 
 ## Acceptance
 
@@ -112,4 +112,4 @@ still affects the final canvas output.
 - Damage flashes restart on each hit, including ailments and killing blows; remote players do not receive the local sprite flash.
 - Check weapon visibility, debuff spacing/expiry, torch animation, animal shadows, portal bloom-off visibility and reduced-motion countdown.
 
-Evidence: [tree-opacity.test.ts](../../packages/server/src/tree-opacity.test.ts), [graphics.spec.ts](../../tests/graphics.spec.ts), [tree-opacity.spec.ts](../../tests/tree-opacity.spec.ts), [damage-flash.spec.ts](../../tests/damage-flash.spec.ts), [weapon-visibility.spec.ts](../../tests/weapon-visibility.spec.ts), [torch-fire.spec.ts](../../tests/torch-fire.spec.ts), [animal-shadows.spec.ts](../../tests/animal-shadows.spec.ts), [critter-shadow.spec.ts](../../tests/critter-shadow.spec.ts).
+Evidence: [tree-opacity.test.ts](../../packages/server/src/tree-opacity.test.ts).

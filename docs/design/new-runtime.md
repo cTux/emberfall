@@ -1,19 +1,20 @@
-# Independent game runtime
+# Game runtime
 
-Status: implemented independent runtime. Existing gameplay specifications remain
-the behavior contract. Existing packages remain runnable and are the parity
-reference, not dependencies of the new runtime. See the
+Status: implemented sole runtime. The former `*-new` packages now occupy
+`packages/common`, `packages/server` and `packages/client`; the original runtime
+and its comparison suite are retired. Gameplay specifications remain the
+behavior contract. See the
 [verification record](../plans/new-runtime.md) for measured coverage and limits.
 
 ## Ownership
 
-- `common-new`: serializable definitions, validated commands, geometry, shared
+- `common`: serializable definitions, validated commands, geometry, shared
   simulation and prediction functions. No DOM, database or network connections.
-- `server-new`: authoritative Miniplex entities, ordered fixed-timestep systems,
+- `server`: authoritative Miniplex entities, ordered fixed-timestep systems,
   Colyseus transport/state projection and Colyseus database persistence.
-- `client-new`: Colyseus SDK, presentation/prediction Miniplex world, PixiJS world
+- `client`: Colyseus SDK, presentation/prediction Miniplex world, PixiJS world
   rendering, audio and screen composition using the shared UI package.
-- `ui`: shared controlled components and theme for both runtimes.
+- `ui`: controlled components and theme for the client and Storybook.
 
 Definition objects describe types; mutable entities describe instances. Stable
 definition IDs connect them. The simulation owns live state; network projections
@@ -35,8 +36,8 @@ share `drawCharacterName`; Marta's label sits above her sprite and adds the
 interaction background and `(E)` only while selected. Her cached idle frames advance
 by time, with the same frame used for rendering and shadow masks; there is no
 moving NPC state, network command or persistence change. Verification:
-[village rules](../../packages/server-new/src/village.test.ts) and
-[Innkeeper browser scenario](../../tests-new/innkeeper.spec.ts).
+[village rules](../../packages/server/src/village.test.ts) and
+[Innkeeper browser scenario](../../tests/innkeeper.spec.ts).
 
 Gold collection adds one coin to the nearest living forest collector, once, in shared simulation. The optional validated `coins` progress field defaults to zero when loading old saves. Existing per-class save scheduling and protocol payloads carry the balance; the shared party card receives confirmed values from the new client.
 
@@ -52,7 +53,7 @@ owns gameplay, so browsing, password joins and world transfers preserve one SDK
 connection and existing recovery behavior. This is intentionally a single-process
 design, not a horizontally sharded room-per-world deployment.
 
-`common-new/protocol` projects plain state into native Colyseus schema records.
+`common/protocol` projects plain state into native Colyseus schema records.
 Positions, angles and input acknowledgements use scalar deltas; the remaining
 entity details use a per-entity payload. Collection membership and order are
 explicit. A party broadcast is serialized once and applied to each session's
@@ -78,7 +79,7 @@ resolution, with nearest-neighbor sampling for sharper enlarged labels and
 damage numbers. Text density does not increase the world render resolution.
 
 The optional hitbox overlay runs after world effects in both village and forest.
-`client-new/hitboxes.ts` reads detached displayed poses and common-new collision,
+`client/hitboxes.ts` reads detached displayed poses and common collision,
 enemy, world, attack and pickup definitions. Body, feet, projectile and scenery
 shapes have distinct colors; orange labeled rings indicate action ranges rather
 than solid bodies. The preference defaults to false, lives in `emberfall-new.preferences`,
@@ -89,7 +90,7 @@ combined incoming-projectile hit threshold minus the incoming projectile radius,
 so the displayed circle sum reproduces the actual hit check independently of the
 player movement radius.
 `data-debug-hitboxes` reports the number of visible shapes for rendering diagnostics.
-Verification: [hitbox overlay tests](../../tests-new/hitboxes.spec.ts).
+Verification: [hitbox overlay tests](../../tests/hitboxes.spec.ts).
 
 Gradient ramps are baked once onto transparent textures and cached independently
 of world position, so vignette centers preserve the scene beneath them. SVG
@@ -103,11 +104,12 @@ debuff glyphs, including reuse of pooled sprites.
 
 ## Compatibility
 
-The new packages cannot import old common/client/server packages. Assets and rules
-are ported with attribution; parity tooling may read the old implementation.
-Dedicated commands, ports, database paths and browser identity keys isolate the
-two runtimes. New commands include dev-new, build-new, start-new, test-new,
-typecheck-new and test:browser-new.
+The original runtime and parity tooling are retired. Canonical commands are
+`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm test`, `pnpm typecheck` and
+`pnpm test:browser`. Existing ports, `PORT_NEW`, `SAVE_PATH_NEW` and browser
+storage keys remain compatible. Retained original assets keep their attribution.
+The default database directory changes with the package path; see
+[operations](../operations.md#persistence-and-backup) before upgrading a deployment.
 
 Keep 20 Hz simulation, current numbers, wrapped maps, all classes, companions,
 training, encounters, graphics preferences, UI, audio and recovery behavior.
@@ -151,12 +153,12 @@ There is no asynchronous write queue. A crash can lose progress since the last
 successful save. Restart restores village membership, not combat. Legacy import
 reads an offline backup into a new destination and refuses to overwrite either
 an existing destination or the source. See the
-[server guide](../../packages/server-new/README.md) for commands and identity
+[server guide](../../packages/server/README.md) for commands and identity
 transfer. SQLite and the shared party registry require a single server process.
 
 ## Equipment and typed damage
 
-`common-new/definitions/equipment` declares slot compatibility, gear definitions
+`common/definitions/equipment` declares slot compatibility, gear definitions
 and per-class starter IDs. `equipment.ts` derives totals from equipped IDs;
 simulation, prediction and presentation consume that calculation. Equipment lives
 in per-class progress. Saves without equipment migrate at decode; invalid items,
@@ -261,16 +263,15 @@ delays, world seams, source immutability and duplicate adoption.
 
 ## Verification
 
-Run ported rule/prediction tests against new imports, native Colyseus integration
-tests, isolated persistence round trips/conflicts/restarts, dependency boundary
-checks and browser scenarios. Verify PixiJS screenshots and representative frame
+Run rule/prediction tests against canonical package imports, native Colyseus integration
+tests, isolated persistence round trips/conflicts/restarts, definition validation and browser scenarios. Verify PixiJS screenshots and representative frame
 times separately. Passing sampled scenarios does not establish pixel-identical
 rendering, hardware GPU throughput, or production capacity. Keep measured limits
 alongside results in the verification record.
 
 ## Inventory, loot and shared trading
 
-`common-new/inventory.ts` owns validated unlimited backpack entries, stack merging,
+`common/inventory.ts` owns validated unlimited backpack entries, stack merging,
 gear exchange, consumable use and one-item trades. Stable entry IDs make stale
 commands harmless. Gear definitions are the single source of armor and price.
 Per-class progress includes the backpack; older saves default to an empty array.
@@ -286,6 +287,6 @@ removes the entry before another can buy it. World deletion deletes merchant sta
 The existing protocol payload carries backpacks and merchant state without a
 second transport. UI components remain controlled; host callbacks send commands.
 
-Verification: `packages/server-new/src/inventory.test.ts` and
-`tests-new/inventory.spec.ts` cover transfers, failures, migration, restart,
+Verification: `packages/server/src/inventory.test.ts` and
+`tests/inventory.spec.ts` cover transfers, failures, migration, restart,
 stacking, loot, unarmed casting and the replicated UI.

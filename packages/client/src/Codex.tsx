@@ -14,9 +14,11 @@ const chapters = [
           enabled. With auto-attack off, hold LMB to cast on cooldown. With auto-target off, aim
           with the cursor; spells fly straight up to 1000 units and hit enemies in their path.
           Auto-target selects only the nearest enemy. A transparent circle shows spell range when
-          the cursor is beyond it. Press E near a building or blue portal to interact. Trees,
-          buildings and torch posts block movement. Escape opens a leave confirmation; Escape inside
-          a window closes it. Drag window titles to move them.
+          the cursor is beyond it. Press E near a building, Marta the Innkeeper or blue portal to
+          interact. Trees, buildings and torch posts block movement. Escape opens a leave
+          confirmation; Escape inside a window closes it. Drag window titles to move them. Press I
+          to open your inventory and character stats, or press it again to close the window.
+          Movement and equipment hotkeys follow physical keys across keyboard layouts.
         </p>{" "}
       </>
     ),
@@ -29,11 +31,11 @@ const chapters = [
         <p>
           Playtest Default is always open to everyone, with room for 32 players. World creation is
           disabled. Other worlds disappear when everyone leaves. Your character is saved on the
-          server and linked to this browser. A portal creates a Forest / Easy scene on the server.
-          Vote inside the portal window. Everyone must be ready. Retract your vote to cancel the
-          five-second countdown. You can join a world during combat, then use its village portal to
-          join or rejoin the running scene until the boss dies and return portals open. After that,
-          everyone must return before creating a new scene. Party members in another dimension
+          server and linked to your Steam account. A portal creates a Forest / Easy scene on the
+          server. Vote inside the portal window. Everyone must be ready. Retract your vote to cancel
+          the five-second countdown. You can join a world during combat, then use its village portal
+          to join or rejoin the running scene until the boss dies and return portals open. After
+          that, everyone must return before creating a new scene. Party members in another dimension
           appear dimmed.
         </p>{" "}
       </>
@@ -45,19 +47,23 @@ const chapters = [
       <>
         {" "}
         <p>
-          The forest wraps at every edge. Attacks are automatic. Warrior slashes for 5 damage;
-          ranger arrows deal 5 damage and pierce all targets for 1000 units. Ranger and mage fire
-          two projectiles, 3° either side of the aim direction, with 6° between them. Mage fireballs
-          travel up to 250 units with auto-target enabled, deal 3 damage to the direct target, and
-          explode within 100 units for 1 damage to other enemies. Each hit has a 10% chance to cause
-          bleeding, poison, or burning respectively. Each stack deals 1 damage per second for 5
-          seconds. Stacks have no limit and new stacks refresh the shared timer. Icons above enemy
-          health bars show active ailments and stacks. Skeletons have 10 HP. Each spawn has a 10%
-          chance to be a big, slow enemy with triple HP, and a 10% chance to be ranged with 70% HP.
-          Every tenth spawn is elite with five times normal HP; big and ranged modifiers also apply
-          to elites. Each additional player in the forest multiplies enemy HP by 1.75 and dropped XP
-          by 1.2. Three players mean 3.0625 times HP and 1.44 times dropped XP. Red areas warn of
-          spawns and enemy attacks. Dodge filled circles and red projectiles.
+          The forest wraps at every edge. Attacks are automatic. Starter weapons have a 5% chance to
+          critically hit for 150% power. Warrior damage is physical, Mage fire, Ranger poison and
+          Druid nature. Damage numbers use those colors; critical hits appear white with a thick red
+          outline. Equipped gear determines offense and defense; inspect its totals in Inventory.
+          Warrior slashes for 5 damage; ranger arrows deal 5 damage and pierce all targets for 1000
+          units. Ranger and mage fire two projectiles, 3° either side of the aim direction, with 6°
+          between them. Mage fireballs travel up to 250 units with auto-target enabled, deal 3
+          damage to the direct target, and explode within 100 units for 1 damage to other enemies.
+          Each hit has a 10% chance to cause bleeding, poison, or burning respectively. Each stack
+          deals 1 damage per second for 5 seconds. Stacks have no limit and new stacks refresh the
+          shared timer. Icons above enemy health bars show active ailments and stacks. Skeletons
+          have 10 HP. Each spawn has a 10% chance to be a big, slow enemy with triple HP, and a 10%
+          chance to be ranged with 70% HP. Every tenth spawn is elite with five times normal HP; big
+          and ranged modifiers also apply to elites. Each additional player in the forest multiplies
+          enemy HP by 1.75 and dropped XP by 1.2. Three players mean 3.0625 times HP and 1.44 times
+          dropped XP. Red areas warn of spawns and enemy attacks. Dodge filled circles and red
+          projectiles.
         </p>{" "}
         <p>
           <img className="combat-icon" src={statusSrc("bleed")} alt="Bleeding" /> Bleeding ·{" "}
@@ -94,8 +100,10 @@ const chapters = [
           and companions. Other players do not flash. Your screen flashes red when you are hit. Your
           movement and attack animation respond locally; the server validates movement and decides
           damage. Settings control floating damage numbers, FPS, vignette, graphics, music and sound
-          effects. Your preferences and nickname stay in this browser. Server saves include XP,
-          health and playtime; clearing browser storage loses the character key. No offline mode.
+          effects. Your preferences stay in this browser. Your nickname belongs to your Steam
+          account; change it in Settings → Account. Server saves include XP, health and playtime.
+          Sign in through the same Steam account to recover your character on another browser. No
+          offline mode.
         </p>{" "}
       </>
     ),
@@ -114,11 +122,13 @@ const chapters = [
           enabled. One projectile bounces up to three times to the nearest unhit living enemy within
           250 units of each impact. All hits deal full power and apply one root stack, slowing
           ordinary enemies by 10% for five seconds. Further hits refresh the duration. Roots cause
-          no damage over time and do not affect bosses. Boar has 1.5 times your maximum HP, strikes
-          with tusks for 2 damage, and revives five seconds after death. It chases the nearest enemy
-          within 200 units of you, returns when more than 200 units away from you, and resumes
-          hunting once back at your side. Boar keeps an 80-unit gap for tusk attacks, backs away
-          from close enemies, and tries to dodge attack warnings and incoming projectiles.
+          no damage over time and do not affect bosses. Bear has 1.5 times your maximum HP, strikes
+          with physical claws reaching 250 units, inherits your power, attack speed, critical stats
+          and armor, and has a 10% chance per hit to inflict bleed. It revives five seconds after
+          death and moves at your speed. It chases the nearest enemy within 200 units of you,
+          returns when more than 200 units away from you, and resumes hunting once back at your
+          side. Bear keeps an 80-unit gap for claw attacks, backs away from close enemies, and tries
+          to dodge attack warnings and incoming projectiles.
         </p>
         <p>
           Level, experience, health, and playtime are saved separately for each class under your
@@ -132,7 +142,13 @@ const chapters = [
     title: "Credits",
     content: (
       <>
-        <p>Art and characters from the Ninja Adventure asset pack by Pixel-boy & AAA.</p>
+        <p>
+          New-client sprites and animations were generated for Emberfall using the approved
+          wardrobe-style concepts. The wardrobe reference is LPC Wooden Furniture; its credits and
+          CC BY-SA 3.0 license are preserved. The original imported art remains bundled for
+          provenance.
+        </p>
+        <p>Original art and characters: Ninja Adventure asset pack by Pixel-boy & AAA.</p>
         <a
           href="https://pixel-boy.itch.io/ninja-adventure-asset-pack"
           target="_blank"
@@ -142,7 +158,7 @@ const chapters = [
         </a>
         <p>Music by TimberwolfGames. Audio credits and licenses are included with the game.</p>
         <p>
-          Village lamp posts:{" "}
+          Original village lamp posts:{" "}
           <a href="https://karsiori.itch.io/free-pixel-art-lantern-pack">Karsiori</a>,{" "}
           <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>. Bronze post and
           orange lantern from the FREE Pixel Art Lantern Pack.
@@ -151,18 +167,19 @@ const chapters = [
           Wardrobe:{" "}
           <a href="https://opengameart.org/content/lpc-wooden-furniture">LPC Wooden Furniture</a> by
           bluecarrot16, Baŝto, Lanea Zimmerman (Sharm), William Thompson, Tuomo Untinen (Reemax),
-          and Janna/Lilius/Jannax. Cropped from the original sheet;{" "}
+          and Janna/Lilius/Jannax. Original crop used as the reference for the regenerated wardrobe;{" "}
           <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>.{" "}
           <a href="/assets/LPC-CREDITS.txt">Full credits</a> and{" "}
           <a href="/assets/LPC-LICENSE.txt">license</a>.
         </p>
         <p>
-          Weapons: <a href="https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack">Kyrise</a>,{" "}
+          Original weapons:{" "}
+          <a href="https://kyrise.itch.io/kyrises-free-16x16-rpg-icon-pack">Kyrise</a>,{" "}
           <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Unmodified sprites
           from Kyrise's Free 16x16 RPG Icon Pack.
         </p>
         <p>
-          Status and spell icons:{" "}
+          Original status and spell icons:{" "}
           <a href="https://game-icons.net/">Lorc and Delapouite / Game-icons.net</a>,{" "}
           <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>. Colors adapted for
           Emberfall.

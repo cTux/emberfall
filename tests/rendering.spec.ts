@@ -1,134 +1,71 @@
 import { test, expect } from "./fixtures";
+test.use({ graphicsPreset: "High" });
 
-interface RenderCapture {
-  sprites: { x: number; y: number }[];
-  label?: { text: string; textWidth: number; boxWidth: number };
-}
-declare global {
-  interface Window {
-    renderCapture: RenderCapture;
-  }
-}
-
-test("walking keeps direction, advances frames, and fits the full nickname", async ({ page }) => {
-  await page.addInitScript(() => {
-    window.renderCapture = { sprites: [] };
-    const boxes = new WeakMap<CanvasRenderingContext2D, number>();
-    const prototype = CanvasRenderingContext2D.prototype;
-    prototype.drawImage = new Proxy(prototype.drawImage, {
-      apply(target, context, args) {
-        if (args[0] instanceof HTMLImageElement && args[0].src.endsWith("/knight.png")) {
-          window.renderCapture.sprites.push({ x: args[1], y: args[2] });
-          if (window.renderCapture.sprites.length > 120) window.renderCapture.sprites.shift();
-        }
-        return Reflect.apply(target, context, args);
-      },
-    });
-    prototype.fillRect = new Proxy(prototype.fillRect, {
-      apply(target, context, args) {
-        if (context.fillStyle === "#101817" && args[3] === 7) boxes.set(context, args[2]);
-        return Reflect.apply(target, context, args);
-      },
-    });
-    prototype.fillText = new Proxy(prototype.fillText, {
-      apply(target, context, args) {
-        if (context.font === '8px "Alegreya Sans", sans-serif')
-          window.renderCapture.label = {
-            text: args[0],
-            textWidth: context.measureText(args[0]).width,
-            boxWidth: boxes.get(context) ?? 0,
-          };
-        return Reflect.apply(target, context, args);
-      },
-    });
-  });
+test("High graphics uses viewport-sized WebGL with bounded cached resources", async ({
+  page,
+  browser,
+}, testInfo) => {
+  const session = await browser.newBrowserCDPSession();
+  const system = await session.send("SystemInfo.getInfo");
+  await session.detach();
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/");
-  const name = "A very long adventurer";
-  await page.getByLabel("Your adventurer name").fill(name);
-  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
-  await expect.poll(() => page.evaluate(() => window.renderCapture.label?.text)).toBe(name);
-  const label = await page.evaluate(() => window.renderCapture.label!);
-  expect(label.boxWidth).toBe(Math.max(40, Math.ceil(label.textWidth) + 12));
-  for (const [key, column] of [
-    ["d", 48],
-    ["w", 16],
-    ["a", 32],
-    ["s", 0],
-  ] as const) {
-    await page.keyboard.down(key);
-    await page.waitForTimeout(250);
-    await page.evaluate(() => {
-      window.renderCapture.sprites = [];
-    });
-    await page.waitForTimeout(370);
-    const frames = await page.evaluate(() => window.renderCapture.sprites);
-    expect(frames.length).toBeGreaterThan(3);
-    expect([...new Set(frames.map((frame) => frame.x))]).toEqual([column]);
-    expect(
-      new Set(frames.map((frame) => frame.y)).size,
-      `Walking ${key} should animate`,
-    ).toBeGreaterThan(2);
-    await page.keyboard.up(key);
-    await page.waitForTimeout(500);
-    const idle = await page.evaluate(() => window.renderCapture.sprites.at(-1));
-    expect(idle).toEqual({ x: column, y: 0 });
-  }
-  await page.keyboard.down("w");
-  await page.waitForTimeout(100);
-  await page.keyboard.down("a");
-  await page.waitForTimeout(60);
-  await page.evaluate(() => {
-    window.renderCapture.sprites = [];
-  });
-  await page.waitForTimeout(250);
-  const diagonal = await page.evaluate(() => window.renderCapture.sprites);
-  expect(diagonal.length).toBeGreaterThan(3);
-  expect([...new Set(diagonal.map((frame) => frame.x))]).toEqual([16]);
-  await page.keyboard.up("a");
-  await page.keyboard.up("w");
-  await page.screenshot({ path: "test-results/directional-walking.png" });
-  await page.getByRole("button", { name: "Leave world" }).click();
-  await page.getByRole("button", { name: "Leave", exact: true }).click();
-});
-
-test("holding movement into a torch leaves the character still and idle", async ({ page }) => {
-  await page.addInitScript(() => {
-    window.renderCapture = { sprites: [] };
-    const prototype = CanvasRenderingContext2D.prototype;
-    prototype.drawImage = new Proxy(prototype.drawImage, {
-      apply(target, context, args) {
-        if (args[0] instanceof HTMLImageElement && args[0].src.endsWith("/knight.png")) {
-          window.renderCapture.sprites.push({ x: args[6], y: args[2] });
-          if (window.renderCapture.sprites.length > 120) window.renderCapture.sprites.shift();
-        }
-        return Reflect.apply(target, context, args);
-      },
-    });
-  });
-  await page.goto("/");
-  await page.getByLabel("Your adventurer name").fill("Blocked walker");
-  await page.getByRole("button", { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole("button", { name: "Leave world" })).toBeVisible();
-  // Spawn is (420, 340); approach the torch at (440, 435) from above.
-  await page.keyboard.down("d");
-  await page.waitForTimeout(100);
-  await page.keyboard.up("d");
-  await page.keyboard.down("s");
-  await page.waitForTimeout(1400);
-  await page.evaluate(() => {
-    window.renderCapture.sprites = [];
-  });
-  await page.waitForTimeout(650);
-  const frames = await page.evaluate(() => window.renderCapture.sprites);
-  expect(frames.length).toBeGreaterThan(3);
+  const canvas = page.locator("canvas");
+  await expect(canvas).toHaveAttribute("data-renderer", "pixijs-webgl");
   expect(
-    Math.max(...frames.map((frame) => frame.x)) - Math.min(...frames.map((frame) => frame.x)),
-  ).toBeLessThan(0.01);
-  expect([...new Set(frames.map((frame) => frame.y))]).toEqual([0]);
-  // The sprite top should still be near the torch, not stopped at the map boundary.
-  expect(frames[0].x).toBeGreaterThan(360);
-  expect(frames[0].x).toBeLessThan(395);
-  await page.screenshot({ path: "test-results/blocked-torch.png" });
-  await page.keyboard.up("s");
+    await canvas.evaluate((canvas: HTMLCanvasElement) => ({
+      width: canvas.width,
+      height: canvas.height,
+      canvas2d: !!canvas.getContext("2d"),
+    })),
+  ).toEqual({ width: 2160, height: 1500, canvas2d: false });
+  await page.waitForTimeout(3000);
+  const timing = await page.evaluate(
+    () =>
+      new Promise<{ frames: number; averageMs: number; p95Ms: number }>((resolve) => {
+        const intervals: number[] = [];
+        let last = performance.now();
+        const start = last;
+        function frame(now: number) {
+          intervals.push(now - last);
+          last = now;
+          if (now - start < 3000) requestAnimationFrame(frame);
+          else {
+            const sorted = [...intervals].sort((a, b) => a - b);
+            resolve({
+              frames: intervals.length,
+              averageMs: intervals.reduce((sum, n) => sum + n, 0) / intervals.length,
+              p95Ms: sorted[Math.floor(sorted.length * 0.95)],
+            });
+          }
+        }
+        requestAnimationFrame(frame);
+      }),
+  );
+  const stats = JSON.parse((await canvas.getAttribute("data-render-stats"))!);
+  expect(stats.textures).toBeLessThan(150);
+  expect(stats.gradients).toBeLessThan(150);
+  expect(stats.visuals).toBeLessThan(5000);
+  expect(timing.frames).toBeGreaterThan(5);
+  console.log("High preview renderer measurement", JSON.stringify({ timing, stats }));
+  await testInfo.attach("renderer-measurement", {
+    body: JSON.stringify(
+      {
+        browser: browser.version(),
+        gpu: system.gpu,
+        viewport: page.viewportSize(),
+        preset: "High",
+        warmupMs: 3000,
+        sampleMs: 3000,
+        timing,
+        stats,
+      },
+      null,
+      2,
+    ),
+    contentType: "application/json",
+  });
+  await page.screenshot({ path: "test-results/new-pixi-high-preview.png" });
+  expect(errors).toEqual([]);
 });

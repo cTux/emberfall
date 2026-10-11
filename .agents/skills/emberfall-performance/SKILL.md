@@ -1,16 +1,16 @@
 ---
 name: emberfall-performance
-description: Profile and fix Emberfall client-new frame-time, allocation, texture or rendering regressions. Use for low FPS or render hot-path changes; excludes server capacity tuning, asset styling alone and unmeasured performance claims.
+description: Profile and fix Emberfall client frame-time, allocation, texture or rendering regressions. Use for low FPS or render hot-path changes; excludes server capacity tuning, asset styling alone and unmeasured performance claims.
 ---
 
 # Measure the frame that is slow
 
-Read the [client guide](../../../packages/client-new/README.md) and
+Read the [client guide](../../../packages/client/README.md) and
 [benchmark setup](../../../docs/development.md). Establish the actual scene,
 enemy/effect count, movement, viewport, preset, browser and GPU. Quiet village
 performance does not establish crowded combat performance.
 
-Build first. Run `PERF_NEW=1 pnpm test:browser-new tests-new/frame-budget.spec.ts`
+Build first. Run `PERF_NEW=1 pnpm test:browser tests/frame-budget.spec.ts`
 with environment syntax appropriate to the shell; `PROFILE_NEW=1` records CPU
 profiles. Tests own an isolated in-memory server. Preserve baseline artifacts
 before another Playwright run replaces `test-results`. Compare the same workload,

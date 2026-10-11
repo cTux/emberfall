@@ -1,4 +1,6 @@
-# Independent runtime implementation
+# Independent runtime implementation (historical record)
+
+This record describes the independent runtime rollout on 2026-10-03. It is now the sole runtime under canonical package names. The original packages and comparison suite are retired; historical results below are not current checks.
 
 The accepted scope is full parity with the current game in independent packages.
 
@@ -20,14 +22,14 @@ The accepted scope is full parity with the current game in independent packages.
 
 Local checks on 2026-10-03; these are not CI results.
 
-| Area                                        | Evidence                                                                                                                                                                                                                                         |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Rules, prediction, sessions and persistence | `pnpm test-new`: 104 passing Node tests, including ECS equivalence, real SDK connections, restart/import/CAS and injected shutdown failure                                                                                                       |
-| Exact sampled parity and isolation          | `pnpm test:parity-new`: four checks; all assets/credits hashed identically, runtime import boundaries checked, definitions/generated geometry compared, four classes compared over 600 seeded ticks each                                         |
-| Type safety and builds                      | `pnpm typecheck-new`, root `pnpm typecheck`, and `pnpm build-new` pass                                                                                                                                                                           |
-| Development transport                       | `pnpm dev-new` starts ports 5174/3003; a real browser creates a world through Vite matchmaking and WebSocket proxies with native Pixi active                                                                                                     |
-| Browser behavior                            | `pnpm test:browser-new`: 11 passing scenarios covering fonts, all classes/training, chat/reconnect, forest vote/boss/return, password/host transfer, permanent worlds, reload, physical keyboard layouts, shared HUD/settings and narrow layouts |
-| Rendering review                            | Village training/Druid/Bear, forest combat/return and High preview screenshots inspected; visible canvas uses WebGL at viewport resolution                                                                                                       |
+| Area                                        | Evidence                                                                                                                                                                                                                                     |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rules, prediction, sessions and persistence | `pnpm test`: 104 passing Node tests, including ECS equivalence, real SDK connections, restart/import/CAS and injected shutdown failure                                                                                                       |
+| Exact sampled parity and isolation          | `pnpm test:parity-new`: four checks; all assets/credits hashed identically, runtime import boundaries checked, definitions/generated geometry compared, four classes compared over 600 seeded ticks each                                     |
+| Type safety and builds                      | `pnpm typecheck`, root `pnpm typecheck`, and `pnpm build` pass                                                                                                                                                                               |
+| Development transport                       | `pnpm dev` starts ports 5174/3003; a real browser creates a world through Vite matchmaking and WebSocket proxies with native Pixi active                                                                                                     |
+| Browser behavior                            | `pnpm test:browser`: 11 passing scenarios covering fonts, all classes/training, chat/reconnect, forest vote/boss/return, password/host transfer, permanent worlds, reload, physical keyboard layouts, shared HUD/settings and narrow layouts |
+| Rendering review                            | Village training/Druid/Bear, forest combat/return and High preview screenshots inspected; visible canvas uses WebGL at viewport resolution                                                                                                   |
 
 The original runtime's 97 Node tests, workspace typecheck and original build also
 pass. Both production commands accepted browser joins concurrently on separate
@@ -39,7 +41,7 @@ new content, presentation and server tasks from original-runtime and unrelated w
 
 ### Performance sample
 
-`pnpm benchmark-new` uses a seeded party of eight stationary players and 160 mixed
+`pnpm benchmark` uses a seeded party of eight stationary players and 160 mixed
 enemies at 20 Hz, with 100 warmup ticks and 400 measured ticks. On this host,
 simulation averaged 1.88 ms (p95 6.41 ms) and projection/encoding for eight clients
 averaged 2.72 ms (p95 6.11 ms). Encoded patches totalled about 1.06 MB/s for the

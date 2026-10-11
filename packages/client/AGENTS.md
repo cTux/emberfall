@@ -1,9 +1,7 @@
-# Client instructions
+# PixiJS client
 
-- Read [presentation](../../docs/design/presentation.md) and, for input/network work, [movement](../../docs/design/movement.md).
-- Keep high-frequency drawing outside React state. Predict visuals only; server snapshots own damage, roots, deaths and rewards.
-- Project actors, scenery, attachments, aim and navigation through the same wrapped camera. Reuse existing caches and avoid full-map allocation/redraw on joins.
-- Use `packages/ui` for shared UI. Client owns network actions, preferences, clocks and panel-position storage.
-- Preserve keyboard/text-entry/modal boundaries and gesture/visibility audio behavior. Progression feedback must not take focus or require selection.
-- For visual changes, verify the affected village and forest cases, relevant presets and narrow-screen/keyboard behavior. Keep performance claims tied to measured scenarios.
-- Preserve original licenses and Codex credits for imported assets; see [assets](../../docs/assets.md).
+Read [the package guide](README.md). Keep shared UI controlled, Colyseus state
+detached, and prediction presentation-only. Use common definitions and
+shared geometry. Preserve input sequences and action IDs during reconciliation.
+Profile native rendering before adding caches or claiming performance; verify
+cache lifetime and visual correctness. Preserve all asset licenses.

@@ -1,16 +1,16 @@
 # Characters and saved progress
 
-Status: implemented; CHAR-05 applies to the new runtime. Goal: Preserve character identity and independent class progress. See [current technical design](../design/network-and-persistence.md) and [Steam account design](../design/steam-accounts.md).
+Status: implemented; CHAR-05 defines production identity. Goal: Preserve character identity and independent class progress. See [current technical design](../design/network-and-persistence.md) and [Steam account design](../design/steam-accounts.md).
 
 ## CHAR-01 — Identity and recovery
 
-In the original runtime, a server-generated 256-bit bearer key in browser localStorage identifies the character; only its SHA-256 hash is stored in the database. Nicknames are not credentials. Clearing browser site data loses access to that character; there is no account recovery or cross-device login yet. Duplicate active sessions for the same character are rejected. The browser cannot write levels, XP, or stats. Failed loads do not silently reset characters; failed saves are reported and retried. Forest kills add 1 XP each; playtime also progresses. Dead characters revive on rejoining a village. Every return from a scene (return portal, death window, or leaving early) restores the returning player to maximum health and their companion to maximum health immediately, clearing any pending companion resurrection.
+Production identity belongs to a Steam account with a server-owned nickname; see CHAR-05. Legacy bearer keys remain supported only by offline imports and isolated protocol fixtures. Duplicate active sessions for the same character are rejected. The browser cannot write levels, XP, or stats. Failed loads do not silently reset characters; failed saves are reported and retried. Forest kills add 1 XP each; playtime also progresses. Dead characters revive on rejoining a village. Every return from a scene (return portal, death window, or leaving early) restores the returning player to maximum health and their companion to maximum health immediately, clearing any pending companion resurrection.
 
 New characters start at level 1 with 0 XP, 100/100 HP and 0 playtime. Level and XP are stored, but level advancement and talent effects are not implemented. Collecting XP currently requires no progression choice. Mana is not a character resource, equipment stat or UI element. Older saves discard obsolete mana fields without resetting other progress.
 
 ## CHAR-02 — Class selection
 
-The wardrobe opposite the village portal switches between warrior (default), ranger, mage, and druid, only while in lobby and outside the departure countdown. Existing character saves migrate to warrior; each class keeps independent level, XP, health, playtime, and reserved talent data under the same character identity (the original browser token or new-runtime Steam account). Switching is server-validated by proximity and saved before it becomes visible.
+The wardrobe opposite the village portal switches between warrior (default), ranger, mage, and druid, only while in lobby and outside the departure countdown. Existing character saves migrate to warrior; each class keeps independent level, XP, health, playtime, and reserved talent data under the same character identity (the Steam account). Switching is server-validated by proximity and saved before it becomes visible.
 
 ## CHAR-03 — Save lifecycle
 
@@ -86,7 +86,7 @@ setup signs out; cancelling a later edit preserves the saved nickname.
 
 Steam accounts start fresh. Existing browser saves are preserved and never linked
 or merged automatically. The new executable requires Steam configuration and has
-no guest fallback. CHAR-01 describes the unchanged original runtime and the isolated
+no guest fallback. CHAR-01 describes shared character behavior and the isolated
 legacy-protocol test fixtures. Account sessions expire after seven days; signing
 out revokes the session and closes its active connection.
 
@@ -103,7 +103,7 @@ Steam acceptance:
 - Forged identities, expired sessions and another account's rename requests cannot
   read or mutate the account. Concurrent active character sessions remain rejected.
 
-## Acceptance — original identity and shared character behavior
+## Acceptance — identity and shared character behavior
 
 - Restart with the same character key preserves name and each class’s XP, level, HP, playtime and reserved talent data.
 - Older single-class saves load as Warrior; missing classes start fresh without overwriting existing class progress.
@@ -112,7 +112,7 @@ Steam acceptance:
 - A second live session cannot use the same character key. Missing/corrupt saves surface an error.
 - XP collection does not open an upgrade selector or block movement; see [PROG-01](progression.md#prog-01--uninterrupted-progression).
 
-Evidence: [characters.test.ts](../../packages/server/src/characters.test.ts), [classes.test.ts](../../packages/server/src/classes.test.ts), [classes.spec.ts](../../tests/classes.spec.ts).
+Evidence: [characters.test.ts](../../packages/server/src/characters.test.ts), [classes.test.ts](../../packages/server/src/classes.test.ts).
 
-Steam evidence: [server account tests](../../packages/server-new/src/accounts.test.ts) and
-[browser account tests](../../tests-new/accounts.spec.ts).
+Steam evidence: [server account tests](../../packages/server/src/accounts.test.ts) and
+[browser account tests](../../tests/accounts.spec.ts).

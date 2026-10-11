@@ -1,3 +1,5 @@
+import { TRANSIENT_EFFECTS } from "./definitions/effects/transient.ts";
+import { TRAINING_DEFINITION } from "./definitions/encounters/training.ts";
 import { TRAINING_ZONES, inTrainingZone } from "./world.ts";
 import { tickCompanion, tickPlayerCombat } from "./simulation.ts";
 import { damagePerSecond, tickDebuffs } from "./class-combat.ts";
@@ -10,7 +12,27 @@ export function tickTraining(
   now: number,
   dt: number,
 ) {
-  scene ??= {
+  scene ??= createTrainingScene(now);
+  if (now >= scene.nextSpawn) {
+    for (const enemy of scene.enemies) enemy.hitpoints = enemy.maxHitpoints!;
+    scene.nextSpawn +=
+      (Math.floor((now - scene.nextSpawn) / TRAINING_DEFINITION.refreshMs) + 1) *
+      TRAINING_DEFINITION.refreshMs;
+  }
+  scene.damage = scene.damage.filter((hit) => now - hit.at < TRANSIENT_EFFECTS.damage.lifetimeMs);
+  const lobby = players.filter(
+    (player) => !player.scene && player.hitpoints > 0 && !player.reconnecting,
+  );
+  tickDebuffs(scene, lobby, now);
+  for (const player of lobby)
+    tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt);
+  tickPlayerCombat(scene, lobby, now, dt);
+  for (const player of players) player.dps = damagePerSecond(player, now);
+  return scene;
+}
+
+export function createTrainingScene(now: number): SceneState {
+  return {
     id: "lobby-training",
     training: true,
     type: "Forest",
@@ -21,36 +43,24 @@ export function tickTraining(
     endsAt: null,
     portals: [],
     sequence: 7,
-    nextSpawn: now + 1000,
+    nextSpawn: now + TRAINING_DEFINITION.refreshMs,
     damage: [],
     enemies: [
       { x: TRAINING_ZONES[0].x, y: TRAINING_ZONES[0].y },
-      ...[0, 1, 2].flatMap((row) =>
+      ...Array.from({ length: TRAINING_DEFINITION.triangleRows }, (_, row) => row).flatMap((row) =>
         Array.from({ length: row + 1 }, (_, col) => ({
-          x: TRAINING_ZONES[1].x + (col - row / 2) * 40,
-          y: TRAINING_ZONES[1].y - 40 + row * 40,
+          x: TRAINING_ZONES[1].x + (col - row / 2) * TRAINING_DEFINITION.spacing,
+          y: TRAINING_ZONES[1].y - TRAINING_DEFINITION.spacing + row * TRAINING_DEFINITION.spacing,
         })),
       ),
     ].map((position, index) => ({
       ...position,
       id: index + 1,
-      name: "Training dummy",
+      name: TRAINING_DEFINITION.dummyName,
       archetype: "skeleton" as const,
       angle: 0,
-      hitpoints: 1_000_000_000,
-      maxHitpoints: 1_000_000_000,
+      hitpoints: TRAINING_DEFINITION.hitpoints,
+      maxHitpoints: TRAINING_DEFINITION.hitpoints,
     })),
-  };
-  if (now >= scene.nextSpawn) {
-    for (const enemy of scene.enemies) enemy.hitpoints = enemy.maxHitpoints!;
-    scene.nextSpawn += (Math.floor((now - scene.nextSpawn) / 1000) + 1) * 1000;
-  }
-  scene.damage = scene.damage.filter((hit) => now - hit.at < 800);
-  const lobby = players.filter((player) => !player.scene && player.hitpoints > 0);
-  tickDebuffs(scene, lobby, now);
-  for (const player of lobby)
-    tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt);
-  tickPlayerCombat(scene, lobby, now, dt);
-  for (const player of players) player.dps = damagePerSecond(player, now);
-  return scene;
+  } satisfies SceneState;
 }

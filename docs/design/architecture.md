@@ -1,24 +1,20 @@
 # System architecture
 
-Status: implemented original runtime. Emberfall is an online-only browser game. One Node process owns worlds and simulation; React presents application UI and Canvas 2D renders the original moving world. There is no offline mode, desktop wrapper or room sharding. The independent [new runtime](new-runtime.md) uses PixiJS, Miniplex and Colyseus; the original packages described here remain supported.
+Status: implemented. Emberfall is online-only. One Node process owns worlds and simulation, React presents UI, PixiJS renders the world, Miniplex manages entities and Colyseus replicates state. The [runtime design](new-runtime.md) describes the sole runtime; the original implementation is retired.
 
 ## Packages and ownership
 
 | Package           | Responsibility                                                                               | Main entry points                                                                                        |
 | ----------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | `packages/common` | Shared types, Zod messages, geometry and simulation functions; exported as TypeScript source | [index.ts](../../packages/common/src/index.ts), [simulation.ts](../../packages/common/src/simulation.ts) |
-| `packages/server` | HTTP(S), WebSocket sessions, world directory, authoritative ticks and SQLite saves           | [index.ts](../../packages/server/src/index.ts), [worlds.ts](../../packages/server/src/worlds.ts)         |
-| `packages/client` | Connection/recovery, preferences, input, prediction, Canvas rendering and screen composition | [main.tsx](../../packages/client/src/main.tsx), [Arena.tsx](../../packages/client/src/Arena.tsx)         |
+| `packages/server` | HTTP(S), Colyseus sessions, world directory, authoritative ticks and SQLite saves            | [index.ts](../../packages/server/src/index.ts), [worlds.ts](../../packages/server/src/worlds.ts)         |
+| `packages/client` | Connection/recovery, preferences, input, prediction, PixiJS rendering and screen composition | [main.tsx](../../packages/client/src/main.tsx), [Arena.tsx](../../packages/client/src/Arena.tsx)         |
 | `packages/ui`     | Controlled React/MUI presentation, theme, accessibility and Storybook                        | [public exports](../../packages/ui/src/index.ts), [component guide](../../packages/ui/README.md)         |
 
 Node 24 executes server TypeScript during development. Vite builds the client and bundles the server with an SSR target. The Node HTTP/WebSocket application, not Vite, runs the multiplayer server. Turborepo coordinates workspace commands.
 
-Both client package build commands run [PNG optimization](../../scripts/optimize-images.ts)
-after Vite finishes. The optimizer processes only build output, preserves paths,
-dimensions, pixels and color profiles, and replaces a PNG only when it becomes smaller.
-It skips animated and higher-bit-depth PNGs; other asset formats and development serving
-are unchanged. Compression failures fail the build. Turbo includes the shared
-optimizer in its cache inputs so a script change cannot reuse stale output.
+The client Vite build optimizes PNGs and emits Brotli/gzip companions for text assets.
+See [development](../development.md) for pixel-preservation checks and [operations](../operations.md) for cache and deployment rules.
 
 ## Data flow
 
@@ -27,7 +23,7 @@ flowchart LR
   Input[Browser input] -->|validated commands| Server[Node world server]
   Server --> Simulation[Shared simulation]
   Simulation -->|20 Hz world state| Client[Client snapshots]
-  Client --> Canvas[Canvas presentation]
+  Client --> Canvas[PixiJS presentation]
   Client --> UI[React UI]
   Server --> SQLite[(SQLite character and world records)]
   Input --> Prediction[Local visual prediction]
@@ -48,6 +44,6 @@ Local prediction improves perceived response; it never owns damage, health, deat
 
 Update a shared message schema, its server validation and client handling together when changing the wire contract. Persist only validated character progress and authorized world membership. Renderer-only changes must not alter gameplay geometry. Combat changes must cover both forest and training use of the shared simulation.
 
-The current limits are eight players per world and bounded combat collections with full snapshots. There is no measured large-horde scalability guarantee. Profile a concrete target before adopting batching, delta snapshots, sharding or another renderer.
+The current limits are eight players per world and bounded combat collections with Colyseus schema deltas. There is no measured large-horde scalability guarantee. Profile a concrete target before adopting batching, sharding or changing renderers.
 
 The accepted [uninterrupted progression constraint](../specs/progression.md) introduces no new message or database field yet. A future feature must define its data, transitions and migration only after its behavior is selected.
