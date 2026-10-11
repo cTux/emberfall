@@ -42,7 +42,9 @@ test("import CLI defaults to the configured save and prints a restart path witho
     const setting = imported.stdout
       .split(/\r?\n/)
       .find((line) => line.startsWith("SAVE_PATH_NEW="))!;
-    assert.equal(resolve(parseEnv(setting).SAVE_PATH_NEW), destination);
+    const configured = parseEnv(setting).SAVE_PATH_NEW;
+    assert(configured);
+    assert.equal(resolve(configured), destination);
     assert.deepEqual(readFileSync(source), before);
     const store = new CharacterStore(destination);
     await store.ready;
