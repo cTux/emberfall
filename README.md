@@ -1,6 +1,6 @@
 # Emberfall
 
-An online-only 2D cooperative bullet hell game built with TypeScript, React and Canvas 2D. Players meet in a village, choose one of four classes and enter a shared forest encounter with enemies, a boss and a Druid companion. The server owns combat and saved character progress.
+An online-only 2D cooperative bullet hell game built with TypeScript, React and PixiJS WebGL. Players meet in a village, choose one of four classes and enter a shared forest encounter with enemies, a boss and a Druid companion. The server owns combat and saved character progress.
 
 Visual inspiration: [Asgard's Fall](https://store.steampowered.com/app/2780710/Asgards_Fall/). No assets are copied from that game.
 
@@ -13,7 +13,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open https://localhost:5173. Use a second browser profile to join as another character. The local certificate is self-signed. See [running and hosting](docs/operations.md) for HTTPS, internet access, configuration and save backups.
+Open https://localhost:5174. Use a second browser profile to join as another character. The local certificate is self-signed. See [running and hosting](docs/operations.md) for HTTPS, internet access, configuration and save backups.
 
 Production:
 
@@ -22,7 +22,7 @@ pnpm build
 pnpm start
 ```
 
-Production serves the client and WebSocket endpoint at https://localhost:3001.
+Production serves the client and WebSocket endpoint at https://localhost:3003.
 
 ## Documentation
 
@@ -41,8 +41,8 @@ Current boundaries: online only, up to eight players per world, one Forest / Eas
 | Package           | Responsibility                                             |
 | ----------------- | ---------------------------------------------------------- |
 | `packages/common` | Shared contracts, geometry and simulation                  |
-| `packages/server` | Authoritative worlds, WebSocket sessions and SQLite saves  |
-| `packages/client` | Browser connection, input, prediction and Canvas rendering |
+| `packages/server` | Authoritative worlds, Colyseus sessions and SQLite saves   |
+| `packages/client` | Browser connection, input, prediction and PixiJS rendering |
 | `packages/ui`     | Controlled MUI components, theme and Storybook             |
 
 ## Checks

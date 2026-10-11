@@ -1,21 +1,30 @@
-import { PLAYER_ATTACK_DURATION, PLAYER_ATTACK_RANGE } from "@emberfall/common";
+import { bearArt as image } from "./art";
+import { PLAYER_ATTACK_DURATION } from "@emberfall/common";
+import { BEAR_DEFINITION } from "@emberfall/common/definitions/entities/companions";
 import type { Bear } from "@emberfall/common";
 import { drawPlayerHealth, drawTargetHit } from "./effects";
 import { spriteMask } from "./lighting";
 
-const image = new Image();
-image.src = "/assets/companion-boar.png";
-
 function companionFrame(bear: Bear, now: number) {
+  const age = now - (bear.attackAt ?? -Infinity);
   return {
-    column: bear.hitpoints <= 0 || !bear.moving ? 0 : Math.floor(now / 120) % 2,
+    column:
+      bear.hitpoints <= 0
+        ? 7
+        : age >= 0 && age < PLAYER_ATTACK_DURATION
+          ? age < PLAYER_ATTACK_DURATION / 2
+            ? 5
+            : 6
+          : bear.moving
+            ? 1 + (Math.floor(now / 120) % 4)
+            : 0,
     left: Math.cos(bear.attackAngle ?? 0) < 0,
   };
 }
 export function companionCaster(bear: Bear, x: number, y: number, now: number, id: string) {
   if (bear.hitpoints <= 0) return null;
   const { column, left } = companionFrame(bear, now);
-  const mask = spriteMask(image, column, 0, left, 17);
+  const mask = spriteMask(image, column % 4, Math.floor(column / 4), left, 64, false, 64);
   return mask ? { id, x, y: y + 18, width: 42.5, height: 40, mask } : null;
 }
 
@@ -26,6 +35,7 @@ export function drawCompanion(
   y: number,
   now: number,
   shadows = false,
+  opacity = 1,
 ) {
   ctx.save();
   if (!shadows) {
@@ -37,16 +47,26 @@ export function drawCompanion(
   const angle = bear.attackAngle ?? 0;
   const { column, left } = companionFrame(bear, now);
   const dead = bear.hitpoints <= 0;
-  ctx.globalAlpha = dead ? 0.3 : 1;
+  ctx.globalAlpha = opacity * (dead ? 0.3 : 1);
   if (image.naturalWidth) {
     ctx.save();
     ctx.translate(x, y);
     if (left) ctx.scale(-1, 1);
-    ctx.drawImage(image, column * 17, 0, 17, 16, -21.25, -22, 42.5, 40);
+    ctx.drawImage(
+      image,
+      (column % 4) * 64,
+      Math.floor(column / 4) * 64,
+      64,
+      64,
+      -21.25,
+      -22,
+      42.5,
+      40,
+    );
     ctx.restore();
     drawTargetHit(
       ctx,
-      spriteMask(image, column, 0, left, 17)!,
+      spriteMask(image, column % 4, Math.floor(column / 4), left, 64, false, 64)!,
       x - 21.25,
       y - 22,
       42.5,
@@ -61,7 +81,7 @@ export function drawCompanion(
     y - 38,
     bear.hitpoints,
     bear.maxHitpoints,
-    dead ? `Boar · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s` : "Boar",
+    dead ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s` : "Bear",
   );
   const age = now - (bear.attackAt ?? -Infinity);
   if (!dead && !bear.returning && age >= 0 && age < PLAYER_ATTACK_DURATION) {
@@ -71,7 +91,7 @@ export function drawCompanion(
     ctx.lineWidth = 3;
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
-      ctx.arc(0, 0, PLAYER_ATTACK_RANGE - 5 - i * 7, -0.65, 0);
+      ctx.arc(0, 0, BEAR_DEFINITION.range - 5 - i * 7, -0.65, 0);
       ctx.stroke();
     }
   }

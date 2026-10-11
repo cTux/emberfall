@@ -1,7 +1,7 @@
 import {
   playerAimAngle,
   smoothAttackAngle,
-  PLAYER_ATTACK_INTERVAL,
+  characterStats,
   inTrainingZone,
   fireClassAttack,
   advancePlayerShot,
@@ -43,7 +43,7 @@ export class LocalMovement {
   private castSeq = 0;
   private requestAt = -Infinity;
   private casts = new Map<number, number>();
-  private shots: PlayerShot[] = [];
+  private shots: (PlayerShot & { confirmedId?: number })[] = [];
   private shotCastAt = -Infinity;
   private shotsAt = 0;
   private sourceAt = 0;
@@ -58,8 +58,10 @@ export class LocalMovement {
   }
 
   private advance(now: number) {
-    const elapsed = now - this.at;
-    this.at = now;
+    // RAF's timestamp can predate an input handler's performance.now(). Never
+    // rewind this clock or the next frame predicts/sends the same time twice.
+    const elapsed = Math.max(0, now - this.at);
+    this.at = Math.max(this.at, now);
     if (this.base) {
       const queued = this.pending.reduce((n, p) => n + p.durationMs, 0);
       this.unsent += Math.min(
@@ -199,7 +201,9 @@ export class LocalMovement {
   }
   animateAttack(player: Player, world: WorldState, now: number) {
     const scene = player.scene === "forest" ? world.scene : world.training;
+    const stats = characterStats(player);
     if (
+      !stats.hasWeapon ||
       player.hitpoints <= 0 ||
       scene?.phase !== "active" ||
       scene.pausedAt !== undefined ||
@@ -228,7 +232,7 @@ export class LocalMovement {
       const confirmedAt =
         this.base?.attackAt === undefined ? -Infinity : now - (serverNow - this.base.attackAt);
       const origin = Math.max(confirmedAt, this.requestAt);
-      if (player.attacking && now - origin >= PLAYER_ATTACK_INTERVAL) {
+      if (player.attacking && now - origin >= stats.attackIntervalMs) {
         this.attackAt = serverNow;
         this.requestAt = now;
         this.attackId = ++this.castSeq;
@@ -247,13 +251,19 @@ export class LocalMovement {
         started = true;
       }
     } else {
-      const origin =
-        this.base?.attackAt ??
-        (Number.isFinite(this.attackAt) ? this.attackAt : (this.source?.serverNow ?? 0));
+      // Automatic attacks belong to the server clock. Entering a combat area
+      // before its first attack snapshot must not invent a swing that confirmation restarts.
+      const origin = this.base?.attackAt;
+      if (origin === undefined) {
+        player.attackAt = undefined;
+        this.attackAt = -Infinity;
+        this.attackId = undefined;
+        return false;
+      }
       const cycle =
         origin +
-        Math.floor(Math.max(0, serverNow - origin) / PLAYER_ATTACK_INTERVAL) *
-          PLAYER_ATTACK_INTERVAL;
+        Math.floor(Math.max(0, serverNow - origin) / stats.attackIntervalMs) *
+          stats.attackIntervalMs;
       started = cycle !== this.attackAt;
       this.attackAt = cycle;
       this.attackId = undefined;
@@ -272,6 +282,21 @@ export class LocalMovement {
   animateProjectiles(player: Player, world: WorldState, now: number, started: boolean) {
     const scene = player.scene === "forest" ? world.scene : world.training;
     const confirmed = player.scene === "forest" ? this.source?.scene : this.source?.training;
+    // Apply the prediction offset once at adoption, never every frame. Retain
+    // distance already flown, remaining range, heading and authoritative identity.
+    const adopt = (shot: PlayerShot) => ({
+      ...shot,
+      x:
+        shot.kind === "roots" && shot.hitIds.length
+          ? shot.x
+          : wrap(shot.x + wrappedDelta(player.x, this.base!.x, FOREST.width), FOREST.width),
+      y:
+        shot.kind === "roots" && shot.hitIds.length
+          ? shot.y
+          : wrap(shot.y + wrappedDelta(player.y, this.base!.y, FOREST.height), FOREST.height),
+      confirmedId: shot.id,
+      hitIds: [...shot.hitIds],
+    });
     const dt = Math.min(100, Math.max(0, now - this.shotsAt)) / 1000;
     this.shotsAt = now;
     if (!scene) {
@@ -294,7 +319,7 @@ export class LocalMovement {
           shot.castId !== undefined
             ? (this.base?.castSeq ?? 0) >= shot.castId &&
               (this.source?.serverNow ?? 0) >= (this.base?.attackAt ?? 0)
-            : (this.source?.serverNow ?? 0) >= shot.castAt!;
+            : (this.base?.attackAt ?? -Infinity) >= shot.castAt!;
         if (acknowledged) {
           const candidates = confirmed?.playerShots?.filter(
             (s) =>
@@ -303,10 +328,13 @@ export class LocalMovement {
               !matched.has(s.id),
           );
           const serverShot =
-            candidates?.find((s) => s.targetId === shot.targetId) ?? candidates?.[0];
+            shot.confirmedId !== undefined
+              ? candidates?.find((s) => s.id === shot.confirmedId)
+              : (candidates?.find((s) => s.targetId === shot.targetId) ?? candidates?.[0]);
           if (!serverShot) return false;
           matched.add(serverShot.id);
           shot.id = serverShot.id;
+          shot.confirmedId = serverShot.id;
           // Keep the same visual through every server-confirmed turn.
           if (serverShot.kind === "roots" && serverShot.hitIds.length > shot.hitIds.length) {
             Object.assign(shot, serverShot, { hitIds: [...serverShot.hitIds] });
@@ -314,18 +342,36 @@ export class LocalMovement {
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
-          shot.angle = serverShot.angle;
+          // A ballistic visual keeps its launch heading. Re-aiming it from a
+          // newer server origin creates a visible kink in the flight path.
         }
-        if (shot.kind === "roots") {
-          advancePlayerShot(shot, confirmed?.enemies ?? [], dt, undefined, false);
-        } else if (advancePlayerShot(shot, scene.enemies, dt)) return false;
+        // Buffered enemies are behind the local shot's clock. They must not
+        // invent an impact that hides a projectile the server still has alive.
+        advancePlayerShot(shot, confirmed?.enemies ?? [], dt, undefined, false);
         return shot.remaining > 0.001;
       });
       if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
-        const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
-        fireClassAttack(cast, { ...player, attackAt: this.attackAt });
-        this.shots.push(...cast.playerShots);
-        if (cast.playerShots.length) this.shotCastAt = this.attackAt;
+        const known =
+          confirmed?.playerShots?.filter(
+            (shot) =>
+              shot.ownerId === player.id &&
+              (this.attackId !== undefined
+                ? shot.castId === this.attackId
+                : shot.castAt === this.attackAt),
+          ) ?? [];
+        if (known.length) {
+          this.shots.push(
+            ...known
+              .filter((shot) => !this.shots.some((existing) => existing.confirmedId === shot.id))
+              .map(adopt),
+          );
+          this.shotCastAt = this.attackAt;
+        } else if ((this.base?.attackAt ?? -Infinity) < this.attackAt) {
+          const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
+          fireClassAttack(cast, { ...player, attackAt: this.attackAt });
+          this.shots.push(...cast.playerShots);
+          if (cast.playerShots.length) this.shotCastAt = this.attackAt;
+        }
       }
       // A target absent from our snapshots cannot be predicted. Launch that server cast here too.
       const missed =
@@ -337,12 +383,9 @@ export class LocalMovement {
             (s.castId === undefined || !this.casts.has(s.castId)),
         ) ?? [];
       for (const shot of missed)
-        this.shots.push({
-          ...shot,
-          x: shot.kind === "roots" && shot.hitIds.length ? shot.x : player.x,
-          y: shot.kind === "roots" && shot.hitIds.length ? shot.y : player.y,
-          hitIds: [...shot.hitIds],
-        });
+        // Late discoveries are already in flight. Moving them back to the
+        // player while keeping the server's remaining range truncates the shot.
+        this.shots.push(adopt(shot));
       if (missed.length) this.shotCastAt = Math.max(...missed.map((s) => s.castAt!));
     }
     // Only replace our projectiles; other players retain snapshot interpolation.

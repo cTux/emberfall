@@ -1,27 +1,21 @@
-import {
-  ARENA,
-  WARDROBE,
-  BUILDINGS,
-  TORCHES,
-  TREES,
-  onPath,
-  TRAINING_ZONES,
-} from "@emberfall/common";
+import { WARDROBE, BUILDINGS, TORCHES, TREES, INNKEEPER } from "@emberfall/common";
 import { makeMask, castShadow } from "./lighting";
 import type { Caster, Light } from "./lighting";
-import type { GraphicsSettings } from "./graphics";
+import { environmentArt, wardrobeArt, innkeeperArt } from "./art";
+import { chimneyAnchors } from "./ambient-art";
 
 export interface Scenery extends Caster {
   sprite: HTMLCanvasElement;
   name?: string;
+  chimney?: { x: number; y: number };
+  frames?: { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }[];
 }
 export function villageSprites(
-  nature: HTMLImageElement,
-  houses: HTMLImageElement,
-  wardrobe: HTMLImageElement,
-  lampPost: HTMLImageElement,
-  lantern: HTMLImageElement,
-  graphics: GraphicsSettings,
+  _nature: HTMLImageElement,
+  _houses: HTMLImageElement,
+  _wardrobe: HTMLImageElement,
+  _lampPost: HTMLImageElement,
+  _lantern: HTMLImageElement,
 ): Scenery[] {
   const objects: Scenery[] = [];
   const sprites = new Map<
@@ -40,69 +34,90 @@ export function villageSprites(
     sw: number,
     sh: number,
     name?: string,
+    frameCount = 1,
   ) {
     let frames = sprites.get(source);
     if (!frames) sprites.set(source, (frames = new Map()));
-    const key = `${sx}:${sy}:${sw}:${sh}`;
-    let frame = frames.get(key);
-    if (!frame) {
-      const sprite = document.createElement("canvas");
-      sprite.width = sw;
-      sprite.height = sh;
-      sprite.getContext("2d")!.drawImage(source, sx, sy, sw, sh, 0, 0, sw, sh);
-      frame = { sprite, mask: makeMask(sprite) };
-      frames.set(key, frame);
-    }
-    objects.push({ id, x, y, width, height, ...frame, name });
+    const animation = Array.from({ length: frameCount }, (_, i) => {
+      const key = `${sx + i * sw}:${sy}:${sw}:${sh}`;
+      let frame = frames.get(key);
+      if (!frame) {
+        const sprite = document.createElement("canvas");
+        sprite.width = sw;
+        sprite.height = sh;
+        sprite.getContext("2d")!.drawImage(source, sx + i * sw, sy, sw, sh, 0, 0, sw, sh);
+        frame = { sprite, mask: makeMask(sprite) };
+        frames.set(key, frame);
+      }
+      return frame;
+    });
+    objects.push({
+      id,
+      x,
+      y,
+      width,
+      height,
+      ...animation[0],
+      name,
+      ...(frameCount > 1 ? { frames: animation } : {}),
+    });
   }
-  if (nature.naturalWidth) {
-    TREES.forEach((t, i) => add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, nature, 32, 0, 32, 32));
-    let seed = 713;
-    const random = () => {
-      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      return seed / 4294967296;
-    };
-    for (let i = 0; i < (graphics.grass ? 850 : 325); i++) {
-      const x = random() * ARENA.width,
-        y = random() * ARENA.height;
-      if (
-        TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.radius) ||
-        onPath(x, y, 38) ||
-        BUILDINGS.some((b) => Math.abs(x - b.x) < 85 && y > b.y - 105 && y < b.y + 20)
-      )
-        continue;
-      const size = 12 + random() * 10;
-      add(`grass:${i}`, x, y, size, size, nature, 64, 160, 16, 16);
-    }
+  if (environmentArt.naturalWidth) {
+    TREES.forEach((t, i) =>
+      add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
+    );
   }
-  if (houses.naturalWidth)
-    BUILDINGS.forEach((b) =>
+  if (environmentArt.naturalWidth)
+    BUILDINGS.forEach((b, i) => {
       add(
         `building:${b.id}`,
         b.x,
         b.y,
         b.sourceWidth * 2,
         96,
-        houses,
-        b.sourceX,
+        environmentArt,
+        (i % 3) * 128,
         0,
-        b.sourceWidth,
-        48,
-        b.name,
-      ),
+        128,
+        128,
+        b.id === "inn" ? undefined : b.name,
+      );
+      const anchor = chimneyAnchors[i % 3];
+      objects.at(-1)!.chimney = { x: (anchor.x - 0.5) * b.sourceWidth * 2, y: (anchor.y - 1) * 96 };
+    });
+  if (wardrobeArt.naturalWidth)
+    add(
+      "building:wardrobe",
+      WARDROBE.x,
+      WARDROBE.y,
+      60,
+      64,
+      wardrobeArt,
+      0,
+      0,
+      128,
+      128,
+      "Wardrobe",
     );
-  if (wardrobe.naturalWidth)
-    add("building:wardrobe", WARDROBE.x, WARDROBE.y, 48, 60, wardrobe, 0, 0, 64, 80, "Wardrobe");
-  if (lampPost.naturalWidth && lantern.naturalWidth) {
-    const torch = document.createElement("canvas");
-    torch.width = 32;
-    torch.height = 96;
-    const ctx = torch.getContext("2d")!;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(lampPost, 10, 24, 12, 72);
-    ctx.drawImage(lantern, 4, 0, 24, 34);
-    TORCHES.forEach((t, i) => add(`torch:${i}`, t.x, t.y, 20, 60, torch, 0, 0, 32, 96));
-  }
+  if (innkeeperArt.naturalWidth)
+    add(
+      "npc:innkeeper",
+      INNKEEPER.x,
+      INNKEEPER.y,
+      48,
+      48,
+      innkeeperArt,
+      0,
+      0,
+      64,
+      64,
+      INNKEEPER.name,
+      4,
+    );
+  if (environmentArt.naturalWidth)
+    TORCHES.forEach((t, i) =>
+      add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128),
+    );
   return objects.sort((a, b) => a.y - b.y);
 }
 export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
@@ -113,75 +128,129 @@ export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
   owner: `torch:${i}`,
 }));
 
+let hangingLamp: { post: HTMLCanvasElement; lamp: HTMLCanvasElement } | undefined;
+
+/** Split the existing painting once: one fixed post and one suspended lantern. */
 export function drawTorchFire(
   ctx: CanvasRenderingContext2D,
-  lantern: HTMLImageElement,
   x: number,
   y: number,
   now: number,
   particles: boolean,
   bloom: boolean,
+  width = 42,
+  height = 64,
 ) {
-  ctx.save();
-  ctx.translate(x, y - 60);
-  if (lantern.naturalWidth) {
-    // Original sheet: 38 frames, seven 24x34 cells per row.
-    const frame = Math.floor((now + x * 13 + y * 7) / 80) % 38;
-    ctx.drawImage(
-      lantern,
-      (frame % 7) * 24,
-      Math.floor(frame / 7) * 34,
-      24,
-      34,
-      -7.5,
-      0,
-      15,
-      21.25,
-    );
+  if (!environmentArt.naturalWidth) return;
+  if (!hangingLamp) {
+    const post = document.createElement("canvas");
+    post.width = post.height = 128;
+    const paint = post.getContext("2d")!;
+    paint.drawImage(environmentArt, 0, 256, 128, 128, 0, 0, 128, 128);
+    const lamp = document.createElement("canvas");
+    lamp.width = 27;
+    lamp.height = 46;
+    lamp.getContext("2d")!.drawImage(post, 69, 28, 27, 46, 0, 0, 27, 46);
+    paint.clearRect(69, 28, 27, 46);
+    hangingLamp = { post, lamp };
   }
+  ctx.save();
+  ctx.translate(x - width / 2, y - height);
+  ctx.scale(width / 128, height / 128);
+  ctx.drawImage(hangingLamp.post, 0, 0);
+  ctx.translate(82, 28);
+  // Time-only phase stays continuous when projected coordinates wrap.
+  ctx.rotate(Math.sin(now / 1500) * 0.065 + Math.sin(now / 3700) * 0.02);
+  ctx.drawImage(hangingLamp.lamp, -13, 0);
+  const opacity = ctx.globalAlpha;
+  ctx.globalAlpha = opacity * (0.08 + Math.sin(now / 113) * 0.035);
+  ctx.fillStyle = "#ffd477";
+  ctx.fillRect(-3, 26, 6, 10);
   if (particles) {
-    const opacity = ctx.globalAlpha;
     if (bloom) {
-      ctx.shadowBlur = 6;
+      ctx.shadowBlur = 3;
       ctx.shadowColor = "#ff8b32";
     }
-    for (let i = 0; i < 12; i++) {
-      const age = ((now + x * 13 + y * 7 + i * 137) % 1800) / 1800;
-      const angle = i * 2.399963;
-      ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.8;
-      ctx.fillStyle = ["#ffe6a3", "#ffac42", "#f45b28"][i % 3];
-      ctx.fillRect(
-        Math.round(Math.cos(angle) * (3 + age * 10)),
-        Math.round(10 + Math.sin(angle) * 4 - age * 30),
-        2,
-        2,
-      );
+    for (let i = 0; i < 4; i++) {
+      const age = ((now + i * 450) % 1800) / 1800;
+      ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.45;
+      ctx.fillRect(Math.sin(i * 2.4 + age) * 5, 25 - age * 24, 1, 1);
     }
   }
   ctx.restore();
 }
 
+const lightCanvases = new Map<
+  string,
+  {
+    canvas: HTMLCanvasElement;
+    signature: string;
+    masks: CanvasImageSource[];
+    base?: HTMLCanvasElement;
+  }
+>();
 /** Light contribution with silhouette occlusion. The canvas bounds limit shadow reach. */
 export function lightTexture(
   light: Light,
   casters: readonly Caster[],
   shadows: boolean,
-  canvas = document.createElement("canvas"),
+  base?: HTMLCanvasElement,
 ) {
+  const key = `${base ? "occlusion" : "glow"}:${light.owner ?? `${light.x}:${light.y}`}`;
+  const blockers = shadows
+    ? casters.filter(
+        (caster) =>
+          caster.id !== light.owner &&
+          Math.hypot(caster.x - light.x, caster.y - light.y) < light.radius,
+      )
+    : [];
+  // Camera translation cancels out. Only silhouettes inside the light radius
+  // can change this texture; flicker is applied to the resulting sprite.
+  const revision =
+    (base as (HTMLCanvasElement & { textureRevision?: number }) | undefined)?.textureRevision ?? 0;
+  const signature =
+    `${light.radius}:${light.height}:${light.strength}:${revision}:` +
+    blockers
+      .map(
+        (caster) => `${caster.x - light.x},${caster.y - light.y},${caster.width},${caster.height}`,
+      )
+      .join(";");
+  let entry = lightCanvases.get(key);
+  if (
+    entry?.signature === signature &&
+    entry.base === base &&
+    blockers.every((caster, index) => caster.mask === entry!.masks[index])
+  )
+    return entry.canvas;
+  const canvas = entry?.canvas ?? document.createElement("canvas");
+  entry = { canvas, signature, masks: blockers.map((caster) => caster.mask), base };
+  lightCanvases.set(key, entry);
+  if (lightCanvases.size > 64) lightCanvases.delete(lightCanvases.keys().next().value!);
   if (canvas.width !== light.radius * 2) canvas.width = canvas.height = light.radius * 2;
   const ctx = canvas.getContext("2d")!;
   ctx.resetTransform();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 1;
+  if (base) ctx.drawImage(base, 0, 0);
   ctx.translate(light.radius - light.x, light.radius - light.y);
-  const glow = ctx.createRadialGradient(light.x, light.y, 4, light.x, light.y, light.radius);
-  glow.addColorStop(0, `rgba(255, 190, 95, ${light.strength})`);
-  glow.addColorStop(1, "rgba(255, 160, 65, 0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(light.x - light.radius, light.y - light.radius, light.radius * 2, light.radius * 2);
+  if (!base) {
+    const glow = ctx.createRadialGradient(light.x, light.y, 4, light.x, light.y, light.radius);
+    glow.addColorStop(0, `rgba(255, 190, 95, ${light.strength})`);
+    glow.addColorStop(1, "rgba(255, 160, 65, 0)");
+    ctx.fillStyle = glow;
+    ctx.fillRect(
+      light.x - light.radius,
+      light.y - light.radius,
+      light.radius * 2,
+      light.radius * 2,
+    );
+  }
   if (shadows) {
     ctx.globalCompositeOperation = "destination-out";
-    for (const caster of casters) castShadow(ctx, caster, light);
+    for (const caster of blockers) castShadow(ctx, caster, light);
   }
+  const dynamic = canvas as HTMLCanvasElement & { textureRevision?: number };
+  dynamic.textureRevision = (dynamic.textureRevision ?? 0) + 1;
   return canvas;
 }

@@ -4,9 +4,8 @@ import { mkdtemp, rm, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { once } from "node:events";
-import { WebSocket } from "ws";
+import { WebSocket } from "./testing/socket.ts";
 import type { ServerMessage } from "@emberfall/common";
-import { DatabaseSync } from "node:sqlite";
 import { CLASS_IDS } from "@emberfall/common";
 import { CharacterStore, freshProgress } from "./characters.ts";
 import { createGameServer } from "./worlds.ts";
@@ -14,11 +13,10 @@ import { createGameServer } from "./worlds.ts";
 test("server saves survive restart, authenticate independently of nickname, and reject forged progress", async () => {
   const directory = await mkdtemp(join(tmpdir(), "emberfall-save-test-"));
   const path = join(directory, "characters.sqlite");
-  let app = createGameServer(undefined, path);
+  let app = await createGameServer(undefined, path);
   const clients: WebSocket[] = [];
   const listen = async () => {
-    app.server.listen(0, "127.0.0.1");
-    await once(app.server, "listening");
+    await app.listen(0, "127.0.0.1");
   };
   async function connect() {
     const address = app.server.address();
@@ -64,12 +62,14 @@ test("server saves survive restart, authenticate independently of nickname, and 
     assert(denied.type === "error" && denied.message.includes("already playing"));
     await first.wait("saved");
     const autosaved = new CharacterStore(path);
+    await autosaved.ready;
     assert(autosaved.load(token).progress.playtimeSeconds >= 4);
     autosaved.close();
     first.send({ type: "leave" });
     await first.wait("left");
     await app.close();
     const store = new CharacterStore(path);
+    await store.ready;
     const saved = store.load(token);
     assert(saved.progress.playtimeSeconds >= 1);
     // Simulate a future server-side combat reward; clients never get a progress-write endpoint.
@@ -77,13 +77,17 @@ test("server saves survive restart, authenticate independently of nickname, and 
       ...saved.progress,
       level: 4,
       experience: 321,
+      coins: 1003,
       hitpoints: 77,
+      equipment: {},
     });
     assert.throws(() => store.save(saved.id, "Hero", { ...saved.progress, level: -1 }));
+    for (const coins of [-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1])
+      assert.throws(() => store.save(saved.id, "Hero", { ...saved.progress, coins }));
     assert.throws(() => store.load("0".repeat(64)));
     store.close();
     assert(!(await readFile(path)).includes(Buffer.from(token)));
-    app = createGameServer(undefined, path);
+    app = await createGameServer(undefined, path);
     await listen();
     const returning = await connect();
     returning.send({
@@ -94,6 +98,8 @@ test("server saves survive restart, authenticate independently of nickname, and 
       characterToken: token,
       level: 9999,
       experience: 9999,
+      coins: 99999,
+      equipment: { weapon: "mage-staff" },
     });
     const restored = await returning.wait("joined");
     assert(restored.type === "joined");
@@ -101,9 +107,20 @@ test("server saves survive restart, authenticate independently of nickname, and 
     assert.equal(player.name, "Renamed hero");
     assert.equal(player.level, 4);
     assert.equal(player.experience, 321);
+    assert.equal(
+      player.coins,
+      1003,
+      "saved coins survive restart and ignore forged client balances",
+    );
     assert.equal(player.hitpoints, 77);
     assert(!("manapoints" in player));
     assert(!("maxManapoints" in player));
+    assert.deepEqual(
+      player.equipment,
+      {},
+      "empty saved equipment survives restart and ignores forged gear",
+    );
+    assert.deepEqual(player.classes?.mage.equipment, { weapon: "mage-staff" });
     assert(player.playtimeSeconds >= 1);
     const stranger = await connect();
     stranger.send({
@@ -126,10 +143,8 @@ test("server saves survive restart, authenticate independently of nickname, and 
 });
 
 test("old single-class and per-class saves discard mana without losing progress", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "emberfall-mana-removal-"));
-  const path = join(directory, "characters.sqlite");
-  const store = new CharacterStore(path);
-  const db = new DatabaseSync(path);
+  const store = new CharacterStore(":memory:");
+  await store.ready;
   try {
     const legacy = {
       ...freshProgress(),
@@ -138,18 +153,26 @@ test("old single-class and per-class saves discard mana without losing progress"
       manapoints: 14,
       maxManapoints: 50,
     };
+    delete legacy.coins;
     for (const raw of [
       legacy,
-      { classId: "mage", classes: Object.fromEntries(CLASS_IDS.map((id) => [id, legacy])) },
+      {
+        formatVersion: 1,
+        classId: "mage",
+        classes: Object.fromEntries(CLASS_IDS.map((id) => [id, legacy])),
+      },
     ]) {
       const created = store.create("Hero");
-      db.prepare("UPDATE characters SET progress=? WHERE id=?").run(
-        JSON.stringify(raw),
-        created.id,
-      );
+      const save = (await store.database.saves.load(created.id))!;
+      await store.database.saves.save(created.id, raw, 0, save.version);
       const loaded = store.load(created.token);
       assert.equal(loaded.progress.experience, 87.5);
       assert.equal(loaded.progress.hitpoints, 77);
+      assert.equal(
+        loaded.progress.coins,
+        0,
+        "old saves start with zero coins without losing progress",
+      );
       for (const progress of Object.values(loaded.classes)) {
         assert(!("manapoints" in progress));
         assert(!("maxManapoints" in progress));
@@ -159,13 +182,10 @@ test("old single-class and per-class saves discard mana without losing progress"
         classId: loaded.classId,
         classes: loaded.classes,
       });
-      const saved = db.prepare("SELECT progress FROM characters WHERE id=?").get(created.id);
-      assert(saved);
-      assert(!/mana/i.test(String(saved.progress)));
+      const saved = (await store.database.saves.load(created.id))!;
+      assert(!/mana/i.test(JSON.stringify(saved.data)));
     }
   } finally {
-    db.close();
     store.close();
-    await rm(directory, { recursive: true, force: true });
   }
 });

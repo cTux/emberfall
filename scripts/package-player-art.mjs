@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 
 // Art and handedness are authored in the sources; packaging locks walk colors
 // to the standing pose so separately generated sheets cannot change materials.
-const root = "packages/client-new/public/assets/wardrobe-style";
+const root = "packages/client/public/assets/wardrobe-style";
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();

@@ -1,11 +1,11 @@
 ---
 name: emberfall-new-server
-description: Develop or test Emberfall server-new Miniplex lifecycle, Colyseus sessions, replication and SQLite saves. Excludes visual-only client work and changes confined to the original server.
+description: Develop or test Emberfall server Miniplex lifecycle, Colyseus sessions, replication and SQLite saves. Excludes visual-only client work and changes confined to the original server.
 ---
 
 # New server systems and persistence
 
-Read the [server-new guide](../../../packages/server-new/README.md), its AGENTS,
+Read the [server-new guide](../../../packages/server/README.md), its AGENTS,
 and the [runtime design](../../../docs/design/new-runtime.md).
 
 Keep Miniplex authoritative, Colyseus a projection, and persistence behind the

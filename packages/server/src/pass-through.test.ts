@@ -18,7 +18,7 @@ import type { Player, WorldState } from "@emberfall/common";
 import { LocalMovement } from "../../client/src/local-movement.ts";
 import { SnapshotBuffer } from "../../client/src/snapshots.ts";
 
-test("server movement, prediction and interpolation pass through every scenery kind", () => {
+test("server movement, prediction and interpolation pass through every scenery kind", async () => {
   const obstacles = [
     ...BUILDINGS,
     ...TORCHES,
@@ -99,7 +99,7 @@ test("server movement, prediction and interpolation pass through every scenery k
   }
 });
 
-test("pass-through preserves wrapping in both areas, speed and death rules", () => {
+test("pass-through preserves wrapping in both areas, speed and death rules", async () => {
   const player = { x: 420, y: 340, hitpoints: 100 } as Player;
   movePlayer(player, 1, 1, 0.1);
   assert(Math.abs(Math.hypot(player.x - 420, player.y - 340) - ARENA.speed * 0.1) < 1e-9);

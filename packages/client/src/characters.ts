@@ -1,18 +1,10 @@
+import { actorArt, artUrl } from "./art";
 import { CLASS_IDS } from "@emberfall/common";
 import type { ClassId } from "@emberfall/common";
-export const classSprite = (id: ClassId = "warrior") =>
-  `/assets/${id === "warrior" ? "knight" : id}.png`;
-const load = (src: string) => {
-  const image = new Image();
-  image.src = src;
-  return image;
-};
+export const classSprite = (id: ClassId = "warrior") => artUrl(`${id}-portrait`);
 export const characterImages = Object.fromEntries(
-  CLASS_IDS.map((id) => [
-    id,
-    {
-      walk: load(classSprite(id)),
-      attack: load(`/assets/${id}-attack.png`),
-    },
-  ]),
+  CLASS_IDS.map((id) => {
+    const image = actorArt(id);
+    return [id, { walk: image, attack: image }];
+  }),
 ) as Record<ClassId, { walk: HTMLImageElement; attack: HTMLImageElement }>;

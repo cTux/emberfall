@@ -4,11 +4,10 @@ This is the maintained map of existing features and their implementation. The ba
 
 ## How to use these documents
 
-The independent `*-new` implementation has its own [runtime design](design/new-runtime.md)
-and [verification plan](plans/new-runtime.md). It shares these gameplay specifications
-and the UI package with the original runtime. Package guides explain development,
-testing and reuse: [common-new](../packages/common-new/README.md),
-[server-new](../packages/server-new/README.md), [client-new](../packages/client-new/README.md).
+The sole runtime uses PixiJS, Miniplex and Colyseus; see its [runtime design](design/new-runtime.md)
+and [historical verification record](plans/new-runtime.md). Package guides explain development,
+testing and reuse: [common](../packages/common/README.md),
+[server](../packages/server/README.md), [client](../packages/client/README.md).
 
 - **Specifications** describe observable rules, scope and acceptance scenarios. Requirement IDs identify stable behavior groups, not individual test cases.
 - **Technical designs** describe ownership, state, interfaces, failure behavior and verification seams.
@@ -19,42 +18,33 @@ An explicit product decision takes precedence over the baseline. If source and s
 
 ## Feature map
 
-| Feature group                                                       | Specification                                                                                                                                     | Technical design                                                             | Verification entry points                                                                                                                |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| World browser, passwords, capacity, permanent world, host transfer  | [WORLD-01](specs/worlds-and-chat.md#world-01--discovery-and-membership)                                                                           | [Network](design/network-and-persistence.md)                                 | `worlds.test.ts`, `lobby.spec.ts`                                                                                                        |
-| Disconnect/reload/restart recovery, client build updates            | [WORLD-01/02](specs/worlds-and-chat.md)                                                                                                           | [Network](design/network-and-persistence.md), [operations](operations.md)    | `reconnect.test.ts`, `update-recovery.test.ts`, `reconnect.spec.ts`                                                                      |
-| World chat, speech bubbles and system messages                      | [CHAT-01–03](specs/worlds-and-chat.md)                                                                                                            | [Network](design/network-and-persistence.md)                                 | `chat.test.ts`, `chat.spec.ts`                                                                                                           |
-| Browser character identity, class saves and wardrobe                | [CHAR-01–03](specs/characters.md)                                                                                                                 | [Persistence](design/network-and-persistence.md)                             | `characters.test.ts`, `classes.test.ts`, `classes.spec.ts`                                                                               |
-| Village, buildings, paths, wrapped camera and interactions          | [SCENE-01/02](specs/scenes-and-village.md)                                                                                                        | [Simulation](design/simulation.md), [presentation](design/presentation.md)   | `village.test.ts`, `pass-through.test.ts`, `buildings.spec.ts`, `paths.spec.ts`, `lobby-camera.spec.ts`                                  |
-| Readiness, countdown, late join, pause/regenerate, boss and returns | [SCENE-03–05](specs/scenes-and-village.md)                                                                                                        | [Simulation](design/simulation.md)                                           | `scenes.test.ts`, `scenes.spec.ts`, `portal.spec.ts`, `boss-health.spec.ts`                                                              |
-| Four classes, melee/projectiles, ailments and Bear                  | [COMBAT-01–03](specs/combat.md)                                                                                                                   | [Simulation](design/simulation.md)                                           | `classes.test.ts`, `enemies.test.ts`, `combat-features.spec.ts`                                                                          |
-| Enemy archetypes, telegraphs, scaling and boss                      | [COMBAT-02](specs/combat.md#combat-02--encounters-and-scaling)                                                                                    | [Simulation](design/simulation.md)                                           | `enemies.test.ts`, `enemies.spec.ts`                                                                                                     |
-| Training, DPS, XP and cosmetic gold pickups                         | [COMBAT-04/05](specs/combat.md)                                                                                                                   | [Simulation](design/simulation.md)                                           | `training.test.ts`, `training.spec.ts`, `combat-features.spec.ts`                                                                        |
-| Movement prediction, interpolation and cast reconciliation          | [SCENE-02](specs/scenes-and-village.md#scene-02--world-geometry), [UI-02](specs/interface-and-audio.md#ui-02--combat-controls)                    | [Movement](design/movement.md)                                               | `local-movement.test.ts`, `local-projectiles.test.ts`, `snapshots.test.ts`, `predictive-casting.spec.ts`, `snapshots.spec.ts`            |
-| HUD, Codex, settings, windows, keyboard, numbers and navigation     | [UI-01–05](specs/interface-and-audio.md)                                                                                                          | [Presentation](design/presentation.md), [UI guide](../packages/ui/README.md) | `hud.spec.ts`, `keyboard-layout.spec.ts`, `number-display.spec.ts`, `context-menu.spec.ts`, UI suite                                     |
-| Music, sound, gestures, playlists and visibility                    | [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music)                                                                                   | [Presentation](design/presentation.md)                                       | `rendering.spec.ts`                                                                                                                      |
-| Performance graphs, stale state, adaptive scale and frame caps      | [UI-03](specs/interface-and-audio.md#ui-03--network-and-performance-feedback), [GRAPHICS-01](specs/graphics.md#graphics-01--presets-and-renderer) | [Movement](design/movement.md), [presentation](design/presentation.md)       | `latency.spec.ts`, `startup-performance.spec.ts`, snapshot benchmark                                                                     |
-| Presets, lighting, shadows, fog, foliage, critters and occlusion    | [GRAPHICS-01–03](specs/graphics.md)                                                                                                               | [Presentation](design/presentation.md)                                       | `graphics.spec.ts`, `tree-opacity.spec.ts`, `critters.test.ts`, `critter-shadow.spec.ts`, `animal-shadows.spec.ts`, `torch-fire.spec.ts` |
-| Weapons, debuff icons, flashes, death effects and portals           | [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readability)                                                                                  | [Presentation](design/presentation.md)                                       | `weapon-visibility.spec.ts`, `damage-flash.spec.ts`, `rendering.spec.ts`                                                                 |
-| Shared UI components and Storybook                                  | [UI specification](specs/interface-and-audio.md), [component guide](../packages/ui/README.md)                                                     | [Presentation](design/presentation.md)                                       | `packages/ui/tests/ui.spec.ts`                                                                                                           |
-| Asset provenance, credits and fonts                                 | [Assets](assets.md)                                                                                                                               | [Presentation](design/presentation.md)                                       | `fonts.spec.ts`, shipped license/credit files                                                                                            |
-| Progression without required choices                                | [PROG-01](specs/progression.md)                                                                                                                   | [Architecture boundary](design/architecture.md#change-boundaries)            | Future acceptance only; no new progression implementation                                                                                |
+| Feature group                           | Specification                                                   | Design                                                           | Verification entry points                                                                                                                 |
+| --------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Worlds, recovery and chat               | [WORLD/CHAT](specs/worlds-and-chat.md)                          | [Network](design/network-and-persistence.md)                     | `worlds.test.ts`, `reconnect.test.ts`, `chat.test.ts`, `gameplay.spec.ts`, `reconnect.spec.ts`, `chat-presentation.spec.ts`               |
+| Steam accounts, characters and classes  | [CHAR](specs/characters.md)                                     | [Accounts](design/steam-accounts.md)                             | `accounts.test.ts`, `characters.test.ts`, `classes.test.ts`, `accounts.spec.ts`                                                           |
+| Village, forest and training            | [SCENE](specs/scenes-and-village.md), [COMBAT](specs/combat.md) | [Simulation](design/simulation.md)                               | `scenes.test.ts`, `village.test.ts`, `training.test.ts`, `enemies.test.ts`, `gameplay.spec.ts`                                            |
+| Prediction and replication              | [SCENE/UI](specs/interface-and-audio.md)                        | [Movement](design/movement.md), [runtime](design/new-runtime.md) | `local-movement.test.ts`, `local-projectiles.test.ts`, `snapshots.test.ts`, `protocol.test.ts`                                            |
+| Inventory, equipment and shared trading | [CHAR](specs/characters.md)                                     | [Runtime](design/new-runtime.md)                                 | `inventory.test.ts`, `equipment.test.ts`, `inventory.spec.ts`, `equipment.spec.ts`, `innkeeper.spec.ts`                                   |
+| HUD, controls, settings and audio       | [UI](specs/interface-and-audio.md)                              | [Presentation](design/presentation.md)                           | `gameplay.spec.ts`, `companion-hud.spec.ts`, `packages/ui/tests/ui.spec.ts`                                                               |
+| Rendering, shadows and assets           | [GRAPHICS](specs/graphics.md), [assets](assets.md)              | [Runtime](design/new-runtime.md)                                 | `rendering.spec.ts`, `renderer-pixels.spec.ts`, `entity-layering.spec.ts`, `terrain-loading.spec.ts`, `player-art.spec.ts`, `test:images` |
+| Performance                             | [GRAPHICS](specs/graphics.md)                                   | [Development](development.md)                                    | Opt-in `frame-budget.spec.ts` and `pnpm benchmark`                                                                                        |
+| Uninterrupted progression               | [PROG-01](specs/progression.md)                                 | [Architecture](design/architecture.md#change-boundaries)         | Future acceptance; no new progression system selected                                                                                     |
 
 New-runtime Steam accounts and nickname onboarding/editing are specified in
 [CHAR-05](specs/characters.md#char-05--steam-accounts-and-nickname), with
-[design and verification](design/steam-accounts.md). Evidence: [server tests](../packages/server-new/src/accounts.test.ts) and [browser tests](../tests-new/accounts.spec.ts).
+[design and verification](design/steam-accounts.md). Evidence: [server tests](../packages/server/src/accounts.test.ts) and [browser tests](../tests/accounts.spec.ts).
 
 Server tests live in [packages/server/src](../packages/server/src), game browser tests in [tests](../tests), and shared UI tests in [packages/ui/tests](../packages/ui/tests). See [development](development.md) for commands and evidence expectations.
 
 ## Start here by task
 
 New-runtime Innkeeper: [SCENE-01](specs/scenes-and-village.md#scene-01--village-and-interactions),
-[runtime design](design/new-runtime.md), [shared village definition](../packages/common-new/src/definitions/worlds/village.ts)
-and [browser verification](../tests-new/innkeeper.spec.ts).
+[runtime design](design/new-runtime.md), [shared village definition](../packages/common/src/definitions/worlds/village.ts)
+and [browser verification](../tests/innkeeper.spec.ts).
 
 New-client hitbox debugging: [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music),
-[overlay design](design/new-runtime.md), [renderer](../packages/client-new/src/hitboxes.ts)
-and [browser verification](../tests-new/hitboxes.spec.ts).
+[overlay design](design/new-runtime.md), [renderer](../packages/client/src/hitboxes.ts)
+and [browser verification](../tests/hitboxes.spec.ts).
 
 Steam login and account nicknames (new runtime):
 [CHAR-05](specs/characters.md#char-05--steam-accounts-and-nickname),
@@ -63,33 +53,33 @@ Steam login and account nicknames (new runtime):
 
 New-client wardrobe-style art: [GRAPHICS-05](specs/graphics.md#graphics-05--wardrobe-style-art-in-the-new-client),
 [atlas design](design/new-runtime.md#wardrobe-style-presentation-assets), and
-[asset provenance and prompts](../packages/client-new/public/assets/wardrobe-style/README.md).
-Verification: `tests-new/art-animation.test.ts`, `tests-new/art-assets.spec.ts`,
-and the training/forest browser scenarios in `tests-new/gameplay.spec.ts`.
+[asset provenance and prompts](../packages/client/public/assets/wardrobe-style/README.md).
+Verification: `tests/art-animation.test.ts`, `tests/art-assets.spec.ts`,
+and the training/forest browser scenarios in `tests/gameplay.spec.ts`.
 
 New-client frame-time regressions: [performance skill](../.agents/skills/emberfall-performance/SKILL.md)
-and `tests-new/frame-budget.spec.ts`. Local projectile/pickup offsets:
+and `tests/frame-budget.spec.ts`. Local projectile/pickup offsets:
 [reconciliation skill](../.agents/skills/emberfall-reconciliation/SKILL.md),
 [alignment design](design/new-runtime.md#local-effect-alignment),
-`packages/server-new/src/local-projectiles.test.ts` and
-`packages/server-new/src/pickup-presentation.test.ts`.
+`packages/server/src/local-projectiles.test.ts` and
+`packages/server/src/pickup-presentation.test.ts`.
 
 New-runtime saved coins: [save lifecycle](specs/characters.md#char-03--save-lifecycle)
 and [HUD](specs/interface-and-audio.md#ui-01--hud-and-windows), implemented by
-[pickup rules](../packages/common-new/src/simulation.ts),
-[character saves](../packages/server-new/src/characters.ts), and
+[pickup rules](../packages/common/src/simulation.ts),
+[character saves](../packages/server/src/characters.ts), and
 [PartyCard](../packages/ui/src/components/PartyCard.tsx). Verification:
-[pickup tests](../packages/server-new/src/snapshots.test.ts),
-[restart tests](../packages/server-new/src/characters.test.ts), and
-[browser scenario](../tests-new/coins.spec.ts).
+[pickup tests](../packages/server/src/snapshots.test.ts),
+[restart tests](../packages/server/src/characters.test.ts), and
+[browser scenario](../tests/coins.spec.ts).
 
 New-runtime inventory, loot and trading: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime)
 and [UI-06](specs/interface-and-audio.md#ui-06--inventory-and-trading-new-runtime),
-implemented by [equipment rules](../packages/common-new/src/equipment.ts),
-[slot presentation](../packages/client-new/src/equipment-view.tsx) and the shared
+implemented by [equipment rules](../packages/common/src/equipment.ts),
+[slot presentation](../packages/client/src/equipment-view.tsx) and the shared
 [EquipmentPanel](../packages/ui/src/components/EquipmentPanel.tsx). Verification:
-[rule/save/protocol tests](../packages/server-new/src/equipment.test.ts) and
-[browser scenarios](../tests-new/equipment.spec.ts).
+[rule/save/protocol tests](../packages/server/src/equipment.test.ts) and
+[browser scenarios](../tests/equipment.spec.ts).
 
 - Run or host the game: [operations](operations.md).
 - Understand package ownership: [architecture](design/architecture.md).

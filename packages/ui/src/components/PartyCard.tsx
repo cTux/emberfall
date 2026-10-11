@@ -1,4 +1,4 @@
-import { Avatar, Box, Stack, Tooltip, Typography } from "@mui/material";
+import { Avatar, Box, Stack, Tooltip } from "@mui/material";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCrown } from "@fortawesome/free-solid-svg-icons/faCrown";
 import { faDoorOpen } from "@fortawesome/free-solid-svg-icons/faDoorOpen";

@@ -13,21 +13,20 @@ pnpm test
 pnpm build
 ```
 
-The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, including shared simulation and client helper tests. Build includes client, server and the static UI Storybook through Turborepo. No GitHub Actions workflow exists in the baseline; do not describe local checks as CI.
+The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, and `tests/*.test.ts`, including shared simulation, client helpers and asset checks. Build includes client, server and the static UI Storybook through Turborepo. No GitHub Actions workflow exists in the baseline; do not describe local checks as CI.
 
-Both `pnpm build` and `pnpm build-new` compress PNGs through
+`pnpm build` compress PNGs through
 [`vite-plugin-image-optimizer`](https://github.com/FatehAK/vite-plugin-image-optimizer)
-in each client's Vite config, including copied public assets. Individual client
+in the client's Vite config, including copied public assets. Individual client
 package builds do the same. PNG palette conversion is disabled to preserve sprite
 pixels. Source assets, licenses and development serving are untouched. The plugin
 logs byte savings and keeps original bytes when compression would increase size.
 It strips image metadata and logs optimization errors while retaining the original
 file. It does not preserve animated or high-bit-depth PNGs; exclude such assets in
 the Vite config if introduced. Current sprites are static 8-bit PNGs.
-Run `pnpm test:images` for real Vite build checks of both client configurations.
+Run `pnpm test:images` for real Vite build checks of the client configuration.
 
-Use `pnpm --filter @emberfall/client analyze` or
-`pnpm --filter @emberfall/client-new analyze` for an optional production build
+Use `pnpm --filter @emberfall/client analyze` for an optional production build
 with a `rollup-plugin-visualizer` bundle report. Open the selected package's
 `node_modules/.cache/bundle-report.html` to inspect dependencies and estimated
 gzip/Brotli sizes. Reports are ignored by Git and stay outside deployed `dist`.
@@ -36,22 +35,22 @@ see [serving and deployment](operations.md#deployment-and-cache-consistency).
 
 ## Browser and UI verification
 
-The independent runtime uses `pnpm dev-new`, `pnpm build-new`, and `pnpm start-new`.
-`pnpm start-new` sets up HTTPS and builds both new packages before launching,
+The independent runtime uses `pnpm dev`, `pnpm build`, and `pnpm start`.
+`pnpm start` sets up HTTPS and builds the runtime packages before launching,
 so a fresh checkout needs no separate build step after installing dependencies.
 Its development client is on 5174 and its server on 3003. Use `PORT_NEW` and
-`SAVE_PATH_NEW` for overrides; old commands remain scoped to old packages.
-`pnpm typecheck-new` and `pnpm test-new` validate the new packages. Build before
-`pnpm test:browser-new`; those tests own an in-memory server per test on 3013
+`SAVE_PATH_NEW` for overrides; these names are retained for deployment compatibility.
+`pnpm typecheck` and `pnpm test` validate the workspace. Build before
+`pnpm test:browser`; those tests own an in-memory server per test on 3013
 (`TEST_PORT_NEW` overrides it), run sequentially, and never reuse a live database.
 Functional browser tests use Balanced graphics; explicit rendering tests use
 High. The [package guides](design/new-runtime.md) explain ownership and reuse.
-`pnpm test:parity-new` checks import isolation, asset/credit hashes, definitions
-and seeded simulation equivalence. `pnpm benchmark-new` measures simulation and
+The old-runtime parity comparison was retired with the original packages.
+`pnpm benchmark` measures simulation and
 replication kernels; see the [verification record](plans/new-runtime.md) for scope.
-`pnpm lint-new` checks the new source and styles. Use `pnpm import-save-new` only
+`pnpm lint` checks source and styles. Use `pnpm import-save` only
 with an offline backup and a new destination, as described in the
-[server guide](../packages/server-new/README.md).
+[server guide](../packages/server/README.md).
 
 ```sh
 pnpm exec playwright install chromium
@@ -61,7 +60,8 @@ pnpm --filter @emberfall/ui build
 pnpm --filter @emberfall/ui test
 ```
 
-Root Playwright owns a fresh production server and in-memory database per test on port 3002 by default, using HTTPS with the local certificate accepted for tests. Build first. `TEST_PORT` overrides the test server port. `TEST_DEV=1` starts the development setup instead; unlike the production test configuration it does not automatically set an in-memory database, so set an isolated save path explicitly when using it. The root suite runs one worker and does not reuse a running server.
+Root Playwright owns a fresh production server and in-memory database per test on port 3013.
+`TEST_PORT_NEW` overrides the port. Build first; the suite runs one worker and never reuses a running server.
 
 The UI suite starts Storybook on port 6007; interactive Storybook uses 6006. It can reuse an existing server outside CI. See the [UI guide](../packages/ui/README.md) for component authoring and accessibility checks.
 
@@ -69,14 +69,14 @@ Focused examples:
 
 ```sh
 node --test packages/server/src/classes.test.ts packages/server/src/training.test.ts
-pnpm exec playwright test tests/combat-controls.spec.ts
-node scripts/benchmark-snapshots.ts
+pnpm exec playwright test tests/gameplay.spec.ts
+pnpm benchmark
 ```
 
 Browser artifacts go to ignored `test-results/` and `playwright-report/` as configured by the suites. Treat screenshots as review evidence, not proof of unmeasured gameplay or performance.
 
 For an opt-in hardware frame-budget measurement, build the new client, set
-`PERF_NEW=1`, then run `pnpm test:browser-new tests-new/frame-budget.spec.ts`.
+`PERF_NEW=1`, then run `pnpm test:browser tests/frame-budget.spec.ts`.
 The isolated village, training, moving-forest and 80-enemy crowded cases use High at 1440×1000,
 three seconds of warmup and 1,200 uncapped animation frames each. JSON records
 include browser/GPU, frame percentiles and frames over the 240 FPS budget;

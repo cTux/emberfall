@@ -72,7 +72,43 @@ function frame(
   return { player, started, scene: (player.scene ? view.scene : view.training)! };
 }
 
-test("manual confirmations with latency preserve flight and swing, correct aim and never replay completed casts", () => {
+test("automatic combat entry waits for its first authoritative swing in forest and training", () => {
+  for (const training of [false, true]) {
+    for (const classId of ["warrior", "mage", "ranger", "druid"] as const) {
+      const source = fixture(classId, training);
+      source.players[0].attackAt = undefined;
+      const movement = new LocalMovement("p", () => {});
+      for (const now of [0, 25, 75, 150]) {
+        const waiting = frame(movement, source, now);
+        assert.equal(waiting.started, false, "no invented first swing or sound");
+        assert.equal(waiting.player.attackAt, undefined);
+        assert.equal(waiting.scene.playerShots?.length ?? 0, 0);
+      }
+      const confirmed = structuredClone(source);
+      confirmed.serverNow = 10200;
+      confirmed.players[0].attackAt = 10150;
+      const first = frame(movement, confirmed, 200);
+      assert.equal(first.started, true);
+      assert.equal(first.player.attackAt, 150, "use the server's actual swing age");
+      assert.equal(frame(movement, confirmed, 225).started, false);
+      const next = structuredClone(confirmed);
+      next.serverNow = 10250;
+      assert.equal(
+        frame(movement, next, 250).started,
+        false,
+        "snapshot does not restart the swing",
+      );
+      assert.equal(frame(movement, next, 250).player.attackAt, 150);
+      assert.equal(
+        frame(movement, next, 150 + PLAYER_ATTACK_INTERVAL).started,
+        true,
+        "keep extrapolating established automatic cycles",
+      );
+    }
+  }
+});
+
+test("manual confirmations with latency preserve flight and swing, correct aim and never replay completed casts", async () => {
   for (const delay of [100, 150, 300]) {
     for (const classId of ["mage", "ranger", "druid"] as const) {
       const source = fixture(classId),
@@ -144,7 +180,7 @@ test("manual confirmations with latency preserve flight and swing, correct aim a
   }
 });
 
-test("manual rejection removes predicted effects, restores cooldown and keeps request IDs increasing", () => {
+test("manual rejection removes predicted effects, restores cooldown and keeps request IDs increasing", async () => {
   const source = fixture();
   source.players[0].autoAttack = false;
   source.players[0].attackAt = undefined;
@@ -184,7 +220,7 @@ test("manual rejection removes predicted effects, restores cooldown and keeps re
   );
 });
 
-test("all local attacks stop on stale or paused snapshots and resume from fresh server state", () => {
+test("all local attacks stop on stale or paused snapshots and resume from fresh server state", async () => {
   for (const training of [false, true]) {
     for (const classId of ["warrior", "mage", "ranger", "druid"] as const) {
       const source = fixture(classId, training),
@@ -228,7 +264,7 @@ test("all local attacks stop on stale or paused snapshots and resume from fresh 
   }
 });
 
-test("moving casts launch at the displayed player before a reply, with no predicted damage", () => {
+test("moving casts launch at the displayed player before a reply, with no predicted damage", async () => {
   for (const training of [false, true]) {
     const source = fixture("mage", training),
       before = structuredClone(source);
@@ -248,7 +284,7 @@ test("moving casts launch at the displayed player before a reply, with no predic
   }
 });
 
-test("confirmation preserves launch trajectory, suppresses duplicates and retires completed casts", () => {
+test("confirmation preserves launch trajectory, suppresses duplicates and retires completed casts", async () => {
   const source = fixture(),
     movement = new LocalMovement("p", () => {});
   frame(movement, source, 0);
@@ -277,7 +313,7 @@ test("confirmation preserves launch trajectory, suppresses duplicates and retire
   assert.equal(frame(movement, completed, 200).scene.playerShots!.length, 0);
 });
 
-test("server target corrections and rejected casts do not replay an old launch", () => {
+test("server target corrections and rejected casts do not replay an old launch", async () => {
   const source = fixture(),
     movement = new LocalMovement("p", () => {});
   frame(movement, source, 0);
@@ -296,7 +332,7 @@ test("server target corrections and rejected casts do not replay an old launch",
   assert.equal(frame(movement, rejected, 200).scene.playerShots!.length, 0);
 });
 
-test("prediction wraps, expires and clears on death, class/area changes and stale replies", () => {
+test("prediction wraps, expires and clears on death, class/area changes and stale replies", async () => {
   const source = fixture("ranger");
   source.players[0].x = FOREST.width - 5;
   source.scene!.enemies = [{ ...source.scene!.enemies[0], x: 80 }];
@@ -320,7 +356,7 @@ test("prediction wraps, expires and clears on death, class/area changes and stal
   }
 });
 
-test("training snapshots are detached before local projectile rendering", () => {
+test("training snapshots are detached before local projectile rendering", async () => {
   const source = fixture("mage", true),
     before = structuredClone(source);
   const snapshots = new SnapshotBuffer("p"),
@@ -334,7 +370,7 @@ test("training snapshots are detached before local projectile rendering", () => 
   assert.deepEqual(source, before);
 });
 
-test("a server cast with a previously unseen target still launches at the displayed player once", () => {
+test("a late server cast retains its in-flight position and remaining range without relaunching", async () => {
   const source = fixture(),
     movement = new LocalMovement("p", () => {});
   source.scene!.enemies = [];
@@ -345,12 +381,125 @@ test("a server cast with a previously unseen target still launches at the displa
   reply.serverNow = 10100;
   reply.players[0].attackAt = 10100;
   fireClassAttack(reply.scene!, reply.players[0]);
+  for (const shot of reply.scene!.playerShots!) {
+    shot.x += 80;
+    shot.remaining -= 80;
+  }
   const result = frame(movement, reply, 150);
   assert.equal(result.scene.playerShots!.length, 2);
-  assert(result.scene.playerShots!.every((s) => s.x === result.player.x));
+  assert.deepEqual(
+    result.scene.playerShots!.map((s) => [s.x, s.y, s.remaining]),
+    reply.scene!.playerShots!.map((s) => [
+      s.x + result.player.x - reply.players[0].x,
+      s.y,
+      s.remaining,
+    ]),
+  );
   assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 2);
   for (let now = 250; now <= 650; now += 50) frame(movement, reply, now);
   assert.equal(frame(movement, reply, 650).scene.playerShots!.length, 0);
+});
+
+test("newly confirmed moving casts attach once to the displayed pose in both areas and across seams", () => {
+  for (const training of [false, true])
+    for (const delay of [50, 200, 700]) {
+      const source = fixture("mage", training);
+      source.players[0].x = FOREST.width - 5;
+      source.players[0].attackAt = undefined;
+      const movement = new LocalMovement("p", () => {});
+      frame(movement, source, 0);
+      movement.input(1, 0, 0);
+      for (let t = 50; t < delay; t += 50) frame(movement, source, t);
+      const reply = structuredClone(source);
+      reply.serverNow! += delay;
+      reply.players[0].attackAt = reply.serverNow;
+      reply.players[0].autoTarget = false;
+      reply.players[0].aimX = 200;
+      reply.players[0].aimY = reply.players[0].y;
+      fireClassAttack((training ? reply.training : reply.scene)!, reply.players[0]);
+      const result = frame(movement, reply, delay);
+      assert.equal(result.scene.playerShots!.length, 2);
+      for (const shot of result.scene.playerShots!) {
+        assert(Math.abs(shot.x - result.player.x) < 1e-8);
+        assert.equal(shot.y, result.player.y);
+      }
+      const next = frame(movement, reply, delay + 10);
+      assert.equal(next.scene.playerShots!.length, 2);
+      assert(next.scene.playerShots![0].remaining < result.scene.playerShots![0].remaining);
+      assert.equal((training ? reply.training : reply.scene)!.playerShots![0].x, FOREST.width - 5);
+    }
+});
+
+test("confirmation cannot bend a moving cast or rebind its surviving projectile to a sibling", () => {
+  for (const training of [false, true]) {
+    const source = fixture("ranger", training);
+    const movement = new LocalMovement("p", () => {});
+    frame(movement, source, 0);
+    movement.input(0, 1, 0);
+    const cast = frame(movement, source, 100);
+    const angles = cast.scene.playerShots!.map((s) => s.angle);
+    const reply = structuredClone(source);
+    reply.serverNow = 10100;
+    reply.players[0].attackAt = 10100;
+    const scene = (training ? reply.training : reply.scene)!;
+    fireClassAttack(scene, reply.players[0]);
+    assert.notEqual(scene.playerShots![0].angle, angles[0]);
+    assert.deepEqual(
+      frame(movement, reply, 150).scene.playerShots!.map((s) => s.angle),
+      angles,
+    );
+    const next = structuredClone(reply);
+    next.serverNow = 10150;
+    const nextScene = (training ? next.training : next.scene)!;
+    nextScene.playerShots!.shift();
+    const remaining = frame(movement, next, 200).scene.playerShots!;
+    assert.equal(remaining.length, 1);
+    assert.equal(remaining[0].id, nextScene.playerShots![0].id);
+    assert.equal(remaining[0].angle, angles[1]);
+    assert.equal(frame(movement, next, 220).scene.playerShots![0].angle, angles[1]);
+  }
+});
+
+test("a snapshot timestamp alone cannot reject an automatic cast before the server attacks", () => {
+  const source = fixture("ranger");
+  const movement = new LocalMovement("p", () => {});
+  frame(movement, source, 0);
+  assert.equal(frame(movement, source, 100).scene.playerShots!.length, 2);
+  const early = structuredClone(source);
+  early.serverNow = 10100;
+  // The timestamp advanced but the attack phase still belongs to the previous cycle.
+  assert.equal(frame(movement, early, 150).scene.playerShots!.length, 2);
+  const accepted = structuredClone(early);
+  accepted.serverNow = 10150;
+  accepted.players[0].attackAt = 10100;
+  fireClassAttack(accepted.scene!, accepted.players[0]);
+  assert.equal(frame(movement, accepted, 200).scene.playerShots!.length, 2);
+});
+
+test("buffered enemy positions cannot hide a projectile before a confirmed impact", () => {
+  const source = fixture("mage");
+  const movement = new LocalMovement("p", () => {});
+  frame(movement, source, 0);
+  frame(movement, source, 100);
+  const reply = structuredClone(source);
+  reply.serverNow = 10100;
+  reply.players[0].attackAt = 10100;
+  fireClassAttack(reply.scene!, reply.players[0]);
+  const player = movement.render(reply, 150)!;
+  const buffered = structuredClone(reply);
+  buffered.scene!.enemies[0].x = player.x + 10;
+  buffered.scene!.enemies[0].y = player.y;
+  movement.animateProjectiles(player, buffered, 150, false);
+  assert.equal(
+    buffered.scene!.playerShots!.length,
+    2,
+    "do not predict impact against older enemies",
+  );
+  assert.equal(buffered.scene!.damage.length, 0);
+  const completed = structuredClone(reply);
+  completed.serverNow = 10150;
+  completed.scene!.playerShots = [];
+  assert.equal(frame(movement, completed, 200).scene.playerShots!.length, 0);
 });
 
 test("a local root projectile remains visible through all confirmed bounces despite delayed snapshots", () => {

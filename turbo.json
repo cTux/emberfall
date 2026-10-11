@@ -1,5 +1,4 @@
 {
-  "globalDependencies": ["scripts/optimize-images.ts"],
   "tasks": {
     "dev": {
       "cache": false,

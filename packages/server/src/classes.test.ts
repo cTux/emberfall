@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -25,6 +25,10 @@ import {
 } from "../../common/src/class-combat.ts";
 import type { Player, SceneState, Enemy } from "@emberfall/common";
 import { moveEnemies } from "../../common/src/enemies.ts";
+// Base-damage scenarios exclude random criticals; equipment.test.ts covers their boundaries.
+beforeEach((t) => {
+  if ("mock" in t) t.mock.method(Math, "random", () => 0.5);
+});
 const hero = (): Player => ({
   ...freshProgress(),
   id: "p",
@@ -56,16 +60,18 @@ const scene = (): SceneState => ({
   portals: [],
 });
 
-test("class records migrate legacy progress, save independently, and survive restart", () => {
+test("class records migrate legacy progress, save independently, and survive restart", async () => {
   const directory = mkdtempSync(join(tmpdir(), "emberfall-classes-"));
   const file = join(directory, "save.sqlite");
   let store = new CharacterStore(file);
+  await store.ready;
   try {
     const created = store.create("Hero");
     store.save(created.id, "Hero", {
       ...created.progress,
       level: 4,
       experience: 234,
+      coins: 13,
       talents: { strength: 2 },
     });
     const old = store.load(created.token);
@@ -73,17 +79,22 @@ test("class records migrate legacy progress, save independently, and survive res
     const player = { ...hero(), ...old.progress, classId: old.classId, classes: old.classes };
     store.selectClass(old.id, player, "ranger");
     assert.equal(player.level, 1);
+    assert.equal(player.coins, 0);
     assert.deepEqual(player.talents, {});
     player.experience = 17;
+    player.coins = 3;
     store.selectClass(old.id, player, "mage");
     player.experience = 9;
     store.save(old.id, player.name, player);
     store.close();
     store = new CharacterStore(file);
+    await store.ready;
     const restored = store.load(created.token);
     assert.equal(restored.classId, "mage");
     assert.equal(restored.progress.experience, 9);
     assert.equal(restored.classes.ranger.experience, 17);
+    assert.equal(restored.classes.ranger.coins, 3);
+    assert.equal(restored.classes.warrior.coins, 13);
     assert.equal(restored.classes.warrior.experience, 234);
     assert.deepEqual(restored.classes.warrior.talents, { strength: 2 });
     assert.equal(restored.classes.druid.maxHitpoints, 100);
@@ -94,6 +105,7 @@ test("class records migrate legacy progress, save independently, and survive res
     store.selectClass(old.id, player, "warrior");
     assert.equal(player.level, 4);
     assert.equal(player.experience, 234);
+    assert.equal(player.coins, 13);
   } finally {
     store.close();
     rmSync(directory, { recursive: true });
@@ -219,7 +231,7 @@ test("roots damage a lone enemy only once per projectile and never bounce back",
   assert.equal(s.playerShots!.length, 0);
 });
 
-test("projectile spread centers odd and even counts with six-degree spacing", () => {
+test("projectile spread centers odd and even counts with six-degree spacing", async () => {
   for (const [count, degrees] of [
     [1, [0]],
     [2, [-3, 3]],
@@ -258,7 +270,7 @@ test("ranged classes launch their configured straight projectiles in both aiming
   }
 });
 
-test("roots slow ordinary enemies, bosses are immune, and root kills complete the boss", () => {
+test("roots slow ordinary enemies, bosses are immune, and root kills complete the boss", async () => {
   const s = scene(),
     p = { ...hero(), classId: "druid" as const, attackAt: 10000 };
   const normal = enemy(1),
@@ -284,7 +296,7 @@ test("roots slow ordinary enemies, bosses are immune, and root kills complete th
   assert(s.drops?.length);
 });
 
-test("bear swipes once per enemy per cycle for two damage, leashes, returns and resumes", () => {
+test("bear swipes once per enemy per cycle for owner power, leashes, returns and resumes", async () => {
   const s = scene(),
     p: Player = { ...hero(), classId: "druid" };
   s.enemies = [enemy(1, 2440), enemy(2, 2460)];
@@ -294,22 +306,22 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
   assert.equal(bear.maxHitpoints, 150);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [98, 98],
+    [97, 97],
   );
   tickCompanion(p, s, 10050, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [98, 98],
+    [97, 97],
   );
   tickCompanion(p, s, 10999, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [98, 98],
+    [97, 97],
   );
   tickCompanion(p, s, 11000, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [96, 96],
+    [94, 94],
   );
   bear.x = p.x + 220;
   tickCompanion(p, s, 11400, 0.05);
@@ -325,11 +337,11 @@ test("bear swipes once per enemy per cycle for two damage, leashes, returns and 
   tickCompanion(p, s, 12400, 0);
   assert.deepEqual(
     s.enemies.map((e) => e.hitpoints),
-    [94, 94],
+    [91, 91],
   );
 });
 
-test("bear only targets and chases inside the owner's 200-unit radius, including wrapped edges", () => {
+test("bear only targets and chases inside the owner's 200-unit radius, including wrapped edges", async () => {
   const s = scene(),
     p: Player = { ...hero(), classId: "druid" };
   const e = enemy(1, p.x + 201);
@@ -365,7 +377,7 @@ test("bear only targets and chases inside the owner's 200-unit radius, including
   assert.equal(bear.attackAt, 13000);
 });
 
-test("Bear stops in claw range, backs away from close enemies, and preserves spacing across seams", () => {
+test("Bear stops in claw range, backs away from close enemies, and preserves spacing across seams", async () => {
   const s = scene(),
     p: Player = { ...hero(), classId: "druid", x: 2300 };
   const e = enemy(1, 2480);
@@ -373,7 +385,7 @@ test("Bear stops in claw range, backs away from close enemies, and preserves spa
   tickCompanion(p, s, 10000, 1);
   const bear = p.bear!;
   assert.equal(forestDistance(bear, e), 80);
-  assert.equal(e.hitpoints, 98);
+  assert.equal(e.hitpoints, 97);
   const stoppedX = bear.x;
   tickCompanion(p, s, 10050, 0.05);
   assert.equal(bear.x, stoppedX);
@@ -381,19 +393,19 @@ test("Bear stops in claw range, backs away from close enemies, and preserves spa
   e.x = bear.x + 20;
   tickCompanion(p, s, 10999, 0.05);
   assert.equal(bear.x, stoppedX, "hold the destination until one second has elapsed");
-  tickCompanion(p, s, 11000, 0.3);
+  tickCompanion(p, s, 11000, 0.4);
   assert.equal(forestDistance(bear, e), 80);
   assert(bear.x < stoppedX);
   assert.equal(bear.moving, true);
   p.x = 5;
   bear.x = FOREST.width - 20;
   e.x = 25;
-  tickCompanion(p, s, 12000, 0.25);
+  tickCompanion(p, s, 12000, 0.4);
   assert.equal(forestDistance(bear, e), 80);
-  assert.equal(e.hitpoints, 94);
+  assert.equal(e.hitpoints, 91);
 });
 
-test("Bear moves at 1.3 times player speed in forest and village", () => {
+test("Bear moves at player speed in forest and village", async () => {
   for (const forest of [true, false]) {
     const p: Player = {
       ...hero(),
@@ -407,13 +419,12 @@ test("Bear moves at 1.3 times player speed in forest and village", () => {
     const start = { x: p.bear!.x, y: p.bear!.y };
     tickCompanion(p, undefined, 10050, 0.05);
     assert(
-      Math.abs(Math.hypot(p.bear!.x - start.x, p.bear!.y - start.y) - ARENA.speed * 1.3 * 0.05) <
-        1e-6,
+      Math.abs(Math.hypot(p.bear!.x - start.x, p.bear!.y - start.y) - ARENA.speed * 0.05) < 1e-6,
     );
   }
 });
 
-test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", () => {
+test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", async () => {
   const s = scene(),
     p: Player = { ...hero(), classId: "druid" };
   tickCompanion(p, s, 10000, 0);
@@ -421,7 +432,7 @@ test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", () =>
     e = enemy(1, 2460);
   s.enemies = [e];
   e.attack = { startedAt: 11000, endsAt: 11500, x: bear.x, y: bear.y, radius: 40, ranged: false };
-  tickCompanion(p, s, 11000, 0.25);
+  tickCompanion(p, s, 11000, 0.4);
   assert(forestDistance(bear, e.attack) > e.attack.radius);
   e.attack = undefined;
   const safeX = bear.x;
@@ -433,17 +444,17 @@ test("Bear dodges telegraphed attacks and sidesteps incoming projectiles", () =>
   assert.equal(bear.moving, false);
   bear.x = p.x;
   bear.y = p.y;
-  s.projectiles = [{ id: 2, x: bear.x - 40, y: bear.y, vx: 210, vy: 0, expiresAt: 14000 }];
+  s.projectiles = [{ id: 2, x: bear.x - 70, y: bear.y, vx: 210, vy: 0, expiresAt: 14000 }];
   tickCompanion(p, s, 12000, 0.05);
   assert(bear.y > p.y);
-  p.x = 2320;
+  p.x = 2280;
   p.attackAt = 1e6;
   for (let i = 1; i <= 8; i++) stepCombat(s, [p], 12000 + i * 50, 0.05);
   assert.equal(bear.hitpoints, 150);
   assert(s.projectiles.some((shot) => shot.x > 2400));
 });
 
-test("Bear repositions on its reaction interval while continuing to damage melee enemies", () => {
+test("Bear repositions on its reaction interval while continuing to damage melee enemies", async () => {
   for (const archetype of ["skeleton", "runner", "brute"] as const) {
     const s = scene(),
       p: Player = { ...hero(), classId: "druid", x: 2300, attackAt: 1e6 };
@@ -458,7 +469,7 @@ test("Bear repositions on its reaction interval while continuing to damage melee
   }
 });
 
-test("Bear teleports only beyond 500 pixels, using wrapped forest distance, without bypassing death", () => {
+test("Bear teleports only beyond 500 pixels, using wrapped forest distance, without bypassing death", async () => {
   for (const forest of [true, false]) {
     const p: Player = {
       ...hero(),
@@ -496,15 +507,15 @@ test("Bear teleports only beyond 500 pixels, using wrapped forest distance, with
   assert.equal(p.bear!.x, p.x);
 });
 
-test("enemies damage Bear; death resurrects exactly five seconds later at its owner", () => {
+test("enemies damage Bear; death resurrects exactly five seconds later at its owner", async () => {
   const s = scene(),
     p: Player = { ...hero(), classId: "druid", attackAt: 10000 };
   tickCompanion(p, s, 10000, 0);
   const bear = p.bear!;
-  bear.x = 2460;
+  bear.x = 2470;
   bear.hitpoints = 10;
-  const e = enemy(1, 2460);
-  e.attack = { startedAt: 9000, endsAt: 10000, x: 2460, y: 1280, radius: 40, ranged: false };
+  const e = enemy(1, 2470);
+  e.attack = { startedAt: 9000, endsAt: 10000, x: 2470, y: 1280, radius: 40, ranged: false };
   s.enemies = [e];
   stepCombat(s, [p], 10000, 0);
   assert.equal(bear.hitpoints, 0);
@@ -525,7 +536,7 @@ test("enemies damage Bear; death resurrects exactly five seconds later at its ow
   assert.equal(bear.hitpoints, hitpoints - 10);
 });
 
-test("bear wraps its leash and follows in the village; other classes remove companions", () => {
+test("bear wraps its leash and follows in the village; other classes remove companions", async () => {
   const p: Player = { ...hero(), classId: "druid", x: 5 };
   tickCompanion(p, scene(), 10000, 0);
   p.bear!.x = FOREST.width - 40;
@@ -543,7 +554,7 @@ test("bear wraps its leash and follows in the village; other classes remove comp
   assert.equal(p.bear, undefined);
 });
 
-test("Druid launches roots without instant melee damage, with zero or one target", () => {
+test("Druid launches roots without instant melee damage, with zero or one target", async () => {
   const s = scene(),
     p: Player = { ...hero(), classId: "druid" };
   tickCompanion(p, s, 10000, 0);
@@ -561,14 +572,14 @@ test("Druid launches roots without instant melee damage, with zero or one target
   assert.doesNotThrow(() => fireClassAttack(s, p, 10700));
 });
 
-test("class selection schema and wardrobe interaction reject invalid classes and dead players", () => {
+test("class selection schema and wardrobe interaction reject invalid classes and dead players", async () => {
   assert(!clientMessage.safeParse({ type: "selectClass", classId: "hacker" }).success);
   const player = { ...hero(), scene: undefined, x: WARDROBE.x + 40, y: WARDROBE.y - 15 };
   assert.equal(nearbyInteraction(player)?.id, "wardrobe");
   assert.equal(nearbyInteraction({ ...player, hitpoints: 0 }), null);
 });
 
-test("one spawn roll gives exactly ten percent big and ten percent ranged with health multipliers", () => {
+test("one spawn roll gives exactly ten percent big and ten percent ranged with health multipliers", async () => {
   const types = Array.from({ length: 100 }, (_, i) => spawnArchetype(i / 100, i));
   assert.equal(types.filter((a) => a === "brute").length, 10);
   assert.equal(types.filter((a) => a === "caster").length, 10);
@@ -623,7 +634,10 @@ test("proc boundary is ten percent; DOT kills use the same loot, XP and boss com
   stepCombat(s, [p], 1000, 0);
   assert.equal(s.phase, "ended");
   assert.equal(p.experience, 1);
-  assert.equal(s.drops!.length, 1);
+  assert.deepEqual(
+    s.drops!.map((drop) => drop.kind),
+    ["experience", "item"],
+  );
 });
 
 test("ranger arrows pierce every target once, wrap, and expire at 1000 units", (t) => {
@@ -641,7 +655,7 @@ test("ranger arrows pierce every target once, wrap, and expire at 1000 units", (
   assert.equal(s.playerShots!.length, 0);
 });
 
-test("mage fireballs target and travel up to 250 units, including wrapped edges", () => {
+test("mage fireballs target and travel up to 250 units, including wrapped edges", async () => {
   const s = scene(),
     p = { ...hero(), classId: "mage" as const };
   s.enemies = [enemy(1, p.x + 250), enemy(2, p.x + 250.01), enemy(3, p.x + 249)];
@@ -695,7 +709,8 @@ test("fireball damages the actual collision target only once and splashes across
   const s = scene(),
     p = { ...hero(), classId: "mage" as const, x: 5 };
   const direct = enemy(1, FOREST.width - 5);
-  s.enemies = [direct, enemy(2, 95), enemy(3, 95.01), enemy(4, FOREST.width - 200)];
+  s.enemies = [direct, enemy(2, 119), enemy(3, 119.01), enemy(4, FOREST.width - 200)];
+  for (const target of s.enemies) target.y += 6; // Model centers align with the explosion.
   fireClassAttack(s, p, 1000);
   s.playerShots!.splice(1);
   s.playerShots![0].x = direct.x;
@@ -929,7 +944,7 @@ test("untargeted spells follow cast aim past the cursor and expire after 1000px"
         aimY: 1300,
       };
       const arena = scene();
-      arena.enemies = [enemy(1, 2420), enemy(2, 2580)];
+      arena.enemies = [enemy(1, 2440), enemy(2, 2580)];
       fireClassAttack(arena, player, 1000);
       assert.equal(arena.playerShots?.length, classId === "druid" ? 1 : 2);
       const shot = arena.playerShots![0];
@@ -1008,6 +1023,23 @@ test("manual client prediction casts on hold, preserves release cooldown, and tr
   assert.equal(movement.animateAttack(displayed, world, 1009), false);
   assert.equal(movement.animateAttack(displayed, world, 1010), true);
   assert.equal(movement.animateAttack(displayed, world, 1020), false);
+});
+
+test("root primary and bounce both use full critical weapon damage", (t) => {
+  t.mock.method(Math, "random", () => 0);
+  const s = scene(),
+    p = { ...hero(), classId: "druid" as const };
+  s.enemies = [enemy(1, 2420), enemy(2, 2480)];
+  fireClassAttack(s, p, 1000);
+  tickPlayerShots(s, [p], 1050, 0.05);
+  tickPlayerShots(s, [p], 1250, 0.2);
+  assert.deepEqual(
+    s.enemies.map((e) => e.hitpoints),
+    [95.5, 95.5],
+  );
+  assert(
+    s.damage.every((hit) => hit.amount === 4.5 && hit.critical && hit.damageType === "nature"),
+  );
 });
 
 test("a lethal root impact still bounces and credits both kills through the shared path", () => {

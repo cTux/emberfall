@@ -31,10 +31,9 @@ Village and forest share 4800×2560 wrapped geometry. Player movement passes thr
 
 Warrior/Bear melee uses a smoothed forward half-disc and per-swing hit tracking. Projectile movement and class effects share `fireClassAttack`, `advancePlayerShot`, `tickPlayerShots` and `hitEnemy`. Root projectiles retain their identity and hit IDs through three bounces, select the nearest living unhit enemy within 250 wrapped units of each impact, and track that target until impact or its death. All four possible impacts use the shared full-power hit path. Local presentation keeps the same projectile through confirmed turns and uses shared motion with hit detection disabled; it never predicts damage or hit history. Roots refresh one five-second stack and multiply ordinary enemy movement speed by 0.9; bosses receive no roots. Manual casts validate cooldown, life, area epoch, class and training range; increasing request IDs identify processed/rejected casts and the accepted attack. Presentation prediction is described in [movement](movement.md).
 
-The new runtime shares `modelHitbox` in `common-new/hitboxes.ts` between authoritative combat and debug rendering. A model of size S has radius S/2 and center at (x, y + 15 - 7S/16), matching the sprite rectangle's center. Player and Bear models use S=48; enemies use their archetype size. Projectile overlap adds the projectile radius, and melee tests the model circle against the attack area. Feet remain movement coordinates and are omitted from the debug overlay.
+The new runtime shares `modelHitbox` in `common/hitboxes.ts` between authoritative combat and debug rendering. A model of size S has radius S/2 and center at (x, y + 15 - 7S/16), matching the sprite rectangle's center. Player and Bear models use S=48; enemies use their archetype size. Projectile overlap adds the projectile radius, and melee tests the model circle against the attack area. Feet remain movement coordinates and are omitted from the debug overlay.
 
-Player base attacks and Bear share a 1000 ms cooldown in both runtimes; the new
-runtime derives player and Bear attack timing from gear stats. `companionStats`
+Player base attacks and Bear share a 1000 ms cooldown in the runtime; it derives player and Bear attack timing from gear stats. `companionStats`
 inherits the owner's totals with physical damage, 75-unit range and 1.5× maximum
 HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% bleed,
 and enemy hit resolution applies the owner's armor. UI shows the resulting
@@ -52,4 +51,4 @@ Scene entities, projectiles, drops, damage events, companion state and DPS histo
 
 Drive explicit timestamps rather than sleeping through two-minute runs. Use [scenes.test.ts](../../packages/server/src/scenes.test.ts), [classes.test.ts](../../packages/server/src/classes.test.ts), [enemies.test.ts](../../packages/server/src/enemies.test.ts), [training.test.ts](../../packages/server/src/training.test.ts) and [pass-through.test.ts](../../packages/server/src/pass-through.test.ts).
 
-For changed combat, test the same effect in forest and training, wrapped overlap, duplicate hits/casts, dead targets, membership scaling, fractional rewards and companion ownership. Browser [scenes](../../tests/scenes.spec.ts), [enemies](../../tests/enemies.spec.ts) and [combat features](../../tests/combat-features.spec.ts) verify visible warnings and lifecycle behavior.
+For changed combat, test the same effect in forest and training, wrapped overlap, duplicate hits/casts, dead targets, membership scaling verify visible warnings and lifecycle behavior.

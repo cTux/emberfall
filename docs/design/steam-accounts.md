@@ -2,12 +2,12 @@
 
 Status: implemented in the new runtime. Behavior: [CHAR-05](../specs/characters.md#char-05--steam-accounts-and-nickname)
 and [UI-04](../specs/interface-and-audio.md#ui-04--settings-and-music).
-The original runtime remains unchanged. Steam accounts start fresh; existing
+Steam accounts start fresh; existing
 browser saves and their bearer keys are preserved without linking or merging.
 
 ## Authentication and account ownership
 
-[steam.ts](../../packages/server-new/src/steam.ts) implements the fixed Steam
+[steam.ts](../../packages/server/src/steam.ts) implements the fixed Steam
 OpenID 2.0 provider with direct server verification. Login redirects to Steam;
 Emberfall never receives Steam passwords. OpenID supplies the verified Steam ID.
 The server separately calls `GetPlayerSummaries/v2` with its Web API key for the
@@ -33,7 +33,7 @@ Sources: [Valve authentication](https://partner.steamgames.com/doc/features/auth
 
 ## HTTP and game sessions
 
-[accounts.ts](../../packages/server-new/src/accounts.ts) owns these routes:
+[accounts.ts](../../packages/server/src/accounts.ts) owns these routes:
 
 | Route                         | Behavior                                                                                                    |
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -53,13 +53,13 @@ Login starts allow 20 attempts per remote IP per minute; account mutations/ticke
 allow 30 per account per minute. Maps are bounded and callbacks allow eight
 concurrent upstream verifications. Reverse proxies still need ingress limits.
 
-[worlds.ts](../../packages/server-new/src/worlds.ts) validates the browser Origin
+[worlds.ts](../../packages/server/src/worlds.ts) validates the browser Origin
 and consumes a ticket on Colyseus admission. Tickets stay in client memory, not
 localStorage. A session is rechecked on join, on every command, after asynchronous
 password work, and once per second for idle connections. Logout follows the
 existing disconnect/save lifecycle. Expired or revoked credentials cannot resume.
 
-[runtime.ts](../../packages/server-new/src/runtime.ts) derives character identity
+[runtime.ts](../../packages/server/src/runtime.ts) derives character identity
 and name from the authenticated session. Legacy wire name/token fields cannot
 select or rename a Steam character. They remain in the compatibility protocol for
 existing simulation tests; Steam replies return an empty character token. Existing
@@ -67,7 +67,7 @@ duplicate-live-character rejection and reconnect/world authorization still apply
 
 ## Persistence and UI
 
-[CharacterStore](../../packages/server-new/src/characters.ts) adds `steam_accounts`
+[CharacterStore](../../packages/server/src/characters.ts) adds `steam_accounts`
 with unique Steam ID, unique linked character ID, nullable game nickname and Steam
 name; `account_sessions` stores token hashes, account references and expiry.
 Account creation and nickname completion are transactional. Nested savepoints let
@@ -80,8 +80,8 @@ account and character metadata before live state. Autosave uses the canonical
 account nickname, so stale player data cannot undo a rename. Historical chat text
 is preserved. Server restarts preserve accounts, sessions and progress.
 
-[Account.tsx](../../packages/client-new/src/Account.tsx) gates entry and owns the
-same dialog for first setup and editing. [Settings](../../packages/client-new/src/Settings.tsx)
+[Account.tsx](../../packages/client/src/Account.tsx) gates entry and owns the
+same dialog for first setup and editing. [Settings](../../packages/client/src/Settings.tsx)
 adds Account, Change nickname and Sign out. Existing GameWindow supplies focus,
 dragging and modal input blocking. Invalid names remain editable; failed writes
 keep the draft and dialog open. Editing starts from the saved game nickname;
@@ -100,9 +100,9 @@ switch that disables authentication. The server factory's omitted Steam option
 exists only for isolated legacy-protocol/parity fixtures; the executable always
 supplies validated Steam configuration.
 
-[Account tests](../../packages/server-new/src/accounts.test.ts) cover assertion
+[Account tests](../../packages/server/src/accounts.test.ts) cover assertion
 rejections, browser binding, CSRF, session/ticket authorization, nickname ownership,
-logout, database restart and untouched legacy saves. [Browser tests](../../tests-new/accounts.spec.ts)
+logout, database restart and untouched legacy saves. [Browser tests](../../tests/accounts.spec.ts)
 cover onboarding/reload, edit/cancel/failure, another player's view, repeat login,
 profile outage and narrow layouts. These tests mock Steam responses while exercising
 the real HTTP, cookie, Colyseus and UI boundaries. A full live Steam login with the

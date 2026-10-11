@@ -53,61 +53,12 @@ importers:
 
   packages/client:
     dependencies:
-      '@emberfall/common':
-        specifier: workspace:*
-        version: link:../common
-      '@emberfall/ui':
-        specifier: workspace:*
-        version: link:../ui
-      '@emotion/react':
-        specifier: ^11.14.0
-        version: 11.14.0(@types/react@19.3.0)(react@19.3.0)
-      '@emotion/styled':
-        specifier: ^11.14.1
-        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
-      '@fortawesome/free-solid-svg-icons':
-        specifier: ^7.0.0
-        version: 7.3.1
-      '@mui/material':
-        specifier: ^9.4.0
-        version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      react:
-        specifier: ^19.2.8
-        version: 19.3.0
-      react-dom:
-        specifier: ^19.2.8
-        version: 19.3.0(react@19.3.0)
-    devDependencies:
-      '@vitejs/plugin-react':
-        specifier: ^6.0.5
-        version: 6.1.1(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(sass@1.105.1))
-      rollup-plugin-visualizer:
-        specifier: ^7.1.1
-        version: 7.1.1(rolldown@1.2.11)
-      sass:
-        specifier: ^1.102.0
-        version: 1.105.1
-      sharp:
-        specifier: ^0.35.5
-        version: 0.35.5(@types/node@26.6.3)
-      vite:
-        specifier: 'catalog:'
-        version: 8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(sass@1.105.1)
-      vite-plugin-compression2:
-        specifier: ^2.5.3
-        version: 2.5.3
-      vite-plugin-image-optimizer:
-        specifier: ^2.0.3
-        version: 2.0.3(sharp@0.35.5(@types/node@26.6.3))(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(sass@1.105.1))
-
-  packages/client-new:
-    dependencies:
       '@colyseus/sdk':
         specifier: 0.18.4
         version: 0.18.4(@colyseus/core@0.18.18)(typescript@7.0.2)(zod@4.6.5)
-      '@emberfall/common-new':
+      '@emberfall/common':
         specifier: workspace:*
-        version: link:../common-new
+        version: link:../common
       '@emberfall/ui':
         specifier: workspace:*
         version: link:../ui
@@ -163,12 +114,6 @@ importers:
 
   packages/common:
     dependencies:
-      zod:
-        specifier: 'catalog:'
-        version: 4.6.5
-
-  packages/common-new:
-    dependencies:
       '@colyseus/schema':
         specifier: 5.0.35
         version: 5.0.35(typescript@7.0.2)
@@ -177,25 +122,6 @@ importers:
         version: 4.6.5
 
   packages/server:
-    dependencies:
-      '@emberfall/common':
-        specifier: workspace:*
-        version: link:../common
-      negotiator:
-        specifier: ^1.1.0
-        version: 1.1.0
-      ws:
-        specifier: ^8.22.0
-        version: 8.22.0
-    devDependencies:
-      '@types/negotiator':
-        specifier: ^0.6.5
-        version: 0.6.5
-      vite:
-        specifier: 'catalog:'
-        version: 8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(sass@1.105.1)
-
-  packages/server-new:
     dependencies:
       '@colyseus/core':
         specifier: 0.18.18
@@ -209,9 +135,9 @@ importers:
       '@colyseus/ws-transport':
         specifier: 0.18.4
         version: 0.18.4(@colyseus/core@0.18.18)(express@5.2.1)
-      '@emberfall/common-new':
+      '@emberfall/common':
         specifier: workspace:*
-        version: link:../common-new
+        version: link:../common
       drizzle-orm:
         specifier: 1.0.0-rc.2
         version: 1.0.0-rc.2(zod@4.6.5)

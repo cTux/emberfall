@@ -4,7 +4,7 @@ Use licensed project assets and preserve their original credits. Asgard’s Fall
 
 ## Sprites and icons
 
-The new client uses the [wardrobe-style collection](../packages/client-new/public/assets/wardrobe-style/README.md):
+The new client uses the [wardrobe-style collection](../packages/client/public/assets/wardrobe-style/README.md):
 generated actor and animal animations, village/forest scenery, a regenerated opening
 wardrobe, weapons, portraits, status icons, lantern/portal/projectile frames,
 pickups, terrain and a window panel skin. Source sheets and exact generation

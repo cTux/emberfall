@@ -41,7 +41,7 @@ test("boar leaves its wardrobe spawn, follows its owner and attacks training tar
   let bearHit = false;
   for (let now = 12050; now <= 16000; now += 50) {
     tickTraining(s, [p], now, 0.05);
-    bearHit ||= s.damage.some((hit) => hit.amount === 2);
+    bearHit ||= s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5);
   }
   assert(bearHit, "boar must chase and hit the dummy");
   assert.equal(p.experience, 0);
@@ -77,15 +77,17 @@ test("training has one and six stationary, harmless targets and regenerates ever
   assert.equal(s.projectiles, undefined);
 });
 
-test("training area boundaries gate server attacks, Bear hunting, and client swing prediction", () => {
+test("training area boundaries gate server attacks, Bear hunting, and client swing prediction", async () => {
   for (const zone of TRAINING_ZONES) {
+    assert(inTrainingZone({ x: zone.x + 200, y: zone.y - 15 }));
+    assert(inTrainingZone({ x: zone.x, y: zone.y - 15 + 180 }));
     assert(inTrainingZone({ x: zone.x + zone.radius, y: zone.y - 15 }));
     assert(!inTrainingZone({ x: zone.x + zone.radius + 0.01, y: zone.y - 15 }));
     assert(inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 - 0.01 }));
     assert(!inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 + 0.01 }));
   }
   for (const classId of ["warrior", "ranger", "mage", "druid"] as const) {
-    const p = { ...hero(), classId, x: 300, y: 340 };
+    const p = { ...hero(), classId, x: 480, y: 340 };
     const s = tickTraining(undefined, [p], 10000, 0.05);
     assert.equal(p.attackAt, undefined);
     assert.equal(p.bear?.attackAt, undefined);
@@ -102,11 +104,14 @@ test("training area boundaries gate server attacks, Bear hunting, and client swi
     };
     movement.render(world, 0);
     assert.equal(movement.animateAttack(p, world, 0), false);
-    p.x = 175;
+    p.x = 300;
     tickTraining(s, [p], 10050, 0.05);
     assert.equal(p.attackAt, 10050);
-    assert(movement.animateAttack(p, world, 50));
-    p.x = 300;
+    const confirmed = { ...world, serverNow: 10050, players: [{ ...p }] };
+    const displayed = movement.render(confirmed, 50)!;
+    assert(movement.animateAttack(displayed, confirmed, 50));
+    assert.equal(displayed.attackAt, 50);
+    p.x = 480;
     tickTraining(s, [p], 10100, 0.05);
     assert.equal(p.attackAt, undefined);
     assert.equal(p.bear?.attackAt, undefined);
@@ -115,7 +120,7 @@ test("training area boundaries gate server attacks, Bear hunting, and client swi
   }
 });
 
-test("all lobby classes damage dummies, Bear contributes, and forest players cannot attack them", () => {
+test("all lobby classes damage dummies, Bear contributes, and forest players cannot attack them", async () => {
   for (const classId of ["warrior", "ranger", "mage", "druid"] as const) {
     const p = { ...hero(), classId, x: 175 };
     const s = tickTraining(undefined, [p], 10000, 0.05);
@@ -129,7 +134,7 @@ test("all lobby classes damage dummies, Bear contributes, and forest players can
   assert(s.enemies.every((e) => e.hitpoints === 1e9));
 });
 
-test("boar reaches a stationary dummy from every side and keeps landing tusk attacks", () => {
+test("boar reaches a stationary dummy from every side and keeps landing tusk attacks", async () => {
   for (const [dx, dy] of [
     [110, 0],
     [-110, 0],
@@ -153,13 +158,13 @@ test("boar reaches a stationary dummy from every side and keeps landing tusk att
     assert(Math.abs(Math.hypot(bear.x - dummy.x, bear.y - dummy.y) - 80) < 1e-6);
     assert.equal(bear.moving, false);
     assert(p.dps! >= 1.2, "at least three boar hits, with player roots disabled");
-    assert(s.damage.some((hit) => hit.amount === 2));
+    assert(s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5));
     assert.equal(dummy.x, TRAINING_ZONES[0].x);
     assert.equal(dummy.y, TRAINING_ZONES[0].y);
   }
 });
 
-test("DPS counts actual damage once, attributes ailments and Bear, and expires after five seconds", () => {
+test("DPS counts actual damage once, attributes ailments and Bear, and expires after five seconds", async () => {
   const p = hero(),
     other = { ...hero(), id: "other" };
   const s = tickTraining(undefined, [], 10000, 0);
@@ -172,7 +177,7 @@ test("DPS counts actual damage once, attributes ailments and Bear, and expires a
   assert.equal(damagePerSecond(p, 15000), 0);
 });
 
-test("roots include exactly 250 units, exclude farther targets, and work across forest edges", () => {
+test("roots include exactly 250 units, exclude farther targets, and work across forest edges", async () => {
   const p = { ...hero(), classId: "druid" as const };
   const s = tickTraining(undefined, [], 10000, 0);
   s.enemies = [250, 250.01, 249].map((distance, id) => ({

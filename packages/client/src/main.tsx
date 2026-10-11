@@ -1,10 +1,24 @@
+import { AccountGate } from "./Account";
+import type { AccountView } from "@emberfall/common";
+import { GameConnection } from "./connection";
+import { classSprite } from "./characters";
+import { AssetGallery } from "./AssetGallery";
+import { ClassMovementGallery } from "./ClassMovementGallery";
 import { weaponSrc, statusSrc, classAbility } from "./combat-assets";
 import { classDetails } from "./class-details";
+import { Equipment, Trading } from "./equipment-view";
 import { Codex } from "./Codex";
-import { enemyMaxHealth, CLASS_IDS, CLASS_LABELS, hasLivingScenePlayers } from "@emberfall/common";
+import {
+  characterStats,
+  INNKEEPER,
+  enemyMaxHealth,
+  CLASS_IDS,
+  CLASS_LABELS,
+  hasLivingScenePlayers,
+} from "@emberfall/common";
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { ClientMessage, ServerMessage, WorldState, WorldSummary } from "@emberfall/common";
+import type { ClientMessage, WorldState, WorldSummary } from "@emberfall/common";
 import type { Interaction } from "./effects";
 import {
   GameUiProvider,
@@ -26,6 +40,7 @@ import { faGear } from "@fortawesome/free-solid-svg-icons/faGear";
 import { faRightFromBracket } from "@fortawesome/free-solid-svg-icons/faRightFromBracket";
 import { faDoorOpen } from "@fortawesome/free-solid-svg-icons/faDoorOpen";
 import { faGlobe } from "@fortawesome/free-solid-svg-icons/faGlobe";
+import { faShieldHalved } from "@fortawesome/free-solid-svg-icons/faShieldHalved";
 import { Settings } from "./Settings";
 import { loadPreferences } from "./preferences";
 import { Arena } from "./Arena";
@@ -34,8 +49,18 @@ import { loadGraphics } from "./graphics";
 import "./style.scss";
 import { panelPositions } from "./panel-positions";
 
-function App() {
-  const socket = useRef<WebSocket | null>(null);
+function App({
+  account,
+  rename,
+  logout,
+  refresh,
+}: {
+  account: AccountView;
+  rename(): void;
+  logout(): Promise<void>;
+  refresh(): Promise<void>;
+}) {
+  const socket = useRef<GameConnection | null>(null);
   const [status, setStatus] = useState("Connecting");
   const [latency, setLatency] = useState<number | null>(null);
   const [worlds, setWorlds] = useState<WorldSummary[]>([]);
@@ -43,15 +68,17 @@ function App() {
   const [displayedHp, setDisplayedHp] = useState<Record<string, number>>({});
   const [world, setWorld] = useState<WorldState | null>(null);
   const [playerId, setPlayerId] = useState("");
-  const [name, setName] = useState(() => {
+  const [legacyName, setName] = useState(() => {
     try {
-      return localStorage.getItem("emberfall.nickname")?.slice(0, 24) || "Wanderer";
+      return localStorage.getItem("emberfall-new.nickname")?.slice(0, 24) || "Wanderer";
     } catch {
       return "Wanderer";
     }
   });
+  const steam = account.mode === "steam";
+  const name = steam ? account.nickname! : legacyName;
   const [menu, setMenu] = useState<
-    "codex" | "settings" | "portal" | "building" | "wardrobe" | "exit" | null
+    "codex" | "settings" | "portal" | "building" | "wardrobe" | "equipment" | "exit" | null
   >(null);
   const [building, setBuilding] = useState("");
   const [settingsTab, setSettingsTab] = useState("gameplay");
@@ -60,7 +87,7 @@ function App() {
   const [preferences, setPreferences] = useState(loadPreferences);
   useEffect(() => {
     try {
-      localStorage.setItem("emberfall.preferences", JSON.stringify(preferences));
+      localStorage.setItem("emberfall-new.preferences", JSON.stringify(preferences));
     } catch {
       /* Session preferences still apply. */
     }
@@ -70,26 +97,27 @@ function App() {
   const characterToken = useRef<string | undefined>(undefined);
   useEffect(() => {
     try {
-      characterToken.current = localStorage.getItem("emberfall.character") ?? undefined;
-      previousWorld.current = sessionStorage.getItem("emberfall.world");
+      if (!steam)
+        characterToken.current = localStorage.getItem("emberfall-new.character") ?? undefined;
+      previousWorld.current = sessionStorage.getItem("emberfall-new.world");
     } catch {
       /* Keep the key in memory for this session. */
     }
-  }, []);
+  }, [steam]);
   useEffect(() => {
     try {
-      localStorage.setItem("emberfall.graphics", JSON.stringify(graphics));
+      localStorage.setItem("emberfall-new.graphics", JSON.stringify(graphics));
     } catch {
       /* Settings still apply to this session. */
     }
   }, [graphics]);
   useEffect(() => {
     try {
-      localStorage.setItem("emberfall.nickname", name);
+      if (!steam) localStorage.setItem("emberfall-new.nickname", name);
     } catch {
       /* Storage may be disabled. */
     }
-  }, [name]);
+  }, [name, steam]);
   const [joinPassword, setJoinPassword] = useState("");
   const [selected, setSelected] = useState<WorldSummary | null>(null);
   const [tab, setTab] = useState<"browse" | "create">("browse");
@@ -99,8 +127,8 @@ function App() {
   const rememberWorld = (id: string | null) => {
     previousWorld.current = id;
     try {
-      if (id) sessionStorage.setItem("emberfall.world", id);
-      else sessionStorage.removeItem("emberfall.world");
+      if (id) sessionStorage.setItem("emberfall-new.world", id);
+      else sessionStorage.removeItem("emberfall-new.world");
     } catch {
       /* Recovery within this page still works when storage is unavailable. */
     }
@@ -115,7 +143,7 @@ function App() {
     const versionRequest = new AbortController();
     let disposed = false;
     let resuming = false;
-    const ws = new WebSocket(url);
+    const ws = new GameConnection(url, steam);
     socket.current = ws;
     let joinedId = "";
     let previousScene: string | undefined;
@@ -123,12 +151,12 @@ function App() {
     let probeId = 0;
     let pendingProbe: { id: number; at: number } | null = null;
     const ping = () => {
-      if (ws.readyState !== WebSocket.OPEN) return;
+      if (ws.readyState !== GameConnection.OPEN) return;
       const now = performance.now();
       if (pendingProbe && now - pendingProbe.at < 5000) return;
       if (pendingProbe) setLatency(null);
       pendingProbe = { id: ++probeId, at: now };
-      ws.send(JSON.stringify({ type: "ping", id: probeId }));
+      ws.send({ type: "ping", id: probeId });
     };
     const pingTimer = setInterval(ping, 2000);
     ws.onopen = async () => {
@@ -140,34 +168,33 @@ function App() {
         if (!response.ok) throw new Error("Version check unavailable");
         const { buildId } = await response.json();
         if (typeof buildId !== "string" || !buildId) throw new Error("Invalid build ID");
-        if (disposed || ws.readyState !== WebSocket.OPEN) return;
+        if (disposed || ws.readyState !== GameConnection.OPEN) return;
         if (buildId !== __BUILD_ID__) {
           setStatus("Updating");
           location.reload();
           return;
         }
       } catch {
-        if (!disposed && ws.readyState === WebSocket.OPEN) ws.close(3001, "Retry version check");
+        if (!disposed && ws.readyState === GameConnection.OPEN)
+          ws.close(3001, "Retry version check");
         return;
       }
-      if (disposed || ws.readyState !== WebSocket.OPEN) return;
+      if (disposed || ws.readyState !== GameConnection.OPEN) return;
       failedConnections.current = 0;
       setError("");
-      resuming = !!previousWorld.current && !!characterToken.current;
+      resuming = !!previousWorld.current && (steam || !!characterToken.current);
       if (resuming) {
         setPending(true);
-        ws.send(
-          JSON.stringify({
-            type: "resume",
-            worldId: previousWorld.current,
-            characterToken: characterToken.current,
-          }),
-        );
+        ws.send({
+          type: "resume",
+          worldId: previousWorld.current!,
+          characterToken: steam ? "0".repeat(64) : characterToken.current!,
+        });
       } else setStatus("Connected");
       ping();
     };
     ws.onmessage = (event) => {
-      const message = JSON.parse(event.data) as ServerMessage;
+      const message = event.data;
       if (message.type === "pong" && pendingProbe?.id === message.id) {
         setLatency(Math.max(0, Math.round(performance.now() - pendingProbe.at)));
         pendingProbe = null;
@@ -182,7 +209,7 @@ function App() {
         previousScene = undefined;
         characterToken.current = message.characterToken;
         try {
-          localStorage.setItem("emberfall.character", message.characterToken);
+          if (!steam) localStorage.setItem("emberfall-new.character", message.characterToken);
         } catch {
           setError(
             "Your browser cannot remember this character key. Enable site storage to restore progress next session.",
@@ -230,6 +257,7 @@ function App() {
       }
     };
     ws.onclose = () => {
+      if (steam) void refresh();
       clearInterval(pingTimer);
       setLatency(null);
       setStatus("Reconnecting");
@@ -257,10 +285,10 @@ function App() {
       ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null;
       ws.close();
     };
-  }, [retry]);
+  }, [retry, steam, refresh]);
   const send = (message: ClientMessage) => {
-    if (status === "Connected" && socket.current?.readyState === WebSocket.OPEN)
-      socket.current.send(JSON.stringify(message));
+    if (status === "Connected" && socket.current?.readyState === GameConnection.OPEN)
+      socket.current.send(message);
   };
   const act = (message: ClientMessage) => {
     if (status !== "Connected") return;
@@ -289,10 +317,29 @@ function App() {
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
       if (event.repeat) return;
+      const typing =
+        event.target instanceof Element &&
+        !!event.target.closest("input, textarea, select, [contenteditable=true]");
+      if (
+        event.code === "KeyI" &&
+        world &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        !typing &&
+        (menu === "equipment" ||
+          (!menu && !document.querySelector('[role="dialog"][aria-modal="true"]')))
+      ) {
+        event.preventDefault();
+        setMenu(menu === "equipment" ? null : "equipment");
+        return;
+      }
       if (
         world &&
         !menu &&
-        !(event.target as HTMLElement)?.closest("input, textarea, select, [contenteditable=true]")
+        !typing &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]')
       ) {
         const option =
           event.code === "KeyF" ? "autoAttack" : event.code === "KeyG" ? "autoTarget" : null;
@@ -372,6 +419,12 @@ function App() {
               ...(world
                 ? [
                     {
+                      id: "equipment",
+                      label: "Inventory (I)",
+                      icon: faShieldHalved,
+                      onClick: () => setMenu("equipment"),
+                    },
+                    {
                       id: "leave",
                       label: "Leave world",
                       icon: faRightFromBracket,
@@ -426,6 +479,7 @@ function App() {
                 level={p.level}
                 health={displayedHp[p.id] ?? p.hitpoints}
                 maxHealth={p.maxHitpoints}
+                coins={p.coins ?? 0}
                 companion={
                   p.bear
                     ? {
@@ -438,8 +492,8 @@ function App() {
                             role="img"
                             aria-label={`${p.bear.name} portrait`}
                             sx={{
-                              backgroundImage: 'url("/assets/companion-boar.png")',
-                              backgroundSize: "200% 100%",
+                              backgroundImage: 'url("/assets/wardrobe-style/bear-cub.png")',
+                              backgroundSize: "400% 200%",
                               backgroundPosition: "left top",
                               backgroundRepeat: "no-repeat",
                               imageRendering: "pixelated",
@@ -449,7 +503,7 @@ function App() {
                       }
                     : undefined
                 }
-                portrait={<img src={`/assets/portraits/${p.classId ?? "warrior"}.png`} alt="" />}
+                portrait={<img src={classSprite(p.classId)} alt="" />}
                 local={p.id === playerId}
                 host={p.id === world.hostId}
                 away={p.scene !== me?.scene}
@@ -460,14 +514,16 @@ function App() {
           <Box className="lobby">
             <GameWindow title="Emberfall" modal={false} onClose={() => setBrowserOpen(false)}>
               <Stack spacing={3}>
-                <TextField
-                  label="Your adventurer name"
-                  value={name}
-                  required
-                  autoComplete="nickname"
-                  onChange={(e) => setName(e.target.value)}
-                  slotProps={{ htmlInput: { maxLength: 24 } }}
-                />
+                {!steam && (
+                  <TextField
+                    label="Your adventurer name"
+                    value={name}
+                    required
+                    autoComplete="nickname"
+                    onChange={(e) => setName(e.target.value)}
+                    slotProps={{ htmlInput: { maxLength: 24 } }}
+                  />
+                )}
                 <ChapterTabs
                   label="World actions"
                   value={tab}
@@ -619,19 +675,27 @@ function App() {
         <GameWindow
           key={menu}
           height={menu === "settings" ? 420 : undefined}
-          width={menu === "wardrobe" ? 600 : undefined}
+          width={
+            menu === "wardrobe"
+              ? 600
+              : menu === "equipment" || (menu === "building" && building === INNKEEPER.name)
+                ? 520
+                : undefined
+          }
           title={
             menu === "codex"
               ? "Codex"
-              : menu === "settings"
-                ? "Settings"
-                : menu === "portal"
-                  ? "Forest portal"
-                  : menu === "wardrobe"
-                    ? "Wardrobe"
-                    : menu === "exit"
-                      ? "Leave?"
-                      : building
+              : menu === "equipment"
+                ? "Inventory"
+                : menu === "settings"
+                  ? "Settings"
+                  : menu === "portal"
+                    ? "Forest portal"
+                    : menu === "wardrobe"
+                      ? "Wardrobe"
+                      : menu === "exit"
+                        ? "Leave?"
+                        : building
           }
           onClose={() => setMenu(null)}
         >
@@ -643,8 +707,18 @@ function App() {
             )}
             {menu === "codex" ? (
               <Codex />
+            ) : menu === "equipment" && me ? (
+              <Equipment player={me} send={send} />
             ) : menu === "settings" ? (
               <Settings
+                account={account}
+                onRename={() => {
+                  setMenu(null);
+                  rename();
+                }}
+                onLogout={() => {
+                  void logout();
+                }}
                 tab={settingsTab}
                 onTab={setSettingsTab}
                 preferences={preferences}
@@ -696,12 +770,7 @@ function App() {
                       selected={selected}
                       disabled={unavailable || selected || scene?.phase === "countdown"}
                       onSelect={() => send({ type: "selectClass", classId: id })}
-                      portrait={
-                        <img
-                          src={`/assets/portraits/${id}.png`}
-                          alt={`${CLASS_LABELS[id]} portrait`}
-                        />
-                      }
+                      portrait={<img src={classSprite(id)} alt={`${CLASS_LABELS[id]} portrait`} />}
                       weapon={{
                         name: details.weapon,
                         description: details.weaponDescription,
@@ -716,12 +785,14 @@ function App() {
                         level: stats?.level ?? 1,
                         experience: stats?.experience ?? 0,
                         maxHitpoints: stats?.maxHitpoints ?? 100,
-                        power: id === "warrior" || id === "ranger" ? 5 : 3,
+                        power: characterStats({ classId: id, equipment: stats?.equipment }).power,
                       }}
                     />
                   );
                 })}
               </Box>
+            ) : menu === "building" && building === INNKEEPER.name && me && world?.merchant ? (
+              <Trading player={me} merchant={world.merchant} send={send} />
             ) : menu === "building" ? (
               <Typography>{building} services are coming in a future update.</Typography>
             ) : (
@@ -816,7 +887,13 @@ window.addEventListener("contextmenu", (event) => event.preventDefault(), { capt
 createRoot(document.getElementById("root")!).render(
   <GameUiProvider>
     <PanelPositionContext value={panelPositions}>
-      <App />
+      {new URLSearchParams(location.search).has("class-movement") ? (
+        <ClassMovementGallery />
+      ) : new URLSearchParams(location.search).has("art-gallery") ? (
+        <AssetGallery />
+      ) : (
+        <AccountGate>{(props) => <App {...props} />}</AccountGate>
+      )}
     </PanelPositionContext>
   </GameUiProvider>,
 );

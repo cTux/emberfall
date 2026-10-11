@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { forestTrees, forestDistance, FOREST, stepCombat, enemyMaxHealth } from "@emberfall/common";
+import {
+  forestTrees,
+  forestDistance,
+  FOREST,
+  stepCombat,
+  enemyMaxHealth,
+} from "@emberfall/common";
 import type { Player, Enemy, SceneState } from "@emberfall/common";
 import { moveEnemies } from "../../common/src/enemies.ts";
 import { hitEnemy } from "../../common/src/class-combat.ts";
@@ -22,7 +28,7 @@ const player = (x: number, y: number): Player => ({
 });
 const enemy = (id: number, x: number, y: number): Enemy => ({ id, x, y, hitpoints: 10, angle: 0 });
 
-test("scene population compounds enemy HP and dropped XP, preserving fractions in saves", (t) => {
+test("scene population compounds enemy HP and dropped XP, preserving fractions in saves", async (t) => {
   t.mock.method(Math, "random", () => 0.5);
   for (const count of [1, 2, 3, 8]) {
     for (const kind of ["normal", "elite", "boss"] as const) {
@@ -76,8 +82,9 @@ test("scene population compounds enemy HP and dropped XP, preserving fractions i
       assert.equal(newcomer.experience, 1.2 ** (count - 1));
       assert.equal(lobby.experience, 0);
       if (count > 1) assert.equal(players[count - 1].experience, 0);
-      assert.equal(scene.drops!.length, 0);
+      assert.equal(scene.drops!.filter((drop) => drop.kind === "experience").length, 0);
       const store = new CharacterStore(":memory:");
+      await store.ready;
       try {
         const saved = store.create("scaling");
         store.save(saved.id, "scaling", players[0]);
@@ -89,7 +96,7 @@ test("scene population compounds enemy HP and dropped XP, preserving fractions i
   }
 });
 
-test("melee windup can be dodged and ranged attacks launch visible, colliding projectiles", () => {
+test("melee windup can be dodged and ranged attacks launch visible, colliding projectiles", async () => {
   const p = player(2400, 1280);
   const scene: SceneState = {
     id: "s",
@@ -134,7 +141,7 @@ test("melee windup can be dodged and ranged attacks launch visible, colliding pr
   assert.equal(scene.projectiles.length, 0);
 });
 
-test("spawn warnings last a full second and small enemies move faster than brutes", () => {
+test("spawn warnings last a full second and small enemies move faster than brutes", async () => {
   const p = player(2400, 1280);
   const scene: SceneState = {
     id: "s",
@@ -166,7 +173,7 @@ test("spawn warnings last a full second and small enemies move faster than brute
   assert(runner.x - 2300 > (brute.x - 2300) * 2);
 });
 
-test("enemies detour around a trunk from both sides and keep solid bodies", () => {
+test("enemies detour around a trunk from both sides and keep solid bodies", async () => {
   const tree = forestTrees(400, 400, 100)[0];
   for (const id of [1, 2]) {
     const e = enemy(id, tree.x - 70, tree.y - 15);
@@ -189,7 +196,7 @@ test("enemies detour around a trunk from both sides and keep solid bodies", () =
   }
 });
 
-test("chase selects nearest living player, retargets, and respects wrapped crowd collisions", () => {
+test("chase selects nearest living player, retargets, and respects wrapped crowd collisions", async () => {
   const e = enemy(1, 2, 1280);
   const far = player(300, 1280),
     near = player(FOREST.width - 30, 1280);
@@ -206,7 +213,7 @@ test("chase selects nearest living player, retargets, and respects wrapped crowd
   }
 });
 
-test("every tenth successful spawn is a 50 HP elite; timer spawns only one 200 HP boss", (t) => {
+test("every tenth successful spawn is a 50 HP elite; timer spawns only one 200 HP boss", async (t) => {
   t.mock.method(Math, "random", () => 0.5);
   const scene: SceneState = {
     id: "s",
@@ -244,4 +251,92 @@ test("every tenth successful spawn is a 50 HP elite; timer spawns only one 200 H
   assert.equal([...scene.enemies, ...scene.spawns!].filter((e) => e.kind === "boss").length, 1);
   assert.equal(scene.phase, "active");
   assert.equal(scene.portals.length, 0);
+});
+
+test("enemy projectiles overlap the whole player model, including wrapped boundaries", () => {
+  for (const wrapped of [false, true]) {
+    for (const gap of [16, 28.9, 29.1]) {
+      const p = player(wrapped ? 2 : 2400, 1280);
+      const scene: SceneState = {
+        id: "hitbox",
+        type: "Forest",
+        difficulty: "Easy",
+        phase: "active",
+        ready: [],
+        countdownAt: null,
+        endsAt: 1e9,
+        nextSpawn: 1e9,
+        sequence: 0,
+        damage: [],
+        portals: [],
+        enemies: [],
+        projectiles: [
+          {
+            id: 1,
+            x: wrapped ? FOREST.width + 2 - gap : p.x - gap,
+            y: p.y - 6,
+            vx: 0,
+            vy: 0,
+            expiresAt: 20000,
+          },
+        ],
+      };
+      stepCombat(scene, [p], 10000, 0);
+      assert.equal(p.hitpoints, gap < 29 ? 90 : 100);
+      assert.equal(scene.projectiles!.length, gap < 29 ? 0 : 1);
+    }
+  }
+});
+
+test("reconnecting players and their companions cannot be targeted or hit", () => {
+  const offline: Player = { ...player(2400, 1280), reconnecting: true, autoAttack: true };
+  offline.bear = {
+    id: "bear",
+    name: "Bear",
+    x: offline.x,
+    y: offline.y,
+    hitpoints: 100,
+    maxHitpoints: 100,
+    returning: false,
+  };
+  const online = { ...player(2460, 1280), id: "online", autoAttack: false };
+  const foe = enemy(1, 2400, 1280);
+  const scene: SceneState = {
+    id: "reconnect",
+    type: "Forest",
+    difficulty: "Easy",
+    phase: "active",
+    ready: [],
+    countdownAt: null,
+    endsAt: 1e9,
+    nextSpawn: 1e9,
+    sequence: 10,
+    damage: [],
+    portals: [],
+    enemies: [foe],
+    projectiles: [{ id: 9, x: offline.x, y: offline.y, vx: 0, vy: 0, expiresAt: 20000 }],
+  };
+  stepCombat(scene, [offline, online], 10000, 0);
+  assert.equal(foe.attack, undefined, "nearby reconnecting player does not trigger a melee attack");
+  assert.equal(offline.hitpoints, 100);
+  assert.equal(offline.bear.hitpoints, 100);
+  assert.equal(scene.projectiles?.length, 1, "projectile passes through reconnecting combatants");
+  assert.equal(scene.playerShots?.length ?? 0, 0, "reconnecting player cannot auto-attack");
+  online.x = offline.x + 20;
+  foe.attack = {
+    startedAt: 9000,
+    endsAt: 10000,
+    x: offline.x,
+    y: offline.y,
+    radius: 100,
+    ranged: false,
+  };
+  stepCombat(scene, [offline, online], 10050, 0);
+  assert.equal(offline.hitpoints, 100, "existing area attacks cannot hit reconnecting player");
+  assert.equal(offline.bear.hitpoints, 100);
+  assert(online.hitpoints < 100, "connected player still takes area damage");
+  delete offline.reconnecting;
+  scene.projectiles = [{ id: 11, x: offline.x, y: offline.y, vx: 0, vy: 0, expiresAt: 20000 }];
+  stepCombat(scene, [offline, online], 10100, 0);
+  assert(offline.hitpoints < 100, "resuming restores projectile collisions");
 });

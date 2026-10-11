@@ -1,3 +1,4 @@
+import { AILMENT_DEFINITIONS } from "./definitions/effects/ailments.ts";
 import {
   FOREST,
   forestDistance,
@@ -8,28 +9,27 @@ import {
 } from "./scene.ts";
 import type { Enemy } from "./scene.ts";
 
-export const ENEMY_HP = { normal: 10, elite: 50, boss: 200 } as const;
-export const ENEMY_STATS = {
-  skeleton: { speed: 64, radius: 10, size: 48, reach: 40, windup: 650, cooldown: 1000 },
-  runner: { speed: 104, radius: 8, size: 32, reach: 32, windup: 500, cooldown: 900 },
-  brute: { speed: 40, radius: 16, size: 68, reach: 65, windup: 1000, cooldown: 1600 },
-  caster: { speed: 54, radius: 10, size: 44, reach: 260, windup: 900, cooldown: 1600 },
-} as const;
-
+import {
+  ENEMY_HP,
+  ENEMY_STATS,
+  ENEMY_RULES,
+  ENEMY_HEALTH_MULTIPLIERS,
+} from "./definitions/entities/enemies.ts";
+export { ENEMY_HP, ENEMY_STATS };
 export function spawnArchetype(roll: number, count: number): NonNullable<Enemy["archetype"]> {
-  return roll < 0.1 ? "brute" : roll < 0.2 ? "caster" : count % 2 ? "skeleton" : "runner";
+  return roll < ENEMY_RULES.bruteChance
+    ? "brute"
+    : roll < ENEMY_RULES.bruteChance + ENEMY_RULES.casterChance
+      ? "caster"
+      : count % 2
+        ? "skeleton"
+        : "runner";
 }
 export function enemyMaxHealth(enemy: Pick<Enemy, "kind" | "archetype" | "maxHitpoints">) {
   return (
     enemy.maxHitpoints ??
     ENEMY_HP[enemy.kind ?? "normal"] *
-      (enemy.kind === "boss"
-        ? 1
-        : enemy.archetype === "brute"
-          ? 3
-          : enemy.archetype === "caster"
-            ? 0.7
-            : 1)
+      (enemy.kind === "boss" ? 1 : ENEMY_HEALTH_MULTIPLIERS[enemy.archetype ?? "skeleton"])
   );
 }
 
@@ -59,11 +59,14 @@ export function moveEnemies(
       );
     if (!target) continue;
     const targetDistance = forestDistance(enemy, target);
-    if (enemy.archetype === "caster" && targetDistance < 210) continue;
+    if (enemy.archetype === "caster" && targetDistance < ENEMY_RULES.casterStopRange) continue;
     cells.get(key(enemy.x, enemy.y))!.delete(enemy);
     const rooted =
       enemy.kind !== "boss" && enemy.debuffs?.some((d) => d.kind === "roots" && d.expiresAt > now);
-    const distance = Math.min(stats.speed * dt * (rooted ? 0.9 : 1), targetDistance);
+    const distance = Math.min(
+      stats.speed * dt * (rooted ? 1 - AILMENT_DEFINITIONS.roots.slowFraction : 1),
+      targetDistance,
+    );
     const steps = Math.max(1, Math.ceil(distance / 5));
     for (let step = 0; step < steps && distance > 0; step++) {
       const dx = wrappedDelta(target.x, enemy.x, FOREST.width);

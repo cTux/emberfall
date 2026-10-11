@@ -145,6 +145,8 @@ test("nickname persists in a new session, viewport is full, party bars and contr
   );
   await next.keyboard.press("Escape");
   await expect(next.getByRole("dialog")).not.toBeVisible();
+  await next.mouse.move(200, 400);
+  await expect(next.getByRole("tooltip")).not.toBeVisible();
   await next.getByRole("button", { name: "Settings", exact: true }).click();
   await next.getByRole("tab", { name: "Graphics", exact: true }).click();
   await next.getByLabel("Ambient particles").uncheck();

@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { once } from "node:events";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { request } from "node:http";
 import { tmpdir } from "node:os";
@@ -29,8 +28,7 @@ test("static files negotiate compressed representations and preserve HTTP semant
     brotliCompressSync(Buffer.from('{"buildId":"stale"}')),
   );
   const app = await createGameServer(root, ":memory:");
-  app.server.listen(0, "127.0.0.1");
-  await once(app.server, "listening");
+  await app.listen(0, "127.0.0.1");
   t.after(() => app.close());
   const address = app.server.address();
   assert.ok(address && typeof address !== "string");

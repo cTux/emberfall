@@ -65,17 +65,26 @@ export default defineConfig(({ command, mode }) => {
       },
     };
   const cert = readFileSync(new URL("../../.certs/localhost.pem", import.meta.url));
+  const serverPort = process.env.PORT_NEW ?? "3003";
   return {
     ...shared,
     server: {
-      port: 5173,
+      port: 5174,
       strictPort: true,
       https: {
         cert,
         key: readFileSync(new URL("../../.certs/localhost-key.pem", import.meta.url)),
       },
       proxy: {
-        "/ws": { target: "wss://127.0.0.1:3001", ws: true, agent: new Agent({ ca: cert }) },
+        "/auth": { target: `https://127.0.0.1:${serverPort}`, agent: new Agent({ ca: cert }) },
+        "/api": { target: `https://127.0.0.1:${serverPort}`, agent: new Agent({ ca: cert }) },
+        "/matchmake": { target: `https://127.0.0.1:${serverPort}`, agent: new Agent({ ca: cert }) },
+        "/colyseus": {
+          target: `wss://127.0.0.1:${serverPort}`,
+          ws: true,
+          rewrite: (path) => path.replace(/^\/colyseus/, ""),
+          agent: new Agent({ ca: cert }),
+        },
       },
     },
   };

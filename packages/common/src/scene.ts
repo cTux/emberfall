@@ -1,10 +1,17 @@
+import {
+  FOREST,
+  LOBBY_PORTAL,
+  FOREST_PORTAL,
+  INTERACTION_RADIUS,
+  FOREST_DEFINITION,
+} from "./definitions/worlds/forest.ts";
+export { FOREST, LOBBY_PORTAL, FOREST_PORTAL, INTERACTION_RADIUS };
 import { BUILDINGS, WARDROBE } from "./world.ts";
+import { INNKEEPER } from "./definitions/worlds/village.ts";
+export { INNKEEPER };
 
-export const FOREST = { width: 4800, height: 2560 };
 export { WARDROBE } from "./world.ts";
-export const LOBBY_PORTAL = { x: 550, y: 365 };
-export const FOREST_PORTAL = { x: 2400, y: 1280 };
-export const INTERACTION_RADIUS = 68;
+
 export const wrap = (n: number, size: number) =>
   n >= 0 && n < size ? n : ((n % size) + size) % size;
 export const wrappedDelta = (a: number, b: number, size: number) =>
@@ -15,19 +22,33 @@ export const forestDistance = (a: { x: number; y: number }, b: { x: number; y: n
 // One deterministic trunk per grid cell; collision and rendering query only nearby cells.
 export function forestTrees(x: number, y: number, radius: number) {
   const trees: { id: string; x: number; y: number; size: number; radius: number }[] = [];
-  for (let row = Math.floor((y - radius) / 160); row <= Math.floor((y + radius) / 160); row++) {
-    for (let col = Math.floor((x - radius) / 160); col <= Math.floor((x + radius) / 160); col++) {
-      const c = wrap(col, 30),
-        r = wrap(row, 16);
+  for (
+    let row = Math.floor((y - radius) / FOREST_DEFINITION.treeCellSize);
+    row <= Math.floor((y + radius) / FOREST_DEFINITION.treeCellSize);
+    row++
+  ) {
+    for (
+      let col = Math.floor((x - radius) / FOREST_DEFINITION.treeCellSize);
+      col <= Math.floor((x + radius) / FOREST_DEFINITION.treeCellSize);
+      col++
+    ) {
+      const c = wrap(col, FOREST.width / FOREST_DEFINITION.treeCellSize),
+        r = wrap(row, FOREST.height / FOREST_DEFINITION.treeCellSize);
       let seed = (Math.imul(c + 17, 73856093) ^ Math.imul(r + 31, 19349663)) >>> 0;
       const random = () => {
         seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
         return seed / 4294967296;
       };
-      const tx = col * 160 + 25 + random() * 110,
-        ty = row * 160 + 25 + random() * 110;
+      const tx = col * FOREST_DEFINITION.treeCellSize + 25 + random() * 110,
+        ty = row * FOREST_DEFINITION.treeCellSize + 25 + random() * 110;
       if (forestDistance({ x: tx, y: ty }, FOREST_PORTAL) < 180) continue;
-      trees.push({ id: `forest:${c}:${r}`, x: tx, y: ty, size: 78 + random() * 28, radius: 15 });
+      trees.push({
+        id: `forest:${c}:${r}`,
+        x: tx,
+        y: ty,
+        size: 78 + random() * 28,
+        radius: FOREST_DEFINITION.treeRadius,
+      });
     }
   }
   return trees;
@@ -72,8 +93,9 @@ export function nearbyInteraction(
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
     return { id: "portal", name: "Forest portal", ...LOBBY_PORTAL };
   if (distance(WARDROBE) < 55) return { id: "wardrobe", name: "Wardrobe", ...WARDROBE };
+  if (distance(INNKEEPER) < INTERACTION_RADIUS) return { ...INNKEEPER };
   const building = BUILDINGS.find(
-    (b) => distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
+    (b) => b.id !== "inn" && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
   );
   return building
     ? { id: building.id, name: building.name, x: building.doorX, y: building.y }
@@ -124,6 +146,9 @@ export interface Enemy {
   angle: number;
 }
 export interface DamageEvent {
+  ownerId?: string;
+  damageType?: import("./definitions/equipment.ts").DamageType;
+  critical?: boolean;
   enemy?: Pick<Enemy, "archetype" | "kind" | "angle">;
   killed?: boolean;
   id: number;
@@ -134,9 +159,12 @@ export interface DamageEvent {
   target: string;
 }
 export interface LootDrop {
+  /** Server-selected attraction target; presentation may attach to its reconciled pose. */
+  collectorId?: string;
   amount?: number;
   id: number;
-  kind: "experience" | "gold";
+  kind: "experience" | "gold" | "item";
+  itemId?: string;
   x: number;
   y: number;
   at: number;

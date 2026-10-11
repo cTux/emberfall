@@ -24,4 +24,4 @@ Client rendering predicts local movement, sword presentation and local mage/rang
 
 ## Verification
 
-Use [local movement tests](../../packages/server/src/local-movement.test.ts), [local projectile tests](../../packages/server/src/local-projectiles.test.ts), [snapshot tests](../../packages/server/src/snapshots.test.ts), [browser prediction](../../tests/predictive-casting.spec.ts) and [browser snapshots](../../tests/snapshots.spec.ts). Exercise delayed, duplicate and stale commands, partial acknowledgements, seams, class changes, death, manual rejection and recovery.
+Use [local movement tests](../../packages/server/src/local-movement.test.ts), [local projectile tests](../../packages/server/src/local-projectiles.test.ts), [snapshot tests](../../packages/server/src/snapshots.test.ts). Exercise delayed, duplicate and stale commands, partial acknowledgements, seams, class changes, death, manual rejection and recovery.

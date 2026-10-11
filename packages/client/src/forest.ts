@@ -1,8 +1,12 @@
+import type { PixiContext } from "./rendering/pixi-context";
 import { characterImages } from "./characters";
-import { weaponImages } from "./combat-assets";
+import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from "./animation";
+import { actorArt, environmentArt, terrainArt, terrainTile } from "./art";
+import { portalArt, drawStonePortal } from "./ambient-art";
 import { companionCaster, drawCompanion } from "./companion";
 import { critterCaster, crittersAt, drawCritter } from "./critters";
 import { drawNavigation } from "./navigation";
+import { drawHitboxes } from "./hitboxes";
 import type { Interaction } from "./effects";
 import {
   bloodPuddleRenderer,
@@ -10,14 +14,20 @@ import {
   drawClassProjectiles,
   drawDebuffs,
 } from "./combat-effects";
-import { PLAYER_ATTACK_RANGE, PLAYER_ATTACK_DURATION } from "@emberfall/common";
+import { defaultSpellRange, characterStats, PLAYER_ATTACK_DURATION } from "@emberfall/common";
 import { movementFacing } from "./facing";
 import { drawDanger } from "./danger";
-import { enemyMaxHealth, ENEMY_STATS, FOREST, forestTrees, wrappedDelta } from "@emberfall/common";
+import {
+  enemyMaxHealth,
+  ENEMY_STATS,
+  FOREST,
+  forestTrees,
+  wrappedDelta,
+} from "@emberfall/common";
 import type { WorldState, Player } from "@emberfall/common";
 import type { GraphicsSettings } from "./graphics";
 import type { Preferences } from "./preferences";
-import { makeMask, castShadow } from "./lighting";
+import { makeMask, castShadow, spriteMask } from "./lighting";
 import type { Caster } from "./lighting";
 import { lightTexture } from "./village";
 import {
@@ -31,7 +41,6 @@ import {
   drawAtmosphere,
   obstacleOpacity,
   drawVegetation,
-  vegetationSway,
 } from "./effects";
 
 const portalSilhouette = document.createElement("canvas");
@@ -53,11 +62,34 @@ export function drawPortal(
   name: string,
   active: boolean,
   shadows: boolean,
-  waving: boolean,
+  _waving: boolean,
+  opacity = 1,
 ) {
+  if (portalArt.naturalWidth) {
+    if (shadows)
+      castShadow(ctx, {
+        id: "portal",
+        x,
+        y: y + 8,
+        width: 64,
+        height: 80,
+        mask: spriteMask(portalArt, 0, 0, false, 128, false, 128)!,
+      });
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    if (bloom) {
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = "#53c9ff";
+    }
+    drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
+    ctx.restore();
+    drawNameBadge(ctx, x, y - 72, name, active);
+    return;
+  }
   if (shadows)
     castShadow(ctx, { id: "portal", x, y: y + 8, width: 50, height: 76, mask: portalMask });
   ctx.save();
+  ctx.globalAlpha = opacity;
   ctx.translate(x, y);
   ctx.lineWidth = 4;
   if (!shadows) {
@@ -67,10 +99,6 @@ export function drawPortal(
     ctx.fill();
   }
   ctx.save();
-  if (waving) {
-    const sway = vegetationSway(x, y + 8, 50, 76, now);
-    ctx.transform(1, 0, sway, 1, -sway * 8, 0);
-  }
   if (bloom) {
     ctx.shadowBlur = 20;
     ctx.shadowColor = "#53c9ff";
@@ -167,22 +195,16 @@ export function drawFog(
 }
 
 export function forestRenderer(
-  nature: HTMLImageElement,
+  _nature: HTMLImageElement,
   _knight: HTMLImageElement,
   skeleton: HTMLImageElement,
 ) {
   const enemyImages = Object.fromEntries(
-    ["runner", "brute", "caster"].map((name) => {
-      const image = new Image();
-      image.src = `/assets/${name}.png`;
-      return [name, image];
-    }),
+    ["runner", "brute", "caster", "warden"].map((name) => [name, actorArt(name)]),
   );
   const tree = document.createElement("canvas");
-  tree.width = tree.height = 32;
+  tree.width = tree.height = 128;
   let treeMask: HTMLCanvasElement | undefined;
-  const grass = document.createElement("canvas");
-  grass.width = grass.height = 16;
   const ground = document.createElement("canvas");
   ground.width = ground.height = 320;
   const g = ground.getContext("2d")!;
@@ -197,20 +219,11 @@ export function forestRenderer(
     g.fillStyle = i % 3 ? "#49654332" : "#132c2544";
     g.fillRect(random() * 320, random() * 320, 2 + random() * 6, 1 + random() * 3);
   }
-  const lanternTexture = document.createElement("canvas");
   const positions = new Map<string, { x: number; y: number; facing: number }>();
   const drawBloodPuddles = bloodPuddleRenderer();
   let lastScene: string | undefined;
-  const masks = new Map<string, HTMLCanvasElement>();
   function mask(image: HTMLImageElement, column: number, row: number) {
-    const key = image.src + column + ":" + row;
-    if (!masks.has(key)) {
-      const tile = document.createElement("canvas");
-      tile.width = tile.height = 16;
-      tile.getContext("2d")!.drawImage(image, column * 16, row * 16, 16, 16, 0, 0, 16, 16);
-      masks.set(key, makeMask(tile));
-    }
-    return masks.get(key)!;
+    return spriteMask(image, column, row, false, ACTOR_CELL, false, ACTOR_CELL)!;
   }
   return (
     ctx: CanvasRenderingContext2D,
@@ -227,10 +240,16 @@ export function forestRenderer(
       lastScene = world?.scene?.id;
     }
     const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
-    if (nature.naturalWidth && !treeMask) {
-      tree.getContext("2d")!.drawImage(nature, 32, 0, 32, 32, 0, 0, 32, 32);
+    if (
+      environmentArt.naturalWidth &&
+      terrainArt.complete &&
+      terrainArt.naturalWidth &&
+      !treeMask
+    ) {
+      tree.getContext("2d")!.drawImage(environmentArt, 0, 128, 128, 128, 0, 0, 128, 128);
       treeMask = makeMask(tree);
-      grass.getContext("2d")!.drawImage(nature, 64, 160, 16, 16, 0, 0, 16, 16);
+      g.fillStyle = g.createPattern(terrainTile(2), "repeat")!;
+      g.fillRect(0, 0, 320, 320);
     }
     const scale = Math.max(ctx.canvas.width / 960, ctx.canvas.height / 640),
       width = ctx.canvas.width / scale,
@@ -273,20 +292,6 @@ export function forestRenderer(
           mask: treeMask!,
         }))
       : [];
-    if (quality.grass && nature.naturalWidth)
-      for (const t of trees)
-        for (let i = 0; i < 5; i++) {
-          drawVegetation(
-            ctx,
-            grass,
-            t.x - 57 + ((i * 41) % 120),
-            t.y - 64 + ((i * 67) % 145),
-            16,
-            16,
-            now,
-            quality.wavingVegetation,
-          );
-        }
     const players = world?.players.filter((p) => p.scene === "forest") ?? [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
@@ -309,6 +314,8 @@ export function forestRenderer(
         enemy: {
           name: undefined,
           debuffs: undefined,
+          attack: undefined,
+          cooldownUntil: undefined,
           archetype: "skeleton" as const,
           id: 0,
           x: d.x,
@@ -341,16 +348,27 @@ export function forestRenderer(
         pos.y = actor.y;
         positions.set(actor.id, pos);
         const actorTime = actor.id === playerId ? now : serverTime;
-        const attacking =
-          actor.player &&
-          actorTime - (actor.player.attackAt ?? -Infinity) >= 0 &&
-          actorTime - (actor.player.attackAt ?? -Infinity) < PLAYER_ATTACK_DURATION;
         const point = near(pos.x, pos.y),
-          row = attacking ? 0 : moving ? Math.floor(now / 120) % 4 : 0,
+          row = actor.player
+            ? playerFrame(actorTime, moving, actor.player.hitpoints > 0, actor.player.attackAt)
+            : enemyFrame(
+                serverTime,
+                moving,
+                actor.enemy!.hitpoints > 0,
+                actor.enemy!.attack,
+                (actor.enemy!.cooldownUntil ?? -Infinity) -
+                  ENEMY_STATS[actor.enemy!.archetype ?? "skeleton"].cooldown,
+              ),
           image = actor.player
-            ? characterImages[actor.player.classId ?? "warrior"][attacking ? "attack" : "walk"]
-            : (enemyImages[actor.enemy?.archetype ?? "skeleton"] ?? skeleton);
+            ? characterImages[actor.player.classId ?? "warrior"].walk
+            : actor.enemy?.kind === "boss"
+              ? enemyImages.warden
+              : (enemyImages[actor.enemy?.archetype ?? "skeleton"] ?? skeleton);
         const size = actor.enemy ? ENEMY_STATS[actor.enemy.archetype ?? "skeleton"].size : 48;
+        if (row === 5 || row === 6) {
+          const angle = actor.player?.attackAngle ?? actor.enemy?.angle ?? 0;
+          pos.facing = movementFacing(Math.cos(angle), Math.sin(angle), pos.facing);
+        }
         if (image.naturalWidth)
           casters.push({
             id: actor.id,
@@ -431,7 +449,7 @@ export function forestRenderer(
         p.bear
           ? [
               {
-                y: near(p.bear.x, p.bear.y).y + 15,
+                y: near(p.bear.x, p.bear.y).y + 18,
                 tree: null,
                 actor: null,
                 bear: p.bear,
@@ -464,16 +482,27 @@ export function forestRenderer(
           interaction?.id === "return" && interaction.x === portal.x && interaction.y === portal.y,
           quality.shadows,
           quality.wavingVegetation,
+          obstacleOpacity({ x: point.x, y: point.y + 8, width: 64, height: 80 }, me),
         );
         continue;
       }
       if (layer.critter) {
+        ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, me);
         drawCritter(ctx, layer.critter, quality.shadows);
+        ctx.globalAlpha = 1;
         continue;
       }
       if (layer.bear) {
         const point = near(layer.bear.x, layer.bear.y);
-        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime, quality.shadows);
+        drawCompanion(
+          ctx,
+          layer.bear,
+          point.x,
+          point.y,
+          serverTime,
+          quality.shadows,
+          obstacleOpacity({ x: point.x, y: point.y + 18, width: 42.5, height: 40 }, me),
+        );
         continue;
       }
       if (layer.tree) {
@@ -492,15 +521,15 @@ export function forestRenderer(
         const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / 700));
         ctx.save();
         ctx.translate(a.x, a.y + 15);
-        ctx.rotate(((a.facing === 2 ? -1 : 1) * progress * Math.PI) / 2);
-        ctx.scale(1, 1 - progress * 0.35);
-        ctx.globalAlpha = 1 - progress;
+        ctx.globalAlpha =
+          (1 - progress) *
+          obstacleOpacity({ x: a.x, y: a.y + 15, width: a.size, height: a.size }, me);
         ctx.drawImage(
           a.image,
-          a.facing * 16,
-          0,
-          16,
-          16,
+          a.facing * ACTOR_CELL,
+          7 * ACTOR_CELL,
+          ACTOR_CELL,
+          ACTOR_CELL,
           -a.size / 2,
           -a.size * 0.94,
           a.size,
@@ -508,7 +537,7 @@ export function forestRenderer(
         );
         drawTargetHit(
           ctx,
-          mask(a.image, a.facing, 0),
+          mask(a.image, a.facing, 7),
           -a.size / 2,
           -a.size * 0.94,
           a.size,
@@ -520,23 +549,41 @@ export function forestRenderer(
       }
       const left = a.x - a.size / 2,
         top = a.y + 15 - (a.size * 45) / 48;
-      ctx.globalAlpha = a.player?.hitpoints === 0 ? 0.35 : 1;
+      const opacity =
+        a.id === playerId
+          ? 1
+          : obstacleOpacity({ x: a.x, y: a.y + 15, width: a.size, height: a.size }, me);
+      const bodyOpacity = opacity * (a.player?.hitpoints === 0 ? 0.35 : 1);
+      ctx.globalAlpha = bodyOpacity;
       if (quality.motionBlur && a.moving) {
-        ctx.globalAlpha = 0.13;
+        ctx.globalAlpha = 0.13 * bodyOpacity;
         ctx.drawImage(
           a.image,
-          a.facing * 16,
-          a.row * 16,
-          16,
-          16,
+          a.facing * ACTOR_CELL,
+          a.row * ACTOR_CELL,
+          ACTOR_CELL,
+          ACTOR_CELL,
           left - a.dx * 0.7,
           top - a.dy * 0.7,
           a.size,
           a.size,
         );
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = bodyOpacity;
       }
-      ctx.drawImage(a.image, a.facing * 16, a.row * 16, 16, 16, left, top, a.size, a.size);
+      (ctx as unknown as PixiContext).spriteTint = a.player?.reconnecting ? "#ff5555" : "#ffffff";
+      const breath = idleBreath(now, a.row);
+      ctx.drawImage(
+        a.image,
+        a.facing * ACTOR_CELL,
+        a.row * ACTOR_CELL,
+        ACTOR_CELL,
+        ACTOR_CELL,
+        left,
+        top + a.size * (1 - breath),
+        a.size,
+        a.size * breath,
+      );
+      (ctx as unknown as PixiContext).spriteTint = "#ffffff";
       if (hit && (a.enemy || a.player?.id === playerId))
         drawTargetHit(
           ctx,
@@ -594,11 +641,7 @@ export function forestRenderer(
           strength: 0.18,
           owner: p.id,
         };
-        ctx.drawImage(
-          lightTexture(light, casters, quality.shadows, lanternTexture),
-          light.x - 110,
-          light.y - 110,
-        );
+        ctx.drawImage(lightTexture(light, casters, quality.shadows), light.x - 110, light.y - 110);
       }
       ctx.restore();
     }
@@ -607,24 +650,18 @@ export function forestRenderer(
     drawAtmosphere(ctx, cameraX, cameraY, width, height, now, quality);
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near, true);
     if (quality.vignette) drawVignette(ctx, cameraX, cameraY, width, height);
-    if (prefs.damageNumbers)
-      for (const hit of world?.scene?.damage ?? []) {
-        const age = serverTime - hit.at;
-        if (age > 750) continue;
-        const p = near(hit.x, hit.y);
-        ctx.globalAlpha = 1 - age / 800;
-        ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
-        ctx.textAlign = "center";
-        ctx.fillStyle = hit.target.startsWith("enemy:") ? "#fff0b1" : "#ff8b81";
-        ctx.fillText(String(Math.round(hit.amount)), p.x, p.y - 45 - age / 30);
-        ctx.globalAlpha = 1;
-      }
+    if (prefs.damageNumbers) drawDamageNumbers(ctx, world?.scene?.damage ?? [], near, serverTime);
     drawDamageFlash(ctx, world, playerId);
     if (world) drawNavigation(ctx, world, playerId);
     for (const player of players) {
       const point = near(player.x, player.y);
       drawChatBubble(ctx, point.x, point.y, player.chat);
     }
+    ctx.canvas.dataset.debugHitboxes = String(
+      prefs.debugHitboxes && world
+        ? drawHitboxes(ctx, world, true, { x: cameraX, y: cameraY, width, height })
+        : 0,
+    );
   };
 }
 export function drawPlayerDetails(
@@ -641,32 +678,23 @@ export function drawPlayerDetails(
   if (showVitals) {
     drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
   }
-  const age = now - (p.attackAt ?? -Infinity);
-  const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
-  const weapon = weaponImages[p.classId ?? "warrior"];
-  if (inCombat && p.hitpoints > 0 && weapon.naturalWidth) {
-    const slash = attacking && (p.classId ?? "warrior") === "warrior";
-    const angle = slash
-      ? (p.attackAngle ?? 0) - Math.PI / 2 + (age / PLAYER_ATTACK_DURATION) * Math.PI
-      : (p.attackAngle ?? (facing === 2 ? Math.PI : 0));
+  if (p.reconnecting) {
     ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(angle);
-    ctx.translate(slash ? PLAYER_ATTACK_RANGE / 2 : 23, -2);
-    // The bow faces down-left in its source sprite; swords and staffs face up-left.
-    ctx.rotate(((p.classId === "ranger" ? -3 : 3) * Math.PI) / 4);
-    ctx.imageSmoothingEnabled = false;
-    const size = slash ? 58 : 32;
-    ctx.drawImage(weapon, -size / 2, -size / 2, size, size);
+    ctx.font = 'bold 10px "Alegreya Sans", sans-serif';
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ff5555";
+    ctx.strokeStyle = "#101817";
+    ctx.lineWidth = 3;
+    ctx.strokeText("Reconnecting", x, y - 62);
+    ctx.fillText("Reconnecting", x, y - 62);
     ctx.restore();
-  } else if (!inCombat && facing === 1 && p.hitpoints > 0 && weapon.naturalWidth) {
-    // The upward-facing sprite exposes the back, so keep the sheathed weapon on its torso.
-    ctx.save();
-    ctx.translate(x, y + 8);
-    ctx.scale(1, -1);
-    ctx.drawImage(weapon, -16, -16, 32, 32);
-    ctx.restore();
+    return;
   }
+  const age = now - (p.attackAt ?? -Infinity);
+  if (!characterStats(p).hasWeapon) return;
+  const attackRange = defaultSpellRange(p);
+  const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
+  // Class weapons are painted into the directional action frames.
   if (attacking && p.hitpoints > 0) {
     if (p.classId === "ranger" || p.classId === "mage" || p.classId === "druid") {
       return;
@@ -683,7 +711,7 @@ export function drawPlayerDetails(
     ctx.strokeStyle = `rgba(195,237,255,${1 - progress * 0.7})`;
     ctx.lineWidth = 9;
     ctx.beginPath();
-    ctx.arc(0, 0, PLAYER_ATTACK_RANGE - 5, -0.65, 0);
+    ctx.arc(0, 0, Math.max(0, attackRange - 5), -0.65, 0);
     ctx.stroke();
     ctx.fillStyle = "#a8ffce";
     for (let i = 0; i < 10; i++) {
@@ -694,3 +722,4 @@ export function drawPlayerDetails(
     ctx.restore();
   }
 }
+import { drawDamageNumbers } from "./damage-text";

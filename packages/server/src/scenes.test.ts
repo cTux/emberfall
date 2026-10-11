@@ -27,7 +27,7 @@ const hero = (id: string): Player => ({
   playtimeSeconds: 0,
 });
 
-test("system chat announces scene transitions and deaths exactly once", () => {
+test("system chat announces scene transitions and deaths exactly once", async () => {
   const a = hero("a"),
     b = hero("b");
   const world: SceneWorld = {
@@ -76,7 +76,7 @@ test("system chat announces scene transitions and deaths exactly once", () => {
   assert(world.chat?.every((m) => m.excludedPlayerId === m.text[0]));
 });
 
-test("empty and dead scenes freeze combat deadlines, resume on entry, and can regenerate", () => {
+test("empty and dead scenes freeze combat deadlines, resume on entry, and can regenerate", async () => {
   const a = hero("a"),
     b = hero("b");
   const world: SceneWorld = {
@@ -177,7 +177,7 @@ test("empty and dead scenes freeze combat deadlines, resume on entry, and can re
   assert.notEqual(world.scene!.id, empty!.id);
 });
 
-test("players can join and rejoin an unfinished scene, but not after return portals open", () => {
+test("players can join and rejoin an unfinished scene, but not after return portals open", async () => {
   const a = hero("a");
   const world: SceneWorld = { players: new Map([[a.id, a]]) };
   assert.throws(() => sceneAction(world, a, { type: "joinScene" }, 0));
@@ -216,7 +216,7 @@ test("players can join and rejoin an unfinished scene, but not after return port
   assert.notEqual((world as SceneWorld).scene?.id, scene.id);
 });
 
-test("every scene exit restores all classes and injured or dead companions to their maximum stats", () => {
+test("every scene exit restores all classes and injured or dead companions to their maximum stats", async () => {
   for (const exit of ["portal", "death", "leave"] as const) {
     for (const bearHealth of [0, 7]) {
       const players = CLASS_IDS.map((classId) => ({ ...hero(classId), classId }));
@@ -363,7 +363,7 @@ test("server scene lifecycle: proximity, unanimous votes, retract, membership ch
   sceneAction(world, b, { type: "returnLobby" }, 144002);
   assert.equal(world.scene, undefined);
 });
-test("forest and expanded lobby share dimensions; all edges wrap; indexed trunks stop players and enemies including seam copies", () => {
+test("forest and expanded lobby share dimensions; all edges wrap; indexed trunks stop players and enemies including seam copies", async () => {
   assert.equal(FOREST.width, ARENA.width);
   assert.equal(FOREST.height, ARENA.height);
   // Known clear crossing lines isolate wrapping from obstacle collisions.
@@ -391,7 +391,7 @@ test("forest and expanded lobby share dimensions; all edges wrap; indexed trunks
   );
 });
 
-test("combat uses wrapped distances and warned melee damage respects its cooldown", () => {
+test("combat uses wrapped distances and warned melee damage respects its cooldown", async () => {
   const a = hero("a");
   const world: SceneWorld = { players: new Map([[a.id, a]]) };
   sceneAction(world, a, { type: "createScene", scene: "Forest", difficulty: "Easy" }, 10000);

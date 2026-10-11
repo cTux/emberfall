@@ -1,3 +1,5 @@
+import { FOREST_DEFINITION } from "@emberfall/common/definitions/worlds/forest";
+import { VILLAGE_DEFINITION } from "@emberfall/common/definitions/worlds/village";
 import { randomUUID } from "node:crypto";
 import {
   FOREST_PORTAL,
@@ -8,6 +10,8 @@ import {
 } from "@emberfall/common";
 import type { Player, SceneState, ClientMessage, ChatMessage } from "@emberfall/common";
 import { addChat } from "./chat.ts";
+import { simulationFor } from "./ecs/simulation.ts";
+import { createTrainingScene } from "@emberfall/common";
 
 export interface Scene extends SceneState {
   nextSpawn: number;
@@ -24,8 +28,8 @@ export function returnToLobby(world: SceneWorld, player: Player) {
   if (player.scene)
     addChat(world, `${player.name} left the scene. Everyone became weaker.`, undefined, player.id);
   player.scene = undefined;
-  player.x = 480;
-  player.y = 360;
+  player.x = VILLAGE_DEFINITION.returnSpawn.x;
+  player.y = VILLAGE_DEFINITION.returnSpawn.y;
   player.hitpoints = player.maxHitpoints;
   player.attackAt = undefined;
   player.attackAngle = undefined;
@@ -138,7 +142,7 @@ export function reconcileVote(world: SceneWorld, now: number) {
   }
   scene.ready = scene.ready.filter((id) => world.players.has(id));
   if (ids.length && ids.every((id) => scene.ready.includes(id))) {
-    scene.countdownAt ??= now + 5000;
+    scene.countdownAt ??= now + FOREST_DEFINITION.countdownMs;
     scene.phase = "countdown";
   } else {
     scene.phase = "voting";
@@ -146,13 +150,18 @@ export function reconcileVote(world: SceneWorld, now: number) {
   }
 }
 export function tickScene(world: SceneWorld, now: number, dt: number) {
+  const entities = simulationFor(world.players);
+  world.training ??= createTrainingScene(now);
+  entities?.retain([world.training, world.scene]);
+  entities?.bind(world.training);
+  if (world.scene) entities?.bind(world.scene);
   world.training = tickTraining(world.training, [...world.players.values()], now, dt);
   reconcileVote(world, now);
   const scene = world.scene;
   if (!scene) return;
   if (scene.phase === "countdown" && now >= scene.countdownAt!) {
     scene.phase = "active";
-    scene.endsAt = now + 120000;
+    scene.endsAt = now + FOREST_DEFINITION.durationMs;
     scene.countdownAt = null;
     scene.nextSpawn = now;
     let index = 0;

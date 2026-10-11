@@ -8,12 +8,16 @@
     "analyze": "vite build --mode analyze"
   },
   "dependencies": {
+    "@colyseus/sdk": "0.18.4",
     "@emberfall/common": "workspace:*",
     "@emberfall/ui": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fortawesome/free-solid-svg-icons": "^7.0.0",
+    "@fortawesome/react-fontawesome": "^3.5.0",
     "@mui/material": "^9.4.0",
+    "miniplex": "2.0.0",
+    "pixi.js": "8.22.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
