@@ -41,7 +41,7 @@ export const gameTheme = createTheme({
   shape: { borderRadius: 5 },
   components: {
     MuiCssBaseline: {
-      styleOverrides: () => [
+      styleOverrides: (theme) => [
         ...[400, 500, 700].map((weight) => ({
           '@font-face': {
             fontFamily: 'Alegreya Sans',
@@ -62,6 +62,14 @@ export const gameTheme = createTheme({
         },
         {
           '*, *::before, *::after': { userSelect: 'none' },
+          '*': {
+            scrollbarWidth: 'thin',
+            scrollbarColor: `${theme.palette.divider} ${theme.palette.background.default}`,
+          },
+          '*::-webkit-scrollbar': { width: 8, height: 8 },
+          '*::-webkit-scrollbar-track': { backgroundColor: theme.palette.background.default },
+          '*::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.divider, borderRadius: 5 },
+          '*::-webkit-scrollbar-thumb:hover': { backgroundColor: theme.palette.secondary.main },
           ':focus-visible': { outline: '2px solid #e6be80', outlineOffset: 3 },
           '@media (prefers-reduced-motion: reduce)': {
             '*, *::before, *::after': {

@@ -1,7 +1,10 @@
-import { Box } from '@mui/material';
+import { useState } from 'react';
+import { Box, IconButton, Tooltip } from '@mui/material';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import type { ClientMessage, BackpackItem } from '@emberfall/common';
 import { itemDefinition, CONSUMABLES } from '@emberfall/common';
-import { Backpack, EquipmentPanel } from '@emberfall/ui';
+import { Backpack, ChapterTabs, EquipmentPanel } from '@emberfall/ui';
 import type { EquipmentSlotView, EquipmentStatView, EquipmentBadgeView } from '@emberfall/ui';
 import {
   EQUIPMENT_SLOTS,
@@ -294,22 +297,66 @@ export function Trading({
   merchant: import('@emberfall/common').Merchant;
   send(message: ClientMessage): void;
 }) {
+  const [tab, setTab] = useState('buy');
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 1.5 }}>
-      <Backpack
-        label="Innkeeper's backpack"
-        items={backpackViews(merchant.backpack)}
-        coins={merchant.coins}
-        action='Buy'
-        onUse={(id) => send({ type: 'trade', id, buying: true })}
-      />
-      <Backpack
-        label='Your backpack'
-        items={backpackViews(player.backpack ?? [])}
-        coins={player.coins ?? 0}
-        action='Sell'
-        onUse={(id) => send({ type: 'trade', id, buying: false })}
-      />
-    </Box>
+    <ChapterTabs
+      label='Trader inventory'
+      value={tab}
+      onChange={setTab}
+      showHeading={false}
+      chapters={[
+        {
+          id: 'buy',
+          title: 'Buy',
+          items: merchant.backpack,
+          action: 'Buy',
+          label: "Innkeeper's backpack",
+        },
+        {
+          id: 'buyback',
+          title: 'Buyback',
+          items: merchant.buyback,
+          action: 'Buy back',
+          label: 'Buyback',
+        },
+      ].map(({ id, title, items, action, label }) => ({
+        id,
+        title,
+        content: (
+          <Box
+            sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 1.5 }}
+          >
+            <Backpack
+              label={label}
+              items={backpackViews(items)}
+              coins={merchant.coins}
+              action={action}
+              onUse={(id) => send({ type: 'trade', id, buying: true })}
+            />
+            <Backpack
+              label='Your backpack'
+              items={backpackViews(player.backpack ?? [])}
+              coins={player.coins ?? 0}
+              action='Sell'
+              headerActions={
+                <Tooltip title='Sell all'>
+                  <span>
+                    <IconButton
+                      aria-label='Sell all'
+                      disabled={!player.backpack?.length}
+                      onClick={() => send({ type: 'sellAll' })}
+                      sx={{ color: 'primary.main', fontSize: '0.75rem', p: 0.5 }}
+                    >
+                      <FontAwesomeIcon icon={faSackDollar} aria-hidden='true' />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              }
+              onUse={(id) => send({ type: 'trade', id, buying: false })}
+            />
+          </Box>
+        ),
+      }))}
+    />
   );
 }

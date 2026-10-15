@@ -48,7 +48,7 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 
 ## Game components
 
-Windows are 400px wide with a maximum height of 480px, clamped to the viewport with a 16px margin. Settings uses a fixed 420px height across tabs. The title stays visible while window content scrolls internally. Compact typography, switches and tabs come from the shared theme.
+Windows are 400px wide with a maximum height of 480px, clamped to the viewport with a 16px margin. Settings uses a fixed 420px height across tabs. The compact, medium-weight title stays visible while window content scrolls internally. Thin forest scrollbars, compact typography, switches and tabs come from the shared theme. `Backpack.headerActions` accepts host-owned controls opposite the gold balance, such as the trader's Sell all button.
 
 | Component          | Responsibility and inputs                                                                                                                                                                                                                                                            |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

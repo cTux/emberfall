@@ -37,7 +37,12 @@ Consumables stack by type; right-click consumes one. Health potions restore 25 H
 clamped to maximum HP, and are not consumed at full health or while dead.
 
 Marta has one shared backpack and gold balance per world, initially 5000 gold and
-five health potions. Right-click sells one player item or buys one merchant item
+five health potions. Buy shows regular stock; Buyback shows the latest 16 sold
+entries, newest first, shared by everyone in the world. Older entries expire.
+Sold items never enter regular stock. Sell all, beside the player's gold balance,
+sells every backpack item (including consumable stacks) in one atomic action;
+equipped items remain equipped. If Marta cannot afford the entire sale, nothing changes.
+Right-click sells one player item or buys one merchant item
 for its listed price. Each transfer updates both inventories and gold balances
 atomically. Insufficient gold, stale items, incompatible gear and trading outside
 Marta's village interaction range are rejected without changing saved state.

@@ -241,6 +241,23 @@ test('tabs, settings and voting support keyboard and callbacks', async ({ page }
   await expect(page.getByRole('heading', { name: 'Forest · Easy (1/2 ready)' })).toBeVisible();
 });
 
+test('backpack header action mirrors gold and works with the keyboard', async ({ page }) => {
+  await page.goto(story('components-backpack--selling'));
+  const action = page.getByRole('button', { name: 'Sell all', exact: true });
+  const gold = page.getByLabel('Your backpack: 5000 coins');
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    const a = (await action.boundingBox())!;
+    const g = (await gold.boundingBox())!;
+    expect(a.x).toBeGreaterThan(g.x + g.width);
+    expect(Math.abs(a.y + a.height / 2 - g.y - g.height / 2)).toBeLessThan(2);
+  }
+  await action.focus();
+  await page.keyboard.press('Enter');
+  await expect(action).toBeDisabled();
+  await expect(page.locator('[data-backpack-item]')).toHaveCount(0);
+});
+
 test('meters expose clamped actual units', async ({ page }) => {
   await page.goto(story('components-game-patterns--meter'));
   const health = page.getByRole('progressbar', { name: 'Health' });

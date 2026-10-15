@@ -38,9 +38,15 @@ export function GameWindow({
     <>
       <WindowTitleStyled {...dragHandle}>
         {modal ? (
-          <DialogTitle id={id}>{title}</DialogTitle>
+          <DialogTitle id={id} sx={{ py: 0.5, fontSize: '1rem', fontWeight: 500 }}>
+            {title}
+          </DialogTitle>
         ) : (
-          <Typography id={id} component='h2' variant='h2' sx={{ p: 1.5 }}>
+          <Typography
+            id={id}
+            component='h2'
+            sx={{ px: 1.5, py: 0.5, fontSize: '1rem', fontWeight: 500 }}
+          >
             {title}
           </Typography>
         )}
