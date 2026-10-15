@@ -13,6 +13,7 @@
     "@colyseus/schema": "5.0.35",
     "@colyseus/ws-transport": "0.18.4",
     "@emberfall/common": "workspace:*",
+    "@emberfall/core": "workspace:*",
     "drizzle-orm": "1.0.0-rc.2",
     "miniplex": "2.0.0",
     "negotiator": "^1.1.0"

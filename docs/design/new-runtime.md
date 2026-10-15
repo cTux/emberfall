@@ -28,6 +28,15 @@ Village dummies join the same foot-position render sort as scenery and actors. A
 
 ## Simulation and replication
 
+After authoritative forest combat (including kill credit and shared pickups),
+`server/scenes.ts` applies `core/levelUp` to each player's level, XP and paragon.
+The existing per-entity payload replicates these fields; prediction never grants
+progress. Per-class saves include optional paragon, defaulted to zero on decode;
+legacy levels above 20 are folded into paragon. Existing autosave, class-switch,
+disconnect and shutdown writes retain all three fields. The client uses core's
+`experienceRequired` formula and passes confirmed values to the controlled
+PartyCard XP meter. No stat changes or progression prompts are introduced.
+
 The shared village definition owns Marta the Innkeeper's fixed position and
 display name. `nearbyInteraction` excludes the Inn doorway and selects Marta
 using the existing wrapped proximity check. The client reuses the building

@@ -58,13 +58,17 @@ test('companion health sits beneath the player at desktop and narrow widths', as
   );
 });
 
-test('party keeps a single HP row with portrait corner icons', async ({ page }, testInfo) => {
+test('party keeps portrait corner icons beside health with a thinner XP row below', async ({
+  page,
+}, testInfo) => {
   await page.goto(story('components-partycard--host-away'));
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 800 });
     const card = page.getByRole('article');
     const meter = card.getByRole('progressbar', { name: 'Astrid, lvl 1' });
-    await expect(card.getByRole('progressbar')).toHaveCount(1);
+    await expect(card.getByRole('progressbar')).toHaveCount(2);
+    const xp = card.getByRole('progressbar', { name: 'Astrid XP', exact: true });
+    await expect(xp).toHaveAttribute('aria-valuetext', '25 / 50');
     await expect(card.getByText('Astrid, lvl 1', { exact: true })).toBeVisible();
     await expect(card.getByText('Host', { exact: true })).toHaveCount(0);
     const host = card.getByRole('img', { name: 'Host', exact: true });
@@ -74,6 +78,9 @@ test('party keeps a single HP row with portrait corner icons', async ({ page }, 
     const h = (await host.boundingBox())!;
     const d = (await dimension.boundingBox())!;
     const m = (await meter.boundingBox())!;
+    const x = (await xp.boundingBox())!;
+    expect(x.y).toBeGreaterThanOrEqual(m.y + m.height);
+    expect(x.height).toBeLessThan(m.height);
     expect(p.height).toBe(m.height);
     expect(p.y).toBe(m.y);
     expect(h.y).toBe(p.y);

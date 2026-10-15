@@ -55,9 +55,9 @@ export const PortalVoteStyled = styled(Paper)(({ theme }) => ({
 export const StatusMeterStyled = styled(Box)({ position: 'relative' });
 
 export const StatusMeterProgressStyled = styled(LinearProgress, {
-  shouldForwardProp: (prop) => prop !== 'compact',
-})<{ compact?: boolean }>(({ theme, color = 'primary', compact }) => ({
-  height: theme.spacing(compact ? 2.5 : 3),
+  shouldForwardProp: (prop) => prop !== 'compact' && prop !== 'thin',
+})<{ compact?: boolean; thin?: boolean }>(({ theme, color = 'primary', compact, thin }) => ({
+  height: theme.spacing(thin ? 1.75 : compact ? 2.5 : 3),
   borderRadius: theme.shape.borderRadius,
   backgroundColor: theme.palette.background.paper,
   // Solid muted fills keep parchment text readable without showing the scene through.

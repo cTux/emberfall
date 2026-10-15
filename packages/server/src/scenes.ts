@@ -1,4 +1,5 @@
 import { FOREST_DEFINITION } from '@emberfall/common/definitions/worlds/forest';
+import { levelUp } from '@emberfall/core';
 import { VILLAGE_DEFINITION } from '@emberfall/common/definitions/worlds/village';
 import { randomUUID } from 'node:crypto';
 import {
@@ -172,6 +173,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
   if (scene.phase !== 'active' && scene.phase !== 'ended') return;
   const living = [...world.players.values()].filter((player) => player.hitpoints > 0);
   stepCombat(scene, [...world.players.values()], now, dt);
+  for (const player of world.players.values()) Object.assign(player, levelUp(player));
   for (const player of living)
     if (player.hitpoints <= 0) addChat(world, `${player.name} died.`, undefined, player.id);
   cleanupScene(world);

@@ -59,5 +59,5 @@ Run affected browser scenarios with `pnpm test:browser` after building.
 
 See the [runtime design](../../docs/design/new-runtime.md),
 [combat requirements](../../docs/specs/combat.md), and
-[progression constraints](../../docs/specs/progression.md). This migration does
-not select a new progression system.
+[progression constraints](../../docs/specs/progression.md). The server uses
+automatic saved leveling and paragon as specified in PROG-02.

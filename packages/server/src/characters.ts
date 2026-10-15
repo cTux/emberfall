@@ -24,6 +24,8 @@ export const freshProgress = (classId?: ClassId): CharacterProgress => ({
 });
 function classProgress(value: unknown, classId: ClassId): CharacterProgress {
   const progress = progressSchema.parse(value);
+  progress.paragon = (progress.paragon ?? 0) + Math.max(0, progress.level - 20);
+  progress.level = Math.min(20, progress.level);
   progress.coins ??= 0;
   progress.backpack ??= [];
   progress.equipment = validateClassEquipment(
