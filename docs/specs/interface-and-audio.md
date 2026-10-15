@@ -102,7 +102,10 @@ Interacting with the existing village Storehouse opens three storage tabs alongs
 the backpack and the account's shared gold balance. The HUD and trader show that
 same balance. Each tab displays exactly 40 slots. Right-click a tab to open a rename
 dialog; F2 on the focused tab provides the same keyboard action. Enter saves and
-Cancel or Escape preserves the name. Names are limited to 24 characters.
+Cancel or Escape preserves the name. The compact rename dialog uses the shared game
+window style and an unclipped storage-name placeholder, without validation helper text.
+Names must be nonempty after trimming, with no character-count limit. Long tab names
+stay on one line and end with an ellipsis; their full names remain accessible.
 Right-click, Enter or Space on an item transfers the whole stack. The existing
 window, item icons, tooltips, scrolling and narrow-viewport behavior are reused.
 

@@ -93,7 +93,7 @@ export async function createGameServer(
   const server = tls ? createSecureServer(tls) : createServer();
   const transport = new WebSocketTransport({
     server,
-    maxPayload: 4096,
+    maxPayload: 1024 * 1024,
     pingInterval: 15000,
     pingMaxRetries: 1,
     beforeUpgrade: (request) => {

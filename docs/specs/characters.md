@@ -76,7 +76,7 @@ tab by tab, prioritizing the active class; overflow returns to the original clas
 backpack, remaining accessible above its normal limit until cleared. Active-class
 custom names take priority, then the first existing custom name. Migration never
 discards items or gold; unsafe numeric totals reject loading instead of truncating.
-Right-clicking a tab renames it to a trimmed, nonempty name of up to 24 characters.
+Right-clicking a tab renames it to a trimmed, nonempty name with no character-count limit.
 Right-clicking an item transfers its entire stack between the selected storage and
 the backpack. Consumables join existing stacks even when the destination is full.
 Full destinations, stale items, invalid tabs and actions while dead, in a scene or

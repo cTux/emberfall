@@ -42,7 +42,12 @@ export function ChapterTabs({
           id={`${id}-${chapter.id}`}
           aria-controls={`${id}-panel-${chapter.id}`}
           value={chapter.id}
-          label={chapter.title}
+          label={
+            <Typography component='span' variant='inherit' noWrap sx={{ maxWidth: '100%' }}>
+              {chapter.title}
+            </Typography>
+          }
+          title={chapter.title}
           disabled={chapter.disabled}
           {...inventoryDropProps(chapter.disabled ? undefined : chapter.drop)}
           onContextMenu={

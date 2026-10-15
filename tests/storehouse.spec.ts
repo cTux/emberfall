@@ -37,8 +37,38 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   expect(player.storages![2].items[0].quantity).toBe(5);
   await dialog.getByRole('tab', { name: 'Storage 3', exact: true }).click({ button: 'right' });
   const rename = page.getByRole('dialog', { name: 'Rename storage' });
+  await expect(rename.locator('.game-window-surface')).toBeVisible();
+  expect((await rename.boundingBox())!.width).toBeLessThanOrEqual(280);
+  expect((await rename.boundingBox())!.height).toBeLessThan(180);
   await rename.getByRole('textbox', { name: 'Storage name' }).fill('   ');
   await expect(rename.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+  await rename.getByRole('textbox').fill('');
+  await expect(rename.getByPlaceholder('Storage name')).toBeVisible();
+  await expect(rename.getByText('1–24 characters')).toHaveCount(0);
+  await page.screenshot({
+    path: 'test-results/storage-rename-desktop.png',
+    animations: 'disabled',
+  });
+  const longName = 'Potions and equipment for the next forest adventure '.repeat(100).trim();
+  await rename.getByRole('textbox').fill(longName);
+  await rename.getByRole('textbox').press('Enter');
+  const longTab = dialog.getByRole('tab', { name: longName, exact: true });
+  await expect(longTab).toBeVisible();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const label = longTab.locator('.MuiTypography-root');
+    await expect(label).toHaveCSS('text-overflow', 'ellipsis');
+    expect(await label.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+    await longTab.click({ button: 'right' });
+    await rename.getByRole('textbox').fill('');
+    await page.screenshot({
+      path: `test-results/storage-rename-${width}.png`,
+      animations: 'disabled',
+    });
+    await rename.getByRole('button', { name: 'Cancel', exact: true }).click();
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await longTab.click({ button: 'right' });
   await rename.getByRole('textbox', { name: 'Storage name' }).fill(' Potions ');
   await rename.getByRole('textbox').press('Enter');
   await expect(dialog.getByRole('tab', { name: 'Potions', exact: true })).toBeVisible();
