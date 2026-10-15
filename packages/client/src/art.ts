@@ -171,9 +171,42 @@ export function terrainTile(column: number, size = 320) {
   // draw at that point permanently retains an empty tile, even after onload.
   if (terrainArt.complete && terrainArt.naturalWidth) {
     const width = terrainArt.naturalWidth / 3;
-    // Preserve the irregular source texture: mirrored copies create visible
-    // diamonds and repeated four-way tufts. 320 divides both wrapped axes.
-    ctx.drawImage(terrainArt, column * width, 0, width, terrainArt.naturalHeight, 0, 0, size, size);
+    // Crossfade overlapping edges without mirroring the asymmetric scatter.
+    // The first/last pixels share a sample, including at four-tile corners.
+    const overlap = Math.max(1, Math.round(size / 8));
+    const span = size - 1;
+    const source = document.createElement('canvas');
+    source.width = source.height = span + overlap;
+    const sourceContext = source.getContext('2d')!;
+    sourceContext.imageSmoothingEnabled = false;
+    sourceContext.drawImage(
+      terrainArt,
+      column * width,
+      0,
+      width,
+      terrainArt.naturalHeight,
+      0,
+      0,
+      source.width,
+      source.height,
+    );
+    const pixels = sourceContext.getImageData(0, 0, source.width, source.height).data;
+    const output = ctx.createImageData(size, size);
+    for (let y = 0; y < size; y++) {
+      const blendY = Math.max(0, 1 - y / overlap);
+      for (let x = 0; x < size; x++) {
+        const blendX = Math.max(0, 1 - x / overlap);
+        const a = (y * source.width + x) * 4;
+        const b = (y * source.width + x + (blendX ? span : 0)) * 4;
+        const c = ((y + (blendY ? span : 0)) * source.width + x) * 4;
+        const d = c + (blendX ? span * 4 : 0);
+        for (let channel = 0; channel < 4; channel++)
+          output.data[(y * size + x) * 4 + channel] =
+            (pixels[a + channel] * (1 - blendX) + pixels[b + channel] * blendX) * (1 - blendY) +
+            (pixels[c + channel] * (1 - blendX) + pixels[d + channel] * blendX) * blendY;
+      }
+    }
+    ctx.putImageData(output, 0, 0);
     terrainTiles.set(key, tile);
   }
   return tile;
