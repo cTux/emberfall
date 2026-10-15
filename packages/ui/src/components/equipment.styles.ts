@@ -44,8 +44,8 @@ export const GearBadgeValueStyled = styled(Box)(({ theme }) => ({
 
 export const BackpackSlotStyled = styled(ButtonBase)(({ theme }) => ({
   position: 'relative',
-  width: 44,
-  height: 44,
+  width: '100%',
+  aspectRatio: '1',
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: theme.shape.borderRadius,
   backgroundColor: theme.palette.wood.dark,

@@ -28,14 +28,19 @@ export function Backpack({ label, items, coins, action, headerActions, onUse }: 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          minHeight: 20,
+          minHeight: 24,
         }}
       >
         {coins !== undefined && <GoldBalance name={label} coins={coins} />}
         {headerActions}
       </Box>
       <Box
-        sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 44px)', gap: 0.5, mt: 0.5 }}
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(44px, 1fr))',
+          gap: 0.5,
+          mt: 0.5,
+        }}
       >
         {items.map((item) => (
           <GearTooltipStyled
