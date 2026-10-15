@@ -9,6 +9,10 @@ import {
   merchantSchema,
   freshMerchant,
   freshStorages,
+  storehouseSchema,
+  addItem,
+  CONSUMABLES,
+  STORAGE_SLOTS,
   progressSchema,
   classSchema,
   CLASS_IDS,
@@ -41,7 +45,7 @@ function classProgress(value: unknown, classId: ClassId): CharacterProgress {
 }
 export function decodeProgress(raw: string) {
   const data = JSON.parse(raw);
-  if (data.formatVersion !== undefined && data.formatVersion !== 1)
+  if (data.formatVersion !== undefined && data.formatVersion !== 1 && data.formatVersion !== 2)
     throw new Error('Unsupported save format');
   const classId: ClassId = data.classes ? classSchema.parse(data.classId) : 'warrior';
   const classes = Object.fromEntries(
@@ -53,7 +57,36 @@ export function decodeProgress(raw: string) {
       ),
     ]),
   ) as Record<ClassId, CharacterProgress>;
-  return { classId, classes, progress: classes[classId] };
+  let storehouse;
+  if (data.formatVersion === 2) storehouse = storehouseSchema.parse(data.storehouse);
+  else {
+    storehouse = { coins: 0, storages: freshStorages() };
+    const order = [classId, ...CLASS_IDS.filter((id) => id !== classId)];
+    for (const id of order) {
+      const progress = classes[id];
+      storehouse.coins += progress.coins ?? 0;
+      for (const [tab, storage] of progress.storages!.entries()) {
+        const destination = storehouse.storages[tab];
+        const defaultName = `Storage ${tab + 1}`;
+        if (destination.name === defaultName && storage.name !== defaultName)
+          destination.name = storage.name;
+        for (const item of storage.items) {
+          const stacks =
+            Object.hasOwn(CONSUMABLES, item.itemId) &&
+            destination.items.some((entry) => entry.itemId === item.itemId);
+          if (destination.items.length < STORAGE_SLOTS || stacks)
+            addItem(destination.items, item, STORAGE_SLOTS);
+          else addItem(progress.backpack!, item, Number.MAX_SAFE_INTEGER);
+        }
+      }
+    }
+    storehouse = storehouseSchema.parse(storehouse);
+  }
+  for (const id of CLASS_IDS) {
+    delete classes[id].coins;
+    delete classes[id].storages;
+  }
+  return { classId, classes, storehouse, progress: { ...classes[classId], ...storehouse } };
 }
 
 /** SQLite's synchronous transaction keeps identity and Colyseus save rows atomic.
@@ -190,7 +223,7 @@ export class CharacterStore {
     return { token, ...this.load(token) };
   }
   importCharacter(id: string, tokenHash: string, name: string, raw: string) {
-    const { classId, classes } = decodeProgress(raw);
+    const { classId, classes, storehouse } = decodeProgress(raw);
     if (this.db.prepare('SELECT 1 FROM characters WHERE id=? OR token_hash=?').get(id, tokenHash))
       throw new Error('Character already exists; refusing to overwrite progress');
     this.transaction(() => {
@@ -205,7 +238,7 @@ export class CharacterStore {
         .prepare(
           `INSERT INTO ${this.savesTable} (user_id, slot, version, data, created_at, updated_at) VALUES (?, 0, 1, ?, ?, ?)`,
         )
-        .run(id, JSON.stringify({ formatVersion: 1, classId, classes }), now, now);
+        .run(id, JSON.stringify({ formatVersion: 2, classId, classes, storehouse }), now, now);
     });
     this.versions.set(id, 1);
   }
@@ -230,7 +263,15 @@ export class CharacterStore {
       ...progress.classes,
       [classId]: progressSchema.parse(progress),
     };
-    for (const id of CLASS_IDS) classes[id] = classProgress(classes[id], id);
+    for (const id of CLASS_IDS) {
+      classes[id] = classProgress(classes[id], id);
+      delete classes[id].coins;
+      delete classes[id].storages;
+    }
+    const storehouse = storehouseSchema.parse({
+      coins: progress.coins ?? previous.storehouse.coins,
+      storages: progress.storages ?? previous.storehouse.storages,
+    });
     const version = this.versions.get(id) ?? Number(row.version);
     this.transaction(() => {
       const result = this.db
@@ -238,7 +279,7 @@ export class CharacterStore {
           `UPDATE ${this.savesTable} SET data=?, version=version+1, updated_at=? WHERE user_id=? AND slot=0 AND version=?`,
         )
         .run(
-          JSON.stringify({ formatVersion: 1, classId, classes }),
+          JSON.stringify({ formatVersion: 2, classId, classes, storehouse }),
           Math.floor(Date.now() / 1000),
           id,
           version,
@@ -265,6 +306,10 @@ export class CharacterStore {
       CharacterProgress
     >;
     const next = classProgress(classes[classId] ?? freshProgress(classId), classId);
+    delete next.coins;
+    delete next.storages;
+    delete classes[previousId].coins;
+    delete classes[previousId].storages;
     const updated = {
       ...player,
       ...next,

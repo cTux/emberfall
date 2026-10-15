@@ -59,6 +59,13 @@ and database design; deploying multiple copies is not automatically safe.
 
 ## Persistence
 
+Version-2 documents keep one account Storehouse (gold and three storage tabs)
+beside the class records. Version-1 loads merge class balances/storage once and
+return storage overflow to the owning class backpack. Class changes preserve the
+shared balance and items. Live `coins`/`storages` fields project this account state;
+they are omitted from persisted class records. Back up saves before deployment:
+older servers reject version 2 rather than silently dropping the shared items.
+
 `@colyseus/database` boots its SQLite schema through Drizzle. Character progress
 uses its cloud-save table, slot 0, and revision field. Small synchronous SQLite
 transactions atomically update the save and Emberfall identity metadata.

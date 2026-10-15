@@ -59,6 +59,10 @@ export const storagesSchema = z
 export function freshStorages(): z.infer<typeof storagesSchema> {
   return Array.from({ length: 3 }, (_, index) => ({ name: `Storage ${index + 1}`, items: [] }));
 }
+export const storehouseSchema = z.object({
+  coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  storages: storagesSchema,
+});
 export const BUYBACK_SLOTS = INVENTORY_SLOTS;
 export const merchantSchema = z
   .object({

@@ -24,4 +24,10 @@ Older progress documents preserve fractional XP and class progress, default miss
 
 ## Verification
 
+Account Storehouse ownership is persisted once in version-2 saves, beside class
+records. Version-1 balances and storage contents migrate without discarding items;
+class switches keep the same shared balance and inventories. See
+[Storehouse tests](../../packages/server/src/storehouse.test.ts) for overflow,
+idempotent migration, restart, isolation and save-failure coverage.
+
 Use [world tests](../../packages/server/src/worlds.test.ts), [character tests](../../packages/server/src/characters.test.ts), [account tests](../../packages/server/src/accounts.test.ts), [reconnect tests](../../packages/server/src/reconnect.test.ts), [update recovery tests](../../packages/server/src/update-recovery.test.ts) and [chat tests](../../packages/server/src/chat.test.ts). Browser coverage includes [reconnect](../../tests/reconnect.spec.ts), [accounts](../../tests/accounts.spec.ts) and [gameplay](../../tests/gameplay.spec.ts). Use disposable databases, never live player saves.

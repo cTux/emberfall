@@ -32,7 +32,7 @@ Combat presentation includes sword sparks, enemy attack sparks and short red blo
 
 In the new runtime, each forest kill also drops one random non-weapon equipment item with 1 armor and a 1-gold price (CHAR-04). Gear pickup grants it only to the collector's unlimited backpack.
 
-Experience shards, coins and new-runtime gear attract after the initial hop toward the nearest living forest player within 140 units, moving at 280 units/second. XP pickup rewards all living scene players. Separately, the credited killer receives 1 XP at death; Bear damage credits its owner. Training grants neither reward. In the new runtime, gold grants one coin to its collector, saved per class; original-runtime gold remains visual only. The new runtime supports optional Innkeeper trading (CHAR-04).
+Experience shards, coins and new-runtime gear attract after the initial hop toward the nearest living forest player within 140 units, moving at 280 units/second. XP pickup rewards all living scene players. Separately, the credited killer receives 1 XP at death; Bear damage credits its owner. Training grants neither reward. In the new runtime, gold grants one coin to its collector, saved in the account Storehouse and shared across classes; original-runtime gold remains visual only. The new runtime supports optional Innkeeper trading (CHAR-04).
 
 DPS is actual enemy damage over the previous five seconds divided by five, including ailments and Bear and excluding overkill. It returns to zero after five seconds without damage.
 

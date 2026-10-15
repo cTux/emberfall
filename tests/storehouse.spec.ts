@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { BUILDINGS } from '../packages/common/src/index.ts';
+import { BUILDINGS, WARDROBE } from '../packages/common/src/index.ts';
 
 test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', async ({
   page,
@@ -16,12 +16,14 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   player.x = building.doorX;
   player.y = building.y + 9;
   player.backpack = [{ id: 'test-potions', itemId: 'health-potion', quantity: 5 }];
+  player.coins = 13;
   const dialog = page.getByRole('dialog', { name: 'Storehouse', exact: true });
   await expect(async () => {
     await page.keyboard.press('e');
     await expect(dialog).toBeVisible();
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(dialog.getByRole('tab')).toHaveCount(3);
+  await expect(dialog.getByLabel('Storehouse: 13 coins', { exact: true })).toBeVisible();
   for (let tab = 1; tab <= 3; tab++) {
     await dialog.getByRole('tab', { name: `Storage ${tab}`, exact: true }).click();
     await expect(
@@ -64,9 +66,43 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   await page.keyboard.press('Enter');
   await expect(dialog.getByRole('button', { name: 'Deposit Health potion (5)' })).toBeVisible();
   expect(player.storages![2].items).toHaveLength(0);
+  await dialog
+    .getByRole('button', { name: 'Deposit Health potion (5)' })
+    .click({ button: 'right' });
+  await expect(dialog.getByRole('button', { name: 'Withdraw Health potion (5)' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Close Storehouse' }).click();
+  player.x = WARDROBE.x;
+  player.y = WARDROBE.y - 15;
+  const wardrobe = page.getByRole('dialog', { name: 'Wardrobe', exact: true });
+  await expect(async () => {
+    if (await dialog.isVisible())
+      await dialog.getByRole('button', { name: 'Close Storehouse' }).click();
+    await page.keyboard.press('e');
+    await expect(wardrobe).toBeVisible({ timeout: 400 });
+  }).toPass({ intervals: [200], timeout: 6000 });
+  await wardrobe.getByRole('button', { name: /^Mage/ }).click();
+  await expect.poll(() => player.classId).toBe('mage');
+  expect(player.coins).toBe(13);
+  expect(player.backpack).toHaveLength(0);
+  await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
+  player.x = building.doorX;
+  player.y = building.y + 9;
+  await expect(async () => {
+    if (await wardrobe.isVisible())
+      await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
+    await page.keyboard.press('e');
+    await expect(dialog).toBeVisible({ timeout: 400 });
+  }).toPass({ intervals: [200], timeout: 6000 });
+  await expect(dialog.getByLabel('Storehouse: 13 coins', { exact: true })).toBeVisible();
+  await dialog.getByRole('tab', { name: 'Potions', exact: true }).click();
+  await dialog
+    .getByRole('button', { name: 'Withdraw Health potion (5)' })
+    .click({ button: 'right' });
+  await expect(dialog.getByRole('button', { name: 'Deposit Health potion (5)' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   expect([...world.players.values()][0].storages![2].name).toBe('Potions');
   expect([...world.players.values()][0].backpack![0].quantity).toBe(5);
+  expect([...world.players.values()][0].coins).toBe(13);
   expect(errors).toEqual([]);
 });

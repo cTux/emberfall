@@ -8,8 +8,14 @@ behavior contract. See the
 
 ## Ownership
 
-Storehouse names and inventories live in class progress as three validated storage
-records. The existing character transaction saves detached transfer/rename results
+Storehouse names, inventories and gold live once in the account's version-2 save,
+outside its class records. Each Steam account owns one saved identity with multiple
+classes; existing duplicate-session protection prevents concurrent owners. Live
+player `coins` and `storages` project this account state for existing pickup,
+trading and UI consumers. Class selection preserves those fields. Version-1 saves
+merge old balances and tab contents once, returning overflow to owning backpacks;
+version-2 reads never re-import class balances. Older servers reject version 2.
+The existing character transaction saves detached transfer/rename results
 before publishing them. The server validates session ownership, living village
 status and Storehouse proximity. The client composes ChapterTabs and Backpack;
 storage capacity is 40 while the existing player backpack remains 20 slots.
@@ -54,7 +60,7 @@ moving NPC state, network command or persistence change. Verification:
 [village rules](../../packages/server/src/village.test.ts) and
 [Innkeeper browser scenario](../../tests/innkeeper.spec.ts).
 
-Gold collection adds one coin to the nearest living forest collector, once, in shared simulation. The optional validated `coins` progress field defaults to zero when loading old saves. Existing per-class save scheduling and protocol payloads carry the balance; the shared party card receives confirmed values from the new client.
+Gold collection adds one coin to the nearest living forest collector, once, in shared simulation. The live player `coins` field projects the account Storehouse balance. Version-2 saves persist that balance once outside class records, using the existing autosave lifecycle. The party HUD, Storehouse and trading UI receive the same confirmed balance.
 
 Each party has one Miniplex simulation world. Components reference canonical
 plain entities; ordered query views preserve targeting and spawn order even when
