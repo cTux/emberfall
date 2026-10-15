@@ -25,8 +25,8 @@ nature staff. Equipment is saved independently per class. Older saves without
 equipment receive that class's starter weapon; explicitly empty slots stay empty.
 The nine slots are weapon, gloves, helmet, body armor, leggings, boots, amulet,
 off-hand and ring. Off-hands accept class-appropriate shields, quivers, orbs and
-nature focuses. The unlimited backpack is saved independently per class. Older saves receive an
-empty backpack. Right-clicking compatible gear equips it, returning the old item
+nature focuses. The 20-slot backpack is saved independently per class. Older saves receive an
+empty backpack. New entries are limited to 20 slots; consumables can still join an existing stack when full. Purchases and unequipping reject a full backpack. Full players do not attract item drops; other nearby players can collect them. Existing saves above 20 entries remain readable and accessible until cleared, without accepting new slots. Right-clicking compatible gear equips it, returning the old item
 to the backpack; right-clicking equipment unequips it. Totals update immediately
 from confirmed equipment. Removing the weapon disables its default attack.
 
@@ -37,7 +37,7 @@ Consumables stack by type; right-click consumes one. Health potions restore 25 H
 clamped to maximum HP, and are not consumed at full health or while dead.
 
 Marta has one shared backpack and gold balance per world, initially 5000 gold and
-five health potions. Buy shows regular stock; Buyback shows the latest 16 sold
+five health potions. Buy shows regular stock; Buyback shows the latest 20 sold
 entries, newest first, shared by everyone in the world. Older entries expire.
 Sold items never enter regular stock. Sell all, beside the player's gold balance,
 sells every backpack item (including consumable stacks) in one atomic action;

@@ -48,7 +48,7 @@ export const BackpackSlotStyled = styled(ButtonBase)(({ theme }) => ({
   height: 44,
   border: `1px solid ${theme.palette.divider}`,
   borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.background.default,
+  backgroundColor: theme.palette.wood.dark,
   boxShadow: `inset 0 0 0 2px ${alpha(theme.palette.common.black, 0.4)}`,
   '& img, & svg': { width: 36, height: 36, objectFit: 'contain', imageRendering: 'pixelated' },
   '&:hover': { borderColor: theme.palette.text.secondary },

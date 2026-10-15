@@ -4,9 +4,11 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 declare module '@mui/material/styles' {
   interface Palette {
     boss: Palette['primary'];
+    wood: Palette['primary'];
   }
   interface PaletteOptions {
     boss?: PaletteOptions['primary'];
+    wood?: PaletteOptions['primary'];
   }
 }
 declare module '@mui/material/LinearProgress' {
@@ -23,7 +25,8 @@ export const gameTheme = createTheme({
     secondary: { main: '#9bbca1' },
     background: { default: '#101817', paper: '#192820' },
     text: { primary: '#eeeddf', secondary: '#b8c9b7' },
-    divider: '#46594a',
+    divider: '#875039',
+    wood: { main: '#875039', dark: '#281a14', light: '#583524' },
     success: { main: '#83cba3' },
     info: { main: '#88b8df' },
     warning: { main: '#e6be80' },
@@ -85,7 +88,30 @@ export const gameTheme = createTheme({
     MuiIconButton: { defaultProps: { size: 'small' } },
     MuiSwitch: { defaultProps: { size: 'small' } },
     MuiDialogTitle: { styleOverrides: { root: { padding: 12 } } },
-    MuiTab: { styleOverrides: { root: { minHeight: 36, padding: '6px 12px' } } },
+    MuiTab: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          minHeight: 30,
+          minWidth: 64,
+          padding: '4px 12px',
+          marginRight: 4,
+          border: `1px solid ${theme.palette.divider}`,
+          borderRadius: '3px 3px 0 0',
+          color: theme.palette.text.primary,
+          backgroundColor: theme.palette.wood.dark,
+          '&:hover': { backgroundColor: theme.palette.wood.light },
+          '&.Mui-selected': {
+            color: theme.palette.primary.main,
+            backgroundColor: theme.palette.wood.light,
+            borderColor: theme.palette.primary.main,
+          },
+          '&.Mui-focusVisible': {
+            outline: `2px solid ${theme.palette.primary.main}`,
+            outlineOffset: -3,
+          },
+        }),
+      },
+    },
     MuiTextField: { defaultProps: { size: 'small', fullWidth: true } },
     MuiFormControl: { defaultProps: { size: 'small' } },
     MuiPaper: {
@@ -95,7 +121,7 @@ export const gameTheme = createTheme({
     MuiDialog: { defaultProps: { fullWidth: true, maxWidth: 'sm' } },
     MuiTabs: {
       defaultProps: { variant: 'scrollable', scrollButtons: 'auto' },
-      styleOverrides: { root: { minHeight: 36 } },
+      styleOverrides: { root: { minHeight: 30 }, indicator: { display: 'none' } },
     },
     MuiLinearProgress: { styleOverrides: { root: { height: 6, borderRadius: 5 } } },
   },

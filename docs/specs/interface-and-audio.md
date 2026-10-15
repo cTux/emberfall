@@ -4,8 +4,8 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 
 ## UI-01 — HUD and windows
 
-All game windows use compact, lighter title bars and thin forest-colored scrollbars.
-The trader has Buy and Buyback tabs, with 16 Buyback slots. A small Sell all icon
+All game windows use compact, lighter title bars, wardrobe-brown borders and thin scrollbars. Tabs sit close to the title, with brown frames and a filled gold-accented selected state. Backpack slots use matching brown borders and dark wood backgrounds, with 20 slots shown by default.
+The trader has Buy and Buyback tabs, with 20 Buyback slots. A small Sell all icon
 button sits at the top-right of the player's backpack, opposite the gold balance.
 
 The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames belong to Steam accounts; see CHAR-05.
@@ -69,7 +69,7 @@ The Inventory HUD action and physical `KeyI` open a draggable inventory dialog i
 village and forest. `I` toggles it closed; Escape and the close button also close
 it. Ignore repeats, modified shortcuts, text entry and other open dialogs. Use
 the existing modal focus, movement suppression and persisted drag-position rules.
-New-runtime windows use a light solid border, with no divider under the title.
+New-runtime windows use a wardrobe-brown solid border, with no divider under the title.
 
 The Inventory window opens with physical KeyI or the HUD action. Compact square backpack slots use item art when available and default equipment-slot art otherwise. Stack counts sit at the bottom right. Item tooltips end with the gold price. Right-click activates an item; Enter or Space provides the same action for keyboard users. Marta opens two compact backpacks, hers on the left and the player's on the right, each with the same gold display used in the HUD.
 
@@ -86,7 +86,7 @@ Each badge exposes its own weapon-specific explanation on hover, keyboard focus
 or touch, including critical stats, swing/projectile details and ailment stacking.
 Range follows the active auto-target/cursor-aim mode. Empty slots explain accepted
 gear types. Character stats derived from all equipment
-appear underneath equipment on the left, with the unlimited backpack on the right. Attack timing is
+appear underneath equipment on the left, with the 20-slot backpack on the right. Attack timing is
 shown only as cooldown, without a duplicate attack-speed row.
 
 Normal outgoing damage numbers use physical parchment, fire orange, poison lime

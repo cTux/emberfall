@@ -280,9 +280,9 @@ alongside results in the verification record.
 
 ## Inventory, loot and shared trading
 
-`common/inventory.ts` owns validated unlimited backpack entries, stack merging,
+`common/inventory.ts` owns validated 20-slot backpack entries, stack merging,
 gear exchange, consumable use, one-item trades and atomic whole-backpack sales.
-Merchant buyback is a separate newest-first queue capped at 16 entries, including
+Merchant buyback is a separate newest-first queue capped at 20 entries, including
 whole consumable stacks from Sell all. Buying returns one item per action.
 Legacy merchant gear stock migrates to buyback; potion stock stays in Buy.
 Stable entry IDs make stale

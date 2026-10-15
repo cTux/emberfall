@@ -19,7 +19,7 @@ export interface BackpackProps {
   headerActions?: ReactNode;
   onUse(id: string): void;
 }
-/** Slots grow with the supplied inventory; empty cells are presentation only. */
+/** Twenty slots by default; keep legacy overflow accessible until it is cleared. */
 export function Backpack({ label, items, coins, action, headerActions, onUse }: BackpackProps) {
   return (
     <Box component='section' aria-label={label} sx={{ minWidth: 0 }}>
@@ -75,7 +75,7 @@ export function Backpack({ label, items, coins, action, headerActions, onUse }: 
             </BackpackSlotStyled>
           </GearTooltipStyled>
         ))}
-        {Array.from({ length: Math.max(0, 16 - items.length) }, (_, index) => (
+        {Array.from({ length: Math.max(0, 20 - items.length) }, (_, index) => (
           <BackpackSlotStyled key={`empty-${index}`} disabled tabIndex={-1} aria-hidden='true' />
         ))}
       </Box>
