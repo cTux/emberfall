@@ -56,9 +56,12 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   expect(results['shaft after camera move'].actual).toEqual(results['shaft center'].actual);
   expect(groupedLabels).toEqual(['8']);
   expect(lootPixels).toHaveLength(12);
-  for (const { itemId, colored, purple } of lootPixels) {
+  for (const { itemId, colored, purple, beam, above, beside } of lootPixels) {
     expect(colored, `${itemId} visible icon`).toBeGreaterThan(30);
     expect(purple, `${itemId} has no placeholder square`).toBe(0);
+    expect(beam, `${itemId} visible beam above icon`).toBeGreaterThan(0);
+    expect(above, `${itemId} beam stays short`).toBe(0);
+    expect(beside, `${itemId} beam stays narrow`).toBe(0);
   }
   expect(projectilePixels).toHaveLength(20);
   for (const [index, count] of projectilePixels.entries())

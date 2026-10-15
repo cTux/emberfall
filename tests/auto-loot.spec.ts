@@ -41,7 +41,7 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
         id: 1,
         kind: 'item',
         itemId: 'loot-helmet',
-        x: current.x,
+        x: current.x + 55,
         y: current.y,
         at: Date.now() - 1000,
       },
@@ -51,6 +51,7 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
   await expect.poll(() => current.coins).toBe(1);
   expect(current.backpack?.length ?? 0).toBe(0);
   expect(world.scene.drops).toHaveLength(1);
+  await page.screenshot({ path: 'test-results/dropped-item-beam-forest.png' });
   await settings.click();
   await toggle.check();
   await expect.poll(() => current.autoLoot).toBe(true);
