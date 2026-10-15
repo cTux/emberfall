@@ -4,9 +4,9 @@ Status: implemented. Implements [village/scenes](../specs/scenes-and-village.md)
 
 ## Ownership and tick order
 
-[worlds.ts](../../packages/server/src/worlds.ts) consumes validated player input on the 50 ms tick. [scenes.ts](../../packages/server/src/scenes.ts) ticks shared village training, reconciles readiness and advances forest state. [simulation.ts](../../packages/common/src/simulation.ts) owns combat, pause/resume, scaling and companions. [class-combat.ts](../../packages/common/src/class-combat.ts) owns ranged shots, ailments, the shared hit/reward path and DPS history. [enemies.ts](../../packages/common/src/enemies.ts) owns archetype stats and deterministic steering.
+[worlds.ts](../../packages/server/src/worlds.ts) consumes validated player input on the 50 ms tick. [scenes.ts](../../packages/server/src/scenes.ts) ticks shared village training, reconciles readiness and advances forest state. [simulation.ts](../../packages/core/src/simulation.ts) owns combat, pause/resume, scaling and companions. [class-combat.ts](../../packages/core/src/class-combat.ts) owns ranged shots, ailments, the shared hit/reward path and DPS history. [enemies.ts](../../packages/core/src/enemies.ts) owns archetype stats and deterministic steering.
 
-These functions are in `common` so prediction can reuse geometry. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
+These functions are in `core`, which depends on `common` for enums, state, geometry and definitions. Common never imports core. Config utilities select enemy types, roll equipment drops and counts, and calculate HP/damage using type and difficulty multipliers. Server and client use the same attribute and prediction helpers. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
 
 ## Scene states
 

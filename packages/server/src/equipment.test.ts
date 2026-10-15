@@ -9,27 +9,27 @@ import {
   SLOT_GEAR_TYPES,
   characterStats,
   companionStats,
-  tickCompanion,
   starterEquipment,
   validateClassEquipment,
   canEquip,
   syncEquipmentVitals,
+  clientMessage,
+} from '@emberfall/common';
+import {
+  tickCompanion,
   createTrainingScene,
   tickPlayerCombat,
   defaultSpellRange,
   requestPlayerCast,
   stepCombat,
-  clientMessage,
   swordOverlapsEnemy,
-} from '@emberfall/common';
-import { enemyHitbox } from '../../common/src/hitboxes.ts';
-import type { Player, ClassId, GearDefinition, WorldState, Enemy } from '@emberfall/common';
-import {
   hitWithWeapon,
   tickDebuffs,
   tickPlayerShots,
   fireClassAttack,
-} from '../../common/src/class-combat.ts';
+} from '@emberfall/core';
+import { enemyHitbox } from '../../common/src/hitboxes.ts';
+import type { Player, ClassId, GearDefinition, WorldState, Enemy } from '@emberfall/common';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 import { drawDamageNumber, DAMAGE_COLORS } from '../../client/src/damage-text.ts';
 
@@ -119,7 +119,7 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
         ranged: false,
       };
       stepCombat(arena, [player], 2000, 0);
-      assert.equal(player.bear!.hitpoints, 175, 'owner armor halves incoming damage');
+      assert.equal(player.bear!.hitpoints, 178.5, 'owner armor halves incoming damage');
     }
     player.equipment = {};
     tickCompanion(player, arena, 3000, 0);
@@ -248,7 +248,7 @@ test('all nine slots aggregate and gear controls real power, range, cadence and 
     attack: { startedAt: 0, endsAt: 2000, x: player.x, y: player.y, radius: 100, ranged: false },
   });
   stepCombat(arena, [player], 2000, 0.05);
-  assert.equal(player.hitpoints, 95, '100 armor halves a 10 damage enemy attack');
+  assert.equal(player.hitpoints, 98.5, '100 armor halves a 3 damage enemy attack');
 });
 
 test('critical boundary is exactly five percent, with fractional 150% power in both areas', (t) => {

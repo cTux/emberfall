@@ -1,11 +1,5 @@
 import { PLAYER_DEFINITIONS, INITIAL_PROGRESS } from './entities/players.ts';
-import {
-  ENEMY_HP,
-  ENEMY_STATS,
-  ENEMY_RULES,
-  ENEMY_HEALTH_MULTIPLIERS,
-  BOSS_DEFINITIONS,
-} from './entities/enemies.ts';
+import { ENEMY_STATS, ENEMY_RULES, BOSS_DEFINITIONS } from './entities/enemies.ts';
 import { FOREST_ENCOUNTER } from './encounters/forest.ts';
 import { BEAR_DEFINITION } from './entities/companions.ts';
 import { PICKUP_DEFINITIONS, PICKUP_RULES } from './entities/pickups.ts';
@@ -25,9 +19,7 @@ export const GAME_DEFINITIONS = {
   initialProgress: INITIAL_PROGRESS,
   enemies: {
     archetypes: ENEMY_STATS,
-    health: ENEMY_HP,
     rules: ENEMY_RULES,
-    healthMultipliers: ENEMY_HEALTH_MULTIPLIERS,
     bosses: BOSS_DEFINITIONS,
   },
   encounters: { forest: FOREST_ENCOUNTER },

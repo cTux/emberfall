@@ -1,3 +1,5 @@
+import { EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { enemyAttributes, enemyTypeMultiplier } from '@emberfall/core';
 import { useState } from 'react';
 import { ChapterTabs } from '@emberfall/ui';
 import { Box } from '@mui/material';
@@ -112,9 +114,11 @@ const chapters = [
         </p>
         <h4>Enemy variants</h4>
         <p>
-          Skeletons have 10 HP. Each spawn has a 10% chance to be a big, slow enemy with triple HP,
-          and a 10% chance to be ranged with 70% HP. Every tenth spawn is elite with five times
-          normal HP; big and ranged modifiers also apply to elites.
+          Skeletons have {enemyAttributes(EnemyKind.Skeleton).hitPoints} HP and deal{' '}
+          {enemyAttributes(EnemyKind.Skeleton).damage} damage before armor. Each spawn has a 10%
+          chance to be a big, slow enemy with triple HP, and a 10% chance to be ranged with 70% HP.
+          Each spawn independently has a 5% chance to be elite, multiplying both HP and damage by{' '}
+          {enemyTypeMultiplier(EnemyType.Elite)}.
         </p>
         <h4>Party scaling</h4>
         <p>
@@ -144,8 +148,10 @@ const chapters = [
         </figure>
         <h4>Face the boss</h4>
         <p>
-          When time runs out, a boss with 200 HP and a purple health bar arrives. Enemies keep
-          spawning until it falls.
+          When time runs out, the Warden arrives with{' '}
+          {enemyAttributes(EnemyKind.Brute, EnemyType.Boss).hitPoints} base HP and{' '}
+          {enemyAttributes(EnemyKind.Brute, EnemyType.Boss).damage} damage on Easy before armor and
+          party HP scaling. Enemies keep spawning until it falls.
         </p>
         <h4>Victory & return</h4>
         <p>

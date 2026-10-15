@@ -1,18 +1,27 @@
-import { LOOT_ITEM_IDS } from './equipment.ts';
-import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
-import { COLLISION } from './definitions/collision.ts';
-import { AILMENT_DEFINITIONS } from './definitions/effects/ailments.ts';
-import { PICKUP_DEFINITIONS, PICKUP_RULES } from './definitions/entities/pickups.ts';
-import { ENEMY_RULES } from './definitions/entities/enemies.ts';
-import { appendSceneEntities } from './entities.ts';
-import { ATTACK_DEFINITIONS } from './definitions/abilities/attacks.ts';
-import { PLAYER_DEFINITIONS } from './definitions/entities/players.ts';
-import { FOREST, forestDistance, wrappedDelta, wrap } from './scene.ts';
-import { enemyHitbox, overlapsBody } from './hitboxes.ts';
-import type { DebuffKind, Enemy, PlayerShot, SceneState } from './scene.ts';
-import type { Player } from './index.ts';
-import { characterStats, type CharacterStats } from './equipment.ts';
-import type { DamageType } from './definitions/equipment.ts';
+import {
+  LOOT_ITEM_IDS,
+  appendSceneEntities,
+  FOREST,
+  forestDistance,
+  wrappedDelta,
+  wrap,
+  characterStats,
+  type CharacterStats,
+} from '@emberfall/common';
+import { TRANSIENT_EFFECTS } from '@emberfall/common/definitions/effects/transient';
+import { COLLISION } from '@emberfall/common/definitions/collision';
+import { AILMENT_DEFINITIONS } from '@emberfall/common/definitions/effects/ailments';
+import { PICKUP_DEFINITIONS, PICKUP_RULES } from '@emberfall/common/definitions/entities/pickups';
+import { ENEMY_RULES } from '@emberfall/common/definitions/entities/enemies';
+import { ATTACK_DEFINITIONS } from '@emberfall/common/definitions/abilities/attacks';
+import { PLAYER_DEFINITIONS } from '@emberfall/common/definitions/entities/players';
+import { enemyHitbox, overlapsBody } from '@emberfall/common/hitboxes';
+import type { DebuffKind, Enemy, PlayerShot, SceneState, Player } from '@emberfall/common';
+import type { DamageType } from '@emberfall/common/definitions/equipment';
+import { EnemyType } from '@emberfall/common/enums';
+import { isChanced } from './utils/isChanced.ts';
+import { shouldDropItem } from './utils/shouldDropItem.ts';
+import { itemDropCount } from './utils/itemDropCount.ts';
 
 const damageHistory = new WeakMap<Player, { at: number; amount: number }[]>();
 export function damagePerSecond(player: Player, now: number) {
@@ -60,7 +69,7 @@ export function hitEnemy(
     ailment &&
     ailment !== 'roots' &&
     owner &&
-    Math.random() < AILMENT_DEFINITIONS[ailment].chance
+    isChanced(AILMENT_DEFINITIONS[ailment].chance * 100)
   ) {
     enemy.debuffs ??= [];
     let debuff = enemy.debuffs.find((d) => d.kind === ailment && d.expiresAt >= now);
@@ -90,7 +99,7 @@ export function hitEnemy(
     y: enemy.y,
     at: now,
   });
-  if (Math.random() < PICKUP_DEFINITIONS.gold.chance)
+  if (isChanced(PICKUP_DEFINITIONS.gold.chance * 100))
     appendSceneEntities(scene, 'drops', {
       id: ++scene.sequence,
       kind: 'gold',
@@ -98,14 +107,20 @@ export function hitEnemy(
       y: enemy.y,
       at: now,
     });
-  appendSceneEntities(scene, 'drops', {
-    id: ++scene.sequence,
-    kind: 'item',
-    itemId: LOOT_ITEM_IDS[Math.floor(Math.random() * LOOT_ITEM_IDS.length)],
-    x: wrap(enemy.x - 10, FOREST.width),
-    y: enemy.y,
-    at: now,
-  });
+  const type = enemy.kind ?? EnemyType.Normal;
+  if (shouldDropItem(type)) {
+    const count = itemDropCount(type);
+    for (let i = 0; i < count; i++) {
+      appendSceneEntities(scene, 'drops', {
+        id: ++scene.sequence,
+        kind: 'item',
+        itemId: LOOT_ITEM_IDS[Math.floor(Math.random() * LOOT_ITEM_IDS.length)],
+        x: wrap(enemy.x - 10, FOREST.width),
+        y: enemy.y,
+        at: now,
+      });
+    }
+  }
   if (scene.drops.length > PICKUP_RULES.capacity)
     scene.drops = scene.drops.slice(-PICKUP_RULES.capacity);
 }
@@ -149,7 +164,7 @@ export function hitWithWeapon(
 ) {
   if (enemy.hitpoints <= 0) return;
   if (!stats.hasWeapon) return;
-  const critical = Math.random() < stats.criticalChance;
+  const critical = isChanced(stats.criticalChance * 100);
   hitEnemy(
     scene,
     enemy,

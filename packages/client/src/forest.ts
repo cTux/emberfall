@@ -14,10 +14,10 @@ import {
   drawClassProjectiles,
   drawDebuffs,
 } from './combat-effects';
-import { defaultSpellRange, characterStats, PLAYER_ATTACK_DURATION } from '@emberfall/common';
+import { characterStats, ENEMY_STATS, FOREST, forestTrees, wrappedDelta } from '@emberfall/common';
+import { defaultSpellRange, PLAYER_ATTACK_DURATION, enemyMaxHealth } from '@emberfall/core';
 import { movementFacing } from './facing';
 import { drawDanger } from './danger';
-import { enemyMaxHealth, ENEMY_STATS, FOREST, forestTrees, wrappedDelta } from '@emberfall/common';
 import type { WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import type { Preferences } from './preferences';
@@ -596,7 +596,7 @@ export function forestRenderer(
             a.x,
             top - 10,
             a.enemy.hitpoints,
-            enemyMaxHealth(a.enemy),
+            enemyMaxHealth(a.enemy, world?.scene?.difficulty),
             a.enemy.name ?? 'The Hollow Warden',
             '#ffffff',
             true,
@@ -606,7 +606,12 @@ export function forestRenderer(
           ctx.fillStyle = '#102020';
           ctx.fillRect(a.x - 17, top - 8, 34, 5);
           ctx.fillStyle = a.enemy.kind === 'elite' ? '#f4d447' : '#df7765';
-          ctx.fillRect(a.x - 16, top - 7, (32 * a.enemy.hitpoints) / enemyMaxHealth(a.enemy), 3);
+          ctx.fillRect(
+            a.x - 16,
+            top - 7,
+            (32 * a.enemy.hitpoints) / enemyMaxHealth(a.enemy, world?.scene?.difficulty),
+            3,
+          );
           drawDebuffs(ctx, a.enemy, a.x - 17, top - 8, serverTime);
         }
       }

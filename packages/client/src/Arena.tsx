@@ -37,10 +37,10 @@ import {
   wrap,
   wrappedDelta,
   LOBBY_PORTAL,
-  TICK_MS,
   nearbyInteraction,
   inTrainingZone,
 } from '@emberfall/common';
+import { TICK_MS } from '@emberfall/core';
 import type { ClientMessage, WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import { castShadow, makeMask, spriteMask } from './lighting';

@@ -1,10 +1,9 @@
-import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
-import { TRAINING_DEFINITION } from './definitions/encounters/training.ts';
-import { TRAINING_ZONES, inTrainingZone } from './world.ts';
+import { TRANSIENT_EFFECTS } from '@emberfall/common/definitions/effects/transient';
+import { TRAINING_DEFINITION } from '@emberfall/common/definitions/encounters/training';
+import { TRAINING_ZONES, inTrainingZone } from '@emberfall/common';
 import { tickCompanion, tickPlayerCombat } from './simulation.ts';
 import { damagePerSecond, tickDebuffs } from './class-combat.ts';
-import type { Player } from './index.ts';
-import type { SceneState } from './scene.ts';
+import type { Player, SceneState } from '@emberfall/common';
 
 export function tickTraining(
   scene: SceneState | undefined,

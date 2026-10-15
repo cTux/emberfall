@@ -27,8 +27,10 @@ or a validated storage-to-storage command. The server derives the owner from the
 session and saves detached results before publication; drag data never supplies
 items, quantities, currency or a different owner.
 
-- `common`: serializable definitions, validated commands, geometry, shared
-  simulation and prediction functions. No DOM, database or network connections.
+- `common`: shared enums, serializable definitions, validated commands and geometry.
+  No DOM, database or network connections and no dependency on core.
+- `core`: reusable utilities, balance configs and shared combat/prediction kernels;
+  depends on common. Only the server rolls spawns and rewards or applies damage.
 - `server`: authoritative Miniplex entities, ordered fixed-timestep systems,
   Colyseus transport/state projection and Colyseus database persistence.
 - `client`: Colyseus SDK, presentation/prediction Miniplex world, PixiJS world

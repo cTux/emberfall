@@ -4,12 +4,13 @@ Status: implemented. Emberfall is online-only. One Node process owns worlds and 
 
 ## Packages and ownership
 
-| Package           | Responsibility                                                                               | Main entry points                                                                                        |
-| ----------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `packages/common` | Shared types, Zod messages, geometry and simulation functions; exported as TypeScript source | [index.ts](../../packages/common/src/index.ts), [simulation.ts](../../packages/common/src/simulation.ts) |
-| `packages/server` | HTTP(S), Colyseus sessions, world directory, authoritative ticks and SQLite saves            | [index.ts](../../packages/server/src/index.ts), [worlds.ts](../../packages/server/src/worlds.ts)         |
-| `packages/client` | Connection/recovery, preferences, input, prediction, PixiJS rendering and screen composition | [main.tsx](../../packages/client/src/main.tsx), [Arena.tsx](../../packages/client/src/Arena.tsx)         |
-| `packages/ui`     | Controlled React/MUI presentation, theme, accessibility and Storybook                        | [public exports](../../packages/ui/src/index.ts), [component guide](../../packages/ui/README.md)         |
+| Package           | Responsibility                                                                               | Main entry points                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `packages/common` | Shared enums, types, Zod messages, geometry and portable content definitions                 | [index.ts](../../packages/common/src/index.ts)                                                       |
+| `packages/core`   | Balance configs, reusable utilities and shared combat/prediction; depends on common          | [index.ts](../../packages/core/src/index.ts), [simulation.ts](../../packages/core/src/simulation.ts) |
+| `packages/server` | HTTP(S), Colyseus sessions, world directory, authoritative ticks and SQLite saves            | [index.ts](../../packages/server/src/index.ts), [worlds.ts](../../packages/server/src/worlds.ts)     |
+| `packages/client` | Connection/recovery, preferences, input, prediction, PixiJS rendering and screen composition | [main.tsx](../../packages/client/src/main.tsx), [Arena.tsx](../../packages/client/src/Arena.tsx)     |
+| `packages/ui`     | Controlled React/MUI presentation, theme, accessibility and Storybook                        | [public exports](../../packages/ui/src/index.ts), [component guide](../../packages/ui/README.md)     |
 
 Node 24 executes server TypeScript during development. Vite builds the client and bundles the server with an SSR target. The Node HTTP/WebSocket application, not Vite, runs the multiplayer server. Turborepo coordinates workspace commands.
 

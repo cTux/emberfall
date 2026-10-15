@@ -11,8 +11,6 @@ import {
   MAX_PLAYERS,
   clientMessage,
   nearbyInteraction,
-  requestPlayerCast,
-  TICK_MS,
   syncEquipmentVitals,
   useBackpackItem,
   unequipItem,
@@ -21,6 +19,7 @@ import {
   transferStoredItem,
   moveStorageItem,
 } from '@emberfall/common';
+import { requestPlayerCast, TICK_MS } from '@emberfall/core';
 import type {
   ChatMessage,
   Player,

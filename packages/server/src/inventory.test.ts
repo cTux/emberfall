@@ -19,16 +19,14 @@ import {
   GEAR_DEFINITIONS,
   backpackSchema,
   clientMessage,
-  createTrainingScene,
-  requestPlayerCast,
-  stepCombat,
+  INNKEEPER,
+  type ServerMessage,
 } from '@emberfall/common';
+import { createTrainingScene, requestPlayerCast, stepCombat, hitEnemy } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
-import { hitEnemy } from '../../common/src/class-combat.ts';
 import { CharacterStore, freshProgress, decodeProgress } from './characters.ts';
 import { createRuntime } from './runtime.ts';
 import { Peer } from './network/peer.ts';
-import { INNKEEPER, type ServerMessage } from '@emberfall/common';
 
 const hero = (): Player => ({
   ...freshProgress('warrior'),
@@ -282,9 +280,10 @@ test('sell all transfers stacks and gold atomically, preserves equipment and rej
   assert.deepEqual({ player, merchant }, overflow);
 });
 
-test('every forest kill drops non-weapon 1-armor 1-gold gear, collected once across a wrapped seam; training drops none', (t) => {
+test('successful item rolls drop non-weapon 1-armor 1-gold gear once across a wrapped seam; training drops none', (t) => {
   for (const [index, id] of LOOT_ITEM_IDS.entries()) {
-    t.mock.method(Math, 'random', () => (index + 0.5) / LOOT_ITEM_IDS.length);
+    const rolls = [0.5, 0, 0, (index + 0.5) / LOOT_ITEM_IDS.length];
+    t.mock.method(Math, 'random', () => rolls.shift() ?? 0.5);
     const player = hero();
     player.scene = 'forest';
     player.x = 4798;

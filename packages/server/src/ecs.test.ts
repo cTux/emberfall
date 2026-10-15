@@ -1,13 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SimulationWorld } from './ecs/simulation.ts';
-import {
-  appendSceneEntities,
-  createTrainingScene,
-  stepCombat,
-  type Player,
-  type SceneState,
-} from '@emberfall/common';
+import { appendSceneEntities, type Player, type SceneState } from '@emberfall/common';
+import { createTrainingScene, stepCombat } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 
 test('ECS collections preserve identity and explicit order across removal and scene disposal', () => {

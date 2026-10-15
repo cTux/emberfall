@@ -1,19 +1,19 @@
 import {
-  playerAimAngle,
-  smoothAttackAngle,
   characterStats,
   inTrainingZone,
-  fireClassAttack,
-  advancePlayerShot,
-} from '@emberfall/common';
-import {
   FOREST,
-  movePlayer,
   moveActor,
   moveForestActor,
   wrap,
   wrappedDelta,
 } from '@emberfall/common';
+import {
+  playerAimAngle,
+  smoothAttackAngle,
+  fireClassAttack,
+  advancePlayerShot,
+  movePlayer,
+} from '@emberfall/core';
 import type { Player, PlayerShot, WorldState, ClientMessage } from '@emberfall/common';
 
 type Move = Extract<ClientMessage, { type: 'move' }> & {

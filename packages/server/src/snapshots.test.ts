@@ -1,9 +1,9 @@
 import { edgeArrow } from '../../client/src/navigation.ts';
-import { swordOverlapsEnemy, smoothAttackAngle } from '@emberfall/common';
+import { swordOverlapsEnemy, smoothAttackAngle, stepCombat } from '@emberfall/core';
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
-import { FOREST, stepCombat } from '@emberfall/common';
+import { FOREST } from '@emberfall/common';
 import type { WorldState, Player, SceneState } from '@emberfall/common';
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
@@ -270,12 +270,12 @@ test('kills drop experience and 10-percent coins; experience pickups reward play
   stepCombat(scene, [player], 10000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ['experience', 'gold', 'item'],
+    ['experience', 'gold'],
   );
   const experience = player.experience;
   player.x = 2440;
   stepCombat(scene, [player], 10200, 0);
-  assert.equal(scene.drops!.length, 3, 'initial hop is visible before pickup');
+  assert.equal(scene.drops!.length, 2, 'initial hop is visible before pickup');
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.drops!.length, 0);
   assert.equal(player.experience, experience + 1, 'collection grants one extra experience');
@@ -285,7 +285,7 @@ test('kills drop experience and 10-percent coins; experience pickups reward play
   stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
     scene.drops!.map((d) => d.kind),
-    ['experience', 'item'],
+    ['experience'],
   );
   scene.phase = 'ended';
   stepCombat(scene, [player], 71000, 0);

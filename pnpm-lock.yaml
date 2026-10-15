@@ -124,7 +124,11 @@ importers:
         specifier: 'catalog:'
         version: 4.6.5
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      '@emberfall/common':
+        specifier: workspace:*
+        version: link:../common
 
   packages/server:
     dependencies:
