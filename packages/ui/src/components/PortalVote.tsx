@@ -9,7 +9,7 @@ export interface PortalVoteProps {
   voted: boolean;
   countdown?: number;
   disabled?: boolean;
-  onVote(): void;
+  onVote: () => void;
 }
 export function PortalVote({
   scene,

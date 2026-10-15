@@ -77,7 +77,10 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   for (const [name, { actual, expected }] of Object.entries(results)) {
     for (let channel = 0; channel < 4; channel++) {
       expect
-        .soft(Math.abs(actual[channel] - expected[channel]), `${name}: ${actual} vs ${expected}`)
+        .soft(
+          Math.abs(actual[channel] - expected[channel]),
+          `${name}: ${actual.join(',')} vs ${expected.join(',')}`,
+        )
         .toBeLessThanOrEqual(3);
     }
   }

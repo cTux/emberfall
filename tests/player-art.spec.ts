@@ -111,9 +111,9 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
         if (col >= 2) {
           const silhouettes = [...feet];
           const spans = silhouettes.map((silhouette) => {
-            const occupied = [...silhouette].flatMap((pixel, index) =>
-              pixel === '1' ? [index % 32] : [],
-            );
+            const occupied = silhouette
+              .split('')
+              .flatMap((pixel, index) => (pixel === '1' ? [index % 32] : []));
             return occupied.length ? Math.max(...occupied) - Math.min(...occupied) : 0;
           });
           if (Math.max(...spans) - Math.min(...spans) < 4)
@@ -121,7 +121,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
           const changed = Math.max(
             ...silhouettes.flatMap((a) =>
               silhouettes.map((b) =>
-                [...a].reduce((count, pixel, index) => count + Number(pixel !== b[index]), 0),
+                a.split('').reduce((count, pixel, index) => count + Number(pixel !== b[index]), 0),
               ),
             ),
           );

@@ -124,7 +124,7 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
   const call = (
     path: string,
     cookies = '',
-    method = 'GET',
+    method: string = 'GET',
     body?: unknown,
     requestOrigin = origin,
   ) =>
@@ -228,6 +228,8 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
     });
     assert.match(await rejected, /already playing/);
     await otherRoom.leave();
+    // Preserve the method for restoration; this reference is never called unbound.
+    // oxlint-disable-next-line typescript/unbound-method
     const rename = app.runtime.characters.renameSteam;
     app.runtime.characters.renameSteam = () => {
       throw new Error('Injected save failure');

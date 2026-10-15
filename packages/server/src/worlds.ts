@@ -55,10 +55,10 @@ export async function createGameServer(
       if (!token) throw new ServerError(401, 'Please sign in again');
       return token;
     }
-    onCreate(options: { protocolVersion?: number }) {
+    async onCreate(options: { protocolVersion?: number }) {
       if (options.protocolVersion !== RUNTIME.protocolVersion)
         throw new ServerError(4002, 'Client protocol version is incompatible. Reload the game.');
-      this.setPrivate(true);
+      await this.setPrivate(true);
       this.setPatchRate(50);
       this.onMessage('command', (_client, command) => this.peer?.receive(command));
     }

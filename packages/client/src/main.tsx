@@ -56,9 +56,9 @@ function App({
   refresh,
 }: {
   account: AccountView;
-  rename(): void;
-  logout(): Promise<void>;
-  refresh(): Promise<void>;
+  rename: () => void;
+  logout: () => Promise<void>;
+  refresh: () => Promise<void>;
 }) {
   const socket = useRef<GameConnection | null>(null);
   const [status, setStatus] = useState('Connecting');
@@ -159,6 +159,8 @@ function App({
       ws.send({ type: 'ping', id: probeId });
     };
     const pingTimer = setInterval(ping, 2000);
+    // The version request catches failures and closes the connection for retry.
+    // oxlint-disable-next-line typescript/no-misused-promises
     ws.onopen = async () => {
       try {
         const response = await fetch('/version.json', {

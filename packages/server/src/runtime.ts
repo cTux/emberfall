@@ -245,6 +245,8 @@ export async function createRuntime(savePath = ':memory:') {
       sessions.delete(ws);
       broadcastList();
     });
+    // Password hashing and persistence failures are caught and sent to the peer below.
+    // oxlint-disable-next-line typescript/no-misused-promises
     ws.on('command', async (command: unknown) => {
       const error = (message: string) => send(ws, { type: 'error', message });
       const authenticated = account?.();

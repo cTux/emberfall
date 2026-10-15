@@ -8,7 +8,7 @@ export interface ChoiceCardProps {
   icon?: ReactNode;
   selected?: boolean;
   disabled?: boolean;
-  onSelect(): void;
+  onSelect: () => void;
 }
 export function ChoiceCard({
   title,

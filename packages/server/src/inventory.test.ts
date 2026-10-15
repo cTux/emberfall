@@ -224,6 +224,8 @@ test('buyback keeps the latest 20 sales separate, migrates legacy gear, and reje
   const merchant = freshMerchant();
   player.backpack = Array.from({ length: 24 }, () => item('loot-helmet'));
   const ids: string[] = [];
+  // Trading mutates the backpack; iterate a snapshot so every original item is sold.
+  // oxlint-disable-next-line unicorn/no-useless-spread
   for (const entry of [...player.backpack]) {
     tradeItem(player, merchant, entry.id, false);
     ids.push(merchant.buyback[0].id);

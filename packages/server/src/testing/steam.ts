@@ -4,9 +4,15 @@ export const heroId = '76561198000000001';
 export const friendId = '76561198000000002';
 /** Fake upstream only; tests still exercise the complete OpenID verifier. */
 export const steamRequest: typeof fetch = async (input, init) => {
-  const url = new URL(String(input));
+  const url = new URL(input instanceof Request ? input.url : input);
   if (url.hostname === 'steamcommunity.com') {
-    const query = new URLSearchParams(String(init?.body));
+    const query = new URLSearchParams(
+      typeof init?.body === 'string'
+        ? init.body
+        : init?.body instanceof URLSearchParams
+          ? init.body
+          : undefined,
+    );
     return new Response(
       `ns:http://specs.openid.net/auth/2.0\nis_valid:${query.get('openid.sig') === 'test-signature'}\n`,
     );

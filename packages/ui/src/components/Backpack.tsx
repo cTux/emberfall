@@ -21,7 +21,7 @@ export interface BackpackProps {
   slots?: number;
   inventory?: string;
   drop?: InventoryDrop;
-  onUse(id: string): void;
+  onUse: (id: string) => void;
 }
 /** Twenty slots by default; keep legacy overflow accessible until it is cleared. */
 export function Backpack({

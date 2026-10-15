@@ -9,8 +9,8 @@ function NicknameDialog({
   onClose,
 }: {
   account: AccountView;
-  onSaved(account: AccountView): void;
-  onClose(): void;
+  onSaved: (account: AccountView) => void;
+  onClose: () => void;
 }) {
   const [value, setValue] = useState(account.nickname ?? account.steamName);
   const [pending, setPending] = useState(false);
@@ -26,6 +26,8 @@ function NicknameDialog({
       <Stack
         component='form'
         spacing={2}
+        // The handler catches request failures and displays them in the dialog.
+        // oxlint-disable-next-line typescript/no-misused-promises
         onSubmit={async (event) => {
           event.preventDefault();
           if (!valid || pending) return;
@@ -81,12 +83,12 @@ function NicknameDialog({
 export function AccountGate({
   children,
 }: {
-  children(props: {
+  children: (props: {
     account: AccountView;
-    rename(): void;
-    logout(): Promise<void>;
-    refresh(): Promise<void>;
-  }): ReactNode;
+    rename: () => void;
+    logout: () => Promise<void>;
+    refresh: () => Promise<void>;
+  }) => ReactNode;
 }) {
   const [account, setAccount] = useState<AccountView>();
   const [editing, setEditing] = useState(false);

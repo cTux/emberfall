@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises';
 import Negotiator from 'negotiator';
 import { resolve, extname, sep } from 'node:path';
 export function staticHandler(staticRoot?: string): RequestListener {
+  // File request failures are caught below and finish the HTTP response.
+  // oxlint-disable-next-line typescript/no-misused-promises
   const handler: RequestListener = async (req, res) => {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });

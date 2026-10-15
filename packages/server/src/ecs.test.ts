@@ -16,6 +16,8 @@ test('ECS collections preserve identity and explicit order across removal and sc
   assert.equal(scene.enemies.at(-1), last);
   last.hitpoints = 12;
   assert.equal(
+    // Miniplex queries are iterable but do not implement Array.find.
+    // oxlint-disable-next-line unicorn/no-useless-spread
     [...world.ecs.with('enemies')].find((e) => e.enemies === last)!.enemies.hitpoints,
     12,
   );

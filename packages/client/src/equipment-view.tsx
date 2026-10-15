@@ -191,7 +191,7 @@ export function Equipment({
   send,
 }: {
   player: Player;
-  send(message: ClientMessage): void;
+  send: (message: ClientMessage) => void;
 }) {
   const classId = player.classId ?? 'warrior';
   const equipment = equippedItems(player);
@@ -295,7 +295,7 @@ export function Trading({
 }: {
   player: Player;
   merchant: import('@emberfall/common').Merchant;
-  send(message: ClientMessage): void;
+  send: (message: ClientMessage) => void;
 }) {
   const [tab, setTab] = useState('buy');
   return (

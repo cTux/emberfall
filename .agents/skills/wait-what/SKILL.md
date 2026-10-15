@@ -1,6 +1,6 @@
 ---
 name: wait-what
-description: "Stop. That last message did not land: re-pitch it."
+description: 'Stop. That last message did not land: re-pitch it.'
 license: MIT
 metadata:
   upstream-repository: https://github.com/mattpocock/skills

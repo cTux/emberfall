@@ -34,7 +34,7 @@ export interface HudAction {
   label: string;
   icon: IconDefinition;
   disabled?: boolean;
-  onClick(): void;
+  onClick: () => void;
 }
 export function HudActions({ actions }: { actions: HudAction[] }) {
   return (

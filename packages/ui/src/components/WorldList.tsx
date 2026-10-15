@@ -21,7 +21,7 @@ export interface WorldListProps {
   selectedId?: string;
   disabled?: boolean;
   latency?: number | null;
-  onJoin(world: WorldEntry): void;
+  onJoin: (world: WorldEntry) => void;
 }
 export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: WorldListProps) {
   return (
