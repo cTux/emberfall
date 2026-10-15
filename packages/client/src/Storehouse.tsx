@@ -39,10 +39,8 @@ export function Storehouse({
     },
   });
   return (
-    <>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-        <GoldBalance name='Storehouse' coins={player.coins ?? 0} />
-      </Box>
+    <Stack spacing={0.5}>
+      <GoldBalance name='Storehouse' coins={player.coins ?? 0} />
       <ChapterTabs
         label='Storehouse storages'
         value={tab}
@@ -127,6 +125,6 @@ export function Storehouse({
           </Stack>
         </Stack>
       </GameWindow>
-    </>
+    </Stack>
   );
 }

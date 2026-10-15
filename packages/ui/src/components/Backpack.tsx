@@ -37,17 +37,19 @@ export function Backpack({
 }: BackpackProps) {
   return (
     <Box component='section' aria-label={label} sx={{ minWidth: 0 }} {...inventoryDropProps(drop)}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          minHeight: 24,
-        }}
-      >
-        {coins !== undefined && <GoldBalance name={label} coins={coins} />}
-        {headerActions}
-      </Box>
+      {(coins !== undefined || headerActions) && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: 24,
+          }}
+        >
+          {coins !== undefined && <GoldBalance name={label} coins={coins} />}
+          {headerActions}
+        </Box>
+      )}
       <Box
         sx={{
           display: 'grid',
