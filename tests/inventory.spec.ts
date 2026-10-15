@@ -71,6 +71,38 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await expect(trader).toBeVisible();
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(trader.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();
+  for (const width of [1280, 883, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    for (const tab of ['Buyback', 'Buy']) {
+      await trader.getByRole('tab', { name: tab, exact: true }).click();
+      const merchantSlots = trader
+        .getByRole('region', {
+          name: tab === 'Buy' ? "Innkeeper's backpack" : 'Buyback',
+          exact: true,
+        })
+        .locator('button');
+      const playerSlots = trader
+        .getByRole('region', { name: 'Your backpack' })
+        .locator('[data-backpack-item], button[aria-hidden="true"]');
+      for (let index = 0; index < 20; index++) {
+        const left = (await merchantSlots.nth(index).boundingBox())!;
+        const right = (await playerSlots.nth(index).boundingBox())!;
+        expect(Math.abs(left.y - right.y)).toBeLessThan(1);
+        expect(Math.abs(left.width - left.height)).toBeLessThan(1);
+        expect(Math.abs(left.width - right.width)).toBeLessThan(1);
+      }
+      if (width > 320) {
+        const window = (await trader.boundingBox())!;
+        const first = (await merchantSlots.first().boundingBox())!;
+        const last = (await playerSlots.last().boundingBox())!;
+        const padding = first.x - window.x;
+        expect(Math.abs(window.x + window.width - last.x - last.width - padding)).toBeLessThan(1);
+        expect(Math.abs(window.y + window.height - last.y - last.height - padding)).toBeLessThan(1);
+      }
+    }
+    await page.screenshot({ path: `test-results/innkeeper-aligned-${width}.png` });
+  }
+  await page.setViewportSize({ width: 1280, height: 800 });
   await trader.getByRole('button', { name: 'Sell Helmet', exact: true }).click({ button: 'right' });
   await expect(trader.getByRole('button', { name: 'Buy Helmet', exact: true })).toHaveCount(0);
   await trader.getByRole('tab', { name: 'Buyback', exact: true }).click();

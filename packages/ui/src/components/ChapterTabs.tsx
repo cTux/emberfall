@@ -24,7 +24,7 @@ export function ChapterTabs({
   const id = useId();
   const active = chapters.find((chapter) => chapter.id === value && !chapter.disabled);
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} useFlexGap>
       <Tabs
         aria-label={label}
         value={active ? value : false}
