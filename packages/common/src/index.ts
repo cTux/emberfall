@@ -1,4 +1,5 @@
 import { RUNTIME } from './definitions/runtime.ts';
+export * from './enums/index.ts';
 export { nicknameSchema, type AccountView } from './account.ts';
 import { CLASS_IDS, CLASS_LABELS } from './definitions/entities/players.ts';
 export { CLASS_IDS, CLASS_LABELS };
@@ -19,10 +20,6 @@ export {
   moveActor,
 } from './world.ts';
 export * from './scene.ts';
-export * from './simulation.ts';
-export * from './training.ts';
-export { fireClassAttack, advancePlayerShot, defaultSpellRange } from './class-combat.ts';
-export { ENEMY_HP, ENEMY_STATS, enemyMaxHealth, spawnArchetype } from './enemies.ts';
 import { FOREST } from './scene.ts';
 import type { SceneState } from './scene.ts';
 
@@ -220,6 +217,7 @@ export type ServerMessage =
   | { type: 'left' }
   | { type: 'error'; message: string };
 
-export { createTrainingScene } from './training.ts';
 export { SCENE_COLLECTIONS, appendSceneEntities } from './entities.ts';
 export type { SceneCollection, SceneEntity } from './entities.ts';
+
+export { ENEMY_STATS } from './definitions/entities/enemies.ts';

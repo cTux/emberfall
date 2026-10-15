@@ -1,14 +1,30 @@
-import { PLAYER_BODY_RADIUS } from './definitions/entities/players.ts';
-import { modelHitbox, enemyHitbox, overlapsBody } from './hitboxes.ts';
-import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
-import { BEAR_DEFINITION } from './definitions/entities/companions.ts';
-import { ENEMY_RULES, BOSS_DEFINITIONS } from './definitions/entities/enemies.ts';
-import { FOREST_ENCOUNTER } from './definitions/encounters/forest.ts';
-import { PICKUP_DEFINITIONS, PICKUP_RULES } from './definitions/entities/pickups.ts';
-import { COLLISION } from './definitions/collision.ts';
-import { appendSceneEntities } from './entities.ts';
-import { ATTACK_DEFINITIONS } from './definitions/abilities/attacks.ts';
-import { RUNTIME } from './definitions/runtime.ts';
+import { PLAYER_BODY_RADIUS } from '@emberfall/common/definitions/entities/players';
+import { modelHitbox, enemyHitbox, overlapsBody } from '@emberfall/common/hitboxes';
+import { TRANSIENT_EFFECTS } from '@emberfall/common/definitions/effects/transient';
+import { BEAR_DEFINITION } from '@emberfall/common/definitions/entities/companions';
+import { ENEMY_RULES, BOSS_DEFINITIONS } from '@emberfall/common/definitions/entities/enemies';
+import { FOREST_ENCOUNTER } from '@emberfall/common/definitions/encounters/forest';
+import { PICKUP_DEFINITIONS, PICKUP_RULES } from '@emberfall/common/definitions/entities/pickups';
+import { COLLISION } from '@emberfall/common/definitions/collision';
+import {
+  appendSceneEntities,
+  FOREST,
+  forestDistance,
+  forestTrees,
+  wrappedDelta,
+  moveForestActor,
+  wrap,
+  hasLivingScenePlayers,
+  ARENA,
+  moveActor,
+  inTrainingZone,
+  addItem,
+  INVENTORY_SLOTS,
+  characterStats,
+  companionStats,
+} from '@emberfall/common';
+import { ATTACK_DEFINITIONS } from '@emberfall/common/definitions/abilities/attacks';
+import { RUNTIME } from '@emberfall/common/definitions/runtime';
 import {
   hitWithWeapon,
   tickDebuffs,
@@ -17,20 +33,10 @@ import {
   defaultSpellRange,
 } from './class-combat.ts';
 import { ENEMY_STATS, moveEnemies, spawnArchetype, enemyMaxHealth } from './enemies.ts';
-import {
-  FOREST,
-  forestDistance,
-  forestTrees,
-  wrappedDelta,
-  moveForestActor,
-  wrap,
-  hasLivingScenePlayers,
-} from './scene.ts';
-import { ARENA, moveActor, inTrainingZone } from './world.ts';
-import type { Player, Bear, ClientMessage } from './index.ts';
-import type { SceneState, Enemy } from './scene.ts';
-import { addItem, INVENTORY_SLOTS } from './inventory.ts';
-import { characterStats, companionStats } from './equipment.ts';
+import type { Player, Bear, ClientMessage, SceneState, Enemy } from '@emberfall/common';
+import { EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { spawnEnemyType } from './utils/spawnEnemyType.ts';
+import { enemyAttributes } from './utils/enemyAttributes.ts';
 
 export const TICK_MS = RUNTIME.tickMs;
 export const PLAYER_ATTACK_RANGE = defaultSpellRange({ classId: 'warrior' });
@@ -360,7 +366,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     healthScale / ENEMY_RULES.healthPerMember ** Math.max(0, (scene.playerCount ?? 1) - 1);
   if (healthRatio !== 1) {
     for (const enemy of [...scene.enemies, ...(scene.spawns ?? [])]) {
-      enemy.maxHitpoints = enemyMaxHealth(enemy) * healthRatio;
+      enemy.maxHitpoints = enemyMaxHealth(enemy, scene.difficulty) * healthRatio;
       enemy.hitpoints *= healthRatio;
     }
   }
@@ -496,16 +502,12 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
         ) && [...scene.enemies, ...scene.spawns].every((e) => forestDistance(e, position) >= 32);
       if (!clear) continue;
       scene.spawnCount = (scene.spawnCount ?? 0) + 1;
-      const kind = spawnBoss
-        ? 'boss'
-        : scene.spawnCount % ENEMY_RULES.eliteEvery === 0
-          ? 'elite'
-          : 'normal';
+      const kind = spawnBoss ? EnemyType.Boss : spawnEnemyType();
       const id = ++scene.sequence;
       const archetype = spawnBoss
         ? BOSS_DEFINITIONS[FOREST_ENCOUNTER.boss].archetype
         : spawnArchetype(Math.random(), scene.spawnCount);
-      const hitpoints = enemyMaxHealth({ kind, archetype }) * healthScale;
+      const hitpoints = enemyMaxHealth({ kind, archetype }, scene.difficulty) * healthScale;
       appendSceneEntities(scene, 'spawns', {
         id,
         ...position,
@@ -548,7 +550,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     ...alive.flatMap((p) => (p.bear && p.bear.hitpoints > 0 ? [p.bear] : [])),
   ];
   moveEnemies(scene.enemies, combatants, dt, now);
-  const hurt = (target: Player | Bear, damage: number = ENEMY_RULES.damage) => {
+  const hurt = (target: Player | Bear, damage: number) => {
     if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) return;
     const owner = 'returning' in target ? alive.find((p) => p.bear === target) : target;
     const reduction = owner ? characterStats(owner).damageReduction : 0;
@@ -570,6 +572,11 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
   };
   for (const enemy of scene.enemies) {
     const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
+    const damage = enemyAttributes(
+      enemy.archetype ?? EnemyKind.Skeleton,
+      enemy.kind ?? EnemyType.Normal,
+      scene.difficulty,
+    ).damage;
     const target = combatants
       .filter((p) => p.hitpoints > 0)
       .reduce<Player | Bear | undefined>(
@@ -596,10 +603,11 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
             vx: Math.cos(angle) * ENEMY_RULES.projectileSpeed,
             vy: Math.sin(angle) * ENEMY_RULES.projectileSpeed,
             expiresAt: now + ENEMY_RULES.projectileLifetimeMs,
+            damage,
           });
       } else {
         for (const player of combatants)
-          if (overlapsBody(attack, attack.radius, modelHitbox(player))) hurt(player);
+          if (overlapsBody(attack, attack.radius, modelHitbox(player))) hurt(player, damage);
       }
     } else if (
       target &&
@@ -634,7 +642,11 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
           p.hitpoints > 0 && overlapsBody(shot, COLLISION.enemyProjectileRadius, modelHitbox(p)),
       );
       if (hit) {
-        hurt(hit);
+        hurt(
+          hit,
+          shot.damage ??
+            enemyAttributes(EnemyKind.Caster, EnemyType.Normal, scene.difficulty).damage,
+        );
         return false;
       }
     }

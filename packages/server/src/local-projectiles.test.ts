@@ -2,12 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
-import {
-  fireClassAttack,
-  FOREST,
-  requestPlayerCast,
-  PLAYER_ATTACK_INTERVAL,
-} from '@emberfall/common';
+import { FOREST } from '@emberfall/common';
+import { fireClassAttack, requestPlayerCast, PLAYER_ATTACK_INTERVAL } from '@emberfall/core';
 import type { Player, WorldState, SceneState, ClientMessage } from '@emberfall/common';
 
 function fixture(classId: Player['classId'] = 'mage', training = false): WorldState {

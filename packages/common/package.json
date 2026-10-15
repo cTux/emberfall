@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./enums": "./src/enums/index.ts",
     "./protocol": "./src/protocol/state.ts",
     "./hitboxes": "./src/hitboxes.ts",
     "./definitions/*": "./src/definitions/*.ts"

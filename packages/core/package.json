@@ -6,5 +6,8 @@
   "scripts": {
     "test": "node --test src/utils/tests/*.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@emberfall/common": "workspace:*"
   }
 }

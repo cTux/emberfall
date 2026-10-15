@@ -1,4 +1,5 @@
-import { movePlayer, TICK_MS, type Player } from '@emberfall/common';
+import { type Player } from '@emberfall/common';
+import { movePlayer, TICK_MS } from '@emberfall/core';
 export interface MovementInput {
   chatAt?: number;
   timed?: boolean;

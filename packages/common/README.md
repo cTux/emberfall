@@ -1,33 +1,37 @@
 # Shared rules and definitions
 
 This package contains no DOM access, database connection, or server transport.
-The client and server import
-the same movement, wrapping, targeting, projectile, and combat rules.
+The client and server share its state, enums, geometry and content definitions.
+Combat, projectile and training kernels live in [core](../core/README.md).
 
 ## Where things belong
 
-| Location                                                                        | Responsibility                                                    |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `src/definitions/entities`                                                      | Classes, enemy archetypes, companion and pickup definitions       |
-| `src/definitions/abilities`                                                     | Ranges, damage, cadence, projectile speeds and spread             |
-| `src/definitions/effects`                                                       | Ailment stacking and duration rules                               |
-| `src/definitions/encounters`                                                    | Training layout and regeneration                                  |
-| `src/definitions/worlds`                                                        | World dimensions, landmarks, paths, spawn and return locations    |
-| `src/definitions/runtime.ts`                                                    | Shared runtime defaults                                           |
-| `src/index.ts`, `src/scene.ts`                                                  | Validated commands and plain runtime state types                  |
-| `src/simulation.ts`, `src/class-combat.ts`, `src/enemies.ts`, `src/training.ts` | Shared simulation systems                                         |
-| `src/entities.ts`                                                               | Collection membership boundary used by ECS and ordinary snapshots |
-| `src/protocol/state.ts`                                                         | Colyseus projection and detached snapshot reconstruction          |
+Shared enums belong in `src/enums`. New reusable game utilities and balance
+configs belong in [core](../core/README.md). Core may depend on common; common
+must not import core. Combat, enemies and training now live in core; the
+definitions and lower-level geometry below remain in common.
+
+| Location                       | Responsibility                                                    |
+| ------------------------------ | ----------------------------------------------------------------- |
+| `src/definitions/entities`     | Classes, enemy archetypes, companion and pickup definitions       |
+| `src/definitions/abilities`    | Ranges, damage, cadence, projectile speeds and spread             |
+| `src/definitions/effects`      | Ailment stacking and duration rules                               |
+| `src/definitions/encounters`   | Training layout and regeneration                                  |
+| `src/definitions/worlds`       | World dimensions, landmarks, paths, spawn and return locations    |
+| `src/definitions/runtime.ts`   | Shared runtime defaults                                           |
+| `src/index.ts`, `src/scene.ts` | Validated commands and plain runtime state types                  |
+| `src/entities.ts`              | Collection membership boundary used by ECS and ordinary snapshots |
+| `src/protocol/state.ts`        | Colyseus projection and detached snapshot reconstruction          |
 
 Definitions are plain serializable objects. Keys/IDs name types; live entities
 have their own IDs, position, health, deadlines and ownership. Do not place
 functions, Pixi objects, schema instances, mutable progress, or database rows
-inside a definition. Geometry algorithms and behavior belong in systems.
+inside a definition. Geometry algorithms remain here; combat behavior belongs in core systems.
 
 ## Develop and reuse
 
 Start a content change in the relevant definition. Keep its current values when
-porting an existing feature. Add behavior to the appropriate shared system and
+porting an existing feature. Add behavior to the appropriate shared core system and
 use the same system for forest and training. Add presentation separately in
 `client`; server commands decide whether an action is allowed.
 

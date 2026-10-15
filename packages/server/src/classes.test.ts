@@ -5,26 +5,26 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { CharacterStore, freshProgress } from './characters.ts';
 import {
-  spawnArchetype,
-  enemyMaxHealth,
-  stepCombat,
   FOREST,
   ARENA,
   nearbyInteraction,
   WARDROBE,
   clientMessage,
-  tickCompanion,
   forestDistance,
 } from '@emberfall/common';
 import {
+  spawnArchetype,
+  enemyMaxHealth,
+  stepCombat,
+  tickCompanion,
   hitEnemy,
   tickDebuffs,
   fireClassAttack,
   tickPlayerShots,
   projectileAngle,
-} from '../../common/src/class-combat.ts';
+  moveEnemies,
+} from '@emberfall/core';
 import type { Player, SceneState, Enemy } from '@emberfall/common';
-import { moveEnemies } from '../../common/src/enemies.ts';
 // Base-damage scenarios exclude random criticals; equipment.test.ts covers their boundaries.
 beforeEach((t) => {
   if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
@@ -249,7 +249,7 @@ test('projectile spread centers odd and even counts with six-degree spacing', as
 });
 
 test('ranged classes launch their configured straight projectiles in both aiming modes', async () => {
-  const { advancePlayerShot } = await import('@emberfall/common');
+  const { advancePlayerShot } = await import('@emberfall/core');
   for (const classId of ['mage', 'ranger', 'druid'] as const) {
     for (const autoTarget of [false, true]) {
       const p = { ...hero(), classId, autoTarget, aimX: 2600, aimY: 1280 };
@@ -514,7 +514,7 @@ test('enemies damage Bear; death resurrects exactly five seconds later at its ow
   tickCompanion(p, s, 10000, 0);
   const bear = p.bear!;
   bear.x = 2470;
-  bear.hitpoints = 10;
+  bear.hitpoints = 3;
   const e = enemy(1, 2470);
   e.attack = { startedAt: 9000, endsAt: 10000, x: 2470, y: 1280, radius: 40, ranged: false };
   s.enemies = [e];
@@ -534,7 +534,7 @@ test('enemies damage Bear; death resurrects exactly five seconds later at its ow
   p.x -= 80;
   p.attackAt = 15000;
   stepCombat(s, [p], 15100, 0);
-  assert.equal(bear.hitpoints, hitpoints - 10);
+  assert.equal(bear.hitpoints, hitpoints - 3);
 });
 
 test('bear wraps its leash and follows in the village; other classes remove companions', async () => {
@@ -586,9 +586,9 @@ test('one spawn roll gives exactly ten percent big and ten percent ranged with h
   assert.equal(types.filter((a) => a === 'caster').length, 10);
   assert.equal(enemyMaxHealth({ archetype: 'brute' }), 30);
   assert.equal(enemyMaxHealth({ archetype: 'caster' }), 7);
-  assert.equal(enemyMaxHealth({ archetype: 'brute', kind: 'elite' }), 150);
-  assert.equal(enemyMaxHealth({ archetype: 'caster', kind: 'elite' }), 35);
-  assert.equal(enemyMaxHealth({ archetype: 'brute', kind: 'boss' }), 200);
+  assert.equal(enemyMaxHealth({ archetype: 'brute', kind: 'elite' }), 90);
+  assert.equal(enemyMaxHealth({ archetype: 'caster', kind: 'elite' }), 21);
+  assert.equal(enemyMaxHealth({ archetype: 'brute', kind: 'boss' }), 300);
 });
 
 test('each ailment stacks, refreshes its timer, ticks once per second, and expires after five seconds', (t) => {
@@ -637,7 +637,7 @@ test('proc boundary is ten percent; DOT kills use the same loot, XP and boss com
   assert.equal(p.experience, 1);
   assert.deepEqual(
     s.drops!.map((drop) => drop.kind),
-    ['experience', 'item'],
+    ['experience', 'item', 'item'],
   );
 });
 
@@ -751,7 +751,7 @@ test('class attacks fire once per cycle and ranged classes never deal a melee sl
 });
 
 test('manual cast requests acknowledge acceptance, cooldown rejection and duplicates without held-input repeats', async () => {
-  const { tickPlayerCombat, requestPlayerCast } = await import('@emberfall/common');
+  const { tickPlayerCombat, requestPlayerCast } = await import('@emberfall/core');
   const player = { ...hero(), classId: 'ranger' as const, autoAttack: false };
   const arena = scene();
   arena.enemies = [enemy(1)];
@@ -799,7 +799,7 @@ test('manual cast requests acknowledge acceptance, cooldown rejection and duplic
 });
 
 test('slightly early held casts wait for cooldown and retain aim without duplicate launches', async () => {
-  const { requestPlayerCast, tickPlayerCombat } = await import('@emberfall/common');
+  const { requestPlayerCast, tickPlayerCombat } = await import('@emberfall/core');
   for (const classId of ['mage', 'ranger', 'druid'] as const) {
     const player: Player = { ...hero(), classId, autoAttack: false, autoTarget: false };
     const arena = scene();
@@ -848,7 +848,7 @@ test('slightly early held casts wait for cooldown and retain aim without duplica
 });
 
 test('accepted manual projectiles use request aim even if the cursor moves before the combat tick', async () => {
-  const { requestPlayerCast, tickPlayerCombat } = await import('@emberfall/common');
+  const { requestPlayerCast, tickPlayerCombat } = await import('@emberfall/core');
   const player = { ...hero(), classId: 'ranger' as const, autoAttack: false, autoTarget: false };
   const arena = scene();
   assert(
@@ -876,7 +876,7 @@ test('accepted manual projectiles use request aim even if the cursor moves befor
 });
 
 test('manual cast eligibility rejects stale areas/classes, death and inactive combat', async () => {
-  const { requestPlayerCast } = await import('@emberfall/common');
+  const { requestPlayerCast } = await import('@emberfall/core');
   for (const reason of [
     'area',
     'class',
@@ -933,7 +933,7 @@ test('manual cast eligibility rejects stale areas/classes, death and inactive co
 });
 
 test('untargeted spells follow cast aim past the cursor and expire after 1000px', async () => {
-  const { advancePlayerShot, playerAimAngle } = await import('@emberfall/common');
+  const { advancePlayerShot, playerAimAngle } = await import('@emberfall/core');
   for (const classId of ['mage', 'ranger', 'druid'] as const) {
     for (const autoAttack of [false, true]) {
       const player: Player = {

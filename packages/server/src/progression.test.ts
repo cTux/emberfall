@@ -3,9 +3,8 @@ import test from 'node:test';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { experienceRequired } from '@emberfall/core';
+import { experienceRequired, hitEnemy } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
-import { hitEnemy } from '../../common/src/class-combat.ts';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 import { tickScene, type SceneWorld } from './scenes.ts';
 

@@ -11,13 +11,13 @@ import {
   storagesSchema,
   transferStoredItem,
   moveStorageItem,
-  stepCombat,
   tradeItem,
   freshMerchant,
   type SceneState,
   type Player,
   type ServerMessage,
 } from '@emberfall/common';
+import { stepCombat } from '@emberfall/core';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 import { createRuntime } from './runtime.ts';
 import { Peer } from './network/peer.ts';

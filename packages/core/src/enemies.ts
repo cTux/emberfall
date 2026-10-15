@@ -1,4 +1,4 @@
-import { AILMENT_DEFINITIONS } from './definitions/effects/ailments.ts';
+import { AILMENT_DEFINITIONS } from '@emberfall/common/definitions/effects/ailments';
 import {
   FOREST,
   forestDistance,
@@ -6,16 +6,13 @@ import {
   moveForestActor,
   wrap,
   wrappedDelta,
-} from './scene.ts';
-import type { Enemy } from './scene.ts';
+} from '@emberfall/common';
+import type { Enemy } from '@emberfall/common';
 
-import {
-  ENEMY_HP,
-  ENEMY_STATS,
-  ENEMY_RULES,
-  ENEMY_HEALTH_MULTIPLIERS,
-} from './definitions/entities/enemies.ts';
-export { ENEMY_HP, ENEMY_STATS };
+import { ENEMY_STATS, ENEMY_RULES } from '@emberfall/common/definitions/entities/enemies';
+import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { enemyAttributes } from './utils/enemyAttributes.ts';
+export { ENEMY_STATS };
 export function spawnArchetype(roll: number, count: number): NonNullable<Enemy['archetype']> {
   return roll < ENEMY_RULES.bruteChance
     ? 'brute'
@@ -25,11 +22,17 @@ export function spawnArchetype(roll: number, count: number): NonNullable<Enemy['
         ? 'skeleton'
         : 'runner';
 }
-export function enemyMaxHealth(enemy: Pick<Enemy, 'kind' | 'archetype' | 'maxHitpoints'>) {
+export function enemyMaxHealth(
+  enemy: Pick<Enemy, 'kind' | 'archetype' | 'maxHitpoints'>,
+  difficulty: Difficulty = Difficulty.Easy,
+) {
   return (
     enemy.maxHitpoints ??
-    ENEMY_HP[enemy.kind ?? 'normal'] *
-      (enemy.kind === 'boss' ? 1 : ENEMY_HEALTH_MULTIPLIERS[enemy.archetype ?? 'skeleton'])
+    enemyAttributes(
+      enemy.archetype ?? EnemyKind.Skeleton,
+      enemy.kind ?? EnemyType.Normal,
+      difficulty,
+    ).hitPoints
   );
 }
 

@@ -45,7 +45,7 @@ production entrypoint.
   tie-breaking when entities are removed. Scene disposal removes its components.
 - `systems/movement.ts` consumes at most one tick's input duration, acknowledges
   partial commands, and rejects stale area epochs.
-- Shared combat systems in `common` mutate canonical state. The server
+- Shared combat systems in `core` mutate canonical state. The server
   alone decides health, damage, rewards, deaths and persistence.
 - The protocol adapter projects ECS state into Colyseus schema records. Position
   fields receive native deltas; infrequently changed entity details are encoded

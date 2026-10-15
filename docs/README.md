@@ -70,7 +70,7 @@ and `tests/frame-budget.spec.ts`. Local projectile/pickup offsets:
 
 New-runtime saved coins: [save lifecycle](specs/characters.md#char-03--save-lifecycle)
 and [HUD](specs/interface-and-audio.md#ui-01--hud-and-windows), implemented by
-[pickup rules](../packages/common/src/simulation.ts),
+[pickup rules](../packages/core/src/simulation.ts),
 [character saves](../packages/server/src/characters.ts), and
 [PartyCard](../packages/ui/src/components/PartyCard.tsx). Verification:
 [pickup tests](../packages/server/src/snapshots.test.ts),

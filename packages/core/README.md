@@ -1,7 +1,52 @@
 # Core library
 
 `@emberfall/core` is the home for shared game configuration and reusable game
-logic utilities. Existing game code has not been migrated.
+logic utilities, combat, enemies and training. The server uses its authoritative
+combat kernels; client prediction and health displays reuse the same helpers.
+
+## Package boundary and balance configs
+
+Shared enums belong in `common/src/enums`, exported from `@emberfall/common`
+and the lightweight `@emberfall/common/enums` entrypoint. They use `as const`
+objects and matching value types so Node 24 can execute the source directly.
+Core depends on common; common must never depend on or import core.
+Reusable game utilities belong in `core/src/utils`, and balance configs in
+`core/src/configs`. Combat, enemies, training and their client prediction helpers
+live in core; enums, state, geometry and portable content definitions stay in common.
+
+Each balance table has its own `.ts` file and is exported from core:
+
+| Config                           | Values                                                           |
+| -------------------------------- | ---------------------------------------------------------------- |
+| `itemDropChance`                 | Normal 4%, Elite 15%, Boss 50%                                   |
+| `itemCountDropPercent`           | Normal 1, Elite 50–150%, Boss 100–500%                           |
+| `enemyTypeSpawnChance`           | Check Elite 5% first, then Normal 100%; bosses use a timer       |
+| `enemyKindAttribute`             | Skeleton and Runner 10 HP / 3 damage, Brute 30 / 9, Caster 7 / 3 |
+| `enemyTypeAttributesMultiplier`  | Normal 1, Elite 3, Boss 10                                       |
+| `difficultyAttributesMultiplier` | Easy 1, Medium 2, Hard 4                                         |
+
+Runner, Brute and Caster base attributes are initial config values using the
+existing archetypes and HP proportions. These tables now drive live combat and
+loot through the utilities below. The village still offers Easy only.
+`EnemyType` maps to the existing `Enemy.kind` field, while `EnemyKind` maps to
+`Enemy.archetype`, preserving wire IDs.
+
+Count percentages use `isMultiChanced`: 350% yields three guaranteed items and
+a 50% chance of a fourth. The requested Normal value is retained as `1` (1%
+under this percentage convention). Range endpoints describe percentages;
+`itemDropCount(type)` rolls an inclusive integer percentage within the range
+before calling `isMultiChanced`. `shouldDropItem(type)` is the independent drop
+gate, checked before rolling counts. `spawnEnemyType()` checks entries in order,
+while the authoritative boss timer bypasses that utility.
+
+`enemyAttributes(kind, type, difficulty)` returns base HP and damage scaled by
+`enemyTypeMultiplier(type)` and `difficultyMultiplier(difficulty)`. Party scaling
+then applies to HP only. `enemyMaxHealth` prefers confirmed max HP, preserving
+training and party values; it uses the same attribute utility as a fallback.
+Enemy projectiles carry launch-time damage, so killing a shooter cannot change
+an in-flight attack. The client never rolls spawns or rewards.
+
+## Utilities
 
 Keep configuration and utilities usable by both the browser and server, without
 DOM access, Node-specific APIs, transport, persistence or presentation dependencies.

@@ -1,12 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { worldHitboxes, drawHitboxes, HITBOX_COLORS } from '../packages/client/src/hitboxes.ts';
-import {
-  createTrainingScene,
-  ENEMY_STATS,
-  FOREST,
-  type WorldState,
-} from '../packages/common/src/index.ts';
+import { ENEMY_STATS, FOREST, type WorldState } from '../packages/common/src/index.ts';
+import { createTrainingScene } from '../packages/core/src/index.ts';
 import { loadPreferences } from '../packages/client/src/preferences.ts';
 import { INITIAL_PROGRESS } from '../packages/common/src/definitions/entities/players.ts';
 import { modelHitbox, enemyHitbox } from '../packages/common/src/hitboxes.ts';

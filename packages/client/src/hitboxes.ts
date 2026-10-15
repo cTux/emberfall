@@ -11,10 +11,9 @@ import {
   ENEMY_STATS,
   forestTrees,
   wrappedDelta,
-  defaultSpellRange,
-  PLAYER_ATTACK_DURATION,
   type WorldState,
 } from '@emberfall/common';
+import { defaultSpellRange, PLAYER_ATTACK_DURATION } from '@emberfall/core';
 import { COLLISION } from '@emberfall/common/definitions/collision';
 import { BEAR_DEFINITION } from '@emberfall/common/definitions/entities/companions';
 import { PICKUP_RULES } from '@emberfall/common/definitions/entities/pickups';

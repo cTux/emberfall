@@ -1,16 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  tickTraining,
-  tickPlayerCombat,
   FOREST,
   TRAINING_ZONES,
   inTrainingZone,
   WARDROBE,
   forestDistance,
 } from '@emberfall/common';
+import {
+  tickTraining,
+  tickPlayerCombat,
+  hitEnemy,
+  fireClassAttack,
+  damagePerSecond,
+} from '@emberfall/core';
 import { LocalMovement } from '../../client/src/local-movement.ts';
-import { hitEnemy, fireClassAttack, damagePerSecond } from '../../common/src/class-combat.ts';
 import { freshProgress } from './characters.ts';
 import type { Player } from '@emberfall/common';
 

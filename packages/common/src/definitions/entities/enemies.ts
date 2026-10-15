@@ -1,5 +1,3 @@
-export const ENEMY_HP = { normal: 10, elite: 50, boss: 200 } as const;
-export const ENEMY_HEALTH_MULTIPLIERS = { skeleton: 1, runner: 1, brute: 3, caster: 0.7 } as const;
 export const BOSS_DEFINITIONS = {
   hollowWarden: { id: 'hollowWarden', name: 'The Hollow Warden', archetype: 'brute', kind: 'boss' },
 } as const;
@@ -11,10 +9,8 @@ export const ENEMY_STATS = {
 } as const;
 
 export const ENEMY_RULES = {
-  damage: 10,
   damageCooldownMs: 1000,
   maxAlive: 160,
-  eliteEvery: 10,
   bruteChance: 0.1,
   casterChance: 0.1,
   casterStopRange: 210,

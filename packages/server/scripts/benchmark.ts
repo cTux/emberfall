@@ -1,6 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { Encoder } from '@colyseus/schema';
-import { stepCombat, type Player, type SceneState } from '@emberfall/common';
+import { type Player, type SceneState } from '@emberfall/common';
+import { stepCombat } from '@emberfall/core';
 import { prepareState, applyState, SessionState } from '@emberfall/common/protocol';
 import { SimulationWorld } from '../src/ecs/simulation.ts';
 import { freshProgress } from '../src/characters.ts';

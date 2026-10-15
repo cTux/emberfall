@@ -47,7 +47,7 @@ record scene, viewport, settings, browser/GPU, warmup and frame-time distributio
 ## Develop and reuse
 
 Read content from `common/definitions`; don't introduce a separate client
-balance table. Reuse the shared kernels for geometry and prediction. Keep visual
+balance table. Reuse common geometry and core prediction/attribute utilities. Keep visual
 effects and sound keyed to acknowledged/predicted actions so reconciliation
 does not replay them. Use the reconciled player pose for camera and attachments.
 Keep chat, pickup rewards and damage confirmation on the server.

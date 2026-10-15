@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { createTrainingScene } from '../packages/common/src/index.ts';
+import { createTrainingScene } from '../packages/core/src/index.ts';
 
 test('auto-loot setting applies live, persists after reload and resumes item pickup', async ({
   page,

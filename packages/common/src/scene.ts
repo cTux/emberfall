@@ -8,6 +8,7 @@ import {
 export { FOREST, LOBBY_PORTAL, FOREST_PORTAL, INTERACTION_RADIUS };
 import { BUILDINGS, WARDROBE } from './world.ts';
 import { INNKEEPER } from './definitions/worlds/village.ts';
+import type { Difficulty, EnemyKind, EnemyType } from './enums/index.ts';
 export { INNKEEPER };
 
 export { WARDROBE } from './world.ts';
@@ -128,7 +129,7 @@ export interface Enemy {
   maxHitpoints?: number;
   debuffs?: Debuff[];
   name?: string;
-  archetype?: 'skeleton' | 'runner' | 'brute' | 'caster';
+  archetype?: EnemyKind;
   attack?: {
     startedAt: number;
     endsAt: number;
@@ -138,7 +139,7 @@ export interface Enemy {
     ranged: boolean;
   };
   cooldownUntil?: number;
-  kind?: 'normal' | 'elite' | 'boss';
+  kind?: EnemyType;
   id: number;
   x: number;
   y: number;
@@ -177,7 +178,15 @@ export interface SceneState {
   explosions?: { id: number; x: number; y: number; at: number }[];
   drops?: LootDrop[];
   spawns?: (Enemy & { spawnsAt: number; warnedAt: number })[];
-  projectiles?: { id: number; x: number; y: number; vx: number; vy: number; expiresAt: number }[];
+  projectiles?: {
+    id: number;
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    expiresAt: number;
+    damage?: number;
+  }[];
   bossId?: number;
   spawnCount?: number;
   portals: { x: number; y: number }[];
@@ -185,7 +194,7 @@ export interface SceneState {
   nextSpawn: number;
   id: string;
   type: 'Forest';
-  difficulty: 'Easy';
+  difficulty: Difficulty;
   phase: 'voting' | 'countdown' | 'active' | 'ended';
   ready: string[];
   countdownAt: number | null;

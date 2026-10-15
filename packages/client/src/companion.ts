@@ -1,5 +1,5 @@
 import { bearArt as image } from './art';
-import { PLAYER_ATTACK_DURATION } from '@emberfall/common';
+import { PLAYER_ATTACK_DURATION } from '@emberfall/core';
 import { BEAR_DEFINITION } from '@emberfall/common/definitions/entities/companions';
 import type { Bear } from '@emberfall/common';
 import { drawPlayerHealth, drawTargetHit } from './effects';

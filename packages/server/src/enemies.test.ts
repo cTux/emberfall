@@ -1,9 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { forestTrees, forestDistance, FOREST, stepCombat, enemyMaxHealth } from '@emberfall/common';
+import { forestTrees, forestDistance, FOREST } from '@emberfall/common';
+import { stepCombat, enemyMaxHealth, moveEnemies, hitEnemy } from '@emberfall/core';
 import type { Player, Enemy, SceneState } from '@emberfall/common';
-import { moveEnemies } from '../../common/src/enemies.ts';
-import { hitEnemy } from '../../common/src/class-combat.ts';
 import { CharacterStore } from './characters.ts';
 
 const player = (x: number, y: number): Player => ({
@@ -26,6 +25,7 @@ test('scene population compounds enemy HP and dropped XP, preserving fractions i
   t.mock.method(Math, 'random', () => 0.5);
   for (const count of [1, 2, 3, 8]) {
     for (const kind of ['normal', 'elite', 'boss'] as const) {
+      t.mock.method(Math, 'random', () => (kind === 'elite' ? 0.04 : 0.5));
       const players = Array.from({ length: count }, (_, i) => ({
         ...player(2400, 1280),
         id: `p${i}`,
@@ -131,7 +131,7 @@ test('melee windup can be dodged and ranged attacks launch visible, colliding pr
   p.y = 1280;
   scene.projectiles = [{ id: 99, x: p.x - 20, y: p.y, vx: 210, vy: 0, expiresAt: 20000 }];
   stepCombat(scene, [p], 14000, 0.1);
-  assert.equal(p.hitpoints, 90);
+  assert.equal(p.hitpoints, 97);
   assert.equal(scene.projectiles.length, 0);
 });
 
@@ -207,8 +207,8 @@ test('chase selects nearest living player, retargets, and respects wrapped crowd
   }
 });
 
-test('every tenth successful spawn is a 50 HP elite; timer spawns only one 200 HP boss', async (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+test('successful elite rolls use configured HP; timer spawns only one configured boss', async (t) => {
+  t.mock.method(Math, 'random', () => 0.04);
   const scene: SceneState = {
     id: 's',
     type: 'Forest',
@@ -229,17 +229,17 @@ test('every tenth successful spawn is a 50 HP elite; timer spawns only one 200 H
   }
   assert.equal(scene.spawnCount, 20);
   const elites = [...scene.enemies, ...scene.spawns!].filter((e) => e.kind === 'elite');
-  assert.equal(elites.length, 2);
-  assert(elites.every((e) => e.hitpoints === 50));
+  assert.equal(elites.length, 20);
+  assert(elites.every((e) => e.hitpoints === 90));
   stepCombat(scene, [p], 120000, 0);
   assert.equal(
     scene.enemies.some((e) => e.kind === 'boss'),
     false,
   );
-  assert.equal(scene.spawns!.find((e) => e.kind === 'boss')?.hitpoints, 200);
+  assert.equal(scene.spawns!.find((e) => e.kind === 'boss')?.hitpoints, 300);
   stepCombat(scene, [p], 121000, 0);
   const count = scene.enemies.length;
-  assert.equal(scene.enemies.find((e) => e.kind === 'boss')?.hitpoints, 200);
+  assert.equal(scene.enemies.find((e) => e.kind === 'boss')?.hitpoints, 300);
   stepCombat(scene, [p], 122000, 0);
   assert(scene.enemies.length > count, 'regular enemies keep spawning while the boss is alive');
   assert.equal([...scene.enemies, ...scene.spawns!].filter((e) => e.kind === 'boss').length, 1);
@@ -276,7 +276,7 @@ test('enemy projectiles overlap the whole player model, including wrapped bounda
         ],
       };
       stepCombat(scene, [p], 10000, 0);
-      assert.equal(p.hitpoints, gap < 29 ? 90 : 100);
+      assert.equal(p.hitpoints, gap < 29 ? 97 : 100);
       assert.equal(scene.projectiles!.length, gap < 29 ? 0 : 1);
     }
   }

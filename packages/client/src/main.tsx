@@ -1,6 +1,6 @@
 import { AccountGate } from './Account';
-import { experienceRequired } from '@emberfall/core';
-import type { AccountView } from '@emberfall/common';
+import { experienceRequired, enemyMaxHealth } from '@emberfall/core';
+import type { AccountView, ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
 import { GameConnection } from './connection';
 import { classSprite } from './characters';
 import { AssetGallery } from './AssetGallery';
@@ -13,14 +13,12 @@ import { Codex } from './Codex';
 import {
   characterStats,
   INNKEEPER,
-  enemyMaxHealth,
   CLASS_IDS,
   CLASS_LABELS,
   hasLivingScenePlayers,
 } from '@emberfall/common';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
 import type { Interaction } from './effects';
 import {
   GameUiProvider,
@@ -624,7 +622,7 @@ function App({
             <BossHealth
               name={boss.name ?? 'The Hollow Warden'}
               health={boss.hitpoints}
-              maxHealth={enemyMaxHealth(boss)}
+              maxHealth={enemyMaxHealth(boss, scene?.difficulty)}
             />
           </Box>
         )}
