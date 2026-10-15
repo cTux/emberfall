@@ -41,6 +41,11 @@ Drawing combines predicted local presentation with buffered remote actors. The c
 
 Cull offscreen actors before expensive sprite masks/shadows, share identical sprite/grass canvases, copy presentation positions instead of whole combat state, and index hit events once per frame. Full-map redraws and cache invalidation during world joins previously caused stalls; keep startup and re-entry coverage when changing cache lifetime.
 
+Item drops draw a 6-by-36 world-unit fading beam behind their existing icons in
+`drawLootAndBlood`, using the same wrapped ground position and visible-region
+culling. Pixi reuses the gradient ramp; the marker needs no bloom or particles.
+`tests/renderer-pixels.spec.ts` checks the visible beam and its bounded footprint.
+
 Player chat is drawn after world effects in both scenes. The rounded message box has no pointer; its bottom sits two world units above the health bar, overlaying the debuff area. The renderer uses the same placement and wrapping.
 
 ## Preferences, diagnostics and audio

@@ -125,6 +125,11 @@ export function drawLootAndBlood(
     ctx.ellipse(p.x, p.y + 2, 5, 2, 0, 0, Math.PI * 2);
     ctx.fill();
     if (drop.kind === 'item') {
+      const beam = ctx.createLinearGradient(p.x, p.y - 36, p.x, p.y);
+      beam.addColorStop(0, '#ffe6a800');
+      beam.addColorStop(1, '#ffe6a8aa');
+      ctx.fillStyle = beam;
+      ctx.fillRect(p.x - 3, p.y - 36, 6, 36);
       const gear = GEAR_DEFINITIONS[drop.itemId ?? ''];
       const slot = EQUIPMENT_SLOTS.find((slot) =>
         (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear?.gearType),

@@ -42,6 +42,10 @@ Diagonal facing retains its current valid axis near a 45-degree heading to preve
 
 Blood puddles have their own persistent gameplay toggle. Damage numbers and hit effects present server events; they cannot award damage or XP.
 
+Dropped equipment and consumables have a short, pale-gold vertical beam behind
+their icons, fading upward from the ground. The marker stays visible at every
+graphics preset until collection or expiry and follows wrapped pickup positions.
+
 In the new runtime, floating damage numbers combine hits from the same player to
 the same target with the same damage type within 10 ms of the first hit (inclusive),
 using server event timestamps. Each total keeps the first hit's position and

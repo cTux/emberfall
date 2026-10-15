@@ -398,7 +398,15 @@ export async function compare() {
       if (pixels[i + 3] > 128) colored++;
       if (pixels[i] === 195 && pixels[i + 1] === 166 && pixels[i + 2] === 232) purple++;
     }
-    return { itemId, colored, purple };
+    const red = (dx: number, dy: number) => lootContext.getImageData(x + dx, y + dy, 1, 1).data[0];
+    return {
+      itemId,
+      colored,
+      purple,
+      beam: red(0, -18),
+      above: red(0, -23),
+      beside: red(5, -18),
+    };
   });
   return {
     results,
