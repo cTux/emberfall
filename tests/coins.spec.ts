@@ -52,8 +52,10 @@ test('collected gold credits the account Storehouse across classes and rejoining
   player.y = building.y + 9;
   const storehouse = page.getByRole('dialog', { name: 'Storehouse', exact: true });
   await expect(async () => {
+    if (await wardrobe.isVisible())
+      await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
     await page.keyboard.press('e');
-    await expect(storehouse).toBeVisible();
+    await expect(storehouse).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(storehouse.getByLabel('Storehouse: 1000 coins', { exact: true })).toHaveText('1k');
   await page.screenshot({ path: testInfo.outputPath('account-storehouse-gold.png') });
