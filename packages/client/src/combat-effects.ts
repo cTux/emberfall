@@ -1,6 +1,7 @@
 import { TRANSIENT_EFFECTS } from '@emberfall/common/definitions/effects/transient';
 import { statusImages } from './combat-assets';
-import { effectsArt, pickupArt, drawArt } from './art';
+import { effectsArt, pickupArt, drawArt, loadArt } from './art';
+import { EQUIPMENT_SLOTS, GEAR_DEFINITIONS, SLOT_GEAR_TYPES } from '@emberfall/common';
 import { hitOutline } from './effects';
 import type { SceneState, LootDrop, Enemy, DamageEvent } from '@emberfall/common';
 
@@ -124,10 +125,14 @@ export function drawLootAndBlood(
     ctx.ellipse(p.x, p.y + 2, 5, 2, 0, 0, Math.PI * 2);
     ctx.fill();
     if (drop.kind === 'item') {
-      ctx.fillStyle = '#c3a6e8';
-      ctx.fillRect(p.x - 7, p.y - 14 - jump, 14, 14);
-      ctx.strokeStyle = '#f2dcff';
-      ctx.strokeRect(p.x - 7, p.y - 14 - jump, 14, 14);
+      const gear = GEAR_DEFINITIONS[drop.itemId ?? ''];
+      const slot = EQUIPMENT_SLOTS.find((slot) =>
+        (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear?.gearType),
+      );
+      const icon = loadArt(
+        drop.itemId === 'health-potion' ? 'health-potion' : `slot-${slot ?? 'amulet'}`,
+      );
+      drawArt(ctx, icon, 0, 0, p.x - 10, p.y - 18 - jump, 20, 20);
     } else if (pickupArt.naturalWidth)
       drawArt(
         ctx,
