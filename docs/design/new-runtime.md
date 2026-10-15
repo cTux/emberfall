@@ -8,6 +8,12 @@ behavior contract. See the
 
 ## Ownership
 
+Storehouse names and inventories live in class progress as three validated storage
+records. The existing character transaction saves detached transfer/rename results
+before publishing them. The server validates session ownership, living village
+status and Storehouse proximity. The client composes ChapterTabs and Backpack;
+storage capacity is 40 while the existing player backpack remains 20 slots.
+
 - `common`: serializable definitions, validated commands, geometry, shared
   simulation and prediction functions. No DOM, database or network connections.
 - `server`: authoritative Miniplex entities, ordered fixed-timestep systems,

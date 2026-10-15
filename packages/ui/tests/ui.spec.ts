@@ -2,6 +2,21 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('storage supports forty slots and optional tab rename by mouse or keyboard', async ({
+  page,
+}) => {
+  await page.goto(story('components-backpack--storage'));
+  await expect(page.getByRole('region', { name: 'Storage 1' }).locator('button')).toHaveCount(40);
+  await page.goto(story('components-chaptertabs--renameable'));
+  await page.getByRole('tab', { name: 'Storage 1' }).click({ button: 'right' });
+  await expect(page.getByRole('tab', { name: 'Renamed storage' })).toBeVisible();
+  await page.reload();
+  const tab = page.getByRole('tab', { name: 'Storage 1' });
+  await tab.focus();
+  await tab.press('F2');
+  await expect(page.getByRole('tab', { name: 'Renamed storage' })).toBeFocused();
+});
+
 test('external modal tabs scroll, navigate and stay with the window at viewport edges', async ({
   page,
 }, testInfo) => {

@@ -8,6 +8,7 @@ import { GameDatabase, VersionConflictError } from '@colyseus/database';
 import {
   merchantSchema,
   freshMerchant,
+  freshStorages,
   progressSchema,
   classSchema,
   CLASS_IDS,
@@ -20,6 +21,7 @@ import type { CharacterProgress, ClassId, Player, Merchant } from '@emberfall/co
 
 export const freshProgress = (classId?: ClassId): CharacterProgress => ({
   ...structuredClone(INITIAL_PROGRESS),
+  storages: freshStorages(),
   ...(classId ? { equipment: starterEquipment(classId) } : {}),
 });
 function classProgress(value: unknown, classId: ClassId): CharacterProgress {
@@ -28,6 +30,7 @@ function classProgress(value: unknown, classId: ClassId): CharacterProgress {
   progress.level = Math.min(20, progress.level);
   progress.coins ??= 0;
   progress.backpack ??= [];
+  progress.storages ??= freshStorages();
   progress.equipment = validateClassEquipment(
     progress.equipment ?? starterEquipment(classId),
     classId,

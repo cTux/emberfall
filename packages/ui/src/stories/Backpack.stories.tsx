@@ -29,6 +29,9 @@ const meta = {
 export default meta;
 export const Stacked: StoryObj<typeof meta> = {};
 export const Empty: StoryObj<typeof meta> = { args: { items: [] } };
+export const Storage: StoryObj<typeof meta> = {
+  args: { label: 'Storage 1', slots: 40, coins: undefined, action: 'Withdraw' },
+};
 export const Selling: StoryObj<typeof meta> = {
   render: function Selling(args) {
     const [items, setItems] = useState(args.items);

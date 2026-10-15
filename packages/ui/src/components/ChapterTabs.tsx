@@ -8,6 +8,7 @@ export interface Chapter {
   title: string;
   content: ReactNode;
   disabled?: boolean;
+  onRename?(): void;
 }
 export interface ChapterTabsProps {
   label: string;
@@ -41,6 +42,24 @@ export function ChapterTabs({
           value={chapter.id}
           label={chapter.title}
           disabled={chapter.disabled}
+          onContextMenu={
+            chapter.onRename
+              ? (event) => {
+                  event.preventDefault();
+                  chapter.onRename?.();
+                }
+              : undefined
+          }
+          onKeyDown={
+            chapter.onRename
+              ? (event) => {
+                  if (event.key === 'F2') {
+                    event.preventDefault();
+                    chapter.onRename?.();
+                  }
+                }
+              : undefined
+          }
         />
       ))}
     </Tabs>

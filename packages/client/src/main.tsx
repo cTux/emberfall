@@ -8,6 +8,7 @@ import { ClassMovementGallery } from './ClassMovementGallery';
 import { weaponSrc, statusSrc, classAbility } from './combat-assets';
 import { classDetails } from './class-details';
 import { Equipment, Trading } from './equipment-view';
+import { Storehouse } from './Storehouse';
 import { Codex } from './Codex';
 import {
   characterStats,
@@ -684,7 +685,9 @@ function App({
           width={
             menu === 'wardrobe'
               ? 600
-              : menu === 'equipment' || (menu === 'building' && building === INNKEEPER.name)
+              : menu === 'equipment' ||
+                  (menu === 'building' &&
+                    (building === INNKEEPER.name || building === 'Storehouse'))
                 ? 520
                 : undefined
           }
@@ -799,6 +802,8 @@ function App({
               </Box>
             ) : menu === 'building' && building === INNKEEPER.name && me && world?.merchant ? (
               <Trading player={me} merchant={world.merchant} send={send} />
+            ) : menu === 'building' && building === 'Storehouse' && me ? (
+              <Storehouse player={me} send={send} />
             ) : menu === 'building' ? (
               <Typography>{building} services are coming in a future update.</Typography>
             ) : (
