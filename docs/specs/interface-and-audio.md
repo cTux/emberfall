@@ -108,6 +108,15 @@ window, item icons, tooltips, scrolling and narrow-viewport behavior are reused.
 
 ## Acceptance
 
+- Drag an item between the visible backpack and Storehouse or vendor inventory.
+  Storehouse moves whole stacks; vendor drops buy/sell one item at the existing
+  price. Dropping onto another storage tab moves the whole stack to that tab;
+  dropping a backpack item onto a storage tab deposits there. Cancelled drags,
+  same-inventory drops and unrelated browser drags do nothing. Server rejection
+  (full destination, insufficient gold, stale item or invalid proximity) preserves
+  items and gold. RMB and Enter/Space remain alternatives. Dragging does not equip
+  or consume items, reorder slots or move merchant stock between Buy/Buyback.
+
 - In the new runtime, all four classes receive only their base weapon, including
   migrated saves. All equipped items affect combat and the displayed totals.
 - Equipment supports non-Latin `KeyI`, drag/reopen, Escape, typing suppression,

@@ -29,6 +29,24 @@ export function Storehouse({
   const [renaming, setRenaming] = useState<number | null>(null);
   const [name, setName] = useState('');
   const validName = storageNameSchema.safeParse(name);
+  const storageInventories = (player.storages ?? []).map((_, index) => `storage-${index}`);
+  const storageDrop = (index: number) => ({
+    accepts: [
+      'backpack',
+      ...storageInventories.filter((inventory) => inventory !== `storage-${index}`),
+    ],
+    onDrop(inventory: string, id: string) {
+      if (inventory === 'backpack') send({ type: 'storeItem', tab: index, id, depositing: true });
+      else
+        send({
+          type: 'moveStorageItem',
+          fromTab: Number(inventory.slice('storage-'.length)),
+          toTab: index,
+          id,
+        });
+      setTab(String(index));
+    },
+  });
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
@@ -43,6 +61,7 @@ export function Storehouse({
         chapters={(player.storages ?? []).map((storage, index) => ({
           id: String(index),
           title: storage.name,
+          drop: storageDrop(index),
           onRename: () => {
             setRenaming(index);
             setName(storage.name);
@@ -50,7 +69,7 @@ export function Storehouse({
           content: (
             <>
               <Typography variant='body2' color='text.secondary'>
-                Right-click a tab to rename. Right-click an item to transfer its stack.
+                Drag items between inventories or onto a storage tab. Right-click a tab to rename.
               </Typography>
               <Box
                 sx={{
@@ -64,12 +83,25 @@ export function Storehouse({
                   slots={STORAGE_SLOTS}
                   items={backpackViews(storage.items)}
                   action='Withdraw'
+                  inventory={`storage-${index}`}
+                  drop={storageDrop(index)}
                   onUse={(id) => send({ type: 'storeItem', tab: index, id, depositing: false })}
                 />
                 <Backpack
                   label='Your backpack'
                   items={backpackViews(player.backpack ?? [])}
                   action='Deposit'
+                  inventory='backpack'
+                  drop={{
+                    accepts: storageInventories,
+                    onDrop: (inventory, id) =>
+                      send({
+                        type: 'storeItem',
+                        tab: Number(inventory.slice('storage-'.length)),
+                        id,
+                        depositing: false,
+                      }),
+                  }}
                   onUse={(id) => send({ type: 'storeItem', tab: index, id, depositing: true })}
                 />
               </Box>

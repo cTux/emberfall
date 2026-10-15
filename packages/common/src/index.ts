@@ -72,6 +72,12 @@ export const clientMessage = z.discriminatedUnion('type', [
     name: storageNameSchema,
   }),
   z.object({
+    type: z.literal('moveStorageItem'),
+    fromTab: z.number().int().min(0).max(2),
+    toTab: z.number().int().min(0).max(2),
+    id: z.string().min(1).max(64),
+  }),
+  z.object({
     type: z.literal('chat'),
     text: z
       .string()

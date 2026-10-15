@@ -18,6 +18,10 @@ An explicit product decision takes precedence over the baseline. If source and s
 
 ## Feature map
 
+Inventory drag-and-drop verification: [native browser transfers](../tests/inventory-drag.spec.ts),
+[storage rules and failure paths](../packages/server/src/storehouse.test.ts), and
+[shared UI drag/keyboard checks](../packages/ui/tests/ui.spec.ts).
+
 | Feature group                             | Specification                                                   | Design                                                           | Verification entry points                                                                                                                                                                                                                               |
 | ----------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Worlds, recovery and chat                 | [WORLD/CHAT](specs/worlds-and-chat.md)                          | [Network](design/network-and-persistence.md)                     | `worlds.test.ts`, `reconnect.test.ts`, `chat.test.ts`, `gameplay.spec.ts`, `reconnect.spec.ts`, `chat-presentation.spec.ts`                                                                                                                             |

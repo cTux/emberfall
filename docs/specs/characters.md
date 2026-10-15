@@ -83,6 +83,11 @@ Full destinations, stale items, invalid tabs and actions while dead, in a scene 
 away from the Storehouse are rejected. Transfers and renames save successfully
 before becoming visible; failed saves preserve both inventories.
 
+Items can also be dragged between the backpack and Storehouse, or directly onto
+another storage tab. Storage-to-storage transfers obey the same capacity, stack,
+proximity and save-before-publish rules. Vendor dragging invokes the existing
+one-item buy/sell operation and spends or credits account gold.
+
 ## CHAR-05 — Steam accounts and nickname
 
 Players log in through Steam. After the first successful login, show a nickname

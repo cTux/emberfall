@@ -2,6 +2,37 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('inventory dragging moves once, ignores unrelated drops and preserves keyboard actions', async ({
+  page,
+}) => {
+  await page.goto(story('components-backpack--drag-and-drop'));
+  const backpack = page.getByRole('region', { name: 'Your backpack' });
+  const storage = page.getByRole('region', { name: 'Storage', exact: true });
+  const potion = backpack.getByRole('button', { name: 'Use Health potion (5)' });
+  await potion.dragTo(storage, { targetPosition: { x: 12, y: 12 } });
+  await expect(backpack.locator('[data-backpack-item]')).toHaveCount(0);
+  await expect(storage.locator('[data-backpack-item]')).toHaveCount(1);
+  const unrelated = await page.evaluateHandle(() => {
+    const data = new DataTransfer();
+    data.setData('text/plain', 'potion');
+    return data;
+  });
+  await backpack.dispatchEvent('drop', { dataTransfer: unrelated });
+  await expect(storage.locator('[data-backpack-item]')).toHaveCount(1);
+  const malformed = await page.evaluateHandle(() => {
+    const data = new DataTransfer();
+    data.setData('application/x-emberfall-inventory-1', 'x'.repeat(65));
+    return data;
+  });
+  await backpack.dispatchEvent('drop', { dataTransfer: malformed });
+  await expect(storage.locator('[data-backpack-item]')).toHaveCount(1);
+  const stored = storage.getByRole('button', { name: 'Use Health potion (5)' });
+  await stored.focus();
+  await stored.press('Enter');
+  await expect(potion).toBeVisible();
+  await expect(storage.locator('[data-backpack-item]')).toHaveCount(0);
+});
+
 test('storage supports forty slots and optional tab rename by mouse or keyboard', async ({
   page,
 }) => {

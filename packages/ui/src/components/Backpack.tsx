@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Box, Typography } from '@mui/material';
 import { GearTooltipStyled, BackpackSlotStyled, GearBadgeValueStyled } from './equipment.styles';
 import { GoldBalance } from './GoldBalance';
+import { INVENTORY_DRAG_PREFIX, inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
 export interface BackpackItemView {
   id: string;
@@ -18,6 +19,8 @@ export interface BackpackProps {
   action: string;
   headerActions?: ReactNode;
   slots?: number;
+  inventory?: string;
+  drop?: InventoryDrop;
   onUse(id: string): void;
 }
 /** Twenty slots by default; keep legacy overflow accessible until it is cleared. */
@@ -28,10 +31,12 @@ export function Backpack({
   action,
   headerActions,
   slots = 20,
+  inventory,
+  drop,
   onUse,
 }: BackpackProps) {
   return (
-    <Box component='section' aria-label={label} sx={{ minWidth: 0 }}>
+    <Box component='section' aria-label={label} sx={{ minWidth: 0 }} {...inventoryDropProps(drop)}>
       <Box
         sx={{
           display: 'flex',
@@ -71,6 +76,13 @@ export function Backpack({
             <BackpackSlotStyled
               aria-label={`${action} ${item.name}${item.quantity > 1 ? ` (${item.quantity})` : ''}`}
               data-backpack-item={item.id}
+              draggable={!!inventory}
+              onDragStart={(event) => {
+                if (!inventory) return;
+                event.dataTransfer.clearData();
+                event.dataTransfer.setData(`${INVENTORY_DRAG_PREFIX}${inventory}`, item.id);
+                event.dataTransfer.effectAllowed = 'move';
+              }}
               onContextMenu={(event) => {
                 event.preventDefault();
                 onUse(item.id);
@@ -82,7 +94,9 @@ export function Backpack({
                 }
               }}
             >
-              <Box aria-hidden='true'>{item.icon}</Box>
+              <Box aria-hidden='true' sx={{ pointerEvents: 'none' }}>
+                {item.icon}
+              </Box>
               {item.quantity > 1 && (
                 <GearBadgeValueStyled aria-hidden='true'>{item.quantity}</GearBadgeValueStyled>
               )}

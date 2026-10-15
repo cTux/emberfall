@@ -331,6 +331,11 @@ export function Trading({
               items={backpackViews(items)}
               coins={merchant.coins}
               action={action}
+              inventory={`vendor-${id}`}
+              drop={{
+                accepts: ['backpack'],
+                onDrop: (_, id) => send({ type: 'trade', id, buying: false }),
+              }}
               onUse={(id) => send({ type: 'trade', id, buying: true })}
             />
             <Backpack
@@ -338,6 +343,11 @@ export function Trading({
               items={backpackViews(player.backpack ?? [])}
               coins={player.coins ?? 0}
               action='Sell'
+              inventory='backpack'
+              drop={{
+                accepts: ['vendor-buy', 'vendor-buyback'],
+                onDrop: (_, id) => send({ type: 'trade', id, buying: true }),
+              }}
               headerActions={
                 <Tooltip title='Sell all'>
                   <span>

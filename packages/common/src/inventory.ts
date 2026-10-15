@@ -111,9 +111,30 @@ export function transferStoredItem(player: Player, tab: number, id: string, depo
   const backpack = (player.backpack ??= []);
   const source = depositing ? backpack : storage.items;
   const target = depositing ? storage.items : backpack;
+  moveInventoryItem(source, target, id, depositing ? STORAGE_SLOTS : INVENTORY_SLOTS);
+}
+export function moveStorageItem(player: Player, fromTab: number, toTab: number, id: string) {
+  const source = player.storages?.[fromTab];
+  const target = player.storages?.[toTab];
+  if (
+    !Number.isInteger(fromTab) ||
+    !Number.isInteger(toTab) ||
+    !source ||
+    !target ||
+    fromTab === toTab
+  )
+    throw new Error('Choose two different storage tabs.');
+  moveInventoryItem(source.items, target.items, id, STORAGE_SLOTS);
+}
+function moveInventoryItem(
+  source: BackpackItem[],
+  target: BackpackItem[],
+  id: string,
+  capacity: number,
+) {
   const index = source.findIndex((item) => item.id === id);
   if (index < 0) throw new Error('Item is no longer available.');
-  addItem(target, source[index], depositing ? STORAGE_SLOTS : INVENTORY_SLOTS);
+  addItem(target, source[index], capacity);
   source.splice(index, 1);
 }
 export function useBackpackItem(player: Player, id: string) {
