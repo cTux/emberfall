@@ -3,7 +3,14 @@ import { test, expect } from './fixtures';
 test('lobby window drags across the viewport without outer scrollbars', async ({ page }) => {
   await page.setViewportSize({ width: 960, height: 700 });
   await page.goto('/');
+  await expect(page.getByRole('tab', { name: 'Join a world' })).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
   const panel = page.getByRole('region', { name: 'Emberfall' });
+  await expect(panel).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(panel.locator('.game-window-surface')).toHaveCSS(
+    'background-color',
+    'rgba(0, 0, 0, 0.76)',
+  );
   const before = (await panel.boundingBox())!;
   const title = (await panel.getByRole('heading', { name: 'Emberfall' }).boundingBox())!;
   await page.mouse.move(title.x + 30, title.y + 15);
@@ -27,7 +34,7 @@ test('lobby window drags across the viewport without outer scrollbars', async ({
   await page.screenshot({ path: 'test-results/lobby-dragged.png' });
   await panel.getByRole('button', { name: 'Close Emberfall' }).click();
   await expect(panel).toBeHidden();
-  await page.setViewportSize({ width: 390, height: 240 });
+  await page.setViewportSize({ width: 390, height: 160 });
   await page.getByRole('button', { name: 'World browser' }).click();
   // ResizeObserver clamps the reopened panel on the next layout pass.
   await expect
@@ -35,10 +42,10 @@ test('lobby window drags across the viewport without outer scrollbars', async ({
       const box = (await panel.boundingBox())!;
       return box.y + box.height;
     })
-    .toBeLessThanOrEqual(240);
+    .toBeLessThanOrEqual(160);
   const short = (await panel.boundingBox())!;
   expect(short.y).toBeGreaterThanOrEqual(0);
-  expect(short.y + short.height).toBeLessThanOrEqual(240);
+  expect(short.y + short.height).toBeLessThanOrEqual(160);
   const content = panel.locator('.MuiDialogContent-root');
   await expect(content).toHaveCSS('overflow-y', 'auto');
   expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(

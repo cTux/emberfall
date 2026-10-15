@@ -5,6 +5,7 @@ export const WindowFrameStyled = styled(Paper)(({ theme }) => ({
     '--window-tabs-width': '112px',
     display: 'grid',
     gridTemplateColumns: 'auto minmax(0, 1fr)',
+    gridTemplateRows: 'minmax(0, 1fr)',
     width: 'min(100%, var(--window-width))',
     maxHeight: 'min(480px, calc(100dvh - 32px))',
     overflow: 'visible',

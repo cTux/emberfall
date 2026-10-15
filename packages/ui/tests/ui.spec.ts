@@ -52,6 +52,15 @@ test('external modal tabs scroll, navigate and stay with the window at viewport 
     await expect(dialog.getByRole('tabpanel', { name: 'Chapter 12', exact: true })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath(`external-tabs-${size.width}.png`) });
   }
+  await page.goto(story('components-gamewindow--tabbed-auto-height'));
+  const surface = dialog.locator('.game-window-surface');
+  await expect(surface).toBeVisible();
+  expect((await surface.boundingBox())!.height).toBeLessThanOrEqual(208);
+  expect(
+    await dialog
+      .locator('.MuiDialogContent-root')
+      .evaluate((element) => element.scrollHeight > element.clientHeight),
+  ).toBe(true);
 });
 
 test('backpacks show twenty wood-colored slots and tabs sit outside the left window border', async ({

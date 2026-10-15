@@ -16,11 +16,12 @@ const meta = {
 export default meta;
 export const Playground: StoryObj<typeof meta> = {};
 export const Tabbed: StoryObj<typeof meta> = {
+  args: { height: 420 },
   render: function Tabbed(args) {
     const [value, setValue] = useState('chapter-0');
     return (
       <div>
-        <GameWindow {...args} title='Tabbed window' modal height={420}>
+        <GameWindow {...args} title='Tabbed window' modal>
           <ChapterTabs
             label='Window chapters'
             value={value}
@@ -36,4 +37,8 @@ export const Tabbed: StoryObj<typeof meta> = {
       </div>
     );
   },
+};
+export const TabbedAutoHeight: StoryObj<typeof meta> = {
+  ...Tabbed,
+  args: { height: undefined },
 };
