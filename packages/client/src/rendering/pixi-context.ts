@@ -422,7 +422,8 @@ export class PixiContext {
               128,
             )
           : ctx.createLinearGradient(0, 0, 256, 0);
-      for (const stop of normalized.colorStops!) ramp.addColorStop(stop.offset, String(stop.color));
+      for (const stop of normalized.colorStops!)
+        ramp.addColorStop(stop.offset, new Color(stop.color).toRgbaString());
       ctx.fillStyle = ramp;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       const texture = Texture.from(canvas, true);

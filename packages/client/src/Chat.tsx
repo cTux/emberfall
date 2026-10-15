@@ -56,6 +56,8 @@ export function Chat({
     return () => observer.disconnect();
   }, [latestId]);
   return (
+    // The chat region takes focus so keyboard users can reveal it before entering the input.
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
     <aside className='chat' aria-label='World chat' tabIndex={0}>
       <div className='chat-log' role='log' aria-label='Latest chat messages' ref={log}>
         {messages.map((message) => (

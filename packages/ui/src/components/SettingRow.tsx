@@ -4,7 +4,7 @@ export interface SettingToggleProps {
   label: string;
   checked: boolean;
   disabled?: boolean;
-  onChange(checked: boolean): void;
+  onChange: (checked: boolean) => void;
 }
 export function SettingToggle({ label, checked, disabled, onChange }: SettingToggleProps) {
   return (
@@ -20,7 +20,7 @@ export interface VolumeControlProps {
   label: string;
   value: number;
   disabled?: boolean;
-  onChange(value: number): void;
+  onChange: (value: number) => void;
 }
 export function VolumeControl({ label, value, disabled, onChange }: VolumeControlProps) {
   return (

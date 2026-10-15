@@ -9,7 +9,7 @@ export interface Chapter {
   title: string;
   content: ReactNode;
   disabled?: boolean;
-  onRename?(): void;
+  onRename?: () => void;
   drop?: InventoryDrop;
 }
 export interface ChapterTabsProps {
@@ -17,7 +17,7 @@ export interface ChapterTabsProps {
   chapters: Chapter[];
   value: string;
   showHeading?: boolean;
-  onChange(id: string): void;
+  onChange: (id: string) => void;
 }
 export function ChapterTabs({
   label,

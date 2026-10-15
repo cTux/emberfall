@@ -9,7 +9,7 @@ import { WindowTabsContext } from './WindowTabsContext';
 export interface GameWindowProps {
   title: string;
   children: ReactNode;
-  onClose(): void;
+  onClose: () => void;
   open?: boolean;
   modal?: boolean;
   height?: number;

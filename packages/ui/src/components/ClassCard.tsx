@@ -14,7 +14,7 @@ export interface ClassCardProps {
   stats: { level: number; experience: number; maxHitpoints: number; power: number };
   selected: boolean;
   disabled?: boolean;
-  onSelect(): void;
+  onSelect: () => void;
 }
 
 export function ClassCard({

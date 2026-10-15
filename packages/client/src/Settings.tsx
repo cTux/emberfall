@@ -17,14 +17,14 @@ export function Settings({
   onLogout,
 }: {
   tab: string;
-  onTab(tab: string): void;
+  onTab: (tab: string) => void;
   preferences: Preferences;
   setPreferences: Dispatch<SetStateAction<Preferences>>;
   graphics: GraphicsSettings;
   setGraphics: Dispatch<SetStateAction<GraphicsSettings>>;
   account: AccountView;
-  onRename(): void;
-  onLogout(): void;
+  onRename: () => void;
+  onLogout: () => void;
 }) {
   const toggle = (
     key:

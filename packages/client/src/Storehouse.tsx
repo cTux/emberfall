@@ -14,7 +14,7 @@ export function Storehouse({
   send,
 }: {
   player: Player;
-  send(message: ClientMessage): void;
+  send: (message: ClientMessage) => void;
 }) {
   const [tab, setTab] = useState('0');
   const [renaming, setRenaming] = useState<number | null>(null);

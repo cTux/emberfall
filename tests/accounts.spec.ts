@@ -28,7 +28,12 @@ const test = base.extend<{
           origin: baseURL!,
           apiKey: 'test',
           request: (input, init) => {
-            if (profileFails && String(input).includes('GetPlayerSummaries'))
+            if (
+              profileFails &&
+              (input instanceof Request ? input.url : input.toString()).includes(
+                'GetPlayerSummaries',
+              )
+            )
               return Promise.resolve(new Response('Unavailable', { status: 503 }));
             return steamRequest(input, init);
           },
