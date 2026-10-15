@@ -75,8 +75,10 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   player.y = WARDROBE.y - 15;
   const wardrobe = page.getByRole('dialog', { name: 'Wardrobe', exact: true });
   await expect(async () => {
+    if (await dialog.isVisible())
+      await dialog.getByRole('button', { name: 'Close Storehouse' }).click();
     await page.keyboard.press('e');
-    await expect(wardrobe).toBeVisible();
+    await expect(wardrobe).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await wardrobe.getByRole('button', { name: /^Mage/ }).click();
   await expect.poll(() => player.classId).toBe('mage');
@@ -86,8 +88,10 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   player.x = building.doorX;
   player.y = building.y + 9;
   await expect(async () => {
+    if (await wardrobe.isVisible())
+      await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
     await page.keyboard.press('e');
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(dialog.getByLabel('Storehouse: 13 coins', { exact: true })).toBeVisible();
   await dialog.getByRole('tab', { name: 'Potions', exact: true }).click();
