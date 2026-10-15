@@ -1,6 +1,7 @@
 export interface Preferences {
   autoAttack: boolean;
   autoTarget: boolean;
+  autoLoot: boolean;
   bloodPuddles: boolean;
   damageNumbers: boolean;
   fps: boolean;
@@ -15,6 +16,7 @@ export function loadPreferences(): Preferences {
   const result = {
     autoAttack: true,
     autoTarget: true,
+    autoLoot: true,
     bloodPuddles: true,
     damageNumbers: true,
     fps: true,
@@ -30,6 +32,7 @@ export function loadPreferences(): Preferences {
     for (const key of [
       'autoAttack',
       'autoTarget',
+      'autoLoot',
       'bloodPuddles',
       'damageNumbers',
       'fps',

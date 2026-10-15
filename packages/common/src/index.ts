@@ -85,6 +85,7 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('combatInput'),
     autoAttack: z.boolean(),
+    autoLoot: z.boolean().optional(),
     autoTarget: z.boolean(),
     attacking: z.boolean(),
     aimX: z.number().finite().min(0).max(FOREST.width),
@@ -139,6 +140,7 @@ export interface Player extends CharacterProgress {
   attackId?: number;
   attackAngle?: number;
   autoAttack?: boolean;
+  autoLoot?: boolean;
   autoTarget?: boolean;
   attacking?: boolean;
   aimX?: number;

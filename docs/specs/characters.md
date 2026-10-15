@@ -32,7 +32,7 @@ from confirmed equipment. Removing the weapon disables its default attack.
 
 Forest enemies each drop one random non-weapon item across armor, jewelry and
 class-specific off-hand types. Every dropped item has 1 armor and costs 1 gold.
-Training grants no loot. Pickup remains automatic without interrupting play.
+Training grants no loot. Item pickup is automatic by default and can be disabled in Settings → Gameplay; XP and gold remain automatic.
 Consumables stack by type; right-click consumes one. Health potions restore 25 HP,
 clamped to maximum HP, and are not consumed at full health or while dead.
 

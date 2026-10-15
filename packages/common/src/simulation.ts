@@ -418,7 +418,11 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     let target: Player | undefined;
     let distance = PICKUP_RULES.attractionRadius as number;
     for (const player of collectors) {
-      if (drop.kind === 'item' && (player.backpack?.length ?? 0) >= INVENTORY_SLOTS) continue;
+      if (
+        drop.kind === 'item' &&
+        (player.autoLoot === false || (player.backpack?.length ?? 0) >= INVENTORY_SLOTS)
+      )
+        continue;
       const next = forestDistance(player, drop);
       if (next < distance) {
         target = player;

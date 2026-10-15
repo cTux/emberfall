@@ -89,6 +89,29 @@ test('full players leave item drops for nearby players while still collecting go
   assert.equal(scene.drops!.filter((drop) => drop.kind === 'item').length, 0);
 });
 
+test('auto-loot off leaves items for others without blocking shared XP or gold', (t) => {
+  t.mock.method(Math, 'random', () => 0);
+  const player = { ...hero(), scene: 'forest' as const, autoLoot: false };
+  const scene = {
+    ...createTrainingScene(0),
+    training: false,
+    enemies: [],
+    endsAt: 1e9,
+    nextSpawn: 1e9,
+  };
+  hitEnemy(scene, { id: 1, x: player.x, y: player.y, hitpoints: 1, angle: 0 }, 2, player, 1000);
+  stepCombat(scene, [player], 1400, 0.05);
+  assert.equal(player.backpack?.length ?? 0, 0);
+  assert(player.experience > 0);
+  assert.equal(player.coins, 1);
+  assert.equal(scene.drops!.length, 1);
+  assert.equal(scene.drops![0].collectorId, undefined);
+  const second = { ...hero(), id: 'second', scene: 'forest' as const };
+  stepCombat(scene, [player, second], 1450, 0.05);
+  assert.equal(second.backpack!.length, 1);
+  assert.equal(scene.drops!.length, 0);
+});
+
 test('gear exchange updates totals and weapon removal rejects casts in every class', () => {
   for (const classId of CLASS_IDS) {
     const player = { ...hero(), ...freshProgress(classId), classId };

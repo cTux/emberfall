@@ -30,6 +30,7 @@ export function Settings({
     key:
       | 'autoAttack'
       | 'autoTarget'
+      | 'autoLoot'
       | 'bloodPuddles'
       | 'damageNumbers'
       | 'fps'
@@ -75,6 +76,10 @@ export function Settings({
             <Stack>
               {toggle('autoAttack', 'Auto-attack (F)')}
               {toggle('autoTarget', 'Auto-target (G)')}
+              {toggle('autoLoot', 'Auto-loot items')}
+              <Typography variant='caption' color='text.secondary'>
+                Automatically collect nearby item drops. XP and gold are always collected.
+              </Typography>
               {toggle('bloodPuddles', 'Blood puddles')}
               {toggle('damageNumbers', 'Floating damage numbers')}
               {toggle('fps', 'FPS graph')}

@@ -44,7 +44,9 @@ on the server, independently of local presentation preferences. See
 [CHAR-05](characters.md#char-05--steam-accounts-and-nickname) and the
 [account design](../design/steam-accounts.md). The remaining settings groups are described below.
 
-Settings groups are Gameplay, Graphics and Sound. Preferences persist locally; malformed or unavailable storage falls back to defaults. Gameplay includes auto-attack, auto-target, blood puddles, damage numbers and performance visibility. Audio has independent music/effects enable switches and volumes; defaults are 0.22 music and 0.35 effects.
+Settings groups are Gameplay, Graphics and Sound. Preferences persist locally; malformed or unavailable storage falls back to defaults. Gameplay includes auto-attack, auto-target, auto-loot items, blood puddles, damage numbers and performance visibility. Audio has independent music/effects enable switches and volumes; defaults are 0.22 music and 0.35 effects.
+
+Auto-loot items is enabled by default. Disabling it stops attracting and collecting item drops for that player; nearby players can still collect them. XP and gold pickup stay automatic. The preference applies immediately and persists across reloads.
 
 The new client's Gameplay settings include **Debug mode: show hitboxes**, disabled
 by default and persisted locally. It takes effect immediately in village, training

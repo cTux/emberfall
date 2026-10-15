@@ -289,7 +289,7 @@ Stable entry IDs make stale
 commands harmless. Gear definitions are the single source of armor and price.
 Per-class progress includes the backpack; older saves default to an empty array.
 Forest kill drops join the existing wrapped pickup system; training exits before
-rewards. The client renders confirmed inventory and never grants items or coins.
+rewards. The saved client `autoLoot` preference travels in validated combat input; the server excludes players with it disabled from item attraction and collection, without changing XP/gold eligibility. Missing fields retain automatic pickup for older clients. The client renders confirmed inventory and never grants items or coins.
 
 `runtime.ts` derives item ownership from the authenticated session. Trading also
 checks village proximity. Item commands mutate a detached copy, save first, then
@@ -302,4 +302,4 @@ second transport. UI components remain controlled; host callbacks send commands.
 
 Verification: `packages/server/src/inventory.test.ts` and
 `tests/inventory.spec.ts` cover transfers, failures, migration, restart,
-stacking, loot, unarmed casting and the replicated UI.
+stacking, loot, unarmed casting and the replicated UI. `tests/auto-loot.spec.ts` covers the live setting, item pickup and reload persistence.
