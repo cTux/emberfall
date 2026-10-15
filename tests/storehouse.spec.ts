@@ -24,6 +24,16 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(dialog.getByRole('tab')).toHaveCount(3);
   await expect(dialog.getByLabel('Storehouse: 13 coins', { exact: true })).toBeVisible();
+  const gold = (await dialog.getByLabel('Storehouse: 13 coins', { exact: true }).boundingBox())!;
+  const firstSlot = (await dialog.getByRole('tabpanel').locator('button').first().boundingBox())!;
+  expect(firstSlot.y - (gold.y + gold.height)).toBeLessThanOrEqual(8);
+  await expect
+    .poll(() =>
+      dialog
+        .locator('.MuiDialogContent-root')
+        .evaluate((element) => element.scrollHeight - element.clientHeight),
+    )
+    .toBeLessThanOrEqual(1);
   for (let tab = 1; tab <= 3; tab++) {
     await dialog.getByRole('tab', { name: `Storage ${tab}`, exact: true }).click();
     await expect(
