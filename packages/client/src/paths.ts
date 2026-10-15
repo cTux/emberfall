@@ -8,6 +8,7 @@ export function drawVillagePaths(ctx: CanvasRenderingContext2D, floor: HTMLImage
   paths.width = ARENA.width / 2;
   paths.height = ARENA.height / 2;
   const mask = paths.getContext('2d')!;
+  mask.filter = 'blur(2px)';
   mask.scale(0.5, 0.5);
   mask.lineWidth = 48;
   mask.lineCap = mask.lineJoin = 'round';
@@ -23,6 +24,7 @@ export function drawVillagePaths(ctx: CanvasRenderingContext2D, floor: HTMLImage
   // Only the center tile is dirt throughout; edge tiles contain bright grass.
   const tile = terrainTile(1, 64);
   mask.resetTransform();
+  mask.filter = 'none';
   mask.globalCompositeOperation = 'source-in';
   mask.fillStyle = mask.createPattern(tile, 'repeat')!;
   mask.fillRect(0, 0, paths.width, paths.height);

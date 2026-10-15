@@ -80,6 +80,8 @@ height matches the other classes instead of being scaled down by its raised staf
 The companion uses a juvenile bear smaller than the druid; the boar remains in
 the asset collection and gallery. Belt lanterns use the generated flame frames.
 Ground tiles preserve asymmetric source scatter rather than mirrored quadrants.
+Opposite ground-tile edges blend continuously in both axes, including corners;
+dirt paths feather into the surrounding grass without a hard cutout.
 The wardrobe opens while its interaction is available nearby.
 Window frames use intertwined roots, leaves and sparse small flowers. Their
 black panel backgrounds are 76% opaque, with text and controls fully opaque.
