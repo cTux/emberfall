@@ -4,7 +4,7 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 
 ## UI-01 — HUD and windows
 
-All game windows use compact, lighter title bars, wardrobe-brown borders and thin scrollbars. Tabs sit close to the title, with brown frames and a filled gold-accented selected state. Backpack slots use matching brown borders and dark wood backgrounds, with 20 slots shown by default.
+All game windows use compact, lighter title bars, wardrobe-brown borders and thin scrollbars. Every tabbed window places its tabs vertically outside its left border, with left-rounded brown frames and a filled gold-accented selected state. The rail moves with the window, stays within the viewport and scrolls independently of the content. Up/Down, Home and End navigate tabs. Backpack slots use matching brown borders and dark wood backgrounds, with 20 slots shown by default.
 The trader has Buy and Buyback tabs, with 20 Buyback slots. A small Sell all icon
 button sits at the top-right of the player's backpack, opposite the gold balance.
 

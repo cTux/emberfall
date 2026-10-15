@@ -39,7 +39,7 @@ test('lobby window drags across the viewport without outer scrollbars', async ({
   const short = (await panel.boundingBox())!;
   expect(short.y).toBeGreaterThanOrEqual(0);
   expect(short.y + short.height).toBeLessThanOrEqual(240);
-  const content = panel.locator(':scope > div').last();
+  const content = panel.locator('.MuiDialogContent-root');
   await expect(content).toHaveCSS('overflow-y', 'auto');
   expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
     true,

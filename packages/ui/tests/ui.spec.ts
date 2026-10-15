@@ -2,7 +2,59 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
-test('backpacks show twenty wood-colored slots and tabs sit close to window titles', async ({
+test('external modal tabs scroll, navigate and stay with the window at viewport edges', async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(story('components-gamewindow--tabbed'));
+  const dialog = page.getByRole('dialog', { name: 'Tabbed window' });
+  const tabs = dialog.getByRole('tablist');
+  const first = tabs.getByRole('tab', { name: 'Chapter 1', exact: true });
+  await first.focus();
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(dialog.getByRole('tabpanel', { name: 'Chapter 3', exact: true })).toBeVisible();
+  await page.keyboard.press('End');
+  await page.keyboard.press('Enter');
+  await expect(dialog.getByRole('tabpanel', { name: 'Chapter 12', exact: true })).toBeVisible();
+  await page.keyboard.press('Home');
+  await page.keyboard.press('Enter');
+  await expect(first).toBeFocused();
+  for (const size of [
+    { width: 1280, height: 800 },
+    { width: 320, height: 240 },
+  ]) {
+    await page.setViewportSize(size);
+    const title = (await dialog.getByRole('heading', { name: 'Tabbed window' }).boundingBox())!;
+    await page.mouse.move(title.x + 5, title.y + 5);
+    await page.mouse.down();
+    await page.mouse.move(0, 0, { steps: 5 });
+    await page.mouse.up();
+    await expect
+      .poll(async () => {
+        const box = (await dialog.boundingBox())!;
+        return box.y + box.height;
+      })
+      .toBeLessThanOrEqual(size.height + 0.1);
+    const rail = (await dialog.locator('.MuiTabs-root').boundingBox())!;
+    const surface = (await dialog.locator('.game-window-surface').boundingBox())!;
+    expect(rail.x).toBeGreaterThanOrEqual(-0.1);
+    expect(rail.x + rail.width).toBeLessThanOrEqual(surface.x);
+    expect(rail.y + rail.height).toBeLessThanOrEqual(size.height);
+    expect(surface.x + surface.width).toBeLessThanOrEqual(size.width);
+    const before = rail.y;
+    await dialog.locator('.MuiDialogContent-root').evaluate((element) => {
+      element.scrollTop = 100;
+    });
+    expect((await dialog.locator('.MuiTabs-root').boundingBox())!.y).toBe(before);
+    await tabs.getByRole('tab', { name: 'Chapter 12', exact: true }).scrollIntoViewIfNeeded();
+    await tabs.getByRole('tab', { name: 'Chapter 12', exact: true }).click();
+    await expect(dialog.getByRole('tabpanel', { name: 'Chapter 12', exact: true })).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath(`external-tabs-${size.width}.png`) });
+  }
+});
+
+test('backpacks show twenty wood-colored slots and tabs sit outside the left window border', async ({
   page,
 }) => {
   for (const state of ['empty', 'stacked', 'full']) {
@@ -19,6 +71,14 @@ test('backpacks show twenty wood-colored slots and tabs sit close to window titl
     const tabs = page.getByRole('tablist');
     const heading = (await title.boundingBox())!;
     const row = (await tabs.boundingBox())!;
+    await expect(tabs).toHaveAttribute('aria-orientation', 'vertical');
+    const surface = page.locator('.game-window-surface');
+    const box = (await surface.boundingBox())!;
+    expect(row.x + row.width).toBeLessThanOrEqual(box.x);
+    expect(row.x).toBeGreaterThanOrEqual(0);
+    const first = (await tabs.getByRole('tab').nth(0).boundingBox())!;
+    const second = (await tabs.getByRole('tab').nth(1).boundingBox())!;
+    expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
     expect(row.y - heading.y - heading.height).toBeLessThanOrEqual(12);
     await expect(page.getByRole('tab', { selected: true })).toHaveCSS(
       'background-color',
@@ -258,7 +318,7 @@ test('dialog closes with Escape, restores focus and drags', async ({ page }) => 
 test('tabs, settings and voting support keyboard and callbacks', async ({ page }) => {
   await page.goto(story('components-game-patterns--chapters'));
   await page.getByRole('tab', { name: 'Controls' }).focus();
-  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await expect(page.getByRole('tabpanel', { name: 'Combat' })).toBeVisible();
   await page.goto(story('components-game-patterns--settings'));
