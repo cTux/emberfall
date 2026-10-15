@@ -19,6 +19,7 @@ import {
   tradeItem,
   sellAll,
   transferStoredItem,
+  moveStorageItem,
 } from '@emberfall/common';
 import type {
   ChatMessage,
@@ -348,10 +349,14 @@ export async function createRuntime(savePath = ':memory:') {
         message.type === 'trade' ||
         message.type === 'sellAll' ||
         message.type === 'storeItem' ||
-        message.type === 'renameStorage'
+        message.type === 'renameStorage' ||
+        message.type === 'moveStorageItem'
       ) {
         const trading = message.type === 'trade' || message.type === 'sellAll';
-        const storing = message.type === 'storeItem' || message.type === 'renameStorage';
+        const storing =
+          message.type === 'storeItem' ||
+          message.type === 'renameStorage' ||
+          message.type === 'moveStorageItem';
         const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!world || !player || !session.characterId || player.hitpoints <= 0) {
@@ -373,6 +378,8 @@ export async function createRuntime(savePath = ':memory:') {
           if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
           else if (message.type === 'storeItem')
             transferStoredItem(next, message.tab, message.id, message.depositing);
+          else if (message.type === 'moveStorageItem')
+            moveStorageItem(next, message.fromTab, message.toTab, message.id);
           else if (message.type === 'renameStorage')
             next.storages![message.tab].name = message.name;
           else if (message.type === 'sellAll') sellAll(next, merchant);

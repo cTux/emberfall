@@ -52,6 +52,12 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 adds a host-owned rename action on right-click or F2 without changing tab selection.
 The host owns the rename dialog, validation and persistence.
 
+`Backpack.inventory` enables native item dragging. `Backpack.drop` and `Chapter.drop`
+accept named source inventories and call a host-owned `(inventory, itemId)` action.
+The host chooses transfer/trade commands; the shared UI never moves items itself.
+Unconfigured sources, same-inventory and unrelated browser drops are ignored.
+Existing RMB and Enter/Space actions remain available without dragging.
+
 Windows have a 400px content surface and a maximum height of 480px, clamped to the viewport with a 16px margin. Tabbed windows add an external vertical rail on the left (112px, or 80px on narrow screens, plus an 8px gap). The whole frame stays in the viewport when dragged or resized; content shrinks on narrow screens. Tabs scroll independently of content and use Up/Down, Home and End navigation. Settings uses a fixed 420px height across tabs. The compact, medium-weight title sits four pixels above content and stays visible while window content scrolls internally. Thin scrollbars, compact typography, switches and left-rounded brown framed tabs with a filled active state come from the shared theme. `Backpack.headerActions` accepts host-owned controls opposite the gold balance, such as the trader's Sell all button.
 
 | Component          | Responsibility and inputs                                                                                                                                                                                                                                                            |

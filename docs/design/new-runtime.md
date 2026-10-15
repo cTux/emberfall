@@ -20,6 +20,13 @@ before publishing them. The server validates session ownership, living village
 status and Storehouse proximity. The client composes ChapterTabs and Backpack;
 storage capacity is 40 while the existing player backpack remains 20 slots.
 
+Inventory dragging uses native browser drag events in controlled Backpack and
+ChapterTabs views. Per-inventory MIME types identify allowed sources before drop;
+the payload contains only an item ID. The host sends existing store/trade commands
+or a validated storage-to-storage command. The server derives the owner from the
+session and saves detached results before publication; drag data never supplies
+items, quantities, currency or a different owner.
+
 - `common`: serializable definitions, validated commands, geometry, shared
   simulation and prediction functions. No DOM, database or network connections.
 - `server`: authoritative Miniplex entities, ordered fixed-timestep systems,

@@ -38,4 +38,5 @@ export type {
 
 export { Backpack } from './components/Backpack';
 export type { BackpackItemView, BackpackProps } from './components/Backpack';
+export type { InventoryDrop } from './inventory-drag';
 export { GoldBalance } from './components/GoldBalance';

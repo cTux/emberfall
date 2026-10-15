@@ -2,6 +2,7 @@ import { useContext, useId, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { WindowTabsContext } from './GameWindow/WindowTabsContext';
+import { inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
 export interface Chapter {
   id: string;
@@ -9,6 +10,7 @@ export interface Chapter {
   content: ReactNode;
   disabled?: boolean;
   onRename?(): void;
+  drop?: InventoryDrop;
 }
 export interface ChapterTabsProps {
   label: string;
@@ -42,6 +44,7 @@ export function ChapterTabs({
           value={chapter.id}
           label={chapter.title}
           disabled={chapter.disabled}
+          {...inventoryDropProps(chapter.disabled ? undefined : chapter.drop)}
           onContextMenu={
             chapter.onRename
               ? (event) => {

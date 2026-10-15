@@ -10,6 +10,7 @@ import {
   freshStorages,
   storagesSchema,
   transferStoredItem,
+  moveStorageItem,
   stepCombat,
   tradeItem,
   freshMerchant,
@@ -87,6 +88,44 @@ test('storage schemas bound tabs, slots, names and identities; legacy progress g
   assert.equal(storagesSchema.safeParse(storages).success, false);
   const legacy = { ...freshProgress(), storages: undefined };
   assert.deepEqual(decodeProgress(JSON.stringify(legacy)).progress.storages, freshStorages());
+});
+
+test('storage-to-storage moves conserve stacks, validate tabs and reject full or stale destinations', () => {
+  const player = hero();
+  const potion = item('health-potion', 5);
+  player.storages![0].items = [potion];
+  player.storages![1].items = [
+    item('health-potion', 2),
+    ...Array.from({ length: 39 }, () => item()),
+  ];
+  moveStorageItem(player, 0, 1, potion.id);
+  assert.equal(player.storages![0].items.length, 0);
+  assert.equal(player.storages![1].items.length, 40);
+  assert.equal(player.storages![1].items[0].quantity, 7);
+  assert.throws(() => moveStorageItem(player, 0, 1, potion.id), /available/);
+  player.storages![0].items = [item()];
+  const before = structuredClone(player);
+  assert.throws(() => moveStorageItem(player, 0, 1, player.storages![0].items[0].id), /full/);
+  for (const [fromTab, toTab] of [
+    [0, 0],
+    [-1, 1],
+    [0, 3],
+    [0.5, 1],
+  ])
+    assert.throws(
+      () => moveStorageItem(player, fromTab, toTab, player.storages![0].items[0].id),
+      /different/,
+    );
+  assert.deepEqual(player, before);
+  for (const [fromTab, toTab] of [
+    [-1, 1],
+    [0, 3],
+    [0.5, 1],
+  ])
+    assert.equal(
+      clientMessage.safeParse({ type: 'moveStorageItem', fromTab, toTab, id: 'x' }).success,
+      false,
+    );
 });
 
 test('account storage and collected gold survive class changes and restart without sharing between accounts', async () => {
@@ -278,6 +317,24 @@ test('session commands require Storehouse proximity and commit before publishing
     peer.receive(command);
     assert.equal(player.backpack.length, 0);
     assert.equal(player.storages![0].items.length, 1);
+    const move = { type: 'moveStorageItem', fromTab: 0, toTab: 2, id: command.id };
+    const stored = structuredClone(player);
+    const failMoveSave = t.mock.method(runtime.characters, 'save', () => {
+      throw new Error('Test save failure');
+    });
+    peer.receive(move);
+    assert.match(error(), /Unable to save/);
+    assert.deepEqual(player, stored);
+    failMoveSave.mock.restore();
+    peer.receive(move);
+    assert.equal(player.storages![0].items.length, 0);
+    assert.equal(player.storages![2].items[0].id, command.id);
+    peer.receive({ ...move, fromTab: 2, toTab: 0 });
+    player.x = 1000;
+    peer.receive(move);
+    assert.match(error(), /Storehouse/);
+    assert.equal(player.storages![0].items.length, 1);
+    player.x = building.doorX;
     peer.receive(command);
     assert.match(error(), /available/);
     peer.receive({ type: 'renameStorage', tab: 0, name: ' Gear ' });
