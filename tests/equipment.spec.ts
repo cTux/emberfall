@@ -43,9 +43,9 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   const itemTooltip = page.getByRole('tooltip').filter({ hasText: "Warrior's sword" });
   await expect(itemTooltip).toBeVisible();
   expect(await itemTooltip.evaluate((node) => node.closest('[role="dialog"]') === null)).toBe(true);
-  await expect(dialog).toHaveCSS('border-top-width', '1px');
-  await expect(dialog).toHaveCSS('border-top-style', 'solid');
-  await expect(dialog).toHaveCSS('border-image-source', 'none');
+  await expect(dialog.locator('.game-window-surface')).toHaveCSS('border-top-width', '1px');
+  await expect(dialog.locator('.game-window-surface')).toHaveCSS('border-top-style', 'solid');
+  await expect(dialog.locator('.game-window-surface')).toHaveCSS('border-image-source', 'none');
   await expect(dialog.locator('.MuiDialogTitle-root').locator('..')).toHaveCSS(
     'border-bottom-width',
     '0px',

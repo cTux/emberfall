@@ -92,7 +92,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
         expect(Math.abs(left.width - right.width)).toBeLessThan(1);
       }
       if (width > 320) {
-        const window = (await trader.boundingBox())!;
+        const window = (await trader.locator('.game-window-surface').boundingBox())!;
         const first = (await merchantSlots.first().boundingBox())!;
         const last = (await playerSlots.last().boundingBox())!;
         const padding = first.x - window.x;
