@@ -247,6 +247,7 @@ export function Arena({
           ...combat,
           autoAttack: prefs.current.autoAttack,
           autoTarget: prefs.current.autoTarget,
+          autoLoot: prefs.current.autoLoot,
           attacking: held && !blocked(),
         });
       const { x, y } = movement();
@@ -340,6 +341,7 @@ export function Arena({
           type: 'combatInput',
           autoAttack: prefs.current.autoAttack,
           autoTarget: prefs.current.autoTarget,
+          autoLoot: prefs.current.autoLoot,
           attacking: held && !blocked(),
           aimX: wrap(aimX, FOREST.width),
           aimY: wrap(aimY, FOREST.height),
