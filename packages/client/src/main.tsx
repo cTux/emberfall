@@ -680,7 +680,7 @@ function App({
       {menu && (
         <GameWindow
           key={menu}
-          height={menu === 'settings' ? 420 : undefined}
+          height={menu === 'codex' ? 480 : menu === 'settings' ? 420 : undefined}
           width={
             menu === 'wardrobe'
               ? 600
