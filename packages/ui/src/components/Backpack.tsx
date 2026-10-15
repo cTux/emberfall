@@ -16,13 +16,24 @@ export interface BackpackProps {
   items: BackpackItemView[];
   coins?: number;
   action: string;
+  headerActions?: ReactNode;
   onUse(id: string): void;
 }
 /** Slots grow with the supplied inventory; empty cells are presentation only. */
-export function Backpack({ label, items, coins, action, onUse }: BackpackProps) {
+export function Backpack({ label, items, coins, action, headerActions, onUse }: BackpackProps) {
   return (
     <Box component='section' aria-label={label} sx={{ minWidth: 0 }}>
-      {coins !== undefined && <GoldBalance name={label} coins={coins} />}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minHeight: 20,
+        }}
+      >
+        {coins !== undefined && <GoldBalance name={label} coins={coins} />}
+        {headerActions}
+      </Box>
       <Box
         sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 44px)', gap: 0.5, mt: 0.5 }}
       >

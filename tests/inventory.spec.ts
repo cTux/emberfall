@@ -72,7 +72,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(trader.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();
   await trader.getByRole('button', { name: 'Sell Helmet', exact: true }).click({ button: 'right' });
-  await expect(trader.getByRole('button', { name: 'Buy Helmet', exact: true })).toBeVisible();
+  await expect(trader.getByRole('button', { name: 'Buy Helmet', exact: true })).toHaveCount(0);
+  await trader.getByRole('tab', { name: 'Buyback', exact: true }).click();
+  await expect(trader.getByRole('button', { name: 'Buy back Helmet', exact: true })).toBeVisible();
   await expect(trader.getByLabel('Your backpack: 1 coins')).toBeVisible();
   expect(world.merchant!.coins).toBe(4999);
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
@@ -94,15 +96,19 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
       await secondPage.keyboard.press('e');
       await expect(secondTrader).toBeVisible();
     }).toPass({ intervals: [200], timeout: 6000 });
+    await secondTrader.getByRole('tab', { name: 'Buyback', exact: true }).click();
     await secondTrader
-      .getByRole('button', { name: 'Buy Helmet', exact: true })
+      .getByRole('button', { name: 'Buy back Helmet', exact: true })
       .click({ button: 'right' });
     await expect(
       secondTrader.getByRole('button', { name: 'Sell Helmet', exact: true }),
     ).toBeVisible();
-    await expect(trader.getByRole('button', { name: 'Buy Helmet', exact: true })).toHaveCount(0);
+    await expect(trader.getByRole('button', { name: 'Buy back Helmet', exact: true })).toHaveCount(
+      0,
+    );
     expect(buyer.coins).toBe(0);
     expect(world.merchant!.coins).toBe(5000);
+    await secondTrader.getByRole('tab', { name: 'Buy', exact: true }).click();
     // Rejected purchase keeps the stock and both balances.
     await secondTrader
       .getByRole('button', { name: 'Buy Health potion (5)' })
@@ -121,5 +127,35 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   } finally {
     await context.close();
   }
+  await page.bringToFront();
+  player.backpack = Array.from({ length: 24 }, (_, index) => ({
+    id: `bulk-${index}`,
+    itemId: 'loot-boots',
+    quantity: 1,
+  }));
+  player.backpack.push({ id: 'bulk-potions', itemId: 'health-potion', quantity: 3 });
+  await expect(trader.getByRole('button', { name: 'Sell Boots', exact: true })).toHaveCount(24);
+  await expect(trader.getByRole('button', { name: 'Sell all', exact: true })).toBeEnabled();
+  await page.screenshot({ path: 'test-results/innkeeper-before-sell-all.png' });
+  const oldCoins = player.coins!;
+  await trader.getByRole('button', { name: 'Sell all', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(trader.getByRole('button', { name: 'Sell all', exact: true })).toBeDisabled();
+  expect(player.backpack).toEqual([]);
+  expect(player.coins).toBe(oldCoins + 27);
+  expect(world.merchant!.buyback).toHaveLength(16);
+  const buyback = trader.getByRole('region', { name: 'Buyback', exact: true });
+  await expect(buyback.locator('[data-backpack-item]')).toHaveCount(16);
+  await expect(buyback.getByRole('button', { name: 'Buy back Health potion (3)' })).toBeVisible();
+  await page.screenshot({ path: 'test-results/innkeeper-buyback-desktop.png' });
+  await page.setViewportSize({ width: 320, height: 800 });
+  await expect(trader).toBeVisible();
+  expect(await trader.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+  await trader.getByRole('button', { name: 'Buy back Health potion (3)' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(
+    trader.getByRole('button', { name: 'Sell Health potion', exact: true }),
+  ).toBeVisible();
+  await page.screenshot({ path: 'test-results/innkeeper-buyback-narrow.png' });
   expect(errors).toEqual([]);
 });

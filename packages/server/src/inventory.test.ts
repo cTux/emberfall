@@ -9,6 +9,9 @@ import {
   unequipItem,
   tradeItem,
   freshMerchant,
+  sellAll,
+  merchantSchema,
+  BUYBACK_SLOTS,
   characterStats,
   CLASS_IDS,
   LOOT_ITEM_IDS,
@@ -118,7 +121,7 @@ test('shared merchant trades conserve items and gold, reject stale and unafforda
   assert.equal(player.coins, 1);
   assert.equal(merchant.coins, 4999);
   assert.equal(player.backpack.length, 0);
-  const sold = merchant.backpack.find((item) => item.itemId === helmet.itemId)!;
+  const sold = merchant.buyback.find((item) => item.itemId === helmet.itemId)!;
   const second = hero();
   second.coins = 1;
   tradeItem(second, merchant, sold.id, true);
@@ -144,6 +147,67 @@ test('backpack and command validation reject unknown items, forged stacks and du
   assert.equal(clientMessage.safeParse({ type: 'unequip', slot: 'unknown' }).success, false);
   assert.equal(clientMessage.safeParse({ type: 'trade', id: 'a', buying: 'yes' }).success, false);
   assert.deepEqual(decodeProgress(JSON.stringify(freshProgress())).progress.backpack, []);
+});
+
+test('buyback keeps the latest 16 sales separate, migrates legacy gear, and rejects expired IDs', () => {
+  const player = hero();
+  const merchant = freshMerchant();
+  player.backpack = Array.from({ length: 20 }, () => item('loot-helmet'));
+  const ids: string[] = [];
+  for (const entry of [...player.backpack]) {
+    tradeItem(player, merchant, entry.id, false);
+    ids.push(merchant.buyback[0].id);
+  }
+  assert.equal(merchant.backpack.length, 1);
+  assert.equal(merchant.buyback.length, BUYBACK_SLOTS);
+  assert.deepEqual(
+    merchant.buyback.map((entry) => entry.id),
+    ids.slice(-16).reverse(),
+  );
+  assert.throws(() => tradeItem(player, merchant, ids[0], true), /available/);
+  const legacy = merchantSchema.parse({
+    coins: 100,
+    backpack: [item('health-potion', 3), ...Array.from({ length: 20 }, () => item('loot-boots'))],
+  });
+  assert.equal(legacy.backpack.length, 1);
+  assert.equal(legacy.backpack[0].quantity, 3);
+  assert.equal(legacy.buyback.length, 16);
+  assert.deepEqual(merchantSchema.parse(merchant), merchant);
+  assert.equal(
+    merchantSchema.safeParse({
+      ...merchant,
+      buyback: Array.from({ length: 17 }, () => item('loot-boots')),
+    }).success,
+    false,
+  );
+});
+
+test('sell all transfers stacks and gold atomically, preserves equipment and rejects unaffordable or overflowing sales', () => {
+  const player = hero();
+  const merchant = freshMerchant();
+  const equipment = structuredClone(player.equipment);
+  player.backpack = [item('loot-helmet'), item('health-potion', 5)];
+  merchant.coins = 5;
+  const before = structuredClone({ player, merchant });
+  assert.throws(() => sellAll(player, merchant), /gold/);
+  assert.deepEqual({ player, merchant }, before);
+  merchant.coins = 5000;
+  sellAll(player, merchant);
+  assert.equal(player.coins, 6);
+  assert.equal(merchant.coins, 4994);
+  assert.equal(player.backpack.length, 0);
+  assert.deepEqual(player.equipment, equipment);
+  assert.deepEqual(
+    merchant.buyback.map((entry) => entry.quantity),
+    [5, 1],
+  );
+  tradeItem(player, merchant, merchant.buyback[0].id, true);
+  assert.equal(player.backpack[0].quantity, 1);
+  assert.equal(merchant.buyback[0].quantity, 4);
+  player.coins = Number.MAX_SAFE_INTEGER;
+  const overflow = structuredClone({ player, merchant });
+  assert.throws(() => sellAll(player, merchant), /large/);
+  assert.deepEqual({ player, merchant }, overflow);
 });
 
 test('every forest kill drops non-weapon 1-armor 1-gold gear, collected once across a wrapped seam; training drops none', (t) => {
@@ -202,7 +266,7 @@ test('trade save survives restart and rolls both owners back on failed validatio
     await store.ready;
     assert.equal(store.load(saved.token).progress.coins, 1);
     assert.equal(
-      store.merchant(worldId).backpack.find((entry) => entry.itemId === 'loot-helmet')?.quantity,
+      store.merchant(worldId).buyback.find((entry) => entry.itemId === 'loot-helmet')?.quantity,
       1,
     );
     assert.equal(store.merchant(worldId).coins, 4999);
@@ -228,7 +292,7 @@ test('session-owned commands reject remote trading and retain live items after a
     assert.equal(world.players.size, 1);
     const player = [...world.players.values()][0];
     player.backpack = [item('loot-helmet')];
-    peer.receive({ type: 'trade', id: player.backpack[0].id, buying: false });
+    peer.receive({ type: 'sellAll' });
     assert.match((messages.at(-1) as { message: string }).message, /Trade near Marta/);
     assert.equal(player.backpack.length, 1);
     player.x = INNKEEPER.x;
@@ -237,7 +301,7 @@ test('session-owned commands reject remote trading and retain live items after a
     const failSave = t.mock.method(runtime.characters, 'save', () => {
       throw new Error('Test database failure');
     });
-    peer.receive({ type: 'trade', id: player.backpack[0].id, buying: false });
+    peer.receive({ type: 'sellAll' });
     assert.match((messages.at(-1) as { message: string }).message, /Unable to save/);
     assert.deepEqual(player, before);
     assert.equal(world.merchant!.coins, 5000);
@@ -246,7 +310,7 @@ test('session-owned commands reject remote trading and retain live items after a
     peer.receive({ type: 'trade', id: player.backpack[0].id, buying: false, coins: 99999 });
     assert.equal(player.backpack.length, 0);
     assert.equal(player.coins, 1, 'wire currency cannot override the server calculation');
-    const soldId = world.merchant!.backpack.find((entry) => entry.itemId === 'loot-helmet')!.id;
+    const soldId = world.merchant!.buyback.find((entry) => entry.itemId === 'loot-helmet')!.id;
     peer.receive({ type: 'trade', id: soldId, buying: true });
     peer.receive({ type: 'trade', id: soldId, buying: true });
     assert.match((messages.at(-1) as { message: string }).message, /no longer available/);

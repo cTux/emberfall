@@ -4,6 +4,10 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 
 ## UI-01 — HUD and windows
 
+All game windows use compact, lighter title bars and thin forest-colored scrollbars.
+The trader has Buy and Buyback tabs, with 16 Buyback slots. A small Sell all icon
+button sits at the top-right of the player's backpack, opposite the gold balance.
+
 The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames belong to Steam accounts; see CHAR-05.
 
 Party cards show server-owned `Nickname, lvl N` inside the HP bar, adding `P` and the paragon level when positive. A thinner blue XP bar directly below health shows current/required XP using the shared progression formula. The class portrait matches the health bar height; a crown marks the host in its top-right corner and a dimension icon marks players in another area in its top-left corner. Icons retain accessible labels and away players stay dimmed. Thin health bars also appear beneath player names.

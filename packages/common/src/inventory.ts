@@ -36,15 +36,32 @@ export const backpackSchema = z
     'Duplicate item identity',
   );
 export type BackpackItem = z.infer<typeof backpackSchema>[number];
-export const merchantSchema = z.object({
-  coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-  backpack: backpackSchema,
-});
+export const BUYBACK_SLOTS = 16;
+export const merchantSchema = z
+  .object({
+    coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+    backpack: backpackSchema,
+    buyback: backpackSchema.refine((items) => items.length <= BUYBACK_SLOTS).optional(),
+  })
+  .transform((merchant) => ({
+    ...merchant,
+    backpack:
+      merchant.buyback === undefined
+        ? merchant.backpack.filter((item) => !!CONSUMABLES[item.itemId as keyof typeof CONSUMABLES])
+        : merchant.backpack,
+    buyback:
+      merchant.buyback ??
+      merchant.backpack
+        .filter((item) => !CONSUMABLES[item.itemId as keyof typeof CONSUMABLES])
+        .reverse()
+        .slice(0, BUYBACK_SLOTS),
+  }));
 export type Merchant = z.infer<typeof merchantSchema>;
 export function freshMerchant(): Merchant {
   return {
     coins: 5000,
     backpack: [{ id: crypto.randomUUID(), itemId: 'health-potion', quantity: 5 }],
+    buyback: [],
   };
 }
 export function addItem(backpack: BackpackItem[], item: BackpackItem) {
@@ -92,7 +109,10 @@ export function unequipItem(player: Player, slot: EquipmentSlot) {
 export function tradeItem(player: Player, merchant: Merchant, id: string, buying: boolean) {
   const source = buying ? merchant : player;
   const target = buying ? player : merchant;
-  const backpack = source.backpack ?? [];
+  const backpack =
+    buying && merchant.buyback.some((item) => item.id === id)
+      ? merchant.buyback
+      : (source.backpack ?? []);
   const index = backpack.findIndex((item) => item.id === id);
   if (index < 0) throw new Error('Item is no longer available.');
   const item = backpack[index];
@@ -100,8 +120,35 @@ export function tradeItem(player: Player, merchant: Merchant, id: string, buying
   if ((target.coins ?? 0) < price) throw new Error('Not enough gold.');
   if (!Number.isSafeInteger((source.coins ?? 0) + price))
     throw new Error('Gold balance is too large.');
-  addItem((target.backpack ??= []), { id: crypto.randomUUID(), itemId: item.itemId, quantity: 1 });
+  const transferred = { id: crypto.randomUUID(), itemId: item.itemId, quantity: 1 };
+  if (buying) addItem((player.backpack ??= []), transferred);
+  else {
+    merchant.buyback.unshift(transferred);
+    merchant.buyback.length = Math.min(merchant.buyback.length, BUYBACK_SLOTS);
+  }
   if (--item.quantity === 0) backpack.splice(index, 1);
   target.coins = (target.coins ?? 0) - price;
   source.coins = (source.coins ?? 0) + price;
+}
+
+/** The server commits the detached player and merchant together, as for one-item trades. */
+export function sellAll(player: Player, merchant: Merchant) {
+  const items = player.backpack ?? [];
+  const total = items.reduce(
+    (sum, item) => sum + (itemDefinition(item.itemId).price ?? 1) * item.quantity,
+    0,
+  );
+  if (!Number.isSafeInteger(total) || !Number.isSafeInteger((player.coins ?? 0) + total))
+    throw new Error('Gold balance is too large.');
+  if (merchant.coins < total) throw new Error('Not enough gold.');
+  merchant.buyback = [
+    ...[...items]
+      .reverse()
+      .slice(0, BUYBACK_SLOTS)
+      .map((item) => ({ ...item, id: crypto.randomUUID() })),
+    ...merchant.buyback,
+  ].slice(0, BUYBACK_SLOTS);
+  merchant.coins -= total;
+  player.coins = (player.coins ?? 0) + total;
+  player.backpack = [];
 }

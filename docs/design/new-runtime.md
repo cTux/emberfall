@@ -281,7 +281,11 @@ alongside results in the verification record.
 ## Inventory, loot and shared trading
 
 `common/inventory.ts` owns validated unlimited backpack entries, stack merging,
-gear exchange, consumable use and one-item trades. Stable entry IDs make stale
+gear exchange, consumable use, one-item trades and atomic whole-backpack sales.
+Merchant buyback is a separate newest-first queue capped at 16 entries, including
+whole consumable stacks from Sell all. Buying returns one item per action.
+Legacy merchant gear stock migrates to buyback; potion stock stays in Buy.
+Stable entry IDs make stale
 commands harmless. Gear definitions are the single source of armor and price.
 Per-class progress includes the backpack; older saves default to an empty array.
 Forest kill drops join the existing wrapped pickup system; training exits before
