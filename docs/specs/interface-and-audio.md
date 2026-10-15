@@ -20,7 +20,7 @@ Wardrobe shows all four classes in one compact row. Each card has its matching c
 
 During an active boss fight, forest players see a fixed top-center boss HUD with the boss name (The Hollow Warden), orange health bar and current/max HP, even when the boss is offscreen. It replaces the boss objective label and disappears on defeat or returning to the lobby; the scene-complete message then appears.
 
-Codex uses the shared forest theme with chapter tabs for controls, worlds and party, combat, the boss, character persistence, and credits. Tabs support arrow keys, Home, and End; the book remains draggable and closable.
+Codex uses the shared forest theme with chapter tabs for controls, worlds and party, combat, the boss, character persistence, classes, and credits. Every chapter uses short sections, readable lists where appropriate, and relevant game artwork with accessible descriptions. Illustrations fit narrow screens without horizontal scrolling. Tabs support arrow keys, Home, and End; the book remains draggable and closable and keeps its size and position when switching chapters.
 
 ## UI-02 — Combat controls
 
