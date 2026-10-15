@@ -18,6 +18,7 @@ import {
   unequipItem,
   tradeItem,
   sellAll,
+  transferStoredItem,
 } from '@emberfall/common';
 import type {
   ChatMessage,
@@ -345,9 +346,12 @@ export async function createRuntime(savePath = ':memory:') {
         message.type === 'useItem' ||
         message.type === 'unequip' ||
         message.type === 'trade' ||
-        message.type === 'sellAll'
+        message.type === 'sellAll' ||
+        message.type === 'storeItem' ||
+        message.type === 'renameStorage'
       ) {
         const trading = message.type === 'trade' || message.type === 'sellAll';
+        const storing = message.type === 'storeItem' || message.type === 'renameStorage';
         const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!world || !player || !session.characterId || player.hitpoints <= 0) {
@@ -358,11 +362,19 @@ export async function createRuntime(savePath = ':memory:') {
           error('Trade near Marta the Innkeeper in the village.');
           return;
         }
+        if (storing && (player.scene || nearbyInteraction(player)?.id !== 'storehouse')) {
+          error('Use the Storehouse in the village.');
+          return;
+        }
         let saving = false;
         try {
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
           if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
+          else if (message.type === 'storeItem')
+            transferStoredItem(next, message.tab, message.id, message.depositing);
+          else if (message.type === 'renameStorage')
+            next.storages![message.tab].name = message.name;
           else if (message.type === 'sellAll') sellAll(next, merchant);
           else if (message.type === 'unequip') unequipItem(next, message.slot);
           else useBackpackItem(next, message.id);
@@ -375,6 +387,7 @@ export async function createRuntime(savePath = ':memory:') {
           );
           Object.assign(player, {
             backpack: next.backpack,
+            storages: next.storages,
             equipment: next.equipment,
             coins: next.coins,
             hitpoints: next.hitpoints,

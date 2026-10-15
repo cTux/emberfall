@@ -37,6 +37,28 @@ export const backpackSchema = z
   );
 export type BackpackItem = z.infer<typeof backpackSchema>[number];
 export const INVENTORY_SLOTS = 20;
+export const STORAGE_SLOTS = 40;
+export const storageNameSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(24)
+  .regex(/^[^\p{Cc}\p{Cf}]*$/u);
+export const storagesSchema = z
+  .array(
+    z.object({
+      name: storageNameSchema,
+      items: backpackSchema.refine((items) => items.length <= STORAGE_SLOTS),
+    }),
+  )
+  .length(3)
+  .refine((storages) => {
+    const ids = storages.flatMap((storage) => storage.items.map((item) => item.id));
+    return new Set(ids).size === ids.length;
+  }, 'Duplicate stored item identity');
+export function freshStorages(): z.infer<typeof storagesSchema> {
+  return Array.from({ length: 3 }, (_, index) => ({ name: `Storage ${index + 1}`, items: [] }));
+}
 export const BUYBACK_SLOTS = INVENTORY_SLOTS;
 export const merchantSchema = z
   .object({
@@ -65,7 +87,7 @@ export function freshMerchant(): Merchant {
     buyback: [],
   };
 }
-export function addItem(backpack: BackpackItem[], item: BackpackItem) {
+export function addItem(backpack: BackpackItem[], item: BackpackItem, capacity = INVENTORY_SLOTS) {
   const stack =
     CONSUMABLES[item.itemId as keyof typeof CONSUMABLES] &&
     backpack.find((entry) => entry.itemId === item.itemId);
@@ -74,9 +96,21 @@ export function addItem(backpack: BackpackItem[], item: BackpackItem) {
       throw new Error('Stack is too large.');
     stack.quantity += item.quantity;
   } else {
-    if (backpack.length >= INVENTORY_SLOTS) throw new Error('Your backpack is full.');
+    if (backpack.length >= capacity) throw new Error('The destination inventory is full.');
     backpack.push({ ...item });
   }
+}
+/** Move the whole entry only after the destination has accepted it. */
+export function transferStoredItem(player: Player, tab: number, id: string, depositing: boolean) {
+  const storage = player.storages?.[tab];
+  if (!storage || !Number.isInteger(tab)) throw new Error('Invalid storage tab.');
+  const backpack = (player.backpack ??= []);
+  const source = depositing ? backpack : storage.items;
+  const target = depositing ? storage.items : backpack;
+  const index = source.findIndex((item) => item.id === id);
+  if (index < 0) throw new Error('Item is no longer available.');
+  addItem(target, source[index], depositing ? STORAGE_SLOTS : INVENTORY_SLOTS);
+  source.splice(index, 1);
 }
 export function useBackpackItem(player: Player, id: string) {
   const backpack = (player.backpack ??= []);

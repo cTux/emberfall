@@ -96,6 +96,15 @@ and nature green. Critical numbers override the type color with white text and a
 thick red outline. Server events carry damage type and critical outcome in both
 training and forest; the existing damage-number preference applies.
 
+## UI-07 — Storehouse
+
+Interacting with the existing village Storehouse opens three storage tabs alongside
+the backpack. Each tab displays exactly 40 slots. Right-click a tab to open a rename
+dialog; F2 on the focused tab provides the same keyboard action. Enter saves and
+Cancel or Escape preserves the name. Names are limited to 24 characters.
+Right-click, Enter or Space on an item transfers the whole stack. The existing
+window, item icons, tooltips, scrolling and narrow-viewport behavior are reused.
+
 ## Acceptance
 
 - In the new runtime, all four classes receive only their base weapon, including

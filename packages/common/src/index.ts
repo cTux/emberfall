@@ -3,7 +3,7 @@ export { nicknameSchema, type AccountView } from './account.ts';
 import { CLASS_IDS, CLASS_LABELS } from './definitions/entities/players.ts';
 export { CLASS_IDS, CLASS_LABELS };
 import { z } from 'zod';
-import { backpackSchema, type Merchant } from './inventory.ts';
+import { backpackSchema, storagesSchema, storageNameSchema, type Merchant } from './inventory.ts';
 export * from './inventory.ts';
 import { EQUIPMENT_SLOTS, equipmentSchema } from './equipment.ts';
 export * from './equipment.ts';
@@ -43,6 +43,7 @@ export const progressSchema = z
   .object({
     equipment: equipmentSchema.optional(),
     backpack: backpackSchema.optional(),
+    storages: storagesSchema.optional(),
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),
     level: z.number().int().min(1).max(10000),
     paragon: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
@@ -59,6 +60,17 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('unequip'), slot: z.enum(EQUIPMENT_SLOTS) }),
   z.object({ type: z.literal('trade'), id: z.string().min(1).max(64), buying: z.boolean() }),
   z.object({ type: z.literal('sellAll') }),
+  z.object({
+    type: z.literal('storeItem'),
+    tab: z.number().int().min(0).max(2),
+    id: z.string().min(1).max(64),
+    depositing: z.boolean(),
+  }),
+  z.object({
+    type: z.literal('renameStorage'),
+    tab: z.number().int().min(0).max(2),
+    name: storageNameSchema,
+  }),
   z.object({
     type: z.literal('chat'),
     text: z

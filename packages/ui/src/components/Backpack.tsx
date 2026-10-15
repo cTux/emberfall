@@ -17,10 +17,19 @@ export interface BackpackProps {
   coins?: number;
   action: string;
   headerActions?: ReactNode;
+  slots?: number;
   onUse(id: string): void;
 }
 /** Twenty slots by default; keep legacy overflow accessible until it is cleared. */
-export function Backpack({ label, items, coins, action, headerActions, onUse }: BackpackProps) {
+export function Backpack({
+  label,
+  items,
+  coins,
+  action,
+  headerActions,
+  slots = 20,
+  onUse,
+}: BackpackProps) {
   return (
     <Box component='section' aria-label={label} sx={{ minWidth: 0 }}>
       <Box
@@ -80,7 +89,7 @@ export function Backpack({ label, items, coins, action, headerActions, onUse }: 
             </BackpackSlotStyled>
           </GearTooltipStyled>
         ))}
-        {Array.from({ length: Math.max(0, 20 - items.length) }, (_, index) => (
+        {Array.from({ length: Math.max(0, slots - items.length) }, (_, index) => (
           <BackpackSlotStyled key={`empty-${index}`} disabled tabIndex={-1} aria-hidden='true' />
         ))}
       </Box>

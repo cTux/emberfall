@@ -63,6 +63,18 @@ for 150% damage. Warrior damage is physical, Mage fire, Ranger poison and Druid
 nature. Each direct hit rolls independently; splash scales from weapon power and
 can crit. Ailment ticks and Bear attacks do not inherit weapon critical rolls.
 
+## CHAR-06 — Storehouse
+
+The village Storehouse provides three private storage tabs per character class,
+each with 40 item slots. Older saves receive three empty storages named Storage 1,
+Storage 2 and Storage 3. Names and contents survive reconnects and server restarts.
+Right-clicking a tab renames it to a trimmed, nonempty name of up to 24 characters.
+Right-clicking an item transfers its entire stack between the selected storage and
+the backpack. Consumables join existing stacks even when the destination is full.
+Full destinations, stale items, invalid tabs and actions while dead, in a scene or
+away from the Storehouse are rejected. Transfers and renames save successfully
+before becoming visible; failed saves preserve both inventories.
+
 ## CHAR-05 — Steam accounts and nickname
 
 Players log in through Steam. After the first successful login, show a nickname
