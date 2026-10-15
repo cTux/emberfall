@@ -41,6 +41,7 @@ export const PLAYER_DEFINITIONS = {
 } as const;
 export const INITIAL_PROGRESS = {
   level: 1,
+  paragon: 0,
   experience: 0,
   coins: 0,
   hitpoints: 100,

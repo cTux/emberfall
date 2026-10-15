@@ -8,6 +8,7 @@ export interface StatusMeterProps {
   color?: 'success' | 'info' | 'warning' | 'error' | 'boss';
   centered?: boolean;
   compact?: boolean;
+  thin?: boolean;
 }
 
 export function StatusMeter({
@@ -17,9 +18,11 @@ export function StatusMeter({
   color = 'success',
   centered = false,
   compact = false,
+  thin = false,
 }: StatusMeterProps) {
   const limit = Number.isFinite(max) && max > 0 ? max : 0;
   const current = Number.isFinite(value) ? Math.min(limit, Math.max(0, value)) : 0;
+  const text = `${thin ? Number(current.toFixed(2)) : Math.round(current)} / ${Math.round(limit)}`;
   return (
     <StatusMeterStyled>
       <StatusMeterProgressStyled
@@ -27,18 +30,25 @@ export function StatusMeter({
         value={limit ? (current / limit) * 100 : 0}
         color={color}
         compact={compact}
+        thin={thin}
         aria-label={label}
         aria-valuenow={current}
         aria-valuemin={0}
         aria-valuemax={limit || 1}
-        aria-valuetext={`${Math.round(current)} / ${Math.round(limit)}`}
+        aria-valuetext={text}
       />
-      <StatusMeterTextStyled centered={centered} aria-hidden='true'>
-        <Typography variant='caption' noWrap>
-          {label}
-        </Typography>
+      <StatusMeterTextStyled
+        centered={centered}
+        aria-hidden='true'
+        sx={thin ? { '& .MuiTypography-root': { fontSize: 10 } } : undefined}
+      >
+        {!thin && (
+          <Typography variant='caption' noWrap>
+            {label}
+          </Typography>
+        )}
         <Typography variant='caption' sx={{ flexShrink: 0 }}>
-          {Math.round(current)} / {Math.round(limit)}
+          {text}
         </Typography>
       </StatusMeterTextStyled>
     </StatusMeterStyled>

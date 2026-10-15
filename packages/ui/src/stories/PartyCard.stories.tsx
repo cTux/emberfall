@@ -12,10 +12,14 @@ const meta = {
     host: true,
     local: true,
     coins: 13,
+    experience: { current: 25, required: 50 },
   },
 } satisfies Meta<typeof PartyCard>;
 export default meta;
 export const Playground: StoryObj<typeof meta> = {};
+export const Paragon: StoryObj<typeof meta> = {
+  args: { level: 20, paragon: 1, experience: { current: 25000000, required: 52428800 } },
+};
 export const HostAway: StoryObj<typeof meta> = { args: { away: true } };
 export const Thousands: StoryObj<typeof meta> = { args: { coins: 1000 } };
 export const Millions: StoryObj<typeof meta> = { args: { coins: 3000000 } };

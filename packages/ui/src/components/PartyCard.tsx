@@ -10,6 +10,8 @@ import { PartyCardStyled, PartyPortraitStyled, PartyMarkerStyled } from './style
 export interface PartyCardProps {
   name: string;
   level: number;
+  paragon?: number;
+  experience?: { current: number; required: number };
   health: number;
   maxHealth: number;
   coins?: number;
@@ -28,6 +30,8 @@ export interface PartyCardProps {
 export function PartyCard({
   name,
   level,
+  paragon = 0,
+  experience,
   health,
   maxHealth,
   coins,
@@ -39,7 +43,7 @@ export function PartyCard({
 }: PartyCardProps) {
   return (
     <PartyCardStyled as='article' aria-label={`${name}${away ? ', in another dimension' : ''}`}>
-      <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+      <Stack direction='row' spacing={1} sx={{ alignItems: 'flex-start' }}>
         <PartyPortraitStyled>
           {portrait && typeof portrait !== 'string' ? (
             portrait
@@ -63,9 +67,25 @@ export function PartyCard({
             </Tooltip>
           )}
         </PartyPortraitStyled>
-        <Stack direction='row' spacing={1} sx={{ flex: 1, minWidth: 0, alignItems: 'center' }}>
+        <Stack direction='row' spacing={1} sx={{ flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
           <Box sx={{ width: '60%', minWidth: 0 }} aria-label={local ? 'Your character' : undefined}>
-            <StatusMeter label={`${name}, lvl ${level}`} value={health} max={maxHealth} />
+            <StatusMeter
+              label={`${name}, lvl ${level}${paragon ? `, P${paragon}` : ''}`}
+              value={health}
+              max={maxHealth}
+            />
+            {experience && (
+              <Box sx={{ mt: 0.25 }}>
+                <StatusMeter
+                  label={`${name} XP`}
+                  value={experience.current}
+                  max={experience.required}
+                  color='info'
+                  centered
+                  thin
+                />
+              </Box>
+            )}
           </Box>
           {coins !== undefined && <GoldBalance name={name} coins={coins} />}
         </Stack>

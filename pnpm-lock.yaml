@@ -59,6 +59,9 @@ importers:
       '@emberfall/common':
         specifier: workspace:*
         version: link:../common
+      '@emberfall/core':
+        specifier: workspace:*
+        version: link:../core
       '@emberfall/ui':
         specifier: workspace:*
         version: link:../ui
@@ -140,6 +143,9 @@ importers:
       '@emberfall/common':
         specifier: workspace:*
         version: link:../common
+      '@emberfall/core':
+        specifier: workspace:*
+        version: link:../core
       drizzle-orm:
         specifier: 1.0.0-rc.2
         version: 1.0.0-rc.2(zod@4.6.5)

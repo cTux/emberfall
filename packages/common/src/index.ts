@@ -45,6 +45,7 @@ export const progressSchema = z
     backpack: backpackSchema.optional(),
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),
     level: z.number().int().min(1).max(10000),
+    paragon: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
     experience: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),
     coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
     hitpoints: z.number().finite().nonnegative(),

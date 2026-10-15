@@ -101,6 +101,10 @@ These rules follow the global `customize-material-ui` and `build-react-ui-compon
 
 ## Boundaries and acceptance
 
+PartyCard accepts optional confirmed `experience: { current, required }` and
+`paragon` values. Its thin blue XP meter sits under health and shows current/required
+XP; positive paragon is shown beside the normal level. The host owns XP requirements.
+
 - Shared presentation lives in `packages/ui`; client compositions, persistence and server actions remain in `packages/client`.
 - Storybook previews each shared game pattern and all current screen needs without running the server.
 - Reusable components own presentation and controlled callbacks; the host retains game state and rules.

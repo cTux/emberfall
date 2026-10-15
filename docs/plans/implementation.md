@@ -31,7 +31,7 @@ The files for steps 1–3 are the deliverables of this change. Final verificatio
 
 ## Next gameplay work: decision required
 
-No next gameplay feature is selected by this documentation change. The earlier run-level upgrade selector was rejected. Future progression must apply without required choices or gameplay interruption.
+Automatic saved leveling and paragon are implemented under PROG-02. Stat growth and ability changes remain undecided. The earlier run-level upgrade selector was rejected. Further progression must apply without required choices or gameplay interruption.
 
 When a specific progression feature is requested:
 

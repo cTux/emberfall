@@ -6,7 +6,7 @@ Status: implemented; CHAR-05 defines production identity. Goal: Preserve charact
 
 Production identity belongs to a Steam account with a server-owned nickname; see CHAR-05. Legacy bearer keys remain supported only by offline imports and isolated protocol fixtures. Duplicate active sessions for the same character are rejected. The browser cannot write levels, XP, or stats. Failed loads do not silently reset characters; failed saves are reported and retried. Forest kills add 1 XP each; playtime also progresses. Dead characters revive on rejoining a village. Every return from a scene (return portal, death window, or leaving early) restores the returning player to maximum health and their companion to maximum health immediately, clearing any pending companion resurrection.
 
-New characters start at level 1 with 0 XP, 100/100 HP and 0 playtime. Level and XP are stored, but level advancement and talent effects are not implemented. Collecting XP currently requires no progression choice. Mana is not a character resource, equipment stat or UI element. Older saves discard obsolete mana fields without resetting other progress.
+New characters start at level 1, paragon 0, with 0 XP, 100/100 HP and 0 playtime. XP automatically advances levels up to 20, then paragon, using [PROG-02](progression.md#prog-02--automatic-levels-and-paragon). Level, paragon and remaining XP persist independently per class; talent effects are not implemented. Collecting XP requires no progression choice. Mana is not a character resource, equipment stat or UI element. Older saves discard obsolete mana fields without resetting other progress.
 
 ## CHAR-02 — Class selection
 

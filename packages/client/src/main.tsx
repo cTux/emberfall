@@ -1,4 +1,5 @@
 import { AccountGate } from './Account';
+import { experienceRequired } from '@emberfall/core';
 import type { AccountView } from '@emberfall/common';
 import { GameConnection } from './connection';
 import { classSprite } from './characters';
@@ -477,6 +478,11 @@ function App({
                 key={p.id}
                 name={p.name}
                 level={p.level}
+                paragon={p.paragon}
+                experience={{
+                  current: p.experience,
+                  required: experienceRequired(p.level, p.paragon),
+                }}
                 health={displayedHp[p.id] ?? p.hitpoints}
                 maxHealth={p.maxHitpoints}
                 coins={p.coins ?? 0}
