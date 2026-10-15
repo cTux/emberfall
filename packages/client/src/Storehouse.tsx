@@ -7,7 +7,6 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  Typography,
 } from '@mui/material';
 import { Backpack, ChapterTabs, GoldBalance } from '@emberfall/ui';
 import {
@@ -50,7 +49,6 @@ export function Storehouse({
   return (
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-        <Typography variant='body2'>Account gold</Typography>
         <GoldBalance name='Storehouse' coins={player.coins ?? 0} />
       </Box>
       <ChapterTabs
@@ -68,9 +66,6 @@ export function Storehouse({
           },
           content: (
             <>
-              <Typography variant='body2' color='text.secondary'>
-                Drag items between inventories or onto a storage tab. Right-click a tab to rename.
-              </Typography>
               <Box
                 sx={{
                   display: 'grid',
