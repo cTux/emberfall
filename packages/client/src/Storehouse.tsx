@@ -9,7 +9,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { Backpack, ChapterTabs } from '@emberfall/ui';
+import { Backpack, ChapterTabs, GoldBalance } from '@emberfall/ui';
 import {
   STORAGE_SLOTS,
   storageNameSchema,
@@ -31,6 +31,10 @@ export function Storehouse({
   const validName = storageNameSchema.safeParse(name);
   return (
     <>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+        <Typography variant='body2'>Account gold</Typography>
+        <GoldBalance name='Storehouse' coins={player.coins ?? 0} />
+      </Box>
       <ChapterTabs
         label='Storehouse storages'
         value={tab}
@@ -65,7 +69,6 @@ export function Storehouse({
                 <Backpack
                   label='Your backpack'
                   items={backpackViews(player.backpack ?? [])}
-                  coins={player.coins ?? 0}
                   action='Deposit'
                   onUse={(id) => send({ type: 'storeItem', tab: index, id, depositing: true })}
                 />

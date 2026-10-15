@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
-import { LOBBY_PORTAL } from '../packages/common/src/index.ts';
+import { LOBBY_PORTAL, WARDROBE, BUILDINGS } from '../packages/common/src/index.ts';
 
-test('collected coins update the party HUD and survive leaving and rejoining', async ({
+test('collected gold credits the account Storehouse across classes and rejoining', async ({
   page,
   game,
 }, testInfo) => {
@@ -36,6 +36,28 @@ test('collected coins update the party HUD and survive leaving and rejoining', a
   await page.getByRole('button', { name: 'Leave world' }).click();
   await page.getByRole('button', { name: 'Leave', exact: true }).click();
   await expect(page.getByLabel('Shared village. Move with WASD or arrow keys.')).toBeVisible();
+  player.x = WARDROBE.x;
+  player.y = WARDROBE.y - 15;
+  const wardrobe = page.getByRole('dialog', { name: 'Wardrobe', exact: true });
+  await expect(async () => {
+    await page.keyboard.press('e');
+    await expect(wardrobe).toBeVisible();
+  }).toPass({ intervals: [200], timeout: 6000 });
+  await wardrobe.getByRole('button', { name: /^Ranger/ }).click();
+  await expect.poll(() => player.classId).toBe('ranger');
+  await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
+  await expect(card.getByLabel('Coin hero: 1000 coins', { exact: true })).toHaveText('1k');
+  const building = BUILDINGS.find((building) => building.id === 'storehouse')!;
+  player.x = building.doorX;
+  player.y = building.y + 9;
+  const storehouse = page.getByRole('dialog', { name: 'Storehouse', exact: true });
+  await expect(async () => {
+    await page.keyboard.press('e');
+    await expect(storehouse).toBeVisible();
+  }).toPass({ intervals: [200], timeout: 6000 });
+  await expect(storehouse.getByLabel('Storehouse: 1000 coins', { exact: true })).toHaveText('1k');
+  await page.screenshot({ path: testInfo.outputPath('account-storehouse-gold.png') });
+  await storehouse.getByRole('button', { name: 'Close Storehouse' }).click();
   await page.getByRole('button', { name: 'Leave world' }).click();
   await page.getByRole('button', { name: 'Leave', exact: true }).click();
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();

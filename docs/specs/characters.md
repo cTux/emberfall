@@ -14,7 +14,9 @@ The wardrobe opposite the village portal switches between warrior (default), ran
 
 ## CHAR-03 — Save lifecycle
 
-New-runtime coins are saved independently per class with the existing progress lifecycle. Older saves start at zero coins without losing other progress. Clients cannot grant or overwrite coins.
+Gold belongs to the account Storehouse, shared by every class. Collected gold goes
+directly into that balance; trading spends or credits the same balance. Clients
+cannot grant or overwrite gold. The existing save lifecycle applies.
 
 Save on entry, every five seconds, on explicit leave, on disconnect and during graceful shutdown. An abrupt exit can lose up to five seconds of progress. Failed loads report an error instead of silently creating a replacement; failed saves are reported and retried. Live positions, scenes, chat, attacks and Bear state are temporary. Class changes save successfully before becoming visible. See [operations](../operations.md) for database configuration and backups.
 
@@ -65,9 +67,15 @@ can crit. Ailment ticks and Bear attacks do not inherit weapon critical rolls.
 
 ## CHAR-06 — Storehouse
 
-The village Storehouse provides three private storage tabs per character class,
-each with 40 item slots. Older saves receive three empty storages named Storage 1,
-Storage 2 and Storage 3. Names and contents survive reconnects and server restarts.
+The village Storehouse provides three private storage tabs shared across the
+account's classes, each with 40 item slots, and one shared gold balance. New accounts
+receive empty storages named Storage 1, Storage 2 and Storage 3. Names, contents and
+gold survive class changes, world changes, reconnects and server restarts.
+Existing per-class gold balances are summed once. Old storage contents are merged
+tab by tab, prioritizing the active class; overflow returns to the original class's
+backpack, remaining accessible above its normal limit until cleared. Active-class
+custom names take priority, then the first existing custom name. Migration never
+discards items or gold; unsafe numeric totals reject loading instead of truncating.
 Right-clicking a tab renames it to a trimmed, nonempty name of up to 24 characters.
 Right-clicking an item transfers its entire stack between the selected storage and
 the backpack. Consumables join existing stacks even when the destination is full.

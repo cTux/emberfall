@@ -134,6 +134,7 @@ export const clientMessage = z.discriminatedUnion('type', [
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export interface Player extends CharacterProgress {
+  // coins and storages project the account Storehouse, not the selected class.
   reconnecting?: boolean;
   chat?: string;
   dps?: number;
