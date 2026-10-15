@@ -1,15 +1,6 @@
 import { useState } from 'react';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Typography,
-} from '@mui/material';
-import { Backpack, ChapterTabs, GoldBalance } from '@emberfall/ui';
+import { Box, Button, Stack, TextField, Typography } from '@mui/material';
+import { Backpack, ChapterTabs, GameWindow, GoldBalance } from '@emberfall/ui';
 import {
   STORAGE_SLOTS,
   storageNameSchema,
@@ -109,13 +100,15 @@ export function Storehouse({
           ),
         }))}
       />
-      <Dialog
+      <GameWindow
         open={renaming !== null}
         onClose={() => setRenaming(null)}
-        aria-labelledby='rename-storage-title'
+        title='Rename storage'
+        width={280}
       >
-        <Box
+        <Stack
           component='form'
+          spacing={1}
           onSubmit={(event) => {
             event.preventDefault();
             if (renaming === null || !validName.success) return;
@@ -123,26 +116,21 @@ export function Storehouse({
             setRenaming(null);
           }}
         >
-          <DialogTitle id='rename-storage-title'>Rename storage</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              label='Storage name'
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              error={!validName.success}
-              helperText='1–24 characters'
-              slotProps={{ htmlInput: { maxLength: 24 } }}
-            />
-          </DialogContent>
-          <DialogActions>
+          <TextField
+            autoFocus
+            placeholder='Storage name'
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            slotProps={{ htmlInput: { 'aria-label': 'Storage name' } }}
+          />
+          <Stack direction='row' spacing={1} sx={{ justifyContent: 'flex-end' }}>
             <Button onClick={() => setRenaming(null)}>Cancel</Button>
-            <Button type='submit' disabled={!validName.success}>
+            <Button type='submit' variant='contained' disabled={!validName.success}>
               Save
             </Button>
-          </DialogActions>
-        </Box>
-      </Dialog>
+          </Stack>
+        </Stack>
+      </GameWindow>
     </>
   );
 }

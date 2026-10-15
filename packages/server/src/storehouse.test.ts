@@ -75,10 +75,16 @@ test('storage schemas bound tabs, slots, names and identities; legacy progress g
       false,
     );
   }
-  for (const name of ['', '  ', 'a'.repeat(25), 'bad\nname', 'bad\u200bname'])
+  for (const name of ['', '  ', 'bad\nname', 'bad\u200bname'])
     assert.equal(clientMessage.safeParse({ type: 'renameStorage', tab: 0, name }).success, false);
   const rename = clientMessage.parse({ type: 'renameStorage', tab: 0, name: ' Gear ' });
   assert.equal(rename.type === 'renameStorage' && rename.name, 'Gear');
+  const longName = 'Storage supplies '.repeat(100);
+  const longRename = clientMessage.parse({ type: 'renameStorage', tab: 0, name: longName });
+  assert.equal(longRename.type === 'renameStorage' && longRename.name, longName.trim());
+  const longStorages = freshStorages();
+  longStorages[0].name = longName.trim();
+  assert.deepEqual(storagesSchema.parse(JSON.parse(JSON.stringify(longStorages))), longStorages);
   assert.equal(storagesSchema.safeParse(freshStorages().slice(1)).success, false);
   const storages = freshStorages();
   storages[0].items = Array.from({ length: 41 }, () => item());

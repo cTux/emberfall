@@ -42,7 +42,6 @@ export const storageNameSchema = z
   .string()
   .trim()
   .min(1)
-  .max(24)
   .regex(/^[^\p{Cc}\p{Cf}]*$/u);
 export const storagesSchema = z
   .array(
