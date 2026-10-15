@@ -143,9 +143,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await expect(trader.getByRole('button', { name: 'Sell all', exact: true })).toBeDisabled();
   expect(player.backpack).toEqual([]);
   expect(player.coins).toBe(oldCoins + 27);
-  expect(world.merchant!.buyback).toHaveLength(16);
+  expect(world.merchant!.buyback).toHaveLength(20);
   const buyback = trader.getByRole('region', { name: 'Buyback', exact: true });
-  await expect(buyback.locator('[data-backpack-item]')).toHaveCount(16);
+  await expect(buyback.locator('[data-backpack-item]')).toHaveCount(20);
   await expect(buyback.getByRole('button', { name: 'Buy back Health potion (3)' })).toBeVisible();
   await page.screenshot({ path: 'test-results/innkeeper-buyback-desktop.png' });
   await page.setViewportSize({ width: 320, height: 800 });

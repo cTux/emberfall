@@ -2,6 +2,36 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('backpacks show twenty wood-colored slots and tabs sit close to window titles', async ({
+  page,
+}) => {
+  for (const state of ['empty', 'stacked', 'full']) {
+    await page.goto(story(`components-backpack--${state}`));
+    const slots = page.getByRole('region', { name: 'Your backpack' }).locator('button');
+    await expect(slots).toHaveCount(20);
+    await expect(slots.first()).toHaveCSS('border-top-color', 'rgb(135, 80, 57)');
+    await expect(slots.first()).toHaveCSS('background-color', 'rgb(40, 26, 20)');
+  }
+  await page.goto(story('screens-compositions--settings'));
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    const title = page.getByRole('heading', { name: 'Settings', exact: true });
+    const tabs = page.getByRole('tablist');
+    const heading = (await title.boundingBox())!;
+    const row = (await tabs.boundingBox())!;
+    expect(row.y - heading.y - heading.height).toBeLessThanOrEqual(12);
+    await expect(page.getByRole('tab', { selected: true })).toHaveCSS(
+      'background-color',
+      'rgb(88, 53, 36)',
+    );
+    await expect(title.locator('..').locator('..')).toHaveCSS(
+      'border-top-color',
+      'rgb(135, 80, 57)',
+    );
+    await page.screenshot({ path: `test-results/compact-settings-${width}.png` });
+  }
+});
+
 test('party bars use sixty percent of their old width with compact coins immediately after', async ({
   page,
 }, testInfo) => {

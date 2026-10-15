@@ -36,7 +36,8 @@ export const backpackSchema = z
     'Duplicate item identity',
   );
 export type BackpackItem = z.infer<typeof backpackSchema>[number];
-export const BUYBACK_SLOTS = 16;
+export const INVENTORY_SLOTS = 20;
+export const BUYBACK_SLOTS = INVENTORY_SLOTS;
 export const merchantSchema = z
   .object({
     coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
@@ -72,7 +73,10 @@ export function addItem(backpack: BackpackItem[], item: BackpackItem) {
     if (!Number.isSafeInteger(stack.quantity + item.quantity))
       throw new Error('Stack is too large.');
     stack.quantity += item.quantity;
-  } else backpack.push({ ...item });
+  } else {
+    if (backpack.length >= INVENTORY_SLOTS) throw new Error('Your backpack is full.');
+    backpack.push({ ...item });
+  }
 }
 export function useBackpackItem(player: Player, id: string) {
   const backpack = (player.backpack ??= []);
@@ -92,8 +96,8 @@ export function useBackpackItem(player: Player, id: string) {
   if (!slot) throw new Error('Your class cannot equip this item.');
   player.equipment = { ...equippedItems(player) };
   const previous = player.equipment[slot];
-  backpack.splice(index, 1);
-  if (previous) addItem(backpack, { id: crypto.randomUUID(), itemId: previous, quantity: 1 });
+  if (previous) backpack[index] = { id: crypto.randomUUID(), itemId: previous, quantity: 1 };
+  else backpack.splice(index, 1);
   player.equipment[slot] = item.itemId;
   syncEquipmentVitals(player);
 }

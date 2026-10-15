@@ -29,7 +29,7 @@ import {
 import { ARENA, moveActor, inTrainingZone } from './world.ts';
 import type { Player, Bear, ClientMessage } from './index.ts';
 import type { SceneState, Enemy } from './scene.ts';
-import { addItem } from './inventory.ts';
+import { addItem, INVENTORY_SLOTS } from './inventory.ts';
 import { characterStats, companionStats } from './equipment.ts';
 
 export const TICK_MS = RUNTIME.tickMs;
@@ -418,6 +418,7 @@ export function stepCombat(scene: SceneState, players: Player[], now: number, dt
     let target: Player | undefined;
     let distance = PICKUP_RULES.attractionRadius as number;
     for (const player of collectors) {
+      if (drop.kind === 'item' && (player.backpack?.length ?? 0) >= INVENTORY_SLOTS) continue;
       const next = forestDistance(player, drop);
       if (next < distance) {
         target = player;

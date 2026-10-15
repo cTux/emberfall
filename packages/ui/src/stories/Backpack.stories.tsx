@@ -54,8 +54,8 @@ export const Selling: StoryObj<typeof meta> = {
     );
   },
 };
-export const Unlimited: StoryObj<typeof meta> = {
+export const Full: StoryObj<typeof meta> = {
   args: {
-    items: Array.from({ length: 80 }, (_, index) => ({ ...meta.args.items[0], id: String(index) })),
+    items: Array.from({ length: 20 }, (_, index) => ({ ...meta.args.items[0], id: String(index) })),
   },
 };

@@ -54,7 +54,9 @@ export function GameWindow({
           <FontAwesomeIcon icon={faXmark} aria-hidden='true' />
         </IconButton>
       </WindowTitleStyled>
-      <DialogContent sx={{ p: 1.5, minHeight: 0, overflowX: 'hidden' }}>{children}</DialogContent>
+      <DialogContent sx={{ px: 1.5, pt: 0.5, pb: 1.5, minHeight: 0, overflowX: 'hidden' }}>
+        {children}
+      </DialogContent>
     </>
   );
   return modal ? (

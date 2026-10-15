@@ -12,6 +12,7 @@ import {
   sellAll,
   merchantSchema,
   BUYBACK_SLOTS,
+  INVENTORY_SLOTS,
   characterStats,
   CLASS_IDS,
   LOOT_ITEM_IDS,
@@ -40,14 +41,62 @@ const hero = (): Player => ({
 });
 const item = (itemId: string, quantity = 1) => ({ id: crypto.randomUUID(), itemId, quantity });
 
-test('unlimited gear exchange updates totals and weapon removal rejects casts in every class', () => {
+test('twenty slots reject purchases and unequipping without losing items or gold; stacks and swaps still work', () => {
+  const player = hero();
+  const merchant = freshMerchant();
+  player.coins = 100;
+  player.backpack = Array.from({ length: INVENTORY_SLOTS }, () => item('loot-helmet'));
+  const before = structuredClone({ player, merchant });
+  assert.throws(() => tradeItem(player, merchant, merchant.backpack[0].id, true), /full/);
+  assert.throws(() => unequipItem(player, 'weapon'), /full/);
+  assert.deepEqual({ player, merchant }, before);
+  useBackpackItem(player, player.backpack[0].id);
+  addItem(player.backpack, item('health-potion'));
+  tradeItem(player, merchant, merchant.backpack[0].id, true);
+  assert.equal(player.backpack.length, INVENTORY_SLOTS);
+  assert.equal(player.backpack.at(-1)!.quantity, 2);
+  useBackpackItem(player, player.backpack[0].id);
+  assert.equal(player.backpack.length, INVENTORY_SLOTS);
+  const legacy = { ...hero(), backpack: Array.from({ length: 24 }, () => item('loot-helmet')) };
+  useBackpackItem(legacy, legacy.backpack[0].id);
+  useBackpackItem(legacy, legacy.backpack[0].id);
+  assert.equal(legacy.backpack.length, 23);
+  assert.equal(decodeProgress(JSON.stringify(legacy)).progress.backpack!.length, 23);
+});
+
+test('full players leave item drops for nearby players while still collecting gold', (t) => {
+  t.mock.method(Math, 'random', () => 0);
+  const player = {
+    ...hero(),
+    scene: 'forest' as const,
+    backpack: Array.from({ length: INVENTORY_SLOTS }, () => item('loot-boots')),
+  };
+  const scene = {
+    ...createTrainingScene(0),
+    training: false,
+    enemies: [],
+    endsAt: 1e9,
+    nextSpawn: 1e9,
+  };
+  hitEnemy(scene, { id: 1, x: player.x, y: player.y, hitpoints: 1, angle: 0 }, 2, player, 1000);
+  stepCombat(scene, [player], 1400, 0.05);
+  assert.equal(player.backpack.length, INVENTORY_SLOTS);
+  assert.equal(scene.drops!.filter((drop) => drop.kind === 'item').length, 1);
+  assert((player.coins ?? 0) > 0);
+  const second = { ...hero(), id: 'second', scene: 'forest' as const };
+  stepCombat(scene, [player, second], 1450, 0.05);
+  assert.equal(second.backpack!.length, 1);
+  assert.equal(scene.drops!.filter((drop) => drop.kind === 'item').length, 0);
+});
+
+test('gear exchange updates totals and weapon removal rejects casts in every class', () => {
   for (const classId of CLASS_IDS) {
     const player = { ...hero(), ...freshProgress(classId), classId };
-    player.backpack = Array.from({ length: 80 }, () => item('loot-helmet'));
+    player.backpack = Array.from({ length: 18 }, () => item('loot-helmet'));
     useBackpackItem(player, player.backpack[0].id);
     assert.equal(characterStats(player).armor, 1);
     useBackpackItem(player, player.backpack[0].id);
-    assert.equal(player.backpack.length, 79, 'replaced helmet goes back into backpack');
+    assert.equal(player.backpack.length, 17, 'replaced helmet goes back into backpack');
     assert.equal(characterStats(player).armor, 1);
     unequipItem(player, 'helmet');
     assert.equal(characterStats(player).armor, 0);
@@ -149,10 +198,10 @@ test('backpack and command validation reject unknown items, forged stacks and du
   assert.deepEqual(decodeProgress(JSON.stringify(freshProgress())).progress.backpack, []);
 });
 
-test('buyback keeps the latest 16 sales separate, migrates legacy gear, and rejects expired IDs', () => {
+test('buyback keeps the latest 20 sales separate, migrates legacy gear, and rejects expired IDs', () => {
   const player = hero();
   const merchant = freshMerchant();
-  player.backpack = Array.from({ length: 20 }, () => item('loot-helmet'));
+  player.backpack = Array.from({ length: 24 }, () => item('loot-helmet'));
   const ids: string[] = [];
   for (const entry of [...player.backpack]) {
     tradeItem(player, merchant, entry.id, false);
@@ -162,7 +211,7 @@ test('buyback keeps the latest 16 sales separate, migrates legacy gear, and reje
   assert.equal(merchant.buyback.length, BUYBACK_SLOTS);
   assert.deepEqual(
     merchant.buyback.map((entry) => entry.id),
-    ids.slice(-16).reverse(),
+    ids.slice(-20).reverse(),
   );
   assert.throws(() => tradeItem(player, merchant, ids[0], true), /available/);
   const legacy = merchantSchema.parse({
@@ -171,12 +220,12 @@ test('buyback keeps the latest 16 sales separate, migrates legacy gear, and reje
   });
   assert.equal(legacy.backpack.length, 1);
   assert.equal(legacy.backpack[0].quantity, 3);
-  assert.equal(legacy.buyback.length, 16);
+  assert.equal(legacy.buyback.length, 20);
   assert.deepEqual(merchantSchema.parse(merchant), merchant);
   assert.equal(
     merchantSchema.safeParse({
       ...merchant,
-      buyback: Array.from({ length: 17 }, () => item('loot-boots')),
+      buyback: Array.from({ length: 21 }, () => item('loot-boots')),
     }).success,
     false,
   );
