@@ -8,6 +8,8 @@ const meta = {
   component: ActionBar,
   tags: ['autodocs'],
   args: {
+    autoFire: true,
+    autoTarget: true,
     baseAbility: {
       name: 'Slash',
       icon: <FontAwesomeIcon icon={faBurst} size='2x' aria-hidden='true' />,
@@ -23,3 +25,6 @@ export const CoolingDown: Story = {
   args: { baseAbility: { ...meta.args.baseAbility, remainingMs: 650 } },
 };
 export const Unequipped: Story = { args: { baseAbility: undefined } };
+export const Manual: Story = { args: { autoFire: false, autoTarget: false } };
+export const AutoFireOnly: Story = { args: { autoTarget: false } };
+export const AutoTargetOnly: Story = { args: { autoFire: false } };

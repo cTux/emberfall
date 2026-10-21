@@ -11,6 +11,25 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const bar = page.getByRole('region', { name: 'Action bar', exact: true });
   await expect(bar).toBeVisible();
+  const fire = bar.getByRole('img', { name: /^Left mouse button/ });
+  const target = bar.getByRole('img', { name: /^Auto-target/ });
+  await expect(fire).toHaveAttribute('data-active', 'true');
+  await expect(target).toHaveAttribute('data-active', 'true');
+  await page.keyboard.press('g');
+  await expect(target).toHaveAttribute('data-active', 'false');
+  await expect(fire).toHaveAttribute('data-active', 'true');
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByLabel('Auto-target (G)', { exact: true }).check();
+  await page.getByLabel('Auto-attack (F)', { exact: true }).uncheck();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
+  await expect(target).toHaveAttribute('data-active', 'true');
+  await expect(fire).toHaveAttribute('data-active', 'false');
+  await page.reload();
+  await expect(bar).toBeVisible();
+  await expect(target).toHaveAttribute('data-active', 'true');
+  await expect(fire).toHaveAttribute('data-active', 'false');
+  await page.keyboard.press('f');
+  await expect(fire).toHaveAttribute('data-active', 'true');
   const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
   const player = [...world.players.values()][0];
   const names = { warrior: 'Slash', ranger: 'Piercing arrows', mage: 'Fireball', druid: 'Roots' };
@@ -38,6 +57,7 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   await expect(cooldown).toHaveAttribute('aria-valuemax', '1000');
   await page.keyboard.press('f');
   await expect.poll(() => player.autoAttack).toBe(false);
+  await expect(fire).toHaveAttribute('data-active', 'false');
   await expect(cooldown).toHaveCount(0);
   // A manual cast traverses the real SDK/server path and restarts the display.
   const previousAttack = player.attackAt!;
@@ -87,6 +107,7 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   player.scene = 'forest';
   await page.keyboard.press('f');
   await expect.poll(() => player.autoAttack).toBe(true);
+  await expect(fire).toHaveAttribute('data-active', 'true');
   await expect(cooldown).toBeVisible();
   await page.screenshot({ path: 'test-results/action-bar-forest.png' });
   player.equipment = {};

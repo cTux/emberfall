@@ -2,6 +2,61 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('action bar hotkeys stay in slot corners and automation respects reduced motion', async ({
+  page,
+}) => {
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto(story('components-actionbar--cooling-down'));
+    const bar = page.getByRole('region', { name: 'Action bar', exact: true });
+    const base = bar.getByRole('group', { name: 'Slash', exact: true });
+    const fire = base.getByRole('img', { name: /^Left mouse button/ });
+    const target = base.getByRole('img', { name: /^Auto-target/ });
+    const bounds = (await base.boundingBox())!;
+    for (const [indicator, right] of [
+      [fire, true],
+      [target, false],
+    ] as const) {
+      await expect(indicator).toHaveAttribute('data-active', 'true');
+      await expect(indicator).toHaveCSS('animation-name', 'action-indicator-pulse');
+      const box = (await indicator.boundingBox())!;
+      expect(box.y).toBeGreaterThan(bounds.y + bounds.height / 2);
+      expect(box.x > bounds.x + bounds.width / 2).toBe(right);
+      // The corner overlays are above the radial cooldown mask.
+      expect(await indicator.evaluate((element) => getComputedStyle(element).zIndex)).toBe('1');
+    }
+    for (const key of [1, 2, 3, 4]) {
+      const slot = bar.getByRole('group', { name: `Empty ability slot ${key}`, exact: true });
+      const label = slot.getByText(String(key), { exact: true });
+      const s = (await slot.boundingBox())!;
+      const l = (await label.boundingBox())!;
+      expect(l.x).toBeGreaterThan(s.x + s.width / 2);
+      expect(l.y).toBeGreaterThan(s.y + s.height / 2);
+    }
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(fire).toHaveCSS('animation-name', 'none');
+    await expect(target).toHaveCSS('animation-name', 'none');
+    await expect(fire).not.toHaveCSS('box-shadow', 'none');
+    await page.screenshot({ path: `test-results/action-bar-hotkeys-${width}.png` });
+  }
+  for (const [state, fire, target] of [
+    ['manual', false, false],
+    ['auto-fire-only', true, false],
+    ['auto-target-only', false, true],
+  ] as const) {
+    await page.goto(story(`components-actionbar--${state}`));
+    await expect(page.getByRole('img', { name: /^Left mouse button/ })).toHaveAttribute(
+      'data-active',
+      String(fire),
+    );
+    await expect(page.getByRole('img', { name: /^Auto-target/ })).toHaveAttribute(
+      'data-active',
+      String(target),
+    );
+  }
+});
+
 test('action bar presents ready, cooling and unequipped slots on narrow screens', async ({
   page,
 }) => {

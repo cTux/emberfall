@@ -31,6 +31,10 @@ supplies the current class ability, the same ability artwork as Wardrobe and
 remaining time from replicated `attackAt`, `serverNow` and `characterStats().attackIntervalMs`.
 It mounts only for the local player. The host fixes the bar at bottom center and
 moves chat above it on narrow screens. UI owns no clock or combat commands.
+The host also passes the local auto-attack and auto-target preferences. Corner
+indicators sit above the cooldown sector: an LMB icon at bottom right and crosshairs
+at bottom left, each with an independent enabled glow and reduced-motion-aware
+pulse. The four reserved slots display 1–4 at bottom right.
 
 EquipmentPanel receives item badge labels, atlas keys, optional values and explanations
 from `client/equipment-view.tsx`, which derives them from shared equipment,
