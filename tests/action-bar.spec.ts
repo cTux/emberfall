@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { CLASS_IDS, TRAINING_ZONES, starterEquipment } from '../packages/common/src/index.ts';
+import { CLASS_IDS, TRAINING_ZONES, starterEquipment } from '../packages/core/src/index.ts';
 
 test('action bar follows confirmed training and forest attacks, equipment and viewport', async ({
   page,
@@ -36,7 +36,12 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   for (const classId of CLASS_IDS) {
     player.classId = classId;
     player.equipment = starterEquipment(classId);
-    await expect(bar.getByRole('group', { name: names[classId], exact: true })).toBeVisible();
+    await expect(
+      bar.getByRole('group', {
+        name: names[classId as 'warrior' | 'ranger' | 'mage' | 'druid'],
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(bar.getByRole('group')).toHaveCount(5);
     await expect(bar.locator('img')).toHaveAttribute(
       'src',

@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { starterEquipment, LOBBY_PORTAL } from '../packages/common/src/index.ts';
+import { starterEquipment, LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
 test('companion HUD follows confirmed health in village and forest and disappears with class change', async ({
   page,

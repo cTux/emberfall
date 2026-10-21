@@ -40,8 +40,8 @@ Current boundaries: online only, up to eight players per world, one Forest / Eas
 
 | Package           | Responsibility                                             |
 | ----------------- | ---------------------------------------------------------- |
-| `packages/common` | Shared contracts, geometry and content definitions         |
-| `packages/core`   | Shared combat, prediction helpers and balance utilities    |
+| `packages/common` | Shared contracts, structural schemas and pure geometry     |
+| `packages/core`   | Mod registries, game content, rules and shared simulation  |
 | `packages/server` | Authoritative worlds, Colyseus sessions and SQLite saves   |
 | `packages/client` | Browser connection, input, prediction and PixiJS rendering |
 | `packages/ui`     | Controlled MUI components, theme and Storybook             |

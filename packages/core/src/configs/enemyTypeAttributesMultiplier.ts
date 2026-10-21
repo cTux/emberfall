@@ -1,7 +1,4 @@
-import { EnemyType } from '@emberfall/common/enums';
-
-export const enemyTypeAttributesMultiplier = {
-  [EnemyType.Normal]: 1,
-  [EnemyType.Elite]: 3,
-  [EnemyType.Boss]: 10,
-} as const satisfies Record<EnemyType, number>;
+import { game } from '../game.ts';
+export const enemyTypeAttributesMultiplier = Object.freeze(
+  Object.fromEntries(game.registries.enemyTypes.values().map((type) => [type.id, type.multiplier])),
+);

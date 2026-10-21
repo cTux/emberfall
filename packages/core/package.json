@@ -2,12 +2,17 @@
   "name": "@emberfall/core",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./definitions/*": "./src/definitions/*.ts",
+    "./hitboxes": "./src/hitboxes.ts"
+  },
   "scripts": {
-    "test": "node --test src/utils/tests/*.test.ts",
+    "test": "node --test src/utils/tests/*.test.ts src/content/tests/*.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@emberfall/common": "workspace:*"
+    "@emberfall/common": "workspace:*",
+    "zod": "catalog:"
   }
 }

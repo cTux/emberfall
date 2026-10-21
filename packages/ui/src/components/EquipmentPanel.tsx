@@ -96,11 +96,11 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
         aria-label='Equipment slots'
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-          gridTemplateRows: 'repeat(4, 44px)',
+          gridTemplateColumns: `repeat(${Math.max(3, ...slots.map((slot) => slot.position.column))}, minmax(0, 1fr))`,
+          gridTemplateRows: `repeat(${Math.max(4, ...slots.map((slot) => slot.position.row))}, 44px)`,
           gap: 0.5,
           justifyContent: 'center',
-          maxWidth: 160,
+          maxWidth: Math.max(3, ...slots.map((slot) => slot.position.column)) * 54 - 2,
           width: '100%',
           mx: 'auto',
         }}

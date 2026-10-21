@@ -99,6 +99,12 @@ All consumer-facing prop/data types are exported from `src/index.ts`. Screen sto
 
 ## Create a component
 
+EquipmentPanel derives its grid dimensions from supplied slot positions, with a
+minimum of three columns and four rows. Additional rows/columns preserve the
+44px row height and the existing base arrangement. The host supplies valid
+positive coordinates, labels, icons and stats; the component has no registry or
+game-package dependency.
+
 `EquipmentPanel` accepts controlled slot views (ID, label, grid coordinates,
 fallback image, allowed gear text and optional item name/icon/badges) and calculated
 stat rows. Slots are borderless and empty images are translucent. Focus/hover/touch

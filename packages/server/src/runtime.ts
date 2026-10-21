@@ -1,6 +1,6 @@
-import { validateDefinitions } from '@emberfall/common/definitions/index';
-import { RUNTIME } from '@emberfall/common/definitions/runtime';
-import { VILLAGE_DEFINITION } from '@emberfall/common/definitions/worlds/village';
+import { validateDefinitions } from '@emberfall/core/definitions/index';
+import { RUNTIME } from '@emberfall/core/definitions/runtime';
+import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { stepMovement } from './systems/movement.ts';
 import { randomUUID, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 import { promisify } from 'node:util';
@@ -18,7 +18,7 @@ import {
   sellAll,
   transferStoredItem,
   moveStorageItem,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import { requestPlayerCast, TICK_MS } from '@emberfall/core';
 import type {
   ChatMessage,

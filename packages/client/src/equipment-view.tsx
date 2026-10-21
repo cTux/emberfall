@@ -1,9 +1,11 @@
+import { registeredSlotViews, additionalStatViews } from './content-views';
+import { game } from '@emberfall/core';
 import { useState } from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import type { ClientMessage, BackpackItem } from '@emberfall/common';
-import { itemDefinition, CONSUMABLES } from '@emberfall/common';
+import { itemDefinition, CONSUMABLES } from '@emberfall/core';
 import { Backpack, ChapterTabs, EquipmentPanel } from '@emberfall/ui';
 import type { EquipmentSlotView, EquipmentStatView, EquipmentBadgeView } from '@emberfall/ui';
 import {
@@ -15,52 +17,21 @@ import {
   equippedItems,
   characterStats,
   canEquip,
-} from '@emberfall/common';
-import type { EquipmentSlot, GearType, Player, ClassId } from '@emberfall/common';
-import { ATTACK_DEFINITIONS } from '@emberfall/common/definitions/abilities/attacks';
-import { PLAYER_DEFINITIONS } from '@emberfall/common/definitions/entities/players';
-import { AILMENT_DEFINITIONS } from '@emberfall/common/definitions/effects/ailments';
+} from '@emberfall/core';
+import type { GearType, Player, ClassId } from '@emberfall/common';
+import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
+import { PLAYER_DEFINITIONS } from '@emberfall/core/definitions/entities/players';
+import { AILMENT_DEFINITIONS } from '@emberfall/core/definitions/effects/ailments';
 import { weaponSrc } from './combat-assets';
 
-export const SLOT_POSITIONS = {
-  weapon: { column: 1, row: 2 },
-  gloves: { column: 1, row: 3 },
-  helmet: { column: 2, row: 1 },
-  bodyArmor: { column: 2, row: 2 },
-  leggings: { column: 2, row: 3 },
-  boots: { column: 2, row: 4 },
-  amulet: { column: 3, row: 1 },
-  offHand: { column: 3, row: 2 },
-  ring: { column: 3, row: 3 },
-} as const satisfies Record<EquipmentSlot, { column: number; row: number }>;
-const SLOT_LABELS: Record<EquipmentSlot, string> = {
-  weapon: 'Weapon',
-  gloves: 'Gloves',
-  helmet: 'Helmet',
-  bodyArmor: 'Body armor',
-  leggings: 'Leggings',
-  boots: 'Boots',
-  amulet: 'Amulet',
-  offHand: 'Off-hand',
-  ring: 'Ring',
-};
-const GEAR_LABELS: Record<GearType, string> = {
-  sword: 'Sword',
-  bow: 'Bow',
-  fireStaff: 'Fire staff',
-  natureStaff: 'Nature staff',
-  gloves: 'Gloves',
-  helmet: 'Helmet',
-  bodyArmor: 'Body armor',
-  leggings: 'Leggings',
-  boots: 'Boots',
-  amulet: 'Amulet',
-  ring: 'Ring',
-  shield: 'Shield',
-  quiver: 'Quiver',
-  orb: 'Mage orb',
-  natureFocus: 'Nature focus',
-};
+const slotViews = registeredSlotViews();
+export const SLOT_POSITIONS = Object.fromEntries(slotViews.map((slot) => [slot.id, slot.position]));
+const SLOT_LABELS = Object.fromEntries(
+  game.registries.slots.values().map((slot) => [slot.id, slot.label]),
+);
+const GEAR_LABELS = Object.fromEntries(
+  game.registries.gearTypes.values().map((type) => [type.id, type.label]),
+);
 const ITEM_CLASSES = Object.fromEntries(
   Object.entries(STARTER_WEAPONS).map(([id, weapon]) => [weapon, id]),
 ) as Record<string, ClassId>;
@@ -84,12 +55,14 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: 'Maximum health', value: number(stats.maxHitpoints) },
     { label: 'Armor', value: number(stats.armor) },
     { label: 'Damage reduction', value: percent(stats.damageReduction) },
+    ...additionalStatViews(player),
   ];
 }
 
 function weaponBadges(player: Player, classId: ClassId, weapon: string): EquipmentBadgeView[] {
   const stats = characterStats({ ...player, classId, equipment: { weapon } });
-  const { attack, ailment } = PLAYER_DEFINITIONS[classId];
+  const { attack: abilityId, ailment } = PLAYER_DEFINITIONS[classId];
+  const attack = ATTACK_DEFINITIONS[abilityId].kind;
   const range = player.autoTarget === false ? stats.manualRange : stats.range;
   const badges: EquipmentBadgeView[] = [
     {
@@ -206,14 +179,14 @@ export function Equipment({
       accepts: (SLOT_GEAR_TYPES[id] as readonly GearType[])
         .filter(
           (type) =>
-            (id !== 'weapon' && id !== 'offHand') ||
+            !game.registries.slots.require(id).classRestricted ||
             (CLASS_GEAR_TYPES[classId] as readonly GearType[]).includes(type),
         )
         .map((type) => GEAR_LABELS[type])
         .join(', '),
       fallback: (
         <img
-          src={`/assets/wardrobe-style/slot-${id}.png`}
+          src={slotViews.find((slot) => slot.id === id)!.icon}
           alt=''
           className='equipment-slot-placeholder'
           style={{ opacity: 0.6 }}
@@ -253,7 +226,8 @@ function itemIcon(itemId: string) {
         (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear.gearType),
       )
     : 'amulet';
-  const fallback = `/assets/wardrobe-style/slot-${slot ?? 'offHand'}.png`;
+  const fallback =
+    slotViews.find((view) => view.id === slot)?.icon ?? '/assets/wardrobe-style/slot-offHand.png';
   return (
     <img
       src={

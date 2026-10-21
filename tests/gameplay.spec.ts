@@ -7,7 +7,7 @@ import {
   CLASS_LABELS,
   forestDistance,
   starterEquipment,
-} from '../packages/common/src/index.ts';
+} from '../packages/core/src/index.ts';
 
 test('every wardrobe class trains through Colyseus, preserves health, and resumes after a transport loss', async ({
   page,

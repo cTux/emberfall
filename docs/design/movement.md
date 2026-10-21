@@ -17,7 +17,7 @@ Client rendering predicts local movement, sword presentation and local mage/rang
 ## Ownership
 
 - [worlds.ts](../../packages/server/src/worlds.ts) owns timed command queues, per-tick budgets and acknowledgements.
-- [simulation.ts](../../packages/core/src/simulation.ts) and [world.ts](../../packages/common/src/world.ts) own shared movement geometry and cast validation.
+- [simulation.ts](../../packages/core/src/simulation.ts) and [world.ts](../../packages/core/src/world.ts) own shared movement geometry and cast validation.
 - [local-movement.ts](../../packages/client/src/local-movement.ts) replays unacknowledged input and smooths display offsets.
 - [snapshots.ts](../../packages/client/src/snapshots.ts) buffers server snapshots and reconciles predicted attacks.
 - [Arena.tsx](../../packages/client/src/Arena.tsx) gathers input and draws predicted/interpolated state.

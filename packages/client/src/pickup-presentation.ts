@@ -1,5 +1,6 @@
-import { FOREST, wrap, wrappedDelta } from '@emberfall/common';
-import { PICKUP_RULES } from '@emberfall/common/definitions/entities/pickups';
+import { wrap, wrappedDelta } from '@emberfall/common';
+import { FOREST } from '@emberfall/core';
+import { PICKUP_RULES } from '@emberfall/core/definitions/entities/pickups';
 import type { Player, WorldState } from '@emberfall/common';
 
 /** Adjust detached render drops only. Selection, removal and rewards stay authoritative. */

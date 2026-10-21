@@ -6,14 +6,13 @@ and its comparison suite are retired. Gameplay specifications remain the
 behavior contract. See the
 [verification record](../plans/new-runtime.md) for measured coverage and limits.
 
-## Accepted registry migration
+## Game composition
 
-The [bundled mod design](mods.md), [requirements](../specs/mods.md) and
-[plan](../plans/mods.md) describe the accepted next package boundary. Core will
-initialize registries and bundled content before gameplay; common will retain
-content-independent contracts and algorithms. Existing IDs, saves, gameplay and
-host ownership remain intact. The rest of this document describes the implemented
-runtime until that migration lands.
+Core initializes registries and the explicit bundled mod list before gameplay.
+[Mod requirements](../specs/mods.md), [registry design](mods.md) and the
+[verification plan](../plans/mods.md) define supported extension and compatibility.
+Common retains structural contracts and pure geometry; content-aware rules and
+views belong to core. Existing saved IDs and host responsibilities remain intact.
 
 ## Ownership
 
@@ -36,9 +35,9 @@ or a validated storage-to-storage command. The server derives the owner from the
 session and saves detached results before publication; drag data never supplies
 items, quantities, currency or a different owner.
 
-- `common`: shared enums, serializable definitions, validated commands and geometry.
+- `common`: shared contracts, structural schemas, protocol state and pure geometry.
   No DOM, database or network connections and no dependency on core.
-- `core`: reusable utilities, balance configs and shared combat/prediction kernels;
+- `core`: registries, bundled mods, semantic validation and shared combat/prediction;
   depends on common. Only the server rolls spawns and rewards or applies damage.
 - `server`: authoritative Miniplex entities, ordered fixed-timestep systems,
   Colyseus transport/state projection and Colyseus database persistence.
@@ -197,8 +196,8 @@ transfer. SQLite and the shared party registry require a single server process.
 
 ## Equipment and typed damage
 
-`common/definitions/equipment` declares slot compatibility, gear definitions
-and per-class starter IDs. `equipment.ts` derives totals from equipped IDs;
+`core/mods/base.mod.ts` registers slots, gear, stats and per-class starter IDs.
+Core's bound equipment rules derive totals from equipped IDs;
 simulation, prediction and presentation consume that calculation. Equipment lives
 in per-class progress. Saves without equipment migrate at decode; invalid items,
 incompatible slots and wrong-class gear are rejected. Existing entity payloads
@@ -318,7 +317,7 @@ alongside results in the verification record.
 
 ## Inventory, loot and shared trading
 
-`common/inventory.ts` owns validated 20-slot backpack entries, stack merging,
+`core/content/rules.ts` owns validated 20-slot backpack entries, stack merging,
 gear exchange, consumable use, one-item trades and atomic whole-backpack sales.
 Merchant buyback is a separate newest-first queue capped at 20 entries, including
 whole consumable stacks from Sell all. Buying returns one item per action.

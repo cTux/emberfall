@@ -1,0 +1,22 @@
+import { game } from './game.ts';
+export const {
+  itemDefinition,
+  CONSUMABLES,
+  backpackSchema,
+  INVENTORY_SLOTS,
+  STORAGE_SLOTS,
+  storageNameSchema,
+  storagesSchema,
+  freshStorages,
+  storehouseSchema,
+  BUYBACK_SLOTS,
+  merchantSchema,
+  freshMerchant,
+  addItem,
+  transferStoredItem,
+  moveStorageItem,
+  useBackpackItem,
+  unequipItem,
+  tradeItem,
+  sellAll,
+} = game.rules;

@@ -1,6 +1,7 @@
 import { randomBytes, createHash } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { nicknameSchema, type AccountView } from '@emberfall/common';
+
 import type { CharacterStore } from './characters.ts';
 import type { Peer } from './network/peer.ts';
 import { SteamProvider } from './steam.ts';

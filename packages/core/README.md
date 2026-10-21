@@ -4,26 +4,144 @@
 logic utilities, combat, enemies and training. The server uses its authoritative
 combat kernels; client prediction and health displays reuse the same helpers.
 
-## Accepted mod architecture
+## Registries, mods and startup
 
-The [bundled mod design](../../docs/design/mods.md) and
-[implementation plan](../../docs/plans/mods.md) are accepted upcoming work.
-Core will own registries, the explicit bundled mod list and the lifecycle from
-registration through validation/initialization to playable rules. Current content
-will be registered by `src/mods/base.mod.ts`; existing balance exports become
-derived catalog views. Content-aware equipment, inventory and geometry wrappers
-will move here from common. The sections below describe the implemented baseline
-until that runtime migration lands. Common must remain independent of core.
+Core is the composition root for portable game rules and content. Common supplies
+contracts, structural schemas and pure geometry; common never imports core.
+`createGame(mods)` creates registries, invokes synchronous registration, validates
+references/values, seals content and returns a ready context with `registries`,
+`rules`, `modIds` and `status`. Failed startup exposes no partially ready context.
+The default `game` uses the explicit `GAME_MODS` list in `src/mods/index.ts`, with
+`baseMod` first. Both server and browser initialize that list before gameplay.
 
-## Package boundary and balance configs
+`src/mods/base.mod.ts` registers shipped content from its private `base/` data
+modules. `src/definitions` and balance configs expose derived views for consumers;
+edit source content through the mod, not these views. `src/content` owns registry
+contracts, validation and bound equipment/inventory rules. World helpers,
+hitboxes, combat, enemies and training live in core. Export APIs from `src/index.ts`
+or the declared definition/hitbox subpaths. The [design](../../docs/design/mods.md)
+describes ownership, saved IDs, supported mechanics and validation boundaries.
 
-Shared enums belong in `common/src/enums`, exported from `@emberfall/common`
-and the lightweight `@emberfall/common/enums` entrypoint. They use `as const`
-objects and matching value types so Node 24 can execute the source directly.
-Core depends on common; common must never depend on or import core.
-Reusable game utilities belong in `core/src/utils`, and balance configs in
-`core/src/configs`. Combat, enemies, training and their client prediction helpers
-live in core; enums, state, geometry and portable content definitions stay in common.
+Registries expose `size`, `has`, `get`, `require`, `values` and `entries`.
+Registration receives only `register` for each registry. Definitions are copied
+and deeply frozen, IDs cannot overwrite earlier entries, and retained registration
+handles close even after failure. Do not import the default `game`, its derived
+views or the root core barrel inside a bundled mod: that creates a composition
+cycle. Import `GameMod` as a type from `../content/contracts.ts`, and use plain
+standalone data or shared mod-owned templates.
+
+`ItemDefinition` is a discriminated union. Gear uses `kind: 'gear'` with
+`gearType` and `stats`; consumables use `kind: 'consumable'` with `healing`.
+Consumables need no dummy gear fields. `BaseItemDefinition` carries `id`, `name`
+and optional `price` (a safe nonnegative integer in gold units). `EnemyKind` is an open string type while the named built-in
+constants retain their original values.
+
+## Add a bundled mod
+
+This example adds a numeric stat, a slot/item, a class/ability and an enemy using
+existing engine and art families. Save it as `src/mods/example.mod.ts`, then import
+it in `src/mods/index.ts` and append it after `baseMod` in `GAME_MODS`. It is an
+authoring example, not content enabled in the shipped game.
+
+```ts
+import type { GameMod } from '../content/contracts.ts';
+
+export const exampleMod: GameMod = {
+  id: 'example',
+  register(r) {
+    r.stats.register({
+      id: 'example:luck',
+      label: 'Luck',
+      default: 0,
+      aggregation: 'sum',
+      format: 'number',
+    });
+    r.slots.register({
+      id: 'example:charm',
+      label: 'Charm',
+      gearTypes: ['amulet'],
+      column: 4,
+      row: 1,
+    });
+    r.items.register({
+      id: 'example:charm',
+      name: 'Lucky charm',
+      kind: 'gear',
+      gearType: 'amulet',
+      stats: { 'example:luck': 2 },
+      price: 1,
+    });
+    r.abilities.register({
+      id: 'example:arrow',
+      kind: 'arrow',
+      range: 1000,
+      manualRange: 1000,
+      damage: 5,
+      intervalMs: 1000,
+      durationMs: 260,
+      aimSmoothingSeconds: 0.08,
+      speed: 500,
+      count: 1,
+      spreadRadians: 0,
+      piercing: true,
+      splashRadius: 0,
+      splashDamage: 0,
+      bounces: 0,
+      bounceRadius: 0,
+    });
+    r.classes.register({
+      id: 'example:scout',
+      label: 'Scout',
+      attack: 'example:arrow',
+      ailment: 'poison',
+      art: 'ranger',
+      sprite: '/assets/ranger.png',
+      starterWeapon: 'ranger-bow',
+      gearTypes: ['bow', 'quiver'],
+    });
+    r.enemies.register({
+      id: 'example:runner',
+      behavior: 'melee',
+      art: 'runner',
+      speed: 90,
+      radius: 8,
+      size: 32,
+      reach: 32,
+      windup: 500,
+      cooldown: 900,
+      hitPoints: 15,
+      damage: 3,
+    });
+    r.spawnRules.register({ id: 'example:runner', enemy: 'example:runner', chance: 0.1 });
+  },
+};
+```
+
+References can point to earlier or later registered definitions; validation runs
+after every mod registers. Slots require explicit positive grid coordinates.
+Stats sum numeric contributions and appear in `characterStats(player).attributes`;
+new stat effects need engine rules. Item `loot: true` opts into the existing gear
+loot pool; registration alone does not put an item in inventory. Enemy registration alone does not change spawn composition. A `spawnRules`
+entry references the enemy and assigns a fraction from 0 to 1. The sum of
+registered chances cannot exceed 1. `spawnArchetype` checks cumulative ranges in
+registration order using one roll, then alternates the registered
+`spawnFallbacks`. Base rules reserve 0.1 each for Brute and Caster; the example
+adds a 0.1 range without changing those ranges.
+Classes reuse one of four art families; ability kinds are `slash`, `arrow`,
+`fireball` and `roots`; enemy behaviors are `melee` and `ranged`. Arrow is piercing; other ability families are non-piercing. Roots abilities
+and the roots ailment must be selected together. Class `details` optionally
+provides weapon/spell labels and descriptions; omitted details use generic text.
+Ailment, pickup, effect and critter identities, one Bear companion, scene families
+and difficulty/type identities remain fixed.
+
+For isolated tests call `createGame([baseMod, exampleMod])` and use that context's
+`rules`. Selected combat helpers accept a context explicitly; live startup uses
+the immutable default game. Server `createCharacterPersistence(context)` binds
+save validation and class enumeration to the same context. Do not switch a global
+catalog or assume every default-world helper accepts a custom context. Preserve
+existing saved/wire IDs and use the [extension checks](../../docs/plans/mods.md#verification).
+
+## Balance configs
 
 Each balance table has its own `.ts` file and is exported from core:
 

@@ -1,6 +1,6 @@
 import type { ServerMessage } from '@emberfall/common';
 import { Encoder } from '@colyseus/schema';
-import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { once } from 'node:events';
 import { createServer as createSecureServer, type ServerOptions } from 'node:https';

@@ -99,7 +99,7 @@ test('peers see a red reconnecting character in village and forest until recover
     for (const area of ['village', 'forest'] as const) {
       if (area === 'forest') {
         const { sceneAction, tickScene } = await import('../packages/server/src/scenes.ts');
-        const { LOBBY_PORTAL } = await import('../packages/common/src/index.ts');
+        const { LOBBY_PORTAL } = await import('../packages/core/src/index.ts');
         for (const p of world.players.values()) {
           p.x = LOBBY_PORTAL.x;
           p.y = LOBBY_PORTAL.y - 15;

@@ -1,10 +1,10 @@
+import { createGame, baseMod } from '@emberfall/core';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Encoder, Decoder } from '@colyseus/schema';
 import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
 import {
   CLASS_IDS,
-  GEAR_DEFINITIONS,
   EQUIPMENT_SLOTS,
   SLOT_GEAR_TYPES,
   characterStats,
@@ -12,9 +12,8 @@ import {
   starterEquipment,
   validateClassEquipment,
   canEquip,
-  syncEquipmentVitals,
   clientMessage,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import {
   tickCompanion,
   createTrainingScene,
@@ -28,7 +27,7 @@ import {
   tickPlayerShots,
   fireClassAttack,
 } from '@emberfall/core';
-import { enemyHitbox } from '../../common/src/hitboxes.ts';
+import { enemyHitbox } from '../../core/src/hitboxes.ts';
 import type { Player, ClassId, GearDefinition, WorldState, Enemy } from '@emberfall/common';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 import { drawDamageNumber, DAMAGE_COLORS } from '../../client/src/damage-text.ts';
@@ -76,8 +75,16 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
     gearType: 'ring',
     stats: { power: 10, attacksPerSecond: 1, armor: 100, maxHitpoints: 20 },
   };
-  GEAR_DEFINITIONS[gear.id] = gear;
-  t.after(() => delete GEAR_DEFINITIONS[gear.id]);
+  const context = createGame([
+    baseMod,
+    {
+      id: 'bear-fixture',
+      register(r) {
+        r.items.register({ ...gear, kind: 'gear' });
+      },
+    },
+  ]);
+  const { characterStats, companionStats, syncEquipmentVitals } = context.rules;
   t.mock.method(Math, 'random', () => 0.5);
   for (const training of [true, false]) {
     const player = hero('druid');
@@ -96,16 +103,16 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
     const arena = scene(training);
     // A target whose model overlaps the 75-unit claw range.
     arena.enemies[0].x = player.x + 80;
-    tickCompanion(player, arena, 1000, 0);
+    tickCompanion(player, arena, 1000, 0, context);
     assert.equal(player.bear!.maxHitpoints, 180);
     assert.equal(arena.damage[0].amount, 13);
     assert.equal(arena.damage[0].damageType, 'physical');
     assert.equal(arena.damage[0].ownerId, player.id);
-    tickCompanion(player, arena, 1259, 0);
+    tickCompanion(player, arena, 1259, 0, context);
     assert.equal(arena.damage.length, 1, 'no duplicate hit during a swing');
-    tickCompanion(player, arena, 1499, 0);
+    tickCompanion(player, arena, 1499, 0, context);
     assert.equal(arena.damage.length, 1);
-    tickCompanion(player, arena, 1500, 0);
+    tickCompanion(player, arena, 1500, 0, context);
     assert.equal(arena.damage.length, 2, 'inherits the 500ms gear cadence');
     if (!training) {
       arena.enemies[0].x = player.x - 100;
@@ -118,11 +125,11 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
         radius: 30,
         ranged: false,
       };
-      stepCombat(arena, [player], 2000, 0);
+      stepCombat(arena, [player], 2000, 0, context);
       assert.equal(player.bear!.hitpoints, 178.5, 'owner armor halves incoming damage');
     }
     player.equipment = {};
-    tickCompanion(player, arena, 3000, 0);
+    tickCompanion(player, arena, 3000, 0, context);
     assert.equal(player.bear!.attackAt, undefined);
   }
 });
@@ -163,7 +170,10 @@ test('every class starts with exactly its compatible weapon and preserves base s
     const player = hero(classId);
     assert.deepEqual(Object.keys(player.equipment!), ['weapon']);
     const stats = characterStats(player);
-    assert.deepEqual([stats.power, stats.range, stats.damageType], expected[classId]);
+    assert.deepEqual(
+      [stats.power, stats.range, stats.damageType],
+      expected[classId as 'warrior' | 'ranger' | 'mage' | 'druid'],
+    );
     assert.equal(stats.attackIntervalMs, 1000);
     assert.equal(stats.criticalChance, 0.05);
     assert.equal(stats.criticalMultiplier, 1.5);
@@ -205,10 +215,11 @@ test('all class base attacks wait a full second in training and forest', () => {
 
 test('all nine slots aggregate and gear controls real power, range, cadence and defense', (t) => {
   t.mock.method(Math, 'random', () => 0.5);
+  const items: GearDefinition[] = [];
   const player = hero();
   for (const slot of EQUIPMENT_SLOTS.filter((slot) => slot !== 'weapon')) {
     const id = `test-${slot}`;
-    GEAR_DEFINITIONS[id] = {
+    items.push({
       id,
       name: id,
       gearType: SLOT_GEAR_TYPES[slot][0],
@@ -220,34 +231,41 @@ test('all nine slots aggregate and gear controls real power, range, cadence and 
         armor: 12.5,
         maxHitpoints: 5,
       },
-    };
-    player.equipment![slot] = id;
-    t.after(() => {
-      delete GEAR_DEFINITIONS[id];
     });
+    player.equipment![slot] = id;
   }
+  const context = createGame([
+    baseMod,
+    {
+      id: 'slots-fixture',
+      register(r) {
+        for (const item of items) r.items.register({ ...item, kind: 'gear' });
+      },
+    },
+  ]);
+  const { characterStats, syncEquipmentVitals } = context.rules;
   const stats = characterStats(player);
   assert.equal(stats.power, 13);
-  assert.equal(defaultSpellRange(player), 91);
+  assert.equal(defaultSpellRange(player, context), 91);
   assert.equal(stats.damageReduction, 0.5);
   syncEquipmentVitals(player);
   assert.equal(player.maxHitpoints, 140);
   const arena = scene(false);
   player.scene = 'forest';
   arena.enemies[0].x = player.x + 97;
-  tickPlayerCombat(arena, [player], 1000, 0.05);
+  tickPlayerCombat(arena, [player], 1000, 0.05, context);
   assert.equal(arena.enemies[0].hitpoints, 87, 'extended sword range and summed power apply');
   const interval = stats.attackIntervalMs;
-  tickPlayerCombat(arena, [player], 1000 + interval - 1, 0.05);
+  tickPlayerCombat(arena, [player], 1000 + interval - 1, 0.05, context);
   assert.equal(arena.enemies[0].hitpoints, 87);
-  tickPlayerCombat(arena, [player], 1000 + interval, 0.05);
+  tickPlayerCombat(arena, [player], 1000 + interval, 0.05, context);
   assert.equal(arena.enemies[0].hitpoints, 74);
   player.autoAttack = false;
   arena.enemies[0].x = player.x;
   Object.assign(arena.enemies[0], {
     attack: { startedAt: 0, endsAt: 2000, x: player.x, y: player.y, radius: 100, ranged: false },
   });
-  stepCombat(arena, [player], 2000, 0.05);
+  stepCombat(arena, [player], 2000, 0.05, context);
   assert.equal(player.hitpoints, 98.5, '100 armor halves a 3 damage enemy attack');
 });
 

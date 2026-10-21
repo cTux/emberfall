@@ -1,10 +1,5 @@
 import { test, expect } from './fixtures';
-import {
-  CLASS_IDS,
-  CLASS_LABELS,
-  WARDROBE,
-  starterEquipment,
-} from '../packages/common/src/index.ts';
+import { CLASS_IDS, CLASS_LABELS, WARDROBE, starterEquipment } from '../packages/core/src/index.ts';
 
 test('equipment shows all class starters and stats; physical I, tooltips, dragging and responsive layout work', async ({
   page,
@@ -54,7 +49,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
   await expect(itemTooltip.locator('.MuiTooltip-tooltip').first()).toHaveCSS(
     'background-color',
-    'rgba(0, 0, 0, 0.88)',
+    'rgba(0, 0, 0, 0.76)',
   );
   expect(
     (await itemTooltip.locator('.MuiTooltip-tooltip').first().boundingBox())!.width,
@@ -139,7 +134,9 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect(wardrobe).toHaveCount(0);
     await physicalI();
     await expect(dialog.locator('[data-equipped="true"]')).toHaveCount(1);
-    const type = { warrior: 'Physical', ranger: 'Poison', mage: 'Fire', druid: 'Nature' }[classId];
+    const type = { warrior: 'Physical', ranger: 'Poison', mage: 'Fire', druid: 'Nature' }[
+      classId as 'warrior' | 'ranger' | 'mage' | 'druid'
+    ];
     await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText(type);
     await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText(
       'Cooldown1 sec',
@@ -152,13 +149,17 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
       'aria-label',
       `Range: ${(classId === 'warrior' ? 75 : classId === 'ranger' ? 1000 : 250).toLocaleString('en')}`,
     );
-    const effect = { warrior: 'bleed', ranger: 'poison', mage: 'burn', druid: 'roots' }[classId];
+    const effect = { warrior: 'bleed', ranger: 'poison', mage: 'burn', druid: 'roots' }[
+      classId as 'warrior' | 'ranger' | 'mage' | 'druid'
+    ];
     await page.locator(`[data-equipment-badge="${effect}"]`).last().hover();
     await expect(page.getByRole('tooltip').last()).toContainText(
       classId === 'druid' ? 'Bosses are immune to roots.' : 'new stacks refresh the duration',
     );
     const stats = dialog.getByRole('region', { name: 'Character stats' });
-    const automaticRange = { warrior: 75, ranger: 1000, mage: 250, druid: 250 }[classId];
+    const automaticRange = { warrior: 75, ranger: 1000, mage: 250, druid: 250 }[
+      classId as 'warrior' | 'ranger' | 'mage' | 'druid'
+    ];
     const manualRange = classId === 'warrior' ? 75 : 1000;
     await expect(stats.getByText('Range', { exact: true })).toHaveCount(1);
     await expect(stats).toContainText(`Range${automaticRange.toLocaleString('en')} units`);

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { type ServerMessage } from '@emberfall/common';
 import {
   addItem,
   useBackpackItem,
@@ -20,8 +21,7 @@ import {
   backpackSchema,
   clientMessage,
   INNKEEPER,
-  type ServerMessage,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import { createTrainingScene, requestPlayerCast, stepCombat, hitEnemy } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { CharacterStore, freshProgress, decodeProgress } from './characters.ts';

@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Client } from '@colyseus/sdk';
-import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { SessionState } from '@emberfall/common/protocol';
 import { SteamProvider } from './steam.ts';
 import { CharacterStore } from './characters.ts';

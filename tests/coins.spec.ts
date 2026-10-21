@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { LOBBY_PORTAL, WARDROBE, BUILDINGS } from '../packages/common/src/index.ts';
+import { LOBBY_PORTAL, WARDROBE, BUILDINGS } from '../packages/core/src/index.ts';
 
 test('collected gold credits the account Storehouse across classes and rejoining', async ({
   page,

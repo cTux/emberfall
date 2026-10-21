@@ -23,8 +23,8 @@ test('ordered spawn chances select elite first and fall back to normal', (t) => 
 });
 
 test('drop counts support 350 percent as three guaranteed items and a chance of a fourth', (t) => {
-  assert.ok(itemCountDropPercent[EnemyType.Boss].min <= 350);
-  assert.ok(itemCountDropPercent[EnemyType.Boss].max >= 350);
+  assert.ok((itemCountDropPercent[EnemyType.Boss] as { min: number; max: number }).min <= 350);
+  assert.ok((itemCountDropPercent[EnemyType.Boss] as { min: number; max: number }).max >= 350);
   t.mock.method(Math, 'random', () => 0.499);
   assert.equal(isMultiChanced(350), 4);
   t.mock.method(Math, 'random', () => 0.5);

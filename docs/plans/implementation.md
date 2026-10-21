@@ -8,9 +8,9 @@ All rows below are implemented. Each row names the implementation seams and acce
 
 | Order/dependency        | Capability                                                               | Implementation seams                                                           | Acceptance source                         |
 | ----------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------- |
-| 1 — foundation          | Shared messages, wrapped geometry, HTTP(S)/WebSocket, world browser      | `common/index.ts`, `common/world.ts`, `server/worlds.ts`, `client/main.tsx`    | WORLD-01; network design                  |
+| 1 — foundation          | Shared messages, wrapped geometry, HTTP(S)/WebSocket, world browser      | `common/index.ts`, `core/world.ts`, `server/worlds.ts`, `client/main.tsx`      | WORLD-01; network design                  |
 | 2 — world identity      | Character/class saves, authorized world recovery, build reload checks    | `server/characters.ts`, `server/worlds.ts`, client connection/build code       | CHAR-01–03, WORLD-02                      |
-| 3 — shared world        | Chat, village, doors, wardrobe, paths and interactions                   | `server/chat.ts`, `common/scene.ts`, client village and chat                   | CHAT-01–03, SCENE-01/02                   |
+| 3 — shared world        | Chat, village, doors, wardrobe, paths and interactions                   | `server/chat.ts`, `core/scene.ts`, client village and chat                     | CHAT-01–03, SCENE-01/02                   |
 | 4 — scene lifecycle     | Votes, countdown, late join, pause/regenerate, boss and return           | `server/scenes.ts`, `core/simulation.ts`                                       | SCENE-03–05                               |
 | 5 — combat              | Classes, ailments, enemies, scaling, Bear, training and rewards          | `core/class-combat.ts`, `simulation.ts`, `enemies.ts`, `training.ts`           | COMBAT-01–05                              |
 | 6 — responsive controls | Timed movement, interpolation, predicted casts and F/G/manual input      | Server command queues; client `local-movement.ts`, `snapshots.ts`, `Arena.tsx` | UI-02; movement design                    |
@@ -29,14 +29,13 @@ Paths abbreviated in this table are under `packages/`. Exact links are in the [a
 
 The files for steps 1–3 are the deliverables of this change. Final verification and merge evidence belong to the PR so a static plan does not pretend to know a later GitHub state.
 
-## Accepted next architecture: bundled mods
+## Bundled mod architecture
 
-The [mod implementation plan](mods.md) sequences the accepted
-[MOD-01–04](../specs/mods.md) capability. Its documentation-only PR must merge
-before runtime implementation starts. The subsequent work moves content and
-content-aware rules to core, integrates registries with real server/client
-consumers and proves extension with a second fixture mod. No gameplay rebalance
-or new progression effect is authorized by this architecture.
+[MOD-01–04](../specs/mods.md) is implemented through core-owned registries and
+bundled TypeScript mods. Documentation PR #169 merged before runtime work began.
+The [delivery and verification record](mods.md) covers content-aware rules,
+server/client consumers and fixture-based extension checks. This migration adds
+no progression effect or gameplay rebalance.
 
 ## Next gameplay work: decision required
 

@@ -1,11 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { worldHitboxes, drawHitboxes, HITBOX_COLORS } from '../packages/client/src/hitboxes.ts';
-import { ENEMY_STATS, FOREST, type WorldState } from '../packages/common/src/index.ts';
+import { type WorldState } from '../packages/common/src/index.ts';
+import { ENEMY_STATS, FOREST } from '../packages/core/src/index.ts';
 import { createTrainingScene } from '../packages/core/src/index.ts';
 import { loadPreferences } from '../packages/client/src/preferences.ts';
-import { INITIAL_PROGRESS } from '../packages/common/src/definitions/entities/players.ts';
-import { modelHitbox, enemyHitbox } from '../packages/common/src/hitboxes.ts';
+import { INITIAL_PROGRESS } from '../packages/core/src/definitions/entities/players.ts';
+import { modelHitbox, enemyHitbox } from '../packages/core/src/hitboxes.ts';
 
 test('player overlay covers the whole model and omits feet zones', () => {
   const world: WorldState = {
@@ -60,7 +61,7 @@ test('all enemy archetypes, both projectile sides and pickup ranges use rule geo
   scene.training = false;
   scene.enemies = Object.keys(ENEMY_STATS).map((archetype, id) => ({
     id,
-    archetype: archetype as keyof typeof ENEMY_STATS,
+    archetype: archetype as string,
     x: 100 + id * 50,
     y: 100,
     angle: 0,
@@ -85,7 +86,7 @@ test('all enemy archetypes, both projectile sides and pickup ranges use rule geo
     shapes
       .filter((s) => s.color === HITBOX_COLORS.body)
       .map((s) => ({ x: s.x, y: s.y, radius: 'radius' in s && s.radius })),
-    scene.enemies.map(enemyHitbox),
+    scene.enemies.map((enemy) => enemyHitbox(enemy)),
   );
   assert.deepEqual(
     shapes

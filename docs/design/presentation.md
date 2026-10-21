@@ -22,14 +22,17 @@ PartyCard displays nickname and level within a single HP meter, without a headin
 
 An optional controlled companion view adds a shorter, narrower HP row beneath the player inside PartyCard. The client supplies the companion name, confirmed health and portrait from their existing companion sprite art. StatusMeter retains accessible health values at the compact size; no companion state or gameplay rules live in the UI package.
 
-## Accepted content-driven views
+## Content-driven views
 
-The [mod design](mods.md#make-registry-data-drive-gameplay) will derive available
-classes, equipment slots and numeric stat rows from the initialized core catalog.
-Additional classes and enemies may reuse declared existing art families; new
-slots need a layout fallback. Controlled UI receives view data and keeps its
-current package boundary. This is accepted upcoming work, not a claim that the
-current fixed maps already support added definitions.
+Available classes, equipment slots and extra numeric stat rows derive from the
+initialized core catalog. Classes and enemies declare existing art families;
+equipment slots declare their labels and grid positions. Pure client content
+view helpers build slot/stat views; EquipmentPanel grows beyond its minimum
+three-column/four-row grid when supplied slots require it. Class descriptions
+use registered `details` or generic fallbacks. Ability descriptions
+resolve supported mechanic kinds independently of definition IDs. Controlled UI
+receives view data and has no game-package dependency. See the
+[mod design](mods.md#make-registry-data-drive-gameplay).
 
 ## Rendering pipeline and caches
 

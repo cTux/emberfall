@@ -1,3 +1,4 @@
+import { game } from '@emberfall/core';
 import type { PixiContext } from './rendering/pixi-context';
 import { characterImages } from './characters';
 import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from './animation';
@@ -14,7 +15,8 @@ import {
   drawClassProjectiles,
   drawDebuffs,
 } from './combat-effects';
-import { characterStats, ENEMY_STATS, FOREST, forestTrees, wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/common';
+import { characterStats, ENEMY_STATS, FOREST, forestTrees } from '@emberfall/core';
 import { defaultSpellRange, PLAYER_ATTACK_DURATION, enemyMaxHealth } from '@emberfall/core';
 import { movementFacing } from './facing';
 import { drawDanger } from './danger';
@@ -357,7 +359,9 @@ export function forestRenderer(
             ? characterImages[actor.player.classId ?? 'warrior'].walk
             : actor.enemy?.kind === 'boss'
               ? enemyImages.warden
-              : (enemyImages[actor.enemy?.archetype ?? 'skeleton'] ?? skeleton);
+              : (enemyImages[
+                  game.registries.enemies.require(actor.enemy?.archetype ?? 'skeleton').art
+                ] ?? skeleton);
         const size = actor.enemy ? ENEMY_STATS[actor.enemy.archetype ?? 'skeleton'].size : 48;
         if (row === 5 || row === 6) {
           const angle = actor.player?.attackAngle ?? actor.enemy?.angle ?? 0;

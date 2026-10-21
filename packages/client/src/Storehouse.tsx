@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { Box, Button, Stack, TextField } from '@mui/material';
 import { Backpack, ChapterTabs, GameWindow, GoldBalance } from '@emberfall/ui';
-import {
-  STORAGE_SLOTS,
-  storageNameSchema,
-  type Player,
-  type ClientMessage,
-} from '@emberfall/common';
+import { type Player, type ClientMessage } from '@emberfall/common';
+import { STORAGE_SLOTS, storageNameSchema } from '@emberfall/core';
 import { backpackViews } from './equipment-view';
 
 export function Storehouse({

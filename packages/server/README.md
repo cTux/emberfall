@@ -107,14 +107,15 @@ keys are deliberately separate (`emberfall-new.character`); the corresponding
 existing bearer key must be explicitly transferred to the new origin/key to
 resume that imported character. Do not put bearer keys in documentation or logs.
 
-## Accepted mod startup
+## Bundled content startup
 
-The [mod design](../../docs/design/mods.md) requires core to initialize the bundled
-catalog before content-dependent save decode and session admission. Server keeps
-authoritative scheduling, sessions, ECS ownership and persistence; it uses core's
-content-aware validators and rules. Existing saves and IDs remain compatible,
-and missing content must fail without silently dropping progress. This migration
-is accepted upcoming work, not current startup behavior.
+Core initializes the bundled catalog before content-dependent save decode and
+session admission. Server retains authoritative scheduling, sessions, ECS
+ownership and persistence; it uses core's content-aware validators and rules.
+`createCharacterPersistence(context)` binds save helpers and class enumeration to
+a ready game for isolated fixtures; the live server uses the default game.
+Existing saved IDs retain their meaning. Unknown content fails without silently
+dropping progress. See the [mod design](../../docs/design/mods.md).
 
 ## Extend and test
 

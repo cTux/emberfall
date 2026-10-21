@@ -1,5 +1,5 @@
 import type { Player } from '@emberfall/common';
-import { characterStats } from '@emberfall/common';
+import { characterStats } from '@emberfall/core';
 import { ActionBar } from '@emberfall/ui';
 import { spellSrc } from './combat-assets';
 import { classDetails } from './class-details';

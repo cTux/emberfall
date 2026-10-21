@@ -1,30 +1,31 @@
-import { AILMENT_DEFINITIONS } from '@emberfall/common/definitions/effects/ailments';
-import {
-  FOREST,
-  forestDistance,
-  forestTrees,
-  moveForestActor,
-  wrap,
-  wrappedDelta,
-} from '@emberfall/common';
+import { game, type createGame } from './game.ts';
+import { AILMENT_DEFINITIONS } from './definitions/effects/ailments.ts';
+import { wrap, wrappedDelta } from '@emberfall/common';
+import { FOREST, forestDistance, forestTrees, moveForestActor } from './scene.ts';
 import type { Enemy } from '@emberfall/common';
 
-import { ENEMY_STATS, ENEMY_RULES } from '@emberfall/common/definitions/entities/enemies';
+import { ENEMY_STATS, ENEMY_RULES } from './definitions/entities/enemies.ts';
 import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
 import { enemyAttributes } from './utils/enemyAttributes.ts';
 export { ENEMY_STATS };
-export function spawnArchetype(roll: number, count: number): NonNullable<Enemy['archetype']> {
-  return roll < ENEMY_RULES.bruteChance
-    ? 'brute'
-    : roll < ENEMY_RULES.bruteChance + ENEMY_RULES.casterChance
-      ? 'caster'
-      : count % 2
-        ? 'skeleton'
-        : 'runner';
+export function spawnArchetype(
+  roll: number,
+  count: number,
+  context: ReturnType<typeof createGame> = game,
+): NonNullable<Enemy['archetype']> {
+  let threshold = 0;
+  for (const rule of context.registries.spawnRules.values()) {
+    threshold += rule.chance;
+    if (roll < threshold) return rule.enemy;
+  }
+  const fallbacks = context.registries.settings.require('spawnFallbacks')
+    .value as readonly string[];
+  return fallbacks[count % fallbacks.length];
 }
 export function enemyMaxHealth(
   enemy: Pick<Enemy, 'kind' | 'archetype' | 'maxHitpoints'>,
   difficulty: Difficulty = Difficulty.Easy,
+  context: ReturnType<typeof createGame> = game,
 ) {
   return (
     enemy.maxHitpoints ??
@@ -32,6 +33,7 @@ export function enemyMaxHealth(
       enemy.archetype ?? EnemyKind.Skeleton,
       enemy.kind ?? EnemyType.Normal,
       difficulty,
+      context,
     ).hitPoints
   );
 }
@@ -42,7 +44,9 @@ export function moveEnemies(
   players: { x: number; y: number; hitpoints: number }[],
   dt: number,
   now = 0,
+  context: ReturnType<typeof createGame> = game,
 ) {
+  const ENEMY_STATS = Object.fromEntries(context.registries.enemies.entries());
   const cells = new Map<number, Set<Enemy>>();
   const key = (x: number, y: number) =>
     wrap(Math.floor(x / 40), 120) + wrap(Math.floor(y / 40), 64) * 120;
@@ -62,12 +66,12 @@ export function moveEnemies(
       );
     if (!target) continue;
     const targetDistance = forestDistance(enemy, target);
-    if (enemy.archetype === 'caster' && targetDistance < ENEMY_RULES.casterStopRange) continue;
+    if (stats.behavior === 'ranged' && targetDistance < ENEMY_RULES.casterStopRange) continue;
     cells.get(key(enemy.x, enemy.y))!.delete(enemy);
     const rooted =
       enemy.kind !== 'boss' && enemy.debuffs?.some((d) => d.kind === 'roots' && d.expiresAt > now);
     const distance = Math.min(
-      stats.speed * dt * (rooted ? 1 - AILMENT_DEFINITIONS.roots.slowFraction : 1),
+      stats.speed * dt * (rooted ? 1 - (AILMENT_DEFINITIONS.roots.slowFraction ?? 0) : 1),
       targetDistance,
     );
     const steps = Math.max(1, Math.ceil(distance / 5));

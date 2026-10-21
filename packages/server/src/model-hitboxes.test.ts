@@ -1,14 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FOREST, ENEMY_STATS, type Player, type SceneState } from '@emberfall/common';
-import { INITIAL_PROGRESS } from '../../common/src/definitions/entities/players.ts';
-import { enemyHitbox } from '../../common/src/hitboxes.ts';
+import { type Player, type SceneState } from '@emberfall/common';
+import { FOREST, ENEMY_STATS } from '@emberfall/core';
+import { INITIAL_PROGRESS } from '../../core/src/definitions/entities/players.ts';
+import { enemyHitbox } from '../../core/src/hitboxes.ts';
 import { tickPlayerShots } from '@emberfall/core';
 
 test('projectiles hit heads and feet of every model in forest and training, across both seams', (t) => {
   t.mock.method(Math, 'random', () => 0.5);
   for (const training of [false, true])
-    for (const archetype of Object.keys(ENEMY_STATS) as (keyof typeof ENEMY_STATS)[])
+    for (const archetype of Object.keys(ENEMY_STATS) as string[])
       for (const kind of ['arrow', 'fireball', 'roots'] as const)
         for (const wrapped of [false, true])
           for (const edge of [-1, 1])

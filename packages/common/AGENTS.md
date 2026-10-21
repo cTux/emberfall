@@ -1,8 +1,9 @@
-# Shared rules
+# Shared contracts
 
-Read [the package guide](README.md) and the relevant existing gameplay spec.
-Keep definitions serializable, entity state mutable, and presentation separate.
-Keep browser, database and server transport code outside common. Use the collection
-membership API so the same kernels work with authoritative ECS and prediction
-snapshots. Preserve wrapped geometry and forest/training parity. Validate content
-references, run affected rule tests, and report actual checks.
+Read [the package guide](README.md) and the relevant gameplay spec.
+Keep common independent of core. Put content registration, semantic validation,
+equipment/inventory rules and bound world helpers in core; keep structural
+schemas, portable state/contracts and pure geometry here. A valid string ID does
+not prove registry membership. Preserve wire/save shapes and collection membership
+semantics for authoritative ECS and prediction snapshots. Run affected contract,
+protocol and geometry tests and report actual checks.

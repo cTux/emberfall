@@ -11,7 +11,7 @@ import {
   moveActor,
   moveForestActor,
   forestDistance,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import { movePlayer, tickCompanion } from '@emberfall/core';
 import type { Player, WorldState } from '@emberfall/common';
 import { LocalMovement } from '../../client/src/local-movement.ts';

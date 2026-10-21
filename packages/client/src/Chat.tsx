@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CHAT_MAX_LENGTH } from '@emberfall/common';
+import { CHAT_MAX_LENGTH } from '@emberfall/core';
 import type { ChatMessage, ClientMessage } from '@emberfall/common';
 
 export function Chat({

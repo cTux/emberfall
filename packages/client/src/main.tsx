@@ -10,13 +10,8 @@ import { classDetails } from './class-details';
 import { Equipment, Trading } from './equipment-view';
 import { Storehouse } from './Storehouse';
 import { Codex } from './Codex';
-import {
-  characterStats,
-  INNKEEPER,
-  CLASS_IDS,
-  CLASS_LABELS,
-  hasLivingScenePlayers,
-} from '@emberfall/common';
+import { hasLivingScenePlayers } from '@emberfall/common';
+import { characterStats, INNKEEPER, CLASS_IDS, CLASS_LABELS } from '@emberfall/core';
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Interaction } from './effects';

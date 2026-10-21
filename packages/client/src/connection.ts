@@ -1,4 +1,4 @@
-import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { Client, type Room } from '@colyseus/sdk';
 import { SessionState, materializeState } from '@emberfall/common/protocol';
 import type { ServerMessage, ClientMessage } from '@emberfall/common';

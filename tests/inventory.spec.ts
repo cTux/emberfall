@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { INNKEEPER } from '../packages/common/src/index.ts';
+import { INNKEEPER } from '../packages/core/src/index.ts';
 
 test('inventory equips, unequips and consumes stacks; shared trading transfers items and gold', async ({
   page,

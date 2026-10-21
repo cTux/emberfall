@@ -11,7 +11,7 @@ import {
   WARDROBE,
   clientMessage,
   forestDistance,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import {
   spawnArchetype,
   enemyMaxHealth,

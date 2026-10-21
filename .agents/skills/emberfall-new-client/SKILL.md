@@ -5,11 +5,11 @@ description: Develop or test Emberfall client PixiJS rendering, presentation ECS
 
 # New client rendering and interaction
 
-Read the [client-new guide](../../../packages/client/README.md), its AGENTS,
+Read the [client guide](../../../packages/client/README.md), its AGENTS,
 and the affected graphics/interface requirement in the [documentation map](../../../docs/README.md).
 
 Keep received schemas, detached snapshots, predicted poses and Pixi resources
-separate. Use common geometry and rules. Camera, weapon, light and sound
+separate. Use core content, bound geometry and prediction rules; common supplies contracts. Camera, weapon, light and sound
 must follow the same reconciled local action; replay must not duplicate effects.
 Health, damage, loot and saved progression require server confirmation.
 
@@ -25,7 +25,7 @@ generate replacement sprites from another Codex model. Keep animation frames
 at a stable scale and foot anchor, and verify the loop in the actual client.
 
 Reuse controlled components from the [UI package](../../../packages/ui/README.md).
-Read its instructions before editing it and verify both clients for shared API
+Read its instructions before editing it and verify the client and Storybook for shared API
 changes. Keep browser identity keys isolated under `emberfall-new.*`.
 
 Run typecheck, affected prediction tests, build and actual browser scenarios.

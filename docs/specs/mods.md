@@ -1,6 +1,7 @@
 # Bundled game mods
 
-Status: accepted upcoming architecture; not implemented by this documentation change.
+Status: implemented bundled-content architecture. See the
+[verification record](../plans/mods.md#verification) for execution evidence.
 The shipped gameplay remains specified by [characters](characters.md),
 [combat](combat.md), [scenes](scenes-and-village.md) and [progression](progression.md).
 Implementation and sequencing are in the [mod design](../design/mods.md) and
@@ -52,7 +53,10 @@ the shared combat path.
 New mechanic families require engine and presentation support with tests. The
 first migration does not promise arbitrary scripted AI, new entity component
 layouts, additional active ability slots, multiple simultaneous companions, or
-additional playable scene types merely from a definition. Unsupported content
+additional playable scene types merely from a definition. Pickup, effect,
+critter, ailment and enemy type/difficulty families retain their supported
+identities. Added enemies require explicit registered spawn rules; adding the
+definition alone does not alter spawn probabilities. Unsupported content
 must be rejected or clearly excluded from a selectable/spawnable configuration,
 not silently substituted with an unrelated base entity.
 

@@ -1,4 +1,4 @@
-import { nearbyInteraction } from '@emberfall/common';
+import { nearbyInteraction } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
 
 export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {

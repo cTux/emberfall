@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { CHAT_LIMIT } from '@emberfall/common';
+import { CHAT_LIMIT } from '@emberfall/core';
 import type { ChatMessage, Player } from '@emberfall/common';
 
 export function addChat(

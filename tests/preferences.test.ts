@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadPreferences } from '../packages/client/src/preferences.ts';
-import { clientMessage } from '../packages/common/src/index.ts';
+import { clientMessage } from '../packages/core/src/index.ts';
 
 test('auto-loot defaults on and accepts only saved booleans', () => {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');

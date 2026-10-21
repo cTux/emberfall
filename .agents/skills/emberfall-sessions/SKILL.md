@@ -12,6 +12,7 @@ Trace the shared message schema, `worlds.ts` handler, `CharacterStore` and clien
 - Derive identity and world membership from the session. Keep schema, capacity, Origin, password and rate validation at the boundary.
 - Distinguish explicit leave, temporary disconnect and process restart. Preserve the permanent world UUID and authorized recovery; reject duplicate live character sessions.
 - Treat browser bearer keys as credentials. Never log raw keys or copy a real save into a test artifact.
+- Use core's catalog-aware command/progress validators, enumerate registered classes and reject missing saved content without dropping records.
 - Validate progress before writing; preserve old class saves and fractional XP. Class selection must save before live mutation.
 - For client updates, keep build ID checking, HTML/version cache policy and world recovery coordinated. A reload must not create a second player.
 - Chat remains world-scoped and temporary; system messages must not consume a player's cooldown or replace their speech bubble.
