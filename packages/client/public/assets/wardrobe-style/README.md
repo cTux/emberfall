@@ -6,6 +6,25 @@ Reference: LPC Wooden Furniture by bluecarrot16, Baŝto, Lanea Zimmerman (Sharm)
 
 Preview: run the new client and visit /?art-gallery . The gallery shares the game's actual atlas loader and animation selector. Static buildings and terrain remain static; existing world geometry, lighting, foliage sway, damage and save rules are unchanged. Font and audio assets are unchanged.
 
+## Default spell icons
+
+`default-spells.png` is the approved four-icon source sheet generated with OpenAI
+imagegen on 2026-10-21 using the existing wardrobe icons as a style reference.
+The four 96×96 `{warrior,ranger,mage,druid}-spell.png` assets are mechanical
+nearest-neighbor crops of the approved artwork, including its bronze frames.
+Source rectangles (x, y, width, height) are warrior (144, 183, 352, 352), ranger
+(655, 183, 352, 352), mage (1165, 183, 352, 352), and druid (1676, 183, 352, 352).
+The wardrobe uses these spell assets separately from the compact status icons.
+The collection’s CC BY-SA 3.0 distribution and retained LPC notices above apply.
+
+Prompt: Rework the four spell icons in the reference’s dark fantasy retro
+pixel-art style, with dark forest-green backgrounds and bronze square frames.
+Show a silver slash arc with a crimson blood trail and falling drops; three
+flying arrows coated in green venom; two flying fireballs with distinct hot
+cores and fiery tails; and branching brown roots following a strong zigzag path
+with green leaves. Keep silhouettes readable at small inventory size. Arrange
+four framed tiles in one horizontal row with padding, without text or weapons.
+
 ## Prompt log
 
 ### Health potion
