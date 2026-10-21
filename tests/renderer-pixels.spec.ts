@@ -42,12 +42,16 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     groupedLabels,
     projectilePixels,
     lootPixels,
+    battleTextPixels,
   } = await page.evaluate(async () => {
     const fixture = (window as unknown as { RendererFixture: typeof import('./renderer-fixture') })
       .RendererFixture;
     return fixture.compare();
   });
   await page.screenshot({ path: 'test-results/new-renderer-pixels.png' });
+  await page
+    .locator('[data-preview="battle-text"]')
+    .screenshot({ path: 'test-results/battle-text-phases.png' });
   expect(errors).toEqual([]);
   const shaftCenter = results['shaft center'].actual[0];
   expect(shaftCenter).toBeGreaterThan(131);
@@ -55,6 +59,15 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     expect(results[edge].actual[0]).toBeLessThanOrEqual(129);
   expect(results['shaft after camera move'].actual).toEqual(results['shaft center'].actual);
   expect(groupedLabels).toEqual(['8']);
+  for (const phases of battleTextPixels) {
+    const [start, pop, settled, fading, expired] = phases;
+    expect(pop.height).toBeGreaterThan(start.height);
+    expect(pop.height).toBeGreaterThan(settled.height);
+    expect(fading.top).toBeLessThan(settled.top);
+    expect(fading.count).toBeGreaterThan(0);
+    expect(expired.count).toBe(0);
+  }
+  expect(battleTextPixels[1][1].height).toBeGreaterThan(battleTextPixels[0][1].height);
   expect(lootPixels).toHaveLength(12);
   for (const { itemId, colored, purple, beam, above, beside } of lootPixels) {
     expect(colored, `${itemId} visible icon`).toBeGreaterThan(30);

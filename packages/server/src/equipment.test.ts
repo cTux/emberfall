@@ -395,11 +395,14 @@ test('native protocol patches retain equipment and typed critical damage in deta
 test('damage text uses type colors, with white fill over a thick red critical outline', () => {
   const calls: { operation: string; color: unknown; width?: number }[] = [];
   const ctx = {
+    globalAlpha: 1,
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 1,
     save() {},
     restore() {},
+    translate() {},
+    scale() {},
     fillText(this: CanvasRenderingContext2D) {
       calls.push({ operation: 'fill', color: this.fillStyle });
     },
@@ -411,10 +414,14 @@ test('damage text uses type colors, with white fill over a thick red critical ou
     const hit = { id: 1, amount: 4.5, x: 0, y: 0, at: 1000, target: 'enemy:1', damageType };
     calls.length = 0;
     drawDamageNumber(ctx, hit, { x: 0, y: 0 }, 1000);
-    assert.deepEqual(calls, [{ operation: 'fill', color: DAMAGE_COLORS[damageType] }]);
+    assert.deepEqual(calls, [
+      { operation: 'stroke', color: '#20150f', width: 3 },
+      { operation: 'fill', color: DAMAGE_COLORS[damageType] },
+    ]);
     calls.length = 0;
     drawDamageNumber(ctx, { ...hit, critical: true }, { x: 0, y: 0 }, 1000);
     assert.deepEqual(calls, [
+      { operation: 'stroke', color: '#20150f', width: 7 },
       { operation: 'stroke', color: '#d52b3f', width: 4 },
       { operation: 'fill', color: '#ffffff' },
     ]);

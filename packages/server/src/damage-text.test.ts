@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { DamageEvent } from '@emberfall/common';
-import { combineDamageNumbers, drawDamageNumbers } from '../../client/src/damage-text.ts';
+import {
+  combineDamageNumbers,
+  damageTextFrame,
+  drawDamageNumbers,
+} from '../../client/src/damage-text.ts';
 
 const hit = (overrides: Partial<DamageEvent> = {}): DamageEvent => ({
   id: 1,
@@ -58,9 +62,15 @@ test('players, targets, damage types and unattributed hits stay separate', () =>
 
 test('draws one rounded total at the wrapped projection and expires on the first timestamp', () => {
   const labels: unknown[][] = [];
+  const positions: number[][] = [];
   const ctx = {
+    globalAlpha: 1,
     save() {},
     restore() {},
+    translate(x: number, y: number) {
+      positions.push([x, y]);
+    },
+    scale() {},
     strokeText() {},
     fillText(...args: unknown[]) {
       labels.push(args);
@@ -68,8 +78,35 @@ test('draws one rounded total at the wrapped projection and expires on the first
   } as unknown as CanvasRenderingContext2D;
   const hits = [hit(), hit({ amount: 4.5, at: 1010, critical: true })];
   drawDamageNumbers(ctx, hits, () => ({ x: -10, y: 100 }), 1010);
-  assert.deepEqual(labels, [['8', -10, 55 - 10 / 30]]);
+  assert.deepEqual(labels, [['8', 0, 0]]);
+  const frame = damageTextFrame(hits[0], 1010)!;
+  assert.deepEqual(positions, [[-10 + frame.x, 100 + frame.y]]);
   labels.length = 0;
   drawDamageNumbers(ctx, hits, () => ({ x: 0, y: 0 }), 1751);
   assert.deepEqual(labels, []);
+});
+
+test('battle text pops, settles, rises and fades before the event expires', () => {
+  const start = damageTextFrame(hit(), 1000)!;
+  const impact = damageTextFrame(hit(), 1080)!;
+  const settled = damageTextFrame(hit(), 1220)!;
+  const fading = damageTextFrame(hit(), 1600)!;
+  const last = damageTextFrame(hit(), 1749)!;
+  assert.ok(impact.scale > start.scale);
+  assert.equal(settled.scale, 1);
+  assert.equal(settled.alpha, 1);
+  assert.ok(fading.y < settled.y && settled.y < start.y);
+  assert.equal(fading.alpha, 0.5);
+  assert.ok(last.alpha < 0.01);
+  assert.equal(damageTextFrame(hit(), 999), undefined);
+  assert.equal(damageTextFrame(hit(), 1750), undefined);
+  assert.equal(damageTextFrame(hit(), 1800), undefined);
+});
+
+test('successive hits use stable lanes independent of snapshot order or other hits', () => {
+  const hits = Array.from({ length: 5 }, (_, id) => hit({ id }));
+  const frames = hits.map((event) => damageTextFrame(event, 1200)!);
+  assert.equal(new Set(frames.map((frame) => frame.x)).size, 5);
+  for (const [index, event] of hits.entries())
+    assert.deepEqual(damageTextFrame(structuredClone(event), 1200), frames[index]);
 });
