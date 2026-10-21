@@ -17,6 +17,16 @@ Node 24 executes server TypeScript during development. Vite builds the client an
 The client Vite build optimizes PNGs and emits Brotli/gzip companions for text assets.
 See [development](../development.md) for pixel-preservation checks and [operations](../operations.md) for cache and deployment rules.
 
+## Accepted next architecture
+
+[Bundled mods](mods.md) is the accepted upcoming composition model, specified by
+[MOD-01–04](../specs/mods.md) and sequenced in the [mod plan](../plans/mods.md).
+Core will own extensible registries, base content and initialization of playable
+rules. Common will retain contracts, structural validation and pure geometry;
+content-dependent helpers and definitions will move to core without a reverse
+dependency. Server/client keep their host responsibilities. The package table
+above describes the implemented baseline until the runtime migration lands.
+
 ## Data flow
 
 ```mermaid

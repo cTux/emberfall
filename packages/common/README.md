@@ -4,6 +4,16 @@ This package contains no DOM access, database connection, or server transport.
 The client and server share its state, enums, geometry and content definitions.
 Combat, projectile and training kernels live in [core](../core/README.md).
 
+## Accepted content migration
+
+The [mod architecture](../../docs/design/mods.md) will move content values and
+content-aware rules to core. Common will retain contracts, structural validation,
+protocol state, collection membership and content-independent geometry. It will
+not re-export core to preserve old import paths. Callers will migrate to core for
+catalog lookups, semantic validation, equipment/inventory rules and bound world
+helpers. This is accepted upcoming work; the locations below describe the
+current implementation.
+
 ## Where things belong
 
 Shared enums belong in `src/enums`. New reusable game utilities and balance

@@ -44,6 +44,15 @@ The canvas exposes read-only `data-renderer` and `data-render-stats` diagnostics
 for profiling. A successful build or screenshot does not establish performance;
 record scene, viewport, settings, browser/GPU, warmup and frame-time distribution.
 
+## Accepted mod consumption
+
+The [mod design](../../docs/design/mods.md) will initialize the same bundled
+catalog as the server before gameplay rendering or prediction. Content imports
+will move from common definitions to core. Class, equipment slot and stat views
+will follow registered metadata, while additional definitions can reuse existing
+mechanic and art families. UI stays controlled and independent of game packages.
+This is accepted upcoming work; the guidance below describes today's imports.
+
 ## Develop and reuse
 
 Read content from `common/definitions`; don't introduce a separate client

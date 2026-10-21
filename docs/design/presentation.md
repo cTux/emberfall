@@ -22,6 +22,15 @@ PartyCard displays nickname and level within a single HP meter, without a headin
 
 An optional controlled companion view adds a shorter, narrower HP row beneath the player inside PartyCard. The client supplies the companion name, confirmed health and portrait from their existing companion sprite art. StatusMeter retains accessible health values at the compact size; no companion state or gameplay rules live in the UI package.
 
+## Accepted content-driven views
+
+The [mod design](mods.md#make-registry-data-drive-gameplay) will derive available
+classes, equipment slots and numeric stat rows from the initialized core catalog.
+Additional classes and enemies may reuse declared existing art families; new
+slots need a layout fallback. Controlled UI receives view data and keeps its
+current package boundary. This is accepted upcoming work, not a claim that the
+current fixed maps already support added definitions.
+
 ## Rendering pipeline and caches
 
 The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders

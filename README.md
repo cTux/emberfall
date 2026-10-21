@@ -34,13 +34,14 @@ Production serves the client and WebSocket endpoint at https://localhost:3003.
 - [Asset sources and attribution](docs/assets.md)
 - [Agent instructions](AGENTS.md)
 
-Current boundaries: online only, up to eight players per world, one Forest / Easy scene per world, building service placeholders, and saved XP without implemented level advancement or talent effects. Future progression must work [without required choices or gameplay interruption](docs/specs/progression.md).
+Current boundaries: online only, up to eight players per world, one Forest / Easy scene per world, building service placeholders, and automatic saved levels/paragon without stat growth or talent effects. Future progression must work [without required choices or gameplay interruption](docs/specs/progression.md).
 
 ## Packages
 
 | Package           | Responsibility                                             |
 | ----------------- | ---------------------------------------------------------- |
-| `packages/common` | Shared contracts, geometry and simulation                  |
+| `packages/common` | Shared contracts, geometry and content definitions         |
+| `packages/core`   | Shared combat, prediction helpers and balance utilities    |
 | `packages/server` | Authoritative worlds, Colyseus sessions and SQLite saves   |
 | `packages/client` | Browser connection, input, prediction and PixiJS rendering |
 | `packages/ui`     | Controlled MUI components, theme and Storybook             |

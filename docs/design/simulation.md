@@ -8,6 +8,14 @@ Status: implemented. Implements [village/scenes](../specs/scenes-and-village.md)
 
 These functions are in `core`, which depends on `common` for enums, state, geometry and definitions. Common never imports core. Config utilities select enemy types, roll equipment drops and counts, and calculate HP/damage using type and difficulty multipliers. Server and client use the same attribute and prediction helpers. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
 
+## Accepted content composition
+
+The [mod design](mods.md) will make these kernels consume core's initialized
+catalog. Class/ability and enemy behavior will resolve registered mechanic
+families instead of treating built-in IDs as the complete content universe.
+Shared forest/training paths, spawn/reward ordering and server authority remain
+requirements. This is accepted upcoming work; the ownership above is current.
+
 ## Scene states
 
 ```mermaid
