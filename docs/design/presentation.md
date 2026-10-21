@@ -39,7 +39,11 @@ pulse. The four reserved slots display 1–4 at bottom right.
 EquipmentPanel receives item badge labels, atlas keys, optional values and explanations
 from `client/equipment-view.tsx`, which derives them from shared equipment,
 attack and ailment definitions. The shared UI bundles a transparent generated icon
-atlas and presents 236px black translucent tooltips. Item popups and badge explanations portal into the modal container
+atlas and presents 236px tooltips. `theme.tsx` applies shared `windowSurface`
+styles to game windows and MUI tooltips, including equipment and action-bar
+details; the client no longer needs a separate window skin. `ActionBar` uses
+a focusable ability group and a MUI tooltip for hover, keyboard and touch,
+showing host-supplied cooldown and automation settings. Item popups and badge explanations portal into the modal container
 (or the page for nonmodal stories) to avoid scrolling-content clipping while
 preserving modal focus and pointer interaction. Tab/Shift+Tab connect each slot
 with its first badge across the portal. Click/tap explicitly opens details;
