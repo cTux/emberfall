@@ -399,7 +399,9 @@ function App({
           interaction={interaction}
           onHitpoints={setDisplayedHp}
         />
-        {me && <WeaponActionBar player={me} now={world?.serverNow ?? 0} />}
+        {me && (
+          <WeaponActionBar player={me} now={world?.serverNow ?? 0} preferences={preferences} />
+        )}
         <Box className='controls'>
           <HudActions
             actions={[

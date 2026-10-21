@@ -3,13 +3,24 @@ import { characterStats } from '@emberfall/common';
 import { ActionBar } from '@emberfall/ui';
 import { spellSrc } from './combat-assets';
 import { classDetails } from './class-details';
+import type { Preferences } from './preferences';
 
-export function WeaponActionBar({ player, now }: { player: Player; now: number }) {
+export function WeaponActionBar({
+  player,
+  now,
+  preferences,
+}: {
+  player: Player;
+  now: number;
+  preferences: Pick<Preferences, 'autoAttack' | 'autoTarget'>;
+}) {
   const stats = characterStats(player);
   const classId = player.classId ?? 'warrior';
   return (
     <div className='action-bar'>
       <ActionBar
+        autoFire={preferences.autoAttack}
+        autoTarget={preferences.autoTarget}
         baseAbility={
           stats.hasWeapon
             ? {

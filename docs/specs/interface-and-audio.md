@@ -13,6 +13,12 @@ cooldown sweep and remaining seconds, clearing when ready. The display follows
 confirmed attacks and equipment cooldown stats in village training and forest;
 existing auto-attack and held-LMB controls still cast the ability. The bar stays
 centered on narrow screens, with chat above it when space is limited.
+Each slot shows its hotkey at bottom right: a left-mouse-button icon for the base
+ability and 1–4 for the four empty slots. A target icon sits at the base slot's
+bottom left. The mouse and target icons independently glow and pulse while
+auto-attack and auto-target are enabled, reflecting saved settings and F/G toggles.
+Reduced motion keeps a steady glow. Indicators remain visible over cooldowns;
+empty slots remain unassigned and do not cast abilities.
 
 All game windows use compact, lighter title bars, wardrobe-brown borders and thin scrollbars. Every tabbed window places its tabs vertically outside its left border, with left-rounded brown frames and a filled gold-accented selected state. The rail moves with the window, stays within the viewport and scrolls independently of the content. Up/Down, Home and End navigate tabs. Backpack slots use matching brown borders and dark wood backgrounds, with 20 slots shown by default.
 The trader has Buy and Buyback tabs, with 20 Buyback slots. A small Sell all icon

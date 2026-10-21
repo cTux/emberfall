@@ -49,6 +49,9 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 ## Game components
 
 `ActionBar` displays an optional `baseAbility` and four empty reserved slots.
+Bottom-right hotkey badges show LMB and 1–4; a bottom-left target icon accompanies
+LMB. Controlled `autoFire` and `autoTarget` flags independently glow and pulse the
+base-slot indicators, with a steady glow for reduced motion. They default to false.
 The host supplies its name, icon, cooldown duration and remaining milliseconds;
 the component draws the radial sweep and countdown without owning a clock or
 casting actions. Slots use the client's translucent window surface and brown

@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { Box, Stack, Typography } from '@mui/material';
-import { ActionSlotStyled } from './action-bar.styles';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCrosshairs } from '@fortawesome/free-solid-svg-icons/faCrosshairs';
+import { ActionIndicatorStyled, ActionSlotStyled } from './action-bar.styles';
 
 export interface ActionBarAbility {
   name: string;
@@ -11,9 +13,11 @@ export interface ActionBarAbility {
 
 export interface ActionBarProps {
   baseAbility?: ActionBarAbility;
+  autoFire?: boolean;
+  autoTarget?: boolean;
 }
 
-export function ActionBar({ baseAbility }: ActionBarProps) {
+export function ActionBar({ baseAbility, autoFire = false, autoTarget = false }: ActionBarProps) {
   const duration = baseAbility?.cooldownMs ?? 0;
   const remaining = Math.max(0, Math.min(duration, baseAbility?.remainingMs ?? 0));
   const fraction = duration > 0 ? remaining / duration : 0;
@@ -64,10 +68,31 @@ export function ActionBar({ baseAbility }: ActionBarProps) {
               </Typography>
             </Box>
           )}
+          <ActionIndicatorStyled
+            role='img'
+            aria-label={`Left mouse button; auto-fire ${autoFire ? 'enabled' : 'disabled'} (F)`}
+            data-active={autoFire}
+          >
+            <svg width='11' height='14' viewBox='0 0 12 16' aria-hidden='true'>
+              <rect x='1' y='1' width='10' height='14' rx='5' fill='none' stroke='currentColor' />
+              <path d='M6 1C3 1 1 3 1 6v1h5Z' fill='currentColor' />
+              <path d='M6 1v6h5' fill='none' stroke='currentColor' />
+            </svg>
+          </ActionIndicatorStyled>
+          <ActionIndicatorStyled
+            role='img'
+            aria-label={`Auto-target ${autoTarget ? 'enabled' : 'disabled'} (G)`}
+            data-target
+            data-active={autoTarget}
+          >
+            <FontAwesomeIcon icon={faCrosshairs} aria-hidden='true' />
+          </ActionIndicatorStyled>
         </ActionSlotStyled>
       )}
       {[1, 2, 3, 4].map((slot) => (
-        <ActionSlotStyled key={slot} role='group' aria-label={`Empty ability slot ${slot}`} />
+        <ActionSlotStyled key={slot} role='group' aria-label={`Empty ability slot ${slot}`}>
+          <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
+        </ActionSlotStyled>
       ))}
     </Stack>
   );
