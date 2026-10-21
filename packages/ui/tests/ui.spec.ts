@@ -2,6 +2,62 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('ability tooltips share window surfaces and support hover, keyboard and touch', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(story('components-gamewindow--playground'));
+  const surface = await page.locator('.game-window-surface').evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      background: style.backgroundColor,
+      border: style.borderTop,
+      radius: style.borderRadius,
+      color: style.color,
+      font: style.fontFamily,
+    };
+  });
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto(story('components-actionbar--cooling-down'));
+    const ability = page.getByRole('group', { name: 'Slash', exact: true });
+    await ability.hover();
+    const tooltip = page.getByRole('tooltip');
+    await expect(tooltip).toContainText('Slash');
+    await expect(tooltip).toContainText('Cooldown: 1 second');
+    await expect(tooltip).toContainText('Auto-fire: On (F)');
+    await expect(tooltip).toContainText('Auto-target: On (G)');
+    await expect(tooltip.locator('.MuiTooltip-tooltip')).toHaveCSS(
+      'background-color',
+      surface.background,
+    );
+    await expect(tooltip.locator('.MuiTooltip-tooltip')).toHaveCSS('border-top', surface.border);
+    await expect(tooltip.locator('.MuiTooltip-tooltip')).toHaveCSS('border-radius', surface.radius);
+    await expect(tooltip.locator('.MuiTooltip-tooltip')).toHaveCSS('color', surface.color);
+    await expect(tooltip.locator('.MuiTooltip-tooltip')).toHaveCSS('font-family', surface.font);
+    const box = (await tooltip.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: `test-results/ability-tooltip-${width}.png` });
+    await page.keyboard.press('Escape');
+    await expect(tooltip).toBeHidden();
+    await page.mouse.move(width - 1, 699);
+    await page.keyboard.press('Tab');
+    await expect(ability).toBeFocused();
+    await expect(tooltip).toBeVisible();
+    await page.keyboard.press('Tab');
+    await expect(tooltip).toBeHidden();
+  }
+  await page.goto(story('components-actionbar--manual'));
+  const ability = page.getByRole('group', { name: 'Slash', exact: true });
+  await ability.dispatchEvent('touchstart', { touches: [{ identifier: 1 }] });
+  await expect(page.getByRole('tooltip')).toContainText('Auto-fire: Off (F)');
+  await ability.dispatchEvent('touchend', { touches: [] });
+  await page.goto(story('components-actionbar--unequipped'));
+  await page.getByRole('group', { name: 'Empty ability slot 1', exact: true }).hover();
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+});
+
 test('action bar hotkeys stay in slot corners and automation respects reduced motion', async ({
   page,
 }) => {
