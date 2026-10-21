@@ -10,7 +10,7 @@ import {
   nearbyInteraction,
   CLASS_IDS,
   FOREST_PORTAL,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { sceneAction, tickScene, reconcileVote, sceneState } from './scenes.ts';
 import type { SceneWorld } from './scenes.ts';
@@ -391,7 +391,9 @@ test('forest and expanded lobby share dimensions; all edges wrap; indexed trunks
   );
 });
 
-test('combat uses wrapped distances and warned melee damage respects its cooldown', async () => {
+test('combat uses wrapped distances and warned melee damage respects its cooldown', async (t) => {
+  // This geometry/cooldown scenario asserts base damage; critical boundaries have separate coverage.
+  t.mock.method(Math, 'random', () => 0.5);
   const a = hero('a');
   const world: SceneWorld = { players: new Map([[a.id, a]]) };
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 10000);

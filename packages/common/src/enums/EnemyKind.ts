@@ -5,4 +5,5 @@ export const EnemyKind = {
   Caster: 'caster',
 } as const;
 
-export type EnemyKind = (typeof EnemyKind)[keyof typeof EnemyKind];
+/** Registered enemy archetype IDs are extensible; constants above name base content. */
+export type EnemyKind = string;

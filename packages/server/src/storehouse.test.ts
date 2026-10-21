@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { type SceneState, type Player, type ServerMessage } from '@emberfall/common';
 import {
   BUILDINGS,
   CLASS_IDS,
@@ -13,10 +14,7 @@ import {
   moveStorageItem,
   tradeItem,
   freshMerchant,
-  type SceneState,
-  type Player,
-  type ServerMessage,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import { stepCombat } from '@emberfall/core';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 import { createRuntime } from './runtime.ts';

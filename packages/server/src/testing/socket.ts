@@ -1,4 +1,4 @@
-import { RUNTIME } from '@emberfall/common/definitions/runtime';
+import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { EventEmitter } from 'node:events';
 import { Client, type Room } from '@colyseus/sdk';
 import { SessionState, materializeState } from '@emberfall/common/protocol';

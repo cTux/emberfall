@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { Encoder, Decoder } from '@colyseus/schema';
 import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
 import { type WorldState } from '@emberfall/common';
+
 import { createTrainingScene } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 

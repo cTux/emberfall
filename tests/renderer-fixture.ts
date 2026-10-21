@@ -6,7 +6,7 @@ import {
   drawLootAndBlood,
 } from '../packages/client/src/combat-effects';
 import { pickupArt, effectsArt, artImages } from '../packages/client/src/art';
-import { LOOT_ITEM_IDS } from '../packages/common/src/index';
+import { LOOT_ITEM_IDS } from '../packages/core/src/index';
 import type { SceneState } from '../packages/common/src/index';
 import { statusImages } from '../packages/client/src/combat-assets';
 import { drawFog } from '../packages/client/src/forest';

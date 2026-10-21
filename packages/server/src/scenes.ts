@@ -1,8 +1,9 @@
-import { FOREST_DEFINITION } from '@emberfall/common/definitions/worlds/forest';
+import { FOREST_DEFINITION } from '@emberfall/core/definitions/worlds/forest';
 import { levelUp, stepCombat, tickTraining, createTrainingScene } from '@emberfall/core';
-import { VILLAGE_DEFINITION } from '@emberfall/common/definitions/worlds/village';
+import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { randomUUID } from 'node:crypto';
-import { FOREST_PORTAL, nearbyInteraction, hasLivingScenePlayers } from '@emberfall/common';
+import { hasLivingScenePlayers } from '@emberfall/common';
+import { FOREST_PORTAL, nearbyInteraction } from '@emberfall/core';
 import type { Player, SceneState, ClientMessage, ChatMessage } from '@emberfall/common';
 import { addChat } from './chat.ts';
 import { simulationFor } from './ecs/simulation.ts';

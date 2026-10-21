@@ -1,11 +1,5 @@
-import {
-  FOREST,
-  wrappedDelta,
-  wrap,
-  moveActor,
-  moveForestActor,
-  ENEMY_STATS,
-} from '@emberfall/common';
+import { wrappedDelta, wrap } from '@emberfall/common';
+import { FOREST, moveActor, moveForestActor, ENEMY_STATS } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
 
 /** Interpolate confirmed states on a monotonic clock. No input prediction or rollback. */

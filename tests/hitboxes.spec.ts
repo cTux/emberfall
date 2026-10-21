@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { LOBBY_PORTAL, starterEquipment } from '../packages/common/src/index.ts';
+import { LOBBY_PORTAL, starterEquipment } from '../packages/core/src/index.ts';
 
 test('hitbox debugging defaults off, toggles live, persists and renders in training and wrapped forest', async ({
   page,

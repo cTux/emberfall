@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { WebSocket } from './testing/socket.ts';
 import type { Player, ServerMessage } from '@emberfall/common';
-import { TREES, moveActor } from '@emberfall/common';
+import { TREES, moveActor } from '@emberfall/core';
 import { createGameServer } from './worlds.ts';
 
 test('latest input is coalesced, held between packets, timed out and rejected across areas', async () => {

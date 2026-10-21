@@ -1,23 +1,19 @@
-import {
-  LOOT_ITEM_IDS,
-  appendSceneEntities,
-  FOREST,
-  forestDistance,
-  wrappedDelta,
-  wrap,
-  characterStats,
-  type CharacterStats,
-} from '@emberfall/common';
-import { TRANSIENT_EFFECTS } from '@emberfall/common/definitions/effects/transient';
-import { COLLISION } from '@emberfall/common/definitions/collision';
-import { AILMENT_DEFINITIONS } from '@emberfall/common/definitions/effects/ailments';
-import { PICKUP_DEFINITIONS, PICKUP_RULES } from '@emberfall/common/definitions/entities/pickups';
-import { ENEMY_RULES } from '@emberfall/common/definitions/entities/enemies';
-import { ATTACK_DEFINITIONS } from '@emberfall/common/definitions/abilities/attacks';
-import { PLAYER_DEFINITIONS } from '@emberfall/common/definitions/entities/players';
-import { enemyHitbox, overlapsBody } from '@emberfall/common/hitboxes';
+import { game, type createGame } from './game.ts';
+type Game = ReturnType<typeof createGame>;
+import { appendSceneEntities, wrappedDelta, wrap } from '@emberfall/common';
+import { LOOT_ITEM_IDS } from './definitions/equipment.ts';
+import { FOREST, forestDistance } from './scene.ts';
+import { characterStats } from './equipment.ts';
+import { type CharacterStats } from './content/rules.ts';
+import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
+import { COLLISION } from './definitions/collision.ts';
+import { AILMENT_DEFINITIONS } from './definitions/effects/ailments.ts';
+import { PICKUP_DEFINITIONS, PICKUP_RULES } from './definitions/entities/pickups.ts';
+import { ENEMY_RULES } from './definitions/entities/enemies.ts';
+import { ATTACK_DEFINITIONS } from './definitions/abilities/attacks.ts';
+import { enemyHitbox, overlapsBody } from './hitboxes.ts';
 import type { DebuffKind, Enemy, PlayerShot, SceneState, Player } from '@emberfall/common';
-import type { DamageType } from '@emberfall/common/definitions/equipment';
+import type { DamageType } from './definitions/equipment.ts';
 import { EnemyType } from '@emberfall/common/enums';
 import { isChanced } from './utils/isChanced.ts';
 import { shouldDropItem } from './utils/shouldDropItem.ts';
@@ -146,8 +142,11 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
   }
 }
 
-export function defaultSpellRange(player: Pick<Player, 'classId' | 'autoTarget' | 'equipment'>) {
-  const stats = characterStats(player);
+export function defaultSpellRange(
+  player: Pick<Player, 'classId' | 'autoTarget' | 'equipment'>,
+  context: Game = game,
+) {
+  const stats = context.rules.characterStats(player);
   if (!stats.hasWeapon) return 0;
   return player.autoTarget === false ? stats.manualRange : stats.range;
 }
@@ -189,13 +188,19 @@ function applyRoots(target: Enemy, ownerId: string, now: number) {
   });
 }
 
-export function projectileAngle(aimAngle: number, index: number, count: number) {
-  return aimAngle + (index - (count - 1) / 2) * ATTACK_DEFINITIONS.arrow.spreadRadians;
+export function projectileAngle(
+  aimAngle: number,
+  index: number,
+  count: number,
+  spread = ATTACK_DEFINITIONS.arrow.spreadRadians,
+) {
+  return aimAngle + (index - (count - 1) / 2) * spread;
 }
 
-export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
-  if (!characterStats(player).hasWeapon) return;
-  const range = defaultSpellRange(player);
+export function fireClassAttack(scene: SceneState, player: Player, now = 0, context: Game = game) {
+  const stats = context.rules.characterStats(player);
+  if (!stats.hasWeapon) return;
+  const range = player.autoTarget === false ? stats.manualRange : stats.range;
   const manual = player.autoTarget === false;
   const aim = { x: player.aimX ?? player.x, y: player.aimY ?? player.y };
   const targets = (manual ? [] : scene.enemies)
@@ -210,19 +215,25 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0) {
       wrappedDelta(destination.y, player.y, FOREST.height),
       wrappedDelta(destination.x, player.x, FOREST.width),
     );
-    const attack = PLAYER_DEFINITIONS[player.classId ?? 'ranger'].attack;
-    const count = attack === 'slash' ? 0 : ATTACK_DEFINITIONS[attack].count;
+    const attack = context.registries.abilities.require(
+      context.registries.classes.require(player.classId ?? 'ranger').attack,
+    );
+    const ailment = context.registries.classes.require(player.classId ?? 'ranger').ailment;
+    const defaultAilment =
+      attack.kind === 'arrow' ? 'poison' : attack.kind === 'fireball' ? 'burn' : 'roots';
+    const count = attack.kind === 'slash' ? 0 : attack.count;
     for (let index = 0; index < count; index++) {
       appendSceneEntities(scene, 'playerShots', {
         id: ++scene.sequence,
         ownerId: player.id,
         castAt: player.attackAt ?? now,
         castId: player.attackId,
-        kind:
-          player.classId === 'mage' ? 'fireball' : player.classId === 'druid' ? 'roots' : 'arrow',
+        kind: attack.kind as PlayerShot['kind'],
+        ...(attack.id === attack.kind ? {} : { abilityId: attack.id }),
+        ...(ailment === defaultAilment ? {} : { ailment }),
         x: player.x,
         y: player.y,
-        angle: projectileAngle(aimAngle, index, count),
+        angle: projectileAngle(aimAngle, index, count, attack.spreadRadians),
         remaining: range,
         hitIds: [],
         targetId: target?.id,
@@ -240,6 +251,7 @@ export function advancePlayerShot(
   dt: number,
   onStep?: () => void,
   detectHits = true,
+  context: Game = game,
 ) {
   let travelLimit = shot.remaining;
   if (shot.kind === 'roots' && shot.hitIds.length > 0) {
@@ -248,7 +260,7 @@ export function advancePlayerShot(
       shot.remaining = 0;
       return false;
     }
-    const destination = enemyHitbox(target);
+    const destination = enemyHitbox(target, context);
     shot.angle = Math.atan2(
       wrappedDelta(destination.y, shot.y, FOREST.height),
       wrappedDelta(destination.x, shot.x, FOREST.width),
@@ -257,7 +269,10 @@ export function advancePlayerShot(
     // Hold at the target while waiting for the next authoritative bounce.
     travelLimit = detectHits ? shot.remaining : forestDistance(shot, destination);
   }
-  const distance = Math.min(travelLimit, Math.max(0, dt) * ATTACK_DEFINITIONS[shot.kind].speed);
+  const distance = Math.min(
+    travelLimit,
+    Math.max(0, dt) * context.registries.abilities.require(shot.abilityId ?? shot.kind).speed,
+  );
   const steps = Math.max(1, Math.ceil(distance / 6));
   for (let i = 0; i < steps; i++) {
     shot.x = wrap(shot.x + (Math.cos(shot.angle) * distance) / steps, FOREST.width);
@@ -270,7 +285,7 @@ export function advancePlayerShot(
           enemy.hitpoints > 0 &&
           !shot.hitIds.includes(enemy.id) &&
           (shot.kind !== 'roots' || shot.hitIds.length === 0 || enemy.id === shot.targetId) &&
-          overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy)),
+          overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy, context)),
       );
       if (hit) {
         shot.hitIds.push(hit.id);
@@ -281,7 +296,13 @@ export function advancePlayerShot(
   return false;
 }
 
-export function tickPlayerShots(scene: SceneState, players: Player[], now: number, dt: number) {
+export function tickPlayerShots(
+  scene: SceneState,
+  players: Player[],
+  now: number,
+  dt: number,
+  context: Game = game,
+) {
   scene.explosions = (scene.explosions ?? []).filter(
     (e) => now - e.at < TRANSIENT_EFFECTS.explosion.lifetimeMs,
   );
@@ -293,33 +314,42 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
         p.hitpoints > 0,
     );
     if (!owner) return false;
-    const impacted = advancePlayerShot(shot, scene.enemies, dt, () => {
-      if (shot.kind === 'arrow') {
-        for (const enemy of scene.enemies) {
-          if (
-            enemy.hitpoints <= 0 ||
-            shot.hitIds.includes(enemy.id) ||
-            !overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy))
-          )
-            continue;
-          shot.hitIds.push(enemy.id);
-          hitWithWeapon(scene, enemy, owner, now, 'poison');
+    const ability = context.registries.abilities.require(shot.abilityId ?? shot.kind);
+    const stats = context.rules.characterStats(owner);
+    const impacted = advancePlayerShot(
+      shot,
+      scene.enemies,
+      dt,
+      () => {
+        if (shot.kind === 'arrow') {
+          for (const enemy of scene.enemies) {
+            if (
+              enemy.hitpoints <= 0 ||
+              shot.hitIds.includes(enemy.id) ||
+              !overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy, context))
+            )
+              continue;
+            shot.hitIds.push(enemy.id);
+            hitWithWeapon(scene, enemy, owner, now, shot.ailment ?? 'poison', 1, stats);
+          }
         }
-      }
-    });
+      },
+      true,
+      context,
+    );
     if (impacted) {
       if (shot.kind === 'roots') {
         const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds.at(-1));
         if (target) {
-          hitWithWeapon(scene, target, owner, now);
+          hitWithWeapon(scene, target, owner, now, undefined, 1, stats);
           if (target.hitpoints > 0) applyRoots(target, owner.id, now);
-          if (shot.hitIds.length <= ATTACK_DEFINITIONS.roots.bounces) {
+          if (shot.hitIds.length <= ability.bounces) {
             const next = scene.enemies
               .filter(
                 (enemy) =>
                   enemy.hitpoints > 0 &&
                   !shot.hitIds.includes(enemy.id) &&
-                  forestDistance(target, enemy) <= ATTACK_DEFINITIONS.roots.bounceRadius,
+                  forestDistance(target, enemy) <= ability.bounceRadius,
               )
               .reduce<Enemy | undefined>(
                 (best, enemy) =>
@@ -345,9 +375,18 @@ export function tickPlayerShots(scene: SceneState, players: Player[], now: numbe
         at: now,
       });
       for (const enemy of scene.enemies)
-        if (enemy.id === shot.hitIds[0]) hitWithWeapon(scene, enemy, owner, now, 'burn');
-        else if (overlapsBody(shot, ATTACK_DEFINITIONS.fireball.splashRadius, enemyHitbox(enemy)))
-          hitWithWeapon(scene, enemy, owner, now, 'burn', 1 / 3);
+        if (enemy.id === shot.hitIds[0])
+          hitWithWeapon(scene, enemy, owner, now, shot.ailment ?? 'burn', 1, stats);
+        else if (overlapsBody(shot, ability.splashRadius, enemyHitbox(enemy, context)))
+          hitWithWeapon(
+            scene,
+            enemy,
+            owner,
+            now,
+            shot.ailment ?? 'burn',
+            ability.damage > 0 ? ability.splashDamage / ability.damage : 0,
+            stats,
+          );
       return false;
     }
     return shot.remaining > 0.001;

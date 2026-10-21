@@ -1,3 +1,5 @@
+import { game } from '@emberfall/core';
+import { wrappedDelta, type WorldState } from '@emberfall/common';
 import {
   ARENA,
   FOREST,
@@ -10,15 +12,13 @@ import {
   INTERACTION_RADIUS,
   ENEMY_STATS,
   forestTrees,
-  wrappedDelta,
-  type WorldState,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import { defaultSpellRange, PLAYER_ATTACK_DURATION } from '@emberfall/core';
-import { COLLISION } from '@emberfall/common/definitions/collision';
-import { BEAR_DEFINITION } from '@emberfall/common/definitions/entities/companions';
-import { PICKUP_RULES } from '@emberfall/common/definitions/entities/pickups';
-import { ATTACK_DEFINITIONS } from '@emberfall/common/definitions/abilities/attacks';
-import { modelHitbox, enemyHitbox } from '@emberfall/common/hitboxes';
+import { COLLISION } from '@emberfall/core/definitions/collision';
+import { BEAR_DEFINITION } from '@emberfall/core/definitions/entities/companions';
+import { PICKUP_RULES } from '@emberfall/core/definitions/entities/pickups';
+import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
+import { modelHitbox, enemyHitbox } from '@emberfall/core/hitboxes';
 
 export type Hitbox = {
   x: number;
@@ -67,7 +67,12 @@ export function worldHitboxes(
     if ((player.scene === 'forest') !== forest || player.hitpoints <= 0) continue;
     const body = modelHitbox(player);
     circle(body.x, body.y, body.radius, HITBOX_COLORS.body, 'body');
-    if ((player.classId ?? 'warrior') === 'warrior') swing(player, defaultSpellRange(player));
+    if (
+      game.registries.abilities.require(
+        game.registries.classes.require(player.classId ?? 'warrior').attack,
+      ).kind === 'slash'
+    )
+      swing(player, defaultSpellRange(player));
     const bear = player.bear;
     if (bear && bear.hitpoints > 0) {
       const body = modelHitbox(bear);

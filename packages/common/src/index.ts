@@ -1,33 +1,14 @@
-import { RUNTIME } from './definitions/runtime.ts';
 export * from './enums/index.ts';
 export { nicknameSchema, type AccountView } from './account.ts';
-import { CLASS_IDS, CLASS_LABELS } from './definitions/entities/players.ts';
-export { CLASS_IDS, CLASS_LABELS };
 import { z } from 'zod';
 import { backpackSchema, storagesSchema, storageNameSchema, type Merchant } from './inventory.ts';
 export * from './inventory.ts';
-import { EQUIPMENT_SLOTS, equipmentSchema } from './equipment.ts';
+import { equipmentSchema } from './equipment.ts';
 export * from './equipment.ts';
-export {
-  ARENA,
-  TREES,
-  BUILDINGS,
-  PATHS,
-  TORCHES,
-  TRAINING_ZONES,
-  inTrainingZone,
-  onPath,
-  moveActor,
-} from './world.ts';
 export * from './scene.ts';
-import { FOREST } from './scene.ts';
 import type { SceneState } from './scene.ts';
 
-export const MAX_PLAYERS = RUNTIME.maxPlayers;
-export const CHAT_LIMIT = RUNTIME.chatLimit;
-export const CHAT_MAX_LENGTH = RUNTIME.chatMaxLength;
-
-export const classSchema = z.enum(CLASS_IDS);
+export const classSchema = z.string().min(1).max(128);
 export type ClassId = z.infer<typeof classSchema>;
 
 const name = z.string().trim().min(1).max(24);
@@ -54,7 +35,7 @@ export const progressSchema = z
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('useItem'), id: z.string().min(1).max(64) }),
-  z.object({ type: z.literal('unequip'), slot: z.enum(EQUIPMENT_SLOTS) }),
+  z.object({ type: z.literal('unequip'), slot: z.string().min(1).max(128) }),
   z.object({ type: z.literal('trade'), id: z.string().min(1).max(64), buying: z.boolean() }),
   z.object({ type: z.literal('sellAll') }),
   z.object({
@@ -80,7 +61,7 @@ export const clientMessage = z.discriminatedUnion('type', [
       .string()
       .trim()
       .min(1)
-      .max(CHAT_MAX_LENGTH)
+      .max(200)
       .regex(/^[^\p{Cc}\p{Cf}]*$/u),
   }),
   z.object({ type: z.literal('ping'), id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER) }),
@@ -103,8 +84,8 @@ export const clientMessage = z.discriminatedUnion('type', [
     autoLoot: z.boolean().optional(),
     autoTarget: z.boolean(),
     attacking: z.boolean(),
-    aimX: z.number().finite().min(0).max(FOREST.width),
-    aimY: z.number().finite().min(0).max(FOREST.height),
+    aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
+    aimY: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
   }),
   z.object({
     type: z.literal('cast'),
@@ -112,8 +93,8 @@ export const clientMessage = z.discriminatedUnion('type', [
     epoch: z.string().min(1).max(64),
     classId: classSchema,
     autoTarget: z.boolean(),
-    aimX: z.number().finite().min(0).max(FOREST.width),
-    aimY: z.number().finite().min(0).max(FOREST.height),
+    aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
+    aimY: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
   }),
   z.object({ type: z.literal('leave') }),
   z.object({ type: z.literal('selectClass'), classId: classSchema }),
@@ -171,7 +152,7 @@ export interface Player extends CharacterProgress {
 }
 export interface Bear {
   id: string;
-  name: 'Bear';
+  name: string;
   x: number;
   y: number;
   hitpoints: number;
@@ -220,4 +201,5 @@ export type ServerMessage =
 export { SCENE_COLLECTIONS, appendSceneEntities } from './entities.ts';
 export type { SceneCollection, SceneEntity } from './entities.ts';
 
-export { ENEMY_STATS } from './definitions/entities/enemies.ts';
+export * from './geometry.ts';
+export type { Tree } from './world.ts';

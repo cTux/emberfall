@@ -1,6 +1,6 @@
 import { test, expect } from './fixtures';
 import { writeFileSync } from 'node:fs';
-import { TRAINING_ZONES, LOBBY_PORTAL, starterEquipment } from '../packages/common/src/index.ts';
+import { TRAINING_ZONES, LOBBY_PORTAL, starterEquipment } from '../packages/core/src/index.ts';
 
 test.use({ graphicsPreset: 'High' });
 test.use({

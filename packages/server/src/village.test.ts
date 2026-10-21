@@ -10,7 +10,7 @@ import {
   ARENA,
   moveActor,
   nearbyInteraction,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import { shadowProjection, SUN } from '../../client/src/lighting.ts';
 
 test('distant sun is directional; nearby lights cast opposite shadows with bounded reach', async () => {

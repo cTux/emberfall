@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FOREST, wrappedDelta, type WorldState } from '@emberfall/common';
+import { wrappedDelta, type WorldState } from '@emberfall/common';
+import { FOREST } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 import { alignLocalPickups } from '../../client/src/pickup-presentation.ts';
 import { createTrainingScene } from '@emberfall/core';

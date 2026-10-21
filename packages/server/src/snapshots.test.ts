@@ -3,7 +3,7 @@ import { swordOverlapsEnemy, smoothAttackAngle, stepCombat } from '@emberfall/co
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
-import { FOREST } from '@emberfall/common';
+import { FOREST } from '@emberfall/core';
 import type { WorldState, Player, SceneState } from '@emberfall/common';
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {

@@ -1,4 +1,4 @@
-import { ARENA } from '@emberfall/common';
+import { ARENA } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { drawVillagePaths } from './paths';
 import { castShadow } from './lighting';

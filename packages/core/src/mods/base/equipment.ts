@@ -1,5 +1,5 @@
 import { ATTACK_DEFINITIONS } from './abilities/attacks.ts';
-import type { ClassId } from '../index.ts';
+import type { ClassId } from '@emberfall/common';
 
 export const EQUIPMENT_SLOTS = [
   'weapon',
@@ -47,7 +47,7 @@ export interface GearDefinition {
   name: string;
   gearType: GearType;
   damageType?: DamageType;
-  stats: Partial<GearStats>;
+  stats: Partial<GearStats> & Record<string, number>;
   price?: number;
 }
 

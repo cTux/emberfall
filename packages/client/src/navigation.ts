@@ -1,4 +1,5 @@
-import { FOREST, wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/common';
+import { FOREST } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
 
 export function edgeArrow(x: number, y: number, width: number, height: number) {

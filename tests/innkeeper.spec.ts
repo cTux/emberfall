@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { BUILDINGS, INNKEEPER } from '../packages/common/src/index.ts';
+import { BUILDINGS, INNKEEPER } from '../packages/core/src/index.ts';
 
 test('Marta opens shared trading while the Inn has no interaction', async ({ page, game }) => {
   const errors: string[] = [];

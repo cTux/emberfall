@@ -6,15 +6,16 @@ Status: implemented. Implements [village/scenes](../specs/scenes-and-village.md)
 
 [worlds.ts](../../packages/server/src/worlds.ts) consumes validated player input on the 50 ms tick. [scenes.ts](../../packages/server/src/scenes.ts) ticks shared village training, reconciles readiness and advances forest state. [simulation.ts](../../packages/core/src/simulation.ts) owns combat, pause/resume, scaling and companions. [class-combat.ts](../../packages/core/src/class-combat.ts) owns ranged shots, ailments, the shared hit/reward path and DPS history. [enemies.ts](../../packages/core/src/enemies.ts) owns archetype stats and deterministic steering.
 
-These functions are in `core`, which depends on `common` for enums, state, geometry and definitions. Common never imports core. Config utilities select enemy types, roll equipment drops and counts, and calculate HP/damage using type and difficulty multipliers. Server and client use the same attribute and prediction helpers. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
+These functions are in `core`, which depends on `common` for enums, state and pure geometry. Common never imports core. Config utilities select enemy types, roll equipment drops and counts, and calculate HP/damage using type and difficulty multipliers. Server and client use the same attribute and prediction helpers. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
 
-## Accepted content composition
+## Registered content
 
-The [mod design](mods.md) will make these kernels consume core's initialized
-catalog. Class/ability and enemy behavior will resolve registered mechanic
-families instead of treating built-in IDs as the complete content universe.
+These kernels consume core's initialized catalog. Classes resolve registered
+abilities and optional companions; abilities and enemies dispatch through
+supported mechanic families. Selected kernels accept a context for isolated
+extension tests, while the live game uses the default bundled composition.
 Shared forest/training paths, spawn/reward ordering and server authority remain
-requirements. This is accepted upcoming work; the ownership above is current.
+intact. See the [mod design](mods.md).
 
 ## Scene states
 
@@ -39,7 +40,7 @@ Village and forest share 4800×2560 wrapped geometry. Player movement passes thr
 
 Warrior/Bear melee uses a smoothed forward half-disc and per-swing hit tracking. Projectile movement and class effects share `fireClassAttack`, `advancePlayerShot`, `tickPlayerShots` and `hitEnemy`. Root projectiles retain their identity and hit IDs through three bounces, select the nearest living unhit enemy within 250 wrapped units of each impact, and track that target until impact or its death. All four possible impacts use the shared full-power hit path. Local presentation keeps the same projectile through confirmed turns and uses shared motion with hit detection disabled; it never predicts damage or hit history. Roots refresh one five-second stack and multiply ordinary enemy movement speed by 0.9; bosses receive no roots. Manual casts validate cooldown, life, area epoch, class and training range; increasing request IDs identify processed/rejected casts and the accepted attack. Presentation prediction is described in [movement](movement.md).
 
-The new runtime shares `modelHitbox` in `common/hitboxes.ts` between authoritative combat and debug rendering. A model of size S has radius S/2 and center at (x, y + 15 - 7S/16), matching the sprite rectangle's center. Player and Bear models use S=48; enemies use their archetype size. Projectile overlap adds the projectile radius, and melee tests the model circle against the attack area. Feet remain movement coordinates and are omitted from the debug overlay.
+The new runtime shares `modelHitbox` in `core/hitboxes.ts` between authoritative combat and debug rendering. A model of size S has radius S/2 and center at (x, y + 15 - 7S/16), matching the sprite rectangle's center. Player and Bear models use S=48; enemies use their archetype size. Projectile overlap adds the projectile radius, and melee tests the model circle against the attack area. Feet remain movement coordinates and are omitted from the debug overlay.
 
 Player base attacks and Bear share a 1000 ms cooldown in the runtime; it derives player and Bear attack timing from gear stats. `companionStats`
 inherits the owner's totals with physical damage, 75-unit range and 1.5× maximum
@@ -47,7 +48,7 @@ HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% ble
 and enemy hit resolution applies the owner's armor. UI shows the resulting
 cooldown without also showing attacks per second.
 
-Balance numbers are maintained once in the [combat specification](../specs/combat.md), with executable constants in the common package. Do not fork separate class rules for training, forest or the client.
+Balance numbers are maintained once in the [combat specification](../specs/combat.md), with executable base-mod content in the core package. Do not fork separate class rules for training, forest or the client.
 
 ## Scaling, rewards and temporary state
 

@@ -1,12 +1,12 @@
+import { game } from '@emberfall/core';
+import { wrap, wrappedDelta } from '@emberfall/common';
 import {
   characterStats,
   inTrainingZone,
   FOREST,
   moveActor,
   moveForestActor,
-  wrap,
-  wrappedDelta,
-} from '@emberfall/common';
+} from '@emberfall/core';
 import {
   playerAimAngle,
   smoothAttackAngle,
@@ -220,6 +220,9 @@ export class LocalMovement {
       this.attackAngle,
       playerAimAngle({ ...player, attackAngle: this.attackAngle }, scene.enemies),
       this.aimAt === undefined ? 0 : (now - this.aimAt) / 1000,
+      game.registries.abilities.require(
+        game.registries.classes.require(player.classId ?? 'warrior').attack,
+      ).aimSmoothingSeconds,
     );
     this.aimAt = now;
     const serverNow = (this.source?.serverNow ?? 0) + now - this.sourceAt;
@@ -307,7 +310,9 @@ export class LocalMovement {
       player.hitpoints <= 0 ||
       scene.phase !== 'active' ||
       scene.pausedAt !== undefined ||
-      (player.classId !== 'mage' && player.classId !== 'ranger' && player.classId !== 'druid') ||
+      game.registries.abilities.require(
+        game.registries.classes.require(player.classId ?? 'warrior').attack,
+      ).kind === 'slash' ||
       now - this.sourceAt > PREDICTION_LIMIT_MS
     ) {
       this.shots = [];

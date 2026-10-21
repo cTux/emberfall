@@ -1,4 +1,4 @@
-import { ARENA, PATHS } from '@emberfall/common';
+import { ARENA, PATHS } from '@emberfall/core';
 import { terrainTile } from './art';
 
 /** Plain dirt at the buildings' 2x pixel scale, with continuous rounded joins. */

@@ -1,7 +1,8 @@
-import { TRANSIENT_EFFECTS } from '@emberfall/common/definitions/effects/transient';
+import { equipmentSlotArt } from './content-views';
+import { TRANSIENT_EFFECTS } from '@emberfall/core/definitions/effects/transient';
 import { statusImages } from './combat-assets';
 import { effectsArt, pickupArt, drawArt, loadArt } from './art';
-import { EQUIPMENT_SLOTS, GEAR_DEFINITIONS, SLOT_GEAR_TYPES } from '@emberfall/common';
+import { EQUIPMENT_SLOTS, GEAR_DEFINITIONS, SLOT_GEAR_TYPES } from '@emberfall/core';
 import { hitOutline } from './effects';
 import type { SceneState, LootDrop, Enemy, DamageEvent } from '@emberfall/common';
 
@@ -135,7 +136,7 @@ export function drawLootAndBlood(
         (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear?.gearType),
       );
       const icon = loadArt(
-        drop.itemId === 'health-potion' ? 'health-potion' : `slot-${slot ?? 'amulet'}`,
+        drop.itemId === 'health-potion' ? 'health-potion' : equipmentSlotArt(slot ?? 'amulet'),
       );
       drawArt(ctx, icon, 0, 0, p.x - 10, p.y - 18 - jump, 20, 20);
     } else if (pickupArt.naturalWidth)

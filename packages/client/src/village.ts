@@ -1,4 +1,4 @@
-import { WARDROBE, BUILDINGS, TORCHES, TREES, INNKEEPER } from '@emberfall/common';
+import { WARDROBE, BUILDINGS, TORCHES, TREES, INNKEEPER } from '@emberfall/core';
 import { makeMask, castShadow } from './lighting';
 import type { Caster, Light } from './lighting';
 import { environmentArt, wardrobeArt, innkeeperArt } from './art';

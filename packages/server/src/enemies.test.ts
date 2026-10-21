@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { forestTrees, forestDistance, FOREST } from '@emberfall/common';
+import { forestTrees, forestDistance, FOREST } from '@emberfall/core';
 import { stepCombat, enemyMaxHealth, moveEnemies, hitEnemy } from '@emberfall/core';
 import type { Player, Enemy, SceneState } from '@emberfall/common';
 import { CharacterStore } from './characters.ts';

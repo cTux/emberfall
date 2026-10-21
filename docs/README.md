@@ -16,18 +16,16 @@ testing and reuse: [common](../packages/common/README.md),
 
 An explicit product decision takes precedence over the baseline. If source and specification disagree, record the discrepancy and establish which behavior is intended before changing gameplay. Do not silently turn a documented defect or a proposed idea into a requirement. “Implemented” describes observed source behavior; linked tests are coverage references, not a claim that every scenario was executed in this documentation task.
 
-## Accepted upcoming architecture
+## Bundled game mods
 
-[Bundled mod requirements](specs/mods.md), [registry design](design/mods.md) and
-[implementation plan](plans/mods.md) define core-owned content composition.
-These documents are the approved target, not implemented behavior. Existing
-migration seams include [definitions](../packages/common/src/definitions/index.ts),
-[equipment](../packages/common/src/equipment.ts), [combat](../packages/core/src/class-combat.ts)
-and [character saves](../packages/server/src/characters.ts). Verification will
-cover [definition validation](../packages/common/src/definitions/index.ts) and extend
-[equipment tests](../packages/server/src/equipment.test.ts) and
-[class tests](../packages/server/src/classes.test.ts), with additional fixture-mod
-coverage specified in the plan.
+[Mod requirements](specs/mods.md), [registry design](design/mods.md) and
+[delivery/verification](plans/mods.md) describe core-owned content composition.
+Start at the [core authoring guide](../packages/core/README.md),
+[base mod](../packages/core/src/mods/base.mod.ts),
+[composition](../packages/core/src/content/create-game.ts) and
+[content-aware rules](../packages/core/src/content/rules.ts).
+[Character saves](../packages/server/src/characters.ts) use the same catalog.
+The plan maps extension, equipment, combat, protocol and persistence coverage.
 
 ## Feature map
 
@@ -69,7 +67,7 @@ Server tests live in [packages/server/src](../packages/server/src), game browser
 ## Start here by task
 
 New-runtime Innkeeper: [SCENE-01](specs/scenes-and-village.md#scene-01--village-and-interactions),
-[runtime design](design/new-runtime.md), [shared village definition](../packages/common/src/definitions/worlds/village.ts)
+[runtime design](design/new-runtime.md), [shared village definition](../packages/core/src/definitions/worlds/village.ts)
 and [browser verification](../tests/innkeeper.spec.ts).
 
 New-client hitbox debugging: [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music),
@@ -105,7 +103,7 @@ and [HUD](specs/interface-and-audio.md#ui-01--hud-and-windows), implemented by
 
 New-runtime inventory, loot and trading: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime)
 and [UI-06](specs/interface-and-audio.md#ui-06--inventory-and-trading-new-runtime),
-implemented by [equipment rules](../packages/common/src/equipment.ts),
+implemented by [equipment rules](../packages/core/src/equipment.ts),
 [slot presentation](../packages/client/src/equipment-view.tsx) and the shared
 [EquipmentPanel](../packages/ui/src/components/EquipmentPanel.tsx). Verification:
 [rule/save/protocol tests](../packages/server/src/equipment.test.ts) and

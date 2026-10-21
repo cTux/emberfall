@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { BUILDINGS, INNKEEPER } from '../packages/common/src/index.ts';
+import { BUILDINGS, INNKEEPER } from '../packages/core/src/index.ts';
 
 test('native drags deposit, move between storage tabs and withdraw; full and same-inventory drops preserve items', async ({
   page,

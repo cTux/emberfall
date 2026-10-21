@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { BUILDINGS, WARDROBE } from '../packages/common/src/index.ts';
+import { BUILDINGS, WARDROBE } from '../packages/core/src/index.ts';
 
 test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', async ({
   page,

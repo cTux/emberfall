@@ -1,8 +1,6 @@
-import {
-  VILLAGE_CRITTERS,
-  type CritterKind,
-} from '@emberfall/common/definitions/entities/critters';
-import { ARENA, FOREST, forestTrees, wrap, wrappedDelta } from '@emberfall/common';
+import { VILLAGE_CRITTERS, type CritterKind } from '@emberfall/core/definitions/entities/critters';
+import { wrap, wrappedDelta } from '@emberfall/common';
+import { ARENA, FOREST, forestTrees } from '@emberfall/core';
 export function crittersAt(
   area: 'village' | 'forest',
   now: number,

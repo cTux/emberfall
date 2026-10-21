@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { LOBBY_PORTAL } from '../packages/common/src/index.ts';
+import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
 // Exercise fresh defaults and saved preferences without the fixture's preset override.
 test.use({ graphicsPreset: null });

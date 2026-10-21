@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { once } from 'node:events';
 import { WebSocket } from './testing/socket.ts';
 import type { ServerMessage } from '@emberfall/common';
-import { CLASS_IDS } from '@emberfall/common';
+import { CLASS_IDS } from '@emberfall/core';
 import { CharacterStore, freshProgress } from './characters.ts';
 import { createGameServer } from './worlds.ts';
 

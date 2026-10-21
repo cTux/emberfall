@@ -44,19 +44,18 @@ The canvas exposes read-only `data-renderer` and `data-render-stats` diagnostics
 for profiling. A successful build or screenshot does not establish performance;
 record scene, viewport, settings, browser/GPU, warmup and frame-time distribution.
 
-## Accepted mod consumption
+## Bundled content
 
-The [mod design](../../docs/design/mods.md) will initialize the same bundled
-catalog as the server before gameplay rendering or prediction. Content imports
-will move from common definitions to core. Class, equipment slot and stat views
-will follow registered metadata, while additional definitions can reuse existing
-mechanic and art families. UI stays controlled and independent of game packages.
-This is accepted upcoming work; the guidance below describes today's imports.
+The [mod design](../../docs/design/mods.md) initializes the same `GAME_MODS`
+catalog as the server before gameplay rendering or prediction. Class, equipment
+slot and extra numeric stat views use registered metadata; additional classes
+and enemies reuse declared art families. UI stays controlled and independent of
+game packages. Rebuild both host bundles when the mod list changes.
 
 ## Develop and reuse
 
-Read content from `common/definitions`; don't introduce a separate client
-balance table. Reuse common geometry and core prediction/attribute utilities. Keep visual
+Read content from core registries or `@emberfall/core/definitions/*`; don't introduce a separate client
+balance table. Reuse core geometry wrappers and prediction/attribute utilities. Keep visual
 effects and sound keyed to acknowledged/predicted actions so reconciliation
 does not replay them. Use the reconciled player pose for camera and attachments.
 Keep chat, pickup rewards and damage confirmation on the server.
@@ -68,7 +67,8 @@ keys so existing preferences and recovery state survive the package rename.
 ## Verify
 
 Inventory opens through the HUD or physical `KeyI`. `equipment-view.tsx` owns
-slot grid coordinates, labels and fallback icons; it passes controlled views and
+registered slot coordinates/labels and fallback icons through pure
+`content-views.ts` helpers; it passes controlled views and
 shared derived stats to `EquipmentPanel` inside the existing draggable window.
 `damage-text.ts` renders authoritative damage type and critical metadata for both
 training and forest. It never rolls hit outcomes locally.

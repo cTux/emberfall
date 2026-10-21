@@ -31,15 +31,8 @@ import {
   drawVegetation,
 } from './effects';
 import type { Interaction } from './effects';
-import {
-  ARENA,
-  FOREST,
-  wrap,
-  wrappedDelta,
-  LOBBY_PORTAL,
-  nearbyInteraction,
-  inTrainingZone,
-} from '@emberfall/common';
+import { wrap, wrappedDelta } from '@emberfall/common';
+import { ARENA, FOREST, LOBBY_PORTAL, nearbyInteraction, inTrainingZone } from '@emberfall/core';
 import { TICK_MS } from '@emberfall/core';
 import type { ClientMessage, WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';

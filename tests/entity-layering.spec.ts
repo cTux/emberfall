@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { LOBBY_PORTAL } from '../packages/common/src/index.ts';
+import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
 test('dummies, remote players and forest enemies layer around the local player', async ({
   page,
