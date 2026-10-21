@@ -16,6 +16,19 @@ testing and reuse: [common](../packages/common/README.md),
 
 An explicit product decision takes precedence over the baseline. If source and specification disagree, record the discrepancy and establish which behavior is intended before changing gameplay. Do not silently turn a documented defect or a proposed idea into a requirement. “Implemented” describes observed source behavior; linked tests are coverage references, not a claim that every scenario was executed in this documentation task.
 
+## Accepted upcoming architecture
+
+[Bundled mod requirements](specs/mods.md), [registry design](design/mods.md) and
+[implementation plan](plans/mods.md) define core-owned content composition.
+These documents are the approved target, not implemented behavior. Existing
+migration seams include [definitions](../packages/common/src/definitions/index.ts),
+[equipment](../packages/common/src/equipment.ts), [combat](../packages/core/src/class-combat.ts)
+and [character saves](../packages/server/src/characters.ts). Verification will
+cover [definition validation](../packages/common/src/definitions/index.ts) and extend
+[equipment tests](../packages/server/src/equipment.test.ts) and
+[class tests](../packages/server/src/classes.test.ts), with additional fixture-mod
+coverage specified in the plan.
+
 ## Feature map
 
 DPS meter visibility: [UI-03](specs/interface-and-audio.md#ui-03--network-and-performance-feedback),

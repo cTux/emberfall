@@ -8,6 +8,15 @@ Status: implemented. Implements [worlds/chat](../specs/worlds-and-chat.md) and [
 
 Each connection has a private session room; one in-process party simulation owns shared combat. [Protocol state](../../packages/common/src/protocol/state.ts) projects canonical state into Colyseus schemas. The client reconstructs detached snapshots. See [runtime design](new-runtime.md) for replication, budgets and ownership.
 
+## Accepted catalog validation
+
+The [mod design](mods.md#validation-and-stable-contracts) separates common's
+structural schemas from core's catalog-aware semantic checks. The upcoming
+migration must initialize content before save decode/session admission, validate
+registered class/item/slot IDs at the server boundary, and enumerate registered
+classes without losing existing records. Save versions and transaction ordering
+do not change merely because content moves packages.
+
 ## Recovery lifecycle
 
 Interrupted players remain for 10 seconds with a Reconnecting debuff and red tint. They cannot move, attack, be targeted or take hits. Resume clears the timer and status without replacing the player. Expiry saves before removal; failures retain state for autosave retry. Explicit leave removes membership immediately.

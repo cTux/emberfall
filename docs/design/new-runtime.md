@@ -6,6 +6,15 @@ and its comparison suite are retired. Gameplay specifications remain the
 behavior contract. See the
 [verification record](../plans/new-runtime.md) for measured coverage and limits.
 
+## Accepted registry migration
+
+The [bundled mod design](mods.md), [requirements](../specs/mods.md) and
+[plan](../plans/mods.md) describe the accepted next package boundary. Core will
+initialize registries and bundled content before gameplay; common will retain
+content-independent contracts and algorithms. Existing IDs, saves, gameplay and
+host ownership remain intact. The rest of this document describes the implemented
+runtime until that migration lands.
+
 ## Ownership
 
 Storehouse names, inventories and gold live once in the account's version-2 save,

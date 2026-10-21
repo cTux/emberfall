@@ -4,6 +4,17 @@
 logic utilities, combat, enemies and training. The server uses its authoritative
 combat kernels; client prediction and health displays reuse the same helpers.
 
+## Accepted mod architecture
+
+The [bundled mod design](../../docs/design/mods.md) and
+[implementation plan](../../docs/plans/mods.md) are accepted upcoming work.
+Core will own registries, the explicit bundled mod list and the lifecycle from
+registration through validation/initialization to playable rules. Current content
+will be registered by `src/mods/base.mod.ts`; existing balance exports become
+derived catalog views. Content-aware equipment, inventory and geometry wrappers
+will move here from common. The sections below describe the implemented baseline
+until that runtime migration lands. Common must remain independent of core.
+
 ## Package boundary and balance configs
 
 Shared enums belong in `common/src/enums`, exported from `@emberfall/common`

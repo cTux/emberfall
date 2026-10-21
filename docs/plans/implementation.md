@@ -29,6 +29,15 @@ Paths abbreviated in this table are under `packages/`. Exact links are in the [a
 
 The files for steps 1–3 are the deliverables of this change. Final verification and merge evidence belong to the PR so a static plan does not pretend to know a later GitHub state.
 
+## Accepted next architecture: bundled mods
+
+The [mod implementation plan](mods.md) sequences the accepted
+[MOD-01–04](../specs/mods.md) capability. Its documentation-only PR must merge
+before runtime implementation starts. The subsequent work moves content and
+content-aware rules to core, integrates registries with real server/client
+consumers and proves extension with a second fixture mod. No gameplay rebalance
+or new progression effect is authorized by this architecture.
+
 ## Next gameplay work: decision required
 
 Automatic saved leveling and paragon are implemented under PROG-02. Stat growth and ability changes remain undecided. The earlier run-level upgrade selector was rejected. Further progression must apply without required choices or gameplay interruption.
