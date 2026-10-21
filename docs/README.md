@@ -18,6 +18,10 @@ An explicit product decision takes precedence over the baseline. If source and s
 
 ## Feature map
 
+DPS meter visibility: [UI-03](specs/interface-and-audio.md#ui-03--network-and-performance-feedback),
+[saved preference](../packages/client/src/preferences.ts), [HUD](../packages/client/src/Arena.tsx)
+and [toggle/persistence verification](../tests/dps-meter.spec.ts).
+
 Floating battle text: [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readability),
 [shared renderer](../packages/client/src/damage-text.ts),
 [animation and grouping tests](../packages/server/src/damage-text.test.ts) and

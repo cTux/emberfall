@@ -70,7 +70,7 @@ Player chat is drawn after world effects in both scenes. The rounded message box
 
 [graphics.ts](../../packages/client/src/graphics.ts) and [preferences.ts](../../packages/client/src/preferences.ts) validate persisted settings and fall back to defaults. [panel-positions.ts](../../packages/client/src/panel-positions.ts) persists draggable-window placement. Rendering scale and frame caps affect presentation only; simulation/input cadence remains independent.
 
-[PerformanceGraph.tsx](../../packages/client/src/PerformanceGraph.tsx) samples FPS and network metrics using monotonic timing. Local snapshot age excludes network transit; ping, acknowledgement delay and presentation backlog are different measurements. The shared UI graph receives data; it does not own sampling. DPS comes from authoritative damage history.
+[PerformanceGraph.tsx](../../packages/client/src/PerformanceGraph.tsx) samples FPS and network metrics using monotonic timing. Local snapshot age excludes network transit; ping, acknowledgement delay and presentation backlog are different measurements. The shared UI graph receives data; it does not own sampling. DPS comes from authoritative damage history. Arena renders its meter only when the saved `dps` preference is enabled, independently of the performance graph; hiding it does not affect damage tracking or its saved panel position.
 
 [audio.ts](../../packages/client/src/audio.ts) owns user-gesture unlock, bounded effect voice pools, per-area playlists, crossfades and hidden-tab suspension. Predicted local swing sounds stop on stale snapshots and do not replay missed attacks after reconnect. Asset provenance lives in [assets](../assets.md).
 
