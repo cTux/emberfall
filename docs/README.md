@@ -22,6 +22,10 @@ Inventory drag-and-drop verification: [native browser transfers](../tests/invent
 [storage rules and failure paths](../packages/server/src/storehouse.test.ts), and
 [shared UI drag/keyboard checks](../packages/ui/tests/ui.spec.ts).
 
+Bottom-center action bar: [UI-01](specs/interface-and-audio.md#ui-01--hud-and-windows),
+[presentation design](design/presentation.md), [controlled component](../packages/ui/src/components/ActionBar.tsx)
+and [replicated cooldown/gear coverage](../tests/action-bar.spec.ts).
+
 | Feature group                             | Specification                                                   | Design                                                           | Verification entry points                                                                                                                                                                                                                               |
 | ----------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Worlds, recovery and chat                 | [WORLD/CHAT](specs/worlds-and-chat.md)                          | [Network](design/network-and-persistence.md)                     | `worlds.test.ts`, `reconnect.test.ts`, `chat.test.ts`, `gameplay.spec.ts`, `reconnect.spec.ts`, `chat-presentation.spec.ts`                                                                                                                             |

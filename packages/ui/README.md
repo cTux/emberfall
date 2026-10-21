@@ -48,6 +48,12 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 
 ## Game components
 
+`ActionBar` displays an optional `baseAbility` and four empty reserved slots.
+The host supplies its name, icon, cooldown duration and remaining milliseconds;
+the component draws the radial sweep and countdown without owning a clock or
+casting actions. Slots use the client's translucent window surface and brown
+border. Ready, cooling-down and unequipped states are available in Storybook.
+
 `Backpack.slots` defaults to 20; Storehouse panels use 40. `Chapter.onRename`
 adds a host-owned rename action on right-click or F2 without changing tab selection.
 The host owns the rename dialog, validation and persistence.
