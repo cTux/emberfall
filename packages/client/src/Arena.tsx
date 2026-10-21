@@ -934,7 +934,7 @@ export function Arena({
         showFps={preferences.fps}
         showLatency={preferences.latency}
       />
-      {world && (
+      {world && preferences.dps && (
         <aside
           className='dps-meter'
           ref={dpsRef}

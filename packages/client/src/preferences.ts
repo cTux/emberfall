@@ -4,6 +4,7 @@ export interface Preferences {
   autoLoot: boolean;
   bloodPuddles: boolean;
   damageNumbers: boolean;
+  dps: boolean;
   fps: boolean;
   latency: boolean;
   debugHitboxes: boolean;
@@ -19,6 +20,7 @@ export function loadPreferences(): Preferences {
     autoLoot: true,
     bloodPuddles: true,
     damageNumbers: true,
+    dps: true,
     fps: true,
     latency: true,
     debugHitboxes: false,
@@ -35,6 +37,7 @@ export function loadPreferences(): Preferences {
       'autoLoot',
       'bloodPuddles',
       'damageNumbers',
+      'dps',
       'fps',
       'latency',
       'debugHitboxes',

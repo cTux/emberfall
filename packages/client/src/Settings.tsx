@@ -33,6 +33,7 @@ export function Settings({
       | 'autoLoot'
       | 'bloodPuddles'
       | 'damageNumbers'
+      | 'dps'
       | 'fps'
       | 'latency'
       | 'debugHitboxes'
@@ -82,6 +83,7 @@ export function Settings({
               </Typography>
               {toggle('bloodPuddles', 'Blood puddles')}
               {toggle('damageNumbers', 'Floating damage numbers')}
+              {toggle('dps', 'DPS meter')}
               {toggle('fps', 'FPS graph')}
               {toggle('latency', 'Latency graph')}
               {toggle('debugHitboxes', 'Debug mode: show hitboxes')}

@@ -46,11 +46,11 @@ With auto-target disabled, melee aim follows the cursor and ranged spells fly st
 
 ## UI-03 — Network and performance feedback
 
-Gameplay settings can independently show FPS and server latency together at the top left. Latency is a measured WebSocket ping/pong round trip in milliseconds, sampled every two seconds with a monotonic client clock. The toggle persists; a missing or disconnected measurement shows a dash.
+Gameplay settings can independently show FPS, server latency and the DPS meter at the top left. The DPS meter is enabled by default; its toggle applies immediately and persists across reloads. Latency is a measured WebSocket ping/pong round trip in milliseconds, sampled every two seconds with a monotonic client clock. The toggle persists; a missing or disconnected measurement shows a dash.
 
 The network graph plots ping, input acknowledgement delay, and local snapshot age as separate colored lines on the same millisecond axis. Input acknowledgement delay is the latest consumed command's send-to-snapshot delay, or the oldest outstanding command's age if greater. Local snapshot age includes time since receipt and interpolation backlog, but excludes network transit; it uses the monotonic client clock and differences between server timestamps. A low ping does not imply fresh movement acknowledgements or snapshots. Missing samples leave gaps in each line.
 
-The top-left performance panel overlays a green FPS trace and blue round-trip latency trace on one 30-second scrolling graph, sampled twice per second. The duplicate numeric caption is omitted; color-coded axis ranges (for example 0–240 FPS and 0–100 ms) describe the scales, not current readings. Both traces are enabled by default, with compact 8-pixel side padding. Each trace retains its own saved visibility toggle; disabling both hides the panel. A DPS meter sits between the graph and party list (and stays visible when the graph is hidden). It shows your actual enemy damage over a rolling five-second window, divided by five, including damage over time and the companion; overkill is excluded. The server calculates it from the shared hit path, and it returns to zero after five seconds without damage.
+The top-left performance panel overlays a green FPS trace and blue round-trip latency trace on one 30-second scrolling graph, sampled twice per second. The duplicate numeric caption is omitted; color-coded axis ranges (for example 0–240 FPS and 0–100 ms) describe the scales, not current readings. Both traces are enabled by default, with compact 8-pixel side padding. Each trace retains its own saved visibility toggle; disabling both hides the panel. When enabled, a DPS meter sits between the graph and party list (and stays visible when the graph is hidden). It shows your actual enemy damage over a rolling five-second window, divided by five, including damage over time and the companion; overkill is excluded. The server calculates it from the shared hit path, and it returns to zero after five seconds without damage.
 
 ## UI-04 — Settings and music
 
@@ -145,9 +145,9 @@ window, item icons, tooltips, scrolling and narrow-viewport behavior are reused.
 
 - Toggle F/G once per press, ignore typing/repeats, persist choices and stop held manual casting after release, blur or hiding the tab.
 - Drag and reopen windows, navigate Codex tabs with arrows/Home/End, close with Escape and restore focus.
-- Boss HUD stays readable offscreen and disappears on defeat/return. DPS stays visible with performance traces disabled.
+- Boss HUD stays readable offscreen and disappears on defeat/return. The DPS meter toggles independently of performance traces, applies immediately and retains its saved visibility after reload.
 - Graph lines distinguish ping, input acknowledgement and local snapshot age; missing samples leave gaps.
 - Unlock audio with a gesture, transition through all three music areas, repeat playlists, mute independently and pause hidden tabs.
 - Check desktop/narrow layouts, reduced motion, non-Latin movement, large numbers and context-menu suppression.
 
-Evidence: [hud.spec.ts](../../tests/hud.spec.ts), [keyboard-layout.spec.ts](../../tests/keyboard-layout.spec.ts), [rendering.spec.ts](../../tests/rendering.spec.ts), [ui.spec.ts](../../packages/ui/tests/ui.spec.ts).
+Evidence: [dps-meter.spec.ts](../../tests/dps-meter.spec.ts), [hud.spec.ts](../../tests/hud.spec.ts), [keyboard-layout.spec.ts](../../tests/keyboard-layout.spec.ts), [rendering.spec.ts](../../tests/rendering.spec.ts), [ui.spec.ts](../../packages/ui/tests/ui.spec.ts).
