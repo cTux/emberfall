@@ -5,8 +5,9 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 ## UI-01 — HUD and windows
 
 While in a world, a fixed bottom-center action bar shows the equipped weapon's
-base ability followed by four empty ability slots. Unequipping the weapon hides
-only the base-ability slot. Every slot retains the same translucent black
+base ability with the same ability icon as Wardrobe, followed by four empty ability
+slots. Unequipping the weapon hides only the base-ability slot. Every slot retains
+the same translucent black
 background and brown border as game windows. Abilities show a clockwise radial
 cooldown sweep and remaining seconds, clearing when ready. The display follows
 confirmed attacks and equipment cooldown stats in village training and forest;

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ActionBar } from '../index';
-import sword from '../assets/item-icons/warrior-weapon.png';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBurst } from '@fortawesome/free-solid-svg-icons/faBurst';
 
 const meta = {
   title: 'Components/ActionBar',
@@ -9,7 +10,7 @@ const meta = {
   args: {
     baseAbility: {
       name: 'Slash',
-      icon: <img src={sword} alt='' draggable={false} />,
+      icon: <FontAwesomeIcon icon={faBurst} size='2x' aria-hidden='true' />,
       cooldownMs: 1000,
       remainingMs: 0,
     },

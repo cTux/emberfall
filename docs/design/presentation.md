@@ -25,8 +25,8 @@ An optional controlled companion view adds a shorter, narrower HP row beneath th
 The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders
 the optional base ability and four reserved slots, with an SVG cooldown sector
 and numeric countdown. [WeaponActionBar](../../packages/client/src/WeaponActionBar.tsx)
-supplies the current class ability, existing weapon artwork and remaining time
-from replicated `attackAt`, `serverNow` and `characterStats().attackIntervalMs`.
+supplies the current class ability, the same ability artwork as Wardrobe and
+remaining time from replicated `attackAt`, `serverNow` and `characterStats().attackIntervalMs`.
 It mounts only for the local player. The host fixes the bar at bottom center and
 moves chat above it on narrow screens. UI owns no clock or combat commands.
 
