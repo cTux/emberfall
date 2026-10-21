@@ -18,6 +18,11 @@ An explicit product decision takes precedence over the baseline. If source and s
 
 ## Feature map
 
+Floating battle text: [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readability),
+[shared renderer](../packages/client/src/damage-text.ts),
+[animation and grouping tests](../packages/server/src/damage-text.test.ts) and
+[Pixi pixel checks](../tests/renderer-pixels.spec.ts).
+
 Inventory drag-and-drop verification: [native browser transfers](../tests/inventory-drag.spec.ts),
 [storage rules and failure paths](../packages/server/src/storehouse.test.ts), and
 [shared UI drag/keyboard checks](../packages/ui/tests/ui.spec.ts).

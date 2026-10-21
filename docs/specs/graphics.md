@@ -53,6 +53,14 @@ lifetime, sums exact amounts before rounding, and uses critical styling if any h
 was critical. Later hits start a new total; hits without player attribution remain
 separate. This applies in training and forest and does not alter damage or DPS.
 
+Floating battle text pops on impact, settles, then drifts upward and outward in
+stable lanes so successive hits do not all cover one another. Normal numbers keep
+their damage-type color; incoming damage stays red. Critical hits use larger
+white numbers with a red outline. Every number has a dark readability outline,
+holds full opacity initially, and fades completely by 750 ms, within the server's
+800 ms event retention. The existing Floating damage numbers toggle controls the
+effect in both areas, independently of graphics preset.
+
 ## GRAPHICS-05 — Wardrobe-style art in the new client
 
 The new client uses a cohesive pixel-art set
