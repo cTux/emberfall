@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { windowSurface } from './window-surface';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -118,7 +119,27 @@ export const gameTheme = createTheme({
     MuiFormControl: { defaultProps: { size: 'small' } },
     MuiPaper: {
       defaultProps: { variant: 'outlined' },
-      styleOverrides: { root: { backgroundImage: 'none' } },
+      styleOverrides: {
+        root: ({ theme }) => ({
+          backgroundImage: 'none',
+          '&.game-window-surface': windowSurface(theme),
+        }),
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: ({ theme }) => ({
+          ...windowSurface(theme),
+          fontFamily: theme.typography.fontFamily,
+          fontSize: theme.typography.pxToRem(14),
+          padding: theme.spacing(1.25),
+          maxWidth: 'min(300px, calc(100vw - 32px))',
+        }),
+        arrow: ({ theme }) => ({
+          color: windowSurface(theme).backgroundColor,
+          '&::before': { border: `1px solid ${theme.palette.divider}` },
+        }),
+      },
     },
     MuiDialog: { defaultProps: { fullWidth: true, maxWidth: 'sm' } },
     MuiTabs: {
