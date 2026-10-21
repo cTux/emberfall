@@ -14,12 +14,20 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
   const player = [...world.players.values()][0];
   const names = { warrior: 'Slash', ranger: 'Piercing arrows', mage: 'Fireball', druid: 'Roots' };
+  const icons = { warrior: 'bleed', ranger: 'poison', mage: 'burn', druid: 'roots' };
   for (const classId of CLASS_IDS) {
     player.classId = classId;
     player.equipment = starterEquipment(classId);
     await expect(bar.getByRole('group', { name: names[classId], exact: true })).toBeVisible();
     await expect(bar.getByRole('group')).toHaveCount(5);
-    await expect(bar.locator('img')).toHaveAttribute('src', new RegExp(`${classId}-weapon.png$`));
+    await expect(bar.locator('img')).toHaveAttribute(
+      'src',
+      `/assets/wardrobe-style/${icons[classId]}.png`,
+    );
+    await expect
+      .poll(() => bar.locator('img').evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .toBeGreaterThan(0);
+    await bar.screenshot({ path: `test-results/action-bar-${classId}.png` });
   }
   player.classId = 'warrior';
   player.equipment = starterEquipment('warrior');
