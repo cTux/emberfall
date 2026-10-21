@@ -1,6 +1,7 @@
 import type { ClassId, DebuffKind } from '@emberfall/common';
 
 export const weaponSrc = (id: ClassId) => `/assets/wardrobe-style/${id}-weapon.png`;
+export const spellSrc = (id: ClassId) => `/assets/wardrobe-style/${id}-spell.png`;
 export const statusSrc = (kind: DebuffKind) => `/assets/wardrobe-style/${kind}.png`;
 export const classAbility = {
   warrior: 'bleed',

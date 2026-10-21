@@ -5,7 +5,7 @@ import { GameConnection } from './connection';
 import { classSprite } from './characters';
 import { AssetGallery } from './AssetGallery';
 import { ClassMovementGallery } from './ClassMovementGallery';
-import { weaponSrc, statusSrc, classAbility } from './combat-assets';
+import { weaponSrc, spellSrc } from './combat-assets';
 import { classDetails } from './class-details';
 import { Equipment, Trading } from './equipment-view';
 import { Storehouse } from './Storehouse';
@@ -790,7 +790,7 @@ function App({
                       spell={{
                         name: details.spell,
                         description: details.spellDescription,
-                        icon: <img src={statusSrc(classAbility[id])} alt='' />,
+                        icon: <img src={spellSrc(id)} alt='' />,
                       }}
                       stats={{
                         level: stats?.level ?? 1,
