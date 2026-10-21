@@ -2,6 +2,29 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('action bar presents ready, cooling and unequipped slots on narrow screens', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.goto(story('components-actionbar--cooling-down'));
+  const bar = page.getByRole('region', { name: 'Action bar', exact: true });
+  await expect(bar.getByRole('group')).toHaveCount(5);
+  const cooldown = bar.getByRole('progressbar', { name: 'Slash cooldown' });
+  await expect(cooldown).toHaveAttribute('aria-valuenow', '650');
+  await expect(cooldown).toHaveAttribute('aria-valuetext', '0.7 seconds remaining');
+  await expect(cooldown.locator('svg path')).toBeVisible();
+  const bounds = (await bar.boundingBox())!;
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+  await page.screenshot({ path: 'test-results/action-bar-cooldown.png' });
+  await page.goto(story('components-actionbar--ready'));
+  await expect(bar.getByRole('progressbar')).toHaveCount(0);
+  await expect(bar.getByRole('group', { name: 'Slash', exact: true })).toBeVisible();
+  await page.goto(story('components-actionbar--unequipped'));
+  await expect(bar.getByRole('group')).toHaveCount(4);
+  await expect(bar.locator('img')).toHaveCount(0);
+});
+
 test('inventory dragging moves once, ignores unrelated drops and preserves keyboard actions', async ({
   page,
 }) => {

@@ -22,6 +22,14 @@ An optional controlled companion view adds a shorter, narrower HP row beneath th
 
 ## Rendering pipeline and caches
 
+The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders
+the optional base ability and four reserved slots, with an SVG cooldown sector
+and numeric countdown. [WeaponActionBar](../../packages/client/src/WeaponActionBar.tsx)
+supplies the current class ability, existing weapon artwork and remaining time
+from replicated `attackAt`, `serverNow` and `characterStats().attackIntervalMs`.
+It mounts only for the local player. The host fixes the bar at bottom center and
+moves chat above it on narrow screens. UI owns no clock or combat commands.
+
 EquipmentPanel receives item badge labels, atlas keys, optional values and explanations
 from `client/equipment-view.tsx`, which derives them from shared equipment,
 attack and ailment definitions. The shared UI bundles a transparent generated icon

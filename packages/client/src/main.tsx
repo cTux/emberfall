@@ -44,6 +44,7 @@ import { faShieldHalved } from '@fortawesome/free-solid-svg-icons/faShieldHalved
 import { Settings } from './Settings';
 import { loadPreferences } from './preferences';
 import { Arena } from './Arena';
+import { WeaponActionBar } from './WeaponActionBar';
 import { Chat } from './Chat';
 import { loadGraphics } from './graphics';
 import './style.scss';
@@ -398,6 +399,7 @@ function App({
           interaction={interaction}
           onHitpoints={setDisplayedHp}
         />
+        {me && <WeaponActionBar player={me} now={world?.serverNow ?? 0} />}
         <Box className='controls'>
           <HudActions
             actions={[
