@@ -14,7 +14,7 @@ import { Storehouse } from './Storehouse';
 import { Codex } from './Codex';
 import { hasLivingScenePlayers } from '@emberfall/common';
 import { characterStats, INNKEEPER, CLASS_IDS, CLASS_LABELS } from '@emberfall/core';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Interaction } from './effects';
 import {
@@ -63,6 +63,10 @@ function App({
   const [latency, setLatency] = useState<number | null>(null);
   const [worlds, setWorlds] = useState<WorldSummary[]>([]);
   const interaction = useRef<Interaction | null>(null);
+  const cursorAim = useRef<(() => { aimX: number; aimY: number }) | null>(null);
+  const setCursorAim = useCallback((reader: (() => { aimX: number; aimY: number }) | null) => {
+    cursorAim.current = reader;
+  }, []);
   const [displayedHp, setDisplayedHp] = useState<Record<string, number>>({});
   const [world, setWorld] = useState<WorldState | null>(null);
   const [playerId, setPlayerId] = useState('');
@@ -312,9 +316,11 @@ function App({
   const me = world?.players.find((p) => p.id === playerId);
   const scene = world?.scene;
   const castTalent = (slot: number) => {
-    if (!me || unavailable) return;
+    const aim = cursorAim.current?.();
+    if (!me || unavailable || !aim) return;
     send({
       type: 'talentCast',
+      ...aim,
       slot,
       classId: me.classId ?? 'warrior',
       epoch: me.scene === 'forest' ? (scene?.id ?? '') : 'lobby',
@@ -443,6 +449,7 @@ function App({
           preferences={preferences}
           latency={latency}
           interaction={interaction}
+          onCursorAim={setCursorAim}
           onHitpoints={setDisplayedHp}
         />
         {me && (
