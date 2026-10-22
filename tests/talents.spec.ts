@@ -129,7 +129,15 @@ test('expanded talent graph renders curved paths and irregular branches', async 
   expect(curves.every((curve) => curve?.includes(' Q '))).toBe(true);
   // Expand only the review capture so the complete scrollable graph is visible.
   await tree.evaluate((element) => {
-    (element as HTMLElement).style.maxHeight = 'none';
+    Object.assign((element as HTMLElement).style, {
+      maxHeight: 'none',
+      maxWidth: 'none',
+      width: '1100px',
+      position: 'fixed',
+      left: '16px',
+      top: '16px',
+      transform: 'none',
+    });
     const scroller = element.querySelector<HTMLElement>('[data-talent-scroll]')!;
     scroller.style.maxHeight = 'none';
     scroller.style.overflow = 'visible';
