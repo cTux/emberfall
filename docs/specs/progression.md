@@ -38,6 +38,9 @@ displays server-confirmed progress and uses the shared requirement formula.
 Each normal level above 1 grants one talent point (level minus one, less learned
 nodes); paragon grants none. Existing characters receive their earned budget.
 N or the HUD opens a voluntary, scrollable linked tree shared by every class.
+Dragging the tree pans its canvas with mouse, pen or touch. Node tooltips stay
+hidden during a drag, and releasing a drag does not learn a talent. Clicking or
+using the keyboard still learns available nodes.
 The empty center is free. Curved links connect an irregular branching layout
 with 52 stat nodes and four ability nodes. Stat nodes remain 46px; ability nodes
 are 34px and the empty center is 22px. Every other node costs one point and

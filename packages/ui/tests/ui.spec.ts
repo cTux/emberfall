@@ -692,6 +692,96 @@ test('talent paths unlock by keyboard and expose zero-point state', async ({ pag
   );
 });
 
+test('talent canvas pans without tooltips or accidental learning', async ({ page }) => {
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto(story('components-talenttree--interactive'));
+    const canvas = page.locator('[data-talent-scroll]');
+    // Make both axes scrollable even in the standalone wide Storybook layout.
+    await canvas.evaluate((element) => (element.style.width = '280px'));
+    const power = page.getByRole('button', { name: '+1 power: Available', exact: true });
+    await power.hover();
+    await expect(page.getByRole('tooltip')).toContainText('Increase weapon power');
+    const before = await canvas.evaluate((element) => ({
+      x: element.scrollLeft,
+      y: element.scrollTop,
+    }));
+    const box = (await power.boundingBox())!;
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 40, y + 40, { steps: 8 });
+    await expect(page.getByRole('tooltip')).toHaveCount(0);
+    await expect(canvas).toHaveCSS('cursor', 'grabbing');
+    await expect.poll(() => canvas.evaluate((element) => element.scrollLeft)).toBe(before.x - 40);
+    await expect.poll(() => canvas.evaluate((element) => element.scrollTop)).toBe(before.y - 40);
+    await page.screenshot({ path: `test-results/talent-drag-${width}.png` });
+    await page.mouse.up();
+    await expect(canvas).toHaveCSS('cursor', 'grab');
+    await expect(page.getByRole('status')).toHaveText('2 talent points available');
+    await power.click();
+    await expect(page.getByRole('status')).toHaveText('1 talent point available');
+    await page.mouse.move(0, 0);
+    await page.getByRole('button', { name: '+1 power: Learned', exact: true }).hover();
+    await expect(page.getByRole('tooltip')).toContainText('Learned');
+
+    // Blank canvas dragging recovers on cancellation.
+    const area = (await canvas.boundingBox())!;
+    await page.mouse.move(area.x + 10, area.y + 10);
+    await page.mouse.down();
+    await page.mouse.move(area.x + 40, area.y + 30);
+    await expect(canvas).toHaveCSS('cursor', 'grabbing');
+    await canvas.dispatchEvent('pointercancel', { pointerId: 1 });
+    await expect(canvas).toHaveCSS('cursor', 'grab');
+    await page.mouse.up();
+  }
+});
+
+test('talent canvas supports touch panning and pointer release outside its bounds', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    hasTouch: true,
+    viewport: { width: 390, height: 700 },
+  });
+  const page = await context.newPage();
+  await page.goto(story('components-talenttree--interactive'));
+  const canvas = page.locator('[data-talent-scroll]');
+  const power = page.getByRole('button', { name: '+1 power: Available', exact: true });
+  const box = (await power.boundingBox())!;
+  const x = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const top = await canvas.evaluate((element) => element.scrollTop);
+  const session = await context.newCDPSession(page);
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: [{ x, y }],
+  });
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchMove',
+    touchPoints: [{ x, y: y + 50 }],
+  });
+  await expect(canvas).toHaveCSS('cursor', 'grabbing');
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+  await expect.poll(() => canvas.evaluate((element) => element.scrollTop)).toBe(top - 50);
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(canvas).toHaveCSS('cursor', 'grab');
+  await expect(page.getByRole('status')).toHaveText('2 talent points available');
+
+  const area = (await canvas.boundingBox())!;
+  await page.mouse.move(area.x + 10, area.y + 10);
+  await page.mouse.down();
+  await page.mouse.move(area.x + area.width + 5, area.y + area.height + 5);
+  await expect(canvas).toHaveCSS('cursor', 'grabbing');
+  await page.mouse.up();
+  await expect(canvas).toHaveCSS('cursor', 'grab');
+  await power.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('status')).toHaveText('1 talent point available');
+  await context.close();
+});
+
 test('talent abilities share the base radial cooldown and countdown at every viewport', async ({
   page,
 }) => {
