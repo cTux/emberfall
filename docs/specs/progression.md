@@ -38,8 +38,10 @@ displays server-confirmed progress and uses the shared requirement formula.
 Each normal level above 1 grants one talent point (level minus one, less learned
 nodes); paragon grants none. Existing characters receive their earned budget.
 N or the HUD opens a voluntary, scrollable linked tree shared by every class.
-The empty center is free. Every other node costs one point and requires its
-previous node; learning unlocks its children. Allocations save independently per
+The empty center is free. Curved links connect an irregular branching layout
+with 52 stat nodes and four ability nodes. Stat nodes remain 46px; ability nodes
+are 34px and the empty center is 22px. Every other node costs one point and
+requires its previous node; learning unlocks its children. Allocations save independently per
 class using the existing save lifecycle, including transactional learning.
 
 Four paths grant +1 power, +10% attack speed, +5 percentage points critical

@@ -291,3 +291,40 @@ test('directional Warrior talents strike toward the cursor, not the nearest enem
       false,
     );
 });
+
+test('expanded graph preserves existing allocations, has reachable forks and keeps nodes separate', () => {
+  const p = hero();
+  assert.equal(TALENT_TREE.length, 57);
+  assert.equal(TALENT_TREE.filter((node) => node.kind === 'ability').length, 4);
+  const byId = new Map(TALENT_TREE.map((node) => [node.id, node]));
+  for (let branch = 0; branch < 4; branch++) {
+    for (let step = 1; step <= 4; step++)
+      assert.equal(
+        byId.get(`path-${branch}-${step}`)!.previous,
+        step === 1 ? 'center' : `path-${branch}-${step - 1}`,
+      );
+    assert.equal(byId.get(`leaf-${branch}`)!.previous, `path-${branch}-2`);
+  }
+  const visited = new Set<string>();
+  function visit(id: string) {
+    assert(!visited.has(id), 'tree must be acyclic');
+    visited.add(id);
+    for (const child of byId.get(id)!.next) visit(child);
+  }
+  visit('center');
+  assert.equal(visited.size, TALENT_TREE.length);
+  for (let i = 0; i < TALENT_TREE.length; i++)
+    for (const other of TALENT_TREE.slice(i + 1))
+      assert(
+        Math.hypot(TALENT_TREE[i].x - other.x, TALENT_TREE[i].y - other.y) >= 54,
+        'nodes need room between their hit targets',
+      );
+  assert.equal(canLearnTalent(p, 'branch-0-1'), false);
+  learnTalent(p, 'path-0-1');
+  assert.equal(canLearnTalent(p, 'branch-0-1'), true);
+  const points = availableTalentPoints(p);
+  learnTalent(p, 'branch-0-1');
+  assert.equal(availableTalentPoints(p), points - 1);
+  assert.equal(canLearnTalent(p, 'branch-0-2'), true);
+  assert.equal(canLearnTalent(p, 'branch-0-3'), true);
+});

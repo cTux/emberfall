@@ -48,6 +48,7 @@ export function Talents({
             : talentIconIndex(player.classId ?? 'warrior', node.slot);
         return {
           ...node,
+          size: node.kind === 'ability' ? 34 : node.kind === 'center' ? 22 : 46,
           name: ability?.name ?? TALENT_LABELS[node.kind],
           description: ability
             ? `${ability.count || 1} ${ability.kind === 'slash' ? 'strike' : 'projectiles'}, ${ability.powerScale}× power. ${Math.round(talentCooldownMs(player, node.slot!) / 100) / 10}s cooldown. Slot ${node.slot! + 1}.`
