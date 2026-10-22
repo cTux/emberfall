@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <title>Highlighted adventurer glove</title>
+  <g stroke="#18201d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path fill="#000" opacity=".4" transform="translate(1 2)" d="M14 39 8 32 4 24Q2 20 6 19L13 23V8Q13 3 17 3T21 8V18Q26 15 29 20 34 17 37 23 42 22 42 28V33Q42 37 37 40V44H14Z"/>
+    <path fill="#fff7df" d="M14 39 8 32 4 24Q2 20 6 19L13 23V8Q13 3 17 3T21 8V18Q26 15 29 20 34 17 37 23 42 22 42 28V33Q42 37 37 40Z"/>
+    <path fill="#d9c69d" stroke="none" d="M13 23 18 28 16 33 10 27 8 23 6 21ZM37 25V32Q34 36 29 37H16L14 39 37 40Q42 37 42 33V28Q42 24 39 24Z"/>
+    <path fill="none" stroke="#b58540" d="M21 19V26M29 21V28M37 24V29M19 31 22 34"/>
+    <path fill="#e6be80" d="M13 38H38V44H13Z"/>
+    <path fill="none" stroke="#fff7df" d="M16 40H35M16 8V19"/>
+    <path fill="#fff7df" d="m26 39 3 2-3 2-3-2Z"/>
+    <path fill="none" stroke="#efd086" d="m7 6 2 2M27 5l-2 3M30 13h3"/>
+  </g>
+</svg>

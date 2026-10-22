@@ -7,10 +7,10 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
 }) => {
   await page.goto('/');
   const canvas = page.locator('canvas');
-  await expect(page.locator('body')).toHaveCSS('cursor', /default\.png/);
+  await expect(page.locator('body')).toHaveCSS('cursor', /default\.svg/);
   await expect(page.getByLabel('Your adventurer name')).toHaveCSS('cursor', /text\.png/);
   const join = page.getByRole('button', { name: /^Join Playtest Default/ });
-  await expect(join).toHaveCSS('cursor', /pointer\.png/);
+  await expect(join).toHaveCSS('cursor', /pointer\.svg/);
   await join.click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
@@ -101,13 +101,18 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
     'grabbing',
     'text',
   ]) {
+    const glove = state === 'default' || state === 'pointer';
+    const extension = glove ? 'svg' : 'png';
     expect(
-      await page.evaluate(async (name) => {
-        const image = new Image();
-        image.src = `/assets/cursors/${name}.png`;
-        await image.decode();
-        return [image.naturalWidth, image.naturalHeight];
-      }, state),
-    ).toEqual([32, 32]);
+      await page.evaluate(
+        async ({ name, extension }) => {
+          const image = new Image();
+          image.src = `/assets/cursors/${name}.${extension}`;
+          await image.decode();
+          return [image.naturalWidth, image.naturalHeight];
+        },
+        { name: state, extension },
+      ),
+    ).toEqual(glove ? [48, 48] : [32, 32]);
   }
 });

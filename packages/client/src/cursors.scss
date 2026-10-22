@@ -1,7 +1,7 @@
 // Native cursors keep their hotspots, work over portals and need no render loop.
 body {
-  --cursor-default: url('/assets/cursors/default.png') 2 2, default;
-  --cursor-pointer: url('/assets/cursors/pointer.png') 2 2, pointer;
+  --cursor-default: url('/assets/cursors/default.svg') 17 4, default;
+  --cursor-pointer: url('/assets/cursors/pointer.svg') 17 4, pointer;
   --cursor-attack: url('/assets/cursors/attack.png') 2 2, crosshair;
   --cursor-aim: url('/assets/cursors/aim.png') 16 16, crosshair;
   --cursor-pressed: url('/assets/cursors/pressed.png') 2 2, crosshair;
