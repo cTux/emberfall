@@ -43,8 +43,10 @@ Codex uses the shared forest theme with chapter tabs for controls, worlds and pa
 
 ## UI-02 — Combat controls
 
-The client uses a matching ivory/gold cursor set: a default arrow, an actionable
-UI hover, text entry, open/closed drag hands and a barred disabled state. In
+The client uses a matching ivory/gold cursor set: a large 48 × 48 glove for the
+default cursor, a brighter glove with gold accents for actionable UI hover,
+text entry, open/closed drag hands and a barred disabled state. The glove's
+fingertip is the click hotspot. In
 active forest combat or village training with a weapon equipped, hovering a living
 enemy shows a sword; disabling auto-target shows a crosshair instead. Holding LMB
 shows the active attack cursor. Death shows the barred cursor. Preview, inactive
