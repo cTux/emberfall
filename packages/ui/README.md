@@ -149,3 +149,5 @@ Sources: [MUI installation](https://mui.com/material-ui/getting-started/installa
 learned/available state, descriptions and icons. It centers a scrollable canvas
 sized to the supplied graph on its origin, with curved links and optional
 per-node sizes; node buttons support keyboard/touch tooltips and learning callbacks. The host computes points, prerequisites and effects.
+Drag the canvas or a node to pan with mouse, pen or touch. Tooltips hide while
+dragging, and releasing a drag does not activate a node.

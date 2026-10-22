@@ -1,5 +1,5 @@
 import { Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
-import { useLayoutEffect, useRef, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 export interface TalentNodeView {
   id: string;
   previous: string | null;
@@ -19,6 +19,21 @@ export interface TalentTreeProps {
 }
 export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
   const scroll = useRef<HTMLDivElement>(null);
+  const drag = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    left: number;
+    top: number;
+    moved: boolean;
+  } | null>(null);
+  const suppressClick = useRef(false);
+  const [dragging, setDragging] = useState(false);
+  const [tooltip, setTooltip] = useState<string | null>(null);
+  const finishDrag = () => {
+    drag.current = null;
+    setDragging(false);
+  };
   const width = Math.max(640, ...nodes.map((node) => node.x + 48));
   const height = Math.max(640, ...nodes.map((node) => node.y + 48));
   const origin = nodes.find((node) => node.previous === null);
@@ -44,8 +59,59 @@ export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
       <Box
         ref={scroll}
         data-talent-scroll
+        onPointerDown={(event) => {
+          if (event.button !== 0 || !event.isPrimary || drag.current) return;
+          suppressClick.current = false;
+          drag.current = {
+            pointerId: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+            left: event.currentTarget.scrollLeft,
+            top: event.currentTarget.scrollTop,
+            moved: false,
+          };
+          // Keep the original target so a tap still clicks its node.
+          (event.target as Element).setPointerCapture(event.pointerId);
+        }}
+        onPointerMove={(event) => {
+          const start = drag.current;
+          if (!start || start.pointerId !== event.pointerId) return;
+          const dx = event.clientX - start.x;
+          const dy = event.clientY - start.y;
+          if (!start.moved) {
+            if (Math.hypot(dx, dy) < 5) return;
+            start.moved = true;
+            suppressClick.current = true;
+            setTooltip(null);
+            setDragging(true);
+          }
+          event.currentTarget.scrollLeft = start.left - dx;
+          event.currentTarget.scrollTop = start.top - dy;
+          event.preventDefault();
+        }}
+        onPointerUp={(event) => {
+          if (drag.current?.pointerId !== event.pointerId) return;
+          finishDrag();
+          const target = event.target as Element;
+          if (target.hasPointerCapture(event.pointerId)) {
+            target.releasePointerCapture(event.pointerId);
+          }
+        }}
+        onPointerCancel={finishDrag}
+        onLostPointerCapture={finishDrag}
+        onDragStart={(event) => event.preventDefault()}
+        onClickCapture={(event) => {
+          if (!suppressClick.current || event.detail === 0) return;
+          event.preventDefault();
+          event.stopPropagation();
+          suppressClick.current = false;
+        }}
         sx={{
           overflow: 'auto',
+          touchAction: 'none',
+          userSelect: 'none',
+          cursor: dragging ? 'grabbing' : 'grab',
+          '& button': { cursor: 'inherit' },
           maxHeight: 340,
           border: 1,
           borderColor: 'divider',
@@ -85,6 +151,12 @@ export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
             <Tooltip
               describeChild
               key={node.id}
+              open={!dragging && tooltip === node.id}
+              onOpen={() => {
+                if (!drag.current?.moved) setTooltip(node.id);
+              }}
+              onClose={() => setTooltip((current) => (current === node.id ? null : current))}
+              slotProps={{ transition: { timeout: 0 } }}
               title={
                 <>
                   <strong>{node.name}</strong>
