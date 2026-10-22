@@ -73,12 +73,12 @@ export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
                   <strong>{node.name}</strong>
                   <br />
                   {node.description}
-                  <br />
-                  {node.learned
-                    ? 'Learned'
-                    : node.available
-                      ? 'Learn for 1 talent point'
-                      : 'Learn the previous node and earn a point'}
+                  {(node.learned || node.available) && (
+                    <>
+                      <br />
+                      {node.learned ? 'Learned' : 'Learn for 1 talent point'}
+                    </>
+                  )}
                 </>
               }
               enterTouchDelay={0}
