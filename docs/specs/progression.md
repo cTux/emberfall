@@ -46,8 +46,8 @@ Four paths grant +1 power, +10% attack speed, +5 percentage points critical
 chance and +10 percentage points critical damage. Attack speed bonuses add
 before multiplying gear attack speed and also shorten talent ability cooldowns.
 Four ability nodes unlock class-specific abilities in fixed action-bar slots
-1–4, cast by number key or click using the current targeting mode. Each class
-has four distinct abilities using its existing attack family. Server validation
+1–4, cast by number key or click toward the cursor independently of the base
+attack's auto-target setting. Each class has four distinct abilities using its existing attack family. Server validation
 owns prerequisites, budget, learned abilities, area eligibility and cooldowns.
 No automatic allocation, reset or forced prompt is introduced. Legacy reserved
 unknown talent entries remain saved but grant no effects and consume no points.

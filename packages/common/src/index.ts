@@ -37,6 +37,8 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
   z.object({
     type: z.literal('talentCast'),
+    aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
+    aimY: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
     slot: z.number().int().min(0).max(3),
     classId: classSchema,
     epoch: z.string().min(1).max(64),

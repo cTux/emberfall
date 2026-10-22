@@ -53,3 +53,48 @@ test('N opens linked talents without blocking movement; learning equips and cast
   await page.keyboard.press('n');
   await expect(tree.getByRole('button', { name: 'Sweeping strike: Learned' })).toBeVisible();
 });
+
+test('numbered abilities snapshot the cursor while base auto-target stays enabled', async ({
+  page,
+  game,
+}) => {
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'emberfall-new.preferences',
+      JSON.stringify({ autoAttack: false, autoTarget: true }),
+    ),
+  );
+  await page.goto('/');
+  await page.getByLabel('Your adventurer name').fill('Cursor hero');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Talents (N)' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const player = [...world.players.values()][0];
+  const { learnTalent, starterEquipment } = await import('../packages/core/src/index.ts');
+  player.classId = 'ranger';
+  player.equipment = starterEquipment('ranger');
+  player.level = 20;
+  for (let slot = 0; slot < 4; slot++)
+    for (let step = 1; step <= 4; step++) learnTalent(player, `path-${slot}-${step}`);
+  player.x = TRAINING_ZONES[0].x + 70;
+  player.y = TRAINING_ZONES[0].y;
+  await expect(page.getByRole('button', { name: 'Cast Triple shot (1)' })).toBeVisible();
+  for (let slot = 0; slot < 4; slot++) {
+    await page.mouse.move(1100, 500);
+    await page.keyboard.press(String(slot + 1));
+    await expect
+      .poll(
+        () =>
+          world.training!.playerShots!.filter((shot) => shot.abilityId === `talent:ranger:${slot}`)
+            .length,
+      )
+      .toBeGreaterThan(0);
+    const shots = world.training!.playerShots!.filter(
+      (shot) => shot.abilityId === `talent:ranger:${slot}`,
+    );
+    expect(shots.every((shot) => shot.targetX! > player.x && shot.targetId === undefined)).toBe(
+      true,
+    );
+    expect(player.autoTarget).toBe(true);
+  }
+});

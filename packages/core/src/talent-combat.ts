@@ -2,7 +2,7 @@ import type { Player, SceneState } from '@emberfall/common';
 import { game, type createGame } from './game.ts';
 import { TALENT_TREE, isTalentLearned } from './talent-tree.ts';
 import { fireClassAttack, hitWithWeapon } from './class-combat.ts';
-import { forestDistance } from './scene.ts';
+import { FOREST, forestDistance } from './scene.ts';
 import { inTrainingZone } from './world.ts';
 import { swordOverlapsEnemy, playerAimAngle } from './simulation.ts';
 
@@ -23,7 +23,7 @@ export function talentCooldownMs(player: Player, slot: number, context: Game = g
 export function castTalentAbility(
   scene: SceneState | undefined,
   player: Player,
-  request: { slot: number; classId: string; epoch: string },
+  request: { slot: number; classId: string; epoch: string; aimX: number; aimY: number },
   now: number,
   context: Game = game,
 ) {
@@ -33,6 +33,12 @@ export function castTalentAbility(
     !scene ||
     !node ||
     !ability ||
+    !Number.isFinite(request.aimX) ||
+    !Number.isFinite(request.aimY) ||
+    request.aimX < 0 ||
+    request.aimX > FOREST.width ||
+    request.aimY < 0 ||
+    request.aimY > FOREST.height ||
     !isTalentLearned(player, node.id) ||
     player.hitpoints <= 0 ||
     !context.rules.characterStats(player).hasWeapon ||
@@ -48,8 +54,10 @@ export function castTalentAbility(
     ...player.talentCooldowns,
     [ability.id]: now + talentCooldownMs(player, request.slot, context),
   };
+  // Snapshot cursor aim without changing the base attack's targeting preferences.
+  const aimed = { ...player, autoTarget: false, aimX: request.aimX, aimY: request.aimY };
   if (ability.kind === 'slash') {
-    const actor = { ...player, attackAngle: playerAimAngle(player, scene.enemies) };
+    const actor = { ...aimed, attackAngle: playerAimAngle(aimed, scene.enemies) };
     for (const enemy of scene.enemies) {
       const overlaps =
         request.slot === 1
@@ -69,7 +77,7 @@ export function castTalentAbility(
   } else
     fireClassAttack(
       scene,
-      { ...player, attackAt: now, attackId: undefined },
+      { ...aimed, attackAt: now, attackId: undefined },
       now,
       context,
       ability.id,
