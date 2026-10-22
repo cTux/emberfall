@@ -14,6 +14,23 @@ test('N opens linked talents without blocking movement; learning equips and cast
   await page.keyboard.press('n');
   const tree = page.getByRole('region', { name: 'Talents', exact: true });
   await expect(tree).toBeVisible();
+  await expect(tree.locator('[data-talent-node]')).toHaveCount(57);
+  await expect(tree.locator('[data-talent-map] > svg > path')).toHaveCount(56);
+  expect(
+    await tree
+      .locator('[data-talent-node="path-0-1"]')
+      .evaluate((node) => node.getBoundingClientRect().width),
+  ).toBe(46);
+  expect(
+    await tree
+      .locator('[data-talent-node="path-0-4"]')
+      .evaluate((node) => node.getBoundingClientRect().width),
+  ).toBe(34);
+  expect(
+    await tree
+      .locator('[data-talent-node="center"]')
+      .evaluate((node) => node.getBoundingClientRect().width),
+  ).toBe(22);
   await expect(tree.getByRole('status')).toHaveText('0 talent points available');
   player.level = 5;
   await expect(tree.getByRole('status')).toHaveText('4 talent points available');
@@ -97,4 +114,38 @@ test('numbered abilities snapshot the cursor while base auto-target stays enable
     );
     expect(player.autoTarget).toBe(true);
   }
+});
+
+test('expanded talent graph renders curved paths and irregular branches', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Your adventurer name').fill('Tree explorer');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await page.getByRole('button', { name: 'Talents (N)' }).click();
+  const tree = page.getByRole('region', { name: 'Talents', exact: true });
+  await expect(tree.locator('[data-talent-node]')).toHaveCount(57);
+  const curves = await tree
+    .locator('[data-talent-map] > svg > path')
+    .evaluateAll((paths) => paths.map((path) => path.getAttribute('d')));
+  expect(curves.every((curve) => curve?.includes(' Q '))).toBe(true);
+  // Expand only the review capture so the complete scrollable graph is visible.
+  await tree.evaluate((element) => {
+    Object.assign((element as HTMLElement).style, {
+      maxHeight: 'none',
+      maxWidth: 'none',
+      width: '1100px',
+      position: 'fixed',
+      left: '16px',
+      top: '16px',
+      transform: 'none',
+    });
+    const scroller = element.querySelector<HTMLElement>('[data-talent-scroll]')!;
+    scroller.style.maxHeight = 'none';
+    scroller.style.overflow = 'visible';
+    scroller.parentElement!.parentElement!.style.overflow = 'visible';
+    scroller.scrollTop = 0;
+    scroller.scrollLeft = 0;
+    (element.querySelector('.game-window-surface') as HTMLElement).style.overflow = 'visible';
+  });
+  await page.setViewportSize({ width: 1440, height: 1200 });
+  await tree.locator('[data-talent-map]').screenshot({ path: 'test-results/talent-tree-full.png' });
 });
