@@ -358,4 +358,7 @@ mechanics and remain confirmed visuals rather than client-predicted casts.
 Warrior talents resolve immediate shared melee overlaps (Whirlwind uses a circle).
 The shared UI takes node views and callbacks; the client maps catalog data and
 composes a nonmodal draggable window. N toggles the window, 1–4 cast learned
-abilities, and combat inputs remain available while configuring.
+abilities toward a cursor world-position snapshot carried in the cast command.
+The server validates that position and forces manual aim for that cast without
+changing the base attack targeting mode. Combat inputs remain available while
+configuring.

@@ -62,6 +62,7 @@ export function Arena({
   preferences,
   latency,
   interaction,
+  onCursorAim,
   onHitpoints,
 }: {
   world: WorldState | null;
@@ -71,6 +72,7 @@ export function Arena({
   preferences: Preferences;
   latency: number | null;
   interaction: RefObject<Interaction | null>;
+  onCursorAim: (reader: (() => { aimX: number; aimY: number }) | null) => void;
   onHitpoints: (hp: Record<string, number>) => void;
 }) {
   const {
@@ -164,6 +166,11 @@ export function Arena({
       document.hidden ||
       document.activeElement instanceof HTMLInputElement ||
       document.activeElement instanceof HTMLTextAreaElement;
+    const currentAim = () => ({
+      aimX: wrap(inputCamera.x + (pointer?.x ?? 0.5) * inputCamera.width, FOREST.width),
+      aimY: wrap(inputCamera.y + (pointer?.y ?? 0.5) * inputCamera.height, FOREST.height),
+    });
+    onCursorAim(currentAim);
     const pointerMove = (event: PointerEvent) => {
       pointerInside = true;
       const rect = element.getBoundingClientRect();
@@ -339,16 +346,13 @@ export function Arena({
           width,
           height,
         };
-        const aimX = inputCamera.x + (pointer?.x ?? 0.5) * width;
-        const aimY = inputCamera.y + (pointer?.y ?? 0.5) * height;
         combat = {
           type: 'combatInput',
           autoAttack: prefs.current.autoAttack,
           autoTarget: prefs.current.autoTarget,
           autoLoot: prefs.current.autoLoot,
           attacking: held && !blocked(),
-          aimX: wrap(aimX, FOREST.width),
-          aimY: wrap(aimY, FOREST.height),
+          ...currentAim(),
         };
         Object.assign(local, combat);
         localSwing = localMovement.animateAttack(local, view, now);
@@ -912,6 +916,7 @@ export function Arena({
       cancelAnimationFrame(frame);
       clearInterval(input);
       window.removeEventListener('resize', resize);
+      onCursorAim(null);
       element.removeEventListener('pointermove', pointerMove);
       element.removeEventListener('pointerenter', pointerMove);
       element.removeEventListener('pointerleave', pointerLeave);
@@ -927,7 +932,7 @@ export function Arena({
       presentation.clear();
       audio.dispose();
     };
-  }, [playerId, interaction, onHitpoints]);
+  }, [playerId, interaction, onCursorAim, onHitpoints]);
   return (
     <>
       {renderError && (
