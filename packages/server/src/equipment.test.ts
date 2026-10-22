@@ -202,6 +202,7 @@ test('all class base attacks wait a full second in training and forest', () => {
       if (!training) player.scene = 'forest';
       else Object.assign(player, { x: 140, y: 340 });
       const arena = scene(training);
+      Object.assign(arena.enemies[0], { x: player.x + 20, y: player.y });
       tickPlayerCombat(arena, [player], 1000, 0);
       assert.equal(player.attackAt, 1000);
       tickPlayerCombat(arena, [player], 1999, 0);

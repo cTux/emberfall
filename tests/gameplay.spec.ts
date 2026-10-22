@@ -9,6 +9,39 @@ import {
   starterEquipment,
 } from '../packages/core/src/index.ts';
 
+test('mage auto-cast waits outside spell range and damages the dummy after approaching', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  player.classId = 'mage';
+  player.equipment = starterEquipment('mage');
+  player.attackAt = undefined;
+  const zone = TRAINING_ZONES[0];
+  player.x = zone.x + 260;
+  player.y = zone.y;
+  const settledAt = Date.now();
+  await expect.poll(() => world.training!.nextSpawn).toBeGreaterThan(settledAt + 1000);
+  expect(player.attackAt).toBeUndefined();
+  expect(world.training!.playerShots?.length ?? 0).toBe(0);
+  expect(player.dps ?? 0).toBe(0);
+  await page.screenshot({ path: 'test-results/mage-waiting-outside-range.png' });
+  player.x = zone.x + 220;
+  await expect
+    .poll(() => world.training!.playerShots?.some((shot) => shot.ownerId === player.id), {
+      intervals: [20],
+    })
+    .toBe(true);
+  await page.screenshot({ path: 'test-results/mage-projectiles-in-range.png' });
+  await expect.poll(() => player.dps ?? 0, { intervals: [50] }).toBeGreaterThan(0);
+  expect(player.experience).toBe(0);
+  expect(player.hitpoints).toBe(player.maxHitpoints);
+});
+
 test('every wardrobe class trains through Colyseus, preserves health, and resumes after a transport loss', async ({
   page,
   game,
