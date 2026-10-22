@@ -29,9 +29,6 @@ export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
       <Typography role='status'>
         {points} talent {points === 1 ? 'point' : 'points'} available
       </Typography>
-      <Typography variant='body2' color='text.secondary'>
-        Follow the paths from the center. Each node costs 1 point. Scroll to explore.
-      </Typography>
       <Box
         ref={scroll}
         sx={{
@@ -122,9 +119,6 @@ export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
           ))}
         </Box>
       </Box>
-      <Typography variant='caption' color='text.secondary'>
-        Gold: learned · Blue: available · Dim: locked. Abilities use slots 1–4.
-      </Typography>
     </Stack>
   );
 }
