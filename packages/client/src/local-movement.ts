@@ -329,6 +329,7 @@ export class LocalMovement {
           const candidates = confirmed?.playerShots?.filter(
             (s) =>
               s.ownerId === player.id &&
+              !s.abilityId?.startsWith('talent:') &&
               (shot.castId !== undefined ? s.castId === shot.castId : s.castAt === shot.castAt) &&
               !matched.has(s.id),
           );
@@ -360,6 +361,7 @@ export class LocalMovement {
           confirmed?.playerShots?.filter(
             (shot) =>
               shot.ownerId === player.id &&
+              !shot.abilityId?.startsWith('talent:') &&
               (this.attackId !== undefined
                 ? shot.castId === this.attackId
                 : shot.castAt === this.attackAt),
@@ -383,6 +385,7 @@ export class LocalMovement {
         confirmed?.playerShots?.filter(
           (s) =>
             s.ownerId === player.id &&
+            !s.abilityId?.startsWith('talent:') &&
             s.castAt !== undefined &&
             s.castAt > this.shotCastAt &&
             (s.castId === undefined || !this.casts.has(s.castId)),
@@ -395,7 +398,9 @@ export class LocalMovement {
     }
     // Only replace our projectiles; other players retain snapshot interpolation.
     scene.playerShots = [
-      ...(scene.playerShots ?? []).filter((s) => s.ownerId !== player.id),
+      ...(scene.playerShots ?? []).filter(
+        (s) => s.ownerId !== player.id || s.abilityId?.startsWith('talent:'),
+      ),
       ...this.shots.map((s) => ({ ...s })),
     ];
   }

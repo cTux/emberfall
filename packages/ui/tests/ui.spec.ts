@@ -675,3 +675,19 @@ test('server rows join once from every cell and keyboard, respecting disabled st
     await expect(status).toHaveText('Joins: 0');
   }
 });
+
+test('talent paths unlock by keyboard and expose zero-point state', async ({ page }) => {
+  await page.goto(story('components-talenttree--interactive'));
+  const power = page.getByRole('button', { name: '+1 power: Available', exact: true });
+  await power.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('status')).toHaveText('1 talent point available');
+  const ability = page.getByRole('button', { name: 'Whirlwind: Available' });
+  await ability.focus();
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('status')).toHaveText('0 talent points available');
+  await expect(page.getByRole('button', { name: 'Whirlwind: Learned' })).toHaveAttribute(
+    'aria-disabled',
+    'true',
+  );
+});

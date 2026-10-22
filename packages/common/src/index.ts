@@ -34,6 +34,13 @@ export const progressSchema = z
   .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
+  z.object({
+    type: z.literal('talentCast'),
+    slot: z.number().int().min(0).max(3),
+    classId: classSchema,
+    epoch: z.string().min(1).max(64),
+  }),
   z.object({ type: z.literal('useItem'), id: z.string().min(1).max(64) }),
   z.object({ type: z.literal('unequip'), slot: z.string().min(1).max(128) }),
   z.object({ type: z.literal('trade'), id: z.string().min(1).max(64), buying: z.boolean() }),
@@ -134,6 +141,7 @@ export interface Player extends CharacterProgress {
   attackAt?: number;
   /** Last processed manual request and the request that started the current attack. */
   castSeq?: number;
+  talentCooldowns?: Record<string, number>;
   attackId?: number;
   attackAngle?: number;
   autoAttack?: boolean;

@@ -2,22 +2,29 @@ import type { ReactNode } from 'react';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCrosshairs } from '@fortawesome/free-solid-svg-icons/faCrosshairs';
-import { ActionIndicatorStyled, ActionSlotStyled } from './action-bar.styles';
+import { AbilityButtonStyled, ActionIndicatorStyled, ActionSlotStyled } from './action-bar.styles';
 
 export interface ActionBarAbility {
   name: string;
   icon: ReactNode;
   cooldownMs: number;
   remainingMs: number;
+  onCast?: () => void;
 }
 
 export interface ActionBarProps {
   baseAbility?: ActionBarAbility;
+  abilities?: readonly (ActionBarAbility | undefined)[];
   autoFire?: boolean;
   autoTarget?: boolean;
 }
 
-export function ActionBar({ baseAbility, autoFire = false, autoTarget = false }: ActionBarProps) {
+export function ActionBar({
+  baseAbility,
+  abilities = [],
+  autoFire = false,
+  autoTarget = false,
+}: ActionBarProps) {
   const duration = baseAbility?.cooldownMs ?? 0;
   const remaining = Math.max(0, Math.min(duration, baseAbility?.remainingMs ?? 0));
   const fraction = duration > 0 ? remaining / duration : 0;
@@ -106,11 +113,57 @@ export function ActionBar({ baseAbility, autoFire = false, autoTarget = false }:
           </ActionSlotStyled>
         </Tooltip>
       )}
-      {[1, 2, 3, 4].map((slot) => (
-        <ActionSlotStyled key={slot} role='group' aria-label={`Empty ability slot ${slot}`}>
-          <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
-        </ActionSlotStyled>
-      ))}
+      {[1, 2, 3, 4].map((slot) => {
+        const ability = abilities[slot - 1];
+        if (!ability)
+          return (
+            <ActionSlotStyled key={slot} role='group' aria-label={`Empty ability slot ${slot}`}>
+              <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
+            </ActionSlotStyled>
+          );
+        const remaining = Math.max(0, ability.remainingMs);
+        return (
+          <Tooltip
+            describeChild
+            key={slot}
+            title={`${ability.name} · ${(ability.cooldownMs / 1000).toFixed(1)}s cooldown · ${slot} to cast`}
+          >
+            <AbilityButtonStyled
+              type='button'
+              aria-label={`Cast ${ability.name} (${slot})`}
+              disabled={remaining > 0}
+              onClick={ability.onCast}
+              sx={{
+                cursor: 'pointer',
+                p: 0,
+                '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
+              }}
+            >
+              {ability.icon}
+              {remaining > 0 && (
+                <Box
+                  role='progressbar'
+                  aria-label={`${ability.name} cooldown`}
+                  aria-valuemin={0}
+                  aria-valuemax={Math.round(ability.cooldownMs)}
+                  aria-valuenow={Math.round(Math.min(remaining, ability.cooldownMs))}
+                  sx={{
+                    position: 'absolute',
+                    inset: 0,
+                    bgcolor: 'rgba(0,0,0,0.65)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    color: 'text.primary',
+                  }}
+                >
+                  {Math.ceil(remaining / 1000)}
+                </Box>
+              )}
+              <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
+            </AbilityButtonStyled>
+          </Tooltip>
+        );
+      })}
     </Stack>
   );
 }

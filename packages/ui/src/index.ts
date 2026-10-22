@@ -41,3 +41,5 @@ export type { BackpackItemView, BackpackProps } from './components/Backpack';
 export type { InventoryDrop } from './inventory-drag';
 export { GoldBalance } from './components/GoldBalance';
 export { ActionBar, type ActionBarAbility, type ActionBarProps } from './components/ActionBar';
+
+export { TalentTree, type TalentTreeProps, type TalentNodeView } from './components/TalentTree';

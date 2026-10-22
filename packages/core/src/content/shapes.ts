@@ -63,6 +63,10 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
   }),
   abilities: z.object({
     id,
+    name: z.string().min(1).optional(),
+    classId: id.optional(),
+    talentSlot: nonnegative.int().max(3).optional(),
+    powerScale: positive.optional(),
     kind: z.enum(['slash', 'arrow', 'fireball', 'roots']),
     range: positive,
     manualRange: positive,

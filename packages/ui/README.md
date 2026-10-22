@@ -48,7 +48,7 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 
 ## Game components
 
-`ActionBar` displays an optional `baseAbility` and four empty reserved slots.
+`ActionBar` displays an optional `baseAbility` and four controlled optional talent slots (`abilities`). Learned slots expose click callbacks, number badges and cooldown feedback; missing entries stay empty.
 Bottom-right hotkey badges show LMB and 1–4; a bottom-left target icon accompanies
 LMB. Controlled `autoFire` and `autoTarget` flags independently glow and pulse the
 base-slot indicators, with a steady glow for reduced motion. They default to false.
@@ -139,3 +139,8 @@ XP; positive paragon is shown beside the normal level. The host owns XP requirem
 - `typecheck`, static build and browser checks must pass. Inspect desktop and narrow layouts before changing consumers.
 
 Sources: [MUI installation](https://mui.com/material-ui/getting-started/installation/), [MUI theming](https://mui.com/material-ui/customization/theming/), [Storybook React + Vite](https://storybook.js.org/docs/get-started/frameworks/react-vite/).
+
+`TalentTree` presents controlled node views with previous links, coordinates,
+learned/available state, descriptions and icons. It centers a scrollable 640px
+canvas in its viewport; node buttons support keyboard/touch tooltips and learning
+callbacks. The host computes points, prerequisites and effects.
