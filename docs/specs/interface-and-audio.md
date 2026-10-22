@@ -43,6 +43,14 @@ Codex uses the shared forest theme with chapter tabs for controls, worlds and pa
 
 ## UI-02 — Combat controls
 
+The client uses a matching ivory/gold cursor set: a default arrow, an actionable
+UI hover, text entry, open/closed drag hands and a barred disabled state. In
+active forest combat or village training with a weapon equipped, hovering a living
+enemy shows a sword; disabling auto-target shows a crosshair instead. Holding LMB
+shows the active attack cursor. Death shows the barred cursor. Preview, inactive
+combat, open dialogs and focus loss restore the default cursor. These indicators
+do not select enemies, change targeting or make world objects clickable.
+
 Settings → Gameplay includes saved Auto-attack (F) and Auto-target (G) toggles, both enabled by default. Hotkeys ignore repeated presses, text entry, and open dialogs. With auto-attack disabled, holding LMB casts the class default spell once per one-second base cooldown. Releasing, opening a dialog, hiding the tab, or losing focus stops requesting casts; an already-started swing finishes without resetting its cooldown. Training-area restrictions still apply.
 
 With auto-target disabled, melee aim follows the cursor and ranged spells fly straight around the cursor direction for up to 1000 units, even without an enemy. With auto-target enabled, ranged spells aim around the nearest living enemy in default range. Attack range is not drawn as a ground circle, including when the cursor is beyond spell range. Cursor projection follows the village and wrapped forest cameras. Validated combat input is separate from movement; the server owns cooldowns and expires held-LMB input after 250 ms without a heartbeat. Local presentation shares aim, spread and projectile motion with authoritative combat.

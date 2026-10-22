@@ -44,6 +44,11 @@ function GameInterface() {
 
 Mount the provider once at the UI root. It includes `CssBaseline`; avoid mounting it over unrelated UI without reviewing its global effect. Serve `public/fonts` at `/fonts` in the host, or override the theme font face URLs for your asset pipeline. Source exports are intended for this TypeScript/Vite workspace, not direct unbundled Node imports.
 
+The host can theme native cursors with `--cursor-default` and `--cursor-pointer`;
+WorldList falls back to system cursors when they are absent. `useDraggable`
+marks title and panel handles with `data-drag-handle` for host hover/active styling.
+Cursor assets remain in the host.
+
 Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, Slider, Tabs, Alert, Chip, Tooltip, Paper and layout. Their shared style comes from the theme; do not create a renamed wrapper for every primitive. Use Font Awesome individual imports for UI icons; give icon-only buttons an accessible name and hide decorative icons from assistive technology.
 
 ## Game components

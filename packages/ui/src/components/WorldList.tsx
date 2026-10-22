@@ -45,7 +45,11 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
                 onClick={() => {
                   if (!joinDisabled) onJoin(world);
                 }}
-                sx={{ cursor: joinDisabled ? 'default' : 'pointer' }}
+                sx={{
+                  cursor: joinDisabled
+                    ? 'var(--cursor-default, default)'
+                    : 'var(--cursor-pointer, pointer)',
+                }}
               >
                 <TableCell sx={{ overflowWrap: 'anywhere' }}>
                   <Button

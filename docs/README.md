@@ -29,6 +29,12 @@ The plan maps extension, equipment, combat, protocol and persistence coverage.
 
 ## Feature map
 
+Game cursors: [UI-02](specs/interface-and-audio.md#ui-02--combat-controls),
+[host cursor states](../packages/client/src/cursors.ts),
+[cursor art](../packages/client/public/assets/cursors/README.md) and
+[browser verification](../tests/cursors.spec.ts) and
+[state rule checks](../tests/cursors.test.ts).
+
 DPS meter visibility: [UI-03](specs/interface-and-audio.md#ui-03--network-and-performance-feedback),
 [saved preference](../packages/client/src/preferences.ts), [HUD](../packages/client/src/Arena.tsx)
 and [toggle/persistence verification](../tests/dps-meter.spec.ts).

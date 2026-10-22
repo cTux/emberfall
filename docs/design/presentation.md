@@ -4,6 +4,16 @@ Status: implemented. Implements [interface/audio](../specs/interface-and-audio.m
 
 ## Application and component boundaries
 
+The host's `cursors.scss` supplies transparent PNG native cursors with explicit
+hotspots and system fallbacks, including portaled UI. Shared drag handles expose
+`data-drag-handle` without depending on host assets. `cursors.ts` derives combat
+feedback from detached displayed poses, shared weapon/training rules and enemy
+model hitboxes. Arena projects the pointer through its input camera and uses
+wrapped distances for hover feedback, updating `data-cursor` only on state changes.
+Pointer leave, blur and visibility changes clear hover feedback; modal and text
+entry blocking applies alongside existing input suppression. Browser coverage is
+in [cursor scenarios](../../tests/cursors.spec.ts).
+
 [main.tsx](../../packages/client/src/main.tsx) owns the connection, browser identity, recovery and screen composition. [Arena.tsx](../../packages/client/src/Arena.tsx) owns input capture and animation-frame drawing. Settings, Codex, chat and performance sampling are client concerns; server actions stay in the client host.
 
 `packages/ui` exports controlled components and the shared theme. It has no game-package imports, network requests, persistence, gameplay rules or authorization. [Its README](../../packages/ui/README.md) is the canonical component API/build guide and is imported directly into Storybook by `Guide.mdx`; preserve that integration. Storybook screens are local-state examples, not another application state machine.

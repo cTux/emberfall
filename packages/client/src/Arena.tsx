@@ -1,4 +1,5 @@
 import { alignLocalPickups } from './pickup-presentation';
+import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
 import { PixiContext } from './rendering/pixi-context';
 import { PresentationWorld } from './presentation/world';
@@ -150,6 +151,7 @@ export function Arena({
     const keys = new Set<string>();
     let pointer: { x: number; y: number } | undefined;
     let held = false;
+    let pointerInside = false;
     let combat: Extract<ClientMessage, { type: 'combatInput' }> | undefined;
     let inputCamera: { x: number; y: number; width: number; height: number } = {
       x: 0,
@@ -163,11 +165,16 @@ export function Arena({
       document.activeElement instanceof HTMLInputElement ||
       document.activeElement instanceof HTMLTextAreaElement;
     const pointerMove = (event: PointerEvent) => {
+      pointerInside = true;
       const rect = element.getBoundingClientRect();
       pointer = {
         x: (event.clientX - rect.left) / rect.width,
         y: (event.clientY - rect.top) / rect.height,
       };
+    };
+    const pointerLeave = () => {
+      pointerInside = false;
+      element.dataset.cursor = 'default';
     };
     const pointerDown = (event: PointerEvent) => {
       if (event.button !== 0 || blocked()) return;
@@ -181,6 +188,8 @@ export function Arena({
       sendMovement();
     };
     element.addEventListener('pointermove', pointerMove);
+    element.addEventListener('pointerenter', pointerMove);
+    element.addEventListener('pointerleave', pointerLeave);
     element.addEventListener('pointerdown', pointerDown);
     window.addEventListener('pointerup', pointerUp);
     window.addEventListener('pointercancel', pointerUp);
@@ -214,6 +223,8 @@ export function Arena({
     const reset = () => {
       keys.clear();
       held = false;
+      pointerInside = false;
+      element.dataset.cursor = 'default';
       sendMovement();
     };
     window.addEventListener('keydown', down);
@@ -345,6 +356,20 @@ export function Arena({
         alignLocalPickups(view, local);
       }
       presentation.update(view, playerId, local);
+      const cursor = combatCursor(
+        view,
+        local,
+        pointerInside && pointer
+          ? {
+              x: inputCamera.x + pointer.x * inputCamera.width,
+              y: inputCamera.y + pointer.y * inputCamera.height,
+            }
+          : undefined,
+        held,
+        blocked(),
+        prefs.current.autoTarget,
+      );
+      if (element.dataset.cursor !== cursor) element.dataset.cursor = cursor;
       networkTiming.current = {
         inputDelay: localMovement.inputDelay(now),
         snapshotAge: snapshots.age(now),
@@ -888,6 +913,8 @@ export function Arena({
       clearInterval(input);
       window.removeEventListener('resize', resize);
       element.removeEventListener('pointermove', pointerMove);
+      element.removeEventListener('pointerenter', pointerMove);
+      element.removeEventListener('pointerleave', pointerLeave);
       element.removeEventListener('pointerdown', pointerDown);
       window.removeEventListener('pointerup', pointerUp);
       window.removeEventListener('pointercancel', pointerUp);

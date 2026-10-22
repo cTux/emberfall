@@ -133,6 +133,10 @@ export class PixiContext {
       if (this.disposed) renderer.destroy();
       else {
         this.renderer = renderer;
+        // Arena owns native cursor feedback. Pixi's default inline `inherit`
+        // would otherwise override the canvas's data-cursor stylesheet rules.
+        renderer.events.cursorStyles.default = () => canvas.style.removeProperty('cursor');
+        canvas.style.removeProperty('cursor');
         renderer.resize(this.width, this.height);
         this.canvas.dataset.renderer = 'pixijs-webgl';
       }
