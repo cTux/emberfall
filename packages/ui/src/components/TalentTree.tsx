@@ -71,8 +71,12 @@ export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
               title={
                 <>
                   <strong>{node.name}</strong>
-                  <br />
-                  {node.description}
+                  {node.description !== node.name && (
+                    <>
+                      <br />
+                      {node.description}
+                    </>
+                  )}
                   {(node.learned || node.available) && (
                     <>
                       <br />
