@@ -68,6 +68,7 @@ export function useDraggable(key: string, active = true) {
     ref: attachRef,
     style: { transform: `translate(${offset.x}px, ${offset.y}px)` },
     handleProps: {
+      'data-drag-handle': true,
       onPointerDown(event: PointerEvent<HTMLElement>) {
         if (event.button !== 0 || (event.target as HTMLElement).closest('button, input, a')) return;
         event.stopPropagation();

@@ -1,0 +1,49 @@
+// Native cursors keep their hotspots, work over portals and need no render loop.
+body {
+  --cursor-default: url('/assets/cursors/default.png') 2 2, default;
+  --cursor-pointer: url('/assets/cursors/pointer.png') 2 2, pointer;
+  --cursor-attack: url('/assets/cursors/attack.png') 2 2, crosshair;
+  --cursor-aim: url('/assets/cursors/aim.png') 16 16, crosshair;
+  --cursor-pressed: url('/assets/cursors/pressed.png') 2 2, crosshair;
+  --cursor-disabled: url('/assets/cursors/disabled.png') 16 16, not-allowed;
+  --cursor-grab: url('/assets/cursors/grab.png') 16 16, grab;
+  --cursor-grabbing: url('/assets/cursors/grabbing.png') 16 16, grabbing;
+  --cursor-text: url('/assets/cursors/text.png') 16 16, text;
+
+  cursor: var(--cursor-default);
+}
+
+body :is(button, a[href], [role='button'], [role='tab']) {
+  cursor: var(--cursor-pointer);
+}
+
+body :is(input, textarea, [contenteditable='true']) {
+  cursor: var(--cursor-text);
+}
+
+body :is(input[type='checkbox'], input[type='radio'], input[type='range'], select) {
+  cursor: var(--cursor-pointer);
+}
+
+body :is([data-drag-handle], [draggable='true']) {
+  cursor: var(--cursor-grab);
+}
+
+body :is([data-drag-handle], [draggable='true']):active {
+  cursor: var(--cursor-grabbing);
+}
+
+body :is(:disabled, [aria-disabled='true']) {
+  cursor: var(--cursor-disabled);
+}
+
+// Native disabled buttons still suppress clicks; allow their cursor to be seen.
+body button:disabled {
+  pointer-events: auto;
+}
+
+@each $state in default, attack, aim, pressed, disabled {
+  canvas[data-cursor='#{$state}'] {
+    cursor: var(--cursor-#{$state});
+  }
+}
