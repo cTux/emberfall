@@ -1,4 +1,4 @@
-import { Paper, alpha, styled } from '@mui/material';
+import { Paper, ButtonBase, alpha, styled } from '@mui/material';
 
 export const ActionSlotStyled = styled(Paper)(({ theme }) => ({
   position: 'relative',
@@ -52,4 +52,15 @@ export const ActionIndicatorStyled = styled('span')(({ theme }) => ({
   '@media (prefers-reduced-motion: reduce)': {
     '&[data-active=true]': { animation: 'none' },
   },
+}));
+
+export const AbilityButtonStyled = styled(ButtonBase)(({ theme }) => ({
+  position: 'relative',
+  width: theme.spacing(6.5),
+  height: theme.spacing(6.5),
+  overflow: 'hidden',
+  flexShrink: 0,
+  border: `1px solid ${theme.palette.divider}`,
+  backgroundColor: alpha(theme.palette.common.black, 0.76),
+  [theme.breakpoints.down('sm')]: { width: theme.spacing(5.5), height: theme.spacing(5.5) },
 }));

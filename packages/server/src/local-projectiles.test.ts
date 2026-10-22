@@ -540,3 +540,26 @@ test('a local root projectile remains visible through all confirmed bounces desp
     assert.equal(frame(movement, done, 500).scene.playerShots!.length, 0);
   }
 });
+
+test('confirmed talent projectiles coexist with predicted basic attacks without adoption or duplication', () => {
+  const source = fixture('mage');
+  fireClassAttack(
+    source.scene!,
+    { ...source.players[0], attackAt: 10000 },
+    10000,
+    undefined,
+    'talent:mage:1',
+  );
+  const count = source.scene!.playerShots!.length;
+  const movement = new LocalMovement('p', () => {});
+  const first = frame(movement, source, 0);
+  assert.equal(
+    first.scene.playerShots!.filter((shot) => shot.abilityId === 'talent:mage:1').length,
+    count,
+  );
+  const next = frame(movement, source, 50);
+  assert.equal(
+    next.scene.playerShots!.filter((shot) => shot.abilityId === 'talent:mage:1').length,
+    count,
+  );
+});

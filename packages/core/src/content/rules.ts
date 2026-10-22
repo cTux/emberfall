@@ -1,3 +1,4 @@
+import { TALENT_TREE, isTalentLearned } from '../talent-tree.ts';
 import { z } from 'zod';
 import { progressSchema as progressShape, clientMessage as messageShape } from '@emberfall/common';
 import type {
@@ -17,7 +18,7 @@ export interface CharacterStats extends GearStats {
   attackIntervalMs: number;
   damageReduction: number;
 }
-export type EquipmentOwner = Pick<Player, 'classId' | 'equipment'>;
+export type EquipmentOwner = Pick<Player, 'classId' | 'equipment' | 'talents'>;
 export function createRules(content: Registries) {
   const EQUIPMENT_SLOTS = content.slots.values().map((slot) => slot.id);
   const SLOT_GEAR_TYPES = Object.fromEntries(
@@ -102,6 +103,15 @@ export function createRules(content: Registries) {
       if (slot === 'weapon') weapon = gear;
       for (const key of Object.keys(gear.stats) as string[]) stats[key] += gear.stats[key] ?? 0;
     }
+    let speedBonus = 0;
+    for (const node of TALENT_TREE) {
+      if (!isTalentLearned(player, node.id)) continue;
+      if (node.kind === 'power') stats.power += 1;
+      if (node.kind === 'speed') speedBonus += 0.1;
+      if (node.kind === 'criticalChance') stats.criticalChance += 0.05;
+      if (node.kind === 'criticalDamage') stats.criticalMultiplier += 0.1;
+    }
+    stats.attacksPerSecond *= 1 + speedBonus;
     stats.criticalChance = Math.max(0, Math.min(1, stats.criticalChance));
     stats.criticalMultiplier = Math.max(1, stats.criticalMultiplier);
     stats.armor = Math.max(0, stats.armor);

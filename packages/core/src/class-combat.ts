@@ -197,10 +197,23 @@ export function projectileAngle(
   return aimAngle + (index - (count - 1) / 2) * spread;
 }
 
-export function fireClassAttack(scene: SceneState, player: Player, now = 0, context: Game = game) {
+export function fireClassAttack(
+  scene: SceneState,
+  player: Player,
+  now = 0,
+  context: Game = game,
+  abilityId?: string,
+) {
   const stats = context.rules.characterStats(player);
   if (!stats.hasWeapon) return;
-  const range = player.autoTarget === false ? stats.manualRange : stats.range;
+  const selected = abilityId ? context.registries.abilities.require(abilityId) : undefined;
+  const range = selected
+    ? player.autoTarget === false
+      ? selected.manualRange
+      : selected.range
+    : player.autoTarget === false
+      ? stats.manualRange
+      : stats.range;
   const manual = player.autoTarget === false;
   const aim = { x: player.aimX ?? player.x, y: player.aimY ?? player.y };
   const targets = (manual ? [] : scene.enemies)
@@ -216,7 +229,7 @@ export function fireClassAttack(scene: SceneState, player: Player, now = 0, cont
       wrappedDelta(destination.x, player.x, FOREST.width),
     );
     const attack = context.registries.abilities.require(
-      context.registries.classes.require(player.classId ?? 'ranger').attack,
+      abilityId ?? context.registries.classes.require(player.classId ?? 'ranger').attack,
     );
     const ailment = context.registries.classes.require(player.classId ?? 'ranger').ailment;
     const defaultAilment =
@@ -330,7 +343,15 @@ export function tickPlayerShots(
             )
               continue;
             shot.hitIds.push(enemy.id);
-            hitWithWeapon(scene, enemy, owner, now, shot.ailment ?? 'poison', 1, stats);
+            hitWithWeapon(
+              scene,
+              enemy,
+              owner,
+              now,
+              shot.ailment ?? 'poison',
+              ability.powerScale ?? 1,
+              stats,
+            );
           }
         }
       },
@@ -341,7 +362,7 @@ export function tickPlayerShots(
       if (shot.kind === 'roots') {
         const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds.at(-1));
         if (target) {
-          hitWithWeapon(scene, target, owner, now, undefined, 1, stats);
+          hitWithWeapon(scene, target, owner, now, undefined, ability.powerScale ?? 1, stats);
           if (target.hitpoints > 0) applyRoots(target, owner.id, now);
           if (shot.hitIds.length <= ability.bounces) {
             const next = scene.enemies
@@ -376,7 +397,15 @@ export function tickPlayerShots(
       });
       for (const enemy of scene.enemies)
         if (enemy.id === shot.hitIds[0])
-          hitWithWeapon(scene, enemy, owner, now, shot.ailment ?? 'burn', 1, stats);
+          hitWithWeapon(
+            scene,
+            enemy,
+            owner,
+            now,
+            shot.ailment ?? 'burn',
+            ability.powerScale ?? 1,
+            stats,
+          );
         else if (overlapsBody(shot, ability.splashRadius, enemyHitbox(enemy, context)))
           hitWithWeapon(
             scene,
@@ -384,7 +413,9 @@ export function tickPlayerShots(
             owner,
             now,
             shot.ailment ?? 'burn',
-            ability.damage > 0 ? ability.splashDamage / ability.damage : 0,
+            ability.damage > 0
+              ? (ability.splashDamage / ability.damage) * (ability.powerScale ?? 1)
+              : 0,
             stats,
           );
       return false;

@@ -234,3 +234,25 @@ test('duplicates, bad references, values and unsupported mechanics fail with mod
     /after initialization/,
   );
 });
+
+test('talent ability metadata rejects unknown classes, partial slots and duplicate slots', () => {
+  const ability = game.registries.abilities.require('talent:mage:0');
+  for (const [change, message] of [
+    [{ classId: 'missing' }, /unknown classes reference/],
+    [{ classId: undefined }, /class and slot must be specified together/],
+    [{ classId: 'mage' }, /duplicate talent class\/slot/],
+  ] as const) {
+    assert.throws(
+      () =>
+        compose({
+          id: 'bad-talent',
+          register(r) {
+            const invalid = { ...ability, ...change, id: 'bad-talent:ability' };
+            if (invalid.classId === undefined) delete invalid.classId;
+            r.abilities.register(invalid);
+          },
+        }),
+      message,
+    );
+  }
+});

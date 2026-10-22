@@ -1,3 +1,4 @@
+import { TALENT_ABILITIES } from './base/abilities/talents.ts';
 import { BASE_CLASS_DETAILS } from './base/class-details.ts';
 import type { GameMod, AbilityDefinition, AilmentDefinition } from '../content/contracts.ts';
 import {
@@ -130,6 +131,7 @@ export const baseMod: GameMod = {
         ...ability,
         kind: id,
       } as AbilityDefinition);
+    for (const ability of TALENT_ABILITIES) r.abilities.register(ability);
     for (const [id, enemy] of Object.entries(ENEMY_STATS))
       r.enemies.register({
         ...enemy,

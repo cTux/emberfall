@@ -1,3 +1,5 @@
+import { Talents } from './Talents';
+import { faSitemap } from '@fortawesome/free-solid-svg-icons/faSitemap';
 import { AccountGate } from './Account';
 import { experienceRequired, enemyMaxHealth } from '@emberfall/core';
 import type { AccountView, ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
@@ -74,7 +76,15 @@ function App({
   const steam = account.mode === 'steam';
   const name = steam ? account.nickname! : legacyName;
   const [menu, setMenu] = useState<
-    'codex' | 'settings' | 'portal' | 'building' | 'wardrobe' | 'equipment' | 'exit' | null
+    | 'talents'
+    | 'codex'
+    | 'settings'
+    | 'portal'
+    | 'building'
+    | 'wardrobe'
+    | 'equipment'
+    | 'exit'
+    | null
   >(null);
   const [building, setBuilding] = useState('');
   const [settingsTab, setSettingsTab] = useState('gameplay');
@@ -301,6 +311,15 @@ function App({
   const unavailable = status !== 'Connected' || pending;
   const me = world?.players.find((p) => p.id === playerId);
   const scene = world?.scene;
+  const castTalent = (slot: number) => {
+    if (!me || unavailable) return;
+    send({
+      type: 'talentCast',
+      slot,
+      classId: me.classId ?? 'warrior',
+      epoch: me.scene === 'forest' ? (scene?.id ?? '') : 'lobby',
+    });
+  };
   const interact = () => {
     const source = interaction.current;
     if (!source) return;
@@ -318,6 +337,38 @@ function App({
       const typing =
         event.target instanceof Element &&
         !!event.target.closest('input, textarea, select, [contenteditable=true]');
+      if (
+        event.code === 'KeyN' &&
+        world &&
+        !typing &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        (!menu || menu === 'talents')
+      ) {
+        event.preventDefault();
+        setMenu(menu === 'talents' ? null : 'talents');
+        return;
+      }
+      if (
+        /^Digit[1-4]$/.test(event.code) &&
+        world &&
+        !typing &&
+        (!menu || menu === 'talents') &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey
+      ) {
+        event.preventDefault();
+        castTalent(Number(event.code.slice(-1)) - 1);
+        return;
+      }
+      if (event.key === 'Escape' && menu === 'talents') {
+        event.preventDefault();
+        setMenu(null);
+        return;
+      }
       if (
         event.code === 'KeyI' &&
         world &&
@@ -382,7 +433,7 @@ function App({
     !hasLivingScenePlayers(world?.players ?? []);
   return (
     <main>
-      <section className={`stage ${world ? 'in-world' : ''}`} inert={!!menu}>
+      <section className={`stage ${world ? 'in-world' : ''}`} inert={!!menu && menu !== 'talents'}>
         <Arena
           key={`${playerId}:${retry}`}
           world={status === 'Connected' ? world : null}
@@ -395,7 +446,12 @@ function App({
           onHitpoints={setDisplayedHp}
         />
         {me && (
-          <WeaponActionBar player={me} now={world?.serverNow ?? 0} preferences={preferences} />
+          <WeaponActionBar
+            onCast={castTalent}
+            player={me}
+            now={world?.serverNow ?? 0}
+            preferences={preferences}
+          />
         )}
         <Box className='controls'>
           <HudActions
@@ -419,6 +475,12 @@ function App({
               },
               ...(world
                 ? [
+                    {
+                      id: 'talents',
+                      label: 'Talents (N)',
+                      icon: faSitemap,
+                      onClick: () => setMenu('talents'),
+                    },
                     {
                       id: 'equipment',
                       label: 'Inventory (I)',
@@ -678,216 +740,239 @@ function App({
         )}
       </section>
       {menu && (
-        <GameWindow
-          key={menu}
-          height={menu === 'codex' ? 480 : menu === 'settings' ? 420 : undefined}
-          width={
-            menu === 'wardrobe'
-              ? 600
-              : menu === 'equipment' ||
-                  (menu === 'building' &&
-                    (building === INNKEEPER.name || building === 'Storehouse'))
-                ? 520
-                : undefined
+        <Box
+          sx={
+            menu === 'talents'
+              ? {
+                  position: 'absolute',
+                  zIndex: 5,
+                  inset: '32px 16px auto',
+                  pointerEvents: 'none',
+                  '& > section': { pointerEvents: 'auto' },
+                }
+              : undefined
           }
-          title={
-            menu === 'codex'
-              ? 'Codex'
-              : menu === 'equipment'
-                ? 'Inventory'
-                : menu === 'settings'
-                  ? 'Settings'
-                  : menu === 'portal'
-                    ? 'Forest portal'
-                    : menu === 'wardrobe'
-                      ? 'Wardrobe'
-                      : menu === 'exit'
-                        ? 'Leave?'
-                        : building
-          }
-          onClose={() => setMenu(null)}
         >
-          <Stack spacing={2}>
-            {error && (
-              <Alert severity='error' onClose={() => setError('')}>
-                {error}
-              </Alert>
-            )}
-            {menu === 'codex' ? (
-              <Codex />
-            ) : menu === 'equipment' && me ? (
-              <Equipment player={me} send={send} />
-            ) : menu === 'settings' ? (
-              <Settings
-                account={account}
-                onRename={() => {
-                  setMenu(null);
-                  rename();
-                }}
-                onLogout={() => {
-                  void logout();
-                }}
-                tab={settingsTab}
-                onTab={setSettingsTab}
-                preferences={preferences}
-                setPreferences={setPreferences}
-                graphics={graphics}
-                setGraphics={setGraphics}
-              />
-            ) : menu === 'exit' ? (
-              <>
-                <Typography>
-                  {me?.scene === 'forest'
-                    ? 'Are you sure you want to leave the current game? Your party will continue.'
-                    : 'Are you sure you want to leave the lobby?'}
-                </Typography>
-                <Stack direction='row' spacing={1}>
-                  <Button variant='outlined' onClick={() => setMenu(null)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    variant='contained'
-                    color='error'
-                    disabled={unavailable}
-                    onClick={() => {
-                      if (me?.scene === 'forest') send({ type: 'leaveScene' });
-                      else act({ type: 'leave' });
-                      setMenu(null);
-                    }}
-                  >
-                    Leave
-                  </Button>
-                </Stack>
-              </>
-            ) : menu === 'wardrobe' ? (
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-                  gap: { xs: 0.5, sm: 1 },
-                }}
-              >
-                {CLASS_IDS.map((id) => {
-                  const selected = (me?.classId ?? 'warrior') === id;
-                  const stats = selected ? me : me?.classes?.[id];
-                  const details = classDetails[id];
-                  return (
-                    <ClassCard
-                      key={id}
-                      title={CLASS_LABELS[id]}
-                      selected={selected}
-                      disabled={unavailable || selected || scene?.phase === 'countdown'}
-                      onSelect={() => send({ type: 'selectClass', classId: id })}
-                      portrait={<img src={classSprite(id)} alt={`${CLASS_LABELS[id]} portrait`} />}
-                      weapon={{
-                        name: details.weapon,
-                        description: details.weaponDescription,
-                        icon: <img src={weaponSrc(id)} alt='' />,
-                      }}
-                      spell={{
-                        name: details.spell,
-                        description: details.spellDescription,
-                        icon: <img src={spellSrc(id)} alt='' />,
-                      }}
-                      stats={{
-                        level: stats?.level ?? 1,
-                        experience: stats?.experience ?? 0,
-                        maxHitpoints: stats?.maxHitpoints ?? 100,
-                        power: characterStats({ classId: id, equipment: stats?.equipment }).power,
-                      }}
-                    />
-                  );
-                })}
-              </Box>
-            ) : menu === 'building' && building === INNKEEPER.name && me && world?.merchant ? (
-              <Trading player={me} merchant={world.merchant} send={send} />
-            ) : menu === 'building' && building === 'Storehouse' && me ? (
-              <Storehouse player={me} send={send} />
-            ) : menu === 'building' ? (
-              <Typography>{building} services are coming in a future update.</Typography>
-            ) : (
-              <>
-                {world && scene && ['voting', 'countdown'].includes(scene.phase) ? (
-                  <>
-                    <Typography>Scene created. Vote here when you are ready.</Typography>
-                    <PortalVote
-                      scene={scene.type}
-                      difficulty={scene.difficulty}
-                      ready={scene.ready.length}
-                      total={world.players.length}
-                      voted={scene.ready.includes(playerId)}
-                      countdown={scene.phase === 'countdown' ? departure : undefined}
-                      disabled={unavailable}
-                      onVote={() => {
-                        const ready = !scene.ready.includes(playerId);
-                        send({ type: 'ready', ready });
-                        if (ready) setMenu(null);
-                      }}
-                    />
-                  </>
-                ) : scene?.phase === 'active' && !me?.scene && !scene.portals.length ? (
-                  <>
-                    <Typography>
-                      Your party has a scene in progress. Join before the boss is defeated.
-                    </Typography>
+          <GameWindow
+            key={menu}
+            modal={menu !== 'talents'}
+            height={menu === 'codex' ? 480 : menu === 'settings' ? 420 : undefined}
+            width={
+              menu === 'talents'
+                ? 700
+                : menu === 'wardrobe'
+                  ? 600
+                  : menu === 'equipment' ||
+                      (menu === 'building' &&
+                        (building === INNKEEPER.name || building === 'Storehouse'))
+                    ? 520
+                    : undefined
+            }
+            title={
+              menu === 'talents'
+                ? 'Talents'
+                : menu === 'codex'
+                  ? 'Codex'
+                  : menu === 'equipment'
+                    ? 'Inventory'
+                    : menu === 'settings'
+                      ? 'Settings'
+                      : menu === 'portal'
+                        ? 'Forest portal'
+                        : menu === 'wardrobe'
+                          ? 'Wardrobe'
+                          : menu === 'exit'
+                            ? 'Leave?'
+                            : building
+            }
+            onClose={() => setMenu(null)}
+          >
+            <Stack spacing={2}>
+              {error && (
+                <Alert severity='error' onClose={() => setError('')}>
+                  {error}
+                </Alert>
+              )}
+              {menu === 'talents' && me ? (
+                <Talents player={me} send={send} />
+              ) : menu === 'codex' ? (
+                <Codex />
+              ) : menu === 'equipment' && me ? (
+                <Equipment player={me} send={send} />
+              ) : menu === 'settings' ? (
+                <Settings
+                  account={account}
+                  onRename={() => {
+                    setMenu(null);
+                    rename();
+                  }}
+                  onLogout={() => {
+                    void logout();
+                  }}
+                  tab={settingsTab}
+                  onTab={setSettingsTab}
+                  preferences={preferences}
+                  setPreferences={setPreferences}
+                  graphics={graphics}
+                  setGraphics={setGraphics}
+                />
+              ) : menu === 'exit' ? (
+                <>
+                  <Typography>
+                    {me?.scene === 'forest'
+                      ? 'Are you sure you want to leave the current game? Your party will continue.'
+                      : 'Are you sure you want to leave the lobby?'}
+                  </Typography>
+                  <Stack direction='row' spacing={1}>
+                    <Button variant='outlined' onClick={() => setMenu(null)}>
+                      Cancel
+                    </Button>
                     <Button
                       variant='contained'
+                      color='error'
                       disabled={unavailable}
-                      onClick={() => send({ type: 'joinScene' })}
+                      onClick={() => {
+                        if (me?.scene === 'forest') send({ type: 'leaveScene' });
+                        else act({ type: 'leave' });
+                        setMenu(null);
+                      }}
                     >
-                      Join scene
+                      Leave
                     </Button>
-                    {canRegenerate && (
-                      <>
-                        <Typography>
-                          No living players remain inside. The scene is paused.
-                        </Typography>
-                        <Button
-                          disabled={unavailable}
-                          onClick={() =>
-                            send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' })
-                          }
-                        >
-                          Regenerate scene
-                        </Button>
-                      </>
-                    )}
-                  </>
-                ) : scene && !canRegenerate ? (
-                  <Typography>
-                    {['active', 'ended'].includes(scene.phase)
-                      ? scene.phase === 'ended'
-                        ? 'Scene complete. Everyone must return before creating a new one.'
-                        : 'You are already in this scene.'
-                      : 'Scene created. Vote here when you are ready.'}
-                  </Typography>
-                ) : (
-                  <Stack
-                    component='form'
-                    spacing={2}
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' });
-                    }}
-                  >
-                    <TextField select label='Scene type' defaultValue='Forest'>
-                      <MenuItem value='Forest'>Forest</MenuItem>
-                    </TextField>
-                    <TextField select label='Difficulty' defaultValue='Easy'>
-                      <MenuItem value='Easy'>Easy</MenuItem>
-                    </TextField>
-                    <Stack direction='row' spacing={1}>
-                      <Button type='submit' variant='contained' disabled={unavailable}>
-                        {canRegenerate ? 'Regenerate scene' : 'Create'}
-                      </Button>
-                      <Button onClick={() => setMenu(null)}>Cancel</Button>
-                    </Stack>
                   </Stack>
-                )}
-              </>
-            )}
-          </Stack>
-        </GameWindow>
+                </>
+              ) : menu === 'wardrobe' ? (
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+                    gap: { xs: 0.5, sm: 1 },
+                  }}
+                >
+                  {CLASS_IDS.map((id) => {
+                    const selected = (me?.classId ?? 'warrior') === id;
+                    const stats = selected ? me : me?.classes?.[id];
+                    const details = classDetails[id];
+                    return (
+                      <ClassCard
+                        key={id}
+                        title={CLASS_LABELS[id]}
+                        selected={selected}
+                        disabled={unavailable || selected || scene?.phase === 'countdown'}
+                        onSelect={() => send({ type: 'selectClass', classId: id })}
+                        portrait={
+                          <img src={classSprite(id)} alt={`${CLASS_LABELS[id]} portrait`} />
+                        }
+                        weapon={{
+                          name: details.weapon,
+                          description: details.weaponDescription,
+                          icon: <img src={weaponSrc(id)} alt='' />,
+                        }}
+                        spell={{
+                          name: details.spell,
+                          description: details.spellDescription,
+                          icon: <img src={spellSrc(id)} alt='' />,
+                        }}
+                        stats={{
+                          level: stats?.level ?? 1,
+                          experience: stats?.experience ?? 0,
+                          maxHitpoints: stats?.maxHitpoints ?? 100,
+                          power: characterStats({ classId: id, equipment: stats?.equipment }).power,
+                        }}
+                      />
+                    );
+                  })}
+                </Box>
+              ) : menu === 'building' && building === INNKEEPER.name && me && world?.merchant ? (
+                <Trading player={me} merchant={world.merchant} send={send} />
+              ) : menu === 'building' && building === 'Storehouse' && me ? (
+                <Storehouse player={me} send={send} />
+              ) : menu === 'building' ? (
+                <Typography>{building} services are coming in a future update.</Typography>
+              ) : (
+                <>
+                  {world && scene && ['voting', 'countdown'].includes(scene.phase) ? (
+                    <>
+                      <Typography>Scene created. Vote here when you are ready.</Typography>
+                      <PortalVote
+                        scene={scene.type}
+                        difficulty={scene.difficulty}
+                        ready={scene.ready.length}
+                        total={world.players.length}
+                        voted={scene.ready.includes(playerId)}
+                        countdown={scene.phase === 'countdown' ? departure : undefined}
+                        disabled={unavailable}
+                        onVote={() => {
+                          const ready = !scene.ready.includes(playerId);
+                          send({ type: 'ready', ready });
+                          if (ready) setMenu(null);
+                        }}
+                      />
+                    </>
+                  ) : scene?.phase === 'active' && !me?.scene && !scene.portals.length ? (
+                    <>
+                      <Typography>
+                        Your party has a scene in progress. Join before the boss is defeated.
+                      </Typography>
+                      <Button
+                        variant='contained'
+                        disabled={unavailable}
+                        onClick={() => send({ type: 'joinScene' })}
+                      >
+                        Join scene
+                      </Button>
+                      {canRegenerate && (
+                        <>
+                          <Typography>
+                            No living players remain inside. The scene is paused.
+                          </Typography>
+                          <Button
+                            disabled={unavailable}
+                            onClick={() =>
+                              send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' })
+                            }
+                          >
+                            Regenerate scene
+                          </Button>
+                        </>
+                      )}
+                    </>
+                  ) : scene && !canRegenerate ? (
+                    <Typography>
+                      {['active', 'ended'].includes(scene.phase)
+                        ? scene.phase === 'ended'
+                          ? 'Scene complete. Everyone must return before creating a new one.'
+                          : 'You are already in this scene.'
+                        : 'Scene created. Vote here when you are ready.'}
+                    </Typography>
+                  ) : (
+                    <Stack
+                      component='form'
+                      spacing={2}
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' });
+                      }}
+                    >
+                      <TextField select label='Scene type' defaultValue='Forest'>
+                        <MenuItem value='Forest'>Forest</MenuItem>
+                      </TextField>
+                      <TextField select label='Difficulty' defaultValue='Easy'>
+                        <MenuItem value='Easy'>Easy</MenuItem>
+                      </TextField>
+                      <Stack direction='row' spacing={1}>
+                        <Button type='submit' variant='contained' disabled={unavailable}>
+                          {canRegenerate ? 'Regenerate scene' : 'Create'}
+                        </Button>
+                        <Button onClick={() => setMenu(null)}>Cancel</Button>
+                      </Stack>
+                    </Stack>
+                  )}
+                </>
+              )}
+            </Stack>
+          </GameWindow>
+        </Box>
       )}
     </main>
   );

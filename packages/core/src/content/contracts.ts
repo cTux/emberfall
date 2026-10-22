@@ -57,6 +57,10 @@ export interface ClassDefinition {
 }
 export type AbilityDefinition = Widen<typeof ATTACK_DEFINITIONS.slash> & {
   kind: AbilityKind;
+  name?: string;
+  classId?: string;
+  talentSlot?: number;
+  powerScale?: number;
   manualRange: number;
   speed: number;
   count: number;

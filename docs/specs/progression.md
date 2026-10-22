@@ -4,7 +4,7 @@ Status: implemented automatic per-class leveling and paragon progression. This d
 
 ## PROG-01 — Uninterrupted progression
 
-Progression must not require the player to stop playing, open a selector, make an upgrade choice, or confirm a reward. Moving the selector to a small panel while combat continues still requires a choice and does not meet this requirement. A teammate's progression must not pause the shared game or wait for a party vote.
+Automatic level and XP grants must not require the player to stop playing, open a selector, make an upgrade choice, or confirm a reward. Talents are a voluntary configuration exception: players may spend earned points from N at any time; no level-up opens the window or waits for spending. Moving the selector to a small panel while combat continues still requires a choice and does not meet this requirement. A teammate's progression must not pause the shared game or wait for a party vote.
 
 Any future progression feedback must leave movement, targeting and attacking available. Optional information may be shown without taking focus or requiring dismissal. This constraint concerns progression; existing voluntary settings, wardrobe selection, portal readiness and exit dialogs remain separate features.
 
@@ -33,8 +33,24 @@ Party cards show a thin XP bar beneath health with current/required XP. The
 normal level and, when positive, paragon level are visible. The client only
 displays server-confirmed progress and uses the shared requirement formula.
 
-Stat growth, ability evolution and any role for pre-run configuration remain
-undecided. Do not treat the earlier proposed upgrade table as a requirement.
+## PROG-03 — Talents
+
+Each normal level above 1 grants one talent point (level minus one, less learned
+nodes); paragon grants none. Existing characters receive their earned budget.
+N or the HUD opens a voluntary, scrollable linked tree shared by every class.
+The empty center is free. Every other node costs one point and requires its
+previous node; learning unlocks its children. Allocations save independently per
+class using the existing save lifecycle, including transactional learning.
+
+Four paths grant +1 power, +10% attack speed, +5 percentage points critical
+chance and +10 percentage points critical damage. Attack speed bonuses add
+before multiplying gear attack speed and also shorten talent ability cooldowns.
+Four ability nodes unlock class-specific abilities in fixed action-bar slots
+1–4, cast by number key or click using the current targeting mode. Each class
+has four distinct abilities using its existing attack family. Server validation
+owns prerequisites, budget, learned abilities, area eligibility and cooldowns.
+No automatic allocation, reset or forced prompt is introduced. Legacy reserved
+unknown talent entries remain saved but grant no effects and consume no points.
 
 ## Acceptance for any future implementation
 

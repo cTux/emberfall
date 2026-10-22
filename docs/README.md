@@ -56,7 +56,7 @@ and [replicated cooldown/gear coverage](../tests/action-bar.spec.ts).
 | HUD, controls, settings and audio         | [UI](specs/interface-and-audio.md)                              | [Presentation](design/presentation.md)                           | `gameplay.spec.ts`, `companion-hud.spec.ts`, `packages/ui/tests/ui.spec.ts`                                                                                                                                                                             |
 | Rendering, shadows and assets             | [GRAPHICS](specs/graphics.md), [assets](assets.md)              | [Runtime](design/new-runtime.md)                                 | `rendering.spec.ts`, `renderer-pixels.spec.ts`, `entity-layering.spec.ts`, `terrain-loading.spec.ts`, `player-art.spec.ts`, `test:images`                                                                                                               |
 | Performance                               | [GRAPHICS](specs/graphics.md)                                   | [Development](development.md)                                    | Opt-in `frame-budget.spec.ts` and `pnpm benchmark`                                                                                                                                                                                                      |
-| Uninterrupted progression and paragon     | [PROG-01/02](specs/progression.md)                              | [Runtime](design/new-runtime.md#simulation-and-replication)      | `packages/server/src/progression.test.ts`, `tests/progression.spec.ts`                                                                                                                                                                                  |
+| Progression, paragon and talents          | [PROG-01–03](specs/progression.md)                              | [Runtime](design/new-runtime.md#simulation-and-replication)      | `packages/server/src/progression.test.ts`, `tests/progression.spec.ts`                                                                                                                                                                                  |
 
 New-runtime Steam accounts and nickname onboarding/editing are specified in
 [CHAR-05](specs/characters.md#char-05--steam-accounts-and-nickname), with
@@ -116,3 +116,8 @@ implemented by [equipment rules](../packages/core/src/equipment.ts),
 - Work as an agent: [root instructions](../AGENTS.md) and the applicable package instructions.
 
 The root README is the short entry point. Keep behavior in its spec, mechanics in its design, commands in development/operations and reusable agent procedures in repo skills. Do not append a new chronological feature paragraph to the README.
+
+Talents: [rules](specs/progression.md#prog-03--talents),
+[design](design/new-runtime.md#talent-configuration),
+[authoritative tests](../packages/server/src/talents.test.ts) and
+[browser scenario](../tests/talents.spec.ts).

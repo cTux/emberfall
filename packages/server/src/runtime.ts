@@ -1,3 +1,4 @@
+import { learnTalent, castTalentAbility } from '@emberfall/core';
 import { validateDefinitions } from '@emberfall/core/definitions/index';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
@@ -301,6 +302,18 @@ export async function createRuntime(savePath = ':memory:') {
         }
         return;
       }
+      if (message.type === 'talentCast') {
+        const world = worlds.get(session.worldId ?? '');
+        const player = world?.players.get(session.id);
+        if (player)
+          castTalentAbility(
+            player.scene === 'forest' ? world!.scene : world!.training,
+            player,
+            message,
+            now,
+          );
+        return;
+      }
       if (message.type === 'cast') {
         const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
@@ -345,6 +358,7 @@ export async function createRuntime(savePath = ':memory:') {
         return;
       }
       if (
+        message.type === 'learnTalent' ||
         message.type === 'useItem' ||
         message.type === 'unequip' ||
         message.type === 'trade' ||
@@ -376,7 +390,8 @@ export async function createRuntime(savePath = ':memory:') {
         try {
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
-          if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
+          if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
+          else if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
           else if (message.type === 'storeItem')
             transferStoredItem(next, message.tab, message.id, message.depositing);
           else if (message.type === 'moveStorageItem')
@@ -394,6 +409,7 @@ export async function createRuntime(savePath = ':memory:') {
             trading ? { worldId: world.id, state: merchant } : undefined,
           );
           Object.assign(player, {
+            talents: next.talents,
             backpack: next.backpack,
             storages: next.storages,
             equipment: next.equipment,

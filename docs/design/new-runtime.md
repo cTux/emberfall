@@ -340,3 +340,22 @@ second transport. UI components remain controlled; host callbacks send commands.
 Verification: `packages/server/src/inventory.test.ts` and
 `tests/inventory.spec.ts` cover transfers, failures, migration, restart,
 stacking, loot, unarmed casting and the replicated UI. `tests/auto-loot.spec.ts` covers the live setting, item pickup and reload persistence.
+
+## Talent configuration
+
+[PROG-03](../specs/progression.md#prog-03--talents) uses core's immutable
+[talent graph](../../packages/core/src/talent-tree.ts) and registered
+[ability definitions](../../packages/core/src/mods/base/abilities/talents.ts).
+The graph is shared; only learned IDs live in existing per-class talent saves.
+Available points derive from normal level minus one and valid learned nodes.
+The server applies `learnTalent` to a detached player, saves it, then publishes
+the allocation; failures retain live points and nodes. No database migration.
+
+Talent casts use a separate server-owned cooldown map keyed by ability ID,
+retained across class switches. Forest and training use the same cast rules and
+wrapped hit paths. Projectile talents use registered arrow/fireball/roots
+mechanics and remain confirmed visuals rather than client-predicted casts.
+Warrior talents resolve immediate shared melee overlaps (Whirlwind uses a circle).
+The shared UI takes node views and callbacks; the client maps catalog data and
+composes a nonmodal draggable window. N toggles the window, 1–4 cast learned
+abilities, and combat inputs remain available while configuring.

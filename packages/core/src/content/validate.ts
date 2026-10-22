@@ -113,7 +113,20 @@ export function validateContent(
       check(Number.isFinite(value), 'items', item.id, `invalid stat '${key}'`);
     }
   }
+  const talentSlots = new Set<string>();
   for (const ability of r.abilities.values()) {
+    if (ability.classId !== undefined || ability.talentSlot !== undefined) {
+      check(
+        ability.classId !== undefined && ability.talentSlot !== undefined,
+        'abilities',
+        ability.id,
+        'talent class and slot must be specified together',
+      );
+      reference('abilities', ability.id, 'classes', ability.classId!);
+      const key = `${ability.classId}:${ability.talentSlot}`;
+      check(!talentSlots.has(key), 'abilities', ability.id, 'duplicate talent class/slot');
+      talentSlots.add(key);
+    }
     check(
       ['slash', 'arrow', 'fireball', 'roots'].includes(ability.kind),
       'abilities',
