@@ -691,3 +691,38 @@ test('talent paths unlock by keyboard and expose zero-point state', async ({ pag
     'true',
   );
 });
+
+test('talent abilities share the base radial cooldown and countdown at every viewport', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto(story('components-actionbar--talent-cooldowns'));
+    const bar = page.getByRole('region', { name: 'Action bar', exact: true });
+    const base = bar.getByRole('progressbar', { name: 'Slash cooldown' });
+    const whirlwind = bar.getByRole('progressbar', { name: 'Whirlwind cooldown' });
+    await expect(whirlwind.locator('svg path')).toBeVisible();
+    expect(await whirlwind.locator('svg path').getAttribute('d')).toBe(
+      await base.locator('svg path').getAttribute('d'),
+    );
+    await expect(whirlwind).toHaveAttribute('aria-valuenow', '6500');
+    await expect(whirlwind).toHaveAttribute('aria-valuetext', '7 seconds remaining');
+    await expect(
+      bar.getByRole('progressbar', { name: 'Sweeping strike cooldown' }).locator('svg rect'),
+    ).toBeVisible();
+    const ending = bar.getByRole('progressbar', { name: 'Earthshatter cooldown' });
+    await expect(ending).toHaveAttribute('aria-valuetext', '0.3 seconds remaining');
+    await expect(ending).toHaveText('0.3');
+    await expect(
+      bar.getByRole('button', { name: 'Cast Whirlwind (2)', exact: true }),
+    ).toBeDisabled();
+    await expect(
+      bar.getByRole('button', { name: 'Cast Execution (4)', exact: true }),
+    ).toBeEnabled();
+    await expect(bar.getByRole('progressbar', { name: 'Execution cooldown' })).toHaveCount(0);
+    const bounds = (await bar.boundingBox())!;
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+    await bar.screenshot({ path: `test-results/talent-cooldowns-${width}.png` });
+  }
+});
