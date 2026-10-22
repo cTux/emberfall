@@ -20,6 +20,7 @@ import {
   fireClassAttack,
   tickPlayerShots,
   defaultSpellRange,
+  nearestSpellTarget,
 } from './class-combat.ts';
 import { ENEMY_STATS, moveEnemies, spawnArchetype, enemyMaxHealth } from './enemies.ts';
 import type { Player, Bear, ClientMessage, SceneState, Enemy } from '@emberfall/common';
@@ -754,9 +755,15 @@ export function tickPlayerCombat(
     const attacking = player.autoAttack !== false;
     if (
       attacking &&
+      (ability.kind === 'slash' ||
+        player.autoTarget === false ||
+        nearestSpellTarget(player, scene.enemies, stats.range)) &&
       (player.attackAt === undefined || now - player.attackAt >= stats.attackIntervalMs)
     ) {
-      player.attackAt = now - ((now - (player.attackAt ?? now)) % stats.attackIntervalMs);
+      player.attackAt =
+        ability.kind === 'slash'
+          ? now - ((now - (player.attackAt ?? now)) % stats.attackIntervalMs)
+          : now;
       player.attackId = undefined;
     }
     if (player.attackAt === undefined) continue;

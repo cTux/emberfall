@@ -13,6 +13,7 @@ import {
   fireClassAttack,
   advancePlayerShot,
   movePlayer,
+  nearestSpellTarget,
 } from '@emberfall/core';
 import type { Player, PlayerShot, WorldState, ClientMessage } from '@emberfall/common';
 
@@ -216,13 +217,14 @@ export class LocalMovement {
       return false;
     }
     // Aim follows the selected control mode independently of the cast cooldown.
+    const ability = game.registries.abilities.require(
+      game.registries.classes.require(player.classId ?? 'warrior').attack,
+    );
     this.attackAngle = smoothAttackAngle(
       this.attackAngle,
       playerAimAngle({ ...player, attackAngle: this.attackAngle }, scene.enemies),
       this.aimAt === undefined ? 0 : (now - this.aimAt) / 1000,
-      game.registries.abilities.require(
-        game.registries.classes.require(player.classId ?? 'warrior').attack,
-      ).aimSmoothingSeconds,
+      ability.aimSmoothingSeconds,
     );
     this.aimAt = now;
     const serverNow = (this.source?.serverNow ?? 0) + now - this.sourceAt;
@@ -263,11 +265,16 @@ export class LocalMovement {
         this.attackId = undefined;
         return false;
       }
+      const canRepeat =
+        ability.kind === 'slash' ||
+        player.autoTarget === false ||
+        nearestSpellTarget(player, scene.enemies, stats.range) !== undefined;
       const cycle =
         origin +
-        Math.floor(Math.max(0, serverNow - origin) / stats.attackIntervalMs) *
+        (canRepeat ? Math.floor(Math.max(0, serverNow - origin) / stats.attackIntervalMs) : 0) *
           stats.attackIntervalMs;
-      started = cycle !== this.attackAt;
+      started =
+        cycle !== this.attackAt && (canRepeat || serverNow - origin < stats.attackIntervalMs);
       this.attackAt = cycle;
       this.attackId = undefined;
     }

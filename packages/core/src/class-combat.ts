@@ -197,6 +197,25 @@ export function projectileAngle(
   return aimAngle + (index - (count - 1) / 2) * spread;
 }
 
+/** Shared wrapped target selection for cast scheduling, launch and prediction. */
+export function nearestSpellTarget(
+  player: { x: number; y: number },
+  enemies: Enemy[],
+  range: number,
+) {
+  let target: Enemy | undefined;
+  let nearest = range;
+  for (const enemy of enemies) {
+    if (enemy.hitpoints <= 0) continue;
+    const distance = forestDistance(enemy, player);
+    if (distance <= range && (!target || distance < nearest)) {
+      target = enemy;
+      nearest = distance;
+    }
+  }
+  return target;
+}
+
 export function fireClassAttack(
   scene: SceneState,
   player: Player,
@@ -216,12 +235,9 @@ export function fireClassAttack(
       : stats.range;
   const manual = player.autoTarget === false;
   const aim = { x: player.aimX ?? player.x, y: player.aimY ?? player.y };
-  const targets = (manual ? [] : scene.enemies)
-    .filter((e) => e.hitpoints > 0 && forestDistance(e, player) <= range)
-    .sort((a, b) => forestDistance(a, player) - forestDistance(b, player))
-    .slice(0, 1);
+  const target = manual ? undefined : nearestSpellTarget(player, scene.enemies, range);
   scene.playerShots ??= [];
-  const shotTargets: (Enemy | undefined)[] = manual ? [undefined] : targets;
+  const shotTargets: (Enemy | undefined)[] = manual ? [undefined] : target ? [target] : [];
   for (const target of shotTargets) {
     const destination = target ?? aim;
     const aimAngle = Math.atan2(
