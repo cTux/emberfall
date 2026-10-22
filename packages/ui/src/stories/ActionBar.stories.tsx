@@ -28,3 +28,15 @@ export const Unequipped: Story = { args: { baseAbility: undefined } };
 export const Manual: Story = { args: { autoFire: false, autoTarget: false } };
 export const AutoFireOnly: Story = { args: { autoTarget: false } };
 export const AutoTargetOnly: Story = { args: { autoFire: false } };
+
+export const TalentCooldowns: Story = {
+  args: {
+    baseAbility: { ...meta.args.baseAbility, remainingMs: 650 },
+    abilities: [
+      { ...meta.args.baseAbility, name: 'Sweeping strike', cooldownMs: 5000, remainingMs: 5000 },
+      { ...meta.args.baseAbility, name: 'Whirlwind', cooldownMs: 10000, remainingMs: 6500 },
+      { ...meta.args.baseAbility, name: 'Earthshatter', cooldownMs: 8000, remainingMs: 250 },
+      { ...meta.args.baseAbility, name: 'Execution', cooldownMs: 12000, remainingMs: 0 },
+    ],
+  },
+};

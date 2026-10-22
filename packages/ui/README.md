@@ -53,7 +53,7 @@ Bottom-right hotkey badges show LMB and 1–4; a bottom-left target icon accompa
 LMB. Controlled `autoFire` and `autoTarget` flags independently glow and pulse the
 base-slot indicators, with a steady glow for reduced motion. They default to false.
 The host supplies its name, icon, cooldown duration and remaining milliseconds;
-the component draws the radial sweep and countdown without owning a clock or
+every equipped slot draws the same radial sweep and countdown without owning a clock or
 casting actions. Hover, keyboard focus or touch on an equipped ability shows its
 name, cooldown and casting/automation controls. All tooltips inherit the shared
 game-window surface and theme typography. Slots use the shared translucent window surface and brown
