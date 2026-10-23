@@ -108,6 +108,8 @@ export class FreeNpcModels implements NpcDialogue {
           this.preferred = index;
           return { status: 'ok', text };
         } catch {
+          // A departing world must not mark a shared provider unhealthy.
+          if (signal.aborted) return { status: 'unavailable' };
           this.cooldowns.set(model, this.clock() + 60_000);
         }
       }

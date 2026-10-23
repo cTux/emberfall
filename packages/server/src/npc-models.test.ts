@@ -61,6 +61,10 @@ test('concurrency is bounded and cancellation does not start more model attempts
   let calls = 0;
   const request: typeof fetch = async (_url, options) => {
     calls++;
+    if (calls > 2) {
+      assert.equal(JSON.parse(options?.body as string).model, FREE_NPC_MODELS[0]);
+      return answer();
+    }
     return new Promise((_resolve, reject) =>
       options?.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
         once: true,
@@ -75,6 +79,7 @@ test('concurrency is bounded and cancellation does not start more model attempts
   abort.abort();
   await Promise.all([a, b]);
   assert.equal(calls, 2);
+  assert.equal((await pool.generate('{}', signal())).status, 'ok');
 });
 
 test('a timed out endpoint falls back within a bounded request deadline', async () => {
