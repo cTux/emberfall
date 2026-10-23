@@ -3,7 +3,7 @@ import { test, expect } from './fixtures';
 test('the bundled Alegreya Sans font loads and is used throughout the interface', async ({
   page,
 }) => {
-  const response = await page.request.get('/assets/fonts/AlegreyaSans-Regular.ttf');
+  const response = await page.request.get('/fonts/AlegreyaSans-Regular.ttf');
   expect(response.ok()).toBe(true);
   expect((await response.body()).length).toBeGreaterThan(70000);
   await page.goto('/');

@@ -992,7 +992,7 @@ function App({
 window.addEventListener('contextmenu', (event) => event.preventDefault(), { capture: true });
 
 createRoot(document.getElementById('root')!).render(
-  <GameUiProvider>
+  <GameUiProvider fontBaseUrl={clientAsset('fonts/')}>
     <PanelPositionContext value={panelPositions}>
       {new URLSearchParams(location.search).has('class-movement') ? (
         <ClassMovementGallery />

@@ -42,7 +42,9 @@ function GameInterface() {
 }
 ```
 
-Mount the provider once at the UI root. It includes `CssBaseline`; avoid mounting it over unrelated UI without reviewing its global effect. Serve `public/fonts` at `/fonts` in the host, or override the theme font face URLs for your asset pipeline. Source exports are intended for this TypeScript/Vite workspace, not direct unbundled Node imports.
+Mount the provider once at the UI root. It includes `CssBaseline`; avoid mounting it over unrelated UI without reviewing its global effect. Serve `public/fonts` at `/fonts` in the host, or pass `fontBaseUrl` to `GameUiProvider` for your asset pipeline. Include the
+trailing slash, for example `fontBaseUrl='/emberfall/fonts/'` for a project site.
+Use the same directory for any font preload so the browser reuses that request. Source exports are intended for this TypeScript/Vite workspace, not direct unbundled Node imports.
 
 The host can theme native cursors with `--cursor-default` and `--cursor-pointer`;
 WorldList falls back to system cursors when they are absent. `useDraggable`
