@@ -1,3 +1,4 @@
+import { apiUrl } from './urls.ts';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { Client, type Room } from '@colyseus/sdk';
 import { SessionState, materializeState } from '@emberfall/common/protocol';
@@ -24,7 +25,7 @@ export class GameConnection {
       const endpoint = new URL(url);
       endpoint.pathname = '/';
       const options =
-        typeof location !== 'undefined' && import.meta.env?.DEV
+        typeof location !== 'undefined' && import.meta.env?.DEV && endpoint.host === location.host
           ? {
               urlBuilder: (url: URL) => {
                 if (url.protocol.startsWith('ws')) url.pathname = `/colyseus${url.pathname}`;
@@ -34,9 +35,9 @@ export class GameConnection {
           : undefined;
       let ticket: string | undefined;
       if (this.steam) {
-        const response = await fetch('/api/account/ticket', {
+        const response = await fetch(apiUrl('/api/account/ticket'), {
           method: 'POST',
-          credentials: 'same-origin',
+          credentials: 'include',
           signal: AbortSignal.timeout(10_000),
         });
         if (!response.ok) throw new Error('Authentication required');

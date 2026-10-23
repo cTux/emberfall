@@ -45,7 +45,9 @@ Sources: [Valve authentication](https://partner.steamgames.com/doc/features/auth
 | `POST /auth/logout`           | Revoke the session, clear its cookie and close its active game connections.                                 |
 
 Sessions use random 256-bit tokens with only SHA-256 hashes stored in SQLite.
-Cookies are host-only, Secure, HttpOnly, SameSite=Lax and path `/`. Sessions expire
+Cookies are host-only, Secure, HttpOnly and path `/`. Session cookies use
+SameSite=Lax by default, or SameSite=None when `CLIENT_URL` has a different
+origin. Login-attempt cookies stay SameSite=Lax for Steam redirects. Sessions expire
 after seven days. Account mutations require the exact configured Origin; nickname
 requests require JSON and bounded input. Responses disable caching, callback
 responses suppress referrers, and errors omit upstream URLs, keys and assertions.
@@ -92,7 +94,11 @@ rejected. Presentation preferences remain local.
 ## Configuration and verification
 
 The executable requires `STEAM_ORIGIN` and `STEAM_WEB_API_KEY` and fails closed when
-missing. The origin is the canonical HTTPS browser origin, without trailing slash.
+missing. The origin is the HTTPS backend callback origin, without trailing slash.
+For a separately hosted client, `CLIENT_URL` supplies its full landing URL; its
+origin replaces the backend origin for account CORS/CSRF and game admission.
+Success and failure redirect to that fixed URL. Cross-site cookie restrictions
+still apply; same-site custom domains are recommended for reliable browser login.
 See [operations](../operations.md#steam-login-new-runtime) for deployment and rollback.
 Vite proxies `/auth` and `/api` along with matchmaking and WebSockets. Tests use
 injected upstream responses; there is no test-login HTTP endpoint or environment

@@ -18,7 +18,7 @@ const tls =
         ),
       };
 const app = await createGameServer(root, savePath, tls, steam);
-const port = Number(process.env.PORT_NEW ?? 3003);
+const port = Number(process.env.BASE_PORT ?? process.env.PORT_NEW ?? 3003);
 await app.listen(port, process.env.HOST ?? '0.0.0.0');
 console.log(`Emberfall: ${tls ? 'https' : 'http'}://localhost:${port}`);
 for (const signal of ['SIGINT', 'SIGTERM'] as const)

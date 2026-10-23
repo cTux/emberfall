@@ -1,3 +1,4 @@
+import { clientAsset } from './urls.ts';
 import type { Preferences } from './preferences';
 
 let audioUnlocked = false;
@@ -13,7 +14,7 @@ export function gameAudio(preferences: () => Preferences) {
     Object.entries(tracks).map(([zone, names]) => [
       zone,
       names.map((name, index) => {
-        const audio = new Audio(`/audio/${name}.mp3`);
+        const audio = new Audio(clientAsset(`/audio/${name}.mp3`));
         audio.preload = 'auto';
         audio.volume = 0;
         audio.addEventListener('ended', () => {
@@ -30,7 +31,7 @@ export function gameAudio(preferences: () => Preferences) {
     ['slash', 'hit', 'warning'].map((name) => [
       name,
       Array.from({ length: 4 }, () => {
-        const audio = new Audio(`/audio/${name}.wav`);
+        const audio = new Audio(clientAsset(`/audio/${name}.wav`));
         audio.preload = 'auto';
         return audio;
       }),

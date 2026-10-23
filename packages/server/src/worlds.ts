@@ -50,7 +50,7 @@ export async function createGameServer(
     private peer?: Peer;
     onAuth(_client: Client, options: { ticket?: string }, context: { headers: Headers }) {
       if (!accounts) return true;
-      if (context.headers.get('origin') !== accounts.origin)
+      if (context.headers.get('origin') !== accounts.clientOrigin)
         throw new ServerError(401, 'Invalid origin');
       const token = accounts.consumeTicket(options.ticket);
       if (!token) throw new ServerError(401, 'Please sign in again');
@@ -100,7 +100,7 @@ export async function createGameServer(
     beforeUpgrade: (request) => {
       const origin = request.headers.get('origin');
       try {
-        if (accounts && origin !== accounts.origin)
+        if (accounts && origin !== accounts.clientOrigin)
           return new Response('Forbidden', { status: 403 });
         if (!accounts && origin && new URL(origin).host !== request.headers.get('host'))
           return new Response('Forbidden', { status: 403 });
