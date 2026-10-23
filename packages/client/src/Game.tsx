@@ -335,8 +335,7 @@ export function Game({
       epoch: me.scene === 'forest' ? (scene?.id ?? '') : 'lobby',
     });
   };
-  const interact = () => {
-    const source = interaction.current;
+  const interact = (source = interaction.current) => {
     if (!source) return;
     if (source.id === 'return') send({ type: 'returnLobby' });
     else if (source.id === 'wardrobe') setMenu('wardrobe');
@@ -422,8 +421,7 @@ export function Game({
       if (
         event.code === 'KeyE' &&
         !document.querySelector('[role="dialog"][aria-modal="true"]') &&
-        !(event.target instanceof HTMLInputElement) &&
-        !(event.target instanceof HTMLSelectElement)
+        !typing
       )
         interact();
     };
@@ -460,6 +458,7 @@ export function Game({
               preferences={preferences}
               latency={latency}
               interaction={interaction}
+              onInteract={interact}
               onCursorAim={setCursorAim}
               onHitpoints={setDisplayedHp}
             />

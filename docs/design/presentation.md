@@ -21,6 +21,16 @@ Pointer leave, blur and visibility changes clear hover feedback; modal and text
 entry blocking applies alongside existing input suppression. Browser coverage is
 in [cursor scenarios](../../tests/cursors.spec.ts).
 
+`interaction-targets.ts` picks opaque pixels of functional scenery and portals in
+display depth order, using the same wrapped camera as rendering. It caches yellow
+silhouette outlines per finite sprite frame and display size (1 or 3 world units).
+Range uses confirmed player positions and the existing entrance/NPC/portal geometry.
+Arena routes in-range left clicks to Game's existing E action and suppresses combat
+for clicks on functional targets. Hovered targets take priority over nearby E
+fallbacks; an out-of-range hover cannot activate another nearby object. Names and
+badges have no interaction-dependent styling. Browser coverage is in
+[interaction outlines](../../tests/interaction-outlines.spec.ts).
+
 [main.tsx](../../packages/client/src/main.tsx) owns the connection, browser identity, recovery and screen composition. [Arena.tsx](../../packages/client/src/Arena.tsx) owns input capture and animation-frame drawing. Settings, Codex, chat and performance sampling are client concerns; server actions stay in the client host.
 
 `packages/ui` exports controlled components and the shared theme. It has no game-package imports, network requests, persistence, gameplay rules or authorization. [Its README](../../packages/ui/README.md) is the canonical component API/build guide and is imported directly into Storybook by `Guide.mdx`; preserve that integration. Storybook screens are local-state examples, not another application state machine.

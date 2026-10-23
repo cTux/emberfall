@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   drawCharacterName,
   drawPlayerHealth,
+  drawNameBadge,
   drawChatBubble,
 } from '../packages/client/src/effects.ts';
 
@@ -61,23 +62,15 @@ test('character names match player labels at the same offset above their sprites
   assert.deepEqual(innkeeper.backgrounds, []);
 });
 
-test('an active character name adds the interaction background and E prompt', () => {
-  const active = recordingContext();
-  drawCharacterName(active.ctx, 100, 161, 'Marta', undefined, true);
-  assert.deepEqual(active.backgrounds, [['#786747', 76, 159, 48, 13]]);
-  assert.deepEqual(active.text, [
-    ['outline', '(E) Marta', 100, 167, '#101817', 2, 'round'],
-    [
-      'text',
-      '(E) Marta',
-      100,
-      167,
-      '8px "Alegreya Sans", sans-serif',
-      'center',
-      'alphabetic',
-      '#ffffff',
-    ],
-  ]);
+test('character names and building badges keep their normal text and backgrounds', () => {
+  const name = recordingContext();
+  drawCharacterName(name.ctx, 100, 161, 'Marta');
+  assert.deepEqual(name.backgrounds, []);
+  assert.equal((name.text[0] as unknown[])[1], 'Marta');
+  const badge = recordingContext();
+  drawNameBadge(badge.ctx, 100, 200, 'Hall');
+  assert.deepEqual(badge.backgrounds, [['#302d20', 86, 180, 28, 13]]);
+  assert.equal((badge.text[0] as unknown[])[1], 'Hall');
 });
 
 test('speech bubbles wrap whole words and keep oversized words intact', () => {
