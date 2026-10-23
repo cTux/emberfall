@@ -122,9 +122,9 @@ export class VillageLife {
       player.scene ||
       player.hitpoints <= 0 ||
       player.reconnecting ||
-      this.inFlight ||
       this.reply ||
-      this.continuation ||
+      (this.activeConversation?.playerId && this.activeConversation.text) ||
+      (this.continuation?.conversation.playerId && this.continuation.conversation.text) ||
       now < (this.replyAt.get(player.id) ?? 0)
     )
       return;
@@ -239,6 +239,16 @@ export class VillageLife {
       }
     }
     if (!players.length || this.inFlight || now < this.retryAt) return;
+    if (this.reply) {
+      if (now < this.reply.at) return;
+      const { conversation } = this.reply;
+      this.reply = undefined;
+      // A player's question supersedes ambient banter, including a continuation
+      // produced by the request that was in flight when the question arrived.
+      this.continuation = undefined;
+      this.start(conversation, now);
+      return;
+    }
     if (this.continuation && now >= this.continuation.at) {
       const { conversation } = this.continuation;
       this.continuation = undefined;
@@ -246,13 +256,6 @@ export class VillageLife {
       return;
     }
     if (this.continuation) return;
-    if (this.reply) {
-      if (now < this.reply.at) return;
-      const { conversation } = this.reply;
-      this.reply = undefined;
-      this.start(conversation, now);
-      return;
-    }
     if (now < this.nextTalk) return;
     for (const npc of npcs) {
       if (!npc.silenced && now < (this.npcAt.get(npc.id) ?? 0)) continue;

@@ -1,7 +1,42 @@
 import { test, expect } from './fixtures';
 import type { DialogueResult } from '../packages/server/src/npc-models.ts';
 let response: DialogueResult = { status: 'unavailable' };
-test.use({ npcDialogue: { generate: async () => response } });
+let generate: ((context: string) => Promise<DialogueResult>) | undefined;
+test.use({ npcDialogue: { generate: async (context) => generate?.(context) ?? response } });
+test.afterEach(() => {
+  generate = undefined;
+});
+
+test('a player mention during an NPC greeting receives an answer in the chat log', async ({
+  page,
+  game,
+}) => {
+  let finish!: (result: DialogueResult) => void;
+  const contexts: { quotedSpeech?: string }[] = [];
+  generate = async (context) => {
+    contexts.push(JSON.parse(context));
+    if (contexts.length === 1) return new Promise<DialogueResult>((resolve) => (finish = resolve));
+    return { status: 'ok', text: 'Pack spare boots; goblins collect the left ones.' };
+  };
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
+  Object.assign(player, { x: marta.x, y: marta.y });
+  await expect.poll(() => contexts.length, { timeout: 15_000 }).toBe(1);
+  const question = '@Marta Any forest advice?';
+  await page.keyboard.press('Enter');
+  await page.getByRole('textbox', { name: 'Chat message' }).fill(question);
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('log')).toContainText(question);
+  finish({ status: 'ok', text: '@Oswin, goblins ate the ledger.' });
+  await expect(page.getByRole('log')).toContainText(
+    'Marta the Innkeeper: Pack spare boots; goblins collect the left ones.',
+  );
+  expect(contexts[1].quotedSpeech).toBe(question);
+  expect(world.chat!.at(-1)!.npcId).toBe('innkeeper');
+});
 
 test('Marta walks near a player, stops for trading, and resumes when the window closes', async ({
   page,
