@@ -9,8 +9,40 @@ export interface NpcDialogue {
   generate(context: string, signal: AbortSignal): Promise<DialogueResult>;
 }
 
+type ValidationFailure =
+  | 'missing_body'
+  | 'response_too_large'
+  | 'invalid_json'
+  | 'incomplete'
+  | 'missing_text'
+  | 'empty_text'
+  | 'text_too_long'
+  | 'control_characters';
+
+class InvalidDialogueResponse extends Error {
+  readonly failure: ValidationFailure;
+  constructor(failure: ValidationFailure) {
+    super(failure);
+    this.failure = failure;
+  }
+}
+
+function spokenLine(content: string) {
+  let text = content.replace(/[\t\r\n\u2028\u2029]+/gu, ' ');
+  // Check the whole response before shortening so invalid characters cannot be hidden.
+  if (/[\p{Cc}\p{Cf}]/u.test(text)) throw new InvalidDialogueResponse('control_characters');
+  text = text.replace(/ +/gu, ' ').trim();
+  if (!text) throw new InvalidDialogueResponse('empty_text');
+  if (text.length > 200) {
+    const boundary = text.lastIndexOf(' ', 200);
+    if (boundary <= 0) throw new InvalidDialogueResponse('text_too_long');
+    text = text.slice(0, boundary).trimEnd();
+  }
+  return text;
+}
+
 async function boundedJson(response: Response) {
-  if (!response.body) throw new Error('Missing response');
+  if (!response.body) throw new InvalidDialogueResponse('missing_body');
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;
@@ -19,17 +51,21 @@ async function boundedJson(response: Response) {
       const { value, done } = await reader.read();
       if (done) break;
       size += value.length;
-      if (size > 32_768) throw new Error('Response too large');
+      if (size > 32_768) throw new InvalidDialogueResponse('response_too_large');
       chunks.push(value);
     }
   } finally {
     await reader.cancel().catch(() => {});
     reader.releaseLock();
   }
-  return JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
-    message?: { content?: unknown };
-    done?: boolean;
-  };
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
+      message?: { content?: unknown };
+      done?: boolean;
+    };
+  } catch {
+    throw new InvalidDialogueResponse('invalid_json');
+  }
 }
 
 export class OllamaNpcDialogue implements NpcDialogue {
@@ -118,10 +154,9 @@ export class OllamaNpcDialogue implements NpcDialogue {
         }
         const data = await boundedJson(response);
         const content = data?.message?.content;
-        if (data?.done !== true || typeof content !== 'string') throw new Error('Missing text');
-        const text = content.trim();
-        if (!text || text.length > 200 || /[\p{Cc}\p{Cf}]/u.test(text))
-          throw new Error('Invalid text');
+        if (data?.done !== true) throw new InvalidDialogueResponse('incomplete');
+        if (typeof content !== 'string') throw new InvalidDialogueResponse('missing_text');
+        const text = spokenLine(content);
         if (this.failed) {
           serverLog.info('NPC dialogue provider recovered', { provider: 'ollama', model });
           this.failed = false;
@@ -157,6 +192,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
           startedAt,
           undefined,
           networkCode,
+          error instanceof InvalidDialogueResponse ? error.failure : undefined,
         );
       }
       return { status: 'unavailable' };
@@ -171,6 +207,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
     startedAt: number,
     status?: number,
     networkCode?: string,
+    validationFailure?: ValidationFailure,
   ) {
     this.failed = true;
     serverLog.info('NPC dialogue model failed; cooling down', {
@@ -179,6 +216,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
       reason,
       status,
       networkCode,
+      validationFailure,
       elapsedMs: this.clock() - startedAt,
       timeoutMs: this.timeoutMs,
       retryMs: Math.max(0, this.retryAt - this.clock()),

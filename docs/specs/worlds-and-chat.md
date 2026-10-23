@@ -39,7 +39,11 @@ override them. Cloud model tags are rejected; no external or paid fallback is
 used. The Ollama service must also have cloud features disabled with
 `OLLAMA_NO_CLOUD=1`. Requests time out after 60 seconds to allow cold model loading,
 responses are bounded to 32 KiB and spoken text to 200 characters without
-control/format characters. HTTP errors, timeouts and invalid answers mark the
+control/format characters. The adapter folds line breaks and tabs into spaces
+and shortens overlong replies at a word boundary before validating the spoken
+line; it never invents fallback dialogue. Other control/format characters,
+empty text and replies without a usable word boundary remain invalid.
+HTTP errors, timeouts and invalid answers mark the
 provider unavailable for 60 seconds; Retry-After is honored from 30 seconds up to
 15 minutes. At most two requests run concurrently across worlds. A saturated
 local request budget defers speech without silence.
