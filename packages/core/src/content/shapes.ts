@@ -25,6 +25,12 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
       healing: positive,
       price: nonnegative.int().max(Number.MAX_SAFE_INTEGER).optional(),
     }),
+    z.object({
+      id,
+      name: z.string().min(1),
+      kind: z.literal('resource'),
+      price: nonnegative.int().max(Number.MAX_SAFE_INTEGER).optional(),
+    }),
   ]),
   gearTypes: z.object({ id, label: z.string().min(1) }),
   slots: z.object({

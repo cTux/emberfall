@@ -1,3 +1,5 @@
+import { resourceNodes, resourceState, nearbyResource, GATHER_RANGE } from '@emberfall/core';
+import { resourceScenery, drawResourceHealth } from './gathering';
 import { npcScenery } from './npc-art';
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
@@ -189,6 +191,32 @@ export function Arena({
     const pointerDown = (event: PointerEvent) => {
       if (event.button !== 0 || blocked()) return;
       pointerMove(event);
+      const world = latest.current;
+      const player = world?.players.find((p) => p.id === playerId);
+      if (world && player && player.hitpoints > 0) {
+        const aim = currentAim();
+        const nodes = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE);
+        const node = nodes
+          .filter(
+            (node) => resourceState(world.resources, node, world.serverNow ?? 0)?.remaining !== 0,
+          )
+          .filter((node) => {
+            const x = player.x + wrappedDelta(aim.aimX, player.x, FOREST.width);
+            const y = player.y + wrappedDelta(aim.aimY, player.y, FOREST.height);
+            return (
+              Math.abs(x - node.x) <= node.size / 2 && y >= node.y - node.size && y <= node.y + 8
+            );
+          })
+          .sort((a, b) => b.y - a.y)[0];
+        if (node) {
+          sender.current({
+            type: 'gather',
+            nodeId: node.id,
+            epoch: player.scene === 'forest' ? world.scene!.id : 'lobby',
+          });
+          return;
+        }
+      }
       held = true;
       sendMovement();
     };
@@ -410,6 +438,30 @@ export function Arena({
             authoritative?.npcs,
           )
         : null;
+      if (player && !interaction.current) {
+        const node = nearbyResource(
+          player,
+          authoritative?.resources,
+          authoritative?.serverNow ?? 0,
+        );
+        if (node)
+          interaction.current = {
+            id: `gather:${node.id}`,
+            name: `Gather ${node.kind}`,
+            x: node.x,
+            y: node.y,
+          };
+      }
+      element.dataset.resource = interaction.current?.id.startsWith('gather:')
+        ? interaction.current.id.slice(7)
+        : '';
+      element.dataset.depletedResources = String(
+        Object.values(view?.resources ?? {}).filter((state) => state.remaining === 0).length,
+      );
+      const gatheringId = interaction.current?.id.startsWith('gather:')
+        ? interaction.current.id.slice(7)
+        : '';
+      element.dataset.resourceHealth = String(view?.resources?.[gatheringId]?.remaining ?? '');
       if (local?.scene !== previousScene) {
         positions.clear();
         previousScene = local?.scene;
@@ -446,7 +498,16 @@ export function Arena({
       }
       const prepared = villageBackground(quality.current);
       const scenery = [
-        ...(prepared?.scenery ?? []),
+        ...(prepared?.scenery ?? []).filter((object) => !object.id.startsWith('tree:')),
+        ...resourceNodes(
+          { x: local?.x ?? 480, y: local?.y ?? 320 },
+          Math.max(el.width, el.height) / scale + 200,
+        ).map((node) => {
+          const object =
+            node.kind === 'tree' ? prepared?.scenery.find((o) => o.id === node.id) : undefined;
+          const state = resourceState(view.resources, node, view.serverNow ?? now);
+          return state?.remaining === 0 || !object ? resourceScenery(node, state) : object;
+        }),
         ...npcScenery(view.npcs ?? [], view.serverNow ?? now),
       ];
       element.dataset.npcs = String(view.npcs?.length ?? 0);
@@ -513,7 +574,8 @@ export function Arena({
       const dynamic: Caster[] = [];
       if (quality.current.shadows)
         for (const object of visibleScenery)
-          if (object.frames || object.npc) castShadow(ctx, object);
+          if (object.frames || object.npc || object.id.startsWith('tree:') || object.kind)
+            castShadow(ctx, object);
       for (const player of players) {
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
         const ix = player.inputX ?? 0,
@@ -701,7 +763,9 @@ export function Arena({
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = obstacleOpacity(object, local);
-          const vegetation = object.id.startsWith('tree:');
+          const state = view.resources?.[object.id];
+          const vegetation =
+            (object.id.startsWith('tree:') || object.kind === 'plant') && state?.remaining !== 0;
           if (vegetation)
             drawVegetation(
               ctx,
@@ -746,6 +810,16 @@ export function Arena({
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
+          if (object.id.startsWith('tree:'))
+            drawResourceHealth(
+              ctx,
+              { ...object, kind: 'tree', size: object.width },
+              resourceState(
+                view.resources,
+                { ...object, kind: 'tree', size: object.width },
+                view.serverNow ?? now,
+              ),
+            );
           if (object.name && object.npc)
             drawCharacterName(
               ctx,
@@ -874,7 +948,12 @@ export function Arena({
           if (!texture) continue;
           const movingLight = lightTexture(
             light,
-            [...dynamic, ...visibleScenery.filter((object) => object.frames)],
+            [
+              ...dynamic,
+              ...visibleScenery.filter(
+                (object) => object.frames || object.id.startsWith('tree:') || object.kind,
+              ),
+            ],
             quality.current.shadows,
             texture,
           );

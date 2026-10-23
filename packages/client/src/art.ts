@@ -226,3 +226,5 @@ export function drawArt(
   if (!image.naturalWidth || image.dataset.artReady !== 'true') return;
   ctx.drawImage(image, column * cell, row * cell, cell, cell, x, y, width, height);
 }
+
+export const gatheredArt = loadArt('gathered', 3, 1, 128);

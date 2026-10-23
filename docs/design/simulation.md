@@ -61,3 +61,15 @@ Scene entities, projectiles, drops, damage events, companion state and DPS histo
 Drive explicit timestamps rather than sleeping through two-minute runs. Use [scenes.test.ts](../../packages/server/src/scenes.test.ts), [classes.test.ts](../../packages/server/src/classes.test.ts), [enemies.test.ts](../../packages/server/src/enemies.test.ts), [training.test.ts](../../packages/server/src/training.test.ts) and [pass-through.test.ts](../../packages/server/src/pass-through.test.ts).
 
 For changed combat, test the same effect in forest and training, wrapped overlap, duplicate hits/casts, dead targets, membership scaling verify visible warnings and lifecycle behavior.
+
+## Resource gathering
+
+Core's `gathering.ts` supplies deterministic resource positions and wrapped
+proximity queries for both areas. The authoritative runtime keeps a sparse map
+of touched nodes per world, projected through the world header, and expires it
+using wall-clock deadlines independently of combat pause. Gather commands include
+the current area epoch and node ID, never rewards. Core validates range and builds
+a detached inventory before committing the gather and independent tree rolls.
+The client renders generated depleted art and tree health from this state.
+Resource inventory entries use registered `resource` definitions and stack to
+200; insertion plans capacity before mutation and splits overflow into new IDs.

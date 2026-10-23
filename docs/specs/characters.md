@@ -150,3 +150,7 @@ Evidence: [characters.test.ts](../../packages/server/src/characters.test.ts), [c
 
 Steam evidence: [server account tests](../../packages/server/src/accounts.test.ts) and
 [browser account tests](../../tests/accounts.spec.ts).
+
+Gathered logs, sticks, leaves, rocks and stones are saved resource items. Each
+resource stack holds at most 200 items; overflow starts another slot. Gear and
+weapons remain individual entries. Existing consumable stacking is unchanged.

@@ -16,7 +16,7 @@ test('base loads through the same registries with stable IDs, ordering and balan
     ready.registries.classes.values().map((player) => player.id),
     ['warrior', 'ranger', 'mage', 'druid'],
   );
-  assert.equal(ready.registries.items.size, 16);
+  assert.equal(ready.registries.items.size, 21);
   assert.equal(ready.rules.characterStats({ classId: 'warrior' }).power, 5);
   assert.equal(ready.registries.enemies.require('caster').hitPoints, 7);
   assert.equal(ready.registries.enemyTypes.require('normal').dropCount, 1);

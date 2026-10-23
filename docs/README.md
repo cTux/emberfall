@@ -137,3 +137,8 @@ Talents: [rules](specs/progression.md#prog-03--talents),
 [design](design/new-runtime.md#talent-configuration),
 [authoritative tests](../packages/server/src/talents.test.ts) and
 [browser scenario](../tests/talents.spec.ts).
+
+Resource gathering: [VILLAGE-07](specs/scenes-and-village.md#village-07--gathering),
+implemented by [shared rules](../packages/core/src/gathering.ts) and verified by
+[gathering tests](../packages/server/src/gathering.test.ts) and
+[browser gathering checks](../tests/gathering.spec.ts).

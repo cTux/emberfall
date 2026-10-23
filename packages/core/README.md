@@ -32,7 +32,7 @@ standalone data or shared mod-owned templates.
 
 `ItemDefinition` is a discriminated union. Gear uses `kind: 'gear'` with
 `gearType` and `stats`; consumables use `kind: 'consumable'` with `healing`.
-Consumables need no dummy gear fields. `BaseItemDefinition` carries `id`, `name`
+Resources use `kind: 'resource'` and stack to 200; gear never stacks. Consumables need no dummy gear fields. `BaseItemDefinition` carries `id`, `name`
 and optional `price` (a safe nonnegative integer in gold units). `EnemyKind` is an open string type while the named built-in
 constants retain their original values.
 

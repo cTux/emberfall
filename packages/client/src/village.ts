@@ -6,6 +6,7 @@ import { environmentArt, wardrobeArt } from './art';
 import { chimneyAnchors } from './ambient-art';
 
 export interface Scenery extends Caster {
+  kind?: 'tree' | 'plant' | 'rock' | 'stone';
   npc?: VillageNpc;
   sprite: HTMLCanvasElement;
   name?: string;

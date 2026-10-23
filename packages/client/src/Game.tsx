@@ -337,7 +337,15 @@ export function Game({
   const interact = () => {
     const source = interaction.current;
     if (!source) return;
-    if (source.id === 'return') send({ type: 'returnLobby' });
+    if (source.id.startsWith('gather:')) {
+      const me = world?.players.find((p) => p.id === playerId);
+      if (me)
+        send({
+          type: 'gather',
+          nodeId: source.id.slice(7),
+          epoch: me.scene === 'forest' ? (world?.scene?.id ?? '') : 'lobby',
+        });
+    } else if (source.id === 'return') send({ type: 'returnLobby' });
     else if (source.id === 'wardrobe') setMenu('wardrobe');
     else if (source.id === 'portal') setMenu('portal');
     else {
@@ -421,8 +429,7 @@ export function Game({
       if (
         event.code === 'KeyE' &&
         !document.querySelector('[role="dialog"][aria-modal="true"]') &&
-        !(event.target instanceof HTMLInputElement) &&
-        !(event.target instanceof HTMLSelectElement)
+        !typing
       )
         interact();
     };

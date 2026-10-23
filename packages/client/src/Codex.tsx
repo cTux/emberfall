@@ -27,7 +27,9 @@ const chapters = [
             <kbd>WASD</kbd> or <kbd>↑ ↓ ← →</kbd> — move.
           </li>
           <li>
-            <kbd>E</kbd> — interact near buildings, Marta the Innkeeper, or the blue portal.
+            <kbd>E</kbd> — interact near buildings, Marta the Innkeeper, the blue portal, or gather
+            nearby resources. Click a nearby tree, plant or stone to gather it. Trees allow five
+            gathers; resources restore after one hour.
           </li>
           <li>
             <kbd>I</kbd> — open or close Inventory and character stats.
