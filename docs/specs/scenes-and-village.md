@@ -54,8 +54,11 @@ wait at least two seconds after the triggering message before generation starts,
 subject to model availability. NPC exchanges stop after at most five messages total. An automatic NPC-to-NPC
 greeting also receives one answer if it contains no mention. Continued exchanges
 require another mention. Distant residents do not answer across the village.
-Players can reply with `@Marta message` (or another resident's first name) while
-nearby; directed replies have a separate 10-second player cooldown and a five-second village reply interval. One request
+Players can address a resident by mentioning their first name anywhere in chat,
+with or without `@`, such as `Hello, @Marta!` or `Any advice, Marta?`. Matching
+ignores case and requires a whole name. The first mentioned resident within 120
+wrapped units answers the player's full message; distant residents are skipped.
+Directed replies have a separate 10-second player cooldown and a five-second village reply interval. One request
 runs per world, with at most two across the server and no unbounded request queue.
 Each NPC remembers at most six recent spoken lines. No NPC dialogue grants items,
 changes gold, creates quests or implements services in placeholder buildings.
