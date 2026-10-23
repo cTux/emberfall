@@ -56,28 +56,3 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
     ];
   });
 }
-
-export function drawSilence(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.save();
-  ctx.fillStyle = '#641e2b';
-  ctx.strokeStyle = '#ff8794';
-  ctx.lineWidth = 1.5;
-  ctx.fillRect(x - 9, y - 9, 18, 18);
-  ctx.strokeRect(x - 9, y - 9, 18, 18);
-  ctx.beginPath();
-  ctx.moveTo(x - 5, y - 4);
-  ctx.lineTo(x + 5, y - 4);
-  ctx.lineTo(x + 5, y + 2);
-  ctx.lineTo(x - 1, y + 2);
-  ctx.lineTo(x - 4, y + 5);
-  ctx.lineTo(x - 4, y + 2);
-  ctx.lineTo(x - 5, y + 2);
-  ctx.closePath();
-  ctx.stroke();
-  ctx.strokeStyle = '#ffffff';
-  ctx.beginPath();
-  ctx.moveTo(x - 6, y + 6);
-  ctx.lineTo(x + 6, y - 6);
-  ctx.stroke();
-  ctx.restore();
-}

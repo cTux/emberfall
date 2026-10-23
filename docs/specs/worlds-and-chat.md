@@ -42,7 +42,11 @@ after 2.5 seconds per model, responses are bounded to 32 KiB and spoken text to
 fallback is allowed. A saturated local request budget defers speech without silence.
 
 When every eligible model fails or is cooling down, all residents in the affected
-village receive Silenced: a red crossed speech icon above the head and a red name.
+village receive Silenced: the shared framed Silence ailment icon (12 world units,
+2-unit row spacing, outlined stack count) in the standard overhead debuff row, plus
+a red name. The icon uses the same renderer and assets as bleeding and other
+ailments. Silence is a shared non-damaging debuff kind, ready for future player
+use; player silence application and spell restrictions are not implemented here.
 One red System message announces the outage to village listeners. Silenced NPCs
 continue walking, emit no fallback dialogue, and retry eligible conversations no
 more than once per minute. A successful response removes silence from all residents

@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { FOREST, TRAINING_ZONES, inTrainingZone, WARDROBE, forestDistance } from '@emberfall/core';
 import {
   tickTraining,
+  tickDebuffs,
+  createTrainingScene,
   tickPlayerCombat,
   hitEnemy,
   fireClassAttack,
@@ -198,4 +200,18 @@ test('roots include exactly 250 units, exclude farther targets, and work across 
     s.playerShots!.slice(-1).map((shot) => shot.targetId),
     [4],
   );
+});
+
+test('Silence is a shared non-damaging debuff and expires without producing combat hits', () => {
+  const scene = createTrainingScene(0);
+  const target = scene.enemies[0];
+  const health = target.hitpoints;
+  target.debuffs = [{ kind: 'silence', stacks: 1, expiresAt: 5000, nextTick: 1000, ownerId: 'p' }];
+  tickDebuffs(scene, [hero()], 4000);
+  assert.equal(target.hitpoints, health);
+  assert.equal(scene.damage.length, 0);
+  assert.equal(target.debuffs.length, 1);
+  tickDebuffs(scene, [hero()], 5000);
+  assert.equal(target.debuffs.length, 0);
+  assert.equal(scene.damage.length, 0);
 });

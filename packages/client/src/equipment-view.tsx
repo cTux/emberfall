@@ -149,7 +149,7 @@ function weaponBadges(player: Player, classId: ClassId, weapon: string): Equipme
       icon: 'roots',
       explanation: `One projectile bounces up to three times to the nearest unhit living enemy within 250 units of each impact for full power. Roots slow ordinary enemies by 10% for ${duration} seconds with one stack; hits refresh the duration. Bosses are immune to roots.`,
     });
-  } else {
+  } else if (ailment === 'bleed' || ailment === 'poison' || ailment === 'burn') {
     const definition = AILMENT_DEFINITIONS[ailment];
     badges.push({
       label: capitalize(ailment),

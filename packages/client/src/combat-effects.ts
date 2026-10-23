@@ -4,7 +4,7 @@ import { statusImages } from './combat-assets';
 import { effectsArt, pickupArt, drawArt, loadArt } from './art';
 import { EQUIPMENT_SLOTS, GEAR_DEFINITIONS, SLOT_GEAR_TYPES } from '@emberfall/core';
 import { hitOutline } from './effects';
-import type { SceneState, LootDrop, Enemy, DamageEvent } from '@emberfall/common';
+import type { SceneState, LootDrop, DamageEvent, DebuffIndicator } from '@emberfall/common';
 
 export function bloodPuddleRenderer() {
   const puddles = new Map<number, Pick<DamageEvent, 'id' | 'x' | 'y' | 'at'>>();
@@ -286,12 +286,13 @@ export function drawClassProjectiles(
 
 export function drawDebuffs(
   ctx: CanvasRenderingContext2D,
-  enemy: Enemy,
+  target: { debuffs?: readonly DebuffIndicator[] },
   x: number,
   y: number,
   now: number,
 ) {
-  const debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now) ?? [];
+  const debuffs =
+    target.debuffs?.filter((d) => d.expiresAt === undefined || d.expiresAt > now) ?? [];
   ctx.save();
   ctx.font = 'bold 8px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'right';

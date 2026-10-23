@@ -22,4 +22,5 @@ export const statusImages = {
   poison: load(statusSrc('poison')),
   burn: load(statusSrc('burn')),
   roots: load(statusSrc('roots')),
+  silence: load(statusSrc('silence')),
 };

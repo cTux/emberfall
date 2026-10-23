@@ -80,8 +80,11 @@ Chat entries optionally carry a dimension, NPC identity and announcement tone.
 Server broadcasts share one prepared projection per dimension; the latest ten
 visible messages are selected from a bounded world history. Existing player and
 system chat remains world-wide. NPC art joins the existing scenery depth sort,
-mask/shadow path and wrapped camera. Silence icons draw above atmosphere at every
-quality setting. The finite atlas-cell cache does not retain world instances.
+mask/shadow path and wrapped camera. Silence icons reuse `drawDebuffs` and the shared ailment asset map, drawing the
+same 12-unit framed icon and outlined count in the overhead status row at every
+quality setting. The common `DebuffIndicator` contract supports timed and
+indefinite presentation; the registered non-damaging `silence` kind is reusable
+for future player statuses. The finite atlas-cell cache does not retain world instances.
 See [SCENE-06](../specs/scenes-and-village.md#scene-06--village-life) and
 [CHAT-04](../specs/worlds-and-chat.md#chat-04--npc-speech-and-silence) for timings,
 free-route failover, visibility and recovery rules.
@@ -146,7 +149,7 @@ The WebGL back buffer is enabled for soft-light color grading to blend with the
 scene instead of falling back to a plain translucent fill.
 Its blend filter unpremultiplies texture colors before applying the Canvas
 soft-light equation, then composites alpha once.
-The renderer pixel tests compare gradient blending with Canvas and check all four
+The renderer pixel tests compare gradient blending with Canvas and check all five
 debuff glyphs, including reuse of pooled sprites.
 
 ## Compatibility

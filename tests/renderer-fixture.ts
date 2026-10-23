@@ -115,23 +115,18 @@ export async function compare() {
       128,
     );
   }
-  for (const kind of ['bleed', 'poison', 'burn', 'roots'] as const) {
+  for (const kind of ['bleed', 'poison', 'burn', 'roots', 'silence'] as const) {
     compare(
       kind,
       (ctx) =>
         drawDebuffs(
           ctx,
           {
-            id: 1,
-            x: 0,
-            y: 0,
-            angle: 0,
-            hitpoints: 100,
-            debuffs: [{ kind, stacks: 1, expiresAt: 1000, nextTick: 1000, ownerId: 'p' }],
+            debuffs: [{ kind, stacks: 1, ...(kind === 'silence' ? {} : { expiresAt: 1000 }) }],
           },
           80,
           100,
-          0,
+          kind === 'silence' ? 50_000 : 0,
         ),
       81,
       89,

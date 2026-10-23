@@ -1,4 +1,4 @@
-import { npcScenery, drawSilence } from './npc-art';
+import { npcScenery } from './npc-art';
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
@@ -55,6 +55,8 @@ const colors = [
   '#a4cf7b',
   '#ddd',
 ];
+const NPC_SILENCE = { debuffs: [{ kind: 'silence' as const, stacks: 1 }] };
+
 export function Arena({
   world,
   playerId,
@@ -906,7 +908,9 @@ export function Arena({
       drawNavigation(ctx, view, playerId);
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
       for (const object of visibleScenery) {
-        if (object.npc?.silenced) drawSilence(ctx, object.x, object.y - 70);
+        // NPC positions are feet anchors; this matches the 40-unit actor health/status row.
+        if (object.npc?.silenced)
+          drawDebuffs(ctx, NPC_SILENCE, object.x - 20, object.y - 61, serverTime);
         else if (object.npc && (object.npc.chatUntil ?? 0) > serverTime)
           drawChatBubble(ctx, object.x, object.y - 24, object.npc.chat);
       }
