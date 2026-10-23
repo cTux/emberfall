@@ -265,3 +265,50 @@ test('druid roots visibly bounce through authoritative training with one refresh
   expect(world.training!.drops?.length ?? 0).toBe(0);
   await page.screenshot({ path: 'test-results/druid-bounce-training.png' });
 });
+
+for (const [difficulty, multiplier] of [
+  ['Medium', 2],
+  ['Hard', 4],
+] as const) {
+  test(`portal creates and regenerates ${difficulty} scenes`, async ({ page, game }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+    await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+    const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+    const player = [...world.players.values()][0];
+    player.autoAttack = false;
+    player.x = LOBBY_PORTAL.x;
+    player.y = LOBBY_PORTAL.y - 15;
+    const portal = page.getByRole('dialog', { name: 'Forest portal' });
+    await expect(async () => {
+      await page.keyboard.press('e');
+      await expect(portal).toBeVisible({ timeout: 500 });
+    }).toPass({ intervals: [200], timeout: 15000 });
+    await expect(portal.getByRole('combobox', { name: 'Difficulty' })).toHaveText('Easy');
+    await portal.getByRole('combobox', { name: 'Difficulty' }).click();
+    for (const name of ['Easy', 'Medium', 'Hard'])
+      await expect(page.getByRole('option', { name, exact: true })).toBeVisible();
+    await page.getByRole('option', { name: difficulty, exact: true }).click();
+    await expect(portal.getByText(`${multiplier}× enemy health and damage`)).toBeVisible();
+    await page.screenshot({ path: `test-results/portal-${difficulty.toLowerCase()}.png` });
+    await portal.getByRole('button', { name: 'Create', exact: true }).click();
+    await expect.poll(() => world.scene?.difficulty).toBe(difficulty);
+    await expect(portal.getByText(difficulty, { exact: true })).toBeVisible();
+    await portal.getByRole('button', { name: "I'm ready" }).click();
+    await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
+    const sceneId = world.scene!.id;
+    player.scene = undefined;
+    player.x = LOBBY_PORTAL.x;
+    player.y = LOBBY_PORTAL.y - 15;
+    await expect(async () => {
+      await page.keyboard.press('e');
+      await expect(portal.getByRole('button', { name: 'Regenerate scene' })).toBeVisible({
+        timeout: 500,
+      });
+    }).toPass({ intervals: [200], timeout: 15000 });
+    await portal.getByRole('button', { name: 'Regenerate scene' }).click();
+    await expect.poll(() => world.scene!.id).not.toBe(sceneId);
+    expect(world.scene!.difficulty).toBe(difficulty);
+    await expect(portal.getByText(difficulty, { exact: true })).toBeVisible();
+  });
+}
