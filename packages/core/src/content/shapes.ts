@@ -149,39 +149,88 @@ export const worldShapes = {
     treeCellSize: positive,
     treeRadius: positive,
   }),
-  village: z.object({
-    id: z.literal('village'),
-    geometry: geometry.extend({ speed: positive }),
-    wardrobe: point,
-    innkeeper: point.extend({ id, name: z.string().min(1) }),
-    villagers: z
-      .array(
+  village: z
+    .object({
+      id: z.literal('village'),
+      geometry: geometry.extend({ speed: positive }),
+      wardrobe: point,
+      innkeeper: point.extend({ id, name: z.string().min(1) }),
+      villagers: z
+        .array(
+          point.extend({
+            id,
+            name: z.string().min(1),
+            buildingId: id,
+            personality: z.string().min(1),
+          }),
+        )
+        .optional(),
+      npcStops: z.array(point).min(2).optional(),
+      workstations: z
+        .array(
+          point.extend({
+            id,
+            npcId: id,
+            buildingId: id,
+            name: z.string().min(1),
+            activity: z.enum([
+              'cooking',
+              'brewing',
+              'alchemy',
+              'writing',
+              'forging',
+              'smelting',
+              'archery',
+              'leatherworking',
+            ]),
+            art: z.number().int().min(0).max(7),
+            worker: point,
+          }),
+        )
+        .optional(),
+      buildings: z.array(
         point.extend({
           id,
           name: z.string().min(1),
-          buildingId: id,
-          personality: z.string().min(1),
+          doorX: z.number().finite(),
+          sourceX: nonnegative,
+          sourceWidth: positive,
         }),
-      )
-      .optional(),
-    npcStops: z.array(point).min(2).optional(),
-    buildings: z.array(
-      point.extend({
-        id,
-        name: z.string().min(1),
-        doorX: z.number().finite(),
-        sourceX: nonnegative,
-        sourceWidth: positive,
-      }),
-    ),
-    torches: z.array(point),
-    trainingZones: z.array(point.extend({ radius: positive, clearingRadius: positive })).min(2),
-    paths: z.array(z.tuple([point, point, point, point])),
-    treeSeed: nonnegative.int(),
-    treeAttempts: nonnegative.int(),
-    spawn: point.extend({ spacing: positive }),
-    returnSpawn: point,
-  }),
+      ),
+      torches: z.array(point),
+      trainingZones: z.array(point.extend({ radius: positive, clearingRadius: positive })).min(2),
+      paths: z.array(z.tuple([point, point, point, point])),
+      treeSeed: nonnegative.int(),
+      treeAttempts: nonnegative.int(),
+      spawn: point.extend({ spacing: positive }),
+      returnSpawn: point,
+    })
+    .superRefine((village, ctx) => {
+      if (!village.workstations) return;
+      const ids = new Set<string>();
+      for (const [index, station] of village.workstations.entries()) {
+        const resident = village.villagers?.find((npc) => npc.id === station.npcId);
+        if (
+          ids.has(station.id) ||
+          !resident ||
+          resident.buildingId !== station.buildingId ||
+          !village.buildings.some((building) => building.id === station.buildingId)
+        )
+          ctx.addIssue({
+            code: 'custom',
+            path: ['workstations', index],
+            message: 'Workstation needs a unique ID and its resident home building',
+          });
+        ids.add(station.id);
+      }
+      for (const npc of village.villagers ?? [])
+        if (village.workstations.filter((station) => station.npcId === npc.id).length !== 2)
+          ctx.addIssue({
+            code: 'custom',
+            path: ['workstations'],
+            message: `Resident '${npc.id}' needs two workstations`,
+          });
+    }),
 };
 export const encounterShapes = {
   forest: z.object({

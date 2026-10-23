@@ -216,6 +216,8 @@ export interface VillageNpc {
   silenced: boolean;
   chat?: string;
   chatUntil?: number;
+  workstationId?: string;
+  workStartedAt?: number;
 }
 export type ServerMessage =
   | { type: 'pong'; id: number }

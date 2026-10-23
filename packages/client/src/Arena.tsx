@@ -1,4 +1,4 @@
-import { npcScenery } from './npc-art';
+import { npcScenery, drawNpcWork } from './npc-art';
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
@@ -450,6 +450,14 @@ export function Arena({
         ...npcScenery(view.npcs ?? [], view.serverNow ?? now),
       ];
       element.dataset.npcs = String(view.npcs?.length ?? 0);
+      element.dataset.workstations = String(
+        prepared?.scenery.filter((s) => s.id.startsWith('workstation:')).length ?? 0,
+      );
+      element.dataset.workingNpcIds = (view.npcs ?? [])
+        .filter((n) => n.workstationId)
+        .map((n) => n.id)
+        .join(',');
+      element.dataset.workingNpcs = String(view.npcs?.filter((n) => n.workstationId).length ?? 0);
       element.dataset.silencedNpcs = String(view.npcs?.filter((n) => n.silenced).length ?? 0);
       for (const object of scenery)
         if (object.frames)
@@ -743,6 +751,8 @@ export function Arena({
               object.width,
               object.height,
             );
+          if (object.npc?.workstationId)
+            drawNpcWork(ctx, object.npc, object.x, object.y, serverTime);
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;

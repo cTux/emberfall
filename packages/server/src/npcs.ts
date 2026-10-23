@@ -17,6 +17,13 @@ const SPEED = 38;
 const REPLY_DELAY = 2000;
 const villagePlayers = (world: NpcWorld) =>
   [...world.players.values()].filter((p) => !p.scene && p.hitpoints > 0 && !p.reconnecting);
+interface Routine {
+  stop: number;
+  pauseUntil: number;
+  returnAt: number;
+  station: number;
+  work?: { remaining: number; elapsed: number };
+}
 interface Conversation {
   speaker: string;
   playerId?: string;
@@ -37,7 +44,7 @@ export class VillageLife {
   private npcAt = new Map<string, number>();
   private replyAt = new Map<string, number>();
   private playerAt = new Map<string, number>();
-  private walks = new Map<string, { stop: number; pauseUntil: number }>();
+  private walks = new Map<string, Routine>();
   private interactions = new Map<string, string>();
   private memories = new Map<string, string[]>();
   private reply?: { at: number; conversation: Conversation };
@@ -53,6 +60,8 @@ export class VillageLife {
       this.walks.set(definition.id, {
         stop: this.chooseStop(),
         pauseUntil: now + 5000 + this.random() * 4000,
+        returnAt: now + 25_000 + this.random() * 20_000,
+        station: 0,
       });
       return {
         id: definition.id,
@@ -96,7 +105,13 @@ export class VillageLife {
     )
       return;
     this.interactions.set(player.id, npcId);
-    this.world.npcs.find((npc) => npc.id === npcId)!.moving = false;
+    const npc = this.world.npcs.find((npc) => npc.id === npcId)!;
+    npc.moving = false;
+    npc.workstationId = npc.workStartedAt = undefined;
+    npc.angle = Math.atan2(
+      wrappedDelta(player.y, npc.y, VILLAGE_DEFINITION.geometry.height),
+      wrappedDelta(player.x, npc.x, VILLAGE_DEFINITION.geometry.width),
+    );
   }
   hear(player: Player, text: string, now: number) {
     if (
@@ -117,6 +132,8 @@ export class VillageLife {
           n.name.split(' ')[0].toLowerCase() === name && forestDistance(n, player) <= PLAYER_RANGE,
       );
       if (!npc) continue;
+      npc.workstationId = npc.workStartedAt = undefined;
+      npc.moving = false;
       this.nextReply = now + 5000;
       this.reply = {
         at: now + REPLY_DELAY,
@@ -151,24 +168,66 @@ export class VillageLife {
         this.continuation &&
         (this.continuation.conversation.speaker === npc.id ||
           this.continuation.conversation.otherNpc === npc.id);
+      npc.workstationId = npc.workStartedAt = undefined;
       if (
         !players.length ||
         occupied ||
         continuing ||
-        now < walk.pauseUntil ||
-        interacting.has(npc.id)
+        interacting.has(npc.id) ||
+        this.reply?.conversation.speaker === npc.id ||
+        (npc.chatUntil ?? 0) > now
       ) {
         npc.moving = false;
         continue;
       }
-      const target = VILLAGE_DEFINITION.npcStops[walk.stop % VILLAGE_DEFINITION.npcStops.length];
+      const returning = now >= walk.returnAt;
+      const stations = VILLAGE_DEFINITION.workstations.filter((s) => s.npcId === npc.id);
+      const station = stations[walk.station % stations.length];
+      if (walk.work && station) {
+        npc.moving = false;
+        npc.angle = Math.atan2(
+          wrappedDelta(station.y - 18, npc.y - 24, VILLAGE_DEFINITION.geometry.height),
+          wrappedDelta(station.x, npc.x, VILLAGE_DEFINITION.geometry.width),
+        );
+        npc.workstationId = station.id;
+        npc.workStartedAt = now - walk.work.elapsed;
+        const active = Math.max(0, dt * 1000);
+        walk.work.remaining -= active;
+        walk.work.elapsed += active;
+        if (walk.work.remaining <= 0) {
+          walk.work = undefined;
+          walk.station++;
+          walk.returnAt = now + 25_000 + this.random() * 20_000;
+          walk.pauseUntil = now + 5000 + this.random() * 4000;
+          walk.stop = this.chooseStop(walk.stop);
+          npc.workstationId = npc.workStartedAt = undefined;
+        }
+        continue;
+      }
+      if (!returning && now < walk.pauseUntil) {
+        npc.moving = false;
+        continue;
+      }
+      const target =
+        returning && station
+          ? station.worker
+          : VILLAGE_DEFINITION.npcStops[walk.stop % VILLAGE_DEFINITION.npcStops.length];
       const dx = wrappedDelta(target.x, npc.x, VILLAGE_DEFINITION.geometry.width),
         dy = wrappedDelta(target.y, npc.y, VILLAGE_DEFINITION.geometry.height);
       const distance = Math.hypot(dx, dy);
       const step = Math.min(distance, SPEED * dt);
       if (distance < 1) {
-        walk.stop = this.chooseStop(walk.stop);
-        walk.pauseUntil = now + 5000 + this.random() * 4000;
+        npc.x = target.x;
+        npc.y = target.y;
+        if (returning && station) {
+          walk.work = { remaining: 60_000 + this.random() * 30_000, elapsed: 0 };
+          npc.workstationId = station.id;
+          npc.workStartedAt = now;
+          npc.angle = Math.atan2(station.y - npc.y + 6, station.x - npc.x);
+        } else {
+          walk.stop = this.chooseStop(walk.stop);
+          walk.pauseUntil = now + 5000 + this.random() * 4000;
+        }
         npc.moving = false;
       } else {
         npc.angle = Math.atan2(dy, dx);
@@ -236,6 +295,7 @@ export class VillageLife {
     const actors = this.participants(conversation);
     if (!actors) return;
     actors.npc.moving = false;
+    actors.npc.workstationId = actors.npc.workStartedAt = undefined;
     actors.npc.angle = Math.atan2(
       wrappedDelta(actors.target.y, actors.npc.y, VILLAGE_DEFINITION.geometry.height),
       wrappedDelta(actors.target.x, actors.npc.x, VILLAGE_DEFINITION.geometry.width),
@@ -243,6 +303,7 @@ export class VillageLife {
     if (conversation.otherNpc) {
       const other = this.world.npcs!.find((n) => n.id === conversation.otherNpc)!;
       other.moving = false;
+      other.workstationId = other.workStartedAt = undefined;
       other.angle = actors.npc.angle + Math.PI;
     }
     this.inFlight = true;

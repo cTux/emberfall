@@ -3,7 +3,7 @@ import { ARENA } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { drawVillagePaths } from './paths';
 import { castShadow } from './lighting';
-import { villageSprites, TORCH_LIGHTS, lightTexture } from './village';
+import { villageSprites, TORCH_LIGHTS, lightTexture, workstationArt } from './village';
 import { environmentArt, wardrobeArt, innkeeperArt, terrainArt, terrainTile } from './art';
 
 const nature = new Image();
@@ -31,7 +31,7 @@ let cached:
 /** Shared across Arena remounts. Wait for all assets, including failed loads. */
 export function villageBackground(graphics: GraphicsSettings) {
   if (
-    [environmentArt, wardrobeArt, innkeeperArt].some(
+    [environmentArt, wardrobeArt, innkeeperArt, workstationArt].some(
       (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== 'true',
     ) ||
     !terrainArt.complete ||

@@ -76,6 +76,15 @@ examples guide tone rather than supplying canned responses. `server/npcs.ts` run
 per occupied world; canonical NPC components live in its existing Miniplex world.
 Each resident randomly chooses its next stop, excluding its previous destination and
 preferring unclaimed stops, with independently randomized 5–9 second pauses.
+The definition also owns eight workstations with resident/building IDs, art indices,
+activity kinds, equipment positions and worker anchors. After 25–45 seconds residents
+return to their alternating home workstation. Arrival starts 60–90 seconds of active
+work; fixed-tick deltas consume the remaining duration only while working with village
+players present. Interactions, pending/generated conversations and visible speech suspend
+work. Optional `workstationId` and `workStartedAt` fields replicate the active pose through
+the existing entity payload; suspended sessions remain private to `VillageLife`.
+The client reuses actor action poses and draws timed work tools/effects without combat
+commands. Workstation art uses the scenery atlas cache, wrapping, depth and shadow path.
 The server advances walking on the fixed tick and starts bounded asynchronous
 requests through one shared `OllamaNpcDialogue` provider. Player mentions and NPC
 continuations carry a simulation-time deadline two seconds after the triggering
