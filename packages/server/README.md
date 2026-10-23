@@ -21,6 +21,14 @@ for disposable tests. TLS uses the existing local certificate setup. Ports and o
 keep `SAVE_PATH_NEW` pointing to the existing database or move a stopped backup
 from `packages/server-new/data` to `packages/server/data` before startup.
 
+## Server logs
+
+`pnpm start` and `pnpm dev` print timestamped major server events to the terminal:
+startup/listening, runtime restoration, connections, world creation/removal,
+player joins/leaves/reconnects, shutdown and operational failures. Session and
+world IDs correlate events without logging credentials or command payloads.
+Combat, simulation ticks, movement, chat and successful routine autosaves stay quiet.
+
 ## Ownership and patterns
 
 Steam login is required by the executable. Set `STEAM_ORIGIN` (canonical browser

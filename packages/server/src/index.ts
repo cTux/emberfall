@@ -2,6 +2,9 @@ import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { createGameServer } from './worlds.ts';
 import { steamOptionsFromEnv } from './accounts.ts';
+import { serverLog } from './log.ts';
+
+serverLog.info('Server starting');
 const steam = steamOptionsFromEnv();
 const root = fileURLToPath(new URL('../../client/dist/', import.meta.url));
 const savePath =
@@ -20,11 +23,18 @@ const tls =
 const app = await createGameServer(root, savePath, tls, steam);
 const port = Number(process.env.BASE_PORT ?? process.env.PORT_NEW ?? 3003);
 await app.listen(port, process.env.HOST ?? '0.0.0.0');
-console.log(`Emberfall: ${tls ? 'https' : 'http'}://localhost:${port}`);
+serverLog.info('Server listening', {
+  url: `${tls ? 'https' : 'http'}://localhost:${port}`,
+  host: process.env.HOST ?? '0.0.0.0',
+});
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
   process.once(signal, () => {
-    void app.close().catch((error) => {
-      console.error('Shutdown failed:', error);
-      process.exitCode = 1;
-    });
+    serverLog.info('Shutdown requested', { signal });
+    void app
+      .close()
+      .then(() => serverLog.info('Server stopped'))
+      .catch((error) => {
+        serverLog.error('Shutdown failed:', error);
+        process.exitCode = 1;
+      });
   });
