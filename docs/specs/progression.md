@@ -49,7 +49,11 @@ class using the existing save lifecycle, including transactional learning.
 
 Four paths grant +1 power, +10% attack speed, +5 percentage points critical
 chance and +10 percentage points critical damage. Attack speed bonuses add
-before multiplying gear attack speed and also shorten talent ability cooldowns.
+with gear speed bonuses as one recovery rate for attacks and talent casts:
+`cooldown = base cooldown / (1 + increased speed - reduced speed)`. Percentages
+are fractions (100% is 1); +100% speed halves the cooldown. Gear contributions
+to attacks per second are normalized by the equipped weapon's base rate before
+adding talent bonuses. A net reduction of 100% or more prevents attacks/casts.
 Four ability nodes unlock class-specific abilities in fixed action-bar slots
 1–4, cast by number key or click toward the cursor independently of the base
 attack's auto-target setting. Each class has four distinct abilities using its existing attack family. Server validation

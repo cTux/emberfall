@@ -48,6 +48,15 @@ HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% ble
 and enemy hit resolution applies the owner's armor. UI shows the resulting
 cooldown without also showing attacks per second.
 
+`characterStats().cooldownRecoveryRate` combines gear speed relative to the
+equipped weapon's base attacks per second with additive talent speed bonuses.
+Both base attacks and talent casts use `recoveryCooldownMs(baseMs, rate)`:
+`baseMs / (1 + rate)`, with nonpositive recovery returning `Infinity`. Base attack
+cooldown comes from the weapon's base rate; talent casts retain their registered
+base interval. Bear inherits the same resulting attack timing. Cooldown sectors
+and prediction consume these shared values. The existing 50 ms simulation tick
+is unchanged; no PoE-specific 33 ms rounding is applied.
+
 Balance numbers are maintained once in the [combat specification](../specs/combat.md), with executable base-mod content in the core package. Do not fork separate class rules for training, forest or the client.
 
 ## Scaling, rewards and temporary state
