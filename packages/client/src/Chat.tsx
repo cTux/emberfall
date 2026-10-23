@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Button, Paper, TextField } from '@mui/material';
 import { CHAT_MAX_LENGTH } from '@emberfall/core';
 import type { ChatMessage, ClientMessage } from '@emberfall/common';
 
@@ -57,8 +58,22 @@ export function Chat({
   }, [latestId]);
   return (
     // The chat region takes focus so keyboard users can reveal it before entering the input.
-    // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-    <aside className='chat' aria-label='World chat' tabIndex={0}>
+    <Paper
+      component='aside'
+      className='chat game-window-surface'
+      aria-label='World chat'
+      tabIndex={0}
+      sx={{
+        p: 1.5,
+        typography: 'body2',
+        '@media (hover: hover)': {
+          '&:not(:hover):not(:focus-within)': {
+            backgroundColor: 'transparent',
+            borderColor: 'transparent',
+          },
+        },
+      }}
+    >
       <div className='chat-log' role='log' aria-label='Latest chat messages' ref={log}>
         {messages.map((message) => (
           <div key={message.id} className={message.tone ? `chat-${message.tone}` : undefined}>
@@ -81,23 +96,23 @@ export function Chat({
             document.activeElement.blur();
         }}
       >
-        <input
-          ref={input}
-          aria-label='Chat message'
+        <TextField
+          inputRef={input}
+          slotProps={{ htmlInput: { 'aria-label': 'Chat message', maxLength: CHAT_MAX_LENGTH } }}
+          sx={{ minWidth: 0, '& input': { userSelect: 'text' } }}
           placeholder='Enter to chat · @Marta to talk'
           value={text}
           onChange={(event) => setText(event.target.value)}
-          maxLength={CHAT_MAX_LENGTH}
           disabled={disabled}
           onKeyDown={(event) => {
             event.stopPropagation();
-            if (event.key === 'Escape') event.currentTarget.blur();
+            if (event.key === 'Escape') input.current?.blur();
           }}
         />
-        <button type='submit' disabled={disabled || !text.trim()}>
+        <Button type='submit' variant='contained' disabled={disabled || !text.trim()}>
           Send
-        </button>
+        </Button>
       </form>
-    </aside>
+    </Paper>
   );
 }

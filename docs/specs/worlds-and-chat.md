@@ -12,6 +12,8 @@ Every production client build embeds a unique build ID and emits matching `versi
 
 ## CHAT-01 — Conversation and input focus
 
+Chat inherits the shared game-window surface, typography and themed input/Send controls. On hover-capable devices, its frame and background disappear when neither hovered nor focused; touch devices keep the surface and input visible.
+
 The chat panel shows the latest 10 messages in the current world, shared across village and forest players. Press Enter to activate chat and focus its input, or hover over the panel and click the input. Press Enter or Send to send a message; sending releases chat and input focus when the panel is not hovered. Hover never takes keyboard focus. The panel stays active while focused; Escape releases the input and movement keys do not move the player while typing. Touch devices show the input without hover.
 
 ## CHAT-02 — System announcements
