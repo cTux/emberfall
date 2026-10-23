@@ -1,7 +1,7 @@
-import { FreeNpcModels } from '../src/npc-models.ts';
+import { OllamaNpcDialogue } from '../src/npc-models.ts';
 
 // Use the production provider and validation without starting a world or opening a save.
-const result = await new FreeNpcModels().generate(
+const result = await new OllamaNpcDialogue().generate(
   JSON.stringify({ character: 'Marta', task: 'Greet a traveller in one short sentence.' }),
   new AbortController().signal,
 );

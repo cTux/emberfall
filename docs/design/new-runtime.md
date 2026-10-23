@@ -72,7 +72,7 @@ per occupied world; canonical NPC components live in its existing Miniplex world
 Each resident randomly chooses its next stop, excluding its previous destination and
 preferring unclaimed stops, with independently randomized 5–9 second pauses.
 The server advances walking on the fixed tick and starts bounded asynchronous
-requests through one shared `FreeNpcModels` pool. Position deltas use the existing
+requests through one shared `OllamaNpcDialogue` provider. Position deltas use the existing
 Colyseus entity projection and detached snapshot interpolation. `nearbyInteraction`
 accepts live NPC positions so trading follows Marta, and her proximity pause keeps
 her available during a trade. NPCs and memory are not persisted. World disposal
