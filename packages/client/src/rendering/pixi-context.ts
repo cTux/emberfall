@@ -12,6 +12,7 @@ import {
 } from 'pixi.js';
 import type { BindGroup, Renderer, GradientOptions, LinearGradientOptions } from 'pixi.js';
 import './soft-light';
+import { playerCutoutRuns, PLAYER_CUTOUT_MARGIN } from './player-cutout';
 import { World } from 'miniplex';
 
 type Paint = string | Gradient;
@@ -32,6 +33,7 @@ type State = {
   fillStyle: Paint;
   strokeStyle: Paint;
   globalAlpha: number;
+  occlusion: boolean;
   globalCompositeOperation: string;
   lineWidth: number;
   lineJoin: CanvasLineJoin;
@@ -70,6 +72,11 @@ export class PixiContext {
   readonly canvas: HTMLCanvasElement;
   readonly ecs = new World<Visual>();
   private stage = new Container();
+  private cutout = new Graphics();
+  private cutoutRuns?: ReturnType<typeof playerCutoutRuns>;
+  private hasCutout = false;
+  private cutoutBounds = new Rectangle();
+  private spriteBounds = new Rectangle();
   private renderer?: Renderer;
   private disposed = false;
   private width = 1;
@@ -108,6 +115,7 @@ export class PixiContext {
       fillStyle: '#000',
       strokeStyle: '#000',
       globalAlpha: 1,
+      occlusion: false,
       globalCompositeOperation: 'source-over',
       lineWidth: 1,
       lineJoin: 'miter',
@@ -159,6 +167,7 @@ export class PixiContext {
   }
   begin() {
     this.frame++;
+    this.hasCutout = false;
     this.childCursors.clear();
     this.childCursors.set(this.stage, 0);
     // Release previous clip ownership before pooled graphics take new roles.
@@ -173,6 +182,9 @@ export class PixiContext {
   }
   present() {
     if (!this.renderer) return;
+    // Clearing a pooled object's last mask reference can restore includeInBuild.
+    // The cutout is only stencil geometry, never a visible stage child.
+    this.cutout.includeInBuild = false;
     for (const [parent, count] of this.childCursors)
       if (parent.children.length > count) parent.removeChildren(count);
     if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height)
@@ -238,6 +250,7 @@ export class PixiContext {
     }
     for (const entry of this.gradients.values()) entry.texture.destroy(true);
     for (const group of this.maskGroups) group.destroy();
+    this.cutout.destroy();
     this.shadowRects.clear();
     this.renderer?.destroy();
     this.stage.destroy();
@@ -245,6 +258,51 @@ export class PixiContext {
     this.gradients.clear();
     this.colors.clear();
     this.childCursors.clear();
+  }
+  /** Configure once before the depth-sorted bodies, using their world transform. */
+  setPlayerCutout(mask: HTMLCanvasElement, x: number, y: number, width: number, height: number) {
+    const runs = playerCutoutRuns(mask, width, height);
+    if (runs !== this.cutoutRuns) {
+      this.cutout.clear();
+      for (const [x, y, width] of runs) this.cutout.rect(x, y, width, 1);
+      this.cutout.fill(0xffffff);
+      this.cutoutRuns = runs;
+    }
+    this.hasCutout = runs.length > 0;
+    this.cutout.includeInBuild = false;
+    this.place(this.stage, this.cutout);
+    this.applyTransform(this.cutout, x - PLAYER_CUTOUT_MARGIN, y - PLAYER_CUTOUT_MARGIN);
+    this.transformedBounds(
+      this.cutoutBounds,
+      x - PLAYER_CUTOUT_MARGIN,
+      y - PLAYER_CUTOUT_MARGIN,
+      Math.ceil(width) + 2 * PLAYER_CUTOUT_MARGIN,
+      Math.ceil(height) + 2 * PLAYER_CUTOUT_MARGIN,
+    );
+  }
+  private transformedBounds(
+    bounds: Rectangle,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ) {
+    const m = this.state.matrix;
+    const ax = m.a * width,
+      bx = m.c * height,
+      ay = m.b * width,
+      by = m.d * height;
+    bounds.x = m.a * x + m.c * y + m.tx + Math.min(0, ax) + Math.min(0, bx);
+    bounds.y = m.b * x + m.d * y + m.ty + Math.min(0, ay) + Math.min(0, by);
+    bounds.width = Math.abs(ax) + Math.abs(bx);
+    bounds.height = Math.abs(ay) + Math.abs(by);
+    return bounds;
+  }
+  get occlusion() {
+    return this.state.occlusion;
+  }
+  set occlusion(enabled: boolean) {
+    this.state.occlusion = enabled;
   }
   private visual(kind: Visual['kind']): Visual {
     const index = this.cursors[kind]++;
@@ -604,6 +662,13 @@ export class PixiContext {
     sprite.tint = tint.toNumber();
     sprite.alpha *= tint.alpha;
     this.applyTransform(sprite, dx, dy, dw / sw, dh / sh);
+    if (
+      this.state.occlusion &&
+      this.hasCutout &&
+      !this.shadowPass &&
+      this.cutoutBounds.intersects(this.transformedBounds(this.spriteBounds, dx, dy, dw, dh))
+    )
+      sprite.setMask({ mask: this.cutout, inverse: true });
   }
   fillRect(x: number, y: number, width: number, height: number) {
     this.rectangleShadow(x, y, width, height);

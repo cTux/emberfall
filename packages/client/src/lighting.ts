@@ -1,3 +1,4 @@
+import type { PixiContext } from './rendering/pixi-context';
 export interface Light {
   x: number;
   y: number;
@@ -49,6 +50,7 @@ export function castShadow(ctx: CanvasRenderingContext2D, caster: Caster, light?
   const projection = shadowProjection(caster, light, bottomInset);
   if (!projection) return;
   ctx.save();
+  (ctx as unknown as PixiContext).occlusion = false;
   ctx.globalAlpha = projection.opacity;
   ctx.translate(caster.x, caster.y - bottomInset);
   ctx.transform(1, 0, -projection.x / caster.height, -projection.y / caster.height, 0, 0);

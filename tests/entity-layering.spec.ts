@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
+import { BUILDINGS, LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
 test('dummies, remote players and forest enemies layer around the local player', async ({
   page,
@@ -23,6 +23,9 @@ test('dummies, remote players and forest enemies layer around the local player',
     await page.screenshot({ path: `test-results/layering-${name}.png` });
     expect(player.hitpoints).toBe(player.maxHitpoints);
   };
+  const house = BUILDINGS[0];
+  await capture('house-behind', house.x, house.y - 34);
+  await capture('house-front', house.x, house.y + 20);
   await capture('dummy-behind', dummy.x, dummy.y - 12);
   await capture('dummy-front', dummy.x, dummy.y + 12);
   await capture('dummy-clear', dummy.x + 70, dummy.y - 12);
@@ -39,13 +42,17 @@ test('dummies, remote players and forest enemies layer around the local player',
   await capture('player-behind', remote.x, remote.y - 12);
   await capture('player-front', remote.x, remote.y + 12);
   world.players.delete(remote.id);
-  player.x = LOBBY_PORTAL.x;
-  player.y = LOBBY_PORTAL.y - 15;
+  await page.setViewportSize({ width: 960, height: 640 });
+  player.x = LOBBY_PORTAL.x - 35;
+  player.y = LOBBY_PORTAL.y + 9;
   const portal = page.getByRole('dialog', { name: 'Forest portal' });
   await expect(async () => {
-    await page.keyboard.press('e');
-    await expect(portal).toBeVisible();
+    await page.mouse.move(515, 281);
+    await expect(page.locator('canvas')).toHaveAttribute('data-interaction-target', 'portal');
+    await expect(page.locator('canvas')).toHaveAttribute('data-interaction-range', 'true');
   }).toPass({ intervals: [200], timeout: 6000 });
+  await page.mouse.click(515, 281);
+  await expect(portal).toBeVisible();
   await portal.getByRole('button', { name: 'Create', exact: true }).click();
   await portal.getByRole('button', { name: "I'm ready" }).click();
   await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });

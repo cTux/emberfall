@@ -39,7 +39,6 @@ import {
   drawNameBadge,
   drawCharacterName,
   drawAtmosphere,
-  obstacleOpacity,
   drawVegetation,
 } from './effects';
 import type { Interaction } from './effects';
@@ -672,6 +671,16 @@ export function Arena({
           frame,
           pos.facing,
         );
+        if (mask && player.id === playerId) {
+          const breath = idleBreath(now, frame);
+          renderer.setPlayerCutout(
+            mask,
+            player.x - 24,
+            player.y + 18 - 48 * breath,
+            48,
+            48 * breath,
+          );
+        }
         if (mask)
           dynamic.push({
             id: player.id,
@@ -763,12 +772,9 @@ export function Arena({
       ].sort((a, b) => a.y - b.y);
       const damageByTarget = new Map(training?.damage.map((hit) => [hit.target, hit]));
       for (const layer of layers) {
+        renderer.occlusion = !!local && layer.y > local.y + 15;
         if (layer.dummy) {
           const dummy = layer.dummy;
-          ctx.globalAlpha = obstacleOpacity(
-            { x: dummy.x, y: dummy.y + 15, width: 48, height: 48 },
-            local,
-          );
           if (environmentArt.naturalWidth) {
             drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
             const hit = damageByTarget.get(`enemy:${dummy.id}`);
@@ -784,6 +790,7 @@ export function Arena({
               );
           }
           ctx.globalAlpha = 1;
+          renderer.occlusion = false;
           ctx.fillStyle = '#152018';
           ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
           ctx.fillStyle = '#df7765';
@@ -803,13 +810,12 @@ export function Arena({
             hovered === portalTarget ? hovered : null,
             quality.current.shadows,
             quality.current.wavingVegetation,
-            obstacleOpacity({ x: portal.x, y: portal.y + 8, width: 64, height: 80 }, local),
+            1,
             interactionInRange(portalTarget, authoritativePlayer),
           );
           continue;
         }
         if (layer.critter) {
-          ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, local);
           drawCritter(ctx, layer.critter, quality.current.shadows);
           if (hovered?.source.id === layer.critter.id)
             drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
@@ -824,16 +830,11 @@ export function Arena({
             layer.bear.y,
             view?.serverNow ?? now,
             quality.current.shadows,
-            obstacleOpacity(
-              { x: layer.bear.x, y: layer.bear.y + 18, width: 42.5, height: 40 },
-              local,
-            ),
           );
           continue;
         }
         if (layer.object) {
           const object = layer.object;
-          ctx.globalAlpha = obstacleOpacity(object, local);
           const vegetation = object.id.startsWith('tree:') || object.id.startsWith('plant:');
           if (vegetation)
             drawVegetation(
@@ -922,17 +923,13 @@ export function Arena({
         pos.x = player.x;
         pos.y = player.y;
         positions.set(player.id, pos);
-        const opacity =
-          player.id === playerId
-            ? 1
-            : obstacleOpacity({ x: pos.x, y: pos.y + 15, width: 48, height: 48 }, local);
-        ctx.globalAlpha = opacity;
+        ctx.globalAlpha = 1;
         renderer.spriteTint = player.reconnecting ? '#ff5555' : '#ffffff';
         if (knight.complete && knight.naturalWidth) {
           if (quality.current.motionBlur && moving) {
             // Sprite-only temporal samples keep HUD text and the world sharp.
             for (let sample = 3; sample > 0; sample--) {
-              ctx.globalAlpha = 0.09 * opacity;
+              ctx.globalAlpha = 0.09;
               ctx.drawImage(
                 knight,
                 pos.facing * ACTOR_CELL,
@@ -945,7 +942,7 @@ export function Arena({
                 48,
               );
             }
-            ctx.globalAlpha = opacity;
+            ctx.globalAlpha = 1;
           }
           ctx.drawImage(
             knight,
@@ -960,6 +957,7 @@ export function Arena({
           );
         }
         renderer.spriteTint = '#ffffff';
+        renderer.occlusion = false;
         ctx.globalAlpha = 1;
         drawPlayerHealth(
           ctx,
@@ -982,6 +980,7 @@ export function Arena({
           false,
         );
       }
+      renderer.occlusion = false;
       if (training) {
         drawClassProjectiles(ctx, training, serverTime, project);
         if (prefs.current.damageNumbers)
