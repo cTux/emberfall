@@ -8,9 +8,11 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lines = [''];
-  for (const character of text) {
-    if (ctx.measureText(lines.at(-1)! + character).width > 200) lines.push('');
-    lines[lines.length - 1] += character;
+  for (const word of text.trim().split(/\s+/u)) {
+    const line = lines.at(-1)!;
+    const next = line ? `${line} ${word}` : word;
+    if (line && ctx.measureText(next).width > 200) lines.push(word);
+    else lines[lines.length - 1] = next;
   }
   const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 20;
   const height = lines.length * 17 + 14;

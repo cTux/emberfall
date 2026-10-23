@@ -1,6 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { drawCharacterName, drawPlayerHealth } from '../packages/client/src/effects.ts';
+import {
+  drawCharacterName,
+  drawPlayerHealth,
+  drawChatBubble,
+} from '../packages/client/src/effects.ts';
 
 function recordingContext() {
   const text: unknown[] = [];
@@ -13,6 +17,13 @@ function recordingContext() {
     strokeStyle: '',
     lineWidth: 0,
     lineJoin: '',
+    beginPath() {},
+    moveTo() {},
+    lineTo() {},
+    quadraticCurveTo() {},
+    closePath() {},
+    fill() {},
+    stroke() {},
     save() {},
     restore() {},
     measureText(value: string) {
@@ -67,4 +78,22 @@ test('an active character name adds the interaction background and E prompt', ()
       '#ffffff',
     ],
   ]);
+});
+
+test('speech bubbles wrap whole words and keep oversized words intact', () => {
+  const sentence = 'Welcome! Have you met our neighbours?';
+  const bubble = recordingContext();
+  bubble.ctx.measureText = (value: string) => ({ width: value.length * 7 }) as TextMetrics;
+  drawChatBubble(bubble.ctx, 100, 200, sentence);
+  const lines = bubble.text.map((entry) => (entry as unknown[])[1]);
+  assert.deepEqual(lines, ['Welcome! Have you met our', 'neighbours?']);
+  assert.equal(lines.join(' '), sentence);
+
+  const oversized = recordingContext();
+  const word = 'a'.repeat(60);
+  drawChatBubble(oversized.ctx, 100, 200, `${word} hello`);
+  assert.deepEqual(
+    oversized.text.map((entry) => (entry as unknown[])[1]),
+    [word, 'hello'],
+  );
 });
