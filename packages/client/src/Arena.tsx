@@ -514,6 +514,12 @@ export function Arena({
             ? nearby
             : null
         : nearby;
+      if (
+        nearby &&
+        !nearby.id.startsWith('gather:') &&
+        interaction.current?.id.startsWith('gather:')
+      )
+        interaction.current = nearby;
       updateGatherDiagnostics();
       element.dataset.interactionTarget = hovered?.source.id ?? '';
       element.dataset.interactionRange = hovered
@@ -656,6 +662,12 @@ export function Arena({
         : (nearby ??
           cats.find((cat) => interactionInRange(cat, authoritativePlayer))?.source ??
           null);
+      if (
+        nearby &&
+        !nearby.id.startsWith('gather:') &&
+        interaction.current?.id.startsWith('gather:')
+      )
+        interaction.current = nearby;
       updateGatherDiagnostics();
       element.dataset.interactionTarget = hovered?.source.id ?? '';
       element.dataset.interactionRange = hovered
