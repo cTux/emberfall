@@ -374,6 +374,10 @@ export function Arena({
         frameCount = 0;
       }
       renderer.begin();
+      ctx.imageSmoothingEnabled = quality.current.smoothTextures;
+      const imageRendering = quality.current.smoothTextures ? 'auto' : 'pixelated';
+      if (element.style.imageRendering !== imageRendering)
+        element.style.imageRendering = imageRendering;
       const delta = Math.min(0.1, (now - previous) / 1000);
       previous = now;
       if (previousSettings !== quality.current) {
@@ -608,7 +612,6 @@ export function Arena({
         : '';
 
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
-      ctx.imageSmoothingEnabled = false;
       if (prepared)
         drawVillageBackground(ctx, prepared.background, cameraX, cameraY, viewWidth, viewHeight);
       else {

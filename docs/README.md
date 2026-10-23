@@ -54,6 +54,12 @@ DPS meter visibility: [UI-03](specs/interface-and-audio.md#ui-03--network-and-pe
 [saved preference](../packages/client/src/preferences.ts), [HUD](../packages/client/src/Arena.tsx)
 and [toggle/persistence verification](../tests/dps-meter.spec.ts).
 
+Softer entity tones and optional texture filtering:
+[GRAPHICS-01](specs/graphics.md#graphics-01--presets-and-renderer),
+[atlas tone transform](../packages/client/src/art-tones.ts),
+[renderer/settings verification](../tests/texture-filtering.spec.ts) and
+[tone checks](../tests/art-tones.test.ts).
+
 Floating battle text: [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readability),
 [shared renderer](../packages/client/src/damage-text.ts),
 [animation and grouping tests](../packages/server/src/damage-text.test.ts) and
