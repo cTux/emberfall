@@ -36,6 +36,7 @@ import { addChat } from './chat.ts';
 import { VillageLife } from './npcs.ts';
 import { FreeNpcModels, type NpcDialogue } from './npc-models.ts';
 import type { VillageNpc } from '@emberfall/common';
+import { serverLog } from './log.ts';
 
 const derive = promisify(scrypt);
 type AccountIdentity = () => { characterId: string; nickname: string | null } | undefined;
@@ -110,6 +111,7 @@ export async function createRuntime(
     ]),
   );
   worlds.set(permanentWorld.id, permanentWorld);
+  serverLog.info('Runtime ready', { worlds: worlds.size, restoredWorlds: restoredWorlds.length });
   let shuttingDown = false;
   const sessions = new Map<WebSocket, Session>();
   const villageLives = new Map<World, VillageLife>();
@@ -175,12 +177,14 @@ export async function createRuntime(
           );
       }
       world.players.delete(session.id);
+      if (player) serverLog.info('Player left world', { sessionId: session.id, worldId: world.id });
       reconcileVote(world, Date.now());
       cleanupScene(world);
       if (!world.players.size) {
         if (world !== permanentWorld && !shuttingDown) {
           characters.deleteWorld(world.id);
           worlds.delete(world.id);
+          serverLog.info('Empty world removed', { worldId: world.id });
         }
         world.hostId = '';
         world.scene = undefined;
@@ -218,18 +222,25 @@ export async function createRuntime(
       actionAt: Date.now(),
     };
     sessions.set(ws, session);
+    serverLog.info('Client connected', { sessionId: session.id });
     send(ws, list());
     ws.on('error', () => ws.terminate());
     ws.on('pong', () => {
       session.alive = true;
     });
     ws.on('close', (code: number) => {
+      serverLog.info('Client disconnected', { sessionId: session.id, code });
       if (shuttingDown) {
         sessions.delete(ws);
         return;
       }
       if (session.worldId && !shuttingDown && code !== 1008) {
         session.reconnectUntil = Date.now() + RUNTIME.reconnectMs;
+        serverLog.info('Waiting for player reconnect', {
+          sessionId: session.id,
+          worldId: session.worldId,
+          graceMs: RUNTIME.reconnectMs,
+        });
         session.inputs = [];
         session.x = session.y = 0;
         session.inputAt = 0;
@@ -244,7 +255,10 @@ export async function createRuntime(
             sessions.delete(ws);
             broadcastList();
           } catch (error) {
-            console.error('Character save failed on reconnect expiry; autosave will retry:', error);
+            serverLog.error(
+              'Character save failed on reconnect expiry; autosave will retry:',
+              error,
+            );
           }
         }, RUNTIME.reconnectMs);
         if (player?.attacking) player.attacking = false;
@@ -252,14 +266,14 @@ export async function createRuntime(
           if (player && session.characterId)
             characters.save(session.characterId, player.name, player);
         } catch (error) {
-          console.error('Character save failed on disconnect; autosave will retry:', error);
+          serverLog.error('Character save failed on disconnect; autosave will retry:', error);
         }
         return;
       }
       try {
         leave(session);
       } catch (error) {
-        console.error('Character save failed on disconnect:', error);
+        serverLog.error('Character save failed on disconnect:', error);
         // Keep the session in memory for the autosave retry; it cannot move.
         session.x = 0;
         session.y = 0;
@@ -586,6 +600,7 @@ export async function createRuntime(
             player.inputSeq = player.inputElapsed = undefined;
             player.inputX = player.inputY = 0;
             sessions.delete(oldWs);
+            serverLog.info('Player reconnected', { sessionId: session.id, worldId: world.id });
             send(ws, {
               type: 'joined',
               playerId: session.id,
@@ -704,6 +719,12 @@ export async function createRuntime(
           hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
         });
         villageLife(world, now);
+        if (createdWorld) serverLog.info('World created', { worldId: world.id });
+        serverLog.info(message.type === 'resume' ? 'Player resumed world' : 'Player joined world', {
+          sessionId: session.id,
+          worldId: world.id,
+          players: world.players.size,
+        });
         if (!world.hostId) world.hostId = session.id;
         addChat(world, `${playerName} joined.`, undefined, session.id);
         reconcileVote(world, Date.now());
@@ -716,7 +737,7 @@ export async function createRuntime(
         send(ws, { type: 'saved', savedAt: Date.now() });
         broadcastList();
       } catch (cause) {
-        console.error('Unable to load character:', cause);
+        serverLog.error('Unable to load character:', cause);
         error(
           'Unable to load or save your character. Check the server and retry; existing progress has not been reset.',
         );
@@ -793,7 +814,8 @@ export async function createRuntime(
           sessions.delete(ws);
           broadcastList();
         }
-      } catch {
+      } catch (error) {
+        serverLog.error('Character autosave failed; retrying:', error);
         send(ws, {
           type: 'error',
           message: 'Character autosave failed. Retrying; keep this session open.',
@@ -802,6 +824,7 @@ export async function createRuntime(
     }
   }, RUNTIME.autosaveMs);
   async function close() {
+    serverLog.info('Runtime stopping', { sessions: sessions.size, worlds: worlds.size });
     shuttingDown = true;
     clearInterval(tick);
     clearInterval(heartbeat);
@@ -822,6 +845,7 @@ export async function createRuntime(
     characters.close();
     if (failures.length)
       throw new AggregateError(failures, 'Some characters could not be saved during shutdown');
+    serverLog.info('Runtime stopped');
   }
   function renameCharacter(characterId: string, nickname: string) {
     for (const session of sessions.values()) {
