@@ -25,6 +25,7 @@ export async function compare() {
   const canvas = reference.getContext('2d')!;
   const results: Record<string, { actual: number[]; expected: number[] }> = {};
   const icons: Record<string, number> = {};
+  const stackLabels: Record<string, string[]> = {};
   const compare = (
     name: string,
     draw: (ctx: CanvasRenderingContext2D) => void,
@@ -116,6 +117,12 @@ export async function compare() {
     );
   }
   for (const kind of ['bleed', 'poison', 'burn', 'roots', 'silence'] as const) {
+    stackLabels[kind] = [];
+    const fillText = canvas.fillText.bind(canvas);
+    canvas.fillText = (text, x, y) => {
+      stackLabels[kind].push(text);
+      fillText(text, x, y);
+    };
     compare(
       kind,
       (ctx) =>
@@ -131,6 +138,7 @@ export async function compare() {
       81,
       89,
     );
+    canvas.fillText = fillText;
   }
   // Shrinking/reordering a retained display list must not leave ghost sprites
   // or a previous frame's clip attached to a reused graphic.
@@ -451,6 +459,7 @@ export async function compare() {
   return {
     results,
     icons,
+    stackLabels,
     lights,
     edges,
     damagePixels,

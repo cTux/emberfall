@@ -3,10 +3,11 @@ export type DebuffKind = 'bleed' | 'poison' | 'burn' | 'roots' | 'silence';
 /** Shared overhead presentation for timed ailments and indefinite status effects. */
 export interface DebuffIndicator {
   kind: DebuffKind;
-  stacks: number;
+  stacks?: number;
   expiresAt?: number;
 }
 export interface Debuff extends DebuffIndicator {
+  stacks: number;
   expiresAt: number;
   nextTick: number;
   ownerId: string;
