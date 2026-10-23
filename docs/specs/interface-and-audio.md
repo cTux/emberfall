@@ -43,8 +43,8 @@ Codex uses the shared forest theme with chapter tabs for controls, worlds and pa
 
 ## UI-02 — Combat controls
 
-The client uses a matching ivory/gold cursor set: a large 48 × 48 glove for the
-default cursor, a brighter glove with gold accents for actionable UI hover,
+The client uses an original WoW-inspired ivory/bronze cursor set with ember accents:
+a pointing armored glove for the default cursor, a brighter glove for actionable UI hover,
 text entry, open/closed drag hands and a barred disabled state. The glove's
 fingertip is the click hotspot. In
 active forest combat or village training with a weapon equipped, hovering a living
@@ -52,6 +52,10 @@ enemy shows a sword; disabling auto-target shows a crosshair instead. Holding LM
 shows the active attack cursor. Death shows the barred cursor. Preview, inactive
 combat, open dialogs and focus loss restore the default cursor. These indicators
 do not select enemies, change targeting or make world objects clickable.
+Settings → Gameplay includes **Custom cursor** (enabled by default) and **Cursor size**:
+Small (32 px), Medium (48 px, default) and Large (64 px). Both apply immediately and
+persist locally. Disabling custom cursors restores native system cursors for all
+states, including combat and portaled controls; the size choice is retained while disabled.
 
 Settings → Gameplay includes saved Auto-attack (F) and Auto-target (G) toggles, both enabled by default. Hotkeys ignore repeated presses, text entry, and open dialogs. With auto-attack disabled, holding LMB casts the class default spell once per one-second base cooldown. Releasing, opening a dialog, hiding the tab, or losing focus stops requesting casts; an already-started swing finishes without resetting its cooldown. Training-area restrictions still apply.
 

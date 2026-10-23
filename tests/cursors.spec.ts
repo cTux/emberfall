@@ -7,10 +7,10 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
 }) => {
   await page.goto('/');
   const canvas = page.locator('canvas');
-  await expect(page.locator('body')).toHaveCSS('cursor', /default\.svg/);
+  await expect(page.locator('body')).toHaveCSS('cursor', /default\.png/);
   await expect(page.getByLabel('Your adventurer name')).toHaveCSS('cursor', /text\.png/);
   const join = page.getByRole('button', { name: /^Join Playtest Default/ });
-  await expect(join).toHaveCSS('cursor', /pointer\.svg/);
+  await expect(join).toHaveCSS('cursor', /pointer\.png/);
   await join.click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
@@ -101,18 +101,80 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
     'grabbing',
     'text',
   ]) {
-    const glove = state === 'default' || state === 'pointer';
-    const extension = glove ? 'svg' : 'png';
-    expect(
-      await page.evaluate(
-        async ({ name, extension }) => {
-          const image = new Image();
-          image.src = `/assets/cursors/${name}.${extension}`;
-          await image.decode();
-          return [image.naturalWidth, image.naturalHeight];
-        },
-        { name: state, extension },
-      ),
-    ).toEqual(glove ? [48, 48] : [32, 32]);
+    for (const size of [32, 48, 64]) {
+      expect(
+        await page.evaluate(
+          async ({ name, size }) => {
+            const image = new Image();
+            image.src = `/assets/cursors/${size}/${name}.png`;
+            await image.decode();
+            return [image.naturalWidth, image.naturalHeight];
+          },
+          { name: state, size },
+        ),
+      ).toEqual([size, size]);
+    }
   }
+});
+
+test('cursor enable and size settings apply immediately and persist across reloads', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const body = page.locator('body');
+  const dialog = page.getByRole('dialog', { name: 'Settings', exact: true });
+  const toggle = dialog.getByRole('switch', { name: 'Custom cursor', exact: true });
+  const size = dialog.getByRole('combobox', { name: 'Cursor size', exact: true });
+  await expect(toggle).toBeChecked();
+  await expect(body).toHaveCSS('cursor', /\/48\/default\.png/);
+  await size.click();
+  await page.getByRole('option', { name: 'Large · 64 px' }).click();
+  await expect(body).toHaveCSS('cursor', /\/64\/default\.png/);
+  await expect(dialog.getByRole('heading', { name: 'Settings', exact: true })).toHaveCSS(
+    'cursor',
+    /\/64\/grab\.png/,
+  );
+  await page.screenshot({ path: 'test-results/cursor-settings.png' });
+  await toggle.uncheck();
+  await expect(size).toHaveAttribute('aria-disabled', 'true');
+  await expect(body).toHaveCSS('cursor', 'default');
+  await expect(dialog.getByRole('heading', { name: 'Settings', exact: true })).toHaveCSS(
+    'cursor',
+    'grab',
+  );
+  await expect(page.getByRole('button', { name: 'Close Settings' })).toHaveCSS('cursor', 'pointer');
+  await page.reload();
+  await expect(body).toHaveAttribute('data-custom-cursor', 'false');
+  await expect(body).toHaveAttribute('data-cursor-size', '64');
+  await expect(body).toHaveCSS('cursor', 'default');
+  // Check every canvas fallback, independently of the combat-state derivation above.
+  for (const [state, keyword] of [
+    ['default', 'default'],
+    ['attack', 'crosshair'],
+    ['aim', 'crosshair'],
+    ['pressed', 'crosshair'],
+    ['disabled', 'not-allowed'],
+  ]) {
+    expect(
+      await page.evaluate((state) => {
+        const probe = document.createElement('canvas');
+        probe.dataset.cursor = state;
+        document.body.append(probe);
+        const cursor = getComputedStyle(probe).cursor;
+        probe.remove();
+        return cursor;
+      }, state),
+    ).toBe(keyword);
+  }
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await expect(body).toHaveCSS('cursor', /\/64\/default\.png/);
+  await size.click();
+  await page.getByRole('option', { name: 'Small · 32 px' }).click();
+  await expect(body).toHaveCSS('cursor', /\/32\/default\.png/);
+  await page.reload();
+  await expect(body).toHaveCSS('cursor', /\/32\/default\.png/);
 });

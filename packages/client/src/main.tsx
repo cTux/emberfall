@@ -96,6 +96,8 @@ function App({
   const [deathWindow, setDeathWindow] = useState(true);
   const [preferences, setPreferences] = useState(loadPreferences);
   useEffect(() => {
+    document.body.dataset.customCursor = String(preferences.customCursor);
+    document.body.dataset.cursorSize = String(preferences.cursorSize);
     try {
       localStorage.setItem('emberfall-new.preferences', JSON.stringify(preferences));
     } catch {
