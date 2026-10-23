@@ -152,7 +152,13 @@ Each balance table has its own `.ts` file and is exported from core:
 | `enemyTypeSpawnChance`           | Check Elite 5% first, then Normal 100%; bosses use a timer       |
 | `enemyKindAttribute`             | Skeleton and Runner 10 HP / 3 damage, Brute 30 / 9, Caster 7 / 3 |
 | `enemyTypeAttributesMultiplier`  | Normal 1, Elite 3, Boss 10                                       |
+| `difficultySpeedMultiplier`      | Easy 1, Medium 1.05, Hard 1.15                                   |
 | `difficultyAttributesMultiplier` | Easy 1, Medium 2, Hard 4                                         |
+
+`enemyKindAttribute` also exposes base movement speed in world units per second:
+Skeleton 64, Runner 104, Brute 40 and Caster 54. Movement applies the registered
+`difficultySpeedMultiplier` independently of HP/damage and enemy type, then
+applies any roots slow.
 
 Runner, Brute and Caster base attributes are initial config values using the
 existing archetypes and HP proportions. These tables now drive live combat and

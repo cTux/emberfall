@@ -45,8 +45,10 @@ export function moveEnemies(
   dt: number,
   now = 0,
   context: ReturnType<typeof createGame> = game,
+  difficulty: Difficulty = Difficulty.Easy,
 ) {
   const ENEMY_STATS = Object.fromEntries(context.registries.enemies.entries());
+  const speedMultiplier = context.registries.difficulties.require(difficulty).speedMultiplier;
   const cells = new Map<number, Set<Enemy>>();
   const key = (x: number, y: number) =>
     wrap(Math.floor(x / 40), 120) + wrap(Math.floor(y / 40), 64) * 120;
@@ -71,7 +73,10 @@ export function moveEnemies(
     const rooted =
       enemy.kind !== 'boss' && enemy.debuffs?.some((d) => d.kind === 'roots' && d.expiresAt > now);
     const distance = Math.min(
-      stats.speed * dt * (rooted ? 1 - (AILMENT_DEFINITIONS.roots.slowFraction ?? 0) : 1),
+      stats.speed *
+        speedMultiplier *
+        dt *
+        (rooted ? 1 - (AILMENT_DEFINITIONS.roots.slowFraction ?? 0) : 1),
       targetDistance,
     );
     const steps = Math.max(1, Math.ceil(distance / 5));

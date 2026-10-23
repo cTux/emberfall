@@ -137,7 +137,7 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
     dropCount: z.union([nonnegative, z.object({ min: nonnegative, max: nonnegative })]),
     spawnChance: nonnegative.max(100).optional(),
   }),
-  difficulties: z.object({ id, multiplier: positive }),
+  difficulties: z.object({ id, multiplier: positive, speedMultiplier: positive }),
 };
 export const worldShapes = {
   forest: z.object({

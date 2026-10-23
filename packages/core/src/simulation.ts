@@ -568,7 +568,7 @@ export function stepCombat(
     ...alive,
     ...alive.flatMap((p) => (p.bear && p.bear.hitpoints > 0 ? [p.bear] : [])),
   ];
-  moveEnemies(scene.enemies, combatants, dt, now, context);
+  moveEnemies(scene.enemies, combatants, dt, now, context, scene.difficulty);
   const hurt = (target: Player | Bear, damage: number) => {
     if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) return;
     const owner = 'returning' in target ? alive.find((p) => p.bear === target) : target;
