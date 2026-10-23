@@ -1,6 +1,7 @@
 import type { Player, SceneState } from '@emberfall/common';
 import { game, type createGame } from './game.ts';
 import { TALENT_TREE, isTalentLearned } from './talent-tree.ts';
+import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
 import { fireClassAttack, hitWithWeapon } from './class-combat.ts';
 import { FOREST, forestDistance } from './scene.ts';
 import { inTrainingZone } from './world.ts';
@@ -15,10 +16,10 @@ export function talentAbility(player: Pick<Player, 'classId'>, slot: number, con
     );
 }
 export function talentCooldownMs(player: Player, slot: number, context: Game = game) {
-  const speed = TALENT_TREE.filter(
-    (node) => node.kind === 'speed' && isTalentLearned(player, node.id),
-  ).length;
-  return (talentAbility(player, slot, context)?.intervalMs ?? 0) / (1 + speed * 0.1);
+  return recoveryCooldownMs(
+    talentAbility(player, slot, context)?.intervalMs ?? 0,
+    context.rules.characterStats(player).cooldownRecoveryRate,
+  );
 }
 export function castTalentAbility(
   scene: SceneState | undefined,
@@ -42,6 +43,7 @@ export function castTalentAbility(
     !isTalentLearned(player, node.id) ||
     player.hitpoints <= 0 ||
     !context.rules.characterStats(player).hasWeapon ||
+    !Number.isFinite(talentCooldownMs(player, request.slot, context)) ||
     scene.phase !== 'active' ||
     scene.pausedAt !== undefined ||
     request.classId !== (player.classId ?? 'warrior') ||
