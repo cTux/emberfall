@@ -807,7 +807,7 @@ export function Game({
           >
             <DeferredContent key={menu}>
               <Stack spacing={2}>
-                {error && (
+                {error && menu !== 'settings' && (
                   <Alert severity='error' onClose={() => setError('')}>
                     {error}
                   </Alert>
