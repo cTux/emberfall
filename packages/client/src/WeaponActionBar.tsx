@@ -1,9 +1,9 @@
 import type { Player } from '@emberfall/common';
-import { TalentIcon, talentIconIndex } from './Talents';
+import { TalentIcon, talentIconIndex } from './talent-icons';
 import { TALENT_TREE, isTalentLearned, talentAbility, talentCooldownMs } from '@emberfall/core';
 import { characterStats } from '@emberfall/core';
 import { ActionBar } from '@emberfall/ui';
-import { spellSrc } from './combat-assets';
+import { spellSrc } from './class-art';
 import { classDetails } from './class-details';
 import type { Preferences } from './preferences';
 

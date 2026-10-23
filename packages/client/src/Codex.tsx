@@ -4,7 +4,7 @@ import { enemyAttributes, enemyTypeMultiplier } from '@emberfall/core';
 import { useState } from 'react';
 import { ChapterTabs } from '@emberfall/ui';
 import { Box } from '@mui/material';
-import { statusSrc } from './combat-assets';
+import { statusSrc } from './class-art';
 
 function Illustration({ image, caption }: { image: string; caption: string }) {
   return (
