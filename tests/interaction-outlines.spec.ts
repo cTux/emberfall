@@ -27,6 +27,11 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       const player = [...world.players.values()][0];
       const canvas = page.locator('canvas');
       const scale = Math.max(1440 / 960, 1000 / 640);
+      const closeDialog = async () => {
+        const dialog = page.getByRole('dialog');
+        await dialog.getByRole('button', { name: /^Close / }).click();
+        await expect(dialog).toBeHidden();
+      };
       const hover = async (x: number, y: number, id: string, inRange: boolean) => {
         await expect(async () => {
           await page.mouse.move(
@@ -64,11 +69,11 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       const wardrobe = page.getByRole('dialog', { name: 'Wardrobe' });
       await expect(wardrobe).toBeVisible();
       await expect(canvas).toHaveAttribute('data-interaction-target', '');
-      await page.keyboard.press('Escape');
+      await closeDialog();
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', true);
       await page.keyboard.press('e');
       await expect(wardrobe).toBeVisible();
-      await page.keyboard.press('Escape');
+      await closeDialog();
 
       const hall = BUILDINGS.find((b) => b.id === 'hall')!;
       player.x = hall.doorX;
@@ -77,7 +82,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await page.mouse.down();
       await page.mouse.up();
       await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible();
-      await page.keyboard.press('Escape');
+      await closeDialog();
 
       const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
       await expect(async () => {
@@ -88,7 +93,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         await page.mouse.up();
         await expect(page.getByRole('dialog', { name: marta.name })).toBeVisible();
       }).toPass();
-      await page.keyboard.press('Escape');
+      await closeDialog();
 
       player.x = LOBBY_PORTAL.x - 35;
       player.y = LOBBY_PORTAL.y + 9;
@@ -96,7 +101,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await page.mouse.down();
       await page.mouse.up();
       await expect(page.getByRole('dialog', { name: 'Forest portal' })).toBeVisible();
-      await page.keyboard.press('Escape');
+      await closeDialog();
 
       // Isolate a completed forest with its portal across the horizontal seam.
       world.scene = {
