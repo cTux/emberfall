@@ -6,6 +6,11 @@ Status: implemented baseline. Goal: Stage a party in the village and run one coo
 
 The lobby is a five-building village with a connected path network and a central square. Buildings use the original Ninja Adventure house tileset. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors remain unimplemented; Marta provides shared item trading.
 
+Seeded trees, mossy rocks and five plant kinds fill the surrounding village landscape.
+Paths, building approaches, the central square and training clearings stay open.
+Rocks and plants use the same wrapped scenery rendering as trees and remain pass-through
+for players.
+
 The create/join browser shows a forest backdrop; entering a world takes players to its village. E interacts within 68 units of a blue portal or building doorway. Buildings currently open service placeholders. All windows have a draggable title and close button; closed browser/death windows have a reopen control. Text selection is disabled throughout the game.
 
 Hovering a functional building, NPC or item shows a yellow sprite outline: thick (3 world units) within interaction range and thin (1 world unit) outside it. Names and nameplate backgrounds stay unchanged, without an `(E)` prefix. E or a left click activates the hovered target while in range; outside range neither activates it. E without a hovered target retains the nearby interaction. Decorative scenery has no interaction outline. Completed-forest return portals use the same feedback and input, including across wrapped seams.

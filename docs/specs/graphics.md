@@ -68,8 +68,11 @@ based on the approved wardrobe-style concepts, including a newly drawn wardrobe.
 Players, enemies and animals have frame-based locomotion; combatants also have
 attack/cast and fallen poses. Idle motion, damage flashes and death transitions
 remain presentation-only. Scenery, weapons, portraits and effects use the same
-palette and outline treatment. The new client does not scatter decorative bushes in the village or forest at any
-graphics preset. Ground textures and trees remain. The obsolete Dense grass clusters
+palette and outline treatment. The lobby village scatters mossy rocks and five distinct
+plant kinds (ferns, berry bushes, meadow grass, violet wildflowers and flowering herbs)
+using fixed seeds and the same path, building and training-clearing exclusions as trees.
+They share scenery depth ordering, player-overlap fading and lighting; plants also use
+the Waving trees setting. Forest scenery remains unchanged. The obsolete Dense grass clusters
 setting is removed, and the foliage setting is named Waving trees; old saved grass
 preferences are ignored.
 Buildings and ground stay fixed; lobby chimneys

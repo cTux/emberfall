@@ -59,19 +59,85 @@ const random = () => {
   seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
   return seed / 4294967296;
 };
+function sceneryClearing(x: number, y: number) {
+  return (
+    TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + 35) ||
+    Math.hypot((x - 480) / 190, (y - 355) / 110) < 1 ||
+    onPath(x, y, 55) ||
+    BUILDINGS.some((b) => Math.abs(x - b.x) < 100 && y > b.y - 130 && y < b.y + 65) ||
+    TORCHES.some((t) => Math.hypot(t.x - x, t.y - y) < 45)
+  );
+}
 for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
   const x = 35 + random() * (ARENA.width - 70);
   const y = 55 + random() * (ARENA.height - 85);
-  if (TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + 35))
-    continue;
-  if (Math.hypot((x - 480) / 190, (y - 355) / 110) < 1 || onPath(x, y, 55)) continue;
-  if (BUILDINGS.some((b) => Math.abs(x - b.x) < 100 && y > b.y - 130 && y < b.y + 65)) continue;
-  if (TORCHES.some((t) => Math.hypot(t.x - x, t.y - y) < 45)) continue;
+  if (sceneryClearing(x, y)) continue;
   if (trees.some((tree) => Math.hypot(tree.x - x, tree.y - y) < 48)) continue;
   trees.push({ x, y, size: 72 + Math.floor(random() * 25), radius: 15 });
 }
 export const TREES: readonly Readonly<Tree>[] = Object.freeze(
   trees.map((tree) => Object.freeze(tree)),
+);
+
+export const PLANT_KINDS = Object.freeze([
+  'fern',
+  'berry-bush',
+  'meadow-grass',
+  'violet-wildflowers',
+  'flowering-herb',
+] as const);
+export interface VillageDecoration {
+  x: number;
+  y: number;
+  size: number;
+  variant: number;
+}
+
+function scatterScenery(
+  initialSeed: number,
+  attempts: number,
+  minSize: number,
+  sizeRange: number,
+  variants: number,
+  occupied: readonly { x: number; y: number }[],
+): readonly Readonly<VillageDecoration>[] {
+  let decorationSeed = initialSeed;
+  const roll = () => {
+    decorationSeed = (Math.imul(decorationSeed, 1664525) + 1013904223) >>> 0;
+    return decorationSeed / 4294967296;
+  };
+  const decorations: VillageDecoration[] = [];
+  for (let i = 0; i < attempts; i++) {
+    const x = 35 + roll() * (ARENA.width - 70);
+    const y = 55 + roll() * (ARENA.height - 85);
+    if (sceneryClearing(x, y)) continue;
+    if (occupied.some((object) => Math.hypot(object.x - x, object.y - y) < 48)) continue;
+    if (decorations.some((object) => Math.hypot(object.x - x, object.y - y) < 48)) continue;
+    decorations.push({
+      x,
+      y,
+      size: minSize + Math.floor(roll() * sizeRange),
+      variant: decorations.length % variants,
+    });
+  }
+  return Object.freeze(decorations.map((object) => Object.freeze(object)));
+}
+
+export const ROCKS = scatterScenery(
+  VILLAGE_DEFINITION.rockSeed ?? 3719,
+  VILLAGE_DEFINITION.rockAttempts ?? 300,
+  32,
+  17,
+  1,
+  TREES,
+);
+export const PLANTS = scatterScenery(
+  VILLAGE_DEFINITION.plantSeed ?? 6143,
+  VILLAGE_DEFINITION.plantAttempts ?? 1000,
+  28,
+  17,
+  PLANT_KINDS.length,
+  [...TREES, ...ROCKS],
 );
 
 /** Circle-body movement for players and enemies; coordinates are at their feet. */
