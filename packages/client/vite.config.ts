@@ -64,17 +64,7 @@ export default defineConfig(({ command, mode }) => {
         }),
     ],
   };
-  if (command === 'build')
-    return {
-      ...shared,
-      build: {
-        rolldownOptions: {
-          output: {
-            manualChunks: (id: string) => (id.includes('node_modules') ? 'vendors' : undefined),
-          },
-        },
-      },
-    };
+  if (command === 'build') return { ...shared, build: { manifest: true } };
   const cert = readFileSync(new URL('../../.certs/localhost.pem', import.meta.url));
   const serverPort = env.BASE_PORT ?? env.PORT_NEW ?? '3003';
   return {

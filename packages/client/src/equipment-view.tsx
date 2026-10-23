@@ -23,7 +23,7 @@ import type { GearType, Player, ClassId } from '@emberfall/common';
 import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
 import { PLAYER_DEFINITIONS } from '@emberfall/core/definitions/entities/players';
 import { AILMENT_DEFINITIONS } from '@emberfall/core/definitions/effects/ailments';
-import { weaponSrc } from './combat-assets';
+import { weaponSrc } from './class-art';
 
 const slotViews = registeredSlotViews();
 export const SLOT_POSITIONS = Object.fromEntries(slotViews.map((slot) => [slot.id, slot.position]));

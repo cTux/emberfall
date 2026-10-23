@@ -11,6 +11,7 @@ test('High graphics uses viewport-sized WebGL with bounded cached resources', as
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const canvas = page.locator('canvas');
   await expect(canvas).toHaveAttribute('data-renderer', 'pixijs-webgl');
   expect(
@@ -48,7 +49,7 @@ test('High graphics uses viewport-sized WebGL with bounded cached resources', as
   expect(stats.gradients).toBeLessThan(150);
   expect(stats.visuals).toBeLessThan(5000);
   expect(timing.frames).toBeGreaterThan(5);
-  console.log('High preview renderer measurement', JSON.stringify({ timing, stats }));
+  console.log('High village renderer measurement', JSON.stringify({ timing, stats }));
   await testInfo.attach('renderer-measurement', {
     body: JSON.stringify(
       {

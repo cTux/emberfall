@@ -14,6 +14,20 @@ assets, audio and version checks use the Pages base path. See
 [Pages setup and server configuration](../../docs/operations.md#github-pages-client-with-a-server-on-your-machine)
 for repository settings, Steam variables, HTTPS and browser cookie limitations.
 
+## Loading boundaries
+
+`main.tsx` loads the account gate and shared UI first. `Game.tsx` loads only after
+account access succeeds; its world browser does not initialize Pixi or sprite
+atlases. Joining a world loads `Arena.tsx` and the action bar together. Settings,
+Codex, inventory/trading, talents and storage load when their windows open.
+`?art-gallery` and `?class-movement` load only their selected gallery.
+
+Keep URL-only artwork helpers in `class-art.ts` and talent icon presentation in
+`talent-icons.tsx`; importing atlas or panel modules from the entry point defeats
+these boundaries. Local loading/error boundaries keep windows closable and offer
+Reload if a chunk cannot load. Vite chooses shared chunks without a single vendor
+bucket; `dist/.vite/manifest.json` records the production import graph.
+
 ## Responsibilities
 
 `Account.tsx` loads the server account before entering the game. First Steam login
