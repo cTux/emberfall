@@ -2,7 +2,13 @@ import { BULLSEYE, TALENT_RESET_COST, availableTalentPoints } from '@emberfall/c
 import { clientAsset, websocketUrl } from './urls.ts';
 import { faSitemap } from '@fortawesome/free-solid-svg-icons/faSitemap';
 import { experienceRequired, enemyMaxHealth, difficultyMultiplier } from '@emberfall/core';
-import type { AccountView, ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
+import type {
+  AccountView,
+  ChatMessage,
+  ClientMessage,
+  WorldState,
+  WorldSummary,
+} from '@emberfall/common';
 import { GameConnection } from './connection';
 import { classSprite, weaponSrc, spellSrc } from './class-art';
 import { classDetails } from './class-details';
@@ -74,6 +80,36 @@ export function Game({
   }, []);
   const [displayedHp, setDisplayedHp] = useState<Record<string, number>>({});
   const [world, setWorld] = useState<WorldState | null>(null);
+  const [catMessages, setCatMessages] = useState<
+    { worldId: string; afterId?: string; message: ChatMessage }[]
+  >([]);
+  const catSpoke = (text: string) => {
+    if (!world) return;
+    setCatMessages((messages) =>
+      [
+        ...messages.filter((entry) => entry.worldId === world.id),
+        {
+          worldId: world.id,
+          afterId: world.chat?.at(-1)?.id,
+          message: {
+            id: crypto.randomUUID(),
+            playerId: '',
+            name: 'Cat',
+            text,
+            dimension: 'village',
+          },
+        },
+      ].slice(-10),
+    );
+  };
+  const localChatAfter = (id?: string) =>
+    catMessages
+      .filter((entry) => entry.worldId === world?.id && entry.afterId === id)
+      .map((entry) => entry.message);
+  const chatMessages = [
+    ...localChatAfter(),
+    ...(world?.chat ?? []).flatMap((message) => [message, ...localChatAfter(message.id)]),
+  ];
   const [playerId, setPlayerId] = useState('');
   const [legacyName, setName] = useState(() => {
     try {
@@ -234,6 +270,7 @@ export function Game({
             'Your browser cannot remember this character key. Enable site storage to restore progress next session.',
           );
         }
+        setCatMessages([]);
         setWorld(message.world);
         setPlayerId(message.playerId);
         setPending(false);
@@ -469,6 +506,7 @@ export function Game({
               onInteract={interact}
               onCursorAim={setCursorAim}
               onHitpoints={setDisplayedHp}
+              onCatSpeech={catSpoke}
             />
             {me && (
               <WeaponActionBar
@@ -550,11 +588,13 @@ export function Game({
         {world && (
           <Chat
             key={world.id}
-            messages={(world.chat ?? []).filter(
-              (message) =>
-                message.excludedPlayerId !== playerId &&
-                (!message.dimension || message.dimension === (me?.scene ?? 'village')),
-            )}
+            messages={chatMessages
+              .filter(
+                (message) =>
+                  message.excludedPlayerId !== playerId &&
+                  (!message.dimension || message.dimension === (me?.scene ?? 'village')),
+              )
+              .slice(-10)}
             send={send}
             disabled={status !== 'Connected'}
           />

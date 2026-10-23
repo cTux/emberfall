@@ -33,10 +33,12 @@ stock, gold and transaction rules.
 
 Village cats use the same yellow hover outline, proximity check, E key and left-click
 interaction as other functional objects. Petting a cat shows a local speech bubble
-above its moving sprite, alternating `purrr` and `meow`. Each cat responds at most
+above its moving sprite, cycling through `Purrr`, `Meow`, `Mrrp`, `Mew`, `Prrrt`
+and `Mrrrow`. Each cat responds at most
 once every two seconds; its bubble lasts two seconds. Living village players can
 also pet a nearby cat with E when nothing is hovered. Cat speech opens no window,
-does not enter shared chat and resets when leaving the world.
+also appears once as `Cat` in the petting player’s village chat log and resets
+when leaving the world. Replies stay local and share the chat panel’s ten-message limit.
 
 Residents walk at 38 world units/second between independently chosen shared village stops,
 avoiding their previous stop and preferring destinations not already chosen by another resident.
