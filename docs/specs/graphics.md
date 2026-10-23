@@ -6,6 +6,12 @@ Status: implemented visual baseline. Goal: a readable pixel-art world. The clien
 
 Settings contains Low, Balanced and High (default) presets, plus persistent individual toggles. High enables soft projected tree shadows, 2D contact ambient occlusion, dense grass clusters, sprite-only motion blur, flickering campfire/player lighting, bloom, and ambient particles. Resolution options are 75%, native and 150% supersampling, with backing pixel density capped at 3x. Changes apply immediately and do not change server simulation or collision geometry.
 
+**Smooth textures** enables linear texture filtering in both areas and is enabled
+in every preset. Disabling it restores nearest-neighbor pixel edges immediately;
+the choice persists across reloads. World text keeps its existing sharp sampling.
+Entity artwork uses gentler, material-colored dark tones and slightly reduced
+contrast, preserving transparency, frame bounds and gameplay warning colors.
+
 Settings include sunlight shafts, soft-light color grading, adaptive resolution and frame caps (display refresh, 30/60/120/144 FPS). Adaptive resolution adjusts the selected render scale between 50% and 100% every two seconds based on frame time; it never changes world size, input cadence or collision geometry. Low/Balanced enable adaptation; High prioritizes fixed resolution. Red gameplay warnings remain enabled at every preset. Native DLSS, frame generation, hardware ray tracing, depth-buffer SSAO and HDR output are not advertised as supported. PixiJS does not introduce those native rendering features.
 
 High defaults to 150% supersampling and display-refresh frame pacing. Low uses native scale with adaptive resolution; Balanced uses native scale with adaptation, shadows, contact occlusion, dynamic lighting, vignette, color grading, particles and vegetation sway. Preferences can be adjusted individually.
@@ -65,11 +71,15 @@ effect in both areas, independently of graphics preset.
 
 The new client uses a cohesive pixel-art set
 based on the approved wardrobe-style concepts, including a newly drawn wardrobe.
+Village chickens panic when a living player comes within 70 world units, run in the opposite direction at increased speed with faster walking animation until 100 units clear, then return to wandering. This decorative response respects world wrapping and does not affect collision or combat.
 Players, enemies and animals have frame-based locomotion; combatants also have
 attack/cast and fallen poses. Idle motion, damage flashes and death transitions
 remain presentation-only. Scenery, weapons, portraits and effects use the same
-palette and outline treatment. The new client does not scatter decorative bushes in the village or forest at any
-graphics preset. Ground textures and trees remain. The obsolete Dense grass clusters
+palette and outline treatment. The lobby village scatters mossy rocks and five distinct
+plant kinds (ferns, berry bushes, meadow grass, violet wildflowers and flowering herbs)
+using fixed seeds and the same path, building and training-clearing exclusions as trees.
+They share scenery depth ordering, player-overlap fading and lighting; plants also use
+the Waving trees setting. Forest scenery remains unchanged. The obsolete Dense grass clusters
 setting is removed, and the foliage setting is named Waving trees; old saved grass
 preferences are ignored.
 Buildings and ground stay fixed; lobby chimneys
@@ -114,7 +124,9 @@ atlas cell. Preserve retained original assets and their credits.
 
 ## Acceptance
 
-In the new client, world text, chat bubbles, building/portal labels and navigation
+Village buildings, including the wardrobe, have no world-space name labels.
+
+In the new client, world text, chat bubbles, portal labels and navigation
 are rendered with the world. Text textures use four times the font resolution for
 sharper glyphs without increasing the world render resolution; adaptive resolution
 still affects the final canvas output.
@@ -127,3 +139,8 @@ still affects the final canvas output.
 - Check weapon visibility, debuff spacing/expiry, torch animation, animal shadows, portal bloom-off visibility and reduced-motion countdown.
 
 Evidence: [tree-opacity.test.ts](../../packages/server/src/tree-opacity.test.ts).
+
+Gatherable resources retain their existing tree, rock and plant artwork until
+depleted. Generated stump, rubble and cut-stem sprites replace them during the
+one-hour restoration cooldown. Partial tree health bars remain visible at every
+graphics preset; depleted resources do not receive active interaction outlines.

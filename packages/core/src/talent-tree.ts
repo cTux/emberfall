@@ -179,3 +179,16 @@ export function learnTalent(progress: Pick<CharacterProgress, 'level' | 'talents
     throw new Error('Talent is locked, already learned, or no points remain.');
   progress.talents = { ...progress.talents, [id]: 1 };
 }
+
+export const TALENT_RESET_COST = 50;
+
+export function resetTalents(progress: Pick<CharacterProgress, 'talents' | 'coins'>) {
+  if (!TALENT_TREE.some((node) => node.id !== 'center' && isTalentLearned(progress, node.id)))
+    throw new Error('You have no talent points to reset.');
+  if ((progress.coins ?? 0) < TALENT_RESET_COST)
+    throw new Error(`You need ${TALENT_RESET_COST} coins to reset your talent points.`);
+  const talents = { ...progress.talents };
+  for (const node of TALENT_TREE) delete talents[node.id];
+  progress.talents = talents;
+  progress.coins = (progress.coins ?? 0) - TALENT_RESET_COST;
+}

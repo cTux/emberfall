@@ -11,6 +11,8 @@ import { critterCaster, crittersAt, drawCritter } from './critters';
 import { drawNavigation } from './navigation';
 import { drawHitboxes } from './hitboxes';
 import type { Interaction } from './effects';
+import { drawInteractionOutline } from './interaction-targets';
+import type { InteractionTarget } from './interaction-targets';
 import {
   bloodPuddleRenderer,
   drawLootAndBlood,
@@ -18,7 +20,7 @@ import {
   drawDebuffs,
 } from './combat-effects';
 import { wrappedDelta } from '@emberfall/common';
-import { characterStats, ENEMY_STATS, FOREST } from '@emberfall/core';
+import { characterStats, ENEMY_STATS, FOREST, INTERACTION_RADIUS } from '@emberfall/core';
 import { defaultSpellRange, PLAYER_ATTACK_DURATION, enemyMaxHealth } from '@emberfall/core';
 import { movementFacing } from './facing';
 import { drawDanger } from './danger';
@@ -51,6 +53,20 @@ portalContext.ellipse(25, 38, 25, 38, 0, 0, Math.PI * 2);
 portalContext.fill();
 const portalMask = makeMask(portalSilhouette);
 
+export function portalInteraction(source: Interaction, x: number, y: number): InteractionTarget {
+  const stone = !!portalArt.naturalWidth;
+  return {
+    source,
+    x: x - (stone ? 32 : 25),
+    y: y - (stone ? 72 : 68),
+    width: stone ? 64 : 50,
+    height: stone ? 80 : 76,
+    mask: stone ? spriteMask(portalArt, 0, 0, false, 128, false, 128)! : portalMask,
+    reach: source,
+    radius: INTERACTION_RADIUS,
+  };
+}
+
 export function drawPortal(
   ctx: CanvasRenderingContext2D,
   x: number,
@@ -58,10 +74,11 @@ export function drawPortal(
   now: number,
   bloom: boolean,
   name: string,
-  active: boolean,
+  outline: InteractionTarget | null,
   shadows: boolean,
   _waving: boolean,
   opacity = 1,
+  inRange = false,
 ) {
   if (portalArt.naturalWidth) {
     if (shadows)
@@ -81,7 +98,8 @@ export function drawPortal(
     }
     drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
     ctx.restore();
-    drawNameBadge(ctx, x, y - 72, name, active);
+    if (outline) drawInteractionOutline(ctx, outline, inRange);
+    drawNameBadge(ctx, x, y - 72, name);
     return;
   }
   if (shadows)
@@ -138,7 +156,8 @@ export function drawPortal(
   }
   ctx.restore();
   ctx.restore();
-  drawNameBadge(ctx, x, y - 60, name, active);
+  if (outline) drawInteractionOutline(ctx, outline, inRange);
+  drawNameBadge(ctx, x, y - 60, name);
 }
 const fogTexture = document.createElement('canvas');
 fogTexture.width = fogTexture.height = 512;
@@ -229,7 +248,8 @@ export function forestRenderer(
     prefs: Preferences,
     now: number,
     _dt: number,
-    interaction: Interaction | null,
+    hovered: InteractionTarget | null,
+    inRange: boolean,
   ) => {
     if (world?.scene?.id !== lastScene) {
       positions.clear();
@@ -472,10 +492,11 @@ export function forestRenderer(
           now,
           quality.bloom,
           'Return to village',
-          interaction?.id === 'return' && interaction.x === portal.x && interaction.y === portal.y,
+          hovered?.source.x === portal.x && hovered.source.y === portal.y ? hovered : null,
           quality.shadows,
           quality.wavingVegetation,
           obstacleOpacity({ x: point.x, y: point.y + 8, width: 64, height: 80 }, me),
+          inRange,
         );
         continue;
       }
@@ -524,6 +545,7 @@ export function forestRenderer(
           );
         ctx.globalAlpha = 1;
         drawResourceHealth(ctx, t, state);
+        if (hovered?.source.id === `gather:${t.id}`) drawInteractionOutline(ctx, hovered, inRange);
         continue;
       }
       const a = layer.actor!;

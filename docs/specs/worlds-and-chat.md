@@ -20,7 +20,7 @@ The server adds `System` messages when a player joins or disconnects, dies, ente
 
 ## CHAT-03 — Speech bubbles and validation
 
-Speech bubbles wrap at word boundaries; a single oversized word stays intact and the bubble expands to contain it. Each player displays only their latest message in a wrapped, rounded rectangular speech bubble with no bottom triangle, centered two world units above their health bar in both scenes and drawn over the debuff area, until they send another message or leave the world. The server validates trimmed, nonempty text up to 200 characters, rejects control characters, identifies the sender from their session, and allows one message per 500 ms. Messages and bubbles travel in existing world snapshots, are isolated by world, survive reconnects and scene changes, and reset when the world empties. Chat is not saved with character progress.
+Speech bubbles use compact 10-unit text with 13-unit line spacing and size to their content so messages leave more of the world visible. This presentation is shared by player and NPC bubbles. Speech bubbles wrap at word boundaries; a single oversized word stays intact and the bubble expands to contain it. Each player displays only their latest message in a wrapped, rounded rectangular speech bubble with no bottom triangle, centered two world units above their health bar in both scenes and drawn over the debuff area, until they send another message or leave the world. The server validates trimmed, nonempty text up to 200 characters, rejects control characters, identifies the sender from their session, and allows one message per 500 ms. Messages and bubbles travel in existing world snapshots, are isolated by world, survive reconnects and scene changes, and reset when the world empties. Chat is not saved with character progress.
 
 ## CHAT-04 — NPC speech and silence
 
@@ -38,8 +38,13 @@ default model is `llama3.2:3b`; server-only `OLLAMA_BASE_URL` and `OLLAMA_MODEL`
 override them. Cloud model tags are rejected; no external or paid fallback is
 used. The Ollama service must also have cloud features disabled with
 `OLLAMA_NO_CLOUD=1`. Requests time out after 60 seconds to allow cold model loading,
-responses are bounded to 32 KiB and spoken text to 200 characters without
-control/format characters. HTTP errors, timeouts and invalid answers mark the
+responses are bounded to 32 KiB and spoken text to 120 characters without
+control/format characters. The adapter folds line breaks and tabs into spaces
+and shortens overlong replies at a word boundary before validating the spoken
+line and strips quotation marks while preserving apostrophes inside words;
+it never invents fallback dialogue. Other control/format characters,
+empty text and replies without a usable word boundary remain invalid.
+HTTP errors, timeouts and invalid answers mark the
 provider unavailable for 60 seconds; Retry-After is honored from 30 seconds up to
 15 minutes. At most two requests run concurrently across worlds. A saturated
 local request budget defers speech without silence.

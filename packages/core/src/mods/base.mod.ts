@@ -202,7 +202,11 @@ export const baseMod: GameMod = {
       dropChance: 50,
       dropCount: { min: 100, max: 500 },
     });
-    for (const [id, multiplier] of Object.entries({ Easy: 1, Medium: 2, Hard: 4 }))
-      r.difficulties.register({ id, multiplier });
+    for (const [id, balance] of Object.entries({
+      Easy: { multiplier: 1, speedMultiplier: 1 },
+      Medium: { multiplier: 2, speedMultiplier: 1.05 },
+      Hard: { multiplier: 4, speedMultiplier: 1.15 },
+    }))
+      r.difficulties.register({ id, ...balance });
   },
 };

@@ -208,7 +208,7 @@ export function Equipment({
               name: gear.name,
               icon: itemIcon(gear.id),
               price: gear.price ?? 1,
-              details: gear?.stats.armor ? `Armor: ${gear?.stats.armor}` : undefined,
+              details: gear.stats.armor ? `Armor: ${gear.stats.armor}` : undefined,
               badges: itemClass ? weaponBadges(player, itemClass, gear.id) : [],
             }
           : undefined,
@@ -279,7 +279,7 @@ export function backpackViews(items: BackpackItem[]) {
       details: potion
         ? `Restores ${potion.healing} health`
         : gear?.stats.armor
-          ? `Armor: ${gear?.stats.armor}`
+          ? `Armor: ${gear.stats.armor}`
           : definition.kind === 'resource'
             ? 'Gathered resource · stacks to 200'
             : 'Weapon',

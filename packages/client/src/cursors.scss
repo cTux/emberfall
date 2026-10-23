@@ -1,40 +1,41 @@
-// Native cursors preserve hotspots across canvas, UI and portals.
+// Pointing hotspots follow fingertips and sword tips; drag hands share the default anchor.
+// Each size was fitted independently; do not scale coordinates from another size.
 body[data-cursor-size='32'] {
-  --cursor-default: url('/assets/cursors/32/default.png') 3 3, default;
-  --cursor-pointer: url('/assets/cursors/32/pointer.png') 3 3, pointer;
-  --cursor-attack: url('/assets/cursors/32/attack.png') 2 2, crosshair;
+  --cursor-default: url('/assets/cursors/32/default.png') 5 3, default;
+  --cursor-pointer: url('/assets/cursors/32/pointer.png') 5 3, pointer;
+  --cursor-attack: url('/assets/cursors/32/attack.png') 3 3, crosshair;
   --cursor-aim: url('/assets/cursors/32/aim.png') 16 16, crosshair;
-  --cursor-pressed: url('/assets/cursors/32/pressed.png') 3 4, crosshair;
+  --cursor-pressed: url('/assets/cursors/32/pressed.png') 4 4, crosshair;
   --cursor-disabled: url('/assets/cursors/32/disabled.png') 16 16, not-allowed;
-  --cursor-grab: url('/assets/cursors/32/grab.png') 16 16, grab;
-  --cursor-grabbing: url('/assets/cursors/32/grabbing.png') 16 16, grabbing;
+  --cursor-grab: url('/assets/cursors/32/grab.png') 5 3, grab;
+  --cursor-grabbing: url('/assets/cursors/32/grabbing.png') 5 3, grabbing;
   --cursor-text: url('/assets/cursors/32/text.png') 16 16, text;
 }
 
 body,
 body[data-cursor-size='48'] {
-  --cursor-default: url('/assets/cursors/48/default.png') 5 4, default;
-  --cursor-pointer: url('/assets/cursors/48/pointer.png') 5 4, pointer;
-  --cursor-attack: url('/assets/cursors/48/attack.png') 3 3, crosshair;
+  --cursor-default: url('/assets/cursors/48/default.png') 7 3, default;
+  --cursor-pointer: url('/assets/cursors/48/pointer.png') 7 3, pointer;
+  --cursor-attack: url('/assets/cursors/48/attack.png') 4 3, crosshair;
   --cursor-aim: url('/assets/cursors/48/aim.png') 24 24, crosshair;
-  --cursor-pressed: url('/assets/cursors/48/pressed.png') 5 6, crosshair;
+  --cursor-pressed: url('/assets/cursors/48/pressed.png') 5 5, crosshair;
   --cursor-disabled: url('/assets/cursors/48/disabled.png') 24 24, not-allowed;
-  --cursor-grab: url('/assets/cursors/48/grab.png') 24 24, grab;
-  --cursor-grabbing: url('/assets/cursors/48/grabbing.png') 24 24, grabbing;
+  --cursor-grab: url('/assets/cursors/48/grab.png') 7 3, grab;
+  --cursor-grabbing: url('/assets/cursors/48/grabbing.png') 7 3, grabbing;
   --cursor-text: url('/assets/cursors/48/text.png') 24 24, text;
 
   cursor: var(--cursor-default);
 }
 
 body[data-cursor-size='64'] {
-  --cursor-default: url('/assets/cursors/64/default.png') 7 5, default;
-  --cursor-pointer: url('/assets/cursors/64/pointer.png') 7 5, pointer;
-  --cursor-attack: url('/assets/cursors/64/attack.png') 4 4, crosshair;
+  --cursor-default: url('/assets/cursors/64/default.png') 10 3, default;
+  --cursor-pointer: url('/assets/cursors/64/pointer.png') 9 3, pointer;
+  --cursor-attack: url('/assets/cursors/64/attack.png') 5 3, crosshair;
   --cursor-aim: url('/assets/cursors/64/aim.png') 32 32, crosshair;
-  --cursor-pressed: url('/assets/cursors/64/pressed.png') 7 8, crosshair;
+  --cursor-pressed: url('/assets/cursors/64/pressed.png') 6 5, crosshair;
   --cursor-disabled: url('/assets/cursors/64/disabled.png') 32 32, not-allowed;
-  --cursor-grab: url('/assets/cursors/64/grab.png') 32 32, grab;
-  --cursor-grabbing: url('/assets/cursors/64/grabbing.png') 32 32, grabbing;
+  --cursor-grab: url('/assets/cursors/64/grab.png') 10 3, grab;
+  --cursor-grabbing: url('/assets/cursors/64/grabbing.png') 10 3, grabbing;
   --cursor-text: url('/assets/cursors/64/text.png') 32 32, text;
 }
 

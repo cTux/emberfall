@@ -178,3 +178,46 @@ test('cursor enable and size settings apply immediately and persist across reloa
   await page.reload();
   await expect(body).toHaveCSS('cursor', /\/32\/default\.png/);
 });
+
+test('pointing hotspots stay on the visible artwork at every size', async ({ page }) => {
+  await page.goto('/');
+  for (const size of [32, 48, 64]) {
+    await page.locator('body').evaluate((body, size) => {
+      body.dataset.cursorSize = String(size);
+    }, size);
+    for (const state of ['default', 'pointer', 'attack', 'pressed']) {
+      const alpha = await page.evaluate(async (state) => {
+        const cursor = getComputedStyle(document.body).getPropertyValue(`--cursor-${state}`);
+        const match = /url\(["']?([^"')]+)["']?\)\s+(\d+)\s+(\d+)/.exec(cursor)!;
+        const image = new Image();
+        image.src = match[1];
+        await image.decode();
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        const context = canvas.getContext('2d')!;
+        context.drawImage(image, 0, 0);
+        return context.getImageData(Number(match[2]), Number(match[3]), 1, 1).data[3];
+      }, state);
+      expect(alpha, `${size}px ${state} hotspot must touch the solid icon`).toBeGreaterThanOrEqual(
+        220,
+      );
+    }
+  }
+});
+
+test('drag cursor anchors match the default cursor at every size', async ({ page }) => {
+  await page.goto('/');
+  for (const size of [32, 48, 64]) {
+    const anchors = await page.locator('body').evaluate((body, size) => {
+      body.dataset.cursorSize = String(size);
+      const style = getComputedStyle(body);
+      return ['default', 'grab', 'grabbing'].map((state) => {
+        const cursor = style.getPropertyValue(`--cursor-${state}`);
+        return /\)\s+(\d+)\s+(\d+)/.exec(cursor)!.slice(1).map(Number);
+      });
+    }, size);
+    expect(anchors[1], `${size}px grab anchor`).toEqual(anchors[0]);
+    expect(anchors[2], `${size}px grabbing anchor`).toEqual(anchors[0]);
+  }
+});

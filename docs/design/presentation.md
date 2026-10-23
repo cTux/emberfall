@@ -6,7 +6,10 @@ Status: implemented. Implements [interface/audio](../specs/interface-and-audio.m
 
 The host's `cursors.scss` supplies transparent PNG native cursors with explicit
 hotspots and system fallbacks, including portaled UI. Preferences supply a body-level
-size attribute selecting pre-sized 32/48/64 px PNGs and scaled hotspots. Disabling
+size attribute selecting pre-sized 32/48/64 px PNGs and hotspots measured in each
+final image. Fingertips and blade tips stay at the pointer position. Open and closed
+drag hands use the same hotspot coordinates as the default cursor at each size,
+keeping the image position stable when hovering or pressing a drag handle. Disabling
 custom cursors overrides all cursor variables with their native keywords. The host
 applies preferences independently of storage writes, so unavailable storage does
 not prevent live changes. Shared drag handles expose
@@ -17,6 +20,16 @@ wrapped distances for hover feedback, updating `data-cursor` only on state chang
 Pointer leave, blur and visibility changes clear hover feedback; modal and text
 entry blocking applies alongside existing input suppression. Browser coverage is
 in [cursor scenarios](../../tests/cursors.spec.ts).
+
+`interaction-targets.ts` picks opaque pixels of functional scenery and portals in
+display depth order, using the same wrapped camera as rendering. It caches yellow
+silhouette outlines per finite sprite frame and display size (1 or 3 world units).
+Range uses confirmed player positions and the existing entrance/NPC/portal geometry.
+Arena routes in-range left clicks to Game's existing E action and suppresses combat
+for clicks on functional targets. Hovered targets take priority over nearby E
+fallbacks; an out-of-range hover cannot activate another nearby object. Names and
+badges have no interaction-dependent styling. Browser coverage is in
+[interaction outlines](../../tests/interaction-outlines.spec.ts).
 
 [main.tsx](../../packages/client/src/main.tsx) owns the connection, browser identity, recovery and screen composition. [Arena.tsx](../../packages/client/src/Arena.tsx) owns input capture and animation-frame drawing. Settings, Codex, chat and performance sampling are client concerns; server actions stay in the client host.
 
@@ -50,6 +63,27 @@ receives view data and has no game-package dependency. See the
 
 ## Rendering pipeline and caches
 
+[art.ts](../../packages/client/src/art.ts) bakes softer entity tones once when
+loading packaged actor and scenery atlases. Dark pixels borrow a little color
+from adjacent opaque material, with a small contrast reduction. Alpha is preserved;
+terrain, pickup icons and effects retain their original palettes. Source PNGs stay
+unchanged. [art-tones.ts](../../packages/client/src/art-tones.ts) owns the pixel transform.
+Arena applies the persisted Smooth textures preference before drawing either area.
+Pixi source textures use linear or nearest sampling on use, including cached
+sources; text and procedural gradient textures retain their own sampling. Canvas
+CSS scaling follows the same preference.
+
+Village trees, rocks and plants use immutable seeded placements from core's `world.ts`.
+They share path/building/training clearance; new seeds do not move existing trees.
+`villageSprites` packages the existing environment rock cell and five generated plant
+cells into the usual scenery/mask pipeline. The background waits for plant art before
+caching shadows and contact shading for permanent scenery. Gatherable resource
+shadows and light occlusion use their current sprite so stumps and cut plants
+replace full silhouettes immediately. Plants share the tree sway path; rocks stay fixed.
+Core resource identities match the existing village placements. Hover masks include
+living resources; depleted sprites remain visible during the server-owned cooldown.
+Tree health bars use replicated remaining gathers and disappear on depletion or restoration.
+
 The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders
 the optional base ability and four reserved slots, with an SVG cooldown sector
 and numeric countdown. [WeaponActionBar](../../packages/client/src/WeaponActionBar.tsx)
@@ -81,7 +115,7 @@ Drawing combines predicted local presentation with buffered remote actors. The c
 - [forest.ts](../../packages/client/src/forest.ts), [village.ts](../../packages/client/src/village.ts) and [paths.ts](../../packages/client/src/paths.ts) draw the world with visible-region and wrapped-seam handling.
 - [lighting.ts](../../packages/client/src/lighting.ts) caches sprite masks/static shadows and reuses scratch canvases; moving blockers and player lights update dynamically.
 - [combat-effects.ts](../../packages/client/src/combat-effects.ts), [effects.ts](../../packages/client/src/effects.ts), [danger.ts](../../packages/client/src/danger.ts) and [navigation.ts](../../packages/client/src/navigation.ts) render authoritative events, warnings and navigation.
-- [critters.ts](../../packages/client/src/critters.ts) derives decorative animal motion locally. These animals are not server actors or targets.
+- [critters.ts](../../packages/client/src/critters.ts) derives decorative animal motion locally. These animals are not server actors or targets. The arena owns a bounded chicken motion state per mount, updates every chicken before culling, and supplies living village player positions. Chickens flee the nearest player within 70 world units at 80 units/second (normal wandering is 10), keep fleeing until 100 units clear, and walk back toward their wandering route. Wrapped deltas drive detection, travel and camera projection; elapsed steps are capped at 100 ms after pauses. Panic uses a faster 70 ms walking-frame cadence.
 
 Cull offscreen actors before expensive sprite masks/shadows, share identical sprite/grass canvases, copy presentation positions instead of whole combat state, and index hit events once per frame. Full-map redraws and cache invalidation during world joins previously caused stalls; keep startup and re-entry coverage when changing cache lifetime.
 
@@ -92,9 +126,15 @@ culling. Pixi reuses the gradient ramp; the marker needs no bloom or particles.
 
 Player chat is drawn after world effects in both scenes. The rounded message box has no pointer; its bottom sits two world units above the health bar, overlaying the debuff area. The renderer uses the same placement and wrapping.
 
+`npc-work.ts` draws eight bounded, deterministic particle loops keyed to workstation
+activity and the replicated work start time. Arena passes the wrapped worker
+projection and particle preference; station offsets share that projection. Small
+filled discs and outlined bubbles use native Pixi geometry without per-particle
+blur filters, procedural tool rectangles, persistent emitters or new textures.
+
 ## Preferences, diagnostics and audio
 
-[graphics.ts](../../packages/client/src/graphics.ts) and [preferences.ts](../../packages/client/src/preferences.ts) validate persisted settings and fall back to defaults. [panel-positions.ts](../../packages/client/src/panel-positions.ts) persists draggable-window placement. Rendering scale and frame caps affect presentation only; simulation/input cadence remains independent.
+[graphics.ts](../../packages/client/src/graphics.ts) and [preferences.ts](../../packages/client/src/preferences.ts) validate persisted settings and fall back to defaults. DPS, FPS and latency visibility default to false; saved boolean choices override those defaults. [panel-positions.ts](../../packages/client/src/panel-positions.ts) persists draggable-window placement. Rendering scale and frame caps affect presentation only; simulation/input cadence remains independent.
 
 [PerformanceGraph.tsx](../../packages/client/src/PerformanceGraph.tsx) samples FPS and network metrics using monotonic timing. Local snapshot age excludes network transit; ping, acknowledgement delay and presentation backlog are different measurements. The shared UI graph receives data; it does not own sampling. DPS comes from authoritative damage history. Arena renders its meter only when the saved `dps` preference is enabled, independently of the performance graph; hiding it does not affect damage tracking or its saved panel position.
 

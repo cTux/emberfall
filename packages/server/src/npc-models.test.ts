@@ -18,10 +18,16 @@ test('native Ollama requests use local generation without API credentials', asyn
     assert.equal(body.model, DEFAULT_NPC_MODEL);
     assert.equal(body.stream, false);
     assert.equal(body.keep_alive, '10m');
-    assert.equal(body.options.num_predict, 96);
+    assert.equal(body.options.num_predict, 64);
     assert.equal(body.options.num_ctx, 4096);
     assert.equal(body.messages[1].content, 'fictional context');
-    assert.match(body.messages[0].content, /at most 200 characters/);
+    assert.match(body.messages[0].content, /at most 120 characters/);
+    assert.match(body.messages[0].content, /fantasy humor/);
+    assert.match(body.messages[0].content, /personality shape your vocabulary, rhythm, opinions/);
+    assert.match(body.messages[0].content, /amusing twist in most lines/);
+    assert.match(body.messages[0].content, /Answer the actual question while being funny/);
+    assert.match(body.messages[0].content, /do not copy them verbatim/);
+    assert.match(body.messages[0].content, /Prefix every mentioned resident name with @/);
     return answer(' Good morning! ');
   };
   assert.deepEqual(
@@ -46,6 +52,32 @@ test('server environment configures the provider used by runtime and diagnostic'
     return answer();
   };
   assert.equal((await new OllamaNpcDialogue(request).generate('{}', signal())).status, 'ok');
+});
+
+test('usable model speech is folded to one bounded line without cooling down', async (t) => {
+  const log = t.mock.method(console, 'info', () => {});
+  const long = 'Welcome to our village, traveller. '.repeat(10);
+  for (const [content, expected] of [
+    ['Good morning!\r\n\tWelcome, traveller.', 'Good morning! Welcome, traveller.'],
+    [long, long.slice(0, 120).slice(0, long.slice(0, 120).lastIndexOf(' ')).trim()],
+    ['“The forest goblins call this "fine dining".”', 'The forest goblins call this fine dining.'],
+    ["'Don't feed the goblins.'", "Don't feed the goblins."],
+    ['‘Nell’s boots fear no mud.’', 'Nell’s boots fear no mud.'],
+  ]) {
+    let calls = 0;
+    const pool = new OllamaNpcDialogue(
+      async () => {
+        calls++;
+        return answer(content);
+      },
+      () => 0,
+      defaults,
+    );
+    assert.deepEqual(await pool.generate('{}', signal()), { status: 'ok', text: expected });
+    assert.equal((await pool.generate('{}', signal())).status, 'ok');
+    assert.equal(calls, 2, 'usable replies must not start a shared cooldown');
+  }
+  assert.equal(log.mock.callCount(), 0);
 });
 
 test('HTTP failures honor Retry-After and recover without fallback or repeated logs', async (t) => {
@@ -81,7 +113,7 @@ test('missing models and malformed, incomplete, oversized or invalid text fail s
   for (const response of [
     () => new Response('model not found', { status: 404 }),
     () => answer('bad\u202etext'),
-    () => answer('bad\ntext'),
+    () => answer('bad\u0000text'),
     () => answer('x'.repeat(201)),
     () => answer('  '),
     () => Response.json({ message: { content: 'Incomplete.' }, done: false }),
@@ -96,6 +128,34 @@ test('missing models and malformed, incomplete, oversized or invalid text fail s
     );
     assert.deepEqual(await pool.generate('{}', signal()), { status: 'unavailable' });
   }
+});
+
+test('invalid response diagnostics identify validation failures without exposing speech', async (t) => {
+  const lines: string[] = [];
+  t.mock.method(console, 'info', (line: string) => lines.push(line));
+  const cases: [() => Response, string][] = [
+    [() => new Response(null), 'missing_body'],
+    [() => new Response('private malformed JSON'), 'invalid_json'],
+    [() => new Response('x'.repeat(40_000)), 'response_too_large'],
+    [() => Response.json({ message: { content: 'private' }, done: false }), 'incomplete'],
+    [() => Response.json({ done: true }), 'missing_text'],
+    [() => answer('  '), 'empty_text'],
+    [() => answer('x'.repeat(201)), 'text_too_long'],
+    [() => answer('private\u202etext'), 'control_characters'],
+    [() => answer(`${'safe '.repeat(50)}private\u202etext`), 'control_characters'],
+  ];
+  for (const [response, failure] of cases) {
+    const pool = new OllamaNpcDialogue(
+      async () => response(),
+      () => 0,
+      defaults,
+    );
+    assert.deepEqual(await pool.generate('private prompt', signal()), { status: 'unavailable' });
+    const entry = lines.at(-1)!;
+    assert.match(entry, /"reason":"invalid_response"/);
+    assert(entry.includes(`"validationFailure":"${failure}"`), entry);
+  }
+  assert(!lines.join('\n').includes('private'));
 });
 
 test('concurrency is bounded; cancellation releases slots without poisoning shared health', async (t) => {

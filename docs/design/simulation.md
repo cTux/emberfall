@@ -30,13 +30,13 @@ stateDiagram-v2
   Ended --> [*]: final participant returns
 ```
 
-Electorate changes invalidate the countdown and readiness is reconciled against current membership. Only Forest/Easy is accepted. Late entry uses the existing active scene and deadline. Return portals close further entry; regeneration is a separate action allowed only when no living participants remain and the scene is not voting/countdown.
+Electorate changes invalidate the countdown and readiness is reconciled against current membership. Forest accepts the shared Easy, Medium and Hard difficulty values. Scene creation copies the validated command difficulty into authoritative state; spawning, damage and client health displays reuse the registered 1×, 2× and 4× multipliers. The portal uses controlled difficulty selection, and the active scene regeneration shortcut preserves the existing difficulty. Late entry uses the existing active scene and deadline. Return portals close further entry; regeneration is a separate action allowed only when no living participants remain and the scene is not voting/countdown.
 
 `pausedAt` suspends active scene progression when no living forest player remains. Resuming shifts relevant deadlines by the pause duration: boss timer, spawns, attack windows, projectiles, drops, debuffs and companion timing. A living village player does not keep the forest running. A disconnected participant remains part of the retained session during recovery; do not equate a missing socket with scene departure.
 
 ## Geometry and attacks
 
-Village and forest share 4800×2560 wrapped geometry. Player movement passes through scenery. Enemies and Bear retain tree avoidance; enemy bodies use a wrapped spatial grid for separation. Distances, target choice, hit overlap and camera projections must use the same wrapped geometry.
+Village and forest share 4800×2560 wrapped geometry. Player movement passes through scenery. Enemies and Bear retain tree avoidance; enemy bodies use a wrapped spatial grid for separation. Enemy movement reads registered base speed and the scene difficulty’s `speedMultiplier` (Easy 1, Medium 1.05, Hard 1.15) before applying roots. The public `enemyKindAttribute` and `difficultySpeedMultiplier` configs derive from the same catalog. Bear movement keeps player speed independently of enemy difficulty scaling. Distances, target choice, hit overlap and camera projections must use the same wrapped geometry.
 
 Warrior/Bear melee uses a smoothed forward half-disc and per-swing hit tracking. Projectile movement and class effects share `fireClassAttack`, `advancePlayerShot`, `tickPlayerShots` and `hitEnemy`. Root projectiles retain their identity and hit IDs through three bounces, select the nearest living unhit enemy within 250 wrapped units of each impact, and track that target until impact or its death. All four possible impacts use the shared full-power hit path. Local presentation keeps the same projectile through confirmed turns and uses shared motion with hit detection disabled; it never predicts damage or hit history. Roots refresh one five-second stack and multiply ordinary enemy movement speed by 0.9; bosses receive no roots. Manual casts validate cooldown, life, area epoch, class and training range; increasing request IDs identify processed/rejected casts and the accepted attack. Presentation prediction is described in [movement](movement.md).
 
@@ -47,6 +47,15 @@ inherits the owner's totals with physical damage, 75-unit range and 1.5× maximu
 HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% bleed,
 and enemy hit resolution applies the owner's armor. UI shows the resulting
 cooldown without also showing attacks per second.
+
+`characterStats().cooldownRecoveryRate` combines gear speed relative to the
+equipped weapon's base attacks per second with additive talent speed bonuses.
+Both base attacks and talent casts use `recoveryCooldownMs(baseMs, rate)`:
+`baseMs / (1 + rate)`, with nonpositive recovery returning `Infinity`. Base attack
+cooldown comes from the weapon's base rate; talent casts retain their registered
+base interval. Bear inherits the same resulting attack timing. Cooldown sectors
+and prediction consume these shared values. The existing 50 ms simulation tick
+is unchanged; no PoE-specific 33 ms rounding is applied.
 
 Balance numbers are maintained once in the [combat specification](../specs/combat.md), with executable base-mod content in the core package. Do not fork separate class rules for training, forest or the client.
 

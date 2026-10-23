@@ -26,37 +26,39 @@ test('auto-loot defaults on and accepts only saved booleans', () => {
   }
 });
 
-test('DPS meter defaults on and accepts only saved booleans', () => {
-  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
-  try {
-    for (const [saved, expected] of [
-      [null, true],
-      ['{}', true],
-      ['{"dps":false}', false],
-      ['{"dps":true}', true],
-      ['{"dps":"false"}', true],
-      ['{"dps":0}', true],
-      ['null', true],
-      ['invalid', true],
-    ] as const) {
+for (const key of ['dps', 'fps', 'latency'] as const) {
+  test(`${key} defaults off and accepts only saved booleans`, () => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    try {
+      for (const [saved, expected] of [
+        [null, false],
+        ['{}', false],
+        [JSON.stringify({ [key]: false }), false],
+        [JSON.stringify({ [key]: true }), true],
+        [JSON.stringify({ [key]: 'true' }), false],
+        [JSON.stringify({ [key]: 1 }), false],
+        ['null', false],
+        ['invalid', false],
+      ] as const) {
+        Object.defineProperty(globalThis, 'localStorage', {
+          configurable: true,
+          value: { getItem: () => saved },
+        });
+        assert.equal(loadPreferences()[key], expected);
+      }
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
-        value: { getItem: () => saved },
+        get: () => {
+          throw new Error('Storage unavailable');
+        },
       });
-      assert.equal(loadPreferences().dps, expected);
+      assert.equal(loadPreferences()[key], false);
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'localStorage', original);
+      else Reflect.deleteProperty(globalThis, 'localStorage');
     }
-    Object.defineProperty(globalThis, 'localStorage', {
-      configurable: true,
-      get: () => {
-        throw new Error('Storage unavailable');
-      },
-    });
-    assert.equal(loadPreferences().dps, true);
-  } finally {
-    if (original) Object.defineProperty(globalThis, 'localStorage', original);
-    else Reflect.deleteProperty(globalThis, 'localStorage');
-  }
-});
+  });
+}
 
 test('combat input validates auto-loot and accepts older clients without it', () => {
   const input = {

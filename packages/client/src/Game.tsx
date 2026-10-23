@@ -1,11 +1,18 @@
+import { BULLSEYE, TALENT_RESET_COST, availableTalentPoints } from '@emberfall/core';
 import { clientAsset, websocketUrl } from './urls.ts';
 import { faSitemap } from '@fortawesome/free-solid-svg-icons/faSitemap';
-import { experienceRequired, enemyMaxHealth } from '@emberfall/core';
-import type { AccountView, ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
+import { experienceRequired, enemyMaxHealth, difficultyMultiplier } from '@emberfall/core';
+import type {
+  AccountView,
+  ChatMessage,
+  ClientMessage,
+  WorldState,
+  WorldSummary,
+} from '@emberfall/common';
 import { GameConnection } from './connection';
 import { classSprite, weaponSrc, spellSrc } from './class-art';
 import { classDetails } from './class-details';
-import { hasLivingScenePlayers } from '@emberfall/common';
+import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
 import { characterStats, INNKEEPER, CLASS_IDS, CLASS_LABELS } from '@emberfall/core';
 import { lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
@@ -21,6 +28,7 @@ import {
   SceneStatus,
   ClassCard,
   PortalVote,
+  GoldBalance,
 } from '@emberfall/ui';
 import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons/faBookOpen';
@@ -72,6 +80,36 @@ export function Game({
   }, []);
   const [displayedHp, setDisplayedHp] = useState<Record<string, number>>({});
   const [world, setWorld] = useState<WorldState | null>(null);
+  const [catMessages, setCatMessages] = useState<
+    { worldId: string; afterId?: string; message: ChatMessage }[]
+  >([]);
+  const catSpoke = (text: string) => {
+    if (!world) return;
+    setCatMessages((messages) =>
+      [
+        ...messages.filter((entry) => entry.worldId === world.id),
+        {
+          worldId: world.id,
+          afterId: world.chat?.at(-1)?.id,
+          message: {
+            id: crypto.randomUUID(),
+            playerId: '',
+            name: 'Cat',
+            text,
+            dimension: 'village',
+          },
+        },
+      ].slice(-10),
+    );
+  };
+  const localChatAfter = (id?: string) =>
+    catMessages
+      .filter((entry) => entry.worldId === world?.id && entry.afterId === id)
+      .map((entry) => entry.message);
+  const chatMessages = [
+    ...localChatAfter(),
+    ...(world?.chat ?? []).flatMap((message) => [message, ...localChatAfter(message.id)]),
+  ];
   const [playerId, setPlayerId] = useState('');
   const [legacyName, setName] = useState(() => {
     try {
@@ -83,6 +121,7 @@ export function Game({
   const steam = account.mode === 'steam';
   const name = steam ? account.nickname! : legacyName;
   const [menu, setMenu] = useState<
+    | 'resetTalents'
     | 'talents'
     | 'codex'
     | 'settings'
@@ -93,6 +132,7 @@ export function Game({
     | 'exit'
     | null
   >(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [building, setBuilding] = useState('');
   const [settingsTab, setSettingsTab] = useState('gameplay');
   const [browserOpen, setBrowserOpen] = useState(true);
@@ -230,6 +270,7 @@ export function Game({
             'Your browser cannot remember this character key. Enable site storage to restore progress next session.',
           );
         }
+        setCatMessages([]);
         setWorld(message.world);
         setPlayerId(message.playerId);
         setPending(false);
@@ -334,11 +375,13 @@ export function Game({
       epoch: me.scene === 'forest' ? (scene?.id ?? '') : 'lobby',
     });
   };
-  const interact = () => {
-    const source = interaction.current;
+  const interact = (source = interaction.current) => {
     if (!source) return;
+    if (source.activate) {
+      source.activate();
+      return;
+    }
     if (source.id.startsWith('gather:')) {
-      const me = world?.players.find((p) => p.id === playerId);
       if (me)
         send({
           type: 'gather',
@@ -346,6 +389,7 @@ export function Game({
           epoch: me.scene === 'forest' ? (world?.scene?.id ?? '') : 'lobby',
         });
     } else if (source.id === 'return') send({ type: 'returnLobby' });
+    else if (source.id === BULLSEYE?.id) setMenu('resetTalents');
     else if (source.id === 'wardrobe') setMenu('wardrobe');
     else if (source.id === 'portal') setMenu('portal');
     else {
@@ -466,8 +510,10 @@ export function Game({
               preferences={preferences}
               latency={latency}
               interaction={interaction}
+              onInteract={interact}
               onCursorAim={setCursorAim}
               onHitpoints={setDisplayedHp}
+              onCatSpeech={catSpoke}
             />
             {me && (
               <WeaponActionBar
@@ -549,11 +595,13 @@ export function Game({
         {world && (
           <Chat
             key={world.id}
-            messages={(world.chat ?? []).filter(
-              (message) =>
-                message.excludedPlayerId !== playerId &&
-                (!message.dimension || message.dimension === (me?.scene ?? 'village')),
-            )}
+            messages={chatMessages
+              .filter(
+                (message) =>
+                  message.excludedPlayerId !== playerId &&
+                  (!message.dimension || message.dimension === (me?.scene ?? 'village')),
+              )
+              .slice(-10)}
             send={send}
             disabled={status !== 'Connected'}
           />
@@ -799,21 +847,23 @@ export function Game({
                     : undefined
             }
             title={
-              menu === 'talents'
-                ? 'Talents'
-                : menu === 'codex'
-                  ? 'Codex'
-                  : menu === 'equipment'
-                    ? 'Inventory'
-                    : menu === 'settings'
-                      ? 'Settings'
-                      : menu === 'portal'
-                        ? 'Forest portal'
-                        : menu === 'wardrobe'
-                          ? 'Wardrobe'
-                          : menu === 'exit'
-                            ? 'Leave?'
-                            : building
+              menu === 'resetTalents'
+                ? 'Reset talent points?'
+                : menu === 'talents'
+                  ? 'Talents'
+                  : menu === 'codex'
+                    ? 'Codex'
+                    : menu === 'equipment'
+                      ? 'Inventory'
+                      : menu === 'settings'
+                        ? 'Settings'
+                        : menu === 'portal'
+                          ? 'Forest portal'
+                          : menu === 'wardrobe'
+                            ? 'Wardrobe'
+                            : menu === 'exit'
+                              ? 'Leave?'
+                              : building
             }
             onClose={() => setMenu(null)}
           >
@@ -824,7 +874,49 @@ export function Game({
                     {error}
                   </Alert>
                 )}
-                {menu === 'talents' && me ? (
+                {menu === 'resetTalents' && me ? (
+                  <>
+                    <Typography component='div'>
+                      Do you really want to reset your talent points for{' '}
+                      <Box
+                        component='span'
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          verticalAlign: 'middle',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <GoldBalance name='Reset cost' coins={TALENT_RESET_COST} />?
+                      </Box>
+                    </Typography>
+                    <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+                      <Typography variant='body2'>Currently you have:</Typography>
+                      <GoldBalance name='Your balance' coins={me.coins ?? 0} />
+                    </Stack>
+                    <Stack direction='row' spacing={1}>
+                      <Button variant='outlined' onClick={() => setMenu(null)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant='contained'
+                        disabled={
+                          unavailable ||
+                          (me.coins ?? 0) < TALENT_RESET_COST ||
+                          availableTalentPoints(me) >= Math.min(20, me.level) - 1
+                        }
+                        onClick={() => {
+                          setError('');
+                          send({ type: 'resetTalents', classId: me.classId ?? 'warrior' });
+                          setMenu(null);
+                        }}
+                      >
+                        Reset talents
+                      </Button>
+                    </Stack>
+                  </>
+                ) : menu === 'talents' && me ? (
                   <Talents player={me} send={send} />
                 ) : menu === 'codex' ? (
                   <Codex />
@@ -961,7 +1053,11 @@ export function Game({
                             <Button
                               disabled={unavailable}
                               onClick={() =>
-                                send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' })
+                                send({
+                                  type: 'createScene',
+                                  scene: 'Forest',
+                                  difficulty: scene.difficulty,
+                                })
                               }
                             >
                               Regenerate scene
@@ -983,14 +1079,24 @@ export function Game({
                         spacing={2}
                         onSubmit={(e) => {
                           e.preventDefault();
-                          send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' });
+                          send({ type: 'createScene', scene: 'Forest', difficulty });
                         }}
                       >
                         <TextField select label='Scene type' defaultValue='Forest'>
                           <MenuItem value='Forest'>Forest</MenuItem>
                         </TextField>
-                        <TextField select label='Difficulty' defaultValue='Easy'>
-                          <MenuItem value='Easy'>Easy</MenuItem>
+                        <TextField
+                          select
+                          label='Difficulty'
+                          value={difficulty}
+                          onChange={(event) => setDifficulty(event.target.value as Difficulty)}
+                          helperText={`${difficultyMultiplier(difficulty)}× enemy health and damage`}
+                        >
+                          {Object.values(Difficulty).map((value) => (
+                            <MenuItem key={value} value={value}>
+                              {value}
+                            </MenuItem>
+                          ))}
                         </TextField>
                         <Stack direction='row' spacing={1}>
                           <Button type='submit' variant='contained' disabled={unavailable}>

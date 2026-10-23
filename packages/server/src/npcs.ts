@@ -4,6 +4,7 @@ import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { ChatMessage, Player, VillageNpc } from '@emberfall/common';
 import { simulationFor } from './ecs/simulation.ts';
 import type { NpcDialogue } from './npc-models.ts';
+import { spokenLine } from './npc-models.ts';
 
 export interface NpcWorld {
   players: Map<string, Player>;
@@ -13,14 +14,23 @@ export interface NpcWorld {
 const PLAYER_RANGE = 120;
 const NPC_RANGE = 160;
 const SPEED = 38;
+const REPLY_DELAY = 2000;
 const villagePlayers = (world: NpcWorld) =>
   [...world.players.values()].filter((p) => !p.scene && p.hitpoints > 0 && !p.reconnecting);
+interface Routine {
+  stop: number;
+  pauseUntil: number;
+  returnAt: number;
+  station: number;
+  work?: { remaining: number; elapsed: number };
+}
 interface Conversation {
   speaker: string;
   playerId?: string;
   otherNpc?: string;
   text?: string;
-  followup?: boolean;
+  /** Number of lines already published in this exchange. */
+  lines?: number;
 }
 
 /** One scheduler per world; LLM work never blocks the fixed simulation tick. */
@@ -34,10 +44,10 @@ export class VillageLife {
   private npcAt = new Map<string, number>();
   private replyAt = new Map<string, number>();
   private playerAt = new Map<string, number>();
-  private walks = new Map<string, { stop: number; pauseUntil: number }>();
+  private walks = new Map<string, Routine>();
   private interactions = new Map<string, string>();
   private memories = new Map<string, string[]>();
-  private reply?: Conversation;
+  private reply?: { at: number; conversation: Conversation };
   private continuation?: { at: number; conversation: Conversation };
   private world: NpcWorld;
   private dialogue: NpcDialogue;
@@ -50,6 +60,8 @@ export class VillageLife {
       this.walks.set(definition.id, {
         stop: this.chooseStop(),
         pauseUntil: now + 5000 + this.random() * 4000,
+        returnAt: now + 25_000 + this.random() * 20_000,
+        station: 0,
       });
       return {
         id: definition.id,
@@ -93,7 +105,13 @@ export class VillageLife {
     )
       return;
     this.interactions.set(player.id, npcId);
-    this.world.npcs.find((npc) => npc.id === npcId)!.moving = false;
+    const npc = this.world.npcs.find((npc) => npc.id === npcId)!;
+    npc.moving = false;
+    npc.workstationId = npc.workStartedAt = undefined;
+    npc.angle = Math.atan2(
+      wrappedDelta(player.y, npc.y, VILLAGE_DEFINITION.geometry.height),
+      wrappedDelta(player.x, npc.x, VILLAGE_DEFINITION.geometry.width),
+    );
   }
   hear(player: Player, text: string, now: number) {
     if (
@@ -108,15 +126,22 @@ export class VillageLife {
       now < (this.replyAt.get(player.id) ?? 0)
     )
       return;
-    const named = text.match(/^@([^\s]+)\s+(.+)$/u);
-    if (!named) return;
-    const npc = this.world.npcs?.find(
-      (n) => n.name.split(' ')[0].toLowerCase() === named[1].toLowerCase(),
-    );
-    if (!npc || forestDistance(npc, player) > PLAYER_RANGE) return;
-    this.nextReply = now + 5000;
-    this.reply = { speaker: npc.id, playerId: player.id, text: named[2] };
-    this.replyAt.set(player.id, now + 10_000);
+    for (const name of text.toLowerCase().match(/[\p{L}\p{M}\p{N}_]+/gu) ?? []) {
+      const npc = this.world.npcs?.find(
+        (n) =>
+          n.name.split(' ')[0].toLowerCase() === name && forestDistance(n, player) <= PLAYER_RANGE,
+      );
+      if (!npc) continue;
+      npc.workstationId = npc.workStartedAt = undefined;
+      npc.moving = false;
+      this.nextReply = now + 5000;
+      this.reply = {
+        at: now + REPLY_DELAY,
+        conversation: { speaker: npc.id, playerId: player.id, text },
+      };
+      this.replyAt.set(player.id, now + 10_000);
+      return;
+    }
   }
   tick(now: number, dt: number) {
     this.lastTick = now;
@@ -143,24 +168,66 @@ export class VillageLife {
         this.continuation &&
         (this.continuation.conversation.speaker === npc.id ||
           this.continuation.conversation.otherNpc === npc.id);
+      npc.workstationId = npc.workStartedAt = undefined;
       if (
         !players.length ||
         occupied ||
         continuing ||
-        now < walk.pauseUntil ||
-        interacting.has(npc.id)
+        interacting.has(npc.id) ||
+        this.reply?.conversation.speaker === npc.id ||
+        (npc.chatUntil ?? 0) > now
       ) {
         npc.moving = false;
         continue;
       }
-      const target = VILLAGE_DEFINITION.npcStops[walk.stop % VILLAGE_DEFINITION.npcStops.length];
+      const returning = now >= walk.returnAt;
+      const stations = VILLAGE_DEFINITION.workstations.filter((s) => s.npcId === npc.id);
+      const station = stations[walk.station % stations.length];
+      if (walk.work && station) {
+        npc.moving = false;
+        npc.angle = Math.atan2(
+          wrappedDelta(station.y - 18, npc.y - 24, VILLAGE_DEFINITION.geometry.height),
+          wrappedDelta(station.x, npc.x, VILLAGE_DEFINITION.geometry.width),
+        );
+        npc.workstationId = station.id;
+        npc.workStartedAt = now - walk.work.elapsed;
+        const active = Math.max(0, dt * 1000);
+        walk.work.remaining -= active;
+        walk.work.elapsed += active;
+        if (walk.work.remaining <= 0) {
+          walk.work = undefined;
+          walk.station++;
+          walk.returnAt = now + 25_000 + this.random() * 20_000;
+          walk.pauseUntil = now + 5000 + this.random() * 4000;
+          walk.stop = this.chooseStop(walk.stop);
+          npc.workstationId = npc.workStartedAt = undefined;
+        }
+        continue;
+      }
+      if (!returning && now < walk.pauseUntil) {
+        npc.moving = false;
+        continue;
+      }
+      const target =
+        returning && station
+          ? station.worker
+          : VILLAGE_DEFINITION.npcStops[walk.stop % VILLAGE_DEFINITION.npcStops.length];
       const dx = wrappedDelta(target.x, npc.x, VILLAGE_DEFINITION.geometry.width),
         dy = wrappedDelta(target.y, npc.y, VILLAGE_DEFINITION.geometry.height);
       const distance = Math.hypot(dx, dy);
       const step = Math.min(distance, SPEED * dt);
       if (distance < 1) {
-        walk.stop = this.chooseStop(walk.stop);
-        walk.pauseUntil = now + 5000 + this.random() * 4000;
+        npc.x = target.x;
+        npc.y = target.y;
+        if (returning && station) {
+          walk.work = { remaining: 60_000 + this.random() * 30_000, elapsed: 0 };
+          npc.workstationId = station.id;
+          npc.workStartedAt = now;
+          npc.angle = Math.atan2(station.y - npc.y + 6, station.x - npc.x);
+        } else {
+          walk.stop = this.chooseStop(walk.stop);
+          walk.pauseUntil = now + 5000 + this.random() * 4000;
+        }
         npc.moving = false;
       } else {
         npc.angle = Math.atan2(dy, dx);
@@ -178,9 +245,10 @@ export class VillageLife {
     }
     if (this.continuation) return;
     if (this.reply) {
-      const reply = this.reply;
+      if (now < this.reply.at) return;
+      const { conversation } = this.reply;
       this.reply = undefined;
-      this.start(reply, now);
+      this.start(conversation, now);
       return;
     }
     if (now < this.nextTalk) return;
@@ -227,6 +295,7 @@ export class VillageLife {
     const actors = this.participants(conversation);
     if (!actors) return;
     actors.npc.moving = false;
+    actors.npc.workstationId = actors.npc.workStartedAt = undefined;
     actors.npc.angle = Math.atan2(
       wrappedDelta(actors.target.y, actors.npc.y, VILLAGE_DEFINITION.geometry.height),
       wrappedDelta(actors.target.x, actors.npc.x, VILLAGE_DEFINITION.geometry.width),
@@ -234,22 +303,29 @@ export class VillageLife {
     if (conversation.otherNpc) {
       const other = this.world.npcs!.find((n) => n.id === conversation.otherNpc)!;
       other.moving = false;
+      other.workstationId = other.workStartedAt = undefined;
       other.angle = actors.npc.angle + Math.PI;
     }
     this.inFlight = true;
     this.activeConversation = conversation;
-    this.nextTalk = now + 45_000;
-    this.npcAt.set(actors.npc.id, now + 90_000);
+    if (!conversation.text) {
+      this.nextTalk = now + 90_000;
+      this.npcAt.set(actors.npc.id, now + 180_000);
+      if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, now + 180_000);
+    }
     if (conversation.playerId && !conversation.text)
-      this.playerAt.set(conversation.playerId, now + 120_000);
-    if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, now + 90_000);
+      this.playerAt.set(conversation.playerId, now + 240_000);
     const definition = VILLAGE_DEFINITION.villagers.find((n) => n.id === actors.npc.id)!;
     const context = JSON.stringify({
       character: definition.name,
       personality: definition.personality,
       setting:
-        'Village square, Inn, Hall, Workshop, Storehouse and Lodge. Marta trades items; Hall, Workshop and Lodge have no services yet. Adventurers visit the forest.',
+        'Emberfall is a cooperative medieval fantasy game. Adventurers prepare in the village, fight monsters and a Brute Boss in the forest, and return with loot. Marta trades consumables and collected items. The Storehouse stores items. The Inn is scenery; Hall, Workshop and Lodge have no services yet. Do not invent active festivals, quests or services.',
+      residents: VILLAGE_DEFINITION.villagers.map(
+        (npc) => `@${npc.name.split(' ')[0]}: ${npc.name}`,
+      ),
       listener: actors.target.name,
+      listenerMention: conversation.otherNpc ? `@${actors.target.name.split(' ')[0]}` : undefined,
       task: conversation.text ? 'Reply to the quoted speech.' : 'Start a friendly conversation.',
       quotedSpeech: conversation.text,
       recentConversation: this.memories.get(actors.npc.id) ?? [],
@@ -261,6 +337,10 @@ export class VillageLife {
         // Completion uses the current simulation time, not request-start time.
         const at = this.lastTick;
         if (result.status === 'busy') {
+          if (conversation.text) {
+            this.continuation = { at: at + 500, conversation };
+            return;
+          }
           this.nextTalk = at + 5000;
           this.npcAt.set(actors.npc.id, at + 5000);
           if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, at + 5000);
@@ -271,13 +351,20 @@ export class VillageLife {
         if (result.status === 'unavailable') {
           this.silence(true);
           this.retryAt = at + 60_000;
+          this.nextTalk = this.retryAt;
           this.continuation = undefined;
           return;
         }
         this.silence(false);
         const current = this.participants(conversation);
         if (!current) return;
-        current.npc.chat = result.text;
+        let text = result.text;
+        for (const resident of VILLAGE_DEFINITION.villagers) {
+          const name = resident.name.split(' ')[0];
+          text = text.replace(new RegExp(`(?<![\\p{L}\\p{N}_])@?${name}\\b`, 'giu'), `@${name}`);
+        }
+        text = spokenLine(text);
+        current.npc.chat = text;
         current.npc.chatUntil = at + 10_000;
         this.world.chat = [
           ...(this.world.chat ?? []),
@@ -286,21 +373,28 @@ export class VillageLife {
             playerId: '',
             npcId: current.npc.id,
             name: current.npc.name,
-            text: result.text,
+            text,
             dimension: 'village',
           },
         ].slice(-30);
-        const line = `${current.npc.name}: ${result.text}`;
-        for (const id of [current.npc.id, conversation.otherNpc].filter((id): id is string => !!id))
+        const mentioned = [...text.matchAll(/@([\p{L}]+)/gu)]
+          .map((match) => this.world.npcs?.find((npc) => npc.name.split(' ')[0] === match[1]))
+          .find((npc) => npc && npc.id !== current.npc.id);
+        const line = `${current.npc.name}: ${text}`;
+        for (const id of new Set(
+          [current.npc.id, conversation.otherNpc, mentioned?.id].filter((id): id is string => !!id),
+        ))
           this.memories.set(id, [...(this.memories.get(id) ?? []), line].slice(-6));
-        if (conversation.otherNpc && !conversation.followup)
+        const lines = (conversation.lines ?? 0) + 1;
+        const responder = mentioned?.id ?? (!conversation.text ? conversation.otherNpc : undefined);
+        if (responder && lines < 5)
           this.continuation = {
-            at: at + 6000,
+            at: at + REPLY_DELAY,
             conversation: {
-              speaker: conversation.otherNpc,
+              speaker: responder,
               otherNpc: current.npc.id,
-              text: result.text,
-              followup: true,
+              text,
+              lines,
             },
           };
       })
@@ -308,6 +402,7 @@ export class VillageLife {
         if (!this.stopped && villagePlayers(this.world).length) {
           this.silence(true);
           this.retryAt = this.lastTick + 60_000;
+          this.nextTalk = this.retryAt;
         }
       })
       .finally(() => {

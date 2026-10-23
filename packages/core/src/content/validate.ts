@@ -311,7 +311,9 @@ export function validateContent(
     );
   for (const difficulty of r.difficulties.values())
     check(
-      ['Easy', 'Medium', 'Hard'].includes(difficulty.id) && positive(difficulty.multiplier),
+      ['Easy', 'Medium', 'Hard'].includes(difficulty.id) &&
+        positive(difficulty.multiplier) &&
+        positive(difficulty.speedMultiplier),
       'difficulties',
       difficulty.id,
       'unsupported difficulty or invalid multiplier',

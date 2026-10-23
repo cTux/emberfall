@@ -1,6 +1,14 @@
-import { resourceNodes, resourceState, nearbyResource, GATHER_RANGE } from '@emberfall/core';
+import { resourceNodes, resourceState, nearbyResource } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
+import {
+  sceneryInteraction,
+  pickInteraction,
+  interactionInRange,
+  drawInteractionOutline,
+} from './interaction-targets';
+import type { InteractionTarget } from './interaction-targets';
 import { npcScenery } from './npc-art';
+import { drawNpcWork } from './npc-work';
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
@@ -12,13 +20,15 @@ import { ACTOR_CELL, playerFrame, idleBreath } from './animation';
 import { actorArt, environmentArt, wardrobeArt, drawArt } from './art';
 import { drawChimneySmoke } from './ambient-art';
 import { companionCaster, drawCompanion } from './companion';
-import { critterCaster, crittersAt, drawCritter } from './critters';
+import { critterCaster, drawCritter } from './critters';
+import { CatSpeech } from './cat-speech';
 import { drawNavigation } from './navigation';
 import { useDraggable } from '@emberfall/ui';
 import { PerformanceGraph } from './PerformanceGraph';
 import { movementFacing } from './facing';
 import { LocalMovement } from './local-movement';
 import { gameAudio } from './audio';
+import { createCritterMotion } from './critter-motion';
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
@@ -36,14 +46,27 @@ import {
 } from './effects';
 import type { Interaction } from './effects';
 import { wrap, wrappedDelta } from '@emberfall/common';
-import { ARENA, FOREST, LOBBY_PORTAL, nearbyInteraction, inTrainingZone } from '@emberfall/core';
+import {
+  ARENA,
+  FOREST,
+  LOBBY_PORTAL,
+  INTERACTION_RADIUS,
+  nearbyInteraction,
+  inTrainingZone,
+} from '@emberfall/core';
 import { TICK_MS } from '@emberfall/core';
 import type { ClientMessage, WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import { castShadow, makeMask, spriteMask } from './lighting';
 import type { Caster, Light } from './lighting';
 import { TORCH_LIGHTS, lightTexture, drawTorchFire } from './village';
-import { forestRenderer, drawFog, drawPortal, drawPlayerDetails } from './forest';
+import {
+  forestRenderer,
+  drawFog,
+  drawPortal,
+  portalInteraction,
+  drawPlayerDetails,
+} from './forest';
 import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from './combat-effects';
 import type { Preferences } from './preferences';
 
@@ -68,7 +91,9 @@ export function Arena({
   latency,
   interaction,
   onCursorAim,
+  onInteract,
   onHitpoints,
+  onCatSpeech,
 }: {
   world: WorldState | null;
   playerId: string;
@@ -78,7 +103,9 @@ export function Arena({
   latency: number | null;
   interaction: RefObject<Interaction | null>;
   onCursorAim: (reader: (() => { aimX: number; aimY: number }) | null) => void;
+  onInteract: (source: Interaction) => void;
   onHitpoints: (hp: Record<string, number>) => void;
+  onCatSpeech: (text: string) => void;
 }) {
   const {
     ref: dpsRef,
@@ -89,6 +116,8 @@ export function Arena({
   const [renderError, setRenderError] = useState(false);
   const latest = useRef(world);
   const sender = useRef(send);
+  const activate = useRef(onInteract);
+  const catSpoke = useRef(onCatSpeech);
   const quality = useRef(graphics);
   const prefs = useRef(preferences);
   const frameRate = useRef<number | null>(null);
@@ -99,9 +128,11 @@ export function Arena({
   useEffect(() => {
     latest.current = world;
     sender.current = send;
+    activate.current = onInteract;
+    catSpoke.current = onCatSpeech;
     quality.current = graphics;
     prefs.current = preferences;
-  }, [world, send, graphics, preferences]);
+  }, [world, send, graphics, preferences, onInteract, onCatSpeech]);
   useEffect(() => {
     const element = canvas.current!;
     const renderer = new PixiContext(element);
@@ -152,6 +183,7 @@ export function Arena({
       }
       return masks[index];
     };
+    const villageCritters = createCritterMotion();
     const snapshots = new SnapshotBuffer(playerId);
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
     let previousHp = '';
@@ -159,6 +191,17 @@ export function Arena({
     let pointer: { x: number; y: number } | undefined;
     let held = false;
     let pointerInside = false;
+    let targets: InteractionTarget[] = [];
+    let hovered: InteractionTarget | null = null;
+    const catSpeech = new CatSpeech();
+    const pointerPoint = () =>
+      pointerInside && pointer && !blocked()
+        ? {
+            x: inputCamera.x + pointer.x * inputCamera.width,
+            y: inputCamera.y + pointer.y * inputCamera.height,
+          }
+        : undefined;
+    const confirmedPlayer = () => latest.current?.players.find((p) => p.id === playerId);
     let combat: Extract<ClientMessage, { type: 'combatInput' }> | undefined;
     let inputCamera: { x: number; y: number; width: number; height: number } = {
       x: 0,
@@ -191,31 +234,11 @@ export function Arena({
     const pointerDown = (event: PointerEvent) => {
       if (event.button !== 0 || blocked()) return;
       pointerMove(event);
-      const world = latest.current;
-      const player = world?.players.find((p) => p.id === playerId);
-      if (world && player && player.hitpoints > 0) {
-        const aim = currentAim();
-        const nodes = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE);
-        const node = nodes
-          .filter(
-            (node) => resourceState(world.resources, node, world.serverNow ?? 0)?.remaining !== 0,
-          )
-          .filter((node) => {
-            const x = player.x + wrappedDelta(aim.aimX, player.x, FOREST.width);
-            const y = player.y + wrappedDelta(aim.aimY, player.y, FOREST.height);
-            return (
-              Math.abs(x - node.x) <= node.size / 2 && y >= node.y - node.size && y <= node.y + 8
-            );
-          })
-          .sort((a, b) => b.y - a.y)[0];
-        if (node) {
-          sender.current({
-            type: 'gather',
-            nodeId: node.id,
-            epoch: player.scene === 'forest' ? world.scene!.id : 'lobby',
-          });
-          return;
-        }
+      const target = pickInteraction(targets, pointerPoint());
+      if (target) {
+        held = false;
+        if (interactionInRange(target, confirmedPlayer())) activate.current(target.source);
+        return;
       }
       held = true;
       sendMovement();
@@ -353,6 +376,10 @@ export function Arena({
         frameCount = 0;
       }
       renderer.begin();
+      ctx.imageSmoothingEnabled = quality.current.smoothTextures;
+      const imageRendering = quality.current.smoothTextures ? 'auto' : 'pixelated';
+      if (element.style.imageRendering !== imageRendering)
+        element.style.imageRendering = imageRendering;
       const delta = Math.min(0.1, (now - previous) / 1000);
       previous = now;
       if (previousSettings !== quality.current) {
@@ -429,39 +456,67 @@ export function Arena({
         onHitpoints(hp);
       }
       const authoritative = latest.current;
-      const player = authoritative?.players.find((p) => p.id === playerId);
-      interaction.current = player
+      const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
+      let nearby = authoritativePlayer
         ? nearbyInteraction(
-            player,
+            authoritativePlayer,
             authoritative?.scene?.phase === 'ended',
             authoritative?.scene?.portals,
             authoritative?.npcs,
           )
         : null;
-      if (player && !interaction.current) {
+      if (!nearby && authoritativePlayer) {
         const node = nearbyResource(
-          player,
+          authoritativePlayer,
           authoritative?.resources,
           authoritative?.serverNow ?? 0,
         );
         if (node)
-          interaction.current = {
-            id: `gather:${node.id}`,
-            name: `Gather ${node.kind}`,
-            x: node.x,
-            y: node.y,
-          };
+          nearby = { id: `gather:${node.id}`, name: `Gather ${node.kind}`, x: node.x, y: node.y };
       }
-      element.dataset.resource = interaction.current?.id.startsWith('gather:')
-        ? interaction.current.id.slice(7)
+      const updateGatherDiagnostics = () => {
+        element.dataset.resource = interaction.current?.id.startsWith('gather:')
+          ? interaction.current.id.slice(7)
+          : '';
+        element.dataset.depletedResources = String(
+          Object.values(view?.resources ?? {}).filter((state) => state.remaining === 0).length,
+        );
+        element.dataset.resourceHealth = String(
+          view?.resources?.[element.dataset.resource]?.remaining ?? '',
+        );
+      };
+      targets = [];
+      if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
+        targets = view.scene.portals.map((portal) =>
+          portalInteraction(
+            { id: 'return', name: 'Return to village', ...portal },
+            local.x + wrappedDelta(portal.x, local.x, FOREST.width),
+            local.y + wrappedDelta(portal.y, local.y, FOREST.height),
+          ),
+        );
+      }
+      if (local?.scene === 'forest') {
+        targets.push(
+          ...resourceNodes(local, Math.hypot(inputCamera.width, inputCamera.height) / 2 + 150)
+            .filter(
+              (node) => resourceState(view?.resources, node, view?.serverNow ?? 0)?.remaining !== 0,
+            )
+            .map((node) => sceneryInteraction(resourceScenery(node)))
+            .filter((target) => target !== null),
+        );
+        targets.sort((a, b) => a.y + a.height - b.y - b.height);
+      }
+      hovered = pickInteraction(targets, pointerPoint());
+      interaction.current = hovered
+        ? interactionInRange(hovered, authoritativePlayer)
+          ? hovered.source
+          : null
+        : nearby;
+      updateGatherDiagnostics();
+      element.dataset.interactionTarget = hovered?.source.id ?? '';
+      element.dataset.interactionRange = hovered
+        ? String(interactionInRange(hovered, authoritativePlayer))
         : '';
-      element.dataset.depletedResources = String(
-        Object.values(view?.resources ?? {}).filter((state) => state.remaining === 0).length,
-      );
-      const gatheringId = interaction.current?.id.startsWith('gather:')
-        ? interaction.current.id.slice(7)
-        : '';
-      element.dataset.resourceHealth = String(view?.resources?.[gatheringId]?.remaining ?? '');
       if (local?.scene !== previousScene) {
         positions.clear();
         previousScene = local?.scene;
@@ -482,6 +537,7 @@ export function Arena({
         audio.play('hit');
       }
       if (!view || local?.scene === 'forest') {
+        element.dataset.catSpeech = '';
         drawForest(
           ctx,
           view,
@@ -490,7 +546,8 @@ export function Arena({
           prefs.current,
           now,
           delta,
-          interaction.current,
+          hovered,
+          !!hovered && interactionInRange(hovered, authoritativePlayer),
         );
         renderer.present();
         frame = requestAnimationFrame(draw);
@@ -498,19 +555,30 @@ export function Arena({
       }
       const prepared = villageBackground(quality.current);
       const scenery = [
-        ...(prepared?.scenery ?? []).filter((object) => !object.id.startsWith('tree:')),
+        ...(prepared?.scenery ?? []).filter((object) => !/^(tree|plant|rock):/.test(object.id)),
         ...resourceNodes(
           { x: local?.x ?? 480, y: local?.y ?? 320 },
           Math.max(el.width, el.height) / scale + 200,
         ).map((node) => {
-          const object =
-            node.kind === 'tree' ? prepared?.scenery.find((o) => o.id === node.id) : undefined;
+          const object = prepared?.scenery.find((o) => o.id === node.id);
           const state = resourceState(view.resources, node, view.serverNow ?? now);
-          return state?.remaining === 0 || !object ? resourceScenery(node, state) : object;
+          return {
+            ...(state?.remaining === 0 || !object ? resourceScenery(node, state) : object),
+            kind: node.kind,
+            gathered: state?.remaining === 0,
+          };
         }),
         ...npcScenery(view.npcs ?? [], view.serverNow ?? now),
       ];
       element.dataset.npcs = String(view.npcs?.length ?? 0);
+      element.dataset.workstations = String(
+        prepared?.scenery.filter((s) => s.id.startsWith('workstation:')).length ?? 0,
+      );
+      element.dataset.workingNpcIds = (view.npcs ?? [])
+        .filter((n) => n.workstationId)
+        .map((n) => n.id)
+        .join(',');
+      element.dataset.workingNpcs = String(view.npcs?.filter((n) => n.workstationId).length ?? 0);
       element.dataset.silencedNpcs = String(view.npcs?.filter((n) => n.silenced).length ?? 0);
       for (const object of scenery)
         if (object.frames)
@@ -535,8 +603,62 @@ export function Arena({
             object.y < cameraY + viewHeight + 200,
         );
       const portal = project(LOBBY_PORTAL.x, LOBBY_PORTAL.y);
+      const portalTarget = portalInteraction(
+        { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL },
+        portal.x,
+        portal.y,
+      );
+      const critters = villageCritters(
+        now,
+        { x: cameraX, y: cameraY, width: viewWidth, height: viewHeight },
+        view.players.filter((player) => !player.scene && player.hitpoints > 0),
+        view.serverNow ?? now,
+      );
+      const cats: InteractionTarget[] = [];
+      for (const cat of critters) {
+        if (cat.kind !== 'cat') continue;
+        const caster = critterCaster(cat);
+        if (!caster) continue;
+        cats.push({
+          source: {
+            id: cat.id,
+            name: 'Cat',
+            x: cat.x,
+            y: cat.y,
+            activate: () => {
+              const text = catSpeech.pet(cat.id, performance.now());
+              if (text) catSpoke.current(text);
+            },
+          },
+          x: cat.x - 12,
+          y: cat.y - 24,
+          width: 24,
+          height: 24,
+          mask: caster.mask,
+          reach: cat,
+          radius: INTERACTION_RADIUS,
+        });
+      }
+      targets = [
+        ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
+        ...cats,
+        portalTarget,
+      ].sort((a, b) => a.y + a.height - b.y - b.height);
+      hovered = pickInteraction(targets, pointerPoint());
+      interaction.current = hovered
+        ? interactionInRange(hovered, authoritativePlayer)
+          ? hovered.source
+          : null
+        : (nearby ??
+          cats.find((cat) => interactionInRange(cat, authoritativePlayer))?.source ??
+          null);
+      updateGatherDiagnostics();
+      element.dataset.interactionTarget = hovered?.source.id ?? '';
+      element.dataset.interactionRange = hovered
+        ? String(interactionInRange(hovered, authoritativePlayer))
+        : '';
+
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
-      ctx.imageSmoothingEnabled = false;
       if (prepared)
         drawVillageBackground(ctx, prepared.background, cameraX, cameraY, viewWidth, viewHeight);
       else {
@@ -608,12 +730,6 @@ export function Arena({
             mask,
           });
       }
-      const critters = crittersAt('village', view.serverNow ?? now, {
-        x: cameraX,
-        y: cameraY,
-        width: viewWidth,
-        height: viewHeight,
-      });
       for (const critter of critters) {
         const caster = critterCaster(critter);
         if (caster) dynamic.push(caster);
@@ -732,16 +848,19 @@ export function Arena({
             now,
             quality.current.bloom,
             'Forest portal',
-            interaction.current?.id === 'portal',
+            hovered === portalTarget ? hovered : null,
             quality.current.shadows,
             quality.current.wavingVegetation,
             obstacleOpacity({ x: portal.x, y: portal.y + 8, width: 64, height: 80 }, local),
+            interactionInRange(portalTarget, authoritativePlayer),
           );
           continue;
         }
         if (layer.critter) {
           ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, local);
           drawCritter(ctx, layer.critter, quality.current.shadows);
+          if (hovered?.source.id === layer.critter.id)
+            drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
           ctx.globalAlpha = 1;
           continue;
         }
@@ -763,9 +882,8 @@ export function Arena({
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = obstacleOpacity(object, local);
-          const state = view.resources?.[object.id];
           const vegetation =
-            (object.id.startsWith('tree:') || object.kind === 'plant') && state?.remaining !== 0;
+            !object.gathered && (object.id.startsWith('tree:') || object.id.startsWith('plant:'));
           if (vegetation)
             drawVegetation(
               ctx,
@@ -807,6 +925,14 @@ export function Arena({
               object.width,
               object.height,
             );
+          if (object.npc?.workstationId)
+            drawNpcWork(ctx, object.npc, object.x, object.y, serverTime, quality.current.particles);
+          if (
+            hovered &&
+            (hovered.source.id === object.id.replace(/^(building|npc|workstation):/, '') ||
+              hovered.source.id === `gather:${object.id}`)
+          )
+            drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
@@ -827,16 +953,8 @@ export function Arena({
               object.y - object.height - 9,
               object.name,
               object.npc?.silenced ? '#ff8794' : undefined,
-              object.id === 'npc:innkeeper' && interaction.current?.id === 'innkeeper',
             );
-          else if (object.name)
-            drawNameBadge(
-              ctx,
-              object.x,
-              object.y,
-              object.name,
-              object.id === `building:${interaction.current?.id}`,
-            );
+          else if (object.name) drawNameBadge(ctx, object.x, object.y, object.name);
           continue;
         }
         const player = layer.player!;
@@ -986,6 +1104,16 @@ export function Arena({
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawNavigation(ctx, view, playerId);
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
+      const catMessages: string[] = [];
+      for (const cat of critters) {
+        if (cat.kind !== 'cat') continue;
+        const message = catSpeech.message(cat.id, now);
+        if (message) {
+          drawChatBubble(ctx, cat.x, cat.y + 20, message);
+          catMessages.push(message);
+        }
+      }
+      element.dataset.catSpeech = catMessages.join(',');
       for (const object of visibleScenery) {
         // NPC positions are feet anchors; this matches the 40-unit actor health/status row.
         if (object.npc?.silenced)

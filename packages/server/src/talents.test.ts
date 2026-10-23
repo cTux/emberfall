@@ -7,6 +7,8 @@ import type { Player, SceneState } from '@emberfall/common';
 import { clientMessage } from '@emberfall/common';
 import {
   TALENT_TREE,
+  BULLSEYE,
+  resetTalents,
   availableTalentPoints,
   canLearnTalent,
   isTalentLearned,
@@ -327,4 +329,88 @@ test('expanded graph preserves existing allocations, has reachable forks and kee
   assert.equal(availableTalentPoints(p), points - 1);
   assert.equal(canLearnTalent(p, 'branch-0-2'), true);
   assert.equal(canLearnTalent(p, 'branch-0-3'), true);
+});
+
+test('bullseye reset charges once, refunds points and preserves reserved talents and cooldowns', () => {
+  const p = hero();
+  p.coins = 49;
+  learnPath(p, 0);
+  p.talents!.reserved = 7;
+  p.talentCooldowns = { 'talent:warrior:0': 10000 };
+  assert.throws(() => resetTalents(p), /50 coins/);
+  assert.equal(availableTalentPoints(p), 15);
+  assert.equal(p.coins, 49);
+  p.coins = 100;
+  resetTalents(p);
+  assert.equal(p.coins, 50);
+  assert.equal(availableTalentPoints(p), 19);
+  assert.deepEqual(p.talents, { reserved: 7 });
+  assert.deepEqual(p.talentCooldowns, { 'talent:warrior:0': 10000 });
+  assert.throws(() => resetTalents(p), /no talent points/);
+  assert.equal(p.coins, 50);
+});
+
+test('reset command enforces village proximity and class, and commits coins and talents together', async (t) => {
+  const { createRuntime } = await import('./runtime.ts');
+  const { Peer } = await import('./network/peer.ts');
+  const runtime = await createRuntime();
+  const messages: { type: string; message?: string }[] = [];
+  const peer = new Peer(
+    (message) => messages.push(message),
+    () => {},
+  );
+  try {
+    runtime.connect(peer);
+    const world = [...runtime.worlds.values()][0];
+    peer.receive({ type: 'join', worldId: world.id, playerName: 'Reset hero', password: '' });
+    for (let i = 0; i < 200 && !world.players.size; i++)
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    const p = [...world.players.values()][0];
+    p.level = 5;
+    p.coins = 100;
+    learnPath(p, 0);
+    const command = { type: 'resetTalents', classId: p.classId! };
+    peer.receive(command);
+    assert.equal(p.coins, 100);
+    p.x = BULLSEYE!.x;
+    p.y = BULLSEYE!.y - 15;
+    peer.receive({ ...command, classId: 'mage' });
+    assert.equal(p.coins, 100);
+    p.scene = 'forest';
+    peer.receive(command);
+    assert.equal(p.coins, 100);
+    p.scene = undefined;
+    p.hitpoints = 0;
+    peer.receive(command);
+    assert.equal(p.coins, 100);
+    p.hitpoints = p.maxHitpoints;
+    p.coins = 49;
+    peer.receive(command);
+    assert.match(messages.at(-1)!.message!, /50 coins/);
+    assert.equal(isTalentLearned(p, 'path-0-4'), true);
+    p.coins = 100;
+    const fail = t.mock.method(runtime.characters, 'save', () => {
+      throw new Error('failed save');
+    });
+    peer.receive(command);
+    assert.match(messages.at(-1)!.message!, /Unable to save/);
+    assert.equal(p.coins, 100);
+    assert.equal(isTalentLearned(p, 'path-0-4'), true);
+    fail.mock.restore();
+    peer.receive(command);
+    assert.equal(p.coins, 50);
+    assert.equal(availableTalentPoints(p), 4);
+    peer.receive(command);
+    assert.equal(p.coins, 50);
+    const joined = messages.find((message) => message.type === 'joined') as unknown as {
+      characterToken: string;
+    };
+    const saved = runtime.characters.load(joined.characterToken);
+    assert.equal(saved.progress.coins, 50);
+    assert.deepEqual(saved.progress.talents, {});
+    assert.equal(saved.progress.level, 5);
+  } finally {
+    t.mock.restoreAll();
+    await runtime.close();
+  }
 });

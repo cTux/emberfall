@@ -1,6 +1,7 @@
 export * from './enums/index.ts';
 export { nicknameSchema, type AccountView } from './account.ts';
 import { z } from 'zod';
+import { Difficulty } from './enums/Difficulty.ts';
 import { backpackSchema, storagesSchema, storageNameSchema, type Merchant } from './inventory.ts';
 export * from './inventory.ts';
 import { equipmentSchema } from './equipment.ts';
@@ -39,6 +40,7 @@ export const clientMessage = z.discriminatedUnion('type', [
     nodeId: z.string().min(1).max(64),
     epoch: z.string().min(1).max(64),
   }),
+  z.object({ type: z.literal('resetTalents'), classId: classSchema }),
   z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
   z.object({
     type: z.literal('talentCast'),
@@ -116,7 +118,7 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('createScene'),
     scene: z.literal('Forest'),
-    difficulty: z.literal('Easy'),
+    difficulty: z.enum(Difficulty),
   }),
   z.object({ type: z.literal('ready'), ready: z.boolean() }),
   z.object({ type: z.literal('joinScene') }),
@@ -225,6 +227,8 @@ export interface VillageNpc {
   silenced: boolean;
   chat?: string;
   chatUntil?: number;
+  workstationId?: string;
+  workStartedAt?: number;
 }
 export type ServerMessage =
   | { type: 'pong'; id: number }

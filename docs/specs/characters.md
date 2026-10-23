@@ -56,7 +56,9 @@ Merchant stock and gold survive restarts for worlds that still exist.
 
 All equipped items contribute to one shared stat calculation. Weapons supply
 power, attacks per second, automatic/manual range, damage type and critical stats;
-other gear can add power, cadence, range, health and armor. Characters retain
+other gear can add power, cadence, range, health and armor. Gear cadence and talent
+speed bonuses add into one recovery rate for both attack and talent ability
+cooldowns, as defined in [PROG-03](progression.md#prog-03--talents). Characters retain
 innate 100 maximum health, plus gear bonuses. Armor starts at
 zero and mitigates incoming damage by `armor / (100 + armor)`. Unequipped
 characters cannot attack. The server owns equipment and combat results.

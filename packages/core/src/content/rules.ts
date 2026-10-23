@@ -1,4 +1,5 @@
 import { TALENT_TREE, isTalentLearned } from '../talent-tree.ts';
+import { recoveryCooldownMs } from '../utils/recoveryCooldownMs.ts';
 import { z } from 'zod';
 import { progressSchema as progressShape, clientMessage as messageShape } from '@emberfall/common';
 import type {
@@ -16,6 +17,7 @@ export interface CharacterStats extends GearStats {
   damageType: DamageType;
   hasWeapon: boolean;
   attackIntervalMs: number;
+  cooldownRecoveryRate: number;
   damageReduction: number;
 }
 export type EquipmentOwner = Pick<Player, 'classId' | 'equipment' | 'talents'>;
@@ -111,7 +113,14 @@ export function createRules(content: Registries) {
       if (node.kind === 'criticalChance') stats.criticalChance += 0.05;
       if (node.kind === 'criticalDamage') stats.criticalMultiplier += 0.1;
     }
-    stats.attacksPerSecond *= 1 + speedBonus;
+    const baseAttackRate = weapon?.stats.attacksPerSecond ?? 0;
+    const cooldownRecoveryRate =
+      baseAttackRate > 0 ? stats.attacksPerSecond / baseAttackRate - 1 + speedBonus : -1;
+    const attackIntervalMs =
+      baseAttackRate > 0
+        ? recoveryCooldownMs(1000 / baseAttackRate, cooldownRecoveryRate)
+        : Infinity;
+    stats.attacksPerSecond = 1000 / attackIntervalMs;
     stats.criticalChance = Math.max(0, Math.min(1, stats.criticalChance));
     stats.criticalMultiplier = Math.max(1, stats.criticalMultiplier);
     stats.armor = Math.max(0, stats.armor);
@@ -120,8 +129,8 @@ export function createRules(content: Registries) {
       attributes: Object.freeze({ ...stats }),
       damageType: weapon?.damageType ?? 'physical',
       hasWeapon: !!weapon,
-      attackIntervalMs:
-        weapon && stats.attacksPerSecond > 0 ? 1000 / stats.attacksPerSecond : Infinity,
+      attackIntervalMs,
+      cooldownRecoveryRate,
       damageReduction: stats.armor / (100 + stats.armor),
     };
   }
@@ -227,6 +236,15 @@ export function createRules(content: Registries) {
       (definition.kind === 'gear' && item.quantity !== 1)
     )
       throw new Error('Invalid item quantity.');
+    if (definition.kind === 'consumable') {
+      const stack = backpack.find((entry) => entry.itemId === item.itemId);
+      if (stack) {
+        if (!Number.isSafeInteger(stack.quantity + item.quantity))
+          throw new Error('Stack is too large.');
+        stack.quantity += item.quantity;
+        return;
+      }
+    }
     const limit =
       definition.kind === 'resource'
         ? 200

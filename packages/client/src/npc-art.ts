@@ -4,6 +4,7 @@ import { characterImages } from './characters';
 import { makeMask } from './lighting';
 import { movementFacing } from './facing';
 import { playerFrame } from './animation';
+import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { Scenery } from './village';
 
 const walkingMarta = loadArt('innkeeper-walk', 4, 4, 64, true);
@@ -26,11 +27,19 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
         ].walk;
     if (!image.complete || !image.naturalWidth) return [];
     const column = marta && !npc.moving ? Math.floor(now / 400) % 4 : facing;
+    const station = VILLAGE_DEFINITION.workstations.find((s) => s.id === npc.workstationId);
+    const working = !!station;
+    const actionPose = station?.activity === 'forging' || station?.activity === 'archery';
+    const phase = Math.max(0, now - (npc.workStartedAt ?? now));
     const row = marta
       ? npc.moving
         ? Math.floor(now / 160) % 4
         : 0
-      : playerFrame(now, npc.moving, true);
+      : actionPose
+        ? phase % 1600 < 650
+          ? 5
+          : 6
+        : playerFrame(now, npc.moving, true);
     let atlas = frames.get(image);
     if (!atlas) frames.set(image, (atlas = new Map()));
     const key = `${column}:${row}`;
@@ -48,7 +57,7 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
         x: npc.x,
         y: npc.y,
         width: 48,
-        height: 48,
+        height: working ? 48 + Math.sin(phase / 180) * 1.2 : 48,
         name: npc.name,
         npc,
         ...frame,

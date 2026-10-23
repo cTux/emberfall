@@ -27,6 +27,7 @@ type PathCommand = {
   args: number[];
 };
 type State = {
+  imageSmoothingEnabled: boolean;
   matrix: Matrix;
   fillStyle: Paint;
   strokeStyle: Paint;
@@ -94,9 +95,15 @@ export class PixiContext {
   private path: PathCommand[] = [];
   private metrics = document.createElement('canvas').getContext('2d')!;
   private state: State = this.defaults();
-  imageSmoothingEnabled = false;
+  get imageSmoothingEnabled() {
+    return this.state.imageSmoothingEnabled;
+  }
+  set imageSmoothingEnabled(value: boolean) {
+    this.state.imageSmoothingEnabled = value;
+  }
   private defaults(): State {
     return {
+      imageSmoothingEnabled: false,
       matrix: new Matrix(),
       fillStyle: '#000',
       strokeStyle: '#000',
@@ -568,6 +575,11 @@ export class PixiContext {
     const entity = this.visual('sprite');
     const sprite = entity.object as Sprite;
     let texture = entity.frameTexture;
+    const scaleMode = this.imageSmoothingEnabled ? 'linear' : 'nearest';
+    if (entry.texture.source.scaleMode !== scaleMode) {
+      entry.texture.source.scaleMode = scaleMode;
+      entry.texture.source.style.update();
+    }
     if (!texture)
       texture = entity.frameTexture = new Texture({
         source: entry.texture.source,

@@ -1,9 +1,17 @@
 import { clientAsset } from './urls.ts';
 import { ACTOR_CELL } from './animation';
+import { softenArtTones } from './art-tones';
 
 export const artUrl = (name: string) => clientAsset(`/assets/wardrobe-style/${name}.png`);
 export const artImages: HTMLImageElement[] = [];
 const loadedArt = new Map<string, HTMLImageElement>();
+
+function softenAtlas(canvas: HTMLCanvasElement) {
+  const ctx = canvas.getContext('2d')!;
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  softenArtTones(image.data, image.width, image.height);
+  ctx.putImageData(image, 0, 0);
+}
 
 /** Source-sheet corrections, baked once rather than mirroring actors at runtime.
  * Facing down: anatomical right is screen-left; facing up: screen-right.
@@ -56,15 +64,15 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
         : Array.from({ length: rows }, (_, i) => i);
     const frames = rowMap.flatMap((row) =>
       Array.from({ length: columns }, (_, col) => {
-        const animalColumns = [0, 309, 535, 735, 1024];
-        const x0 =
-          name === 'animals'
-            ? Math.round((animalColumns[col] * input.width) / 1024)
-            : Math.round((col * input.width) / columns);
-        const x1 =
-          name === 'animals'
-            ? Math.round((animalColumns[col + 1] * input.width) / 1024)
-            : Math.round(((col + 1) * input.width) / columns);
+        const sourceColumns =
+          name === 'plants' ? [0, 440, 845, 1230, 1615, 2048] : [0, 309, 535, 735, 1024];
+        const sourceWidth = sourceColumns.at(-1)!;
+        const x0 = ['animals', 'plants'].includes(name)
+          ? Math.round((sourceColumns[col] * input.width) / sourceWidth)
+          : Math.round((col * input.width) / columns);
+        const x1 = ['animals', 'plants'].includes(name)
+          ? Math.round((sourceColumns[col + 1] * input.width) / sourceWidth)
+          : Math.round(((col + 1) * input.width) / columns);
         const y0 = boundaries
           ? (boundaries[row] * input.height) / boundaries.at(-1)!
           : Math.round((row * input.height) / rows);
@@ -128,6 +136,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
       );
       ctx.restore();
     });
+    if (actor) softenAtlas(output);
     result.src = output.toDataURL();
     result.dataset.artReady = 'true';
   };
@@ -144,13 +153,21 @@ export const actorArt = (name: string) => {
   const image = new Image();
   loadedArt.set(key, image);
   artImages.push(image);
-  image.onload = () => {
+  const source = new Image();
+  source.onload = () => {
+    const output = document.createElement('canvas');
+    output.width = source.naturalWidth;
+    output.height = source.naturalHeight;
+    output.getContext('2d')!.drawImage(source, 0, 0);
+    softenAtlas(output);
+    image.src = output.toDataURL();
     image.dataset.artReady = 'true';
   };
-  image.src = artUrl(`${name}-atlas`);
+  source.src = artUrl(`${name}-atlas`);
   return image;
 };
 export const environmentArt = loadArt('environment', 3, 3, 128, true);
+export const plantArt = loadArt('plants', 5, 1, 64, true);
 export const wardrobeArt = loadArt('wardrobe', 4, 1, 128, true);
 export const innkeeperArt = loadArt('innkeeper', 4, 1, 64, true);
 export const animalArt = loadArt('animals', 4, 6, 64, true);
@@ -178,7 +195,7 @@ export function terrainTile(column: number, size = 320) {
     const span = size - 1;
     const source = document.createElement('canvas');
     source.width = source.height = span + overlap;
-    const sourceContext = source.getContext('2d')!;
+    const sourceContext = source.getContext('2d', { willReadFrequently: true })!;
     sourceContext.imageSmoothingEnabled = false;
     sourceContext.drawImage(
       terrainArt,

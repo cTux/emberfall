@@ -4,7 +4,7 @@ import type { WorldState } from '@emberfall/common';
 export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {
   if (!text) return;
   ctx.save();
-  ctx.font = '13px "Alegreya Sans", sans-serif';
+  ctx.font = '10px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lines = [''];
@@ -14,8 +14,8 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
     if (line && ctx.measureText(next).width > 200) lines.push(word);
     else lines[lines.length - 1] = next;
   }
-  const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 20;
-  const height = lines.length * 17 + 14;
+  const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 16;
+  const height = lines.length * 13 + 10;
   const bottom = y - 48; // Two units above the player health bar; overlays the debuff area.
   const left = x - width / 2;
   const right = x + width / 2;
@@ -41,7 +41,7 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.shadowColor = 'transparent';
   ctx.stroke();
   ctx.fillStyle = '#f4ecd6';
-  lines.forEach((line, i) => ctx.fillText(line, x, top + 15.5 + i * 17));
+  lines.forEach((line, i) => ctx.fillText(line, x, top + 11.5 + i * 13));
   ctx.restore();
 }
 
@@ -209,26 +209,22 @@ export function drawDamageFlash(
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.restore();
 }
-export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>>;
+export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>> & {
+  activate?: () => void;
+};
 export function drawCharacterName(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   name: string,
   color = '#ffffff',
-  active = false,
 ) {
   ctx.save();
   ctx.font = '8px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  const label = active ? `(E) ${name}` : name;
+  const label = name;
   const metrics = ctx.measureText(label);
-  if (active) {
-    const width = Math.ceil(metrics.width) + 12;
-    ctx.fillStyle = '#786747';
-    ctx.fillRect(x - width / 2, y - 2, width, 13);
-  }
   ctx.strokeStyle = '#101817';
   ctx.lineWidth = 2;
   ctx.lineJoin = 'round';
@@ -238,19 +234,13 @@ export function drawCharacterName(
   ctx.restore();
 }
 
-export function drawNameBadge(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  name: string,
-  active: boolean,
-) {
+export function drawNameBadge(ctx: CanvasRenderingContext2D, x: number, y: number, name: string) {
   ctx.save();
   ctx.font = '9px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
-  const label = active ? `(E) ${name}` : name;
+  const label = name;
   const width = ctx.measureText(label).width + 12;
-  ctx.fillStyle = active ? '#786747' : '#302d20';
+  ctx.fillStyle = '#302d20';
   ctx.fillRect(x - width / 2, y - 20, width, 13);
   ctx.fillStyle = '#e0c995';
   ctx.fillText(label, x, y - 10);

@@ -15,12 +15,14 @@ test('click and E gather replicated resources in village and forest, show deplet
   const canvas = page.locator('canvas');
   const rock = VILLAGE_RESOURCES.find((node) => node.kind === 'rock')!;
   player.x = rock.x;
-  player.y = rock.y + 25;
+  player.y = rock.y - 15;
+  await page.mouse.move(-1, -1);
   await expect(async () => {
     await page.keyboard.press('e');
     expect(world.resources?.[rock.id]?.remaining).toBe(0);
   }).toPass({ intervals: [500] });
   expect(player.backpack!.find((i) => i.itemId === 'rock')?.quantity).toBe(1);
+  await expect(canvas).toHaveAttribute('data-depleted-resources', '1');
   await page.screenshot({ path: 'test-results/gathering-depleted-rock.png' });
   await page.getByRole('button', { name: 'Inventory (I)' }).click();
   const inventory = page.getByRole('dialog', { name: 'Inventory', exact: true });
@@ -32,7 +34,8 @@ test('click and E gather replicated resources in village and forest, show deplet
 
   const tree = VILLAGE_RESOURCES.find((node) => node.kind === 'tree')!;
   player.x = tree.x;
-  player.y = tree.y + 25;
+  player.y = tree.y + 5;
+  await page.mouse.move(-1, -1);
   const clickTree = async () => {
     const viewport = page.viewportSize()!;
     const scale = Math.max(viewport.width / 960, viewport.height / 640);
@@ -71,6 +74,7 @@ test('click and E gather replicated resources in village and forest, show deplet
   )!;
   player.x = wrap(plant.x, FOREST.width);
   player.y = wrap(plant.y + 25, FOREST.height);
+  await page.mouse.move(-1, -1);
   await expect(canvas).toHaveAttribute('aria-label', 'Forest combat scene.');
   await expect(async () => {
     await page.keyboard.press('e');

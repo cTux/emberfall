@@ -5,7 +5,8 @@ export const VILLAGERS = [
   {
     ...INNKEEPER,
     buildingId: 'inn',
-    personality: 'A warm innkeeper who cares about tired adventurers.',
+    personality:
+      'Warm, unflappable and affectionately cheeky. Speak in cozy, brisk phrases; tease adventurers about muddy boots, impossible appetites and heroic overconfidence. Turn danger into food or housekeeping metaphors, but care about the listener. Comic voice example: A Brute Boss? Finally, someone who can finish the leftovers.',
   },
   {
     id: 'hallkeeper',
@@ -13,7 +14,8 @@ export const VILLAGERS = [
     buildingId: 'hall',
     x: 550,
     y: 215,
-    personality: 'An earnest village steward, fond of local news and keeping the square tidy.',
+    personality:
+      'Pompously earnest but kind-hearted. Speak with fussy precision and solemn official language about absurdly small problems. Treat goblin mischief and untidy boots as paperwork emergencies; let your seriousness be the joke. Comic voice example: The goblins raided us without filing a single complaint.',
   },
   {
     id: 'craftsman',
@@ -22,7 +24,7 @@ export const VILLAGERS = [
     x: 805,
     y: 280,
     personality:
-      'A practical, cheerful craftsman who likes discussing repairs and curious inventions.',
+      'Boisterous, practical and absurdly confident in dubious engineering. Speak in punchy workshop comparisons, terrible tool puns and cheerful admissions that your last brilliant idea exploded. Laugh at your own mistakes. Comic voice example: My goblin-proof lock worked; they stole the door.',
   },
   {
     id: 'lodgekeeper',
@@ -30,7 +32,99 @@ export const VILLAGERS = [
     buildingId: 'lodge',
     x: 785,
     y: 550,
-    personality: 'A curious pathfinder who loves woodland stories and watching village wildlife.',
+    personality:
+      'Quietly mischievous and observant. Speak in short, dry understatements; describe woodland absurdities as perfectly normal, exaggerate your own mishaps and give wildlife suspiciously sensible motives. Comic voice example: The squirrel has my map; our expedition has better leadership now.',
+  },
+] as const;
+// Equipment feet and separate worker anchors keep actors in front of their home walls.
+export const WORKSTATIONS = [
+  {
+    id: 'inn-cooking',
+    npcId: 'innkeeper',
+    buildingId: 'inn',
+    name: 'Cooking pot',
+    activity: 'cooking',
+    art: 0,
+    x: 165,
+    y: 265,
+    worker: { x: 190, y: 279 },
+  },
+  {
+    id: 'inn-brewing',
+    npcId: 'innkeeper',
+    buildingId: 'inn',
+    name: 'Brewing kettle',
+    activity: 'brewing',
+    art: 1,
+    x: 290,
+    y: 277,
+    worker: { x: 315, y: 291 },
+  },
+  {
+    id: 'hall-alchemy',
+    npcId: 'hallkeeper',
+    buildingId: 'hall',
+    name: 'Remedy table',
+    activity: 'alchemy',
+    art: 2,
+    x: 418,
+    y: 213,
+    worker: { x: 443, y: 227 },
+  },
+  {
+    id: 'hall-records',
+    npcId: 'hallkeeper',
+    buildingId: 'hall',
+    name: 'Records desk',
+    activity: 'writing',
+    art: 3,
+    x: 550,
+    y: 213,
+    worker: { x: 575, y: 227 },
+  },
+  {
+    id: 'workshop-anvil',
+    npcId: 'craftsman',
+    buildingId: 'workshop',
+    name: 'Smithing anvil',
+    activity: 'forging',
+    art: 4,
+    x: 672,
+    y: 283,
+    worker: { x: 697, y: 297 },
+  },
+  {
+    id: 'workshop-furnace',
+    npcId: 'craftsman',
+    buildingId: 'workshop',
+    name: 'Smelting furnace',
+    activity: 'smelting',
+    art: 5,
+    x: 800,
+    y: 283,
+    worker: { x: 825, y: 297 },
+  },
+  {
+    id: 'lodge-target',
+    npcId: 'lodgekeeper',
+    buildingId: 'lodge',
+    name: 'Archery target',
+    activity: 'archery',
+    art: 6,
+    x: 666,
+    y: 551,
+    worker: { x: 720, y: 580 },
+  },
+  {
+    id: 'lodge-leather',
+    npcId: 'lodgekeeper',
+    buildingId: 'lodge',
+    name: 'Leather rack',
+    activity: 'leatherworking',
+    art: 7,
+    x: 795,
+    y: 555,
+    worker: { x: 820, y: 569 },
   },
 ] as const;
 // Shared stops form a village circuit, away from building footprints.
@@ -46,8 +140,8 @@ export const NPC_STOPS = [
   { x: 330, y: 440 },
 ] as const;
 export const TRAINING_ZONES = [
-  { x: 140, y: 355, radius: 270, clearingRadius: 135 },
-  { x: 820, y: 355, radius: 270, clearingRadius: 135 },
+  { x: 60, y: 355, radius: 270, clearingRadius: 135 },
+  { x: 1000, y: 355, radius: 270, clearingRadius: 135 },
 ] as const;
 export const BUILDINGS = [
   { id: 'inn', name: 'Inn', x: 235, y: 225, doorX: 219, sourceX: 0, sourceWidth: 64 },
@@ -124,12 +218,17 @@ export const VILLAGE_DEFINITION = {
   innkeeper: INNKEEPER,
   villagers: VILLAGERS,
   npcStops: NPC_STOPS,
+  workstations: WORKSTATIONS,
   buildings: BUILDINGS,
   torches: TORCHES,
   trainingZones: TRAINING_ZONES,
   paths: PATH_CURVES,
   treeSeed: 8927,
   treeAttempts: 550,
+  rockSeed: 3719,
+  rockAttempts: 300,
+  plantSeed: 6143,
+  plantAttempts: 1000,
   spawn: { x: 420, y: 340, spacing: 22 },
   returnSpawn: { x: 480, y: 360 },
 } as const;

@@ -1,5 +1,6 @@
 export * from './talent-tree.ts';
 export * from './talent-combat.ts';
+export { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
 export { isChanced } from './utils/isChanced.ts';
 export { isMultiChanced } from './utils/isMultiChanced.ts';
 export { levelUp, experienceRequired } from './utils/levelUp.ts';
@@ -9,6 +10,7 @@ export { enemyTypeSpawnChance } from './configs/enemyTypeSpawnChance.ts';
 export { enemyKindAttribute } from './configs/enemyKindAttribute.ts';
 export { enemyTypeAttributesMultiplier } from './configs/enemyTypeAttributesMultiplier.ts';
 export { difficultyAttributesMultiplier } from './configs/difficultyAttributesMultiplier.ts';
+export { difficultySpeedMultiplier } from './configs/difficultySpeedMultiplier.ts';
 export { shouldDropItem } from './utils/shouldDropItem.ts';
 export { itemDropCount } from './utils/itemDropCount.ts';
 export { spawnEnemyType } from './utils/spawnEnemyType.ts';

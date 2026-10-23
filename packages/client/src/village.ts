@@ -1,12 +1,17 @@
 import type { VillageNpc } from '@emberfall/common';
-import { WARDROBE, BUILDINGS, TORCHES, TREES } from '@emberfall/core';
+import { WARDROBE, BUILDINGS, TORCHES, TREES, ROCKS, PLANTS } from '@emberfall/core';
 import { makeMask, castShadow } from './lighting';
 import type { Caster, Light } from './lighting';
-import { environmentArt, wardrobeArt } from './art';
+import { environmentArt, plantArt, wardrobeArt, loadArt } from './art';
+import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
+
 import { chimneyAnchors } from './ambient-art';
+
+export const workstationArt = loadArt('workstations', 4, 2, 128, true);
 
 export interface Scenery extends Caster {
   kind?: 'tree' | 'plant' | 'rock' | 'stone';
+  gathered?: boolean;
   npc?: VillageNpc;
   sprite: HTMLCanvasElement;
   name?: string;
@@ -36,7 +41,6 @@ export function villageSprites(
     sy: number,
     sw: number,
     sh: number,
-    name?: string,
     frameCount = 1,
   ) {
     let frames = sprites.get(source);
@@ -61,7 +65,6 @@ export function villageSprites(
       width,
       height,
       ...animation[0],
-      name,
       ...(frameCount > 1 ? { frames: animation } : {}),
     });
   }
@@ -69,7 +72,25 @@ export function villageSprites(
     TREES.forEach((t, i) =>
       add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
     );
+    ROCKS.forEach((rock, i) =>
+      add(`rock:${i}`, rock.x, rock.y, rock.size, rock.size, environmentArt, 256, 256, 128, 128),
+    );
   }
+  if (plantArt.naturalWidth)
+    PLANTS.forEach((plant, i) =>
+      add(
+        `plant:${i}`,
+        plant.x,
+        plant.y,
+        plant.size,
+        plant.size,
+        plantArt,
+        plant.variant * 64,
+        0,
+        64,
+        64,
+      ),
+    );
   if (environmentArt.naturalWidth)
     BUILDINGS.forEach((b, i) => {
       add(
@@ -83,25 +104,26 @@ export function villageSprites(
         0,
         128,
         128,
-        b.id === 'inn' ? undefined : b.name,
       );
       const anchor = chimneyAnchors[i % 3];
       objects.at(-1)!.chimney = { x: (anchor.x - 0.5) * b.sourceWidth * 2, y: (anchor.y - 1) * 96 };
     });
+  if (workstationArt.naturalWidth)
+    for (const station of VILLAGE_DEFINITION.workstations)
+      add(
+        `workstation:${station.id}`,
+        station.x,
+        station.y,
+        48,
+        48,
+        workstationArt,
+        (station.art % 4) * 128,
+        Math.floor(station.art / 4) * 128,
+        128,
+        128,
+      );
   if (wardrobeArt.naturalWidth)
-    add(
-      'building:wardrobe',
-      WARDROBE.x,
-      WARDROBE.y,
-      60,
-      64,
-      wardrobeArt,
-      0,
-      0,
-      128,
-      128,
-      'Wardrobe',
-    );
+    add('building:wardrobe', WARDROBE.x, WARDROBE.y, 60, 64, wardrobeArt, 0, 0, 128, 128);
   if (environmentArt.naturalWidth)
     TORCHES.forEach((t, i) =>
       add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128),

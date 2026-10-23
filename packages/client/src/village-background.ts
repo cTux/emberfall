@@ -3,8 +3,15 @@ import { ARENA } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { drawVillagePaths } from './paths';
 import { castShadow } from './lighting';
-import { villageSprites, TORCH_LIGHTS, lightTexture } from './village';
-import { environmentArt, wardrobeArt, innkeeperArt, terrainArt, terrainTile } from './art';
+import { villageSprites, TORCH_LIGHTS, lightTexture, workstationArt } from './village';
+import {
+  environmentArt,
+  plantArt,
+  wardrobeArt,
+  innkeeperArt,
+  terrainArt,
+  terrainTile,
+} from './art';
 
 const nature = new Image();
 nature.src = clientAsset('/assets/nature.png');
@@ -31,7 +38,7 @@ let cached:
 /** Shared across Arena remounts. Wait for all assets, including failed loads. */
 export function villageBackground(graphics: GraphicsSettings) {
   if (
-    [environmentArt, wardrobeArt, innkeeperArt].some(
+    [environmentArt, plantArt, wardrobeArt, innkeeperArt, workstationArt].some(
       (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== 'true',
     ) ||
     !terrainArt.complete ||
@@ -99,7 +106,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   }
   drawVillagePaths(ctx, floor);
   const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
-  for (const object of scenery.filter((object) => !object.id.startsWith('tree:'))) {
+  for (const object of scenery.filter((object) => !/^(tree|plant|rock):/.test(object.id))) {
     // Bounds include the full directional sun projection and contact shading.
     wrapped(object.x, object.y, object.width + object.height, () => {
       if (graphics.shadows && !object.frames) castShadow(ctx, object);
@@ -120,7 +127,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   const torchTextures = TORCH_LIGHTS.map((light) =>
     lightTexture(
       light,
-      scenery.filter((object) => !object.frames && !object.id.startsWith('tree:')),
+      scenery.filter((object) => !object.frames && !/^(tree|plant|rock):/.test(object.id)),
       graphics.shadows,
     ),
   );

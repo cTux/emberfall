@@ -218,7 +218,12 @@ with the provider and model; subsequent healthy responses stay quiet.
 `& 'G:\AI\Ollama\ollama.exe' pull llama3.2:3b`. HTTP 503 can indicate insufficient
 resources or an overloaded queue. A timeout includes model loading and generation;
 try the smaller model or inspect `ollama ps` and the service logs. An invalid
-response failed JSON, size, completion or spoken-text validation.
+response includes a safe `validationFailure` code: `missing_body`,
+`response_too_large`, `invalid_json`, `incomplete`, `missing_text`, `empty_text`,
+`text_too_long` or `control_characters`. These distinguish validation failures
+without exposing model output. Line breaks and tabs are folded into spaces;
+overlong replies are shortened at a word boundary to fit 200 characters. Empty
+answers, other control/format characters and overlong unbroken words still fail.
 
 If the provider fails, the village visibly receives Silenced and retries after
 its cooldown; movement and trading continue. Successful replies restore voices.

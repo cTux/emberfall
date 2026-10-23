@@ -1,5 +1,5 @@
 import type { Player, ResourceState } from '@emberfall/common';
-import { ARENA, TREES, onPath, BUILDINGS, TRAINING_ZONES } from './world.ts';
+import { ARENA, TREES, ROCKS, PLANTS } from './world.ts';
 import { FOREST, forestTrees, wrappedDelta } from './scene.ts';
 import { addItem } from './inventory.ts';
 
@@ -12,6 +12,7 @@ export interface ResourceNode {
   x: number;
   y: number;
   size: number;
+  variant?: number;
 }
 // The original tree positions and identities remain stable.
 const villageNodes: ResourceNode[] = TREES.map((tree, i) => ({
@@ -20,30 +21,10 @@ const villageNodes: ResourceNode[] = TREES.map((tree, i) => ({
   id: `tree:${i}`,
   kind: 'tree',
 }));
-let seed = 9421;
-const random = () => {
-  seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-  return seed / 4294967296;
-};
-for (let i = 0; i < 240; i++) {
-  const x = 35 + random() * (ARENA.width - 70);
-  const y = 55 + random() * (ARENA.height - 85);
-  if (
-    onPath(x, y, 45) ||
-    BUILDINGS.some((b) => Math.abs(x - b.x) < 120 && y > b.y - 150 && y < b.y + 80) ||
-    TRAINING_ZONES.some((z) => Math.hypot(x - z.x, y - z.y) < z.clearingRadius + 35) ||
-    villageNodes.some((n) => Math.hypot(x - n.x, y - n.y) < 55)
-  )
-    continue;
-  const kind = i % 3 === 0 ? 'rock' : i % 3 === 1 ? 'stone' : 'plant';
-  villageNodes.push({
-    id: `resource:${i}`,
-    kind,
-    x,
-    y,
-    size: kind === 'plant' ? 36 : kind === 'stone' ? 30 : 46,
-  });
-}
+ROCKS.forEach((rock, i) =>
+  villageNodes.push({ ...rock, id: `rock:${i}`, kind: i % 2 ? 'stone' : 'rock' }),
+);
+PLANTS.forEach((plant, i) => villageNodes.push({ ...plant, id: `plant:${i}`, kind: 'plant' }));
 export const VILLAGE_RESOURCES: readonly ResourceNode[] = Object.freeze(
   villageNodes.map((node) => Object.freeze(node)),
 );

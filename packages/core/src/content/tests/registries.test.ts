@@ -7,6 +7,9 @@ import type { GameMod, Registration, AbilityDefinition } from '../contracts.ts';
 import { game } from '../../game.ts';
 import type { Player } from '@emberfall/common';
 
+import { worldShapes } from '../shapes.ts';
+import { VILLAGE_DEFINITION } from '../../mods/base/worlds/village.ts';
+
 const compose = (mod: GameMod) => createGame([baseMod, mod]);
 test('base loads through the same registries with stable IDs, ordering and balance', () => {
   const ready = createGame([baseMod]);
@@ -255,4 +258,35 @@ test('talent ability metadata rejects unknown classes, partial slots and duplica
       message,
     );
   }
+});
+
+test('workstation content rejects unknown owners, wrong homes, duplicate IDs and unsupported art', () => {
+  const valid = structuredClone(VILLAGE_DEFINITION);
+  assert(worldShapes.village.safeParse(valid).success);
+  for (const patch of [
+    { npcId: 'missing' },
+    { buildingId: 'hall' },
+    { art: 8 },
+    { activity: 'missing' },
+    { x: NaN },
+  ]) {
+    const invalid = {
+      ...valid,
+      workstations: valid.workstations.map((station, i) =>
+        i === 0 ? { ...station, ...patch } : station,
+      ),
+    };
+    assert.equal(worldShapes.village.safeParse(invalid).success, false);
+  }
+  assert.equal(
+    worldShapes.village.safeParse({ ...valid, workstations: valid.workstations.slice(1) }).success,
+    false,
+  );
+  assert.equal(
+    worldShapes.village.safeParse({
+      ...valid,
+      workstations: [valid.workstations[0], valid.workstations[0], ...valid.workstations.slice(2)],
+    }).success,
+    false,
+  );
 });
