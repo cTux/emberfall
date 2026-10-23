@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
 import weaponSlot from '../assets/item-icons/slot-weapon.png';
 import glovesSlot from '../assets/item-icons/slot-gloves.png';
 import helmetSlot from '../assets/item-icons/slot-helmet.png';
@@ -9,7 +10,7 @@ import amuletSlot from '../assets/item-icons/slot-amulet.png';
 import offHandSlot from '../assets/item-icons/slot-offHand.png';
 import ringSlot from '../assets/item-icons/slot-ring.png';
 import warriorWeapon from '../assets/item-icons/warrior-weapon.png';
-import { EquipmentPanel, GameWindow } from '../index';
+import { Backpack, EquipmentPanel, GameWindow } from '../index';
 import type { EquipmentSlotView } from '../index';
 
 const slots: EquipmentSlotView[] = [
@@ -117,4 +118,51 @@ export default meta;
 export const Starter: StoryObj<typeof meta> = {};
 export const Empty: StoryObj<typeof meta> = {
   args: { slots, stats: [{ label: 'Power', value: '0' }] },
+};
+
+export const DragToEquip: StoryObj<typeof meta> = {
+  render: function DragToEquip(args) {
+    const [equipped, setEquipped] = useState(false);
+    const equip = (id: string) => {
+      if (id === 'helmet') setEquipped(true);
+    };
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <EquipmentPanel
+          {...args}
+          slots={slots.map((slot) =>
+            slot.id === 'Helmet'
+              ? {
+                  ...slot,
+                  drop: { accepts: ['backpack'], onDrop: (_, id) => equip(id) },
+                  onUnequip: () => setEquipped(false),
+                  item: equipped ? { name: 'Helmet', icon: slot.fallback, badges: [] } : undefined,
+                }
+              : slot,
+          )}
+          stats={[{ label: 'Armor', value: equipped ? '1' : '0' }]}
+        />
+        <Backpack
+          label='Your backpack'
+          inventory='backpack'
+          action='Use'
+          onUse={equip}
+          items={
+            equipped
+              ? []
+              : [
+                  {
+                    id: 'helmet',
+                    name: 'Helmet',
+                    icon: <img src={helmetSlot} alt='' />,
+                    quantity: 1,
+                    details: 'Armor: 1',
+                    price: 1,
+                  },
+                ]
+          }
+        />
+      </div>
+    );
+  },
 };

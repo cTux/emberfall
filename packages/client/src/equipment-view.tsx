@@ -174,6 +174,15 @@ export function Equipment({
     return {
       id,
       onUnequip: gear ? () => send({ type: 'unequip', slot: id }) : undefined,
+      drop: {
+        accepts: ['backpack'],
+        onDrop: (_, itemId) => {
+          const item = player.backpack?.find((item) => item.id === itemId);
+          const definition = item && GEAR_DEFINITIONS[item.itemId];
+          if (definition && canEquip(id, definition, classId))
+            send({ type: 'useItem', id: itemId });
+        },
+      },
       label: SLOT_LABELS[id],
       position: SLOT_POSITIONS[id],
       accepts: (SLOT_GEAR_TYPES[id] as readonly GearType[])
@@ -212,6 +221,7 @@ export function Equipment({
         items={backpackViews(player.backpack ?? [])}
         coins={player.coins ?? 0}
         action='Use'
+        inventory='backpack'
         onUse={(id) => send({ type: 'useItem', id })}
       />
     </Box>

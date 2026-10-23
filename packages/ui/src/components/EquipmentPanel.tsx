@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { Box, ButtonBase, Stack, Typography } from '@mui/material';
 import { GearTooltipStyled, GearBadgeStyled, GearBadgeValueStyled } from './equipment.styles';
 import badgeAtlas from '../assets/gear-badges.png';
+import { inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
 const BADGE_CELLS = {
   power: 0,
@@ -47,6 +48,7 @@ export interface EquipmentSlotView {
     price?: number;
   };
   onUnequip?(): void;
+  drop?: InventoryDrop;
 }
 export interface EquipmentPanelProps {
   slots: EquipmentSlotView[];
@@ -210,6 +212,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               aria-label={`${slot.label}: ${slot.item?.name ?? 'Empty'}`}
               data-equipment-slot={slot.id}
               data-equipped={!!slot.item}
+              {...inventoryDropProps(slot.drop)}
               onClick={() => setOpenSlot(slot.id)}
               onContextMenu={(event) => {
                 event.preventDefault();

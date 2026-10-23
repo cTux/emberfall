@@ -29,7 +29,9 @@ The nine slots are weapon, gloves, helmet, body armor, leggings, boots, amulet,
 off-hand and ring. Off-hands accept class-appropriate shields, quivers, orbs and
 nature focuses. The 20-slot backpack is saved independently per class. Older saves receive an
 empty backpack. New entries are limited to 20 slots; consumables can still join an existing stack when full. Purchases and unequipping reject a full backpack. Full players do not attract item drops; other nearby players can collect them. Existing saves above 20 entries remain readable and accessible until cleared, without accepting new slots. Right-clicking compatible gear equips it, returning the old item
-to the backpack; right-clicking equipment unequips it. Totals update immediately
+to the backpack; dragging backpack gear onto a compatible equipment slot does the
+same. Wrong-slot items, class-incompatible gear and consumables are ignored by
+equipment drops. Right-clicking equipment unequips it. Totals update immediately
 from confirmed equipment. Removing the weapon disables its default attack.
 
 Forest enemies roll equipment chance and counts by enemy type as specified in

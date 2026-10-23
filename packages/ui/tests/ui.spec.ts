@@ -2,6 +2,21 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('equipment slots accept inventory drops and retain keyboard unequipping', async ({ page }) => {
+  await page.goto(story('components-equipmentpanel--drag-to-equip'));
+  const item = page.getByRole('button', { name: 'Use Helmet', exact: true });
+  await item.dragTo(page.getByRole('button', { name: 'Boots: Empty', exact: true }));
+  await expect(item).toBeVisible();
+  await item.dragTo(page.getByRole('button', { name: 'Helmet: Empty', exact: true }));
+  const equipped = page.getByRole('button', { name: 'Helmet: Helmet', exact: true });
+  await expect(equipped).toBeVisible();
+  await expect(item).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Character stats' })).toContainText('Armor1');
+  await equipped.focus();
+  await page.keyboard.press('Enter');
+  await expect(item).toBeVisible();
+});
+
 test('ability tooltips share window surfaces and support hover, keyboard and touch', async ({
   page,
 }) => {

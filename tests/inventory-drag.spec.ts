@@ -1,5 +1,81 @@
 import { test, expect } from './fixtures';
-import { BUILDINGS, INNKEEPER } from '../packages/core/src/index.ts';
+import { BUILDINGS, INNKEEPER, STARTER_WEAPONS } from '../packages/core/src/index.ts';
+
+test('native inventory drags equip compatible slots and swap gear without consuming invalid drops', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  const opener = page.getByRole('button', { name: 'Inventory (I)' });
+  await expect(opener).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  player.classId = 'warrior';
+  player.backpack = [
+    { id: 'drag-helmet', itemId: 'loot-helmet', quantity: 1 },
+    { id: 'drag-potion', itemId: 'health-potion', quantity: 3 },
+    { id: 'drag-bow', itemId: STARTER_WEAPONS.ranger, quantity: 1 },
+  ];
+  player.hitpoints = 60;
+  await opener.click();
+  const dialog = page.getByRole('dialog', { name: 'Inventory', exact: true });
+  const backpack = dialog.getByRole('region', { name: 'Your backpack' });
+  const helmet = backpack.getByRole('button', { name: 'Use Helmet', exact: true });
+  await expect(helmet).toHaveAttribute('draggable', 'true');
+  await helmet.dragTo(dialog.locator('[data-equipment-slot="boots"]'));
+  await backpack
+    .getByRole('button', { name: 'Use Health potion (3)' })
+    .dragTo(dialog.locator('[data-equipment-slot="helmet"]'));
+  await backpack
+    .locator('[data-backpack-item="drag-bow"]')
+    .dragTo(dialog.locator('[data-equipment-slot="weapon"]'));
+  await expect(helmet).toBeVisible();
+  await expect(backpack.getByRole('button', { name: 'Use Health potion (3)' })).toBeVisible();
+  expect(player.hitpoints).toBe(60);
+  expect(player.equipment!.weapon).toBe(STARTER_WEAPONS.warrior);
+  await helmet.dragTo(dialog.locator('[data-equipment-slot="helmet"]'));
+  await expect(dialog.getByRole('button', { name: 'Helmet: Helmet', exact: true })).toBeVisible();
+  expect(player.equipment!.helmet).toBe('loot-helmet');
+  await expect(helmet).toHaveCount(0);
+  await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText('Armor1');
+
+  // A full backpack can swap gear through the same authoritative action.
+  player.backpack = Array.from({ length: 20 }, (_, index) => ({
+    id: `swap-${index}`,
+    itemId: 'loot-helmet',
+    quantity: 1,
+  }));
+  await expect(backpack.locator('[data-backpack-item]')).toHaveCount(20);
+  await backpack
+    .locator('[data-backpack-item="swap-0"]')
+    .dragTo(dialog.locator('[data-equipment-slot="helmet"]'));
+  await expect(backpack.locator('[data-backpack-item="swap-0"]')).toHaveCount(0);
+  expect(player.backpack).toHaveLength(20);
+  expect(player.equipment!.helmet).toBe('loot-helmet');
+
+  await page.keyboard.press('Escape');
+  world.scene = {
+    ...world.training!,
+    id: 'inventory-drag-forest',
+    electorate: '',
+    training: false,
+    enemies: [],
+    endsAt: Date.now() + 60000,
+    nextSpawn: Date.now() + 60000,
+  };
+  player.scene = 'forest';
+  player.equipment = {};
+  player.backpack = [{ id: 'forest-sword', itemId: STARTER_WEAPONS.warrior, quantity: 1 }];
+  await expect(page.getByRole('status').filter({ hasText: /Forest/ })).toBeVisible();
+  await opener.click();
+  await backpack
+    .locator('[data-backpack-item="forest-sword"]')
+    .dragTo(dialog.locator('[data-equipment-slot="weapon"]'));
+  await expect(dialog.getByRole('button', { name: "Weapon: Warrior's sword" })).toBeVisible();
+  expect(player.equipment!.weapon).toBe(STARTER_WEAPONS.warrior);
+  expect(player.backpack).toHaveLength(0);
+});
 
 test('native drags deposit, move between storage tabs and withdraw; full and same-inventory drops preserve items', async ({
   page,
