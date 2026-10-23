@@ -30,7 +30,7 @@ stateDiagram-v2
   Ended --> [*]: final participant returns
 ```
 
-Electorate changes invalidate the countdown and readiness is reconciled against current membership. Only Forest/Easy is accepted. Late entry uses the existing active scene and deadline. Return portals close further entry; regeneration is a separate action allowed only when no living participants remain and the scene is not voting/countdown.
+Electorate changes invalidate the countdown and readiness is reconciled against current membership. Forest accepts the shared Easy, Medium and Hard difficulty values. Scene creation copies the validated command difficulty into authoritative state; spawning, damage and client health displays reuse the registered 1×, 2× and 4× multipliers. The portal uses controlled difficulty selection, and the active scene regeneration shortcut preserves the existing difficulty. Late entry uses the existing active scene and deadline. Return portals close further entry; regeneration is a separate action allowed only when no living participants remain and the scene is not voting/countdown.
 
 `pausedAt` suspends active scene progression when no living forest player remains. Resuming shifts relevant deadlines by the pause duration: boss timer, spawns, attack windows, projectiles, drops, debuffs and companion timing. A living village player does not keep the forest running. A disconnected participant remains part of the retained session during recovery; do not equate a missing socket with scene departure.
 

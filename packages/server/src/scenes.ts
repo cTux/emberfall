@@ -59,7 +59,7 @@ export function sceneAction(
     world.scene = {
       id: randomUUID(),
       type: 'Forest',
-      difficulty: 'Easy',
+      difficulty: message.difficulty,
       phase: 'voting',
       ready: [],
       countdownAt: null,

@@ -1,11 +1,11 @@
 import { clientAsset, websocketUrl } from './urls.ts';
 import { faSitemap } from '@fortawesome/free-solid-svg-icons/faSitemap';
-import { experienceRequired, enemyMaxHealth } from '@emberfall/core';
+import { experienceRequired, enemyMaxHealth, difficultyMultiplier } from '@emberfall/core';
 import type { AccountView, ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
 import { GameConnection } from './connection';
 import { classSprite, weaponSrc, spellSrc } from './class-art';
 import { classDetails } from './class-details';
-import { hasLivingScenePlayers } from '@emberfall/common';
+import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
 import { characterStats, INNKEEPER, CLASS_IDS, CLASS_LABELS } from '@emberfall/core';
 import { lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
@@ -93,6 +93,7 @@ export function Game({
     | 'exit'
     | null
   >(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [building, setBuilding] = useState('');
   const [settingsTab, setSettingsTab] = useState('gameplay');
   const [browserOpen, setBrowserOpen] = useState(true);
@@ -954,7 +955,11 @@ export function Game({
                             <Button
                               disabled={unavailable}
                               onClick={() =>
-                                send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' })
+                                send({
+                                  type: 'createScene',
+                                  scene: 'Forest',
+                                  difficulty: scene.difficulty,
+                                })
                               }
                             >
                               Regenerate scene
@@ -976,14 +981,24 @@ export function Game({
                         spacing={2}
                         onSubmit={(e) => {
                           e.preventDefault();
-                          send({ type: 'createScene', scene: 'Forest', difficulty: 'Easy' });
+                          send({ type: 'createScene', scene: 'Forest', difficulty });
                         }}
                       >
                         <TextField select label='Scene type' defaultValue='Forest'>
                           <MenuItem value='Forest'>Forest</MenuItem>
                         </TextField>
-                        <TextField select label='Difficulty' defaultValue='Easy'>
-                          <MenuItem value='Easy'>Easy</MenuItem>
+                        <TextField
+                          select
+                          label='Difficulty'
+                          value={difficulty}
+                          onChange={(event) => setDifficulty(event.target.value as Difficulty)}
+                          helperText={`${difficultyMultiplier(difficulty)}× enemy health and damage`}
+                        >
+                          {Object.values(Difficulty).map((value) => (
+                            <MenuItem key={value} value={value}>
+                              {value}
+                            </MenuItem>
+                          ))}
                         </TextField>
                         <Stack direction='row' spacing={1}>
                           <Button type='submit' variant='contained' disabled={unavailable}>
