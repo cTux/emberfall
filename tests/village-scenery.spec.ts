@@ -88,19 +88,29 @@ test('village waits for plant art and packages five distinct silhouettes with sh
     });
     ctx.drawImage(rocks[0].sprite, 760, 25, 128, 128);
     return {
+      sizes: [
+        ...new Set(
+          scenery
+            .filter((object) => object.id.startsWith('tree:') || object.id.startsWith('building:'))
+            .map((object) => object.sprite.width),
+        ),
+      ],
       plants: plants.length,
       rocks: rocks.length,
       signatures: new Set(signatures).size,
       masks: new Set(plants.map((plant) => plant.mask)).size,
       sorted: scenery.every((object, index) => index === 0 || scenery[index - 1].y <= object.y),
       opaque: sprites.map((sprite) => {
-        const pixels = sprite.getContext('2d')!.getImageData(0, 0, 64, 64).data;
+        const pixels = sprite
+          .getContext('2d')!
+          .getImageData(0, 0, sprite.width, sprite.height).data;
         let count = 0;
         for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) count++;
         return count;
       }),
     };
   });
+  expect(result.sizes).toEqual([256]);
   expect(result.plants).toBe(PLANTS.length);
   expect(result.rocks).toBe(ROCKS.length);
   expect(result.signatures).toBe(5);

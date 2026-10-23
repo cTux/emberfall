@@ -148,10 +148,11 @@ try {
           56 / Math.max(...frames.map((f) => f.height * f.unitScale)),
         );
         const output = document.createElement('canvas');
-        output.width = 256;
-        output.height = 640;
+        output.width = 512;
+        output.height = 1280;
         const out = output.getContext('2d');
         out.imageSmoothingEnabled = false;
+        out.scale(2, 2);
         const rows = [0, 1, 2, 3, 4, 8, 9, 5, 6, 7];
         for (const f of frames) {
           const width = Math.round(f.width * f.unitScale * scale),
@@ -210,8 +211,8 @@ try {
         const pixels = atlas.data;
         for (let col = 0; col < 4; col++) {
           const palette = new Map();
-          for (let y = 0; y < 64; y++)
-            for (let x = col * 64; x < (col + 1) * 64; x++) {
+          for (let y = 0; y < 128; y++)
+            for (let x = col * 128; x < (col + 1) * 128; x++) {
               const i = (y * output.width + x) * 4;
               if (pixels[i + 3] < 128) continue;
               const rgb = [pixels[i], pixels[i + 1], pixels[i + 2]];
@@ -224,8 +225,8 @@ try {
           const samples = (rows) => {
             const channels = [[], [], []];
             for (const row of rows)
-              for (let y = row * 64; y < (row + 1) * 64; y++)
-                for (let x = col * 64; x < (col + 1) * 64; x++) {
+              for (let y = row * 128; y < (row + 1) * 128; y++)
+                for (let x = col * 128; x < (col + 1) * 128; x++) {
                   const i = (y * output.width + x) * 4;
                   if (pixels[i + 3] < 128) continue;
                   channels.forEach((values, channel) => values.push(pixels[i + channel]));
@@ -246,8 +247,8 @@ try {
           );
           const matches = new Map();
           for (const row of walkRows)
-            for (let y = row * 64; y < (row + 1) * 64; y++)
-              for (let x = col * 64; x < (col + 1) * 64; x++) {
+            for (let y = row * 128; y < (row + 1) * 128; y++)
+              for (let x = col * 128; x < (col + 1) * 128; x++) {
                 const i = (y * output.width + x) * 4;
                 if (!pixels[i + 3]) continue;
                 const rgb = [pixels[i], pixels[i + 1], pixels[i + 2]];

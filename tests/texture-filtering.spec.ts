@@ -43,6 +43,8 @@ test('texture filtering changes pixels on cached sources and restores nearest sa
   expect(samples[1][0]).toBeGreaterThan(50);
   expect(samples[1][0]).toBeLessThan(200);
   expect(samples[2]).toEqual(samples[0]);
+  expect(samples[3]).toEqual([0, 0, 255, 255]);
+  expect(samples[4]).toEqual([255, 255, 255, 255]);
   await page.screenshot({ path: 'test-results/softer-art-comparison.png', fullPage: true });
 });
 

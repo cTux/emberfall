@@ -31,6 +31,8 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
   const cached = loadedArt.get(key);
   if (cached) return cached;
   const result = new Image();
+  const resolution = actor ? 2 : 1;
+  result.dataset.artResolution = String(resolution);
   loadedArt.set(key, result);
   const source = new Image();
   artImages.push(result);
@@ -98,10 +100,11 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
     const maxWidth = Math.max(...frames.map((f) => f.width));
     const scale = Math.min((cell - 4) / maxWidth, (cell - 6) / maxHeight);
     const output = document.createElement('canvas');
-    output.width = columns * cell;
-    output.height = rows * cell;
+    output.width = columns * cell * resolution;
+    output.height = rows * cell * resolution;
     const ctx = output.getContext('2d')!;
     ctx.imageSmoothingEnabled = false;
+    ctx.scale(resolution, resolution);
     frames.forEach((_, i) => {
       const row = Math.floor(i / columns),
         col = i % columns;
@@ -151,6 +154,7 @@ export const actorArt = (name: string) => {
   const cached = loadedArt.get(key);
   if (cached) return cached;
   const image = new Image();
+  image.dataset.artResolution = '2';
   loadedArt.set(key, image);
   artImages.push(image);
   const source = new Image();
@@ -241,7 +245,20 @@ export function drawArt(
   cell = 64,
 ) {
   if (!image.naturalWidth || image.dataset.artReady !== 'true') return;
-  ctx.drawImage(image, column * cell, row * cell, cell, cell, x, y, width, height);
+  // PixiContext translates logical atlas coordinates itself; Canvas 2D does not.
+  const sourceCell =
+    cell * (ctx instanceof CanvasRenderingContext2D ? Number(image.dataset.artResolution ?? 1) : 1);
+  ctx.drawImage(
+    image,
+    column * sourceCell,
+    row * sourceCell,
+    sourceCell,
+    sourceCell,
+    x,
+    y,
+    width,
+    height,
+  );
 }
 
 export const gatheredArt = loadArt('gathered', 3, 1, 128);

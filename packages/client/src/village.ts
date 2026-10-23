@@ -50,9 +50,23 @@ export function villageSprites(
       let frame = frames.get(key);
       if (!frame) {
         const sprite = document.createElement('canvas');
-        sprite.width = sw;
-        sprite.height = sh;
-        sprite.getContext('2d')!.drawImage(source, sx + i * sw, sy, sw, sh, 0, 0, sw, sh);
+        const resolution =
+          source instanceof HTMLImageElement ? Number(source.dataset.artResolution ?? 1) : 1;
+        sprite.width = sw * resolution;
+        sprite.height = sh * resolution;
+        sprite
+          .getContext('2d')!
+          .drawImage(
+            source,
+            (sx + i * sw) * resolution,
+            sy * resolution,
+            sw * resolution,
+            sh * resolution,
+            0,
+            0,
+            sprite.width,
+            sprite.height,
+          );
         frame = { sprite, mask: makeMask(sprite) };
         frames.set(key, frame);
       }
@@ -156,7 +170,18 @@ export function drawTorchFire(
     const post = document.createElement('canvas');
     post.width = post.height = 128;
     const paint = post.getContext('2d')!;
-    paint.drawImage(environmentArt, 0, 256, 128, 128, 0, 0, 128, 128);
+    const resolution = Number(environmentArt.dataset.artResolution ?? 1);
+    paint.drawImage(
+      environmentArt,
+      0,
+      256 * resolution,
+      128 * resolution,
+      128 * resolution,
+      0,
+      0,
+      128,
+      128,
+    );
     const lamp = document.createElement('canvas');
     lamp.width = 27;
     lamp.height = 46;

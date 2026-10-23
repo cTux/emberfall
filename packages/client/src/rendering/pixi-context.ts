@@ -600,6 +600,14 @@ export class PixiContext {
     if (args.length === 2) [dx, dy] = args;
     else if (args.length === 4) [dx, dy, dw, dh] = args;
     else [sx, sy, sw, sh, dx, dy, dw, dh] = args;
+    // Atlas callers use game-pixel cells; the backing art retains twice the detail.
+    if (args.length === 8 && image instanceof HTMLImageElement) {
+      const resolution = Number(image.dataset.artResolution ?? 1);
+      sx *= resolution;
+      sy *= resolution;
+      sw *= resolution;
+      sh *= resolution;
+    }
     if (!sw || !sh || !dw || !dh) return;
     let entry = this.sources.get(source);
     if (!entry) {
