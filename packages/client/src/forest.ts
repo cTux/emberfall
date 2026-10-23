@@ -39,7 +39,6 @@ import {
   drawTargetHit,
   drawDamageFlash,
   drawAtmosphere,
-  obstacleOpacity,
   drawVegetation,
 } from './effects';
 
@@ -481,7 +480,20 @@ export function forestRenderer(
         portal: null,
       })),
     ].sort((a, b) => a.y - b.y);
+    const renderer = ctx as unknown as PixiContext;
+    const localActor = rendered.find((actor) => actor.id === playerId);
+    if (localActor && localActor.image.naturalWidth) {
+      const breath = idleBreath(now, localActor.row);
+      renderer.setPlayerCutout(
+        mask(localActor.image, localActor.facing, localActor.row),
+        localActor.x - localActor.size / 2,
+        localActor.y + 15 - (localActor.size * 45) / 48 + localActor.size * (1 - breath),
+        localActor.size,
+        localActor.size * breath,
+      );
+    }
     for (const layer of layers) {
+      renderer.occlusion = !!localActor && layer.y > localActor.y + 15;
       if (layer.portal) {
         const portal = layer.portal;
         const point = near(portal.x, portal.y);
@@ -495,33 +507,24 @@ export function forestRenderer(
           hovered?.source.x === portal.x && hovered.source.y === portal.y ? hovered : null,
           quality.shadows,
           quality.wavingVegetation,
-          obstacleOpacity({ x: point.x, y: point.y + 8, width: 64, height: 80 }, me),
+          1,
           inRange,
         );
         continue;
       }
       if (layer.critter) {
-        ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, me);
         drawCritter(ctx, layer.critter, quality.shadows);
         ctx.globalAlpha = 1;
         continue;
       }
       if (layer.bear) {
         const point = near(layer.bear.x, layer.bear.y);
-        drawCompanion(
-          ctx,
-          layer.bear,
-          point.x,
-          point.y,
-          serverTime,
-          quality.shadows,
-          obstacleOpacity({ x: point.x, y: point.y + 18, width: 42.5, height: 40 }, me),
-        );
+        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime, quality.shadows);
         continue;
       }
       if (layer.tree) {
         const t = layer.tree;
-        ctx.globalAlpha = obstacleOpacity({ ...t, width: t.size, height: t.size }, me);
+
         const state = resourceState(world?.resources, t, serverTime);
         const object = resourceScenery(t, state);
         if ((t.kind === 'tree' || t.kind === 'plant') && state?.remaining !== 0)
@@ -544,6 +547,7 @@ export function forestRenderer(
             object.height,
           );
         ctx.globalAlpha = 1;
+        renderer.occlusion = false;
         drawResourceHealth(ctx, t, state);
         if (hovered?.source.id === `gather:${t.id}`) drawInteractionOutline(ctx, hovered, inRange);
         continue;
@@ -555,9 +559,7 @@ export function forestRenderer(
         const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / 700));
         ctx.save();
         ctx.translate(a.x, a.y + 15);
-        ctx.globalAlpha =
-          (1 - progress) *
-          obstacleOpacity({ x: a.x, y: a.y + 15, width: a.size, height: a.size }, me);
+        ctx.globalAlpha = 1 - progress;
         ctx.drawImage(
           a.image,
           a.facing * ACTOR_CELL,
@@ -583,11 +585,7 @@ export function forestRenderer(
       }
       const left = a.x - a.size / 2,
         top = a.y + 15 - (a.size * 45) / 48;
-      const opacity =
-        a.id === playerId
-          ? 1
-          : obstacleOpacity({ x: a.x, y: a.y + 15, width: a.size, height: a.size }, me);
-      const bodyOpacity = opacity * (a.player?.hitpoints === 0 ? 0.35 : 1);
+      const bodyOpacity = a.player?.hitpoints === 0 ? 0.35 : 1;
       ctx.globalAlpha = bodyOpacity;
       if (quality.motionBlur && a.moving) {
         ctx.globalAlpha = 0.13 * bodyOpacity;
@@ -629,6 +627,7 @@ export function forestRenderer(
           serverTime - hit.at,
         );
       ctx.globalAlpha = 1;
+      renderer.occlusion = false;
       if (a.enemy) {
         if (a.enemy.kind === 'boss') {
           const width = drawPlayerHealth(
@@ -667,6 +666,7 @@ export function forestRenderer(
           world?.scene?.phase === 'active',
         );
     }
+    renderer.occlusion = false;
     if (world?.scene) drawClassProjectiles(ctx, world.scene, serverTime, near);
     if (quality.lighting) {
       ctx.save();
