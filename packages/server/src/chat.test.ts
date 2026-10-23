@@ -6,7 +6,9 @@ import type { ServerMessage, WorldState } from '@emberfall/common';
 import { createGameServer } from './worlds.ts';
 
 test('chat validates text, identifies senders, retains ten messages and isolates worlds', async () => {
-  const app = await createGameServer();
+  const app = await createGameServer(undefined, ':memory:', undefined, undefined, {
+    generate: async () => ({ status: 'busy' }),
+  });
   await app.listen(0, '127.0.0.1');
   const address = app.server.address();
   assert(address && typeof address !== 'string');

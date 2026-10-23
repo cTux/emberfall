@@ -530,7 +530,11 @@ function App({
         {world && (
           <Chat
             key={world.id}
-            messages={(world.chat ?? []).filter((message) => message.excludedPlayerId !== playerId)}
+            messages={(world.chat ?? []).filter(
+              (message) =>
+                message.excludedPlayerId !== playerId &&
+                (!message.dimension || message.dimension === (me?.scene ?? 'village')),
+            )}
             send={send}
             disabled={status !== 'Connected'}
           />

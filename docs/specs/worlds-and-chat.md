@@ -22,6 +22,40 @@ The server adds `System` messages when a player joins or disconnects, dies, ente
 
 Each player displays only their latest message in a wrapped, rounded rectangular speech bubble with no bottom triangle, centered two world units above their health bar in both scenes and drawn over the debuff area, until they send another message or leave the world. The server validates trimmed, nonempty text up to 200 characters, rejects control characters, identifies the sender from their session, and allows one message per 500 ms. Messages and bubbles travel in existing world snapshots, are isolated by world, survive reconnects and scene changes, and reset when the world empties. Chat is not saved with character progress.
 
+## CHAT-04 — NPC speech and silence
+
+All NPC speech appears in chat for players in the NPC's dimension of the same
+world, including distant listeners. Nearby range controls conversation starts,
+not who can hear. Player chat and existing system announcements remain world-wide.
+The server filters dimension-specific messages before replication; the client also
+filters during scene transitions. A bounded 30-message world buffer supplies the
+latest ten visible messages. NPC speech has its own identity, leaves player speech
+bubbles/cooldowns intact, and has a ten-second NPC bubble.
+
+The server calls OpenCode's free Chat Completions routes directly. It tries only
+`glm-5.3-flash-free`, `deepseek-v4.1-flash-free`, and
+`longcat-2.5-preview-free`, in preferred-success order. Limits, HTTP errors,
+timeouts and invalid answers try another eligible free model. Requests time out
+after 2.5 seconds per model, responses are bounded to 32 KiB and spoken text to
+200 characters without control/format characters. Failed routes rest for at least
+30 seconds (normally 60 seconds); Retry-After is honored up to 15 minutes. No paid
+fallback is allowed. A saturated local request budget defers speech without silence.
+
+When every eligible model fails or is cooling down, all residents in the affected
+village receive Silenced: a red crossed speech icon above the head and a red name.
+One red System message announces the outage to village listeners. Silenced NPCs
+continue walking, emit no fallback dialogue, and retry eligible conversations no
+more than once per minute. A successful response removes silence from all residents
+and adds one recovery System message. Failures do not repeatedly announce silence.
+Late answers are discarded after disposal or when participants leave range or the
+dimension. No model call blocks simulation, and requests are aborted on world reset
+or shutdown.
+
+Evidence: [model failover](../../packages/server/src/npc-models.test.ts),
+[village life](../../packages/server/src/npcs.test.ts),
+[dimension filtering](../../packages/server/src/npc-chat.test.ts),
+[browser presentation](../../tests/npcs.spec.ts).
+
 ## Acceptance
 
 - Creating joins the creator; wrong passwords and full worlds reject entry. Other worlds receive no state or chat.

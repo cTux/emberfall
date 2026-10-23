@@ -82,6 +82,12 @@ export class SnapshotBuffer {
         inputY: b.inputY ? point.dy : 0,
       };
     });
+    const npcs = newer.npcs?.map((b) => {
+      const a = older.npcs?.find((n) => n.id === b.id);
+      if (!a) return { ...b };
+      const point = interpolate(a, b, false, 12, false);
+      return { ...b, x: point.x, y: point.y };
+    });
     const scene = older.scene
       ? {
           ...older.scene,
@@ -139,7 +145,7 @@ export class SnapshotBuffer {
     const training = older.training
       ? { ...older.training, playerShots: older.training.playerShots?.map((p) => ({ ...p })) }
       : undefined;
-    return { ...older, players, scene, training, serverNow: this.clock };
+    return { ...older, players, npcs, scene, training, serverNow: this.clock };
   }
   age(now: number) {
     return this.latest

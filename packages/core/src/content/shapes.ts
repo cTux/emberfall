@@ -154,6 +154,17 @@ export const worldShapes = {
     geometry: geometry.extend({ speed: positive }),
     wardrobe: point,
     innkeeper: point.extend({ id, name: z.string().min(1) }),
+    villagers: z
+      .array(
+        point.extend({
+          id,
+          name: z.string().min(1),
+          buildingId: id,
+          personality: z.string().min(1),
+        }),
+      )
+      .optional(),
+    npcStops: z.array(point).min(2).optional(),
     buildings: z.array(
       point.extend({
         id,

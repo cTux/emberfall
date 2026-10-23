@@ -79,10 +79,12 @@ export function prepareState(source: WorldState) {
     return header;
   };
   source.players.forEach((player, order) => put(`player:${player.id}`, player, order));
-  const { players: _, scene, training, serverNow, ...header } = source;
+  source.npcs?.forEach((npc, order) => put(`npc:${npc.id}`, npc, order));
+  const { players: _, npcs: _npcs, scene, training, serverNow, ...header } = source;
   return {
     header: JSON.stringify({
       ...header,
+      ...(source.npcs ? { npcs: [] } : {}),
       scene: sceneHeader(scene, 'scene'),
       training: sceneHeader(training, 'training'),
     }),
@@ -128,6 +130,7 @@ export function materializeState(state: SessionState): WorldState | undefined {
       if (record.fields & (1 << bit)) value[field] = record[field];
     });
     if (key.startsWith('player:')) world.players.push(value);
+    else if (key.startsWith('npc:')) (world.npcs ??= []).push(value);
     else {
       const [prefix, collection] = key.split(':');
       const scene = prefix === 'scene' ? world.scene : world.training;
