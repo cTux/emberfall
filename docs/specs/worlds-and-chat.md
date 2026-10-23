@@ -38,10 +38,11 @@ default model is `llama3.2:3b`; server-only `OLLAMA_BASE_URL` and `OLLAMA_MODEL`
 override them. Cloud model tags are rejected; no external or paid fallback is
 used. The Ollama service must also have cloud features disabled with
 `OLLAMA_NO_CLOUD=1`. Requests time out after 60 seconds to allow cold model loading,
-responses are bounded to 32 KiB and spoken text to 200 characters without
+responses are bounded to 32 KiB and spoken text to 120 characters without
 control/format characters. The adapter folds line breaks and tabs into spaces
 and shortens overlong replies at a word boundary before validating the spoken
-line; it never invents fallback dialogue. Other control/format characters,
+line and strips quotation marks while preserving apostrophes inside words;
+it never invents fallback dialogue. Other control/format characters,
 empty text and replies without a usable word boundary remain invalid.
 HTTP errors, timeouts and invalid answers mark the
 provider unavailable for 60 seconds; Retry-After is honored from 30 seconds up to

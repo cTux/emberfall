@@ -18,10 +18,12 @@ test('native Ollama requests use local generation without API credentials', asyn
     assert.equal(body.model, DEFAULT_NPC_MODEL);
     assert.equal(body.stream, false);
     assert.equal(body.keep_alive, '10m');
-    assert.equal(body.options.num_predict, 96);
+    assert.equal(body.options.num_predict, 64);
     assert.equal(body.options.num_ctx, 4096);
     assert.equal(body.messages[1].content, 'fictional context');
-    assert.match(body.messages[0].content, /at most 200 characters/);
+    assert.match(body.messages[0].content, /at most 120 characters/);
+    assert.match(body.messages[0].content, /fantasy humor/);
+    assert.match(body.messages[0].content, /Prefix every mentioned resident name with @/);
     return answer(' Good morning! ');
   };
   assert.deepEqual(
@@ -53,7 +55,10 @@ test('usable model speech is folded to one bounded line without cooling down', a
   const long = 'Welcome to our village, traveller. '.repeat(10);
   for (const [content, expected] of [
     ['Good morning!\r\n\tWelcome, traveller.', 'Good morning! Welcome, traveller.'],
-    [long, long.slice(0, 200).slice(0, long.slice(0, 200).lastIndexOf(' ')).trim()],
+    [long, long.slice(0, 120).slice(0, long.slice(0, 120).lastIndexOf(' ')).trim()],
+    ['“The forest goblins call this "fine dining".”', 'The forest goblins call this fine dining.'],
+    ["'Don't feed the goblins.'", "Don't feed the goblins."],
+    ['‘Nell’s boots fear no mud.’', 'Nell’s boots fear no mud.'],
   ]) {
     let calls = 0;
     const pool = new OllamaNpcDialogue(
