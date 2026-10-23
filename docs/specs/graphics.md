@@ -26,9 +26,9 @@ Static sun shadows and static torch occlusion are cached; dynamic character bloc
 
 Fog is animated, seamlessly tiled and layered; it is disabled by default in every preset and can be enabled individually. Saved individual fog preferences remain in effect on reload. Fog and flying particles use world coordinates with seamless repetition. Dense grass, paths and scenery share depth ordering with actors. The renderer draws baked fog sources with native Pixi sprites.
 
-Scenery covering the local player's sprite fades to 20% opacity (80% transparent) when the player is behind it, then returns to full opacity once the player moves clear or in front. This applies to village trees, buildings, wardrobe and torch posts, and forest trees. Players can walk through all scenery; shadows remain unchanged. In the new runtime, training dummies, enemies, other players, companions and decorative animals share this foot-position depth ordering and fade when covering the local player. Player ground identification rings are not drawn; sprite sizes stay unchanged.
+Scenery in front of the local player has a fully transparent hole matching the player's current animated silhouette, expanded by 10 game pixels in every direction. The hole reveals the ground and previously drawn layers; the rest of each sprite stays fully opaque. The mask follows the reconciled position, facing and breathing pose, including across wrapped map edges, and disappears when the player moves clear or in front. This applies to village trees, buildings, wardrobe and torch posts, and forest trees. Players can walk through all scenery; shadows remain unchanged. In the new runtime, training dummies, enemies, other players, companions and decorative animals share this foot-position depth ordering and use the same silhouette cutout when covering the local player. Player ground identification rings are not drawn; sprite sizes stay unchanged.
 
-Settings → Graphics includes **Waving grass and trees**, independent of grass density. Enabled by default and in Balanced/High, disabled in Low; the choice persists across reloads. Both areas use gentle, staggered foliage sway with fixed roots. Disabling it immediately restores static sprites. Sprite drawing applies a time-based horizontal shear without changing collisions, sorting, tree fading, or cached shadows; each renderer implements the same transform. Browser checks cover movement in both areas, fixed roots, live toggling, presets, and persistence.
+Settings → Graphics includes **Waving grass and trees**, independent of grass density. Enabled by default and in Balanced/High, disabled in Low; the choice persists across reloads. Both areas use gentle, staggered foliage sway with fixed roots. Disabling it immediately restores static sprites. Sprite drawing applies a time-based horizontal shear without changing collisions, sorting, silhouette cutouts, or cached shadows; each renderer implements the same transform. Browser checks cover movement in both areas, fixed roots, live toggling, presets, and persistence.
 
 Decorative cats and chickens wander in the village; raccoons appear in the forest. They are deterministic client visuals, participate in shadow passes and do not affect combat, collision, loot or party scaling.
 
@@ -133,9 +133,9 @@ still affects the final canvas output.
 
 - Preset/individual changes apply immediately and persist without changing collision or simulation. Red warnings and the Warrior attack zone remain visible at every preset.
 - Cross world seams: fog, scenery, shadows, attachments and portals remain anchored to the world.
-- Occluding scenery fades to 20% for the local character, then restores opacity; shadows retain their normal appearance.
+- Occluding scenery uses the animated player silhouette plus a 10-pixel margin as a transparent cutout; pixels outside it, health bars and shadows retain their normal appearance.
 - Disable vegetation sway live and reload: roots stay fixed and the preference persists.
 - Damage flashes restart on each hit, including ailments and killing blows; remote players do not receive the local sprite flash.
 - Check weapon visibility, debuff spacing/expiry, torch animation, animal shadows, portal bloom-off visibility and reduced-motion countdown.
 
-Evidence: [tree-opacity.test.ts](../../packages/server/src/tree-opacity.test.ts).
+Evidence: [player-cutout.spec.ts](../../tests/player-cutout.spec.ts).

@@ -81,18 +81,6 @@ export function drawVegetation(
   } else ctx.drawImage(sprite, x - width / 2, y - height, width, height);
 }
 
-export function obstacleOpacity(
-  object: { x: number; y: number; width: number; height: number },
-  player: { x: number; y: number } | undefined,
-) {
-  return player &&
-    player.y + 15 < object.y &&
-    Math.abs(player.x - object.x) < object.width / 2 + 24 &&
-    player.y + 18 > object.y - object.height
-    ? 0.2
-    : 1;
-}
-
 export function drawParticles(
   ctx: CanvasRenderingContext2D,
   x: number,

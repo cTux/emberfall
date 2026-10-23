@@ -884,7 +884,7 @@ export function Game({
                         <GoldBalance name='Reset cost' coins={TALENT_RESET_COST} />?
                       </Box>
                     </Typography>
-                    <Stack direction='row' spacing={1} alignItems='center'>
+                    <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
                       <Typography variant='body2'>Currently you have:</Typography>
                       <GoldBalance name='Your balance' coins={me.coins ?? 0} />
                     </Stack>
