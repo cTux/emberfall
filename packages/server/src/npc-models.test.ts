@@ -23,6 +23,10 @@ test('native Ollama requests use local generation without API credentials', asyn
     assert.equal(body.messages[1].content, 'fictional context');
     assert.match(body.messages[0].content, /at most 120 characters/);
     assert.match(body.messages[0].content, /fantasy humor/);
+    assert.match(body.messages[0].content, /personality shape your vocabulary, rhythm, opinions/);
+    assert.match(body.messages[0].content, /amusing twist in most lines/);
+    assert.match(body.messages[0].content, /Answer the actual question while being funny/);
+    assert.match(body.messages[0].content, /do not copy them verbatim/);
     assert.match(body.messages[0].content, /Prefix every mentioned resident name with @/);
     return answer(' Good morning! ');
   };
