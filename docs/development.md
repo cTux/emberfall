@@ -88,6 +88,7 @@ with an offline backup and a new destination, as described in the
 ```sh
 pnpm exec playwright install chromium
 pnpm test:browser
+pnpm --filter @emberfall/client exec node --test pages-fonts.test.ts
 pnpm --filter @emberfall/ui typecheck
 pnpm --filter @emberfall/ui build
 pnpm --filter @emberfall/ui test

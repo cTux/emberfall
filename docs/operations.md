@@ -117,6 +117,27 @@ cross-origin HTTP, redirects, cookie attributes and SDK authorization with a
 mocked Steam provider; they do not verify the public certificate, router or
 browser third-party-cookie policy.
 
+### Certificate errors from the Pages client
+
+`net::ERR_CERT_AUTHORITY_INVALID` for `/api/account` means the browser rejected
+backend TLS before the account request reached the server. Changing CORS, font
+paths or the Pages build cannot repair it. The generated `.certs/localhost.pem`
+is for local development; GitHub Pages does not make that backend certificate
+trusted.
+
+If no domain or tunnel is available, obtain a publicly trusted certificate with
+an IP-address subject alternative name for the public IP. The CA must support
+IP certificates; configure its validation and automatic renewal on the server.
+Point `TLS_CERT` at its full certificate chain and `TLS_KEY` at its matching
+private key, then restart the backend. Keep `BASE_API`, `BASE_PORT` and
+`STEAM_ORIGIN` aligned with the certified endpoint. This is a hosting change;
+merging the client PR cannot install or renew certificates on the server PC.
+
+Verify `https://176.36.232.74:3003/health` from another device without a browser
+certificate warning before testing Pages login again. Do not disable certificate
+verification or expose an HTTP backend to work around this error: the client
+requires HTTPS/WSS and secure login cookies.
+
 ## HTTPS and connectivity
 
 Production serves the built client and secure WebSocket endpoint together at https://localhost:3003. `pnpm dev` and `pnpm start` create a self-signed certificate in ignored `.certs/` if missing (PowerShell 7 required for generation). The certificate covers localhost and current LAN IPv4 addresses and lasts one year. Browsers show a warning until the public certificate is trusted; private keys must never be shared. The OS trust store is not modified. HTTP and HTTPS have separate browser storage, so a saved nickname/character token on the old HTTP origin does not automatically migrate.
