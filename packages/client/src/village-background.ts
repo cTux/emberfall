@@ -1,3 +1,4 @@
+import { clientAsset } from './urls.ts';
 import { ARENA } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { drawVillagePaths } from './paths';
@@ -6,17 +7,17 @@ import { villageSprites, TORCH_LIGHTS, lightTexture } from './village';
 import { environmentArt, wardrobeArt, innkeeperArt, terrainArt, terrainTile } from './art';
 
 const nature = new Image();
-nature.src = '/assets/nature.png';
+nature.src = clientAsset('/assets/nature.png');
 const floor = new Image();
-floor.src = '/assets/floor.png';
+floor.src = clientAsset('/assets/floor.png');
 const houses = new Image();
-houses.src = '/assets/houses.png';
+houses.src = clientAsset('/assets/houses.png');
 const wardrobe = new Image();
-wardrobe.src = '/assets/wardrobe.png';
+wardrobe.src = clientAsset('/assets/wardrobe.png');
 const lampPost = new Image();
-lampPost.src = '/assets/lanterns/lamp-post.png';
+lampPost.src = clientAsset('/assets/lanterns/lamp-post.png');
 const lantern = new Image();
-lantern.src = '/assets/lanterns/lantern.png';
+lantern.src = clientAsset('/assets/lanterns/lantern.png');
 export const villageImages = { nature, floor, houses, wardrobe, lampPost, lantern };
 let cached:
   | {

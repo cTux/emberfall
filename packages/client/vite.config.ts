@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 import { compression } from 'vite-plugin-compression2';
@@ -9,9 +9,20 @@ import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 
 export default defineConfig(({ command, mode }) => {
+  const root = fileURLToPath(new URL('../../', import.meta.url));
+  const env = {
+    ...loadEnv(mode, root, ''),
+    ...loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), ''),
+    ...process.env,
+  };
   const buildId = command === 'build' ? randomUUID() : 'development';
   const shared = {
-    define: { __BUILD_ID__: JSON.stringify(buildId) },
+    base: env.PAGES_BASE_PATH || '/',
+    define: {
+      __BUILD_ID__: JSON.stringify(buildId),
+      'import.meta.env.BASE_API': JSON.stringify(env.BASE_API || ''),
+      'import.meta.env.BASE_PORT': JSON.stringify(env.BASE_PORT || ''),
+    },
     plugins: [
       react(),
       ViteImageOptimizer({
@@ -65,7 +76,7 @@ export default defineConfig(({ command, mode }) => {
       },
     };
   const cert = readFileSync(new URL('../../.certs/localhost.pem', import.meta.url));
-  const serverPort = process.env.PORT_NEW ?? '3003';
+  const serverPort = env.BASE_PORT ?? env.PORT_NEW ?? '3003';
   return {
     ...shared,
     server: {

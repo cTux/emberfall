@@ -1,6 +1,7 @@
+import { clientAsset } from './urls.ts';
 import { ACTOR_CELL } from './animation';
 
-export const artUrl = (name: string) => `/assets/wardrobe-style/${name}.png`;
+export const artUrl = (name: string) => clientAsset(`/assets/wardrobe-style/${name}.png`);
 export const artImages: HTMLImageElement[] = [];
 const loadedArt = new Map<string, HTMLImageElement>();
 

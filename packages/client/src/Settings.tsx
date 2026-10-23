@@ -1,3 +1,4 @@
+import { clientAsset } from './urls.ts';
 import type { Dispatch, SetStateAction } from 'react';
 import { ChapterTabs, SettingToggle, VolumeControl } from '@emberfall/ui';
 import { Button, Link, MenuItem, Stack, TextField, Typography } from '@mui/material';
@@ -191,7 +192,7 @@ export function Settings({
               />
               <Typography variant='caption' color='text.secondary'>
                 Music: TimberwolfGames · Sound effects: Ninja Adventure.{' '}
-                <Link href='/audio/CREDITS.txt' target='_blank' rel='noreferrer'>
+                <Link href={clientAsset('/audio/CREDITS.txt')} target='_blank' rel='noreferrer'>
                   Audio credits
                 </Link>
               </Typography>

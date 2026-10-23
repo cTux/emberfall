@@ -47,13 +47,83 @@ first nickname confirmation, Settings → Account rename, logout and another-dev
 login. Automated tests mock Steam and do not prove deployment credentials or public
 callback reachability. See [account design](design/steam-accounts.md).
 
+## GitHub Pages client with a server on your machine
+
+The [Pages workflow](../.github/workflows/deploy-pages.yml) builds only the client
+and deploys after every push to `main` (including merged pull requests). It also
+supports **Actions → Deploy client to GitHub Pages → Run workflow**. The server
+must be deployed/restarted separately with a compatible protocol version.
+
+1. In the GitHub repository, open **Settings → Pages → Build and deployment**
+   and choose **GitHub Actions** as the source.
+2. In **Settings → Secrets and variables → Actions → Variables**, optionally
+   add repository variables `BASE_API=176.36.232.74` and `BASE_PORT=3003`.
+   These are already the workflow defaults. `BASE_API` is a host/IP without a
+   scheme, port or path. The client uses HTTPS and WSS. For a tunnel on standard
+   HTTPS, use its hostname and `BASE_PORT=443`.
+3. Merge these changes into `main`. Pages publishes the client at
+   `https://ctux.github.io/emberfall/` for this repository. The workflow derives
+   the asset base path from Pages configuration, including custom domains.
+4. On the machine running the server, configure the ignored root `.env` or
+   `packages/server/.env`, then restart:
+
+   ```dotenv
+   BASE_PORT=3003
+   STEAM_ORIGIN=https://176.36.232.74:3003
+   CLIENT_URL=https://ctux.github.io/emberfall/
+   STEAM_WEB_API_KEY=your-steam-web-api-key
+   TLS_CERT=/absolute/path/to/trusted-fullchain.pem
+   TLS_KEY=/absolute/path/to/private-key.pem
+   ```
+
+`STEAM_ORIGIN` is the **backend** HTTPS origin for Steam callbacks in this setup;
+`CLIENT_URL` is the full client landing URL, including `/emberfall/`. The server
+allows that client's origin for account reads/mutations and Colyseus admission,
+and returns login success/failure to the client. `BASE_PORT` overrides the legacy
+`PORT_NEW` for server startup. With `CLIENT_URL` unset, same-origin behavior stays
+unchanged. Keep the existing `SAVE_PATH_NEW`, `HOST` and TLS/proxy settings on the
+server; none of them belong in the client build. Do not copy the Steam key into
+GitHub Pages, a `VITE_` variable, or the workflow. Pages has no runtime environment;
+public build settings become visible to visitors. Variable changes require a new
+workflow run. Server variable changes require a server restart.
+
+The IP example works only with a publicly trusted certificate valid for that IP,
+plus reachable inbound TCP 3003 through the router/firewall. The generated local
+certificate does not meet that requirement. Prefer a hostname with trusted TLS,
+or an HTTPS tunnel supporting WebSockets; change `BASE_API`, `BASE_PORT` and
+`STEAM_ORIGIN` to match. For TLS termination at a reverse proxy, use `HTTP_ONLY=1`
+only on the private backend and forward auth, API, matchmaking and WebSocket routes.
+
+When client and backend origins differ, session cookies use `SameSite=None;
+Secure`. Browsers that block third-party cookies can still prevent login from
+`github.io` to an unrelated IP/hostname. For reliable browser support, configure
+a Pages custom domain such as `play.example.com` and a backend such as
+`api.example.com`, both HTTPS under the same site. Update `CLIENT_URL` and API
+variables accordingly. CORS alone cannot override browser cookie blocking.
+
+For a manual remote-client build, copy
+[the client environment example](../packages/client/.env.example) to
+`packages/client/.env.local`, or set `BASE_API`/`BASE_PORT` in the build environment.
+Vite loads root and client environment files; client files override root files,
+and shell variables override both. Only the two public API variables are
+explicitly exposed; existing Vite-prefixed variables remain public as usual.
+`PAGES_BASE_PATH=/emberfall/` sets the path for a manual project-site build.
+Without `BASE_API`, the client connects to its own origin, preserving local setup.
+
+Verification: test `/health` from outside the home network, a real Steam login,
+nickname save, game join and logout from the deployed Pages URL in the target
+browsers. Automated [account tests](../packages/server/src/accounts.test.ts) cover
+cross-origin HTTP, redirects, cookie attributes and SDK authorization with a
+mocked Steam provider; they do not verify the public certificate, router or
+browser third-party-cookie policy.
+
 ## HTTPS and connectivity
 
 Production serves the built client and secure WebSocket endpoint together at https://localhost:3003. `pnpm dev` and `pnpm start` create a self-signed certificate in ignored `.certs/` if missing (PowerShell 7 required for generation). The certificate covers localhost and current LAN IPv4 addresses and lasts one year. Browsers show a warning until the public certificate is trusted; private keys must never be shared. The OS trust store is not modified. HTTP and HTTPS have separate browser storage, so a saved nickname/character token on the old HTTP origin does not automatically migrate.
 
 For a temporary internet test, build and run `pnpm start`, reserve this PC's LAN address in the router, and forward **TCP 3003 → PC:3003**. Visitors open `https://PUBLIC_IP:3003`; both game traffic and files use that port, with no UDP or separate WebSocket port. Allow inbound TCP 3003 in Windows Firewall on the active network profile. Keep the Vite development port 5174 private. An alternative is external TCP 443 → PC:3003, then use `https://PUBLIC_IP`. External testing requires a public reachable address: CGNAT or upstream double NAT needs ISP/router changes or a tunnel. Test from mobile data, not from the same LAN. A local self-signed certificate causes a warning on other devices and does not cover a public IP; use a domain and publicly trusted certificate for regular hosting.
 
-`PORT_NEW` and `HOST` configure the server. `TLS_CERT` and `TLS_KEY` accept certificate/key PEM paths for a trusted certificate. `HTTP_ONLY=1` explicitly disables backend TLS when using an HTTPS/WSS reverse proxy; do not expose that plaintext backend directly. Local HTTPS follows [Vite's server HTTPS configuration](https://vite.dev/config/server-options#server-https).
+`BASE_PORT` (falling back to `PORT_NEW`) and `HOST` configure the server. `TLS_CERT` and `TLS_KEY` accept certificate/key PEM paths for a trusted certificate. `HTTP_ONLY=1` explicitly disables backend TLS when using an HTTPS/WSS reverse proxy; do not expose that plaintext backend directly. Local HTTPS follows [Vite's server HTTPS configuration](https://vite.dev/config/server-options#server-https).
 
 The production health endpoint is `/health`; matchmaking and WebSocket traffic use Colyseus. Default binding is `0.0.0.0:3003`. Development proxies `/auth`, `/api`, `/matchmake` and `/colyseus` to the game server. See [development](development.md) for test configuration.
 
@@ -88,10 +158,10 @@ For a stopped-server backup, preserve the data directory before upgrading and re
 
 ## Operational limits
 
-The server owns positions at 20 Hz, normalizes diagonal movement, wraps positions at map edges, and clears stale input. Input/schema validation, payload and connection limits, bounded password-hashing concurrency, per-connection rate limits, slow-consumer eviction and heartbeat cleanup protect the basic protocol. Passwords use salted scrypt and never appear in world listings. Same-origin browser WebSocket connections are enforced. Internet hosting should additionally enforce ingress/IP limits at the reverse proxy; per-connection limits do not stop reconnect-based abuse.
+The server owns positions at 20 Hz, normalizes diagonal movement, wraps positions at map edges, and clears stale input. Input/schema validation, payload and connection limits, bounded password-hashing concurrency, per-connection rate limits, slow-consumer eviction and heartbeat cleanup protect the basic protocol. Passwords use salted scrypt and never appear in world listings. Browser WebSocket origins are restricted to the configured client origin. Internet hosting should additionally enforce ingress/IP limits at the reverse proxy; per-connection limits do not stop reconnect-based abuse.
 
 Rendering runs independently of React at the display frame rate. Forest combat uses up to 160 enemies per scene; red projectiles are capped at 160. Before adding large waves, profile the existing PixiJS renderer, spatial partitioning and Colyseus replication against an explicit enemy/player target. Preserve server authority and keep high-frequency entities out of React state.
 
-A browser launch proves connectivity, not public reachability, persistence recovery or performance. Verify these separately. No automated deployment pipeline or GitHub Actions workflow exists in the documented baseline.
+A browser launch proves connectivity, not public reachability, persistence recovery or performance. Verify these separately. The GitHub Pages workflow deploys the static client only; backend deployment remains manual.
 
 Sources: [server entrypoint](../packages/server/src/index.ts), [HTTP/WebSocket server](../packages/server/src/worlds.ts), [certificate setup](../scripts/setup-https.ps1), [client build](../packages/client/vite.config.ts), [character store](../packages/server/src/characters.ts).

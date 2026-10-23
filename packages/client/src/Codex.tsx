@@ -1,3 +1,4 @@
+import { clientAsset } from './urls.ts';
 import { EnemyKind, EnemyType } from '@emberfall/common/enums';
 import { enemyAttributes, enemyTypeMultiplier } from '@emberfall/core';
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { statusSrc } from './combat-assets';
 function Illustration({ image, caption }: { image: string; caption: string }) {
   return (
     <figure>
-      <img src={`/assets/wardrobe-style/${image}.png`} alt={caption} />
+      <img src={clientAsset(`/assets/wardrobe-style/${image}.png`)} alt={caption} />
       <figcaption>{caption}</figcaption>
     </figure>
   );
@@ -63,7 +64,10 @@ const chapters = [
       <>
         <figure>
           <Box className='codex-innkeeper'>
-            <img src='/assets/wardrobe-style/innkeeper.png' alt='Marta the Innkeeper' />
+            <img
+              src={clientAsset('/assets/wardrobe-style/innkeeper.png')}
+              alt='Marta the Innkeeper'
+            />
           </Box>
           <figcaption>Marta welcomes your party to the village</figcaption>
         </figure>
@@ -142,7 +146,7 @@ const chapters = [
       <>
         <figure>
           <Box className='codex-warden'>
-            <img src='/assets/wardrobe-style/warden.png' alt='The Hollow Warden' />
+            <img src={clientAsset('/assets/wardrobe-style/warden.png')} alt='The Hollow Warden' />
           </Box>
           <figcaption>The Hollow Warden</figcaption>
         </figure>
@@ -274,8 +278,8 @@ const chapters = [
           bluecarrot16, Baŝto, Lanea Zimmerman (Sharm), William Thompson, Tuomo Untinen (Reemax),
           and Janna/Lilius/Jannax. Original crop used as the reference for the regenerated wardrobe;{' '}
           <a href='https://creativecommons.org/licenses/by-sa/3.0/'>CC BY-SA 3.0</a>.{' '}
-          <a href='/assets/LPC-CREDITS.txt'>Full credits</a> and{' '}
-          <a href='/assets/LPC-LICENSE.txt'>license</a>.
+          <a href={clientAsset('/assets/LPC-CREDITS.txt')}>Full credits</a> and{' '}
+          <a href={clientAsset('/assets/LPC-LICENSE.txt')}>license</a>.
         </p>
         <h4>Weapons</h4>
         <p>

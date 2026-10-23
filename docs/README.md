@@ -27,6 +27,15 @@ Start at the [core authoring guide](../packages/core/README.md),
 [Character saves](../packages/server/src/characters.ts) use the same catalog.
 The plan maps extension, equipment, combat, protocol and persistence coverage.
 
+## Hosting
+
+[GitHub Pages setup](operations.md#github-pages-client-with-a-server-on-your-machine)
+covers the static client and a separately hosted backend. Implementation:
+[workflow](../.github/workflows/deploy-pages.yml),
+[client URLs](../packages/client/src/urls.ts),
+[account origin policy](../packages/server/src/accounts.ts).
+Verification: [account integration tests](../packages/server/src/accounts.test.ts).
+
 ## Feature map
 
 Game cursors: [UI-02](specs/interface-and-audio.md#ui-02--combat-controls),

@@ -1,3 +1,4 @@
+import { apiUrl } from './urls.ts';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Alert, Button, Stack, TextField, Typography } from '@mui/material';
 import { GameWindow } from '@emberfall/ui';
@@ -34,7 +35,8 @@ function NicknameDialog({
           setPending(true);
           setError('');
           try {
-            const response = await fetch('/api/account/nickname', {
+            const response = await fetch(apiUrl('/api/account/nickname'), {
+              credentials: 'include',
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ nickname: value }),
@@ -99,7 +101,8 @@ export function AccountGate({
   );
   const refresh = useCallback(async () => {
     try {
-      const response = await fetch('/api/account', {
+      const response = await fetch(apiUrl('/api/account'), {
+        credentials: 'include',
         cache: 'no-store',
         signal: AbortSignal.timeout(10_000),
       });
@@ -110,7 +113,8 @@ export function AccountGate({
     }
   }, []);
   useEffect(() => {
-    const request = fetch('/api/account', {
+    const request = fetch(apiUrl('/api/account'), {
+      credentials: 'include',
       cache: 'no-store',
       signal: AbortSignal.timeout(10_000),
     });
@@ -125,7 +129,8 @@ export function AccountGate({
   }, []);
   const logout = async () => {
     try {
-      const response = await fetch('/auth/logout', {
+      const response = await fetch(apiUrl('/auth/logout'), {
+        credentials: 'include',
         method: 'POST',
         signal: AbortSignal.timeout(10_000),
       });
@@ -149,7 +154,7 @@ export function AccountGate({
             <Typography>Sign in through Steam to play Emberfall.</Typography>
             {error && <Alert severity='error'>{error}</Alert>}
             {account ? (
-              <Button variant='contained' href='/auth/steam'>
+              <Button variant='contained' href={apiUrl('/auth/steam')}>
                 Sign in through Steam
               </Button>
             ) : (

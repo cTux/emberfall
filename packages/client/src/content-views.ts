@@ -1,3 +1,4 @@
+import { clientAsset } from './urls.ts';
 import { game, type createGame } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 const builtinSlots = new Set([
@@ -17,7 +18,7 @@ export function registeredSlotViews(context: ReturnType<typeof createGame> = gam
     id: slot.id,
     label: slot.label,
     position: { column: slot.column, row: slot.row },
-    icon: `/assets/wardrobe-style/${equipmentSlotArt(slot.id)}.png`,
+    icon: clientAsset(`/assets/wardrobe-style/${equipmentSlotArt(slot.id)}.png`),
   }));
 }
 export function additionalStatViews(player: Player, context: ReturnType<typeof createGame> = game) {

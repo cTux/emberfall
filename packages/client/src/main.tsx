@@ -1,3 +1,4 @@
+import { clientAsset, websocketUrl } from './urls.ts';
 import { Talents } from './Talents';
 import { faSitemap } from '@fortawesome/free-solid-svg-icons/faSitemap';
 import { AccountGate } from './Account';
@@ -147,9 +148,7 @@ function App({
   };
   const failedConnections = useRef(0);
   useEffect(() => {
-    const url =
-      import.meta.env.VITE_SERVER_URL ||
-      `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
+    const url = websocketUrl();
     setStatus(previousWorld.current ? 'Reconnecting' : 'Connecting');
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
     const versionRequest = new AbortController();
@@ -175,7 +174,7 @@ function App({
     // oxlint-disable-next-line typescript/no-misused-promises
     ws.onopen = async () => {
       try {
-        const response = await fetch('/version.json', {
+        const response = await fetch(clientAsset('/version.json'), {
           cache: 'no-store',
           signal: AbortSignal.any([versionRequest.signal, AbortSignal.timeout(3000)]),
         });
@@ -573,7 +572,7 @@ function App({
                             role='img'
                             aria-label={`${p.bear.name} portrait`}
                             sx={{
-                              backgroundImage: 'url("/assets/wardrobe-style/bear-cub.png")',
+                              backgroundImage: `url("${clientAsset('/assets/wardrobe-style/bear-cub.png')}")`,
                               backgroundSize: '400% 200%',
                               backgroundPosition: 'left top',
                               backgroundRepeat: 'no-repeat',

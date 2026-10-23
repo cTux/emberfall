@@ -13,7 +13,7 @@ pnpm test
 pnpm build
 ```
 
-The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, and `tests/*.test.ts`, including shared simulation, client helpers and asset checks. Build includes client, server and the static UI Storybook through Turborepo. No GitHub Actions workflow exists in the baseline; do not describe local checks as CI.
+The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, and `tests/*.test.ts`, including shared simulation, client helpers and asset checks. Build includes client, server and the static UI Storybook through Turborepo. The [GitHub Pages workflow](../.github/workflows/deploy-pages.yml) builds and deploys the client on pushes to `main`; local verification commands remain separate from deployment.
 
 ## Lint policy
 

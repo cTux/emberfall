@@ -19,12 +19,14 @@ function cookie(header: string | undefined, name: string) {
   const value = values.length === 1 ? values[0].slice(name.length + 1) : '';
   return /^[a-f0-9]{64}$/.test(value) ? value : '';
 }
-function setCookie(name: string, value: string, seconds: number) {
-  return `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${seconds}`;
+function setCookie(name: string, value: string, seconds: number, crossOrigin = false) {
+  return `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=${crossOrigin ? 'None' : 'Lax'}; Max-Age=${seconds}`;
 }
 export interface SteamOptions {
   origin: string;
   apiKey: string;
+  /** Full client landing URL, including a GitHub Pages repository path. */
+  clientUrl?: string;
   /** Dependency injection for isolated provider tests; never exposed over HTTP. */
   request?: typeof fetch;
 }
@@ -33,10 +35,12 @@ export function steamOptionsFromEnv(): SteamOptions {
   const apiKey = process.env.STEAM_WEB_API_KEY;
   if (!origin || !apiKey)
     throw new Error('Set STEAM_ORIGIN and STEAM_WEB_API_KEY to enable Steam login.');
-  return { origin, apiKey };
+  return { origin, apiKey, clientUrl: process.env.CLIENT_URL };
 }
 export class Accounts {
   readonly origin: string;
+  readonly clientOrigin: string;
+  private clientUrl?: string;
   private steam: SteamProvider;
   private attempts = new Map<string, { cookieHash: string; expires: number }>();
   private tickets = new Map<string, { token: string; expires: number }>();
@@ -57,6 +61,21 @@ export class Accounts {
     if (origin.protocol !== 'https:' || origin.origin !== options.origin)
       throw new Error('STEAM_ORIGIN must be an HTTPS origin without a path or trailing slash.');
     this.origin = origin.origin;
+    if (options.clientUrl) {
+      const client = new URL(options.clientUrl);
+      if (
+        client.protocol !== 'https:' ||
+        client.username ||
+        client.password ||
+        client.search ||
+        client.hash
+      )
+        throw new Error(
+          'CLIENT_URL must be an HTTPS landing URL without credentials, query or fragment.',
+        );
+      this.clientUrl = client.toString();
+      this.clientOrigin = client.origin;
+    } else this.clientOrigin = this.origin;
     this.steam = new SteamProvider(options.apiKey, options.request);
     this.timer = setInterval(() => this.sweep(), 1000);
     this.timer.unref();
@@ -101,6 +120,15 @@ export class Accounts {
     const url = new URL(req.url ?? '/', this.origin);
     if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/account'))
       return false;
+    res.setHeader('Vary', 'Origin');
+    if (req.headers.origin && req.headers.origin !== this.clientOrigin) {
+      res.removeHeader('Access-Control-Allow-Origin');
+      res.writeHead(403);
+      res.end();
+      return true;
+    }
+    res.setHeader('Access-Control-Allow-Origin', this.clientOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
     const json = (status: number, value: unknown) => {
@@ -151,10 +179,10 @@ export class Accounts {
           this.store.revokeSession(token);
           this.sweep();
           res.setHeader('Set-Cookie', [
-            setCookie(sessionCookie, session, lifetime / 1000),
+            setCookie(sessionCookie, session, lifetime / 1000, this.clientOrigin !== this.origin),
             setCookie(loginCookie, '', 0),
           ]);
-          redirect('/');
+          redirect(this.clientUrl ?? '/');
         } finally {
           this.pending--;
         }
@@ -175,7 +203,10 @@ export class Accounts {
         json(401, { error: 'Please sign in through Steam.' });
         return true;
       }
-      if (req.headers.origin !== this.origin || !['POST', 'PATCH'].includes(req.method ?? '')) {
+      if (
+        req.headers.origin !== this.clientOrigin ||
+        !['POST', 'PATCH'].includes(req.method ?? '')
+      ) {
         json(403, { error: 'Request origin is not allowed.' });
         return true;
       }
@@ -192,7 +223,10 @@ export class Accounts {
       } else if (req.method === 'POST' && url.pathname === '/auth/logout') {
         this.store.revokeSession(token);
         this.sweep();
-        res.setHeader('Set-Cookie', setCookie(sessionCookie, '', 0));
+        res.setHeader(
+          'Set-Cookie',
+          setCookie(sessionCookie, '', 0, this.clientOrigin !== this.origin),
+        );
         json(200, { ok: true });
       } else if (req.method === 'PATCH' && url.pathname === '/api/account/nickname') {
         if (!req.headers['content-type']?.startsWith('application/json'))
@@ -230,7 +264,8 @@ export class Accounts {
         } satisfies AccountView);
       } else json(404, { error: 'Not found' });
     } catch {
-      if (url.pathname === '/auth/steam/callback') redirect('/?login=failed');
+      if (url.pathname === '/auth/steam/callback')
+        redirect(this.clientUrl ? `${this.clientUrl}?login=failed` : '/?login=failed');
       else json(400, { error: 'Unable to complete the request. Please try again.' });
     }
     return true;

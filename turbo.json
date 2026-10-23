@@ -3,8 +3,20 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "passThroughEnv": ["PORT_NEW", "SAVE_PATH_NEW", "STEAM_ORIGIN", "STEAM_WEB_API_KEY"]
+      "passThroughEnv": [
+        "PORT_NEW",
+        "SAVE_PATH_NEW",
+        "STEAM_ORIGIN",
+        "STEAM_WEB_API_KEY",
+        "CLIENT_URL",
+        "BASE_API",
+        "BASE_PORT"
+      ]
     },
-    "build": { "dependsOn": ["^build"], "outputs": ["dist/**"] }
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "env": ["BASE_API", "BASE_PORT", "PAGES_BASE_PATH", "VITE_SERVER_URL"]
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { clientAsset } from './urls.ts';
 import { Box } from '@mui/material';
 import type { Player, ClientMessage } from '@emberfall/common';
 import {
@@ -19,7 +20,7 @@ export function TalentIcon({ index }: { index: number }) {
         display: 'block',
         width: '100%',
         height: '100%',
-        backgroundImage: 'url(/assets/talent-icons.png)',
+        backgroundImage: `url("${clientAsset('/assets/talent-icons.png')}")`,
         backgroundSize: '500% 400%',
         backgroundPosition: `${(index % 5) * 25}% ${(Math.floor(index / 5) * 100) / 3}%`,
       }}

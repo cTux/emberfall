@@ -1,3 +1,4 @@
+import { clientAsset } from './urls.ts';
 import { registeredSlotViews, additionalStatViews } from './content-views';
 import { game } from '@emberfall/core';
 import { useState } from 'react';
@@ -237,12 +238,13 @@ function itemIcon(itemId: string) {
       )
     : 'amulet';
   const fallback =
-    slotViews.find((view) => view.id === slot)?.icon ?? '/assets/wardrobe-style/slot-offHand.png';
+    slotViews.find((view) => view.id === slot)?.icon ??
+    clientAsset('/assets/wardrobe-style/slot-offHand.png');
   return (
     <img
       src={
         itemId === 'health-potion'
-          ? '/assets/wardrobe-style/health-potion.png'
+          ? clientAsset('/assets/wardrobe-style/health-potion.png')
           : itemClass
             ? weaponSrc(itemClass)
             : fallback
