@@ -40,6 +40,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
   private endpoint: string;
   private model: string;
   private timeoutMs: number;
+  private failed = false;
   constructor(
     request: typeof fetch = fetch,
     clock = Date.now,
@@ -121,6 +122,10 @@ export class OllamaNpcDialogue implements NpcDialogue {
         const text = content.trim();
         if (!text || text.length > 200 || /[\p{Cc}\p{Cf}]/u.test(text))
           throw new Error('Invalid text');
+        if (this.failed) {
+          serverLog.info('NPC dialogue provider recovered', { provider: 'ollama', model });
+          this.failed = false;
+        }
         return { status: 'ok', text };
       } catch (error) {
         // A departing world must not mark a shared provider unhealthy.
@@ -167,6 +172,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
     status?: number,
     networkCode?: string,
   ) {
+    this.failed = true;
     serverLog.info('NPC dialogue model failed; cooling down', {
       model,
       provider: 'ollama',

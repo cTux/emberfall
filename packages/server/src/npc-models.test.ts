@@ -70,6 +70,11 @@ test('HTTP failures honor Retry-After and recover without fallback or repeated l
   now = 121_000;
   assert.equal((await pool.generate('{}', signal())).status, 'ok');
   assert.equal(calls, 2);
+  assert.equal(lines.length, 2);
+  assert.match(lines[1], /NPC dialogue provider recovered/);
+  assert.match(lines[1], /"provider":"ollama"/);
+  await pool.generate('{}', signal());
+  assert.equal(lines.length, 2, 'healthy requests do not repeat recovery logs');
 });
 
 test('missing models and malformed, incomplete, oversized or invalid text fail safely', async () => {
@@ -159,8 +164,9 @@ test('deadline bounds loading and body reads and permits recovery after cooldown
     now = 60_001;
     assert.equal((await pool.generate('{}', signal())).status, 'ok');
   }
-  assert.equal(lines.length, 2);
-  assert(lines.every((line) => line.includes('"reason":"timeout"')));
+  assert.equal(lines.length, 4);
+  assert(lines.filter((line) => line.includes('"reason":"timeout"')).length === 2);
+  assert(lines.filter((line) => line.includes('NPC dialogue provider recovered')).length === 2);
   assert(!lines.join('\n').includes('private'));
 });
 

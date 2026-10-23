@@ -210,6 +210,8 @@ or `invalid_response`), HTTP status or known network error code when available,
 elapsed time, deadline and retry delay. The requests run on the server and do not
 appear in the browser's Network panel. Cooling requests and world cancellation
 stay quiet. Prompts, responses and raw exceptions are never logged.
+The first valid response after a failure logs `NPC dialogue provider recovered`
+with the provider and model; subsequent healthy responses stay quiet.
 
 `ECONNREFUSED` usually means Ollama is not running or the address is wrong. HTTP
 404 usually means the configured model has not been pulled; run
