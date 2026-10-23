@@ -85,6 +85,10 @@ test('HUD surfaces match and draggable panels and windows persist across session
 }) => {
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Panel hero');
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  for (const name of ['DPS meter', 'FPS graph', 'Latency graph'])
+    await page.getByRole('switch', { name, exact: true }).check();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
   const lobby = page.getByRole('region', { name: 'Emberfall', exact: true });
   await drag(page, lobby.getByRole('heading', { name: 'Emberfall' }), 90, 30);
   const lobbyTransform = await lobby.evaluate((element) => element.style.transform);
@@ -183,6 +187,10 @@ test('nickname persists in a new session, viewport is full, party bars and contr
   const next = await context.newPage();
   await next.goto('/');
   await expect(next.getByLabel('Your adventurer name')).toHaveValue('Persistent hero');
+  await next.getByRole('button', { name: 'Settings', exact: true }).click();
+  for (const name of ['DPS meter', 'FPS graph', 'Latency graph'])
+    await next.getByRole('switch', { name, exact: true }).check();
+  await next.getByRole('button', { name: 'Close Settings' }).click();
   await next.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(next.getByRole('progressbar', { name: 'Persistent hero, lvl 1' })).toHaveAttribute(
     'aria-valuenow',
