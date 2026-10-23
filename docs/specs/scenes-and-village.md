@@ -43,9 +43,9 @@ across residents, with the first start eligible ten seconds after world creation
 Replies do not reset these automatic-start intervals. Speech is one short line of
 at most 120 characters, without quotation marks, grounded in Emberfall's fantasy
 setting and implemented game activities, with occasional gentle humor.
-References to residents use `@Name`. A mentioned nearby resident answers on the
-next simulation tick after generation completes, subject to model availability;
-NPC exchanges stop after at most five messages total. An automatic NPC-to-NPC
+References to residents use `@Name`. Replies to player mentions and NPC exchanges
+wait at least two seconds after the triggering message before generation starts,
+subject to model availability. NPC exchanges stop after at most five messages total. An automatic NPC-to-NPC
 greeting also receives one answer if it contains no mention. Continued exchanges
 require another mention. Distant residents do not answer across the village.
 Players can reply with `@Marta message` (or another resident's first name) while
