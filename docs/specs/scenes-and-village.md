@@ -46,6 +46,13 @@ replace the work pose with the regular talking/idle pose. Work resumes at the sa
 station with its remaining duration when conversation ends. Empty-village time does
 not consume work time. Workstations are scenery and grant no items or combat damage.
 
+Work feedback uses distinct particles at each functional item: cooking steam,
+amber brewing bubbles, green/lilac alchemy motes, ink flecks at the records desk,
+impact sparks at the anvil, rising furnace embers, practice-shot motes and target
+straw dust, and falling leather shavings. Ambient particles controls these effects.
+They appear only during active work, inherit scenery fading, and stay anchored
+when the camera crosses a world seam; they never create combat projectiles.
+
 A resident can greet a living connected player within 120 units or start a short
 exchange with another resident within 160 units. Automatic starts wait at least
 90 seconds per village, 180 seconds per NPC, and 240 seconds per greeted player

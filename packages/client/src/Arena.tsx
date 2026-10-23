@@ -1,4 +1,5 @@
-import { npcScenery, drawNpcWork } from './npc-art';
+import { npcScenery } from './npc-art';
+import { drawNpcWork } from './npc-work';
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
@@ -752,7 +753,7 @@ export function Arena({
               object.height,
             );
           if (object.npc?.workstationId)
-            drawNpcWork(ctx, object.npc, object.x, object.y, serverTime);
+            drawNpcWork(ctx, object.npc, object.x, object.y, serverTime, quality.current.particles);
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
