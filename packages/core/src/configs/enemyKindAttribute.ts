@@ -5,7 +5,7 @@ export const enemyKindAttribute = Object.freeze(
       .values()
       .map((enemy) => [
         enemy.id,
-        Object.freeze({ hitPoints: enemy.hitPoints, damage: enemy.damage }),
+        Object.freeze({ hitPoints: enemy.hitPoints, damage: enemy.damage, speed: enemy.speed }),
       ]),
   ),
 );

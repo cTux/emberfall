@@ -4,6 +4,7 @@ import { forestTrees, forestDistance, FOREST } from '@emberfall/core';
 import { stepCombat, enemyMaxHealth, moveEnemies, hitEnemy } from '@emberfall/core';
 import type { Player, Enemy, SceneState } from '@emberfall/common';
 import { CharacterStore } from './characters.ts';
+import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
 
 const player = (x: number, y: number): Player => ({
   id: 'p',
@@ -20,6 +21,49 @@ const player = (x: number, y: number): Player => ({
   attackAt: 1e9,
 });
 const enemy = (id: number, x: number, y: number): Enemy => ({ id, x, y, hitpoints: 10, angle: 0 });
+
+test('authoritative movement scales base speed by difficulty, then roots, for every enemy type', () => {
+  const speeds = { skeleton: 64, runner: 104, brute: 40, caster: 54 };
+  const multipliers = { Easy: 1, Medium: 1.05, Hard: 1.15 };
+  for (const difficulty of Object.values(Difficulty)) {
+    for (const archetype of Object.values(EnemyKind)) {
+      for (const kind of Object.values(EnemyType)) {
+        for (const rooted of [false, true]) {
+          const e: Enemy = {
+            ...enemy(1, 2300, 1280),
+            archetype,
+            kind,
+            debuffs: rooted
+              ? [{ kind: 'roots', stacks: 1, expiresAt: 5000, nextTick: 2000, ownerId: 'p' }]
+              : [],
+          };
+          const scene: SceneState = {
+            id: 'speed',
+            type: 'Forest',
+            difficulty,
+            phase: 'active',
+            ready: [],
+            countdownAt: null,
+            endsAt: 1e9,
+            nextSpawn: 1e9,
+            sequence: 0,
+            damage: [],
+            portals: [],
+            enemies: [e],
+          };
+          stepCombat(scene, [player(2700, 1280)], 1000, 0.01);
+          const slow = rooted && kind !== EnemyType.Boss ? 0.9 : 1;
+          const expected =
+            speeds[archetype as keyof typeof speeds] * multipliers[difficulty] * slow * 0.01;
+          assert.ok(
+            Math.abs(forestDistance({ x: 2300, y: 1280 }, e) - expected) < 1e-8,
+            `${difficulty} ${kind} ${archetype}, roots=${rooted}`,
+          );
+        }
+      }
+    }
+  }
+});
 
 test('scene population compounds enemy HP and dropped XP, preserving fractions in saves', async (t) => {
   t.mock.method(Math, 'random', () => 0.5);
