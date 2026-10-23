@@ -92,7 +92,10 @@ The server advances walking on the fixed tick and starts bounded asynchronous
 requests through one shared `OllamaNpcDialogue` provider. Player mentions and NPC
 continuations carry a simulation-time deadline two seconds after the triggering
 message; the scheduler waits until that deadline and revalidates participants
-before generation. Position deltas use the existing
+before generation. One pending player reply can wait behind an active request;
+it takes priority over and replaces queued NPC banter. Further player questions
+are ignored while a player reply is queued, generating or waiting to retry.
+Position deltas use the existing
 Colyseus entity projection and detached snapshot interpolation. `nearbyInteraction`
 accepts live NPC positions so trading follows Marta. The client sends `npcInteraction`
 when her trading window opens or closes. The server validates the session-owned
