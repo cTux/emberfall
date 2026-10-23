@@ -73,6 +73,8 @@ accept named source inventories and call a host-owned `(inventory, itemId)` acti
 The host chooses transfer/trade commands; the shared UI never moves items itself.
 Unconfigured sources, same-inventory and unrelated browser drops are ignored.
 Existing RMB and Enter/Space actions remain available without dragging.
+`EquipmentSlotView.drop` uses the same inventory drop contract for individual
+equipment slots. The host validates item compatibility and sends the equip action.
 
 Windows have a 400px content surface and a maximum height of 480px, clamped to the viewport with a 16px margin. Tabbed windows add an external vertical rail on the left (112px, or 80px on narrow screens, plus an 8px gap). The whole frame stays in the viewport when dragged or resized; content shrinks on narrow screens. Tabs scroll independently of content and use Up/Down, Home and End navigation. Settings uses a fixed 420px height across tabs. The compact, medium-weight title sits four pixels above content and stays visible while window content scrolls internally. Thin scrollbars, compact typography, switches and left-rounded brown framed tabs with a filled active state come from the shared theme. `Backpack.headerActions` accepts host-owned controls opposite the gold balance, such as the trader's Sell all button.
 
