@@ -303,6 +303,7 @@ export function drawDebuffs(
     const px = x + index * 14;
     const image = statusImages[debuff.kind];
     if (image.naturalWidth) ctx.drawImage(image, px, y - 12, 12, 12);
+    if (debuff.kind === 'silence' || debuff.stacks === undefined) return;
     ctx.strokeStyle = '#101817';
     ctx.strokeText(String(debuff.stacks), px + 11, y - 1);
     ctx.fillStyle = '#ffffff';

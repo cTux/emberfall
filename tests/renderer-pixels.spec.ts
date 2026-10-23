@@ -36,6 +36,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   const {
     results,
     icons,
+    stackLabels,
     lights,
     edges,
     damagePixels,
@@ -88,6 +89,9 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   expect(lights.moved).toBeGreaterThan(lights.first);
   expect(lights.toggled).toBeGreaterThan(lights.moved);
   expect(edges.filter((count) => count > 0)).toHaveLength(1);
+  expect(stackLabels.silence).toEqual([]);
+  for (const kind of ['bleed', 'poison', 'burn', 'roots'])
+    expect(stackLabels[kind], `${kind} retains its stack count`).toEqual(['1']);
   for (const [kind, count] of Object.entries(icons))
     expect(count, `${kind} colored glyph`).toBeGreaterThan(2);
   for (const [name, { actual, expected }] of Object.entries(results)) {

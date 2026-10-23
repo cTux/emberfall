@@ -55,7 +55,7 @@ const colors = [
   '#a4cf7b',
   '#ddd',
 ];
-const NPC_SILENCE = { debuffs: [{ kind: 'silence' as const, stacks: 1 }] };
+const NPC_SILENCE = { debuffs: [{ kind: 'silence' as const }] };
 
 export function Arena({
   world,

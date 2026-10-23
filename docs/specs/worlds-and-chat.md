@@ -43,7 +43,7 @@ fallback is allowed. A saturated local request budget defers speech without sile
 
 When every eligible model fails or is cooling down, all residents in the affected
 village receive Silenced: the shared framed Silence ailment icon (12 world units,
-2-unit row spacing, outlined stack count) in the standard overhead debuff row, plus
+2-unit row spacing, no stack count) in the standard overhead debuff row, plus
 a red name. The icon uses the same renderer and assets as bleeding and other
 ailments. Silence is a shared non-damaging debuff kind, ready for future player
 use; player silence application and spell restrictions are not implemented here.
