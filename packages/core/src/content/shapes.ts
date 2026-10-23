@@ -162,9 +162,20 @@ export const worldShapes = {
             name: z.string().min(1),
             buildingId: id,
             personality: z.string().min(1),
+            background: z
+              .object({
+                work: z.string().min(1),
+                experience: z.string().min(1),
+                dream: z.string().min(1),
+                interests: z.string().min(1),
+                relationships: z.string().min(1),
+                worry: z.string().min(1),
+              })
+              .optional(),
           }),
         )
         .optional(),
+      dialogueTopics: z.array(z.string().min(1)).min(2).optional(),
       npcStops: z.array(point).min(2).optional(),
       workstations: z
         .array(

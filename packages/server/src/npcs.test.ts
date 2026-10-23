@@ -25,7 +25,13 @@ test('every resident sends their own personality to Ollama for greetings, player
   assert.equal(new Set(definitions.map((npc) => npc.personality)).size, definitions.length);
   for (const definition of definitions) {
     for (const kind of ['greeting', 'reply', 'exchange'] as const) {
-      const contexts: { character: string; personality: string; quotedSpeech?: string }[] = [];
+      const contexts: {
+        character: string;
+        personality: string;
+        background: unknown;
+        topic?: string;
+        quotedSpeech?: string;
+      }[] = [];
       const request: typeof fetch = async (_url, options) => {
         const body = JSON.parse(options!.body as string);
         const context = JSON.parse(body.messages[1].content);
@@ -66,6 +72,9 @@ test('every resident sends their own personality to Ollama for greetings, player
         const context = contexts.at(-1)!;
         assert.equal(context.character, definition.name);
         assert.equal(context.personality, definition.personality);
+        assert.deepEqual(context.background, definition.background);
+        if (kind === 'exchange') assert.equal(context.topic, contexts[0].topic);
+        if (kind !== 'reply') assert(context.topic);
         assert.equal(!!context.quotedSpeech, kind !== 'greeting');
         assert.equal(world.chat!.at(-1)!.npcId, definition.id);
       } finally {
@@ -766,4 +775,63 @@ test('active work fields survive protocol projection and stay detached across po
   assert.equal(materializeState(state)!.npcs![0].workstationId, undefined);
   assert(working.npcs![0].workstationId);
   life.close();
+});
+
+test('each resident rotates all personal topics and player questions take priority', async () => {
+  for (const definition of VILLAGE_DEFINITION.villagers) {
+    const contexts: {
+      topic?: string;
+      background: typeof definition.background;
+      quotedSpeech?: string;
+    }[] = [];
+    const world: NpcWorld = { players: createPlayers() };
+    world.players.set('p', player('p', definition.x, definition.y));
+    const life = new VillageLife(
+      world,
+      {
+        generate: async (context) => {
+          contexts.push(JSON.parse(context));
+          return { status: 'ok', text: 'There is a story behind that.' };
+        },
+      },
+      0,
+      () => 0,
+    );
+    try {
+      // Isolate this resident so cooldowns cannot select a different speaker.
+      world.npcs = world.npcs!.filter((npc) => npc.id === definition.id);
+      const count = VILLAGE_DEFINITION.dialogueTopics.length;
+      for (let index = 0; index <= count; index++) {
+        life.tick(10_000 + index * 240_000, 0);
+        await flush();
+      }
+      assert.equal(contexts.length, count + 1);
+      assert.equal(new Set(contexts.slice(0, count).map((context) => context.topic)).size, count);
+      assert.notEqual(contexts[count].topic, contexts[count - 1].topic);
+      assert(
+        contexts.every((context) => VILLAGE_DEFINITION.dialogueTopics.includes(context.topic!)),
+      );
+      assert(
+        contexts.every(
+          (context) => JSON.stringify(context.background) === JSON.stringify(definition.background),
+        ),
+      );
+
+      const now = 10_001 + count * 240_000;
+      life.hear(
+        world.players.get('p')!,
+        `@${definition.name.split(' ')[0]} What do you dream about?`,
+        now,
+      );
+      life.tick(now + 2000, 0);
+      await flush();
+      assert.equal(
+        contexts.at(-1)!.quotedSpeech,
+        `@${definition.name.split(' ')[0]} What do you dream about?`,
+      );
+      assert.equal(contexts.at(-1)!.topic, undefined);
+    } finally {
+      life.close();
+    }
+  }
 });
