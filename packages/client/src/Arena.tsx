@@ -510,7 +510,9 @@ export function Arena({
       interaction.current = hovered
         ? interactionInRange(hovered, authoritativePlayer)
           ? hovered.source
-          : null
+          : hovered.source.id.startsWith('gather:')
+            ? nearby
+            : null
         : nearby;
       updateGatherDiagnostics();
       element.dataset.interactionTarget = hovered?.source.id ?? '';
@@ -648,7 +650,9 @@ export function Arena({
       interaction.current = hovered
         ? interactionInRange(hovered, authoritativePlayer)
           ? hovered.source
-          : null
+          : hovered.source.id.startsWith('gather:')
+            ? nearby
+            : null
         : (nearby ??
           cats.find((cat) => interactionInRange(cat, authoritativePlayer))?.source ??
           null);
