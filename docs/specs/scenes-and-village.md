@@ -11,7 +11,7 @@ The create/join browser shows a forest backdrop; entering a world takes players 
 Lobby buildings and portals show interaction availability directly in their existing nameplate: a lighter background and `(E) Building name` while in range. They no longer show a separate tooltip.
 
 In the new runtime, the Inn remains scenery without an interaction or nameplate. Marta the
-Innkeeper starts beside its right wall and walks the village circuit with pauses.
+Innkeeper starts beside its right wall and walks between village stops with pauses.
 Oswin the Steward lives at the Hall, Bram the Craftsman at the Workshop, and Nell the
 Pathfinder at the Lodge. Storehouse already provides storage and gets no extra resident.
 Each resident has a name, personality and a home building. The server owns their
@@ -24,8 +24,9 @@ stock, gold and transaction rules.
 
 ## SCENE-06 — Village life
 
-Residents walk at 38 world units/second between shared village stops, pause for
-5–9 seconds at stops and stop walking while conversing. Movement uses wrapped
+Residents walk at 38 world units/second between independently chosen shared village stops,
+avoiding their previous stop and preferring destinations not already chosen by another resident.
+They pause independently for 5–9 seconds initially and at stops, and stop walking while conversing. Movement uses wrapped
 geometry. Village life pauses when no living connected village players remain.
 NPCs never follow players into the forest. Positions, memory, speech and debuffs
 are temporary per-world state, reset when the world empties or the server restarts.

@@ -7,6 +7,7 @@ import type { NpcDialogue, DialogueResult } from './npc-models.ts';
 import { createPlayers, simulationFor } from './ecs/simulation.ts';
 import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
+import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 const flush = () => new Promise<void>((resolve) => setImmediate(resolve));
 const player = (id = 'p', x = 300, y = 250) => ({ id, name: id, x, y, hitpoints: 100 }) as Player;
 function setup(
@@ -39,6 +40,42 @@ test('four residents walk, pause near players, and release authoritative ECS ent
   assert.equal(marta.moving, false);
   life.close();
   assert.equal(simulationFor(world.players)!.villagers.size, 0);
+});
+
+test('residents choose separate destinations and leave the circuit with randomized pauses', () => {
+  let roll = 0;
+  const world: NpcWorld = { players: createPlayers() };
+  world.players.set('p', player('p', 2000, 2000));
+  const life = new VillageLife(
+    world,
+    { generate: async () => ({ status: 'busy' }) },
+    0,
+    () => roll,
+  );
+  const npcs = world.npcs!;
+  // Even identical random rolls give co-located residents different destinations.
+  for (const npc of npcs) Object.assign(npc, { x: 400, y: 400 });
+  life.tick(4999, 0.05);
+  assert(npcs.every((npc) => !npc.moving));
+  life.tick(5000, 0.05);
+  assert(npcs.every((npc) => npc.moving));
+  assert.equal(new Set(npcs.map((npc) => npc.angle)).size, 4);
+  // Keep conversations from interrupting the pause measurement.
+  for (const [index, npc] of npcs.slice(1).entries())
+    Object.assign(npc, { x: 1000 + index * 300, y: 1000 });
+
+  const marta = npcs[0];
+  Object.assign(marta, VILLAGE_DEFINITION.npcStops[0]);
+  roll = 0.99;
+  life.tick(6000, 0);
+  assert.equal(marta.moving, false);
+  life.tick(14_959, 0.05);
+  assert.equal(marta.moving, false);
+  life.tick(14_960, 0.05);
+  assert.equal(marta.moving, true);
+  const destination = VILLAGE_DEFINITION.npcStops.at(-1)!;
+  assert.equal(marta.angle, Math.atan2(destination.y - 320, destination.x - 330));
+  life.close();
 });
 
 test('automatic greetings are bounded across multiple players and explicit replies still work', async () => {

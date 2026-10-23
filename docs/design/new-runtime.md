@@ -69,6 +69,8 @@ PartyCard XP meter. No stat changes or progression prompts are introduced.
 The registered village definition owns resident identities, home positions,
 personalities and walking stops. `server/npcs.ts` runs one `VillageLife` scheduler
 per occupied world; canonical NPC components live in its existing Miniplex world.
+Each resident randomly chooses its next stop, excluding its previous destination and
+preferring unclaimed stops, with independently randomized 5–9 second pauses.
 The server advances walking on the fixed tick and starts bounded asynchronous
 requests through one shared `FreeNpcModels` pool. Position deltas use the existing
 Colyseus entity projection and detached snapshot interpolation. `nearbyInteraction`
