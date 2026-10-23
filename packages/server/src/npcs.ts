@@ -41,11 +41,16 @@ export class VillageLife {
   private continuation?: { at: number; conversation: Conversation };
   private world: NpcWorld;
   private dialogue: NpcDialogue;
-  constructor(world: NpcWorld, dialogue: NpcDialogue, now: number) {
+  private random: () => number;
+  constructor(world: NpcWorld, dialogue: NpcDialogue, now: number, random = Math.random) {
     this.world = world;
     this.dialogue = dialogue;
-    world.npcs = VILLAGE_DEFINITION.villagers.map((definition, index) => {
-      this.walks.set(definition.id, { stop: index * 2, pauseUntil: now + 8000 + index * 1500 });
+    this.random = random;
+    world.npcs = VILLAGE_DEFINITION.villagers.map((definition) => {
+      this.walks.set(definition.id, {
+        stop: this.chooseStop(),
+        pauseUntil: now + 5000 + this.random() * 4000,
+      });
       return {
         id: definition.id,
         name: definition.name,
@@ -60,6 +65,15 @@ export class VillageLife {
     world.npcs = simulationFor(world.players)?.setVillagers(world.npcs) ?? world.npcs;
     this.nextTalk = now + 10_000;
     this.lastTick = now;
+  }
+  private chooseStop(previous = -1) {
+    const stops = VILLAGE_DEFINITION.npcStops
+      .map((_, index) => index)
+      .filter((index) => index !== previous);
+    const claimed = new Set([...this.walks.values()].map((walk) => walk.stop));
+    const free = stops.filter((index) => !claimed.has(index));
+    const candidates = free.length ? free : stops;
+    return candidates[Math.floor(this.random() * candidates.length)];
   }
   close() {
     this.stopped = true;
@@ -125,8 +139,8 @@ export class VillageLife {
       const distance = Math.hypot(dx, dy);
       const step = Math.min(distance, SPEED * dt);
       if (distance < 1) {
-        walk.stop++;
-        walk.pauseUntil = now + 5000 + (walk.stop % 3) * 2000;
+        walk.stop = this.chooseStop(walk.stop);
+        walk.pauseUntil = now + 5000 + this.random() * 4000;
         npc.moving = false;
       } else {
         npc.angle = Math.atan2(dy, dx);
