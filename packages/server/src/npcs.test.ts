@@ -158,7 +158,7 @@ test('automatic greetings are bounded across multiple players and explicit repli
   life.close();
 });
 
-test('nearby NPCs exchange two lines and stop; distant and other-dimension players do not trigger greetings', async () => {
+test('nearby NPCs answer on the next tick and stop without another mention; other-dimension players do not trigger greetings', async () => {
   let calls = 0;
   const { world, life } = setup({
     generate: async () => {
@@ -171,9 +171,7 @@ test('nearby NPCs exchange two lines and stop; distant and other-dimension playe
   world.npcs![1].y = world.npcs![0].y;
   life.tick(10_000, 0);
   await flush();
-  life.tick(15_999, 0);
-  assert.equal(calls, 1);
-  life.tick(16_000, 0);
+  life.tick(10_050, 0);
   await flush();
   assert.equal(calls, 2);
   assert.equal(world.chat![1].npcId, 'hallkeeper');
@@ -190,6 +188,120 @@ test('nearby NPCs exchange two lines and stop; distant and other-dimension playe
   await flush();
   assert.equal(other.world.chat, undefined);
   other.life.close();
+});
+
+test('mentions in a player greeting trigger fast NPC replies capped at five lines', async () => {
+  const contexts: {
+    character: string;
+    listenerMention?: string;
+    residents: string[];
+    setting: string;
+  }[] = [];
+  const { world, life } = setup({
+    generate: async (context) => {
+      const parsed = JSON.parse(context);
+      contexts.push(parsed);
+      return {
+        status: 'ok',
+        text: parsed.character.startsWith('Marta')
+          ? '“Oswin the Steward, are goblins charging a mud tax?”'
+          : '"@Marta, only if they can count their boots."',
+      };
+    },
+  });
+  Object.assign(world.npcs![1], { x: world.npcs![0].x + 50, y: world.npcs![0].y });
+  life.tick(10_000, 0);
+  await flush();
+  for (let i = 1; i < 5; i++) {
+    life.tick(10_000 + i * 50, 0);
+    await flush();
+  }
+  assert.equal(world.chat!.length, 5);
+  assert.deepEqual(
+    world.chat!.map((line) => line.npcId),
+    ['innkeeper', 'hallkeeper', 'innkeeper', 'hallkeeper', 'innkeeper'],
+  );
+  assert.match(world.chat![0].text, /^@Oswin the Steward/);
+  assert(world.chat!.every((line) => !/["“”]/u.test(line.text) && line.text.length <= 120));
+  assert.equal(contexts[1].listenerMention, '@Marta');
+  assert(contexts[0].residents.includes('@Nell: Nell the Pathfinder'));
+  assert.match(contexts[0].setting, /Brute Boss/);
+  life.tick(10_250, 0);
+  await flush();
+  assert.equal(contexts.length, 5, 'mutual mentions cannot create an endless exchange');
+  life.close();
+});
+
+test('automatic starts wait twice as long while player replies bypass that interval', async () => {
+  let calls = 0;
+  const { world, life } = setup({
+    generate: async () => {
+      calls++;
+      return { status: 'ok', text: 'Mind the forest goblins.' };
+    },
+  });
+  // Each NPC and player can participate, so only the village start interval gates the second greeting.
+  world.npcs!.forEach((npc, i) => {
+    Object.assign(npc, { x: 300 + i * 500, y: 250 });
+    world.players.set(`listener${i}`, player(`listener${i}`, npc.x, npc.y));
+  });
+  life.tick(10_000, 0);
+  await flush();
+  life.tick(99_999, 0);
+  await flush();
+  assert.equal(calls, 1);
+  life.hear(world.players.get('p')!, '@Marta Any forest news?', 99_999);
+  life.tick(99_999, 0);
+  await flush();
+  assert.equal(calls, 2);
+  life.tick(100_000, 0);
+  await flush();
+  assert.equal(calls, 3, 'a reply does not postpone the next automatic start');
+  life.close();
+});
+
+test('busy mention replies retry promptly without losing the conversation or its limit', async () => {
+  let calls = 0;
+  const { world, life } = setup({
+    generate: async () => {
+      calls++;
+      if (calls === 2) return { status: 'busy' };
+      return {
+        status: 'ok',
+        text: calls === 1 ? '@Oswin, goblins ate the ledger.' : '@Marta, again?',
+      };
+    },
+  });
+  Object.assign(world.npcs![1], { x: 350, y: 250 });
+  life.tick(10_000, 0);
+  await flush();
+  life.tick(10_050, 0);
+  await flush();
+  assert.equal(world.chat!.length, 1);
+  life.tick(10_549, 0);
+  assert.equal(calls, 2);
+  life.tick(10_550, 0);
+  await flush();
+  assert.equal(world.chat![1].npcId, 'hallkeeper');
+  life.close();
+});
+
+test('mentions do not summon distant NPCs and truncated names cannot trigger replies', async () => {
+  for (const text of ['@Nell, how is the forest?', 'The goblins found Oswinter.']) {
+    let calls = 0;
+    const { life } = setup({
+      generate: async () => {
+        calls++;
+        return { status: 'ok', text };
+      },
+    });
+    life.tick(10_000, 0);
+    await flush();
+    life.tick(10_050, 0);
+    await flush();
+    assert.equal(calls, 1);
+    life.close();
+  }
 });
 
 test('outage announces silence once, keeps walking, and recovers after a shared retry interval', async () => {

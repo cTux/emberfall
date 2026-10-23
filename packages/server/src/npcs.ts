@@ -4,6 +4,7 @@ import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { ChatMessage, Player, VillageNpc } from '@emberfall/common';
 import { simulationFor } from './ecs/simulation.ts';
 import type { NpcDialogue } from './npc-models.ts';
+import { spokenLine } from './npc-models.ts';
 
 export interface NpcWorld {
   players: Map<string, Player>;
@@ -20,7 +21,8 @@ interface Conversation {
   playerId?: string;
   otherNpc?: string;
   text?: string;
-  followup?: boolean;
+  /** Number of lines already published in this exchange. */
+  lines?: number;
 }
 
 /** One scheduler per world; LLM work never blocks the fixed simulation tick. */
@@ -238,18 +240,24 @@ export class VillageLife {
     }
     this.inFlight = true;
     this.activeConversation = conversation;
-    this.nextTalk = now + 45_000;
-    this.npcAt.set(actors.npc.id, now + 90_000);
+    if (!conversation.text) {
+      this.nextTalk = now + 90_000;
+      this.npcAt.set(actors.npc.id, now + 180_000);
+      if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, now + 180_000);
+    }
     if (conversation.playerId && !conversation.text)
-      this.playerAt.set(conversation.playerId, now + 120_000);
-    if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, now + 90_000);
+      this.playerAt.set(conversation.playerId, now + 240_000);
     const definition = VILLAGE_DEFINITION.villagers.find((n) => n.id === actors.npc.id)!;
     const context = JSON.stringify({
       character: definition.name,
       personality: definition.personality,
       setting:
-        'Village square, Inn, Hall, Workshop, Storehouse and Lodge. Marta trades items; Hall, Workshop and Lodge have no services yet. Adventurers visit the forest.',
+        'Emberfall is a cooperative medieval fantasy game. Adventurers prepare in the village, fight monsters and a Brute Boss in the forest, and return with loot. Marta trades consumables and collected items. The Storehouse stores items. The Inn is scenery; Hall, Workshop and Lodge have no services yet. Do not invent active festivals, quests or services.',
+      residents: VILLAGE_DEFINITION.villagers.map(
+        (npc) => `@${npc.name.split(' ')[0]}: ${npc.name}`,
+      ),
       listener: actors.target.name,
+      listenerMention: conversation.otherNpc ? `@${actors.target.name.split(' ')[0]}` : undefined,
       task: conversation.text ? 'Reply to the quoted speech.' : 'Start a friendly conversation.',
       quotedSpeech: conversation.text,
       recentConversation: this.memories.get(actors.npc.id) ?? [],
@@ -261,6 +269,10 @@ export class VillageLife {
         // Completion uses the current simulation time, not request-start time.
         const at = this.lastTick;
         if (result.status === 'busy') {
+          if (conversation.text) {
+            this.continuation = { at: at + 500, conversation };
+            return;
+          }
           this.nextTalk = at + 5000;
           this.npcAt.set(actors.npc.id, at + 5000);
           if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, at + 5000);
@@ -271,13 +283,20 @@ export class VillageLife {
         if (result.status === 'unavailable') {
           this.silence(true);
           this.retryAt = at + 60_000;
+          this.nextTalk = this.retryAt;
           this.continuation = undefined;
           return;
         }
         this.silence(false);
         const current = this.participants(conversation);
         if (!current) return;
-        current.npc.chat = result.text;
+        let text = result.text;
+        for (const resident of VILLAGE_DEFINITION.villagers) {
+          const name = resident.name.split(' ')[0];
+          text = text.replace(new RegExp(`(?<![\\p{L}\\p{N}_])@?${name}\\b`, 'giu'), `@${name}`);
+        }
+        text = spokenLine(text);
+        current.npc.chat = text;
         current.npc.chatUntil = at + 10_000;
         this.world.chat = [
           ...(this.world.chat ?? []),
@@ -286,21 +305,28 @@ export class VillageLife {
             playerId: '',
             npcId: current.npc.id,
             name: current.npc.name,
-            text: result.text,
+            text,
             dimension: 'village',
           },
         ].slice(-30);
-        const line = `${current.npc.name}: ${result.text}`;
-        for (const id of [current.npc.id, conversation.otherNpc].filter((id): id is string => !!id))
+        const mentioned = [...text.matchAll(/@([\p{L}]+)/gu)]
+          .map((match) => this.world.npcs?.find((npc) => npc.name.split(' ')[0] === match[1]))
+          .find((npc) => npc && npc.id !== current.npc.id);
+        const line = `${current.npc.name}: ${text}`;
+        for (const id of new Set(
+          [current.npc.id, conversation.otherNpc, mentioned?.id].filter((id): id is string => !!id),
+        ))
           this.memories.set(id, [...(this.memories.get(id) ?? []), line].slice(-6));
-        if (conversation.otherNpc && !conversation.followup)
+        const lines = (conversation.lines ?? 0) + 1;
+        const responder = mentioned?.id ?? (!conversation.text ? conversation.otherNpc : undefined);
+        if (responder && lines < 5)
           this.continuation = {
-            at: at + 6000,
+            at,
             conversation: {
-              speaker: conversation.otherNpc,
+              speaker: responder,
               otherNpc: current.npc.id,
-              text: result.text,
-              followup: true,
+              text,
+              lines,
             },
           };
       })
@@ -308,6 +334,7 @@ export class VillageLife {
         if (!this.stopped && villagePlayers(this.world).length) {
           this.silence(true);
           this.retryAt = this.lastTick + 60_000;
+          this.nextTalk = this.retryAt;
         }
       })
       .finally(() => {

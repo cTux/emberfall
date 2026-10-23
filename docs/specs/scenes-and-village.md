@@ -38,8 +38,16 @@ residents reuse existing character art with distinct names.
 
 A resident can greet a living connected player within 120 units or start a short
 exchange with another resident within 160 units. Automatic starts wait at least
-45 seconds per village, 90 seconds per NPC, and 120 seconds per greeted player
-across residents. NPC exchanges have two lines spaced at least 6 seconds apart.
+90 seconds per village, 180 seconds per NPC, and 240 seconds per greeted player
+across residents, with the first start eligible ten seconds after world creation.
+Replies do not reset these automatic-start intervals. Speech is one short line of
+at most 120 characters, without quotation marks, grounded in Emberfall's fantasy
+setting and implemented game activities, with occasional gentle humor.
+References to residents use `@Name`. A mentioned nearby resident answers on the
+next simulation tick after generation completes, subject to model availability;
+NPC exchanges stop after at most five messages total. An automatic NPC-to-NPC
+greeting also receives one answer if it contains no mention. Continued exchanges
+require another mention. Distant residents do not answer across the village.
 Players can reply with `@Marta message` (or another resident's first name) while
 nearby; directed replies have a separate 10-second player cooldown and a five-second village reply interval. One request
 runs per world, with at most two across the server and no unbounded request queue.
