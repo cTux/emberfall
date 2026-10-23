@@ -139,10 +139,10 @@ test('HUD surfaces match and draggable panels and windows persist across session
         .evaluate((element) => element.style.transform),
     )
     .toBe(lobbyTransform);
+  await next.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect
     .poll(() => next.locator('.performance-stats').evaluate((element) => element.style.transform))
     .toBe(fpsTransform);
-  await next.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(next.getByLabel('Damage per second', { exact: true })).toBeVisible();
   await expect
     .poll(() =>
