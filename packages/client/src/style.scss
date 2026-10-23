@@ -84,6 +84,20 @@ canvas {
   .in-world .chat {
     bottom: 84px;
   }
+
+  body:has([role='dialog']) {
+    [class~='MuiDialog-container'] {
+      align-items: flex-start;
+    }
+
+    [class~='MuiDialog-paper'] {
+      max-height: min(480px, max(120px, calc(100dvh - 300px)));
+    }
+
+    .chat-log {
+      max-height: min(100px, 15dvh);
+    }
+  }
 }
 
 .connection {

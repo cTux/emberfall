@@ -61,6 +61,11 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
     await page.screenshot({ path: 'test-results/error-chat-inventory.png' });
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(log).toBeVisible();
+    const chatBounds = await log.boundingBox();
+    const dialogBounds = await page
+      .getByRole('dialog', { name: 'Inventory', exact: true })
+      .boundingBox();
+    expect(chatBounds!.y).toBeGreaterThanOrEqual(dialogBounds!.y + dialogBounds!.height);
     await page.screenshot({ path: 'test-results/error-chat-narrow.png' });
   } finally {
     await peer.close();
