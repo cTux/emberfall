@@ -112,6 +112,12 @@ export const baseMod: GameMod = {
       leaf: 'Leaf',
       rock: 'Rock',
       stone: 'Stone',
+      plant: 'Plant',
+      fern: 'Fern',
+      'berry-bush': 'Berry bush',
+      'meadow-grass': 'Meadow grass',
+      'violet-wildflowers': 'Violet wildflowers',
+      'flowering-herb': 'Flowering herb',
     }))
       r.items.register({ id, name, kind: 'resource', price: 1 });
     for (const player of Object.values(PLAYER_DEFINITIONS))

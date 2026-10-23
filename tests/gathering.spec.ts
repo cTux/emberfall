@@ -1,5 +1,54 @@
 import { test, expect } from './fixtures';
-import { VILLAGE_RESOURCES, resourceNodes, wrap, FOREST } from '../packages/core/src/index.ts';
+import {
+  VILLAGE_RESOURCES,
+  resourceNodes,
+  wrap,
+  FOREST,
+  PLANT_KINDS,
+  itemDefinition,
+} from '../packages/core/src/index.ts';
+
+test('each village plant appears in inventory with its own name and artwork after gathering', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  const canvas = page.locator('canvas');
+  await page.mouse.move(-1, -1);
+  for (const [variant, itemId] of PLANT_KINDS.entries()) {
+    const node = VILLAGE_RESOURCES.find((n) => n.kind === 'plant' && n.variant === variant)!;
+    Object.assign(player, { x: node.x, y: node.y - 15 });
+    await expect(canvas).toHaveAttribute('data-resource', node.id);
+    await expect(async () => {
+      await page.keyboard.press('e');
+      expect(world.resources?.[node.id]?.remaining).toBe(0);
+    }).toPass({ intervals: [500] });
+    expect(player.backpack!.find((item) => item.itemId === itemId)?.quantity).toBe(1);
+    await page.getByRole('button', { name: 'Inventory (I)' }).click();
+    const inventory = page.getByRole('dialog', { name: 'Inventory', exact: true });
+    const slot = inventory.getByRole('button', {
+      name: `Use ${itemDefinition(itemId).name}`,
+      exact: true,
+    });
+    await expect(slot).toBeVisible();
+    await expect
+      .poll(() =>
+        slot.locator('canvas').evaluate((canvas: HTMLCanvasElement) =>
+          canvas
+            .getContext('2d')!
+            .getImageData(0, 0, 32, 32)
+            .data.some((value, index) => index % 4 === 3 && value > 0),
+        ),
+      )
+      .toBe(true);
+    await page.screenshot({ path: `test-results/gathered-${itemId}-inventory.png` });
+    await inventory.getByRole('button', { name: 'Close Inventory', exact: true }).click();
+  }
+});
 
 test('click and E gather replicated resources in village and forest, show depleted art and restore', async ({
   page,
@@ -80,8 +129,10 @@ test('click and E gather replicated resources in village and forest, show deplet
     await page.keyboard.press('e');
     expect(world.resources?.[plant.id]?.remaining).toBe(0);
   }).toPass({ intervals: [500] });
-  expect(player.backpack!.some((i) => i.itemId === 'leaf')).toBe(true);
+  expect(player.backpack!.some((i) => i.itemId === 'plant')).toBe(true);
   await expect(canvas).toHaveAttribute('data-depleted-resources', '2');
   await page.screenshot({ path: 'test-results/gathering-forest-plant.png' });
+  await page.getByRole('button', { name: 'Inventory (I)' }).click();
+  await expect(inventory.getByRole('button', { name: 'Use Plant', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });

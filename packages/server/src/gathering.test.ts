@@ -19,6 +19,7 @@ import {
   baseMod,
   clientMessage,
   FOREST,
+  PLANT_KINDS,
 } from '@emberfall/core';
 import { freshProgress, decodeProgress } from './characters.ts';
 
@@ -67,14 +68,20 @@ test('each tree allows five independent rolls, shows remaining health and restor
 });
 
 test('plants, rocks and stones grant one matching item and depletion is shared across players', () => {
-  for (const kind of ['plant', 'rock', 'stone'] as const) {
-    const node = VILLAGE_RESOURCES.find((n) => n.kind === kind)!;
+  const nodes = [
+    ...PLANT_KINDS.map((_, variant) =>
+      VILLAGE_RESOURCES.find((n) => n.kind === 'plant' && n.variant === variant)!,
+    ),
+    ...(['rock', 'stone'] as const).map((kind) => VILLAGE_RESOURCES.find((n) => n.kind === kind)!),
+  ];
+  for (const node of nodes) {
     const states: Record<string, ResourceState> = {};
     const player = hero(node);
     assert.deepEqual(gatherResource(player, states, node.id, 1000), [
-      kind === 'plant' ? 'leaf' : kind,
+      node.kind === 'plant' ? PLANT_KINDS[node.variant!] : node.kind,
     ]);
     assert.equal(player.backpack![0].quantity, 1);
+    assert.deepEqual(decodeProgress(JSON.stringify(player)).progress.backpack, player.backpack);
     assert.throws(() => gatherResource(hero(node), states, node.id, 1000), /restoring/);
     gatherResource(player, states, node.id, 1000 + RESOURCE_RESTORE_MS);
     assert.equal(player.backpack![0].quantity, 2);
