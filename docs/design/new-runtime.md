@@ -145,8 +145,9 @@ tails, including clipped groups. Color parsing is bounded and reused; ordinary
 axis-aligned sprite transforms avoid matrix decomposition. Light textures update
 only when a nearby blocker, its silhouette, the source light or shadow settings
 change. Camera translation and flicker alone do not upload a new texture.
-World text, chat bubbles, building/portal labels and navigation stay in the Pixi
-render pass. Pooled text uses cached textures rasterized at four times the font
+Village building and wardrobe sprites omit name badges. World text, chat bubbles,
+portal labels and navigation stay in the Pixi render pass. Pooled text uses cached
+textures rasterized at four times the font
 resolution, with nearest-neighbor sampling for sharper enlarged labels and
 damage numbers. Text density does not increase the world render resolution.
 

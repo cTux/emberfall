@@ -3,6 +3,7 @@ import test from 'node:test';
 import { Difficulty, EnemyKind, EnemyType } from '../packages/common/src/enums/index.ts';
 import {
   difficultyAttributesMultiplier,
+  difficultySpeedMultiplier,
   enemyKindAttribute,
   enemyTypeAttributesMultiplier,
   isMultiChanced,
@@ -42,8 +43,10 @@ test('balance tables cover every shared enum value with valid attributes and per
   for (const kind of Object.values(EnemyKind)) {
     assert.ok(enemyKindAttribute[kind].hitPoints > 0);
     assert.ok(enemyKindAttribute[kind].damage > 0);
+    assert.ok(enemyKindAttribute[kind].speed > 0);
   }
   for (const difficulty of Object.values(Difficulty)) {
     assert.ok(difficultyAttributesMultiplier[difficulty] > 0);
+    assert.ok(difficultySpeedMultiplier[difficulty] > 0);
   }
 });

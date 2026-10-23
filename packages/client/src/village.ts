@@ -39,7 +39,6 @@ export function villageSprites(
     sy: number,
     sw: number,
     sh: number,
-    name?: string,
     frameCount = 1,
   ) {
     let frames = sprites.get(source);
@@ -64,7 +63,6 @@ export function villageSprites(
       width,
       height,
       ...animation[0],
-      name,
       ...(frameCount > 1 ? { frames: animation } : {}),
     });
   }
@@ -86,7 +84,6 @@ export function villageSprites(
         0,
         128,
         128,
-        b.id === 'inn' ? undefined : b.name,
       );
       const anchor = chimneyAnchors[i % 3];
       objects.at(-1)!.chimney = { x: (anchor.x - 0.5) * b.sourceWidth * 2, y: (anchor.y - 1) * 96 };
@@ -106,19 +103,7 @@ export function villageSprites(
         128,
       );
   if (wardrobeArt.naturalWidth)
-    add(
-      'building:wardrobe',
-      WARDROBE.x,
-      WARDROBE.y,
-      60,
-      64,
-      wardrobeArt,
-      0,
-      0,
-      128,
-      128,
-      'Wardrobe',
-    );
+    add('building:wardrobe', WARDROBE.x, WARDROBE.y, 60, 64, wardrobeArt, 0, 0, 128, 128);
   if (environmentArt.naturalWidth)
     TORCHES.forEach((t, i) =>
       add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128),

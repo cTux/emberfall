@@ -115,7 +115,7 @@ export interface ContentTypes {
     dropCount: number | { min: number; max: number };
     spawnChance?: number;
   };
-  difficulties: { id: string; multiplier: number };
+  difficulties: { id: string; multiplier: number; speedMultiplier: number };
 }
 export type RegistryName = keyof ContentTypes;
 export interface Registry<T> {
