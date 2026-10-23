@@ -43,16 +43,30 @@ test('pet cats with clicks and E, respect range and cooldown, and keep speech ab
     await hoverCat(true);
     await page.mouse.down();
     await page.mouse.up();
-    await expect(canvas).toHaveAttribute('data-cat-speech', 'purrr', { timeout: 250 });
+    await expect(canvas).toHaveAttribute('data-cat-speech', 'Purrr', { timeout: 250 });
   }).toPass();
   await page.keyboard.press('e');
-  await expect(canvas).toHaveAttribute('data-cat-speech', 'purrr');
+  await expect(canvas).toHaveAttribute('data-cat-speech', 'Purrr');
   await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('log').locator('div').filter({ hasText: 'Cat: Purrr' })).toHaveCount(
+    1,
+  );
   await page.screenshot({ path: 'test-results/cat-purrr.png' });
   await expect(canvas).toHaveAttribute('data-cat-speech', '');
   await page.mouse.move(10, 10);
   await page.keyboard.press('e');
-  await expect(canvas).toHaveAttribute('data-cat-speech', 'meow');
-  await expect(page.getByRole('log')).not.toContainText('meow');
+  await expect(canvas).toHaveAttribute('data-cat-speech', 'Meow');
+  await expect(page.getByRole('log')).toContainText('Cat: Meow');
+  await expect(page.getByRole('log')).toContainText('Cat: Purrr');
   await page.screenshot({ path: 'test-results/cat-meow.png' });
+  await page.keyboard.press('Enter');
+  await page.getByRole('textbox', { name: 'Chat message' }).fill('Hello cat');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('log').locator('div').last()).toContainText('Hello cat');
+  await expect(page.getByRole('log')).toContainText('Cat: Meow');
+  await page.getByRole('button', { name: 'Leave world' }).click();
+  await page.getByRole('button', { name: 'Leave', exact: true }).click();
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  await expect(page.getByRole('log')).not.toContainText('Cat:');
 });
