@@ -7,6 +7,7 @@ import {
   PATH_CURVES,
   VILLAGE_DEFINITION,
 } from './definitions/worlds/village.ts';
+import { PLANT_KINDS } from './plants.ts';
 export { ARENA, WARDROBE, TRAINING_ZONES, BUILDINGS, TORCHES };
 export const BULLSEYE = VILLAGE_DEFINITION.workstations.find(
   (station) => station.id === 'lodge-target',
@@ -82,13 +83,7 @@ export const TREES: readonly Readonly<Tree>[] = Object.freeze(
   trees.map((tree) => Object.freeze(tree)),
 );
 
-export const PLANT_KINDS = Object.freeze([
-  'fern',
-  'berry-bush',
-  'meadow-grass',
-  'violet-wildflowers',
-  'flowering-herb',
-] as const);
+export { PLANT_KINDS } from './plants.ts';
 export interface VillageDecoration {
   x: number;
   y: number;

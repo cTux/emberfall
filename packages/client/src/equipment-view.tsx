@@ -1,12 +1,14 @@
 import { clientAsset } from './urls.ts';
 import { registeredSlotViews, additionalStatViews } from './content-views';
 import { game } from '@emberfall/core';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { plantArt, environmentArt } from './art';
+import { resourceScenery } from './gathering';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import type { ClientMessage, BackpackItem } from '@emberfall/common';
-import { itemDefinition, CONSUMABLES } from '@emberfall/core';
+import { itemDefinition, CONSUMABLES, PLANT_KINDS } from '@emberfall/core';
 import { Backpack, ChapterTabs, EquipmentPanel } from '@emberfall/ui';
 import type { EquipmentSlotView, EquipmentStatView, EquipmentBadgeView } from '@emberfall/ui';
 import {
@@ -229,7 +231,33 @@ export function Equipment({
   );
 }
 
+function PlantIcon({ variant }: { variant: number }) {
+  const canvas = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const image = variant === -1 ? environmentArt : plantArt;
+    const draw = () => {
+      const { sprite } = resourceScenery({
+        id: 'inventory-plant',
+        kind: 'plant',
+        x: 0,
+        y: 0,
+        size: 32,
+        variant: variant === -1 ? undefined : variant,
+      });
+      const ctx = canvas.current?.getContext('2d');
+      ctx?.clearRect(0, 0, 32, 32);
+      ctx?.drawImage(sprite, 0, 0, 32, 32);
+    };
+    image.addEventListener('load', draw);
+    draw();
+    return () => image.removeEventListener('load', draw);
+  }, [variant]);
+  return <canvas ref={canvas} width={32} height={32} aria-hidden='true' />;
+}
+
 function itemIcon(itemId: string) {
+  const plantVariant = PLANT_KINDS.findIndex((kind) => kind === itemId);
+  if (plantVariant !== -1 || itemId === 'plant') return <PlantIcon variant={plantVariant} />;
   if (itemDefinition(itemId).kind === 'resource') {
     const icons: Record<string, string> = {
       log: '🪵',

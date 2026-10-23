@@ -2,6 +2,7 @@ import type { Player, ResourceState } from '@emberfall/common';
 import { ARENA, TREES, ROCKS, PLANTS } from './world.ts';
 import { FOREST, forestTrees, wrappedDelta } from './scene.ts';
 import { addItem } from './inventory.ts';
+import { PLANT_KINDS } from './plants.ts';
 
 export const GATHER_RANGE = 65;
 export const RESOURCE_RESTORE_MS = 60 * 60 * 1000;
@@ -115,7 +116,7 @@ export function gatherResource(
         )
           .filter(([, chance]) => roll() < chance)
           .map(([id]) => id)
-      : [node.kind === 'plant' ? 'leaf' : node.kind];
+      : [node.kind === 'plant' ? (PLANT_KINDS[node.variant!] ?? 'plant') : node.kind];
   // Commit only after every drop has fitted, including multi-drop tree gathers.
   const backpack = (player.backpack ?? []).map((item) => ({ ...item }));
   for (const itemId of items) addItem(backpack, { id: crypto.randomUUID(), itemId, quantity: 1 });
