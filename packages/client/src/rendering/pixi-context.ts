@@ -10,7 +10,7 @@ import {
   Color,
   BlurFilter,
 } from 'pixi.js';
-import type { Renderer, GradientOptions, LinearGradientOptions } from 'pixi.js';
+import type { BindGroup, Renderer, GradientOptions, LinearGradientOptions } from 'pixi.js';
 import './soft-light';
 import { World } from 'miniplex';
 
@@ -170,7 +170,20 @@ export class PixiContext {
       if (parent.children.length > count) parent.removeChildren(count);
     if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height)
       this.renderer.resize(this.canvas.width, this.canvas.height);
-    this.renderer.render(this.stage);
+    try {
+      this.renderer.render(this.stage);
+    } finally {
+      // Pixi 8.22 keeps its last filter input, sampler and backdrop bound even
+      // after returning them to TexturePool. Resizing or disposing the view
+      // prunes those textures. Release the bindings before that can happen.
+      // This version-specific access can go once FilterSystem does this itself.
+      const { _globalFilterBindGroup: group } = this.renderer.filter as unknown as {
+        _globalFilterBindGroup: BindGroup;
+      };
+      group.setResource(Texture.EMPTY.source, 1);
+      group.setResource(Texture.EMPTY.source.style, 2);
+      group.setResource(Texture.EMPTY.source, 3);
+    }
     if (this.frame === 1 || this.frame % 60 === 0)
       this.canvas.dataset.renderStats = JSON.stringify(this.stats());
     if (this.frame % 120 === 0) {
