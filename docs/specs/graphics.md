@@ -114,7 +114,9 @@ atlas cell. Preserve retained original assets and their credits.
 
 ## Acceptance
 
-In the new client, world text, chat bubbles, building/portal labels and navigation
+Village buildings, including the wardrobe, have no world-space name labels.
+
+In the new client, world text, chat bubbles, portal labels and navigation
 are rendered with the world. Text textures use four times the font resolution for
 sharper glyphs without increasing the world render resolution; adaptive resolution
 still affects the final canvas output.
