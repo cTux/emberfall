@@ -1,5 +1,11 @@
 import { test, expect } from './fixtures';
-import { TRAINING_ZONES } from '../packages/core/src/index.ts';
+import {
+  BULLSEYE,
+  FOREST,
+  wrappedDelta,
+  learnTalent,
+  TRAINING_ZONES,
+} from '../packages/core/src/index.ts';
 
 test('N opens linked talents without blocking movement; learning equips and casts a saved ability', async ({
   page,
@@ -148,4 +154,60 @@ test('expanded talent graph renders curved paths and irregular branches', async 
   });
   await page.setViewportSize({ width: 1440, height: 1200 });
   await tree.locator('[data-talent-map]').screenshot({ path: 'test-results/talent-tree-full.png' });
+});
+
+test('bullseye confirms a 50 coin reset, supports cancellation and persists refunded points', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Talents (N)' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  player.level = 5;
+  player.coins = 100;
+  for (let step = 1; step <= 4; step++) learnTalent(player, `path-0-${step}`);
+  player.x = BULLSEYE!.x - 35;
+  player.y = BULLSEYE!.y - 15;
+  const canvas = page.locator('canvas');
+  const hover = async () => {
+    await expect(async () => {
+      const viewport = page.viewportSize()!;
+      const scale = Math.max(viewport.width / 960, viewport.height / 640);
+      await page.mouse.move(
+        viewport.width / 2 + wrappedDelta(BULLSEYE!.x, player.x, FOREST.width) * scale,
+        viewport.height / 2 + wrappedDelta(BULLSEYE!.y - 27, player.y, FOREST.height) * scale,
+      );
+      await expect(canvas).toHaveAttribute('data-interaction-target', BULLSEYE!.id);
+      await expect(canvas).toHaveAttribute('data-interaction-range', 'true');
+    }).toPass();
+  };
+  await hover();
+  await page.mouse.down();
+  await page.mouse.up();
+  const dialog = page.getByRole('dialog', { name: 'Reset talent points?' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByLabel('Reset cost: 50 coins')).toBeVisible();
+  await page.screenshot({ path: 'test-results/bullseye-reset-desktop.png' });
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  expect(player.coins).toBe(100);
+  expect(player.talents!['path-0-4']).toBe(1);
+  player.coins = 49;
+  await hover();
+  await page.keyboard.press('e');
+  await expect(dialog.getByRole('button', { name: 'Reset talents', exact: true })).toBeDisabled();
+  await page.setViewportSize({ width: 390, height: 740 });
+  await page.screenshot({ path: 'test-results/bullseye-reset-narrow.png' });
+  player.coins = 100;
+  await expect(dialog.getByRole('button', { name: 'Reset talents', exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: 'Reset talents', exact: true }).click();
+  await expect.poll(() => player.coins).toBe(50);
+  await expect.poll(() => player.talents).toEqual({});
+  await expect(page.getByRole('button', { name: 'Cast Sweeping strike (1)' })).toBeHidden();
+  await page.reload();
+  await page.getByRole('button', { name: 'Talents (N)' }).click();
+  await expect(
+    page.getByRole('region', { name: 'Talents', exact: true }).getByRole('status'),
+  ).toHaveText('4 talent points available');
 });

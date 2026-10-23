@@ -8,6 +8,9 @@ import {
   VILLAGE_DEFINITION,
 } from './definitions/worlds/village.ts';
 export { ARENA, WARDROBE, TRAINING_ZONES, BUILDINGS, TORCHES };
+export const BULLSEYE = VILLAGE_DEFINITION.workstations.find(
+  (station) => station.id === 'lodge-target',
+);
 import { wrap, wrappedDelta } from './scene.ts';
 
 export const inTrainingZone = (player: { x: number; y: number }) =>

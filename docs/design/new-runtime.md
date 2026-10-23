@@ -384,7 +384,11 @@ stacking, loot, unarmed casting and the replicated UI. `tests/auto-loot.spec.ts`
 The graph is shared; only learned IDs live in existing per-class talent saves.
 Available points derive from normal level minus one and valid learned nodes.
 The server applies `learnTalent` to a detached player, saves it, then publishes
-the allocation; failures retain live points and nodes. No database migration.
+the allocation; failures retain live points and nodes. `resetTalents` uses the
+same save-before-publish transaction for current-class talents and the 50-coin
+account charge. The server validates class and wrapped bullseye proximity; the
+client reuses the target sprite hover outline and click/E interaction for its
+confirmation. No database migration.
 
 Talent casts use a separate server-owned cooldown map keyed by ability ID,
 retained across class switches. Forest and training use the same cast rules and
