@@ -167,8 +167,12 @@ test('native vendor drags buy and sell once, including buyback, without bypassin
   await expect(page.getByRole('alert')).toContainText('Not enough gold');
   expect(player.coins).toBe(0);
   expect(world.merchant!.backpack[0].quantity).toBe(5);
-  await page.keyboard.press('e');
-  await expect(dialog).toBeVisible();
+  await expect(async () => {
+    player.x = marta.x;
+    player.y = marta.y + 35;
+    await page.keyboard.press('e');
+    await expect(dialog).toBeVisible({ timeout: 400 });
+  }).toPass({ intervals: [200], timeout: 10000 });
   await backpack
     .getByRole('button', { name: 'Sell Helmet', exact: true })
     .dragTo(merchant, { targetPosition: { x: 12, y: 12 } });

@@ -41,6 +41,8 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
       clip: { x: 685, y: 365, width: 70, height: 70 },
     });
   }
+  // Keep the roaming trader from taking priority over the building interactions below.
+  Object.assign(marta, { x: 1000, y: 1000 });
   player.x = inn.doorX;
   player.y = inn.y + 9;
   // Allow the confirmed relocation to reach presentation before testing E.
@@ -52,7 +54,7 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   player.y = hall.y + 9;
   await expect(async () => {
     await page.keyboard.press('e');
-    await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
   expect(errors).toEqual([]);
 });
