@@ -1,0 +1,66 @@
+import { test, expect } from './fixtures';
+import type { DialogueResult } from '../packages/server/src/npc-models.ts';
+let response: DialogueResult = { status: 'unavailable' };
+test.use({ npcDialogue: { generate: async () => response } });
+
+test('LLM outage gives every villager a visible silence debuff and one red village announcement', async ({
+  page,
+  game,
+}) => {
+  response = { status: 'unavailable' };
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  const canvas = page.locator('canvas').first();
+  await expect(canvas).toHaveAttribute('data-npcs', '4');
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  player.x = 300;
+  player.y = 260;
+  const warning = page.getByText(
+    'The villagers have been silenced. Their voices will return soon.',
+    { exact: false },
+  );
+  await expect(warning).toBeVisible({ timeout: 18_000 });
+  await expect(canvas).toHaveAttribute('data-silenced-npcs', '4');
+  await expect(page.locator('.chat-danger')).toHaveCSS('color', 'rgb(255, 135, 148)');
+  await page.screenshot({ path: 'test-results/npc-silence.png' });
+  expect(world.chat!.filter((m) => m.tone === 'danger')).toHaveLength(1);
+  expect(errors).toEqual([]);
+});
+
+test('players can address Marta, see her answer, and watch her walk after leaving trading range', async ({
+  page,
+  game,
+}) => {
+  response = { status: 'ok', text: 'Welcome! Have you met our neighbours?' };
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  player.x = 300;
+  player.y = 260;
+  await expect(page.locator('canvas').first()).toHaveAttribute('data-npcs', '4');
+  await page.keyboard.press('Enter');
+  await page.getByRole('textbox', { name: 'Chat message' }).fill('@Marta Hello!');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('log')).toContainText(
+    'Marta the Innkeeper: Welcome! Have you met our neighbours?',
+  );
+  await page.screenshot({ path: 'test-results/npc-conversation.png' });
+  const marta = world.npcs!.find((n) => n.id === 'innkeeper')!;
+  player.x = 445;
+  player.y = 350;
+  const start = { x: marta.x, y: marta.y };
+  await expect
+    .poll(() => Math.hypot(marta.x - start.x, marta.y - start.y), { timeout: 12_000 })
+    .toBeGreaterThan(5);
+  for (let frame = 0; frame < 4; frame++) {
+    await page.screenshot({ path: `test-results/npc-walking-${frame}.png` });
+    await page.waitForTimeout(160);
+  }
+  expect(errors).toEqual([]);
+});

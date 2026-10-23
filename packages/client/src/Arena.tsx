@@ -1,3 +1,4 @@
+import { npcScenery, drawSilence } from './npc-art';
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
@@ -404,6 +405,7 @@ export function Arena({
             player,
             authoritative?.scene?.phase === 'ended',
             authoritative?.scene?.portals,
+            authoritative?.npcs,
           )
         : null;
       if (local?.scene !== previousScene) {
@@ -441,7 +443,12 @@ export function Arena({
         return;
       }
       const prepared = villageBackground(quality.current);
-      const scenery = prepared?.scenery ?? [];
+      const scenery = [
+        ...(prepared?.scenery ?? []),
+        ...npcScenery(view.npcs ?? [], view.serverNow ?? now),
+      ];
+      element.dataset.npcs = String(view.npcs?.length ?? 0);
+      element.dataset.silencedNpcs = String(view.npcs?.filter((n) => n.silenced).length ?? 0);
       for (const object of scenery)
         if (object.frames)
           Object.assign(object, object.frames[Math.floor(now / 400) % object.frames.length]);
@@ -503,7 +510,8 @@ export function Arena({
       // Use the reconciled positions consistently for bodies, lanterns and shadows.
       const dynamic: Caster[] = [];
       if (quality.current.shadows)
-        for (const object of visibleScenery) if (object.frames) castShadow(ctx, object);
+        for (const object of visibleScenery)
+          if (object.frames || object.npc) castShadow(ctx, object);
       for (const player of players) {
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
         const ix = player.inputX ?? 0,
@@ -736,14 +744,14 @@ export function Arena({
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
-          if (object.name && object.id === 'npc:innkeeper')
+          if (object.name && object.npc)
             drawCharacterName(
               ctx,
               object.x,
               object.y - object.height - 9,
               object.name,
-              undefined,
-              interaction.current?.id === 'innkeeper',
+              object.npc?.silenced ? '#ff8794' : undefined,
+              object.id === 'npc:innkeeper' && interaction.current?.id === 'innkeeper',
             );
           else if (object.name)
             drawNameBadge(
@@ -897,6 +905,11 @@ export function Arena({
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawNavigation(ctx, view, playerId);
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
+      for (const object of visibleScenery) {
+        if (object.npc?.silenced) drawSilence(ctx, object.x, object.y - 70);
+        else if (object.npc && (object.npc.chatUntil ?? 0) > serverTime)
+          drawChatBubble(ctx, object.x, object.y - 24, object.npc.chat);
+      }
       element.dataset.debugHitboxes = String(
         prefs.current.debugHitboxes
           ? drawHitboxes(ctx, view, false, {

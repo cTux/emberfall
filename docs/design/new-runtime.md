@@ -66,16 +66,25 @@ disconnect and shutdown writes retain all three fields. The client uses core's
 `experienceRequired` formula and passes confirmed values to the controlled
 PartyCard XP meter. No stat changes or progression prompts are introduced.
 
-The shared village definition owns Marta the Innkeeper's fixed position and
-display name. `nearbyInteraction` excludes the Inn doorway and selects Marta
-using the existing wrapped proximity check. The client reuses the building
-trading window and scenery depth ordering. Marta and player health labels
-share `drawCharacterName`; Marta's label sits above her sprite and adds the
-interaction background and `(E)` only while selected. Her cached idle frames advance
-by time, with the same frame used for rendering and shadow masks; there is no
-moving NPC state, network command or persistence change. Verification:
-[village rules](../../packages/server/src/village.test.ts) and
-[Innkeeper browser scenario](../../tests/innkeeper.spec.ts).
+The registered village definition owns resident identities, home positions,
+personalities and walking stops. `server/npcs.ts` runs one `VillageLife` scheduler
+per occupied world; canonical NPC components live in its existing Miniplex world.
+The server advances walking on the fixed tick and starts bounded asynchronous
+requests through one shared `FreeNpcModels` pool. Position deltas use the existing
+Colyseus entity projection and detached snapshot interpolation. `nearbyInteraction`
+accepts live NPC positions so trading follows Marta, and her proximity pause keeps
+her available during a trade. NPCs and memory are not persisted. World disposal
+removes components and aborts pending dialogue.
+
+Chat entries optionally carry a dimension, NPC identity and announcement tone.
+Server broadcasts share one prepared projection per dimension; the latest ten
+visible messages are selected from a bounded world history. Existing player and
+system chat remains world-wide. NPC art joins the existing scenery depth sort,
+mask/shadow path and wrapped camera. Silence icons draw above atmosphere at every
+quality setting. The finite atlas-cell cache does not retain world instances.
+See [SCENE-06](../specs/scenes-and-village.md#scene-06--village-life) and
+[CHAT-04](../specs/worlds-and-chat.md#chat-04--npc-speech-and-silence) for timings,
+free-route failover, visibility and recovery rules.
 
 Gold collection adds one coin to the nearest living forest collector, once, in shared simulation. The live player `coins` field projects the account Storehouse balance. Version-2 saves persist that balance once outside class records, using the existing autosave lifecycle. The party HUD, Storehouse and trading UI receive the same confirmed balance.
 

@@ -150,8 +150,8 @@ export function worldHitboxes(
         );
     }
     circle(
-      INNKEEPER.x,
-      INNKEEPER.y - COLLISION.feetOffset,
+      (world.npcs?.find((n) => n.id === INNKEEPER.id) ?? INNKEEPER).x,
+      (world.npcs?.find((n) => n.id === INNKEEPER.id) ?? INNKEEPER).y - COLLISION.feetOffset,
       INTERACTION_RADIUS,
       HITBOX_COLORS.range,
       'interact',

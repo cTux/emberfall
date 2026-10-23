@@ -1,10 +1,12 @@
-import { WARDROBE, BUILDINGS, TORCHES, TREES, INNKEEPER } from '@emberfall/core';
+import type { VillageNpc } from '@emberfall/common';
+import { WARDROBE, BUILDINGS, TORCHES, TREES } from '@emberfall/core';
 import { makeMask, castShadow } from './lighting';
 import type { Caster, Light } from './lighting';
-import { environmentArt, wardrobeArt, innkeeperArt } from './art';
+import { environmentArt, wardrobeArt } from './art';
 import { chimneyAnchors } from './ambient-art';
 
 export interface Scenery extends Caster {
+  npc?: VillageNpc;
   sprite: HTMLCanvasElement;
   name?: string;
   chimney?: { x: number; y: number };
@@ -98,21 +100,6 @@ export function villageSprites(
       128,
       128,
       'Wardrobe',
-    );
-  if (innkeeperArt.naturalWidth)
-    add(
-      'npc:innkeeper',
-      INNKEEPER.x,
-      INNKEEPER.y,
-      48,
-      48,
-      innkeeperArt,
-      0,
-      0,
-      64,
-      64,
-      INNKEEPER.name,
-      4,
     );
   if (environmentArt.naturalWidth)
     TORCHES.forEach((t, i) =>

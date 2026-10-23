@@ -182,6 +182,7 @@ export interface WorldSummary {
   capacity: number;
 }
 export interface WorldState {
+  npcs?: VillageNpc[];
   merchant?: Merchant;
   chat?: ChatMessage[];
   training?: SceneState;
@@ -193,11 +194,26 @@ export interface WorldState {
   serverNow?: number;
 }
 export interface ChatMessage {
+  dimension?: string;
+  npcId?: string;
+  tone?: 'danger' | 'success';
   id: string;
   excludedPlayerId?: string;
   playerId: string;
   name: string;
   text: string;
+}
+export interface VillageNpc {
+  id: string;
+  name: string;
+  buildingId: string;
+  x: number;
+  y: number;
+  angle: number;
+  moving: boolean;
+  silenced: boolean;
+  chat?: string;
+  chatUntil?: number;
 }
 export type ServerMessage =
   | { type: 'pong'; id: number }

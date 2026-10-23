@@ -1,8 +1,8 @@
 import { World } from 'miniplex';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState, VillageNpc } from '@emberfall/common';
 import { SCENE_COLLECTIONS, type SceneCollection, type SceneEntity } from '@emberfall/common';
 
-type Entity = { scene?: SceneState; order: number; player?: Player } & {
+type Entity = { scene?: SceneState; order: number; player?: Player; npc?: VillageNpc } & {
   [K in SceneCollection]?: SceneEntity<K>;
 };
 
@@ -36,6 +36,14 @@ class PlayerIndex extends Map<string, Player> {
 export class SimulationWorld {
   readonly ecs = new World<Entity>();
   readonly actors = this.ecs.with('player');
+  readonly villagers = this.ecs.with('npc');
+  setVillagers(npcs: VillageNpc[]) {
+    // Removal swaps query entries; snapshot membership before removing.
+    // oxlint-disable-next-line unicorn/no-useless-spread
+    for (const entity of [...this.villagers]) this.ecs.remove(entity);
+    npcs.forEach((npc, order) => this.ecs.add({ npc, order }));
+    return [...this.villagers].sort((a, b) => a.order - b.order).map((e) => e.npc);
+  }
   private scenes = new Map<SceneState, (() => void)[]>();
   readonly players = new PlayerIndex(this.ecs);
   /** Bind collections once. Pure shared systems read query views and commit

@@ -80,6 +80,7 @@ export function nearbyInteraction(
   player: { x: number; y: number; scene?: string; hitpoints: number },
   ended = false,
   portals: { x: number; y: number }[] = [FOREST_PORTAL],
+  npcs?: readonly { id: string; name: string; x: number; y: number }[],
 ) {
   if (player.hitpoints <= 0) return null;
   if (player.scene === 'forest') {
@@ -91,7 +92,9 @@ export function nearbyInteraction(
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
     return { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL };
   if (distance(WARDROBE) < 55) return { id: 'wardrobe', name: 'Wardrobe', ...WARDROBE };
-  if (distance(INNKEEPER) < INTERACTION_RADIUS) return { ...INNKEEPER };
+  const innkeeper = npcs?.find((npc) => npc.id === INNKEEPER.id) ?? (npcs ? undefined : INNKEEPER);
+  if (innkeeper && distance(innkeeper) < INTERACTION_RADIUS)
+    return { id: innkeeper.id, name: innkeeper.name, x: innkeeper.x, y: innkeeper.y };
   const building = BUILDINGS.find(
     (b) => b.id !== 'inn' && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
   );

@@ -23,9 +23,10 @@ export async function createGameServer(
   savePath = ':memory:',
   tls?: ServerOptions,
   steam?: SteamOptions,
+  dialogue?: import('./npc-models.ts').NpcDialogue,
 ) {
   Encoder.BUFFER_SIZE = 128 * 1024;
-  const runtime = await createRuntime(savePath);
+  const runtime = await createRuntime(savePath, dialogue);
   // The executable always supplies Steam configuration. Omission is for the
   // isolated legacy/parity fixtures, which exercise the pre-account protocol.
   const accounts = steam

@@ -134,3 +134,15 @@ conflicts/imports, prediction, combat and schema patch tests. Browser fixtures
 own their server and database and may arrange scene state without shipping
 test-only HTTP endpoints. See [development](../../docs/development.md) and the
 [runtime design](../../docs/design/new-runtime.md).
+
+## Village dialogue
+
+Village NPCs use the free OpenCode Chat Completions API. Outbound HTTPS access to
+`opencode.ai` is required; the documented free chat routes allow anonymous calls.
+`OPENCODE_API_KEY` is optional and belongs only in the server environment, never in
+client configuration or Git. The explicit free-only model list and current API
+endpoint live in `src/npc-models.ts`. Free offers can expire: recheck the
+[official catalog](https://opencode.ai/v2/docs/console/models/) before replacing a
+route. Never add paid routes as an automatic fallback. If no free route responds,
+the village visibly receives Silenced and retries later; movement and trading work.
+Tests inject a dialogue provider and do not require external model access.

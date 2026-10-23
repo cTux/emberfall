@@ -33,10 +33,14 @@ import { CharacterStore } from './characters.ts';
 import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from './scenes.ts';
 import type { Scene } from './scenes.ts';
 import { addChat } from './chat.ts';
+import { VillageLife } from './npcs.ts';
+import { FreeNpcModels, type NpcDialogue } from './npc-models.ts';
+import type { VillageNpc } from '@emberfall/common';
 
 const derive = promisify(scrypt);
 type AccountIdentity = () => { characterId: string; nickname: string | null } | undefined;
 interface World {
+  npcs?: VillageNpc[];
   merchant?: Merchant;
   chat?: ChatMessage[];
   id: string;
@@ -77,7 +81,10 @@ interface Session {
   reconnectTimer?: ReturnType<typeof setTimeout>;
 }
 
-export async function createRuntime(savePath = ':memory:') {
+export async function createRuntime(
+  savePath = ':memory:',
+  dialogue: NpcDialogue = new FreeNpcModels(),
+) {
   validateDefinitions();
   const characters = new CharacterStore(savePath);
   await characters.ready;
@@ -105,6 +112,15 @@ export async function createRuntime(savePath = ':memory:') {
   worlds.set(permanentWorld.id, permanentWorld);
   let shuttingDown = false;
   const sessions = new Map<WebSocket, Session>();
+  const villageLives = new Map<World, VillageLife>();
+  const villageLife = (world: World, now: number) => {
+    let life = villageLives.get(world);
+    if (!life) {
+      life = new VillageLife(world, dialogue, now);
+      villageLives.set(world, life);
+    }
+    return life;
+  };
   let hashing = 0;
   const wss = new EventEmitter();
   const send = (ws: WebSocket, message: ServerMessage) => {
@@ -115,12 +131,15 @@ export async function createRuntime(savePath = ':memory:') {
     }
     ws.send(message);
   };
-  const state = (world: World, now = Date.now()): WorldState => ({
+  const state = (world: World, now = Date.now(), viewer?: Player): WorldState => ({
     id: world.id,
     name: world.name,
     hostId: world.hostId,
     players: [...world.players.values()],
-    chat: world.chat ?? [],
+    chat: (world.chat ?? [])
+      .filter((m) => !m.dimension || m.dimension === (viewer?.scene ?? 'village'))
+      .slice(-10),
+    npcs: world.npcs,
     scene: sceneState(world.scene),
     training: world.training,
     serverNow: now,
@@ -166,6 +185,9 @@ export async function createRuntime(savePath = ':memory:') {
         world.hostId = '';
         world.scene = undefined;
         world.chat = [];
+        villageLives.get(world)?.close();
+        villageLives.delete(world);
+        world.npcs = undefined;
       } else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
     }
     clearTimeout(session.reconnectTimer);
@@ -378,7 +400,12 @@ export async function createRuntime(savePath = ':memory:') {
           error('Join a world with a living character first.');
           return;
         }
-        if (trading && (player.scene || nearbyInteraction(player)?.id !== 'innkeeper')) {
+        villageLife(world, now);
+        if (
+          trading &&
+          (player.scene ||
+            nearbyInteraction(player, false, undefined, world.npcs)?.id !== 'innkeeper')
+        ) {
           error('Trade near Marta the Innkeeper in the village.');
           return;
         }
@@ -418,7 +445,7 @@ export async function createRuntime(savePath = ':memory:') {
             maxHitpoints: next.maxHitpoints,
           });
           if (trading) world.merchant = merchant;
-          send(ws, { type: 'state', world: state(world) });
+          send(ws, { type: 'state', world: state(world, now, player) });
         } catch (failure) {
           error(
             !saving && failure instanceof Error
@@ -442,8 +469,8 @@ export async function createRuntime(savePath = ':memory:') {
         session.chatAt = now;
         player.chat = message.text;
         addChat(world, message.text, player);
-        const update: ServerMessage = { type: 'state', world: state(world, now) };
-        for (const [peer, member] of sessions) if (member.worldId === world.id) send(peer, update);
+        villageLife(world, now).hear(player, message.text, now);
+        broadcastState(world, now);
         return;
       }
       if (message.type === 'leave') {
@@ -474,7 +501,7 @@ export async function createRuntime(savePath = ':memory:') {
         }
         try {
           characters.selectClass(session.characterId, player, message.classId);
-          send(ws, { type: 'state', world: state(world!) });
+          send(ws, { type: 'state', world: state(world!, now, player) });
         } catch {
           error('Unable to save class change. Your current class has been kept.');
         }
@@ -562,7 +589,7 @@ export async function createRuntime(savePath = ':memory:') {
             send(ws, {
               type: 'joined',
               playerId: session.id,
-              world: state(world),
+              world: state(world, now, world.players.get(session.id)),
               characterToken: authenticated ? '' : message.characterToken,
             });
             return;
@@ -676,13 +703,14 @@ export async function createRuntime(savePath = ':memory:') {
           classes: character.classes,
           hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
         });
+        villageLife(world, now);
         if (!world.hostId) world.hostId = session.id;
         addChat(world, `${playerName} joined.`, undefined, session.id);
         reconcileVote(world, Date.now());
         send(ws, {
           type: 'joined',
           playerId: session.id,
-          world: state(world),
+          world: state(world, now, world.players.get(session.id)),
           characterToken: token!,
         });
         send(ws, { type: 'saved', savedAt: Date.now() });
@@ -701,6 +729,20 @@ export async function createRuntime(savePath = ':memory:') {
       }
     });
   });
+  function broadcastState(world: World, now: number) {
+    const messages = new Map<string, ServerMessage>();
+    for (const [ws, session] of sessions) {
+      if (session.worldId !== world.id) continue;
+      const player = world.players.get(session.id);
+      const dimension = player?.scene ?? 'village';
+      let message = messages.get(dimension);
+      if (!message) {
+        message = { type: 'state', world: state(world, now, player) };
+        messages.set(dimension, message);
+      }
+      send(ws, message);
+    }
+  }
   let simulationAt = Date.now();
   const tick = setInterval(() => {
     const wallTime = Date.now();
@@ -717,8 +759,8 @@ export async function createRuntime(savePath = ':memory:') {
       for (const world of worlds.values()) {
         for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);
-        const message: ServerMessage = { type: 'state', world: state(world, now) };
-        for (const [ws, session] of sessions) if (session.worldId === world.id) send(ws, message);
+        if (world.players.size) villageLife(world, now).tick(now, TICK_MS / 1000);
+        broadcastState(world, now);
       }
     }
   }, 10);
@@ -765,6 +807,8 @@ export async function createRuntime(savePath = ':memory:') {
     clearInterval(heartbeat);
     clearInterval(progressTick);
     clearInterval(autosave);
+    for (const life of villageLives.values()) life.close();
+    villageLives.clear();
     const failures: unknown[] = [];
     for (const session of sessions.values()) {
       clearTimeout(session.reconnectTimer);

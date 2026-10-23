@@ -11,12 +11,36 @@ The create/join browser shows a forest backdrop; entering a world takes players 
 Lobby buildings and portals show interaction availability directly in their existing nameplate: a lighter background and `(E) Building name` while in range. They no longer show a separate tooltip.
 
 In the new runtime, the Inn remains scenery without an interaction or nameplate. Marta the
-Innkeeper stands right beside its right wall, facing forward with a looping idle animation and
-no movement. E within 68 units opens her compact shared trading window, titled
+Innkeeper starts beside its right wall and walks the village circuit with pauses.
+Oswin the Steward lives at the Hall, Bram the Craftsman at the Workshop, and Nell the
+Pathfinder at the Lodge. Storehouse already provides storage and gets no extra resident.
+Each resident has a name, personality and a home building. The server owns their
+positions, walking state and conversations. Residents pause within 78 units of a
+living connected village player, keeping Marta still while trading. E within 68 units opens her compact shared trading window, titled
 with her name. Her name uses the player's font, outline
 and placement above the sprite, adding a highlighted background and `(E)` while
-in range. Marta sells consumables and buys collected items; see CHAR-04 for the shared
+in range of her current position. Marta sells consumables and buys collected items; see CHAR-04 for the shared
 stock, gold and transaction rules.
+
+## SCENE-06 — Village life
+
+Residents walk at 38 world units/second between shared village stops, pause for
+5–9 seconds at stops and stop walking while conversing. Movement uses wrapped
+geometry. Village life pauses when no living connected village players remain.
+NPCs never follow players into the forest. Positions, memory, speech and debuffs
+are temporary per-world state, reset when the world empties or the server restarts.
+Marta retains her original idle art and uses a directional walking sheet; the other
+residents reuse existing character art with distinct names.
+
+A resident can greet a living connected player within 120 units or start a short
+exchange with another resident within 160 units. Automatic starts wait at least
+45 seconds per village, 90 seconds per NPC, and 120 seconds per greeted player
+across residents. NPC exchanges have two lines spaced at least 6 seconds apart.
+Players can reply with `@Marta message` (or another resident's first name) while
+nearby; directed replies have a separate 10-second player cooldown and a five-second village reply interval. One request
+runs per world, with at most two across the server and no unbounded request queue.
+Each NPC remembers at most six recent spoken lines. No NPC dialogue grants items,
+changes gold, creates quests or implements services in placeholder buildings.
 
 ## SCENE-02 — World geometry
 

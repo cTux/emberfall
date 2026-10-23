@@ -61,7 +61,7 @@ export function Chat({
     <aside className='chat' aria-label='World chat' tabIndex={0}>
       <div className='chat-log' role='log' aria-label='Latest chat messages' ref={log}>
         {messages.map((message) => (
-          <div key={message.id}>
+          <div key={message.id} className={message.tone ? `chat-${message.tone}` : undefined}>
             <b>{message.name}:</b> {message.text}
           </div>
         ))}
@@ -84,7 +84,7 @@ export function Chat({
         <input
           ref={input}
           aria-label='Chat message'
-          placeholder='Enter to chat · Enter to send'
+          placeholder='Enter to chat · @Marta to talk'
           value={text}
           onChange={(event) => setText(event.target.value)}
           maxLength={CHAT_MAX_LENGTH}

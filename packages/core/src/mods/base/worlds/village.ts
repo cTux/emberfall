@@ -1,6 +1,50 @@
 export const ARENA = { width: 4800, height: 2560, speed: 180 } as const;
 export const WARDROBE = { x: 350, y: 365 };
 export const INNKEEPER = { id: 'innkeeper', name: 'Marta the Innkeeper', x: 300, y: 238 } as const;
+export const VILLAGERS = [
+  {
+    ...INNKEEPER,
+    buildingId: 'inn',
+    personality: 'A warm innkeeper who cares about tired adventurers.',
+  },
+  {
+    id: 'hallkeeper',
+    name: 'Oswin the Steward',
+    buildingId: 'hall',
+    x: 550,
+    y: 215,
+    personality: 'An earnest village steward, fond of local news and keeping the square tidy.',
+  },
+  {
+    id: 'craftsman',
+    name: 'Bram the Craftsman',
+    buildingId: 'workshop',
+    x: 805,
+    y: 280,
+    personality:
+      'A practical, cheerful craftsman who likes discussing repairs and curious inventions.',
+  },
+  {
+    id: 'lodgekeeper',
+    name: 'Nell the Pathfinder',
+    buildingId: 'lodge',
+    x: 785,
+    y: 550,
+    personality: 'A curious pathfinder who loves woodland stories and watching village wildlife.',
+  },
+] as const;
+// Shared stops form a village circuit, away from building footprints.
+export const NPC_STOPS = [
+  { x: 330, y: 320 },
+  { x: 480, y: 320 },
+  { x: 650, y: 325 },
+  { x: 800, y: 340 },
+  { x: 800, y: 580 },
+  { x: 625, y: 590 },
+  { x: 480, y: 515 },
+  { x: 330, y: 590 },
+  { x: 330, y: 440 },
+] as const;
 export const TRAINING_ZONES = [
   { x: 140, y: 355, radius: 270, clearingRadius: 135 },
   { x: 820, y: 355, radius: 270, clearingRadius: 135 },
@@ -78,6 +122,8 @@ export const VILLAGE_DEFINITION = {
   geometry: ARENA,
   wardrobe: WARDROBE,
   innkeeper: INNKEEPER,
+  villagers: VILLAGERS,
+  npcStops: NPC_STOPS,
   buildings: BUILDINGS,
   torches: TORCHES,
   trainingZones: TRAINING_ZONES,
