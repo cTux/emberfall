@@ -340,6 +340,10 @@ export function Game({
   };
   const interact = (source = interaction.current) => {
     if (!source) return;
+    if (source.activate) {
+      source.activate();
+      return;
+    }
     if (source.id === 'return') send({ type: 'returnLobby' });
     else if (source.id === BULLSEYE?.id) setMenu('resetTalents');
     else if (source.id === 'wardrobe') setMenu('wardrobe');

@@ -56,15 +56,15 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
         : Array.from({ length: rows }, (_, i) => i);
     const frames = rowMap.flatMap((row) =>
       Array.from({ length: columns }, (_, col) => {
-        const animalColumns = [0, 309, 535, 735, 1024];
-        const x0 =
-          name === 'animals'
-            ? Math.round((animalColumns[col] * input.width) / 1024)
-            : Math.round((col * input.width) / columns);
-        const x1 =
-          name === 'animals'
-            ? Math.round((animalColumns[col + 1] * input.width) / 1024)
-            : Math.round(((col + 1) * input.width) / columns);
+        const sourceColumns =
+          name === 'plants' ? [0, 440, 845, 1230, 1615, 2048] : [0, 309, 535, 735, 1024];
+        const sourceWidth = sourceColumns.at(-1)!;
+        const x0 = ['animals', 'plants'].includes(name)
+          ? Math.round((sourceColumns[col] * input.width) / sourceWidth)
+          : Math.round((col * input.width) / columns);
+        const x1 = ['animals', 'plants'].includes(name)
+          ? Math.round((sourceColumns[col + 1] * input.width) / sourceWidth)
+          : Math.round(((col + 1) * input.width) / columns);
         const y0 = boundaries
           ? (boundaries[row] * input.height) / boundaries.at(-1)!
           : Math.round((row * input.height) / rows);
@@ -151,6 +151,7 @@ export const actorArt = (name: string) => {
   return image;
 };
 export const environmentArt = loadArt('environment', 3, 3, 128, true);
+export const plantArt = loadArt('plants', 5, 1, 64, true);
 export const wardrobeArt = loadArt('wardrobe', 4, 1, 128, true);
 export const innkeeperArt = loadArt('innkeeper', 4, 1, 64, true);
 export const animalArt = loadArt('animals', 4, 6, 64, true);

@@ -1,0 +1,5 @@
+export { plantArt, environmentArt, artImages, terrainArt } from '../packages/client/src/art';
+export { villageBackground, villageImages } from '../packages/client/src/village-background';
+export { villageSprites } from '../packages/client/src/village';
+export { GRAPHICS_PRESETS } from '../packages/client/src/graphics';
+export { ROCKS, PLANTS } from '../packages/core/src/index';

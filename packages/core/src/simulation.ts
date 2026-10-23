@@ -347,7 +347,7 @@ export function tickCompanion(
     return;
   }
   const stats = context.rules.companionStats(player);
-  if (!stats.hasWeapon) {
+  if (!stats.hasWeapon || !Number.isFinite(stats.attackIntervalMs)) {
     bear.attackAt = undefined;
     return;
   }
@@ -711,6 +711,7 @@ export function requestPlayerCast(
   if (
     !scene ||
     !stats.hasWeapon ||
+    !Number.isFinite(stats.attackIntervalMs) ||
     scene.phase !== 'active' ||
     scene.pausedAt !== undefined ||
     player.hitpoints <= 0 ||
@@ -742,7 +743,11 @@ export function tickPlayerCombat(
     const ability = context.registries.abilities.require(
       context.registries.classes.require(player.classId ?? 'warrior').attack,
     );
-    if (!stats.hasWeapon || (scene.training && !inTrainingZone(player))) {
+    if (
+      !stats.hasWeapon ||
+      !Number.isFinite(stats.attackIntervalMs) ||
+      (scene.training && !inTrainingZone(player))
+    ) {
       player.attackAt = undefined;
       continue;
     }

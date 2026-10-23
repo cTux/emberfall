@@ -38,6 +38,11 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
+Interactive cats: [SCENE-06](specs/scenes-and-village.md#scene-06--village-life),
+[speech timing](../packages/client/src/cat-speech.ts),
+[client interaction](../packages/client/src/Arena.tsx) and
+[browser verification](../tests/cats.spec.ts).
+
 Game cursors: [UI-02](specs/interface-and-audio.md#ui-02--combat-controls),
 [host cursor states](../packages/client/src/cursors.ts),
 [saved enable/size preferences](../packages/client/src/preferences.ts),
@@ -66,7 +71,7 @@ and [replicated cooldown/gear coverage](../tests/action-bar.spec.ts).
 | ------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Worlds, recovery and chat                        | [WORLD/CHAT](specs/worlds-and-chat.md)                          | [Network](design/network-and-persistence.md)                     | `worlds.test.ts`, `reconnect.test.ts`, `chat.test.ts`, `gameplay.spec.ts`, `reconnect.spec.ts`, `chat-presentation.spec.ts`, `npc-chat.test.ts`, `npc-models.test.ts`, `npcs.spec.ts`                                                                   |
 | Steam accounts, characters and classes           | [CHAR](specs/characters.md)                                     | [Accounts](design/steam-accounts.md)                             | `accounts.test.ts`, `characters.test.ts`, `classes.test.ts`, `accounts.spec.ts`                                                                                                                                                                         |
-| Village, forest and training                     | [SCENE](specs/scenes-and-village.md), [COMBAT](specs/combat.md) | [Simulation](design/simulation.md)                               | `scenes.test.ts`, `village.test.ts`, `npcs.test.ts`, `npcs.spec.ts`, `training.test.ts`, `enemies.test.ts`, `gameplay.spec.ts`                                                                                                                          |
+| Village, forest and training                     | [SCENE](specs/scenes-and-village.md), [COMBAT](specs/combat.md) | [Simulation](design/simulation.md)                               | `scenes.test.ts`, `village.test.ts`, `village-scenery.test.ts`, `village-scenery.spec.ts`, `npcs.test.ts`, `npcs.spec.ts`, `training.test.ts`, `enemies.test.ts`, `gameplay.spec.ts`                                                                    |
 | Prediction and replication                       | [SCENE/UI](specs/interface-and-audio.md)                        | [Movement](design/movement.md), [runtime](design/new-runtime.md) | `local-movement.test.ts`, `local-projectiles.test.ts`, `snapshots.test.ts`, `protocol.test.ts`                                                                                                                                                          |
 | Inventory, equipment, storage and trading        | [CHAR](specs/characters.md)                                     | [Runtime](design/new-runtime.md)                                 | `inventory.test.ts`, [storage rules](../packages/server/src/storehouse.test.ts), [storage UI](../tests/storehouse.spec.ts), `equipment.test.ts`, `inventory.spec.ts`, `equipment.spec.ts`, `innkeeper.spec.ts`, [auto-loot](../tests/auto-loot.spec.ts) |
 | HUD, controls, settings and audio                | [UI](specs/interface-and-audio.md)                              | [Presentation](design/presentation.md)                           | `gameplay.spec.ts`, `companion-hud.spec.ts`, `packages/ui/tests/ui.spec.ts`                                                                                                                                                                             |

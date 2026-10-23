@@ -6,6 +6,11 @@ Reference: LPC Wooden Furniture by bluecarrot16, Baŝto, Lanea Zimmerman (Sharm)
 
 Preview: run the new client and visit /?art-gallery . The gallery shares the game's actual atlas loader and animation selector. Static buildings and terrain remain static; existing world geometry, lighting, foliage sway, damage and save rules are unchanged. Font and audio assets are unchanged.
 
+## Village plants
+
+See [plant provenance and packaging](PLANTS-README.md) for the five generated
+lobby plant kinds and their source-cell boundaries.
+
 ## Default spell icons
 
 `default-spells.png` is the approved four-icon source sheet generated with OpenAI

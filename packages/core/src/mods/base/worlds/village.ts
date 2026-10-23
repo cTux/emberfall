@@ -225,6 +225,10 @@ export const VILLAGE_DEFINITION = {
   paths: PATH_CURVES,
   treeSeed: 8927,
   treeAttempts: 550,
+  rockSeed: 3719,
+  rockAttempts: 300,
+  plantSeed: 6143,
+  plantAttempts: 1000,
   spawn: { x: 420, y: 340, spacing: 22 },
   returnSpawn: { x: 480, y: 360 },
 } as const;
