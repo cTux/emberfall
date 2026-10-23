@@ -293,7 +293,9 @@ for (const [difficulty, multiplier] of [
     await page.screenshot({ path: `test-results/portal-${difficulty.toLowerCase()}.png` });
     await portal.getByRole('button', { name: 'Create', exact: true }).click();
     await expect.poll(() => world.scene?.difficulty).toBe(difficulty);
-    await expect(portal.getByText(difficulty, { exact: true })).toBeVisible();
+    await expect(
+      portal.getByRole('heading', { name: new RegExp(`^Forest · ${difficulty}`) }),
+    ).toBeVisible();
     await portal.getByRole('button', { name: "I'm ready" }).click();
     await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
     const sceneId = world.scene!.id;
@@ -309,6 +311,8 @@ for (const [difficulty, multiplier] of [
     await portal.getByRole('button', { name: 'Regenerate scene' }).click();
     await expect.poll(() => world.scene!.id).not.toBe(sceneId);
     expect(world.scene!.difficulty).toBe(difficulty);
-    await expect(portal.getByText(difficulty, { exact: true })).toBeVisible();
+    await expect(
+      portal.getByRole('heading', { name: new RegExp(`^Forest · ${difficulty}`) }),
+    ).toBeVisible();
   });
 }
