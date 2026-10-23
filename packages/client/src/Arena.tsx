@@ -18,13 +18,14 @@ import { ACTOR_CELL, playerFrame, idleBreath } from './animation';
 import { actorArt, environmentArt, wardrobeArt, drawArt } from './art';
 import { drawChimneySmoke } from './ambient-art';
 import { companionCaster, drawCompanion } from './companion';
-import { critterCaster, crittersAt, drawCritter } from './critters';
+import { critterCaster, drawCritter } from './critters';
 import { drawNavigation } from './navigation';
 import { useDraggable } from '@emberfall/ui';
 import { PerformanceGraph } from './PerformanceGraph';
 import { movementFacing } from './facing';
 import { LocalMovement } from './local-movement';
 import { gameAudio } from './audio';
+import { createCritterMotion } from './critter-motion';
 import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
@@ -168,6 +169,7 @@ export function Arena({
       }
       return masks[index];
     };
+    const villageCritters = createCritterMotion();
     const snapshots = new SnapshotBuffer(playerId);
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
     let previousHp = '';
@@ -629,12 +631,16 @@ export function Arena({
             mask,
           });
       }
-      const critters = crittersAt('village', view.serverNow ?? now, {
-        x: cameraX,
-        y: cameraY,
-        width: viewWidth,
-        height: viewHeight,
-      });
+      const critters = villageCritters(
+        now,
+        {
+          x: cameraX,
+          y: cameraY,
+          width: viewWidth,
+          height: viewHeight,
+        },
+        players.filter((player) => player.hitpoints > 0),
+      );
       for (const critter of critters) {
         const caster = critterCaster(critter);
         if (caster) dynamic.push(caster);

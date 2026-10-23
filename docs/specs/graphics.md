@@ -65,6 +65,7 @@ effect in both areas, independently of graphics preset.
 
 The new client uses a cohesive pixel-art set
 based on the approved wardrobe-style concepts, including a newly drawn wardrobe.
+Village chickens panic when a living player comes within 70 world units, run in the opposite direction at increased speed with faster walking animation until 100 units clear, then return to wandering. This decorative response respects world wrapping and does not affect collision or combat.
 Players, enemies and animals have frame-based locomotion; combatants also have
 attack/cast and fallen poses. Idle motion, damage flashes and death transitions
 remain presentation-only. Scenery, weapons, portraits and effects use the same
