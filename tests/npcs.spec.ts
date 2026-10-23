@@ -25,6 +25,8 @@ test('a player mention during an NPC greeting receives an answer in the chat log
   const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
   Object.assign(player, { x: marta.x, y: marta.y });
   await expect.poll(() => contexts.length, { timeout: 15_000 }).toBe(1);
+  // Walking before the greeting may have moved Marta away from the player.
+  Object.assign(player, { x: marta.x, y: marta.y });
   const question = '@Marta Any forest advice?';
   await page.keyboard.press('Enter');
   await page.getByRole('textbox', { name: 'Chat message' }).fill(question);
