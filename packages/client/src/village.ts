@@ -10,6 +10,8 @@ import { chimneyAnchors } from './ambient-art';
 export const workstationArt = loadArt('workstations', 4, 2, 128, true);
 
 export interface Scenery extends Caster {
+  kind?: 'tree' | 'plant' | 'rock' | 'stone';
+  gathered?: boolean;
   npc?: VillageNpc;
   sprite: HTMLCanvasElement;
   name?: string;

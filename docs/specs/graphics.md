@@ -138,4 +138,9 @@ still affects the final canvas output.
 - Damage flashes restart on each hit, including ailments and killing blows; remote players do not receive the local sprite flash.
 - Check weapon visibility, debuff spacing/expiry, torch animation, animal shadows, portal bloom-off visibility and reduced-motion countdown.
 
+Gatherable resources retain their existing tree, rock and plant artwork until
+depleted. Generated stump, rubble and cut-stem sprites replace them during the
+one-hour restoration cooldown. Partial tree health bars remain visible at every
+graphics preset; depleted resources do not receive active interaction outlines.
+
 Evidence: [player-cutout.spec.ts](../../tests/player-cutout.spec.ts).

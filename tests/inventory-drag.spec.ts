@@ -93,7 +93,7 @@ test('native drags deposit, move between storage tabs and withdraw; full and sam
   const dialog = page.getByRole('dialog', { name: 'Storehouse', exact: true });
   await expect(async () => {
     await page.keyboard.press('e');
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 6000 });
   const backpack = dialog.getByRole('region', { name: 'Your backpack' });
   const first = dialog.getByRole('region', { name: 'Storage 1', exact: true });

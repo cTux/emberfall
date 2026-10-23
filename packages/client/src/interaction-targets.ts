@@ -1,4 +1,5 @@
 import {
+  GATHER_RANGE,
   BULLSEYE,
   BUILDINGS,
   INNKEEPER,
@@ -22,6 +23,24 @@ export interface InteractionTarget {
 }
 
 export function sceneryInteraction(object: Scenery): InteractionTarget | null {
+  if (/^(tree|forest|plant|rock):/.test(object.id)) {
+    if (object.gathered) return null;
+    return {
+      source: {
+        id: `gather:${object.id}`,
+        name: `Gather ${object.kind ?? 'tree'}`,
+        x: object.x,
+        y: object.y,
+      },
+      x: object.x - object.width / 2,
+      y: object.y - object.height,
+      width: object.width,
+      height: object.height,
+      mask: object.mask as HTMLCanvasElement,
+      reach: object,
+      radius: GATHER_RANGE,
+    };
+  }
   const id = object.id.replace(/^(building|npc|workstation):/, '');
   const building = BUILDINGS.find((b) => b.id === id && b.id !== 'inn');
   const bullseye = !!BULLSEYE && object.id === `workstation:${BULLSEYE.id}`;
@@ -55,7 +74,11 @@ export function interactionInRange(target: InteractionTarget, player: Player | u
     !!player &&
     player.hitpoints > 0 &&
     forestDistance(
-      { x: player.x, y: player.y + (player.scene === 'forest' ? 0 : 15) },
+      {
+        x: player.x,
+        y:
+          player.y + (target.source.id.startsWith('gather:') || player.scene !== 'forest' ? 15 : 0),
+      },
       target.reach,
     ) < target.radius
   );

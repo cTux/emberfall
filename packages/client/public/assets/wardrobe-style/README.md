@@ -186,3 +186,18 @@ Small gameplay VFX atlas: EXACT FOUR columns THREE rows, 12 equal square cells o
 ### panel
 
 Use case: stylized-concept. One production pixel-art UI panel skin for Emberfall in the attached wardrobe style. Square 512x512 image, edge-to-edge dark reddish walnut frame, slender carved stepped molding occupying the outermost 32 pixels, restrained ochre highlights on upper left edges, subtle small ornamental square corners. The entire central interior is completely flat uniform very dark brown #211916, empty, no text no icons no objects no gradients. This is a 9-slice UI texture: top bottom and side center segments must be simple straight repeatable wood borders; corner motifs confined to corners, no centered ornament. No outside margins, opaque background. Crisp pixel art without antialiasing. The border should look like the wardrobe's panel molding.
+
+## Gathered resources
+
+`gathered.png` was generated with OpenAI imagegen on 2026-10-23 using
+`environment.png` as its style reference. Its three equal-width cells contain a
+chopped tree stump, depleted stone outcrop and harvested plant. The runtime trims
+transparent margins and packs them into 128px cells with nearest-neighbor sampling.
+The collection's CC BY-SA 3.0 distribution and retained LPC notices above apply.
+
+Prompt: Create a companion sprite sheet for the environment sheet on a transparent
+background, exactly three columns and one row, without text or grid lines. Draw a
+freshly chopped oak stump with mossy roots and golden growth rings, a depleted
+stone outcrop with scattered gray chips, and harvested short green stems with
+fallen leaves. Match the source's crisp dark outlined pixel art, muted olive greens,
+warm brown wood and gray stones in a top-down three-quarter RPG view.

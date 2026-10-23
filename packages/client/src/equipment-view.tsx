@@ -230,6 +230,16 @@ export function Equipment({
 }
 
 function itemIcon(itemId: string) {
+  if (itemDefinition(itemId).kind === 'resource') {
+    const icons: Record<string, string> = {
+      log: '🪵',
+      stick: '🌿',
+      leaf: '🍃',
+      rock: '🪨',
+      stone: '🪨',
+    };
+    return <span aria-hidden='true'>{icons[itemId] ?? '◆'}</span>;
+  }
   const gear = GEAR_DEFINITIONS[itemId];
   const itemClass = ITEM_CLASSES[itemId];
   const slot = gear
@@ -268,9 +278,11 @@ export function backpackViews(items: BackpackItem[]) {
       price: definition.price ?? 1,
       details: potion
         ? `Restores ${potion.healing} health`
-        : gear.stats.armor
+        : gear?.stats.armor
           ? `Armor: ${gear.stats.armor}`
-          : 'Weapon',
+          : definition.kind === 'resource'
+            ? 'Gathered resource · stacks to 200'
+            : 'Weapon',
     };
   });
 }

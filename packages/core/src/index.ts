@@ -38,3 +38,5 @@ export const CHAT_LIMIT = RUNTIME.chatLimit;
 export const CHAT_MAX_LENGTH = RUNTIME.chatMaxLength;
 
 export * from './definitions/equipment.ts';
+
+export * from './gathering.ts';

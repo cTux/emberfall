@@ -42,7 +42,10 @@ export interface ConsumableDefinition extends BaseItemDefinition {
   kind: 'consumable';
   healing: number;
 }
-export type ItemDefinition = GearItemDefinition | ConsumableDefinition;
+export interface ResourceDefinition extends BaseItemDefinition {
+  kind: 'resource';
+}
+export type ItemDefinition = GearItemDefinition | ConsumableDefinition | ResourceDefinition;
 export interface ClassDefinition {
   id: string;
   label: string;

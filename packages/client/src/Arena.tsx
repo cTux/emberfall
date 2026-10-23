@@ -1,3 +1,5 @@
+import { resourceNodes, resourceState, nearbyResource } from '@emberfall/core';
+import { resourceScenery, drawResourceHealth } from './gathering';
 import {
   sceneryInteraction,
   pickInteraction,
@@ -454,7 +456,7 @@ export function Arena({
       }
       const authoritative = latest.current;
       const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
-      const nearby = authoritativePlayer
+      let nearby = authoritativePlayer
         ? nearbyInteraction(
             authoritativePlayer,
             authoritative?.scene?.phase === 'ended',
@@ -462,6 +464,26 @@ export function Arena({
             authoritative?.npcs,
           )
         : null;
+      if (!nearby && authoritativePlayer) {
+        const node = nearbyResource(
+          authoritativePlayer,
+          authoritative?.resources,
+          authoritative?.serverNow ?? 0,
+        );
+        if (node)
+          nearby = { id: `gather:${node.id}`, name: `Gather ${node.kind}`, x: node.x, y: node.y };
+      }
+      const updateGatherDiagnostics = () => {
+        element.dataset.resource = interaction.current?.id.startsWith('gather:')
+          ? interaction.current.id.slice(7)
+          : '';
+        element.dataset.depletedResources = String(
+          Object.values(view?.resources ?? {}).filter((state) => state.remaining === 0).length,
+        );
+        element.dataset.resourceHealth = String(
+          view?.resources?.[element.dataset.resource]?.remaining ?? '',
+        );
+      };
       targets = [];
       if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
         targets = view.scene.portals.map((portal) =>
@@ -472,12 +494,32 @@ export function Arena({
           ),
         );
       }
+      if (local?.scene === 'forest') {
+        targets.push(
+          ...resourceNodes(local, Math.hypot(inputCamera.width, inputCamera.height) / 2 + 150)
+            .filter(
+              (node) => resourceState(view?.resources, node, view?.serverNow ?? 0)?.remaining !== 0,
+            )
+            .map((node) => sceneryInteraction(resourceScenery(node)))
+            .filter((target) => target !== null),
+        );
+        targets.sort((a, b) => a.y + a.height - b.y - b.height);
+      }
       hovered = pickInteraction(targets, pointerPoint());
       interaction.current = hovered
         ? interactionInRange(hovered, authoritativePlayer)
           ? hovered.source
-          : null
+          : hovered.source.id.startsWith('gather:')
+            ? nearby
+            : null
         : nearby;
+      if (
+        nearby &&
+        !nearby.id.startsWith('gather:') &&
+        interaction.current?.id.startsWith('gather:')
+      )
+        interaction.current = nearby;
+      updateGatherDiagnostics();
       element.dataset.interactionTarget = hovered?.source.id ?? '';
       element.dataset.interactionRange = hovered
         ? String(interactionInRange(hovered, authoritativePlayer))
@@ -520,7 +562,19 @@ export function Arena({
       }
       const prepared = villageBackground(quality.current);
       const scenery = [
-        ...(prepared?.scenery ?? []),
+        ...(prepared?.scenery ?? []).filter((object) => !/^(tree|plant|rock):/.test(object.id)),
+        ...resourceNodes(
+          { x: local?.x ?? 480, y: local?.y ?? 320 },
+          Math.max(el.width, el.height) / scale + 200,
+        ).map((node) => {
+          const object = prepared?.scenery.find((o) => o.id === node.id);
+          const state = resourceState(view.resources, node, view.serverNow ?? now);
+          return {
+            ...(state?.remaining === 0 || !object ? resourceScenery(node, state) : object),
+            kind: node.kind,
+            gathered: state?.remaining === 0,
+          };
+        }),
         ...npcScenery(view.npcs ?? [], view.serverNow ?? now),
       ];
       element.dataset.npcs = String(view.npcs?.length ?? 0);
@@ -601,10 +655,19 @@ export function Arena({
       interaction.current = hovered
         ? interactionInRange(hovered, authoritativePlayer)
           ? hovered.source
-          : null
+          : hovered.source.id.startsWith('gather:')
+            ? nearby
+            : null
         : (nearby ??
           cats.find((cat) => interactionInRange(cat, authoritativePlayer))?.source ??
           null);
+      if (
+        nearby &&
+        !nearby.id.startsWith('gather:') &&
+        interaction.current?.id.startsWith('gather:')
+      )
+        interaction.current = nearby;
+      updateGatherDiagnostics();
       element.dataset.interactionTarget = hovered?.source.id ?? '';
       element.dataset.interactionRange = hovered
         ? String(interactionInRange(hovered, authoritativePlayer))
@@ -648,7 +711,8 @@ export function Arena({
       const dynamic: Caster[] = [];
       if (quality.current.shadows)
         for (const object of visibleScenery)
-          if (object.frames || object.npc) castShadow(ctx, object);
+          if (object.frames || object.npc || object.id.startsWith('tree:') || object.kind)
+            castShadow(ctx, object);
       for (const player of players) {
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
         const ix = player.inputX ?? 0,
@@ -835,7 +899,9 @@ export function Arena({
         }
         if (layer.object) {
           const object = layer.object;
-          const vegetation = object.id.startsWith('tree:') || object.id.startsWith('plant:');
+
+          const vegetation =
+            !object.gathered && (object.id.startsWith('tree:') || object.id.startsWith('plant:'));
           if (vegetation)
             drawVegetation(
               ctx,
@@ -881,12 +947,23 @@ export function Arena({
             drawNpcWork(ctx, object.npc, object.x, object.y, serverTime, quality.current.particles);
           if (
             hovered &&
-            hovered.source.id === object.id.replace(/^(building|npc|workstation):/, '')
+            (hovered.source.id === object.id.replace(/^(building|npc|workstation):/, '') ||
+              hovered.source.id === `gather:${object.id}`)
           )
             drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
+          if (object.id.startsWith('tree:'))
+            drawResourceHealth(
+              ctx,
+              { ...object, kind: 'tree', size: object.width },
+              resourceState(
+                view.resources,
+                { ...object, kind: 'tree', size: object.width },
+                view.serverNow ?? now,
+              ),
+            );
           if (object.name && object.npc)
             drawCharacterName(
               ctx,
@@ -1005,7 +1082,12 @@ export function Arena({
           if (!texture) continue;
           const movingLight = lightTexture(
             light,
-            [...dynamic, ...visibleScenery.filter((object) => object.frames)],
+            [
+              ...dynamic,
+              ...visibleScenery.filter(
+                (object) => object.frames || object.id.startsWith('tree:') || object.kind,
+              ),
+            ],
             quality.current.shadows,
             texture,
           );

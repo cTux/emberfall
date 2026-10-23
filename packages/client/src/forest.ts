@@ -1,3 +1,5 @@
+import { resourceNodes, resourceState } from '@emberfall/core';
+import { resourceScenery, drawResourceHealth } from './gathering';
 import { game } from '@emberfall/core';
 import type { PixiContext } from './rendering/pixi-context';
 import { characterImages } from './characters';
@@ -18,20 +20,14 @@ import {
   drawDebuffs,
 } from './combat-effects';
 import { wrappedDelta } from '@emberfall/common';
-import {
-  characterStats,
-  ENEMY_STATS,
-  FOREST,
-  forestTrees,
-  INTERACTION_RADIUS,
-} from '@emberfall/core';
+import { characterStats, ENEMY_STATS, FOREST, INTERACTION_RADIUS } from '@emberfall/core';
 import { defaultSpellRange, PLAYER_ATTACK_DURATION, enemyMaxHealth } from '@emberfall/core';
 import { movementFacing } from './facing';
 import { drawDanger } from './danger';
 import type { WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import type { Preferences } from './preferences';
-import { makeMask, castShadow, spriteMask } from './lighting';
+import { castShadow, spriteMask, makeMask } from './lighting';
 import type { Caster } from './lighting';
 import { lightTexture } from './village';
 import {
@@ -222,9 +218,7 @@ export function forestRenderer(
   const enemyImages = Object.fromEntries(
     ['runner', 'brute', 'caster', 'warden'].map((name) => [name, actorArt(name)]),
   );
-  const tree = document.createElement('canvas');
-  tree.width = tree.height = 128;
-  let treeMask: HTMLCanvasElement | undefined;
+  let groundReady = false;
   const ground = document.createElement('canvas');
   ground.width = ground.height = 320;
   const g = ground.getContext('2d')!;
@@ -265,10 +259,9 @@ export function forestRenderer(
       environmentArt.naturalWidth &&
       terrainArt.complete &&
       terrainArt.naturalWidth &&
-      !treeMask
+      !groundReady
     ) {
-      tree.getContext('2d')!.drawImage(environmentArt, 0, 128, 128, 128, 0, 0, 128, 128);
-      treeMask = makeMask(tree);
+      groundReady = true;
       g.fillStyle = g.createPattern(terrainTile(2), 'repeat')!;
       g.fillRect(0, 0, 320, 320);
     }
@@ -296,23 +289,19 @@ export function forestRenderer(
       width,
       height,
     });
-    const trees = forestTrees(cx, cy, Math.max(width, height) / 2 + 150).filter(
+    const trees = resourceNodes(
+      { x: cx, y: cy, scene: 'forest' },
+      Math.hypot(width, height) / 2 + 150,
+    ).filter(
       (t) =>
         t.x > cameraX - 100 &&
         t.x < cameraX + width + 100 &&
         t.y > cameraY - 50 &&
         t.y < cameraY + height + 150,
     );
-    const casters: Caster[] = treeMask
-      ? trees.map((t) => ({
-          id: t.id,
-          x: t.x,
-          y: t.y,
-          width: t.size,
-          height: t.size,
-          mask: treeMask!,
-        }))
-      : [];
+    const casters: Caster[] = trees.map((node) =>
+      resourceScenery(node, resourceState(world?.resources, node, serverTime)),
+    );
     const players = world?.players.filter((p) => p.scene === 'forest') ?? [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
@@ -535,10 +524,32 @@ export function forestRenderer(
       }
       if (layer.tree) {
         const t = layer.tree;
-        if (treeMask) {
-          drawVegetation(ctx, tree, t.x, t.y, t.size, t.size, now, quality.wavingVegetation);
-        }
+
+        const state = resourceState(world?.resources, t, serverTime);
+        const object = resourceScenery(t, state);
+        if ((t.kind === 'tree' || t.kind === 'plant') && state?.remaining !== 0)
+          drawVegetation(
+            ctx,
+            object.sprite,
+            t.x,
+            t.y,
+            object.width,
+            object.height,
+            now,
+            quality.wavingVegetation,
+          );
+        else
+          ctx.drawImage(
+            object.sprite,
+            t.x - object.width / 2,
+            t.y - object.height,
+            object.width,
+            object.height,
+          );
         ctx.globalAlpha = 1;
+        renderer.occlusion = false;
+        drawResourceHealth(ctx, t, state);
+        if (hovered?.source.id === `gather:${t.id}`) drawInteractionOutline(ctx, hovered, inRange);
         continue;
       }
       const a = layer.actor!;

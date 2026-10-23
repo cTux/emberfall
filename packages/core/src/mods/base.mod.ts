@@ -106,6 +106,14 @@ export const baseMod: GameMod = {
       price: 1,
       healing: 25,
     });
+    for (const [id, name] of Object.entries({
+      log: 'Log',
+      stick: 'Stick',
+      leaf: 'Leaf',
+      rock: 'Rock',
+      stone: 'Stone',
+    }))
+      r.items.register({ id, name, kind: 'resource', price: 1 });
     for (const player of Object.values(PLAYER_DEFINITIONS))
       r.classes.register({
         ...player,

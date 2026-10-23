@@ -133,3 +133,16 @@ At timer expiry, regular spawning continues and one Brute Boss with 300 Easy HP 
 - Early scene exit retains world membership; village exit removes it. Buildings remain service placeholders.
 
 Evidence: [scenes.test.ts](../../packages/server/src/scenes.test.ts), [pass-through.test.ts](../../packages/server/src/pass-through.test.ts), [village.test.ts](../../packages/server/src/village.test.ts).
+
+## VILLAGE-07 — Gathering
+
+Trees, plants, rocks and stones in both areas can be gathered by clicking them
+or pressing E within 65 world units of their roots. Server validation owns range,
+area, rewards and inventory capacity. Each rock or stone gives one matching item;
+plants give one leaf. Each tree accepts five gathers, independently rolling one
+log (80%), one stick (40%) and one leaf (20%) per gather. A partially gathered tree
+shows a health bar; depleted nodes remain visible as stumps, rubble or cut stems.
+An exhausted node restores after one hour of wall time; partial trees also reset
+one hour after their first gather. Resource state is shared within the running
+world, including forest re-entry, and resets when that world is disposed.
+Inventory rejection leaves the resource and all rewards unchanged.

@@ -1,3 +1,5 @@
+import { gatherResource, restoreResources } from '@emberfall/core';
+import type { ResourceState } from '@emberfall/common';
 import {
   learnTalent,
   resetTalents,
@@ -48,6 +50,7 @@ import { serverLog } from './log.ts';
 const derive = promisify(scrypt);
 type AccountIdentity = () => { characterId: string; nickname: string | null } | undefined;
 interface World {
+  resources?: Record<string, ResourceState>;
   npcs?: VillageNpc[];
   merchant?: Merchant;
   chat?: ChatMessage[];
@@ -149,6 +152,7 @@ export async function createRuntime(
       .filter((m) => !m.dimension || m.dimension === (viewer?.scene ?? 'village'))
       .slice(-10),
     npcs: world.npcs,
+    resources: world.resources,
     scene: sceneState(world.scene),
     training: world.training,
     serverNow: now,
@@ -333,6 +337,20 @@ export async function createRuntime(
         return;
       }
       const message = parsed.data;
+      if (message.type === 'gather') {
+        const world = worlds.get(session.worldId ?? '');
+        const player = world?.players.get(session.id);
+        if (!world || !player) return;
+        const epoch = player.scene === 'forest' ? world.scene?.id : 'lobby';
+        if (message.epoch !== epoch) return;
+        try {
+          gatherResource(player, (world.resources ??= {}), message.nodeId, now);
+          broadcastState(world, now);
+        } catch (cause) {
+          error(cause instanceof Error ? cause.message : 'Unable to gather.');
+        }
+        return;
+      }
       if (message.type === 'npcInteraction') {
         const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
@@ -803,6 +821,7 @@ export async function createRuntime(
         stepMovement(session, player, world?.scene?.id, now, wallTime);
       }
       for (const world of worlds.values()) {
+        restoreResources(world.resources, wallTime);
         for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);
         if (world.players.size) villageLife(world, now).tick(now, TICK_MS / 1000);

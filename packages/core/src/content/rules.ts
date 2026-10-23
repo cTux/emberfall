@@ -149,24 +149,23 @@ export function createRules(content: Registries) {
     };
   }
   function itemDefinition(id: string) {
-    return GEAR_DEFINITIONS[id] ?? CONSUMABLES[id as keyof typeof CONSUMABLES];
+    return content.items.require(id);
   }
   const backpackSchema = z
     .array(
       z
         .object({
           id: z.string().min(1).max(64),
-          itemId: z
-            .string()
-            .refine(
-              (id) => Object.hasOwn(GEAR_DEFINITIONS, id) || Object.hasOwn(CONSUMABLES, id),
-              'Unknown item',
-            ),
+          itemId: z.string().refine((id) => content.items.has(id), 'Unknown item'),
           quantity: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
         })
-        .refine(
-          (item) => !!CONSUMABLES[item.itemId as keyof typeof CONSUMABLES] || item.quantity === 1,
-        ),
+        .refine((item) => {
+          const definition = content.items.get(item.itemId);
+          return (
+            definition?.kind === 'consumable' ||
+            (definition?.kind === 'resource' ? item.quantity <= 200 : item.quantity === 1)
+          );
+        }),
     )
     .refine(
       (items) => new Set(items.map((item) => item.id)).size === items.length,
@@ -230,18 +229,51 @@ export function createRules(content: Registries) {
     };
   }
   function addItem(backpack: BackpackItem[], item: BackpackItem, capacity = INVENTORY_SLOTS) {
-    const stack =
-      CONSUMABLES[item.itemId as keyof typeof CONSUMABLES] &&
-      backpack.find((entry) => entry.itemId === item.itemId);
-    if (stack) {
-      if (!Number.isSafeInteger(stack.quantity + item.quantity))
-        throw new Error('Stack is too large.');
-      stack.quantity += item.quantity;
-    } else {
-      if (backpack.length >= capacity) throw new Error('The destination inventory is full.');
-      backpack.push({ ...item });
+    const definition = itemDefinition(item.itemId);
+    if (
+      !Number.isSafeInteger(item.quantity) ||
+      item.quantity <= 0 ||
+      (definition.kind === 'gear' && item.quantity !== 1)
+    )
+      throw new Error('Invalid item quantity.');
+    if (definition.kind === 'consumable') {
+      const stack = backpack.find((entry) => entry.itemId === item.itemId);
+      if (stack) {
+        if (!Number.isSafeInteger(stack.quantity + item.quantity))
+          throw new Error('Stack is too large.');
+        stack.quantity += item.quantity;
+        return;
+      }
+    }
+    const limit =
+      definition.kind === 'resource'
+        ? 200
+        : definition.kind === 'consumable'
+          ? Number.MAX_SAFE_INTEGER
+          : 1;
+    const stacks =
+      definition.kind === 'gear'
+        ? []
+        : backpack.filter((entry) => entry.itemId === item.itemId && entry.quantity < limit);
+    let remaining = item.quantity;
+    const planned = stacks.map((stack) => {
+      const quantity = Math.min(remaining, limit - stack.quantity);
+      remaining -= quantity;
+      return { stack, quantity };
+    });
+    const slots = Math.ceil(remaining / limit);
+    if (slots && backpack.length + slots > capacity)
+      throw new Error('The destination inventory is full.');
+    for (const { stack, quantity } of planned) stack.quantity += quantity;
+    let first = true;
+    while (remaining > 0) {
+      const quantity = Math.min(remaining, limit);
+      backpack.push({ ...item, id: first ? item.id : crypto.randomUUID(), quantity });
+      first = false;
+      remaining -= quantity;
     }
   }
+
   /** Move the whole entry only after the destination has accepted it. */
   function transferStoredItem(player: Player, tab: number, id: string, depositing: boolean) {
     const storage = player.storages?.[tab];

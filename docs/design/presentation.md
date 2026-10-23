@@ -77,7 +77,12 @@ Village trees, rocks and plants use immutable seeded placements from core's `wor
 They share path/building/training clearance; new seeds do not move existing trees.
 `villageSprites` packages the existing environment rock cell and five generated plant
 cells into the usual scenery/mask pipeline. The background waits for plant art before
-caching shadows and contact shading. Plants share the tree sway path; rocks stay fixed.
+caching shadows and contact shading for permanent scenery. Gatherable resource
+shadows and light occlusion use their current sprite so stumps and cut plants
+replace full silhouettes immediately. Plants share the tree sway path; rocks stay fixed.
+Core resource identities match the existing village placements. Hover masks include
+living resources; depleted sprites remain visible during the server-owned cooldown.
+Tree health bars use replicated remaining gathers and disappear on depletion or restoration.
 
 The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders
 the optional base ability and four reserved slots, with an SVG cooldown sector

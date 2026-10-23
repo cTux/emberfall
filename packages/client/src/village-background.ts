@@ -106,7 +106,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   }
   drawVillagePaths(ctx, floor);
   const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
-  for (const object of scenery) {
+  for (const object of scenery.filter((object) => !/^(tree|plant|rock):/.test(object.id))) {
     // Bounds include the full directional sun projection and contact shading.
     wrapped(object.x, object.y, object.width + object.height, () => {
       if (graphics.shadows && !object.frames) castShadow(ctx, object);
@@ -127,7 +127,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   const torchTextures = TORCH_LIGHTS.map((light) =>
     lightTexture(
       light,
-      scenery.filter((object) => !object.frames),
+      scenery.filter((object) => !object.frames && !/^(tree|plant|rock):/.test(object.id)),
       graphics.shadows,
     ),
   );

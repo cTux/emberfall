@@ -35,6 +35,11 @@ export const progressSchema = z
   .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('gather'),
+    nodeId: z.string().min(1).max(64),
+    epoch: z.string().min(1).max(64),
+  }),
   z.object({ type: z.literal('resetTalents'), classId: classSchema }),
   z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
   z.object({
@@ -184,7 +189,12 @@ export interface WorldSummary {
   players: number;
   capacity: number;
 }
+export interface ResourceState {
+  remaining: number;
+  restoresAt: number;
+}
 export interface WorldState {
+  resources?: Record<string, ResourceState>;
   npcs?: VillageNpc[];
   merchant?: Merchant;
   chat?: ChatMessage[];

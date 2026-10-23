@@ -98,9 +98,15 @@ export function validateContent(
       item.id,
       'invalid name or price',
     );
-    check(item.kind === 'gear' || item.kind === 'consumable', 'items', item.id, 'unsupported kind');
+    check(
+      item.kind === 'gear' || item.kind === 'consumable' || item.kind === 'resource',
+      'items',
+      item.id,
+      'unsupported kind',
+    );
     if (item.kind === 'gear') reference('items', item.id, 'gearTypes', item.gearType);
-    else check(positive(item.healing), 'items', item.id, 'invalid healing');
+    else if (item.kind === 'consumable')
+      check(positive(item.healing), 'items', item.id, 'invalid healing');
     if (item.kind === 'gear' && item.damageType !== undefined)
       check(
         ['physical', 'fire', 'poison', 'nature'].includes(item.damageType),
