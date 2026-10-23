@@ -74,8 +74,11 @@ preferring unclaimed stops, with independently randomized 5–9 second pauses.
 The server advances walking on the fixed tick and starts bounded asynchronous
 requests through one shared `OllamaNpcDialogue` provider. Position deltas use the existing
 Colyseus entity projection and detached snapshot interpolation. `nearbyInteraction`
-accepts live NPC positions so trading follows Marta, and her proximity pause keeps
-her available during a trade. NPCs and memory are not persisted. World disposal
+accepts live NPC positions so trading follows Marta. The client sends `npcInteraction`
+when her trading window opens or closes. The server validates the session-owned
+player and live interaction range, tracks active traders per player, and releases
+invalid interactions each tick. Proximity alone does not pause walking.
+NPCs and memory are not persisted. World disposal
 removes components and aborts pending dialogue.
 
 Chat entries optionally carry a dimension, NPC identity and announcement tone.

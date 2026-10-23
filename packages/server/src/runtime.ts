@@ -326,6 +326,12 @@ export async function createRuntime(
         return;
       }
       const message = parsed.data;
+      if (message.type === 'npcInteraction') {
+        const world = worlds.get(session.worldId ?? '');
+        const player = world?.players.get(session.id);
+        if (world && player) villageLife(world, now).interact(player, message.npcId);
+        return;
+      }
       if (message.type === 'ping') {
         send(ws, { type: 'pong', id: message.id });
         return;

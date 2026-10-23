@@ -13,19 +13,22 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
-  player.x = INNKEEPER.x - 70;
-  player.y = INNKEEPER.y - 18;
+  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  player.x = marta.x - 70;
+  player.y = marta.y - 18;
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'test-results/innkeeper-name-inactive.png' });
-  player.x = INNKEEPER.x - 45;
+  player.x = marta.x - 45;
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'test-results/innkeeper-name-active.png' });
-  player.x = INNKEEPER.x;
-  player.y = INNKEEPER.y + 35;
+  Object.assign(marta, { x: 1000, y: 1000 });
   const dialog = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
+    if (await page.getByRole('dialog').count()) await page.keyboard.press('Escape');
+    player.x = marta.x;
+    player.y = marta.y - 15;
     await page.keyboard.press('e');
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(dialog.getByRole('region', { name: "Innkeeper's backpack" })).toBeVisible();
   await expect(dialog.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();
@@ -40,6 +43,8 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
       clip: { x: 685, y: 365, width: 70, height: 70 },
     });
   }
+  // Keep the roaming trader from taking priority over the building interactions below.
+  Object.assign(marta, { x: 1000, y: 1000 });
   player.x = inn.doorX;
   player.y = inn.y + 9;
   // Allow the confirmed relocation to reach presentation before testing E.
@@ -50,8 +55,9 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   player.x = hall.doorX;
   player.y = hall.y + 9;
   await expect(async () => {
+    if (await page.getByRole('dialog').count()) await page.keyboard.press('Escape');
     await page.keyboard.press('e');
-    await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
   expect(errors).toEqual([]);
 });

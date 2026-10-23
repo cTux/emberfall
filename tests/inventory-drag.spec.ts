@@ -148,12 +148,14 @@ test('native vendor drags buy and sell once, including buyback, without bypassin
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
-  player.x = INNKEEPER.x;
-  player.y = INNKEEPER.y + 35;
+  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  Object.assign(marta, { x: 1000, y: 1000 });
   player.backpack = [{ id: 'drag-helmet', itemId: 'loot-helmet', quantity: 1 }];
   player.coins = 0;
   const dialog = page.getByRole('dialog', { name: INNKEEPER.name, exact: true });
   await expect(async () => {
+    player.x = marta.x;
+    player.y = marta.y - 15;
     await page.keyboard.press('e');
     await expect(dialog).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 10000 });
@@ -166,8 +168,12 @@ test('native vendor drags buy and sell once, including buyback, without bypassin
   await expect(page.getByRole('alert')).toContainText('Not enough gold');
   expect(player.coins).toBe(0);
   expect(world.merchant!.backpack[0].quantity).toBe(5);
-  await page.keyboard.press('e');
-  await expect(dialog).toBeVisible();
+  await expect(async () => {
+    player.x = marta.x;
+    player.y = marta.y - 15;
+    await page.keyboard.press('e');
+    await expect(dialog).toBeVisible({ timeout: 400 });
+  }).toPass({ intervals: [200], timeout: 10000 });
   await backpack
     .getByRole('button', { name: 'Sell Helmet', exact: true })
     .dragTo(merchant, { targetPosition: { x: 12, y: 12 } });

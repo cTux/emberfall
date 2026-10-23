@@ -316,6 +316,11 @@ export function Game({
     );
   };
   const unavailable = status !== 'Connected' || pending;
+  const tradingNpcId = menu === 'building' && building === INNKEEPER.name ? INNKEEPER.id : null;
+  useEffect(() => {
+    if (status === 'Connected' && socket.current?.readyState === GameConnection.OPEN)
+      socket.current.send({ type: 'npcInteraction', npcId: tradingNpcId });
+  }, [tradingNpcId, status]);
   const me = world?.players.find((p) => p.id === playerId);
   const scene = world?.scene;
   const castTalent = (slot: number) => {

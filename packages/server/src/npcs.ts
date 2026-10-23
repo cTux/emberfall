@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { forestDistance, wrap, wrappedDelta } from '@emberfall/core';
+import { forestDistance, nearbyInteraction, wrap, wrappedDelta } from '@emberfall/core';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { ChatMessage, Player, VillageNpc } from '@emberfall/common';
 import { simulationFor } from './ecs/simulation.ts';
@@ -12,7 +12,6 @@ export interface NpcWorld {
 }
 const PLAYER_RANGE = 120;
 const NPC_RANGE = 160;
-const NPC_PAUSE_RANGE = 78;
 const SPEED = 38;
 const villagePlayers = (world: NpcWorld) =>
   [...world.players.values()].filter((p) => !p.scene && p.hitpoints > 0 && !p.reconnecting);
@@ -36,6 +35,7 @@ export class VillageLife {
   private replyAt = new Map<string, number>();
   private playerAt = new Map<string, number>();
   private walks = new Map<string, { stop: number; pauseUntil: number }>();
+  private interactions = new Map<string, string>();
   private memories = new Map<string, string[]>();
   private reply?: Conversation;
   private continuation?: { at: number; conversation: Conversation };
@@ -80,6 +80,20 @@ export class VillageLife {
     this.abort.abort();
     simulationFor(this.world.players)?.setVillagers([]);
     this.reply = this.continuation = undefined;
+    this.interactions.clear();
+  }
+  interact(player: Player, npcId: string | null) {
+    this.interactions.delete(player.id);
+    if (
+      this.stopped ||
+      !npcId ||
+      !villagePlayers(this.world).includes(player) ||
+      !this.world.npcs?.some((npc) => npc.id === npcId) ||
+      nearbyInteraction(player, false, undefined, this.world.npcs)?.id !== npcId
+    )
+      return;
+    this.interactions.set(player.id, npcId);
+    this.world.npcs.find((npc) => npc.id === npcId)!.moving = false;
   }
   hear(player: Player, text: string, now: number) {
     if (
@@ -109,6 +123,12 @@ export class VillageLife {
     if (this.stopped) return;
     const players = villagePlayers(this.world);
     const npcs = this.world.npcs ?? [];
+    for (const [playerId, npcId] of this.interactions) {
+      const player = players.find((p) => p.id === playerId);
+      if (!player || nearbyInteraction(player, false, undefined, npcs)?.id !== npcId)
+        this.interactions.delete(playerId);
+    }
+    const interacting = new Set(this.interactions.values());
     const liveIds = new Set(this.world.players.keys());
     for (const map of [this.playerAt, this.replyAt])
       for (const id of map.keys()) if (!liveIds.has(id)) map.delete(id);
@@ -128,7 +148,7 @@ export class VillageLife {
         occupied ||
         continuing ||
         now < walk.pauseUntil ||
-        players.some((p) => forestDistance(npc, p) < NPC_PAUSE_RANGE)
+        interacting.has(npc.id)
       ) {
         npc.moving = false;
         continue;
