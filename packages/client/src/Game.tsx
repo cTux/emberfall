@@ -844,8 +844,10 @@ export function Game({
                         <GoldBalance name='Reset cost' coins={TALENT_RESET_COST} />?
                       </Box>
                     </Typography>
-                    <Typography variant='body2'>Resets talents for your current class.</Typography>
-                    <GoldBalance name='Your balance' coins={me.coins ?? 0} />
+                    <Stack direction='row' spacing={1} alignItems='center'>
+                      <Typography variant='body2'>Currently you have:</Typography>
+                      <GoldBalance name='Your balance' coins={me.coins ?? 0} />
+                    </Stack>
                     <Stack direction='row' spacing={1}>
                       <Button variant='outlined' onClick={() => setMenu(null)}>
                         Cancel
