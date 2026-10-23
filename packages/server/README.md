@@ -154,3 +154,25 @@ endpoint live in `src/npc-models.ts`. Free offers can expire: recheck the
 route. Never add paid routes as an automatic fallback. If no free route responds,
 the village visibly receives Silenced and retries later; movement and trading work.
 Tests inject a dialogue provider and do not require external model access.
+
+If villagers stay Silenced, inspect the **server terminal**. These requests run on
+the server and do not appear in the browser's Network panel. Each attempted model
+failure logs its model, reason (`http`, `network`, `timeout`, or `invalid_response`),
+HTTP status or known network error code when available, elapsed time, deadline,
+retry delay and whether authentication was configured. Cooling routes and world
+cancellation do not produce repeated failure logs. Prompts, responses, keys and
+raw exceptions are never logged.
+
+From the repository root, check the production provider without starting the game
+or opening a database (loads the same environment files as server startup):
+
+```sh
+node --env-file-if-exists=.env --env-file-if-exists=packages/server/.env packages/server/scripts/check-npc-dialogue.ts
+```
+
+The check exits nonzero if no model supplies a valid line. HTTP 401/403 points to
+authentication or access restrictions, 429 to rate limits, and 5xx to provider
+availability. Network errors point to DNS, TLS, proxy or outbound access; timeouts
+mean the configured 2.5-second per-model deadline expired. An invalid response
+failed JSON, size or spoken-text validation. Fix the reported cause on the machine
+running the server; the village retries automatically after its cooldown.

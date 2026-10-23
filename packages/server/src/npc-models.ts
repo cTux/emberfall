@@ -1,3 +1,5 @@
+import { serverLog } from './log.ts';
+
 /** Only explicitly free routes are eligible. Never fall back to a paid route. */
 export const FREE_NPC_MODELS = [
   'glm-5.3-flash-free',
@@ -64,10 +66,13 @@ export class FreeNpcModels implements NpcDialogue {
         const index = (this.preferred + offset) % FREE_NPC_MODELS.length;
         const model = FREE_NPC_MODELS[index];
         if ((this.cooldowns.get(model) ?? 0) > this.clock()) continue;
+        const startedAt = this.clock();
+        const requestSignal = AbortSignal.any([signal, AbortSignal.timeout(this.timeoutMs)]);
+        let receivedResponse = false;
         try {
           const response = await this.request(ENDPOINT, {
             method: 'POST',
-            signal: AbortSignal.any([signal, AbortSignal.timeout(this.timeoutMs)]),
+            signal: requestSignal,
             headers: {
               'Content-Type': 'application/json',
               ...(this.key ? { Authorization: `Bearer ${this.key}` } : {}),
@@ -86,6 +91,7 @@ export class FreeNpcModels implements NpcDialogue {
               temperature: 0.8,
             }),
           });
+          receivedResponse = true;
           if (!response.ok) {
             const retry = Number(response.headers.get('retry-after'));
             const date = Date.parse(response.headers.get('retry-after') ?? '');
@@ -96,7 +102,8 @@ export class FreeNpcModels implements NpcDialogue {
                   ? date - this.clock()
                   : 60_000;
             this.cooldowns.set(model, this.clock() + Math.min(900_000, Math.max(30_000, delay)));
-            await response.body?.cancel();
+            this.logFailure(model, 'http', startedAt, response.status);
+            await response.body?.cancel().catch(() => {});
             continue;
           }
           const data = await boundedJson(response);
@@ -107,15 +114,62 @@ export class FreeNpcModels implements NpcDialogue {
             throw new Error('Invalid text');
           this.preferred = index;
           return { status: 'ok', text };
-        } catch {
+        } catch (error) {
           // A departing world must not mark a shared provider unhealthy.
           if (signal.aborted) return { status: 'unavailable' };
           this.cooldowns.set(model, this.clock() + 60_000);
+          const cause = error instanceof Error ? error.cause : undefined;
+          const code =
+            cause && typeof cause === 'object' && 'code' in cause ? cause.code : undefined;
+          // Never log provider bodies, prompts, headers, or arbitrary exception messages.
+          const networkCode =
+            typeof code === 'string' &&
+            [
+              'ECONNREFUSED',
+              'EACCES',
+              'EPERM',
+              'ENOTFOUND',
+              'EAI_AGAIN',
+              'ETIMEDOUT',
+              'ECONNRESET',
+              'UND_ERR_CONNECT_TIMEOUT',
+              'CERT_HAS_EXPIRED',
+              'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+              'SELF_SIGNED_CERT_IN_CHAIN',
+            ].includes(code)
+              ? code
+              : undefined;
+          this.logFailure(
+            model,
+            requestSignal.aborted ? 'timeout' : receivedResponse ? 'invalid_response' : 'network',
+            startedAt,
+            undefined,
+            networkCode,
+          );
         }
       }
       return { status: 'unavailable' };
     } finally {
       this.active--;
     }
+  }
+
+  private logFailure(
+    model: string,
+    reason: string,
+    startedAt: number,
+    status?: number,
+    networkCode?: string,
+  ) {
+    serverLog.info('NPC dialogue model failed; cooling down', {
+      model,
+      reason,
+      status,
+      networkCode,
+      elapsedMs: this.clock() - startedAt,
+      timeoutMs: this.timeoutMs,
+      retryMs: Math.max(0, (this.cooldowns.get(model) ?? 0) - this.clock()),
+      authenticated: !!this.key,
+    });
   }
 }
