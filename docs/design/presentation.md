@@ -63,6 +63,12 @@ receives view data and has no game-package dependency. See the
 
 ## Rendering pipeline and caches
 
+Village trees, rocks and plants use immutable seeded placements from core's `world.ts`.
+They share path/building/training clearance; new seeds do not move existing trees.
+`villageSprites` packages the existing environment rock cell and five generated plant
+cells into the usual scenery/mask pipeline. The background waits for plant art before
+caching shadows and contact shading. Plants share the tree sway path; rocks stay fixed.
+
 The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders
 the optional base ability and four reserved slots, with an SVG cooldown sector
 and numeric countdown. [WeaponActionBar](../../packages/client/src/WeaponActionBar.tsx)

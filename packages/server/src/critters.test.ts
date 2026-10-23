@@ -121,3 +121,13 @@ test('a chased chicken travels continuously across both world edges', () => {
     }
   }
 });
+
+test('reactive motion preserves server-time cat positions for pet interactions', () => {
+  const motion = createCritterMotion();
+  const cats = (critters: ReturnType<typeof crittersAt>) =>
+    critters.filter((c) => c.kind === 'cat');
+  assert.deepEqual(
+    cats(motion(100, village, [], 1700000000000)),
+    cats(crittersAt('village', 1700000000000, village)),
+  );
+});

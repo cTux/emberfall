@@ -19,6 +19,7 @@ import { actorArt, environmentArt, wardrobeArt, drawArt } from './art';
 import { drawChimneySmoke } from './ambient-art';
 import { companionCaster, drawCompanion } from './companion';
 import { critterCaster, drawCritter } from './critters';
+import { CatSpeech } from './cat-speech';
 import { drawNavigation } from './navigation';
 import { useDraggable } from '@emberfall/ui';
 import { PerformanceGraph } from './PerformanceGraph';
@@ -43,7 +44,14 @@ import {
 } from './effects';
 import type { Interaction } from './effects';
 import { wrap, wrappedDelta } from '@emberfall/common';
-import { ARENA, FOREST, LOBBY_PORTAL, nearbyInteraction, inTrainingZone } from '@emberfall/core';
+import {
+  ARENA,
+  FOREST,
+  LOBBY_PORTAL,
+  INTERACTION_RADIUS,
+  nearbyInteraction,
+  inTrainingZone,
+} from '@emberfall/core';
 import { TICK_MS } from '@emberfall/core';
 import type { ClientMessage, WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
@@ -179,6 +187,7 @@ export function Arena({
     let pointerInside = false;
     let targets: InteractionTarget[] = [];
     let hovered: InteractionTarget | null = null;
+    const catSpeech = new CatSpeech();
     const pointerPoint = () =>
       pointerInside && pointer && !blocked()
         ? {
@@ -486,6 +495,7 @@ export function Arena({
         audio.play('hit');
       }
       if (!view || local?.scene === 'forest') {
+        element.dataset.catSpeech = '';
         drawForest(
           ctx,
           view,
@@ -544,8 +554,37 @@ export function Arena({
         portal.x,
         portal.y,
       );
+      const critters = villageCritters(
+        now,
+        { x: cameraX, y: cameraY, width: viewWidth, height: viewHeight },
+        view.players.filter((player) => !player.scene && player.hitpoints > 0),
+        view.serverNow ?? now,
+      );
+      const cats: InteractionTarget[] = [];
+      for (const cat of critters) {
+        if (cat.kind !== 'cat') continue;
+        const caster = critterCaster(cat);
+        if (!caster) continue;
+        cats.push({
+          source: {
+            id: cat.id,
+            name: 'Cat',
+            x: cat.x,
+            y: cat.y,
+            activate: () => catSpeech.pet(cat.id, performance.now()),
+          },
+          x: cat.x - 12,
+          y: cat.y - 24,
+          width: 24,
+          height: 24,
+          mask: caster.mask,
+          reach: cat,
+          radius: INTERACTION_RADIUS,
+        });
+      }
       targets = [
         ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
+        ...cats,
         portalTarget,
       ].sort((a, b) => a.y + a.height - b.y - b.height);
       hovered = pickInteraction(targets, pointerPoint());
@@ -553,7 +592,9 @@ export function Arena({
         ? interactionInRange(hovered, authoritativePlayer)
           ? hovered.source
           : null
-        : nearby;
+        : (nearby ??
+          cats.find((cat) => interactionInRange(cat, authoritativePlayer))?.source ??
+          null);
       element.dataset.interactionTarget = hovered?.source.id ?? '';
       element.dataset.interactionRange = hovered
         ? String(interactionInRange(hovered, authoritativePlayer))
@@ -631,16 +672,6 @@ export function Arena({
             mask,
           });
       }
-      const critters = villageCritters(
-        now,
-        {
-          x: cameraX,
-          y: cameraY,
-          width: viewWidth,
-          height: viewHeight,
-        },
-        players.filter((player) => player.hitpoints > 0),
-      );
       for (const critter of critters) {
         const caster = critterCaster(critter);
         if (caster) dynamic.push(caster);
@@ -770,6 +801,8 @@ export function Arena({
         if (layer.critter) {
           ctx.globalAlpha = obstacleOpacity({ ...layer.critter, width: 24, height: 24 }, local);
           drawCritter(ctx, layer.critter, quality.current.shadows);
+          if (hovered?.source.id === layer.critter.id)
+            drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
           ctx.globalAlpha = 1;
           continue;
         }
@@ -791,7 +824,7 @@ export function Arena({
         if (layer.object) {
           const object = layer.object;
           ctx.globalAlpha = obstacleOpacity(object, local);
-          const vegetation = object.id.startsWith('tree:');
+          const vegetation = object.id.startsWith('tree:') || object.id.startsWith('plant:');
           if (vegetation)
             drawVegetation(
               ctx,
@@ -993,6 +1026,16 @@ export function Arena({
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawNavigation(ctx, view, playerId);
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
+      const catMessages: string[] = [];
+      for (const cat of critters) {
+        if (cat.kind !== 'cat') continue;
+        const message = catSpeech.message(cat.id, now);
+        if (message) {
+          drawChatBubble(ctx, cat.x, cat.y + 20, message);
+          catMessages.push(message);
+        }
+      }
+      element.dataset.catSpeech = catMessages.join(',');
       for (const object of visibleScenery) {
         // NPC positions are feet anchors; this matches the 40-unit actor health/status row.
         if (object.npc?.silenced)

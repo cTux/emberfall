@@ -209,7 +209,9 @@ export function drawDamageFlash(
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.restore();
 }
-export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>>;
+export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>> & {
+  activate?: () => void;
+};
 export function drawCharacterName(
   ctx: CanvasRenderingContext2D,
   x: number,

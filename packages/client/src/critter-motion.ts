@@ -1,7 +1,14 @@
 import { VILLAGE_CRITTERS, type CritterKind } from '@emberfall/core/definitions/entities/critters';
 import { wrap, wrappedDelta } from '@emberfall/common';
 import { ARENA, FOREST, forestTrees } from '@emberfall/core';
-type Critter = { x: number; y: number; kind: CritterKind; left: boolean; frame: number };
+type Critter = {
+  id: string;
+  x: number;
+  y: number;
+  kind: CritterKind;
+  left: boolean;
+  frame: number;
+};
 type Bounds = { x: number; y: number; width: number; height: number };
 type Point = { x: number; y: number };
 
@@ -12,8 +19,8 @@ export function crittersAt(area: 'village' | 'forest', now: number, bounds: Boun
 /** One instance per arena mount; decorative reactions never mutate world state. */
 export function createCritterMotion() {
   const chickens = new Map<number, Point & { now: number; left: boolean; panicking: boolean }>();
-  return (now: number, bounds: Bounds, players: readonly Point[]) =>
-    sampleCritters('village', now, bounds, (critter, index) => {
+  return (now: number, bounds: Bounds, players: readonly Point[], wanderNow = now) =>
+    sampleCritters('village', wanderNow, bounds, (critter, index) => {
       if (critter.kind !== 'chicken') return critter;
       let state = chickens.get(index);
       if (!state) {
@@ -104,6 +111,7 @@ function sampleCritters(
       const offset = phase < 4 ? phase * 10 : phase < 6 ? 40 : phase < 10 ? (10 - phase) * 10 : 0;
       const critter = {
         ...home,
+        id: `${home.kind}:${wrap(home.x, ARENA.width)}:${wrap(home.y, ARENA.height)}`,
         x: home.x + offset - 20,
         left: phase >= 6,
         frame: moving ? 1 + (Math.floor(now / 180) % 3) : phase > 4.5 && phase < 5.5 ? 4 : 0,

@@ -98,6 +98,12 @@ invalid interactions each tick. Proximity alone does not pause walking.
 NPCs and memory are not persisted. World disposal
 removes components and aborts pending dialogue.
 
+Ambient cat interaction remains client presentation. `critter-motion.ts` assigns
+stable wrapped home identities; `cat-speech.ts` holds per-cat two-second responses.
+`Arena.tsx` adds cat sprite masks to the existing interaction targets and draws
+speech using the shared bubble renderer. Local interaction callbacks let E and
+clicks use the same cooldown without adding network messages or server state.
+
 Chat entries optionally carry a dimension, NPC identity and announcement tone.
 Server broadcasts share one prepared projection per dimension; the latest ten
 visible messages are selected from a bounded world history. Existing player and

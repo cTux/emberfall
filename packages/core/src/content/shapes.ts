@@ -202,6 +202,10 @@ export const worldShapes = {
       paths: z.array(z.tuple([point, point, point, point])),
       treeSeed: nonnegative.int(),
       treeAttempts: nonnegative.int(),
+      rockSeed: nonnegative.int().optional(),
+      rockAttempts: nonnegative.int().optional(),
+      plantSeed: nonnegative.int().optional(),
+      plantAttempts: nonnegative.int().optional(),
       spawn: point.extend({ spacing: positive }),
       returnSpawn: point,
     })

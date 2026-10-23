@@ -1,8 +1,8 @@
 import type { VillageNpc } from '@emberfall/common';
-import { WARDROBE, BUILDINGS, TORCHES, TREES } from '@emberfall/core';
+import { WARDROBE, BUILDINGS, TORCHES, TREES, ROCKS, PLANTS } from '@emberfall/core';
 import { makeMask, castShadow } from './lighting';
 import type { Caster, Light } from './lighting';
-import { environmentArt, wardrobeArt, loadArt } from './art';
+import { environmentArt, plantArt, wardrobeArt, loadArt } from './art';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 
 import { chimneyAnchors } from './ambient-art';
@@ -70,7 +70,25 @@ export function villageSprites(
     TREES.forEach((t, i) =>
       add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
     );
+    ROCKS.forEach((rock, i) =>
+      add(`rock:${i}`, rock.x, rock.y, rock.size, rock.size, environmentArt, 256, 256, 128, 128),
+    );
   }
+  if (plantArt.naturalWidth)
+    PLANTS.forEach((plant, i) =>
+      add(
+        `plant:${i}`,
+        plant.x,
+        plant.y,
+        plant.size,
+        plant.size,
+        plantArt,
+        plant.variant * 64,
+        0,
+        64,
+        64,
+      ),
+    );
   if (environmentArt.naturalWidth)
     BUILDINGS.forEach((b, i) => {
       add(
