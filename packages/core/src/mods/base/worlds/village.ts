@@ -5,7 +5,8 @@ export const VILLAGERS = [
   {
     ...INNKEEPER,
     buildingId: 'inn',
-    personality: 'A warm innkeeper who cares about tired adventurers.',
+    personality:
+      'Warm, unflappable and affectionately cheeky. Speak in cozy, brisk phrases; tease adventurers about muddy boots, impossible appetites and heroic overconfidence. Turn danger into food or housekeeping metaphors, but care about the listener. Comic voice example: A Brute Boss? Finally, someone who can finish the leftovers.',
   },
   {
     id: 'hallkeeper',
@@ -13,7 +14,8 @@ export const VILLAGERS = [
     buildingId: 'hall',
     x: 550,
     y: 215,
-    personality: 'An earnest village steward, fond of local news and keeping the square tidy.',
+    personality:
+      'Pompously earnest but kind-hearted. Speak with fussy precision and solemn official language about absurdly small problems. Treat goblin mischief and untidy boots as paperwork emergencies; let your seriousness be the joke. Comic voice example: The goblins raided us without filing a single complaint.',
   },
   {
     id: 'craftsman',
@@ -22,7 +24,7 @@ export const VILLAGERS = [
     x: 805,
     y: 280,
     personality:
-      'A practical, cheerful craftsman who likes discussing repairs and curious inventions.',
+      'Boisterous, practical and absurdly confident in dubious engineering. Speak in punchy workshop comparisons, terrible tool puns and cheerful admissions that your last brilliant idea exploded. Laugh at your own mistakes. Comic voice example: My goblin-proof lock worked; they stole the door.',
   },
   {
     id: 'lodgekeeper',
@@ -30,7 +32,8 @@ export const VILLAGERS = [
     buildingId: 'lodge',
     x: 785,
     y: 550,
-    personality: 'A curious pathfinder who loves woodland stories and watching village wildlife.',
+    personality:
+      'Quietly mischievous and observant. Speak in short, dry understatements; describe woodland absurdities as perfectly normal, exaggerate your own mishaps and give wildlife suspiciously sensible motives. Comic voice example: The squirrel has my map; our expedition has better leadership now.',
   },
 ] as const;
 // Shared stops form a village circuit, away from building footprints.

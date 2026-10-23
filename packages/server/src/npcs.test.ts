@@ -20,6 +20,61 @@ function setup(
   return { world, life };
 }
 
+test('every resident sends their own personality to Ollama for greetings, player replies and NPC answers', async () => {
+  const definitions = VILLAGE_DEFINITION.villagers;
+  assert.equal(new Set(definitions.map((npc) => npc.personality)).size, definitions.length);
+  for (const definition of definitions) {
+    for (const kind of ['greeting', 'reply', 'exchange'] as const) {
+      const contexts: { character: string; personality: string; quotedSpeech?: string }[] = [];
+      const request: typeof fetch = async (_url, options) => {
+        const body = JSON.parse(options!.body as string);
+        const context = JSON.parse(body.messages[1].content);
+        contexts.push(context);
+        const text =
+          kind === 'exchange' && contexts.length === 1
+            ? `@${definition.name.split(' ')[0]}, the goblins stole my boots.`
+            : 'The goblins finally found their sole purpose.';
+        return Response.json({ message: { content: text }, done: true });
+      };
+      const { world, life } = setup(
+        new OllamaNpcDialogue(request, () => 0, {
+          baseUrl: 'http://127.0.0.1:11434',
+          model: DEFAULT_NPC_MODEL,
+        }),
+      );
+      try {
+        const resident = world.npcs!.find((npc) => npc.id === definition.id)!;
+        world.npcs!.forEach((npc, i) => Object.assign(npc, { x: 1000 + i * 500, y: 1000 }));
+        Object.assign(resident, { x: 300, y: 250 });
+        if (kind === 'exchange') {
+          world.players.get('p')!.x = 4000;
+          // The first resident in scheduler order speaks to the resident under test.
+          const initiator = world.npcs!.find((npc) => npc.id !== resident.id)!;
+          Object.assign(initiator, { x: 350, y: 250 });
+          world.npcs = [initiator, resident];
+          life.tick(10_000, 0);
+          await flush();
+          life.tick(12_000, 0);
+        } else if (kind === 'reply') {
+          life.hear(world.players.get('p')!, `@${definition.name.split(' ')[0]} Any advice?`, 1000);
+          life.tick(3000, 0);
+        } else {
+          life.tick(10_000, 0);
+        }
+        await flush();
+        assert.equal(contexts.length, kind === 'exchange' ? 2 : 1);
+        const context = contexts.at(-1)!;
+        assert.equal(context.character, definition.name);
+        assert.equal(context.personality, definition.personality);
+        assert.equal(!!context.quotedSpeech, kind !== 'greeting');
+        assert.equal(world.chat!.at(-1)!.npcId, definition.id);
+      } finally {
+        life.close();
+      }
+    }
+  }
+});
+
 test('four residents walk near players, pause during interaction, and release authoritative ECS entities', () => {
   const { world, life } = setup();
   assert.deepEqual(

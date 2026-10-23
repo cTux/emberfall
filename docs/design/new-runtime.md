@@ -67,7 +67,12 @@ disconnect and shutdown writes retain all three fields. The client uses core's
 PartyCard XP meter. No stat changes or progression prompts are introduced.
 
 The registered village definition owns resident identities, home positions,
-personalities and walking stops. `server/npcs.ts` runs one `VillageLife` scheduler
+personalities and walking stops. Each personality describes a distinct speaking
+style, comic habits and an illustrative line. Every generation receives the
+speaker's registered personality, including greetings, player replies and NPC
+continuations. The shared model prompt asks for that voice throughout, with
+frequent situational fantasy humor and fresh callbacks to recent conversation;
+examples guide tone rather than supplying canned responses. `server/npcs.ts` runs one `VillageLife` scheduler
 per occupied world; canonical NPC components live in its existing Miniplex world.
 Each resident randomly chooses its next stop, excluding its previous destination and
 preferring unclaimed stops, with independently randomized 5–9 second pauses.

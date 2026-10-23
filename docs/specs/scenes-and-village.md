@@ -42,7 +42,13 @@ exchange with another resident within 160 units. Automatic starts wait at least
 across residents, with the first start eligible ten seconds after world creation.
 Replies do not reset these automatic-start intervals. Speech is one short line of
 at most 120 characters, without quotation marks, grounded in Emberfall's fantasy
-setting and implemented game activities, with occasional gentle humor.
+setting and implemented game activities. Each resident has a distinct voice that
+shapes greetings, player replies and NPC banter: Marta uses affectionate teasing
+and food metaphors; Oswin treats tiny problems as solemn bureaucratic business;
+Bram offers overconfident fixes and terrible tool puns; Nell delivers deadpan
+woodland observations and tall tales. Humor is the default tone, with a playful
+twist in most lines, direct answers to questions and varied jokes rather than
+repeating catchphrases. Banter stays friendly and in the fantasy setting.
 References to residents use `@Name`. Replies to player mentions and NPC exchanges
 wait at least two seconds after the triggering message before generation starts,
 subject to model availability. NPC exchanges stop after at most five messages total. An automatic NPC-to-NPC
