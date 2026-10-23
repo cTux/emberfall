@@ -1,4 +1,4 @@
-import { BUILDINGS, INTERACTION_RADIUS, forestDistance } from '@emberfall/core';
+import { BULLSEYE, BUILDINGS, INTERACTION_RADIUS, forestDistance } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { hitOutline } from './effects';
 import type { Interaction } from './effects';
@@ -16,11 +16,13 @@ export interface InteractionTarget {
 }
 
 export function sceneryInteraction(object: Scenery): InteractionTarget | null {
-  const id = object.id.replace(/^(building|npc):/, '');
+  const id = object.id.replace(/^(building|npc|workstation):/, '');
   const building = BUILDINGS.find((b) => b.id === id && b.id !== 'inn');
-  if (!building && object.id !== 'building:wardrobe' && object.id !== 'npc:innkeeper') return null;
+  const bullseye = !!BULLSEYE && object.id === `workstation:${BULLSEYE.id}`;
+  if (!building && !bullseye && object.id !== 'building:wardrobe' && object.id !== 'npc:innkeeper')
+    return null;
   return {
-    source: { id, name: object.name!, x: object.x, y: object.y },
+    source: { id, name: bullseye ? 'Bullseye' : object.name!, x: object.x, y: object.y },
     x: object.x - object.width / 2,
     y: object.y - object.height,
     width: object.width,

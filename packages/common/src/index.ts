@@ -35,6 +35,7 @@ export const progressSchema = z
   .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('resetTalents'), classId: classSchema }),
   z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
   z.object({
     type: z.literal('talentCast'),

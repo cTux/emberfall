@@ -58,7 +58,13 @@ Four ability nodes unlock class-specific abilities in fixed action-bar slots
 1–4, cast by number key or click toward the cursor independently of the base
 attack's auto-target setting. Each class has four distinct abilities using its existing attack family. Server validation
 owns prerequisites, budget, learned abilities, area eligibility and cooldowns.
-No automatic allocation, reset or forced prompt is introduced. Legacy reserved
+The village bullseye offers a voluntary confirmation to reset the current class's
+talents for 50 account coins. Confirming refunds its spent points and removes
+its talent stats and ability unlocks; cancelling changes nothing. The server
+requires a living character near the bullseye, sufficient coins and spent points,
+and saves the charge and reset together before publishing either. Other classes,
+level, XP, reserved unknown entries and ability cooldowns are preserved.
+No automatic allocation or forced prompt is introduced. Legacy reserved
 unknown talent entries remain saved but grant no effects and consume no points.
 
 ## Acceptance for any future implementation

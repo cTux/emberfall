@@ -1,4 +1,11 @@
-import { learnTalent, castTalentAbility } from '@emberfall/core';
+import {
+  learnTalent,
+  resetTalents,
+  BULLSEYE,
+  forestDistance,
+  INTERACTION_RADIUS,
+  castTalentAbility,
+} from '@emberfall/core';
 import { validateDefinitions } from '@emberfall/core/definitions/index';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
@@ -401,6 +408,7 @@ export async function createRuntime(
       }
       if (
         message.type === 'learnTalent' ||
+        message.type === 'resetTalents' ||
         message.type === 'useItem' ||
         message.type === 'unequip' ||
         message.type === 'trade' ||
@@ -433,11 +441,22 @@ export async function createRuntime(
           error('Use the Storehouse in the village.');
           return;
         }
+        if (
+          message.type === 'resetTalents' &&
+          (player.scene ||
+            !BULLSEYE ||
+            player.classId !== message.classId ||
+            forestDistance({ x: player.x, y: player.y + 15 }, BULLSEYE) >= INTERACTION_RADIUS)
+        ) {
+          error('Use the bullseye in the village to reset your current class talents.');
+          return;
+        }
         let saving = false;
         try {
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
           if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
+          else if (message.type === 'resetTalents') resetTalents(next);
           else if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
           else if (message.type === 'storeItem')
             transferStoredItem(next, message.tab, message.id, message.depositing);

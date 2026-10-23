@@ -1,3 +1,4 @@
+import { BULLSEYE, TALENT_RESET_COST, availableTalentPoints } from '@emberfall/core';
 import { clientAsset, websocketUrl } from './urls.ts';
 import { faSitemap } from '@fortawesome/free-solid-svg-icons/faSitemap';
 import { experienceRequired, enemyMaxHealth, difficultyMultiplier } from '@emberfall/core';
@@ -21,6 +22,7 @@ import {
   SceneStatus,
   ClassCard,
   PortalVote,
+  GoldBalance,
 } from '@emberfall/ui';
 import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons/faBookOpen';
@@ -83,6 +85,7 @@ export function Game({
   const steam = account.mode === 'steam';
   const name = steam ? account.nickname! : legacyName;
   const [menu, setMenu] = useState<
+    | 'resetTalents'
     | 'talents'
     | 'codex'
     | 'settings'
@@ -342,6 +345,7 @@ export function Game({
       return;
     }
     if (source.id === 'return') send({ type: 'returnLobby' });
+    else if (source.id === BULLSEYE?.id) setMenu('resetTalents');
     else if (source.id === 'wardrobe') setMenu('wardrobe');
     else if (source.id === 'portal') setMenu('portal');
     else {
@@ -796,21 +800,23 @@ export function Game({
                     : undefined
             }
             title={
-              menu === 'talents'
-                ? 'Talents'
-                : menu === 'codex'
-                  ? 'Codex'
-                  : menu === 'equipment'
-                    ? 'Inventory'
-                    : menu === 'settings'
-                      ? 'Settings'
-                      : menu === 'portal'
-                        ? 'Forest portal'
-                        : menu === 'wardrobe'
-                          ? 'Wardrobe'
-                          : menu === 'exit'
-                            ? 'Leave?'
-                            : building
+              menu === 'resetTalents'
+                ? 'Reset talent points?'
+                : menu === 'talents'
+                  ? 'Talents'
+                  : menu === 'codex'
+                    ? 'Codex'
+                    : menu === 'equipment'
+                      ? 'Inventory'
+                      : menu === 'settings'
+                        ? 'Settings'
+                        : menu === 'portal'
+                          ? 'Forest portal'
+                          : menu === 'wardrobe'
+                            ? 'Wardrobe'
+                            : menu === 'exit'
+                              ? 'Leave?'
+                              : building
             }
             onClose={() => setMenu(null)}
           >
@@ -821,7 +827,47 @@ export function Game({
                     {error}
                   </Alert>
                 )}
-                {menu === 'talents' && me ? (
+                {menu === 'resetTalents' && me ? (
+                  <>
+                    <Typography component='div'>
+                      Do you really want to reset your talent points for{' '}
+                      <Box
+                        component='span'
+                        sx={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          verticalAlign: 'middle',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        <GoldBalance name='Reset cost' coins={TALENT_RESET_COST} />?
+                      </Box>
+                    </Typography>
+                    <Typography variant='body2'>Resets talents for your current class.</Typography>
+                    <GoldBalance name='Your balance' coins={me.coins ?? 0} />
+                    <Stack direction='row' spacing={1}>
+                      <Button variant='outlined' onClick={() => setMenu(null)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant='contained'
+                        disabled={
+                          unavailable ||
+                          (me.coins ?? 0) < TALENT_RESET_COST ||
+                          availableTalentPoints(me) >= Math.min(20, me.level) - 1
+                        }
+                        onClick={() => {
+                          setError('');
+                          send({ type: 'resetTalents', classId: me.classId ?? 'warrior' });
+                          setMenu(null);
+                        }}
+                      >
+                        Reset talents
+                      </Button>
+                    </Stack>
+                  </>
+                ) : menu === 'talents' && me ? (
                   <Talents player={me} send={send} />
                 ) : menu === 'codex' ? (
                   <Codex />

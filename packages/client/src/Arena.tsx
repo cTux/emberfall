@@ -866,7 +866,10 @@ export function Arena({
             );
           if (object.npc?.workstationId)
             drawNpcWork(ctx, object.npc, object.x, object.y, serverTime, quality.current.particles);
-          if (hovered && hovered.source.id === object.id.replace(/^(building|npc):/, ''))
+          if (
+            hovered &&
+            hovered.source.id === object.id.replace(/^(building|npc|workstation):/, '')
+          )
             drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
