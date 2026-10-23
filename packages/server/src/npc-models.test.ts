@@ -1,9 +1,13 @@
-import { test } from 'node:test';
+import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FreeNpcModels, FREE_NPC_MODELS } from './npc-models.ts';
 const signal = () => new AbortController().signal;
 const answer = (content = 'Welcome, traveller!') =>
   Response.json({ choices: [{ message: { content } }] });
+
+beforeEach((t) => {
+  t.mock.method(console, 'info', () => {});
+});
 
 test('free models fail over on limits, honor cooldowns, and never select paid routes', async () => {
   let now = 1000;
@@ -57,7 +61,8 @@ test('malformed, oversized and control-character answers fail over safely', asyn
   }
 });
 
-test('concurrency is bounded and cancellation does not start more model attempts', async () => {
+test('concurrency is bounded and cancellation does not start more model attempts', async (t) => {
+  const log = t.mock.method(console, 'info', () => {});
   let calls = 0;
   const request: typeof fetch = async (_url, options) => {
     calls++;
@@ -79,10 +84,13 @@ test('concurrency is bounded and cancellation does not start more model attempts
   abort.abort();
   await Promise.all([a, b]);
   assert.equal(calls, 2);
+  assert.equal(log.mock.callCount(), 0, 'world cancellation is not a provider failure');
   assert.equal((await pool.generate('{}', signal())).status, 'ok');
 });
 
-test('a timed out endpoint falls back within a bounded request deadline', async () => {
+test('a timed out endpoint falls back within a bounded request deadline', async (t) => {
+  const lines: string[] = [];
+  t.mock.method(console, 'info', (line: string) => lines.push(line));
   let calls = 0;
   const request: typeof fetch = async (_url, options) => {
     if (++calls > 1) return answer();
@@ -101,4 +109,56 @@ test('a timed out endpoint falls back within a bounded request deadline', async 
   const pool = new FreeNpcModels(request, () => 0, undefined, 10);
   assert.equal((await pool.generate('{}', signal())).status, 'ok');
   assert.equal(calls, 2);
+  assert.equal(lines.length, 1);
+  assert.match(lines[0], /"reason":"timeout"/);
+  assert.match(lines[0], /"timeoutMs":10/);
+});
+
+test('failures identify HTTP, network and response errors without exposing private data', async (t) => {
+  const lines: string[] = [];
+  t.mock.method(console, 'info', (line: string) => lines.push(line));
+  let calls = 0;
+  const request: typeof fetch = async () => {
+    calls++;
+    if (calls === 1)
+      return new Response('private provider body', {
+        status: 429,
+        headers: { 'Retry-After': '120' },
+      });
+    if (calls === 2)
+      throw new TypeError('private exception with private-key', {
+        cause: { code: 'ECONNREFUSED', message: 'private transport details' },
+      });
+    return answer('private invalid answer'.repeat(20));
+  };
+  const pool = new FreeNpcModels(request, () => 1000, 'private-key');
+  assert.deepEqual(await pool.generate('private prompt', signal()), { status: 'unavailable' });
+  const details = lines.map((line) => JSON.parse(line.slice(line.indexOf('{'))));
+  assert.deepEqual(
+    details.map((entry) => entry.reason),
+    ['http', 'network', 'invalid_response'],
+  );
+  assert.deepEqual(
+    details.map((entry) => entry.model),
+    [...FREE_NPC_MODELS],
+  );
+  assert.equal(details[0].status, 429);
+  assert.equal(details[0].retryMs, 120_000);
+  assert.equal(details[1].networkCode, 'ECONNREFUSED');
+  assert(details.every((entry) => entry.authenticated === true));
+  assert(!lines.join('\n').includes('private'));
+  await pool.generate('private prompt', signal());
+  assert.equal(lines.length, 3, 'cooling routes do not emit duplicate failures');
+  assert.equal(calls, 3);
+});
+
+test('arbitrary transport codes cannot leak into failure logs', async (t) => {
+  const lines: string[] = [];
+  t.mock.method(console, 'info', (line: string) => lines.push(line));
+  const request: typeof fetch = async () => {
+    throw new TypeError('private exception', { cause: { code: 'private-key' } });
+  };
+  await new FreeNpcModels(request, () => 0, undefined).generate('{}', signal());
+  assert.equal(lines.length, FREE_NPC_MODELS.length);
+  assert(!lines.join('\n').includes('private'));
 });
