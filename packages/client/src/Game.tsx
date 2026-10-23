@@ -14,7 +14,7 @@ import { classSprite, weaponSrc, spellSrc } from './class-art';
 import { classDetails } from './class-details';
 import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
 import { characterStats, INNKEEPER, CLASS_IDS, CLASS_LABELS } from '@emberfall/core';
-import { lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
 import type { Interaction } from './effects';
 import {
@@ -30,7 +30,7 @@ import {
   PortalVote,
   GoldBalance,
 } from '@emberfall/ui';
-import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons/faBookOpen';
 import { faGear } from '@fortawesome/free-solid-svg-icons/faGear';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
@@ -38,7 +38,7 @@ import { faDoorOpen } from '@fortawesome/free-solid-svg-icons/faDoorOpen';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons/faGlobe';
 import { faShieldHalved } from '@fortawesome/free-solid-svg-icons/faShieldHalved';
 import { loadPreferences } from './preferences';
-import { Chat } from './Chat';
+import { useChat } from './ChatProvider';
 import { loadGraphics } from './graphics';
 
 const Arena = lazy(() => import('./Arena').then((module) => ({ default: module.Arena })));
@@ -102,14 +102,16 @@ export function Game({
       ].slice(-10),
     );
   };
-  const localChatAfter = (id?: string) =>
-    catMessages
-      .filter((entry) => entry.worldId === world?.id && entry.afterId === id)
-      .map((entry) => entry.message);
-  const chatMessages = [
-    ...localChatAfter(),
-    ...(world?.chat ?? []).flatMap((message) => [message, ...localChatAfter(message.id)]),
-  ];
+  const chatMessages = useMemo(() => {
+    const localChatAfter = (id?: string) =>
+      catMessages
+        .filter((entry) => entry.worldId === world?.id && entry.afterId === id)
+        .map((entry) => entry.message);
+    return [
+      ...localChatAfter(),
+      ...(world?.chat ?? []).flatMap((message) => [message, ...localChatAfter(message.id)]),
+    ];
+  }, [world, catMessages]);
   const [playerId, setPlayerId] = useState('');
   const [legacyName, setName] = useState(() => {
     try {
@@ -176,7 +178,7 @@ export function Game({
   const [joinPassword, setJoinPassword] = useState('');
   const [selected, setSelected] = useState<WorldSummary | null>(null);
   const [tab, setTab] = useState<'browse' | 'create'>('browse');
-  const [error, setError] = useState('');
+  const { reportError, configureChat } = useChat();
   const [pending, setPending] = useState(false);
   const [retry, setRetry] = useState(0);
   const rememberWorld = (id: string | null) => {
@@ -236,7 +238,7 @@ export function Game({
       }
       if (disposed || ws.readyState !== GameConnection.OPEN) return;
       failedConnections.current = 0;
-      setError('');
+
       resuming = !!previousWorld.current && (steam || !!characterToken.current);
       if (resuming) {
         setPending(true);
@@ -266,7 +268,7 @@ export function Game({
         try {
           if (!steam) localStorage.setItem('emberfall-new.character', message.characterToken);
         } catch {
-          setError(
+          reportError(
             'Your browser cannot remember this character key. Enable site storage to restore progress next session.',
           );
         }
@@ -308,7 +310,7 @@ export function Game({
           setMenu(null);
           setBrowserOpen(true);
         }
-        setError(message.message);
+        reportError(message.message);
         setPending(false);
       }
     };
@@ -326,13 +328,13 @@ export function Game({
       setJoinPassword('');
       setWorlds([]);
       setPending(false);
-      setError('Connection lost. Reconnecting automatically…');
+      reportError('Connection lost. Reconnecting automatically…');
       reconnectTimer = setTimeout(
         () => setRetry((value) => value + 1),
         failedConnections.current++ === 0 ? 0 : 1000,
       );
     };
-    ws.onerror = () => setError('Cannot reach the world server. Retrying automatically…');
+    ws.onerror = () => reportError('Cannot reach the world server. Retrying automatically…');
     return () => {
       disposed = true;
       versionRequest.abort();
@@ -341,14 +343,17 @@ export function Game({
       ws.onopen = ws.onmessage = ws.onerror = ws.onclose = null;
       ws.close();
     };
-  }, [retry, steam, refresh]);
-  const send = (message: ClientMessage) => {
-    if (status === 'Connected' && socket.current?.readyState === GameConnection.OPEN)
-      socket.current.send(message);
-  };
+  }, [retry, steam, refresh, reportError]);
+  const send = useCallback(
+    (message: ClientMessage) => {
+      if (status === 'Connected' && socket.current?.readyState === GameConnection.OPEN)
+        socket.current.send(message);
+    },
+    [status],
+  );
   const act = (message: ClientMessage) => {
     if (status !== 'Connected') return;
-    setError('');
+
     setPending(true);
     send(
       message.type === 'create' || message.type === 'join'
@@ -364,6 +369,19 @@ export function Game({
   }, [tradingNpcId, status]);
   const me = world?.players.find((p) => p.id === playerId);
   const scene = world?.scene;
+  useEffect(() => {
+    configureChat({
+      worldId: world?.id,
+      scene: me?.scene ?? 'village',
+      messages: chatMessages,
+      isVisible: (message) =>
+        message.excludedPlayerId !== playerId &&
+        (!message.dimension || message.dimension === (me?.scene ?? 'village')),
+      send,
+      disabled: !world || status !== 'Connected',
+    });
+  }, [world, chatMessages, me?.scene, playerId, status, send, configureChat]);
+  useEffect(() => () => configureChat(null), [configureChat]);
   const castTalent = (slot: number) => {
     const aim = cursorAim.current?.();
     if (!me || unavailable || !aim) return;
@@ -592,20 +610,6 @@ export function Game({
             }
           />
         </Box>
-        {world && (
-          <Chat
-            key={world.id}
-            messages={chatMessages
-              .filter(
-                (message) =>
-                  message.excludedPlayerId !== playerId &&
-                  (!message.dimension || message.dimension === (me?.scene ?? 'village')),
-              )
-              .slice(-10)}
-            send={send}
-            disabled={status !== 'Connected'}
-          />
-        )}
         {world ? (
           <Stack
             component='aside'
@@ -676,7 +680,6 @@ export function Game({
                   showHeading={false}
                   onChange={() => {
                     setTab('browse');
-                    setError('');
                   }}
                   chapters={[
                     {
@@ -693,7 +696,6 @@ export function Game({
                               if (w.locked) {
                                 setSelected(worlds.find((world) => world.id === w.id)!);
                                 setJoinPassword('');
-                                setError('');
                               } else
                                 act({
                                   type: 'join',
@@ -809,13 +811,6 @@ export function Game({
               You have fallen · Return options
             </Button>
           ))}
-        {error && !menu && (
-          <Box className='notice'>
-            <Alert severity='error' onClose={() => setError('')}>
-              {error}
-            </Alert>
-          </Box>
-        )}
       </section>
       {menu && (
         <Box
@@ -869,11 +864,6 @@ export function Game({
           >
             <DeferredContent key={menu}>
               <Stack spacing={2}>
-                {error && menu !== 'settings' && (
-                  <Alert severity='error' onClose={() => setError('')}>
-                    {error}
-                  </Alert>
-                )}
                 {menu === 'resetTalents' && me ? (
                   <>
                     <Typography component='div'>
@@ -907,7 +897,6 @@ export function Game({
                           availableTalentPoints(me) >= Math.min(20, me.level) - 1
                         }
                         onClick={() => {
-                          setError('');
                           send({ type: 'resetTalents', classId: me.classId ?? 'warrior' });
                           setMenu(null);
                         }}

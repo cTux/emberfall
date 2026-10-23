@@ -159,7 +159,8 @@ test("Steam onboarding, repeat login, shared rename dialog and another player's 
       { times: 1 },
     );
     await page.getByRole('button', { name: 'Save nickname', exact: true }).click();
-    await expect(page.getByText('Save unavailable. Retry.')).toBeVisible();
+    await expect(page.getByRole('log')).toContainText('System: Save unavailable. Retry.');
+    await expect(page.getByRole('alert')).toHaveCount(0);
     expect(game.runtime.characters.steamAccount(heroId)?.nickname).toBe('Ember Hero');
     await page.getByRole('button', { name: 'Save nickname', exact: true }).click();
     await expect(friend.locator('.party')).toContainText('Renamed Hero');

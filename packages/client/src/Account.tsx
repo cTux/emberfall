@@ -1,3 +1,4 @@
+import { useChat } from './ChatProvider';
 import { apiUrl } from './urls.ts';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Alert, Button, Stack, TextField, Typography } from '@mui/material';
@@ -15,7 +16,7 @@ function NicknameDialog({
 }) {
   const [value, setValue] = useState(account.nickname ?? account.steamName);
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState('');
+  const { reportError } = useChat();
   const valid = nicknameSchema.safeParse(value).success;
   return (
     <GameWindow
@@ -27,13 +28,12 @@ function NicknameDialog({
       <Stack
         component='form'
         spacing={2}
-        // The handler catches request failures and displays them in the dialog.
+        // The handler catches request failures and reports them in chat.
         // oxlint-disable-next-line typescript/no-misused-promises
         onSubmit={async (event) => {
           event.preventDefault();
           if (!valid || pending) return;
           setPending(true);
-          setError('');
           try {
             const response = await fetch(apiUrl('/api/account/nickname'), {
               credentials: 'include',
@@ -46,7 +46,7 @@ function NicknameDialog({
             if (!response.ok) throw new Error(result.error ?? 'Could not save nickname.');
             onSaved(result);
           } catch (cause) {
-            setError(
+            reportError(
               cause instanceof Error ? cause.message : 'Could not save nickname. Try again.',
             );
           } finally {
@@ -68,7 +68,6 @@ function NicknameDialog({
         {!account.steamName && account.nickname === null && (
           <Alert severity='info'>Steam's nickname is unavailable. Enter your nickname here.</Alert>
         )}
-        {error && <Alert severity='error'>{error}</Alert>}
         <Stack direction='row' spacing={1}>
           <Button type='submit' variant='contained' disabled={!valid || pending}>
             {pending ? 'Saving…' : 'Save nickname'}
@@ -94,12 +93,10 @@ export function AccountGate({
 }) {
   const [account, setAccount] = useState<AccountView>();
   const [editing, setEditing] = useState(false);
-  const [error, setError] = useState(
-    new URLSearchParams(location.search).has('login')
-      ? 'Steam login was cancelled or could not be verified. Please try again.'
-      : '',
-  );
+  const { reportError } = useChat();
+  const [failed, setFailed] = useState(() => new URLSearchParams(location.search).has('login'));
   const refresh = useCallback(async () => {
+    setFailed(false);
     try {
       const response = await fetch(apiUrl('/api/account'), {
         credentials: 'include',
@@ -109,9 +106,10 @@ export function AccountGate({
       if (!response.ok) throw new Error('Account service unavailable. Please retry.');
       setAccount(await response.json());
     } catch {
-      setError('Account service unavailable. Please retry.');
+      reportError('Account service unavailable. Please retry.');
+      setFailed(true);
     }
-  }, []);
+  }, [reportError]);
   useEffect(() => {
     const request = fetch(apiUrl('/api/account'), {
       credentials: 'include',
@@ -123,10 +121,15 @@ export function AccountGate({
         if (!response.ok) throw new Error('Account service unavailable');
         setAccount(await response.json());
       })
-      .catch(() => setError('Account service unavailable. Please retry.'));
-    if (new URLSearchParams(location.search).has('login'))
+      .catch(() => {
+        reportError('Account service unavailable. Please retry.');
+        setFailed(true);
+      });
+    if (new URLSearchParams(location.search).has('login')) {
+      reportError('Steam login was cancelled or could not be verified. Please try again.');
       history.replaceState(null, '', location.pathname);
-  }, []);
+    }
+  }, [reportError]);
   const logout = async () => {
     try {
       const response = await fetch(apiUrl('/auth/logout'), {
@@ -143,7 +146,7 @@ export function AccountGate({
         /* Optional recovery hint. */
       }
     } catch {
-      setError('Could not sign out. Please retry.');
+      reportError('Could not sign out. Please retry.');
     }
   };
   if (!account || (account.mode === 'steam' && !account.authenticated))
@@ -152,7 +155,6 @@ export function AccountGate({
         <GameWindow title='Emberfall' modal={false} onClose={() => {}}>
           <Stack spacing={2}>
             <Typography>Sign in through Steam to play Emberfall.</Typography>
-            {error && <Alert severity='error'>{error}</Alert>}
             {account ? (
               <Button variant='contained' href={apiUrl('/auth/steam')}>
                 Sign in through Steam
@@ -160,10 +162,9 @@ export function AccountGate({
             ) : (
               <Typography>Loading account…</Typography>
             )}
-            {error && (
+            {failed && (
               <Button
                 onClick={() => {
-                  setError('');
                   void refresh();
                 }}
               >
@@ -178,11 +179,6 @@ export function AccountGate({
     <>
       {(account.mode === 'legacy' || account.nickname !== null) &&
         children({ account, rename: () => setEditing(true), logout, refresh })}
-      {error && (
-        <Alert severity='error' onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
       {account.mode === 'steam' && (account.nickname === null || editing) && (
         <NicknameDialog
           account={account}
@@ -193,7 +189,6 @@ export function AccountGate({
           onSaved={(updated) => {
             setAccount(updated);
             setEditing(false);
-            setError('');
           }}
         />
       )}

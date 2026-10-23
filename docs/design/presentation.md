@@ -33,6 +33,8 @@ badges have no interaction-dependent styling. Browser coverage is in
 
 [main.tsx](../../packages/client/src/main.tsx) owns the connection, browser identity, recovery and screen composition. [Arena.tsx](../../packages/client/src/Arena.tsx) owns input capture and animation-frame drawing. Settings, Codex, chat and performance sampling are client concerns; server actions stay in the client host.
 
+`ChatProvider` in the client entry point keeps one chat outside account, game and lazy-loading boundaries. Account handlers, the game connection and content boundaries report private system errors there; Game supplies the filtered world conversation and send action. Local errors and newly received conversation entries share arrival order and the ten-message display limit. Joining another world replaces its conversation while retaining private errors.
+
 `packages/ui` exports controlled components and the shared theme. It has no game-package imports, network requests, persistence, gameplay rules or authorization. [Its README](../../packages/ui/README.md) is the canonical component API/build guide and is imported directly into Storybook by `Guide.mdx`; preserve that integration. Storybook screens are local-state examples, not another application state machine.
 
 Use the existing theme → MUI defaults → colocated styled rules → small local `sx` hierarchy. Shared components expose typed data/callbacks, accessible labels and keyboard behavior. GameWindow supplies modal focus trapping/restoration and draggable titles; the client supplies persisted positions through context.

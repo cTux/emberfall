@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GameUiProvider, PanelPositionContext } from '@emberfall/ui';
+import { ChatProvider } from './ChatProvider';
 import { AccountGate } from './Account';
 import { DeferredContent } from './DeferredContent';
 import { panelPositions } from './panel-positions';
@@ -20,15 +21,17 @@ window.addEventListener('contextmenu', (event) => event.preventDefault(), { capt
 createRoot(document.getElementById('root')!).render(
   <GameUiProvider fontBaseUrl={clientAsset('fonts/')}>
     <PanelPositionContext value={panelPositions}>
-      <DeferredContent>
-        {new URLSearchParams(location.search).has('class-movement') ? (
-          <ClassMovementGallery />
-        ) : new URLSearchParams(location.search).has('art-gallery') ? (
-          <AssetGallery />
-        ) : (
-          <AccountGate>{(props) => <Game {...props} />}</AccountGate>
-        )}
-      </DeferredContent>
+      <ChatProvider>
+        <DeferredContent>
+          {new URLSearchParams(location.search).has('class-movement') ? (
+            <ClassMovementGallery />
+          ) : new URLSearchParams(location.search).has('art-gallery') ? (
+            <AssetGallery />
+          ) : (
+            <AccountGate>{(props) => <Game {...props} />}</AccountGate>
+          )}
+        </DeferredContent>
+      </ChatProvider>
     </PanelPositionContext>
   </GameUiProvider>,
 );
