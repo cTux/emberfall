@@ -21,10 +21,12 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   player.x = marta.x - 45;
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'test-results/innkeeper-name-active.png' });
+  Object.assign(marta, { x: 1000, y: 1000 });
   const dialog = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
+    if (await page.getByRole('dialog').count()) await page.keyboard.press('Escape');
     player.x = marta.x;
-    player.y = marta.y + 35;
+    player.y = marta.y - 15;
     await page.keyboard.press('e');
     await expect(dialog).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
@@ -53,6 +55,7 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   player.x = hall.doorX;
   player.y = hall.y + 9;
   await expect(async () => {
+    if (await page.getByRole('dialog').count()) await page.keyboard.press('Escape');
     await page.keyboard.press('e');
     await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });

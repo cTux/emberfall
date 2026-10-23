@@ -64,6 +64,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.keyboard.press('Escape');
   const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  Object.assign(marta, { x: 1000, y: 1000 });
   const trader = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
     player.x = marta.x;
