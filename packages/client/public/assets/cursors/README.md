@@ -21,7 +21,8 @@ CSS cursor keywords as fallbacks. The 48 px set is the default.
 Hotspots are measured in each final PNG, rather than scaled from the 48 px set.
 The icons were fitted independently, so scaling also scales the wrong transparent
 padding. Pointing states anchor the fingertip, sword states the blade tip, and
-both drag states the palm center. Reticles, disabled rings and text use their center.
+both drag states share the default cursor anchor so changing hand poses preserves
+the image position. Reticles, disabled rings and text use their center.
 
 | File           | 32 px hotspot | 48 px hotspot | 64 px hotspot | Purpose                           |
 | -------------- | ------------- | ------------- | ------------- | --------------------------------- |
@@ -31,8 +32,8 @@ both drag states the palm center. Reticles, disabled rings and text use their ce
 | `aim.png`      | `16 16`       | `24 24`       | `32 32`       | Open-center targeting reticle     |
 | `pressed.png`  | `4 4`         | `5 5`         | `6 5`         | Sword with orange impact accents  |
 | `disabled.png` | `16 16`       | `24 24`       | `32 32`       | Red/bronze prohibition ring       |
-| `grab.png`     | `16 17`       | `24 26`       | `33 35`       | Open armored palm                 |
-| `grabbing.png` | `13 14`       | `20 21`       | `27 28`       | Closed armored fist               |
+| `grab.png`     | `5 3`         | `7 3`         | `10 3`        | Open armored palm                 |
+| `grabbing.png` | `5 3`         | `7 3`         | `10 3`        | Closed armored fist               |
 | `text.png`     | `16 16`       | `24 24`       | `32 32`       | Ivory insertion beam, bronze caps |
 
 Each size lives in its own `32/`, `48/` or `64/` directory. Settings → Gameplay can disable custom
