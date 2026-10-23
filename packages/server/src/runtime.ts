@@ -34,7 +34,7 @@ import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from 
 import type { Scene } from './scenes.ts';
 import { addChat } from './chat.ts';
 import { VillageLife } from './npcs.ts';
-import { FreeNpcModels, type NpcDialogue } from './npc-models.ts';
+import { OllamaNpcDialogue, type NpcDialogue } from './npc-models.ts';
 import type { VillageNpc } from '@emberfall/common';
 import { serverLog } from './log.ts';
 
@@ -84,7 +84,7 @@ interface Session {
 
 export async function createRuntime(
   savePath = ':memory:',
-  dialogue: NpcDialogue = new FreeNpcModels(),
+  dialogue: NpcDialogue = new OllamaNpcDialogue(),
 ) {
   validateDefinitions();
   const characters = new CharacterStore(savePath);

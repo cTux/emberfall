@@ -32,16 +32,19 @@ filters during scene transitions. A bounded 30-message world buffer supplies the
 latest ten visible messages. NPC speech has its own identity, leaves player speech
 bubbles/cooldowns intact, and has a ten-second NPC bubble.
 
-The server calls OpenCode's free Chat Completions routes directly. It tries only
-`glm-5.3-flash-free`, `deepseek-v4.1-flash-free`, and
-`longcat-2.5-preview-free`, in preferred-success order. Limits, HTTP errors,
-timeouts and invalid answers try another eligible free model. Requests time out
-after 2.5 seconds per model, responses are bounded to 32 KiB and spoken text to
-200 characters without control/format characters. Failed routes rest for at least
-30 seconds (normally 60 seconds); Retry-After is honored up to 15 minutes. No paid
-fallback is allowed. A saturated local request budget defers speech without silence.
+The server calls a local Ollama instance through its native `/api/chat` endpoint,
+using `stream: false`. The default address is `http://127.0.0.1:11434` and the
+default model is `llama3.2:3b`; server-only `OLLAMA_BASE_URL` and `OLLAMA_MODEL`
+override them. Cloud model tags are rejected; no external or paid fallback is
+used. The Ollama service must also have cloud features disabled with
+`OLLAMA_NO_CLOUD=1`. Requests time out after 60 seconds to allow cold model loading,
+responses are bounded to 32 KiB and spoken text to 200 characters without
+control/format characters. HTTP errors, timeouts and invalid answers mark the
+provider unavailable for 60 seconds; Retry-After is honored from 30 seconds up to
+15 minutes. At most two requests run concurrently across worlds. A saturated
+local request budget defers speech without silence.
 
-When every eligible model fails or is cooling down, all residents in the affected
+When the configured model fails or the provider is cooling down, all residents in the affected
 village receive Silenced: the shared framed Silence ailment icon (12 world units,
 2-unit row spacing, no stack count) in the standard overhead debuff row, plus
 a red name. The icon uses the same renderer and assets as bleeding and other
@@ -55,7 +58,7 @@ Late answers are discarded after disposal or when participants leave range or th
 dimension. No model call blocks simulation, and requests are aborted on world reset
 or shutdown.
 
-Evidence: [model failover](../../packages/server/src/npc-models.test.ts),
+Evidence: [Ollama provider](../../packages/server/src/npc-models.test.ts),
 [village life](../../packages/server/src/npcs.test.ts),
 [dimension filtering](../../packages/server/src/npc-chat.test.ts),
 [browser presentation](../../tests/npcs.spec.ts).
