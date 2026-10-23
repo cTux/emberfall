@@ -14,6 +14,7 @@ export interface NpcWorld {
 const PLAYER_RANGE = 120;
 const NPC_RANGE = 160;
 const SPEED = 38;
+const REPLY_DELAY = 2000;
 const villagePlayers = (world: NpcWorld) =>
   [...world.players.values()].filter((p) => !p.scene && p.hitpoints > 0 && !p.reconnecting);
 interface Conversation {
@@ -39,7 +40,7 @@ export class VillageLife {
   private walks = new Map<string, { stop: number; pauseUntil: number }>();
   private interactions = new Map<string, string>();
   private memories = new Map<string, string[]>();
-  private reply?: Conversation;
+  private reply?: { at: number; conversation: Conversation };
   private continuation?: { at: number; conversation: Conversation };
   private world: NpcWorld;
   private dialogue: NpcDialogue;
@@ -117,7 +118,10 @@ export class VillageLife {
     );
     if (!npc || forestDistance(npc, player) > PLAYER_RANGE) return;
     this.nextReply = now + 5000;
-    this.reply = { speaker: npc.id, playerId: player.id, text: named[2] };
+    this.reply = {
+      at: now + REPLY_DELAY,
+      conversation: { speaker: npc.id, playerId: player.id, text: named[2] },
+    };
     this.replyAt.set(player.id, now + 10_000);
   }
   tick(now: number, dt: number) {
@@ -180,9 +184,10 @@ export class VillageLife {
     }
     if (this.continuation) return;
     if (this.reply) {
-      const reply = this.reply;
+      if (now < this.reply.at) return;
+      const { conversation } = this.reply;
       this.reply = undefined;
-      this.start(reply, now);
+      this.start(conversation, now);
       return;
     }
     if (now < this.nextTalk) return;
@@ -321,7 +326,7 @@ export class VillageLife {
         const responder = mentioned?.id ?? (!conversation.text ? conversation.otherNpc : undefined);
         if (responder && lines < 5)
           this.continuation = {
-            at,
+            at: at + REPLY_DELAY,
             conversation: {
               speaker: responder,
               otherNpc: current.npc.id,

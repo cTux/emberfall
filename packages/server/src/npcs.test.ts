@@ -153,12 +153,46 @@ test('automatic greetings are bounded across multiple players and explicit repli
   assert.equal(calls, 1);
   life.hear(world.players.get('p')!, '@Marta How are you?', 45_000);
   life.tick(45_000, 0);
+  life.tick(46_999, 0);
+  await flush();
+  assert.equal(calls, 1);
+  assert.equal(world.chat!.length, 1);
+  life.tick(47_000, 0);
   await flush();
   assert.equal(calls, 2);
+  assert.equal(world.chat!.length, 2);
   life.close();
 });
 
-test('nearby NPCs answer on the next tick and stop without another mention; other-dimension players do not trigger greetings', async () => {
+test('queued player mentions revalidate participants after the delay and cancel on disposal', async () => {
+  for (const action of ['scene', 'distance', 'death', 'disconnect', 'leave', 'close'] as const) {
+    let calls = 0;
+    const { world, life } = setup({
+      generate: async () => {
+        calls++;
+        return { status: 'ok', text: 'Hello!' };
+      },
+    });
+    const listener = world.players.get('p')!;
+    world.players.set('observer', player('observer', 2000, 2000));
+    life.hear(listener, '@Marta Hello!', 1000);
+    life.tick(2999, 0);
+    assert.equal(calls, 0);
+    if (action === 'scene') listener.scene = 'forest';
+    if (action === 'distance') listener.x += 1000;
+    if (action === 'death') listener.hitpoints = 0;
+    if (action === 'disconnect') listener.reconnecting = true;
+    if (action === 'leave') world.players.delete(listener.id);
+    if (action === 'close') life.close();
+    life.tick(3000, 0);
+    await flush();
+    assert.equal(calls, 0, action);
+    assert.equal(world.chat, undefined, action);
+    life.close();
+  }
+});
+
+test('nearby NPCs wait two seconds to answer and stop without another mention; other-dimension players do not trigger greetings', async () => {
   let calls = 0;
   const { world, life } = setup({
     generate: async () => {
@@ -171,7 +205,11 @@ test('nearby NPCs answer on the next tick and stop without another mention; othe
   world.npcs![1].y = world.npcs![0].y;
   life.tick(10_000, 0);
   await flush();
-  life.tick(10_050, 0);
+  life.tick(11_999, 0);
+  await flush();
+  assert.equal(calls, 1);
+  assert.equal(world.chat!.length, 1);
+  life.tick(12_000, 0);
   await flush();
   assert.equal(calls, 2);
   assert.equal(world.chat![1].npcId, 'hallkeeper');
@@ -190,7 +228,7 @@ test('nearby NPCs answer on the next tick and stop without another mention; othe
   other.life.close();
 });
 
-test('mentions in a player greeting trigger fast NPC replies capped at five lines', async () => {
+test('mentions in a player greeting trigger delayed NPC replies capped at five lines', async () => {
   const contexts: {
     character: string;
     listenerMention?: string;
@@ -213,7 +251,11 @@ test('mentions in a player greeting trigger fast NPC replies capped at five line
   life.tick(10_000, 0);
   await flush();
   for (let i = 1; i < 5; i++) {
-    life.tick(10_000 + i * 50, 0);
+    life.tick(10_000 + i * 2000 - 1, 0);
+    await flush();
+    assert.equal(contexts.length, i);
+    assert.equal(world.chat!.length, i);
+    life.tick(10_000 + i * 2000, 0);
     await flush();
   }
   assert.equal(world.chat!.length, 5);
@@ -226,7 +268,7 @@ test('mentions in a player greeting trigger fast NPC replies capped at five line
   assert.equal(contexts[1].listenerMention, '@Marta');
   assert(contexts[0].residents.includes('@Nell: Nell the Pathfinder'));
   assert.match(contexts[0].setting, /Brute Boss/);
-  life.tick(10_250, 0);
+  life.tick(20_000, 0);
   await flush();
   assert.equal(contexts.length, 5, 'mutual mentions cannot create an endless exchange');
   life.close();
@@ -247,10 +289,10 @@ test('automatic starts wait twice as long while player replies bypass that inter
   });
   life.tick(10_000, 0);
   await flush();
-  life.tick(99_999, 0);
+  life.tick(97_999, 0);
   await flush();
   assert.equal(calls, 1);
-  life.hear(world.players.get('p')!, '@Marta Any forest news?', 99_999);
+  life.hear(world.players.get('p')!, '@Marta Any forest news?', 97_999);
   life.tick(99_999, 0);
   await flush();
   assert.equal(calls, 2);
@@ -275,12 +317,12 @@ test('busy mention replies retry promptly without losing the conversation or its
   Object.assign(world.npcs![1], { x: 350, y: 250 });
   life.tick(10_000, 0);
   await flush();
-  life.tick(10_050, 0);
+  life.tick(12_000, 0);
   await flush();
   assert.equal(world.chat!.length, 1);
-  life.tick(10_549, 0);
+  life.tick(12_499, 0);
   assert.equal(calls, 2);
-  life.tick(10_550, 0);
+  life.tick(12_500, 0);
   await flush();
   assert.equal(world.chat![1].npcId, 'hallkeeper');
   life.close();
@@ -297,7 +339,7 @@ test('mentions do not summon distant NPCs and truncated names cannot trigger rep
     });
     life.tick(10_000, 0);
     await flush();
-    life.tick(10_050, 0);
+    life.tick(12_000, 0);
     await flush();
     assert.equal(calls, 1);
     life.close();
