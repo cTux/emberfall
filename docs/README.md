@@ -31,6 +31,7 @@ The plan maps extension, equipment, combat, protocol and persistence coverage.
 
 Game cursors: [UI-02](specs/interface-and-audio.md#ui-02--combat-controls),
 [host cursor states](../packages/client/src/cursors.ts),
+[saved enable/size preferences](../packages/client/src/preferences.ts),
 [cursor art](../packages/client/public/assets/cursors/README.md) and
 [browser verification](../tests/cursors.spec.ts) and
 [state rule checks](../tests/cursors.test.ts).
