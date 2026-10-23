@@ -179,7 +179,7 @@ export function terrainTile(column: number, size = 320) {
     const span = size - 1;
     const source = document.createElement('canvas');
     source.width = source.height = span + overlap;
-    const sourceContext = source.getContext('2d')!;
+    const sourceContext = source.getContext('2d', { willReadFrequently: true })!;
     sourceContext.imageSmoothingEnabled = false;
     sourceContext.drawImage(
       terrainArt,
