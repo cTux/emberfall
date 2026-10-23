@@ -271,7 +271,8 @@ export function validateContent(
   }
   for (const ailment of r.ailments.values()) {
     check(
-      ['bleed', 'poison', 'burn', 'roots'].includes(ailment.kind) && ailment.id === ailment.kind,
+      ['bleed', 'poison', 'burn', 'roots', 'silence'].includes(ailment.kind) &&
+        ailment.id === ailment.kind,
       'ailments',
       ailment.id,
       'unsupported ailment identity/mechanic',

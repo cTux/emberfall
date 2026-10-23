@@ -212,6 +212,7 @@ export function AssetGallery() {
           'poison',
           'burn',
           'roots',
+          'silence',
         ].map((name) => (
           <img
             key={name}

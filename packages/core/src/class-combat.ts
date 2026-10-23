@@ -124,7 +124,7 @@ export function hitEnemy(
 export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
   for (const enemy of scene.enemies) {
     for (const debuff of enemy.debuffs ?? []) {
-      if (debuff.kind === 'roots') continue;
+      if (AILMENT_DEFINITIONS[debuff.kind].damagePerStack === 0) continue;
       while (debuff.nextTick <= Math.min(now, debuff.expiresAt) && enemy.hitpoints > 0) {
         hitEnemy(
           scene,

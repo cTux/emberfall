@@ -1,8 +1,12 @@
 import type { Difficulty, EnemyType } from './enums/index.ts';
-export type DebuffKind = 'bleed' | 'poison' | 'burn' | 'roots';
-export interface Debuff {
+export type DebuffKind = 'bleed' | 'poison' | 'burn' | 'roots' | 'silence';
+/** Shared overhead presentation for timed ailments and indefinite status effects. */
+export interface DebuffIndicator {
   kind: DebuffKind;
   stacks: number;
+  expiresAt?: number;
+}
+export interface Debuff extends DebuffIndicator {
   expiresAt: number;
   nextTick: number;
   ownerId: string;

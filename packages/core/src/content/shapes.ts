@@ -115,7 +115,7 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
   }),
   ailments: z.object({
     id,
-    kind: z.enum(['bleed', 'poison', 'burn', 'roots']),
+    kind: z.enum(['bleed', 'poison', 'burn', 'roots', 'silence']),
     durationMs: positive,
     chance: nonnegative.max(1),
     tickMs: positive,
