@@ -5,7 +5,11 @@ Status: implemented. Implements [interface/audio](../specs/interface-and-audio.m
 ## Application and component boundaries
 
 The host's `cursors.scss` supplies transparent PNG native cursors with explicit
-hotspots and system fallbacks, including portaled UI. Shared drag handles expose
+hotspots and system fallbacks, including portaled UI. Preferences supply a body-level
+size attribute selecting pre-sized 32/48/64 px PNGs and scaled hotspots. Disabling
+custom cursors overrides all cursor variables with their native keywords. The host
+applies preferences independently of storage writes, so unavailable storage does
+not prevent live changes. Shared drag handles expose
 `data-drag-handle` without depending on host assets. `cursors.ts` derives combat
 feedback from detached displayed poses, shared weapon/training rules and enemy
 model hitboxes. Arena projects the pointer through its input camera and uses

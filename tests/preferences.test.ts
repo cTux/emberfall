@@ -71,3 +71,38 @@ test('combat input validates auto-loot and accepts older clients without it', ()
   assert(clientMessage.safeParse({ ...input, autoLoot: false }).success);
   assert(!clientMessage.safeParse({ ...input, autoLoot: 'false' }).success);
 });
+
+test('custom cursor preferences accept only supported sizes and booleans', () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  try {
+    for (const [saved, enabled, size] of [
+      ['{}', true, 48],
+      ['{"customCursor":false,"cursorSize":32}', false, 32],
+      ['{"customCursor":true,"cursorSize":64}', true, 64],
+      ['{"customCursor":"false","cursorSize":"64"}', true, 48],
+      ['{"cursorSize":128}', true, 48],
+      ['{"cursorSize":null}', true, 48],
+      ['null', true, 48],
+      ['invalid', true, 48],
+    ] as const) {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: { getItem: () => saved },
+      });
+      const preferences = loadPreferences();
+      assert.equal(preferences.customCursor, enabled);
+      assert.equal(preferences.cursorSize, size);
+    }
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get: () => {
+        throw new Error('Storage unavailable');
+      },
+    });
+    assert.equal(loadPreferences().customCursor, true);
+    assert.equal(loadPreferences().cursorSize, 48);
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'localStorage', original);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});

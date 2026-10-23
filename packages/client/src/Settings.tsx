@@ -28,6 +28,7 @@ export function Settings({
 }) {
   const toggle = (
     key:
+      | 'customCursor'
       | 'autoAttack'
       | 'autoTarget'
       | 'autoLoot'
@@ -75,6 +76,24 @@ export function Settings({
           title: 'Gameplay',
           content: (
             <Stack>
+              {toggle('customCursor', 'Custom cursor')}
+              <TextField
+                select
+                label='Cursor size'
+                value={preferences.cursorSize}
+                disabled={!preferences.customCursor}
+                onChange={(e) =>
+                  setPreferences((p) => ({
+                    ...p,
+                    cursorSize: Number(e.target.value) as Preferences['cursorSize'],
+                  }))
+                }
+                sx={{ my: 1 }}
+              >
+                <MenuItem value={32}>Small · 32 px</MenuItem>
+                <MenuItem value={48}>Medium · 48 px</MenuItem>
+                <MenuItem value={64}>Large · 64 px</MenuItem>
+              </TextField>
               {toggle('autoAttack', 'Auto-attack (F)')}
               {toggle('autoTarget', 'Auto-target (G)')}
               {toggle('autoLoot', 'Auto-loot items')}
