@@ -20,19 +20,27 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
     const tile = document.createElement('canvas');
     tile.width = tile.height = 64;
     const ctx = tile.getContext('2d', { willReadFrequently: true })!;
+    ctx.imageSmoothingEnabled = false;
     const walks = [1, 2, 3, 4, 8, 9];
     images.forEach((image, i) => {
-      if (image.width !== 256 || image.height !== 640) failures.push(`${names[i]} size`);
+      if (image.width !== 512 || image.height !== 1280) failures.push(`${names[i]} size`);
       for (let col = 0; col < 4; col++) {
         ctx.clearRect(0, 0, 64, 64);
-        ctx.drawImage(image, col * 64, 0, 64, 64, 0, 0, 64, 64);
+        ctx.drawImage(image, col * 128, 0, 128, 128, 0, 0, 64, 64);
         const idle = ctx.getImageData(0, 0, 64, 64).data;
         const palette: number[][] = [];
+        const native = document.createElement('canvas');
+        native.width = native.height = 128;
+        const nativeContext = native.getContext('2d')!;
+        nativeContext.drawImage(image, col * 128, 0, 128, 128, 0, 0, 128, 128);
+        const nativeIdle = nativeContext.getImageData(0, 0, 128, 128).data;
+        for (let p = 0; p < nativeIdle.length; p += 4)
+          if (nativeIdle[p + 3] >= 128)
+            palette.push([nativeIdle[p], nativeIdle[p + 1], nativeIdle[p + 2]]);
         const idleTone = [0, 0, 0];
         let idleCount = 0;
         for (let i = 0; i < idle.length; i += 4)
           if (idle[i + 3] >= 128) {
-            palette.push([idle[i], idle[i + 1], idle[i + 2]]);
             if (idle[i + 3] >= 200) {
               idleCount++;
               idleTone.forEach((_, channel) => (idleTone[channel] += idle[i + channel]));
@@ -46,7 +54,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
         const contacts: number[] = [];
         for (let row = 0; row < 10; row++) {
           ctx.clearRect(0, 0, 64, 64);
-          ctx.drawImage(image, col * 64, row * 64, 64, 64, 0, 0, 64, 64);
+          ctx.drawImage(image, col * 128, row * 128, 128, 128, 0, 0, 64, 64);
           const pixels = ctx.getImageData(0, 0, 64, 64).data;
           let count = 0;
           for (let y = 0; y < 64; y++)
@@ -148,7 +156,17 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
         out.textAlign = 'left';
         out.fillText(names[i], 8, 125 + i * 175);
         for (let col = 0; col < 4; col++)
-          out.drawImage(image, col * 64, row * 64, 64, 64, 95 + col * 175, 40 + i * 175, 160, 160);
+          out.drawImage(
+            image,
+            col * 128,
+            row * 128,
+            128,
+            128,
+            95 + col * 175,
+            40 + i * 175,
+            160,
+            160,
+          );
       });
       frames.push(preview.toDataURL().split(',')[1]);
     }

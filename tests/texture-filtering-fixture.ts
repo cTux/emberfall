@@ -32,6 +32,32 @@ export async function compareFiltering() {
     samples.push([...capture.getImageData(60, 32, 1, 1).data]);
     document.body.append(copy);
   }
+  // A logical one-pixel cell must crop two backing pixels, even on a cached source.
+  const atlas = document.createElement('canvas');
+  atlas.width = 4;
+  atlas.height = 2;
+  const art = atlas.getContext('2d')!;
+  art.fillStyle = '#ff0000';
+  art.fillRect(0, 0, 2, 2);
+  art.fillStyle = '#0000ff';
+  art.fillRect(2, 0, 1, 2);
+  art.fillStyle = '#ffffff';
+  art.fillRect(3, 0, 1, 2);
+  const image = new Image();
+  image.src = atlas.toDataURL();
+  image.dataset.artResolution = '2';
+  await image.decode();
+  renderer.begin();
+  renderer.imageSmoothingEnabled = false;
+  renderer.drawImage(image, 1, 0, 1, 1, 0, 0, 128, 64);
+  renderer.present();
+  const capture = document.createElement('canvas');
+  capture.width = 128;
+  capture.height = 64;
+  const pixels = capture.getContext('2d')!;
+  pixels.drawImage(canvas, 0, 0);
+  samples.push([...pixels.getImageData(10, 32, 1, 1).data]);
+  samples.push([...pixels.getImageData(100, 32, 1, 1).data]);
   renderer.destroy();
   // Show the same source artwork before and after the tone transform, at game scale.
   for (const name of ['environment', 'mage-atlas', 'warrior-atlas']) {

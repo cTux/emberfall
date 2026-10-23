@@ -114,12 +114,13 @@ export function spriteMask(
       ctx.translate(frameWidth, 0);
       ctx.scale(-1, 1);
     }
+    const resolution = Number(image.dataset.artResolution ?? 1);
     ctx.drawImage(
       image,
-      column * frameWidth,
-      row * frameHeight,
-      frameWidth,
-      frameHeight,
+      column * frameWidth * resolution,
+      row * frameHeight * resolution,
+      frameWidth * resolution,
+      frameHeight * resolution,
       0,
       0,
       frameWidth,

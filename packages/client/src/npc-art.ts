@@ -46,8 +46,11 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
     let frame = atlas.get(key);
     if (!frame) {
       const sprite = document.createElement('canvas');
-      sprite.width = sprite.height = 64;
-      sprite.getContext('2d')!.drawImage(image, column * 64, row * 64, 64, 64, 0, 0, 64, 64);
+      const cell = 64 * Number(image.dataset.artResolution ?? 1);
+      sprite.width = sprite.height = cell;
+      sprite
+        .getContext('2d')!
+        .drawImage(image, column * cell, row * cell, cell, cell, 0, 0, cell, cell);
       frame = { sprite, mask: makeMask(sprite) };
       atlas.set(key, frame);
     }

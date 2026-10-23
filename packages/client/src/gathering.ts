@@ -22,20 +22,21 @@ export function resourceScenery(node: ResourceNode, state?: ResourceState): Scen
   let frame = frames.get(key);
   if (!frame || !image.naturalWidth || image.dataset.artReady !== 'true') {
     const sprite = document.createElement('canvas');
-    sprite.width = sprite.height = 128;
+    const resolution = Number(image.dataset.artResolution ?? 1);
+    sprite.width = sprite.height = 128 * resolution;
     if (image.naturalWidth && image.dataset.artReady === 'true') {
       sprite
         .getContext('2d')!
         .drawImage(
           image,
-          (plant ? node.variant! : column) * (plant ? 64 : 128),
-          plant ? 0 : row * 128,
-          plant ? 64 : 128,
-          plant ? 64 : 128,
+          (plant ? node.variant! : column) * (plant ? 64 : 128) * resolution,
+          plant ? 0 : row * 128 * resolution,
+          (plant ? 64 : 128) * resolution,
+          (plant ? 64 : 128) * resolution,
           0,
           0,
-          128,
-          128,
+          sprite.width,
+          sprite.height,
         );
       frame = { sprite, mask: makeMask(sprite) };
       frames.set(key, frame);
