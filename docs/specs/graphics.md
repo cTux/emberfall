@@ -6,6 +6,12 @@ Status: implemented visual baseline. Goal: a readable pixel-art world. The clien
 
 Settings contains Low, Balanced and High (default) presets, plus persistent individual toggles. High enables soft projected tree shadows, 2D contact ambient occlusion, dense grass clusters, sprite-only motion blur, flickering campfire/player lighting, bloom, and ambient particles. Resolution options are 75%, native and 150% supersampling, with backing pixel density capped at 3x. Changes apply immediately and do not change server simulation or collision geometry.
 
+**Smooth textures** enables linear texture filtering in both areas and is enabled
+in every preset. Disabling it restores nearest-neighbor pixel edges immediately;
+the choice persists across reloads. World text keeps its existing sharp sampling.
+Entity artwork uses gentler, material-colored dark tones and slightly reduced
+contrast, preserving transparency, frame bounds and gameplay warning colors.
+
 Settings include sunlight shafts, soft-light color grading, adaptive resolution and frame caps (display refresh, 30/60/120/144 FPS). Adaptive resolution adjusts the selected render scale between 50% and 100% every two seconds based on frame time; it never changes world size, input cadence or collision geometry. Low/Balanced enable adaptation; High prioritizes fixed resolution. Red gameplay warnings remain enabled at every preset. Native DLSS, frame generation, hardware ray tracing, depth-buffer SSAO and HDR output are not advertised as supported. PixiJS does not introduce those native rendering features.
 
 High defaults to 150% supersampling and display-refresh frame pacing. Low uses native scale with adaptive resolution; Balanced uses native scale with adaptation, shadows, contact occlusion, dynamic lighting, vignette, color grading, particles and vegetation sway. Preferences can be adjusted individually.

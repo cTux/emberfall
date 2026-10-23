@@ -63,6 +63,16 @@ receives view data and has no game-package dependency. See the
 
 ## Rendering pipeline and caches
 
+[art.ts](../../packages/client/src/art.ts) bakes softer entity tones once when
+loading packaged actor and scenery atlases. Dark pixels borrow a little color
+from adjacent opaque material, with a small contrast reduction. Alpha is preserved;
+terrain, pickup icons and effects retain their original palettes. Source PNGs stay
+unchanged. [art-tones.ts](../../packages/client/src/art-tones.ts) owns the pixel transform.
+Arena applies the persisted Smooth textures preference before drawing either area.
+Pixi source textures use linear or nearest sampling on use, including cached
+sources; text and procedural gradient textures retain their own sampling. Canvas
+CSS scaling follows the same preference.
+
 Village trees, rocks and plants use immutable seeded placements from core's `world.ts`.
 They share path/building/training clearance; new seeds do not move existing trees.
 `villageSprites` packages the existing environment rock cell and five generated plant

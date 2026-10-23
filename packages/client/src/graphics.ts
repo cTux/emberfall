@@ -1,4 +1,5 @@
 export interface GraphicsSettings {
+  smoothTextures: boolean;
   ambientOcclusion: boolean;
   shadows: boolean;
   wavingVegetation: boolean;
@@ -16,6 +17,7 @@ export interface GraphicsSettings {
 }
 export const GRAPHICS_PRESETS: Record<'Low' | 'Balanced' | 'High', GraphicsSettings> = {
   Low: {
+    smoothTextures: true,
     adaptiveResolution: true,
     lightShafts: false,
     colorGrading: false,
@@ -32,6 +34,7 @@ export const GRAPHICS_PRESETS: Record<'Low' | 'Balanced' | 'High', GraphicsSetti
     resolution: 1,
   },
   Balanced: {
+    smoothTextures: true,
     adaptiveResolution: true,
     lightShafts: false,
     colorGrading: true,
@@ -48,6 +51,7 @@ export const GRAPHICS_PRESETS: Record<'Low' | 'Balanced' | 'High', GraphicsSetti
     resolution: 1,
   },
   High: {
+    smoothTextures: true,
     adaptiveResolution: false,
     lightShafts: true,
     colorGrading: true,
@@ -68,6 +72,7 @@ export const GRAPHICS_LABELS: Record<
   Exclude<keyof GraphicsSettings, 'resolution' | 'frameLimit'>,
   string
 > = {
+  smoothTextures: 'Smooth textures',
   adaptiveResolution: 'Adaptive resolution',
   lightShafts: 'Sunlight shafts (2D)',
   colorGrading: 'Cinematic color grading',
