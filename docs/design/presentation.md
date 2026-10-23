@@ -7,8 +7,9 @@ Status: implemented. Implements [interface/audio](../specs/interface-and-audio.m
 The host's `cursors.scss` supplies transparent PNG native cursors with explicit
 hotspots and system fallbacks, including portaled UI. Preferences supply a body-level
 size attribute selecting pre-sized 32/48/64 px PNGs and hotspots measured in each
-final image. Fingertips and blade tips stay at the pointer position; open and closed
-drag hands anchor their palm centers so starting a drag does not shift the grip. Disabling
+final image. Fingertips and blade tips stay at the pointer position. Open and closed
+drag hands use the same hotspot coordinates as the default cursor at each size,
+keeping the image position stable when hovering or pressing a drag handle. Disabling
 custom cursors overrides all cursor variables with their native keywords. The host
 applies preferences independently of storage writes, so unavailable storage does
 not prevent live changes. Shared drag handles expose
