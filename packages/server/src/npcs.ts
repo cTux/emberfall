@@ -111,18 +111,20 @@ export class VillageLife {
       now < (this.replyAt.get(player.id) ?? 0)
     )
       return;
-    const named = text.match(/^@([^\s]+)\s+(.+)$/u);
-    if (!named) return;
-    const npc = this.world.npcs?.find(
-      (n) => n.name.split(' ')[0].toLowerCase() === named[1].toLowerCase(),
-    );
-    if (!npc || forestDistance(npc, player) > PLAYER_RANGE) return;
-    this.nextReply = now + 5000;
-    this.reply = {
-      at: now + REPLY_DELAY,
-      conversation: { speaker: npc.id, playerId: player.id, text: named[2] },
-    };
-    this.replyAt.set(player.id, now + 10_000);
+    for (const name of text.toLowerCase().match(/[\p{L}\p{M}\p{N}_]+/gu) ?? []) {
+      const npc = this.world.npcs?.find(
+        (n) =>
+          n.name.split(' ')[0].toLowerCase() === name && forestDistance(n, player) <= PLAYER_RANGE,
+      );
+      if (!npc) continue;
+      this.nextReply = now + 5000;
+      this.reply = {
+        at: now + REPLY_DELAY,
+        conversation: { speaker: npc.id, playerId: player.id, text },
+      };
+      this.replyAt.set(player.id, now + 10_000);
+      return;
+    }
   }
   tick(now: number, dt: number) {
     this.lastTick = now;
