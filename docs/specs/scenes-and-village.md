@@ -70,8 +70,8 @@ A resident can greet a living connected player within 120 units or start a short
 exchange with another resident within 160 units. Automatic starts wait at least
 90 seconds per village, 180 seconds per NPC, and 240 seconds per greeted player
 across residents, with the first start eligible ten seconds after world creation.
-Replies do not reset these automatic-start intervals. Speech is one short line of
-at most 120 characters, without quotation marks, grounded in Emberfall's fantasy
+Replies do not reset these automatic-start intervals. The prompt requests one short
+line of at most 120 characters, without quotation marks, grounded in Emberfall's fantasy
 setting and implemented game activities. Each resident has a distinct voice that
 shapes greetings, player replies and NPC banter: Marta uses affectionate teasing
 and food metaphors; Oswin treats tiny problems as solemn bureaucratic business;

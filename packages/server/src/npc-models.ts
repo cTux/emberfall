@@ -29,7 +29,6 @@ class InvalidDialogueResponse extends Error {
 
 export function spokenLine(content: string) {
   let text = content.replace(/[\t\r\n\u2028\u2029]+/gu, ' ');
-  // Check the whole response before shortening so invalid characters cannot be hidden.
   if (/[\p{Cc}\p{Cf}]/u.test(text)) throw new InvalidDialogueResponse('control_characters');
   // Keep apostrophes inside words (don't, Nell’s), but remove speech quotes.
   text = text
@@ -38,11 +37,7 @@ export function spokenLine(content: string) {
     .replace(/ +/gu, ' ')
     .trim();
   if (!text) throw new InvalidDialogueResponse('empty_text');
-  if (text.length > 120) {
-    const boundary = text.lastIndexOf(' ', 120);
-    if (boundary <= 0) throw new InvalidDialogueResponse('text_too_long');
-    text = text.slice(0, boundary).trimEnd();
-  }
+  if (text.length > 32_768) throw new InvalidDialogueResponse('text_too_long');
   return text;
 }
 

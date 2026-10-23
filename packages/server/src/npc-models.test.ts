@@ -1,6 +1,6 @@
 import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { OllamaNpcDialogue, DEFAULT_NPC_MODEL } from './npc-models.ts';
+import { OllamaNpcDialogue, DEFAULT_NPC_MODEL, spokenLine } from './npc-models.ts';
 const signal = () => new AbortController().signal;
 const answer = (content = 'Welcome, traveller!') =>
   Response.json({ message: { content }, done: true });
@@ -54,12 +54,13 @@ test('server environment configures the provider used by runtime and diagnostic'
   assert.equal((await new OllamaNpcDialogue(request).generate('{}', signal())).status, 'ok');
 });
 
-test('usable model speech is folded to one bounded line without cooling down', async (t) => {
+test('usable model speech is folded to one complete line without cooling down', async (t) => {
   const log = t.mock.method(console, 'info', () => {});
   const long = 'Welcome to our village, traveller. '.repeat(10);
   for (const [content, expected] of [
     ['Good morning!\r\n\tWelcome, traveller.', 'Good morning! Welcome, traveller.'],
-    [long, long.slice(0, 120).slice(0, long.slice(0, 120).lastIndexOf(' ')).trim()],
+    [long, long.trim()],
+    ['x'.repeat(201), 'x'.repeat(201)],
     ['“The forest goblins call this "fine dining".”', 'The forest goblins call this fine dining.'],
     ["'Don't feed the goblins.'", "Don't feed the goblins."],
     ['‘Nell’s boots fear no mud.’', 'Nell’s boots fear no mud.'],
@@ -114,7 +115,7 @@ test('missing models and malformed, incomplete, oversized or invalid text fail s
     () => new Response('model not found', { status: 404 }),
     () => answer('bad\u202etext'),
     () => answer('bad\u0000text'),
-    () => answer('x'.repeat(201)),
+    () => answer('x'.repeat(32_769)),
     () => answer('  '),
     () => Response.json({ message: { content: 'Incomplete.' }, done: false }),
     () => Response.json(null),
@@ -140,7 +141,6 @@ test('invalid response diagnostics identify validation failures without exposing
     [() => Response.json({ message: { content: 'private' }, done: false }), 'incomplete'],
     [() => Response.json({ done: true }), 'missing_text'],
     [() => answer('  '), 'empty_text'],
-    [() => answer('x'.repeat(201)), 'text_too_long'],
     [() => answer('private\u202etext'), 'control_characters'],
     [() => answer(`${'safe '.repeat(50)}private\u202etext`), 'control_characters'],
   ];
@@ -156,6 +156,10 @@ test('invalid response diagnostics identify validation failures without exposing
     assert(entry.includes(`"validationFailure":"${failure}"`), entry);
   }
   assert(!lines.join('\n').includes('private'));
+});
+
+test('spoken text remains bounded even for injected dialogue providers', () => {
+  assert.throws(() => spokenLine('x'.repeat(32_769)));
 });
 
 test('concurrency is bounded; cancellation releases slots without poisoning shared health', async (t) => {
