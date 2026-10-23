@@ -44,6 +44,7 @@ export function crittersAt(
       const offset = phase < 4 ? phase * 10 : phase < 6 ? 40 : phase < 10 ? (10 - phase) * 10 : 0;
       return {
         ...home,
+        id: `${home.kind}:${wrap(home.x, ARENA.width)}:${wrap(home.y, ARENA.height)}`,
         x: home.x + offset - 20,
         left: phase >= 6,
         frame: moving ? 1 + (Math.floor(now / 180) % 3) : phase > 4.5 && phase < 5.5 ? 4 : 0,

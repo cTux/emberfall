@@ -38,6 +38,11 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
+Interactive cats: [SCENE-06](specs/scenes-and-village.md#scene-06--village-life),
+[speech timing](../packages/client/src/cat-speech.ts),
+[client interaction](../packages/client/src/Arena.tsx) and
+[browser verification](../tests/cats.spec.ts).
+
 Game cursors: [UI-02](specs/interface-and-audio.md#ui-02--combat-controls),
 [host cursor states](../packages/client/src/cursors.ts),
 [saved enable/size preferences](../packages/client/src/preferences.ts),
