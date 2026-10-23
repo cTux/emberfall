@@ -3,6 +3,43 @@ import type { DialogueResult } from '../packages/server/src/npc-models.ts';
 let response: DialogueResult = { status: 'unavailable' };
 test.use({ npcDialogue: { generate: async () => response } });
 
+test('a long NPC reply keeps its ending and remains readable while scrolling on narrow screens', async ({
+  page,
+  game,
+}) => {
+  const text =
+    'The forest goblins keep borrowing my soup spoons. '.repeat(8) + 'Please bring them back!';
+  response = { status: 'ok', text };
+  await page.setViewportSize({ width: 390, height: 640 });
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
+  Object.assign(player, { x: marta.x, y: marta.y + 30 });
+  await page.keyboard.press('Enter');
+  await page.getByRole('textbox', { name: 'Chat message' }).fill('@Marta Hello!');
+  await page.keyboard.press('Enter');
+  const reply = page.getByRole('log').getByText(`${marta.name}: ${text}`, { exact: true });
+  await expect(reply).toBeVisible();
+  expect(marta.chat).toBe(text);
+  expect(world.chat!.find((message) => message.npcId === marta.id)?.text).toBe(text);
+  const log = page.getByRole('log');
+  expect(await reply.evaluate((element) => element.clientHeight)).toBeGreaterThan(
+    await log.evaluate((element) => element.clientHeight),
+  );
+  await log.evaluate((element) => {
+    element.scrollTop = 0;
+  });
+  await expect(reply).toBeVisible();
+  await page.screenshot({ path: 'test-results/npc-full-reply-start.png' });
+  await log.evaluate((element) => {
+    element.scrollTop = element.scrollHeight;
+  });
+  await expect(reply).toBeVisible();
+  await page.screenshot({ path: 'test-results/npc-full-reply-end.png' });
+});
+
 test('Marta walks near a player, stops for trading, and resumes when the window closes', async ({
   page,
   game,

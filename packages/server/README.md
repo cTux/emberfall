@@ -222,8 +222,9 @@ response includes a safe `validationFailure` code: `missing_body`,
 `response_too_large`, `invalid_json`, `incomplete`, `missing_text`, `empty_text`,
 `text_too_long` or `control_characters`. These distinguish validation failures
 without exposing model output. Line breaks and tabs are folded into spaces;
-overlong replies are shortened at a word boundary to fit 200 characters. Empty
-answers, other control/format characters and overlong unbroken words still fail.
+valid replies retain their full text within the 32 KiB response limit. Spoken text
+is capped at 32,768 characters, including for injected providers. Empty answers
+and other control/format characters still fail.
 
 If the provider fails, the village visibly receives Silenced and retries after
 its cooldown; movement and trading continue. Successful replies restore voices.
