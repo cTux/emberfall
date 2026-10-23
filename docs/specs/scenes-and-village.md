@@ -93,6 +93,15 @@ runs per world, with at most two across the server and no unbounded request queu
 Each NPC remembers at most six recent spoken lines. No NPC dialogue grants items,
 changes gold, creates quests or implements services in placeholder buildings.
 
+Residents have consistent personal backgrounds covering their work, past experience,
+dreams, interests, relationships and worries. Automatic conversations select from
+32 topics, including work, childhood, mentors, travel, ambitions, hobbies, food,
+friendship, fears, achievements, nature and village traditions. Each resident uses
+every topic in a random order before starting a new rotation, with no immediate
+repeat between rotations. NPC follow-ups keep the opening topic; directed player
+replies answer the player's words first. Recent lines discourage repeated phrasing.
+Backgrounds and topics guide generated speech rather than supplying scripted lines.
+
 ## SCENE-02 — World geometry
 
 The lobby and generated forest are each 4800×2560 and wrap on all four edges. The lobby is 20 times its original area (five times the width and four times the height). Its camera always centers the local character, including while training or crossing an edge; terrain, scenery, players, companions, combat effects, cursor aim, and navigation use the nearest wrapped positions. The original village buildings, wardrobe, portal, and training dummies keep their positions, with extra terrain and vegetation around them. Both areas share the same dimensions so combat and interpolation use the same wrapped distances. Tree generation and nearby-cell collision queries are shared; combat distances and client interpolation also wrap.

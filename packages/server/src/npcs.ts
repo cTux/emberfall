@@ -31,6 +31,7 @@ interface Conversation {
   text?: string;
   /** Number of lines already published in this exchange. */
   lines?: number;
+  topic?: string;
 }
 
 /** One scheduler per world; LLM work never blocks the fixed simulation tick. */
@@ -47,6 +48,7 @@ export class VillageLife {
   private walks = new Map<string, Routine>();
   private interactions = new Map<string, string>();
   private memories = new Map<string, string[]>();
+  private topics = new Map<string, { remaining: string[]; last?: string }>();
   private reply?: { at: number; conversation: Conversation };
   private continuation?: { at: number; conversation: Conversation };
   private world: NpcWorld;
@@ -276,6 +278,20 @@ export class VillageLife {
     }
   }
   private activeConversation?: Conversation;
+  private chooseTopic(npcId: string) {
+    let rotation = this.topics.get(npcId);
+    if (!rotation) {
+      rotation = { remaining: [] };
+      this.topics.set(npcId, rotation);
+    }
+    if (!rotation.remaining.length) rotation.remaining = [...VILLAGE_DEFINITION.dialogueTopics];
+    let index = Math.floor(this.random() * rotation.remaining.length);
+    if (rotation.remaining[index] === rotation.last && rotation.remaining.length > 1)
+      index = (index + 1) % rotation.remaining.length;
+    const [topic] = rotation.remaining.splice(index, 1);
+    rotation.last = topic;
+    return topic;
+  }
   private participants(conversation: Conversation) {
     const npc = this.world.npcs?.find((n) => n.id === conversation.speaker);
     const target = conversation.playerId
@@ -316,9 +332,11 @@ export class VillageLife {
     if (conversation.playerId && !conversation.text)
       this.playerAt.set(conversation.playerId, now + 240_000);
     const definition = VILLAGE_DEFINITION.villagers.find((n) => n.id === actors.npc.id)!;
+    if (!conversation.text) conversation.topic = this.chooseTopic(actors.npc.id);
     const context = JSON.stringify({
       character: definition.name,
       personality: definition.personality,
+      background: definition.background,
       setting:
         'Emberfall is a cooperative medieval fantasy game. Adventurers prepare in the village, fight monsters and a Brute Boss in the forest, and return with loot. Marta trades consumables and collected items. The Storehouse stores items. The Inn is scenery; Hall, Workshop and Lodge have no services yet. Do not invent active festivals, quests or services.',
       residents: VILLAGE_DEFINITION.villagers.map(
@@ -326,7 +344,10 @@ export class VillageLife {
       ),
       listener: actors.target.name,
       listenerMention: conversation.otherNpc ? `@${actors.target.name.split(' ')[0]}` : undefined,
-      task: conversation.text ? 'Reply to the quoted speech.' : 'Start a friendly conversation.',
+      task: conversation.text
+        ? 'Reply to the quoted speech, drawing on your background when relevant.'
+        : 'Start a friendly conversation about the selected topic with a personal detail or a question.',
+      topic: conversation.topic,
       quotedSpeech: conversation.text,
       recentConversation: this.memories.get(actors.npc.id) ?? [],
     });
@@ -395,6 +416,7 @@ export class VillageLife {
               otherNpc: current.npc.id,
               text,
               lines,
+              topic: conversation.topic,
             },
           };
       })
