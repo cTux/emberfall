@@ -13,19 +13,20 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
-  player.x = INNKEEPER.x - 70;
-  player.y = INNKEEPER.y - 18;
+  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  player.x = marta.x - 70;
+  player.y = marta.y - 18;
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'test-results/innkeeper-name-inactive.png' });
-  player.x = INNKEEPER.x - 45;
+  player.x = marta.x - 45;
   await page.waitForTimeout(500);
   await page.screenshot({ path: 'test-results/innkeeper-name-active.png' });
-  player.x = INNKEEPER.x;
-  player.y = INNKEEPER.y + 35;
   const dialog = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
+    player.x = marta.x;
+    player.y = marta.y + 35;
     await page.keyboard.press('e');
-    await expect(dialog).toBeVisible();
+    await expect(dialog).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(dialog.getByRole('region', { name: "Innkeeper's backpack" })).toBeVisible();
   await expect(dialog.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();

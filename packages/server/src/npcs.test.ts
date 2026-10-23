@@ -20,7 +20,7 @@ function setup(
   return { world, life };
 }
 
-test('four residents walk, pause near players, and release authoritative ECS entities', () => {
+test('four residents walk near players, pause during interaction, and release authoritative ECS entities', () => {
   const { world, life } = setup();
   assert.deepEqual(
     world.npcs!.map((n) => n.buildingId),
@@ -30,17 +30,73 @@ test('four residents walk, pause near players, and release authoritative ECS ent
   const marta = world.npcs![0],
     initial = { x: marta.x, y: marta.y };
   life.tick(9000, 0.05);
-  assert.equal(marta.moving, false);
-  world.players.get('p')!.x = 1000;
-  life.tick(9050, 0.05);
   assert(marta.moving);
   assert(Math.hypot(marta.x - initial.x, marta.y - initial.y) <= 38 * 0.05 + 0.001);
   assert.notEqual(marta.y, initial.y);
+  life.interact(world.players.get('p')!, marta.id);
+  const paused = { x: marta.x, y: marta.y };
+  life.tick(9050, 0.05);
+  assert.equal(marta.moving, false);
+  assert.deepEqual({ x: marta.x, y: marta.y }, paused);
+  life.interact(world.players.get('p')!, null);
+  life.tick(9075, 0.05);
+  assert(marta.moving, 'closing the interaction releases Marta while the player stays nearby');
   world.players.clear();
   life.tick(9100, 0.05);
   assert.equal(marta.moving, false);
   life.close();
   assert.equal(simulationFor(world.players)!.villagers.size, 0);
+});
+
+test('interactions validate live wrapped range and release invalid traders without resuming stale interactions', () => {
+  for (const action of ['distance', 'scene', 'death', 'disconnect', 'leave'] as const) {
+    const { world, life } = setup();
+    const trader = world.players.get('p')!;
+    world.players.set('observer', player('observer', 2000, 2000));
+    const marta = world.npcs![0];
+    Object.assign(marta, { x: ARENA.width - 5, y: 238 });
+    Object.assign(trader, { x: 5, y: 223 });
+    life.interact(trader, marta.id);
+    life.tick(9000, 0.05);
+    assert.equal(marta.moving, false, 'trading works across a wrapped seam');
+    if (action === 'distance') trader.x = 1000;
+    if (action === 'scene') trader.scene = 'forest';
+    if (action === 'death') trader.hitpoints = 0;
+    if (action === 'disconnect') trader.reconnecting = true;
+    if (action === 'leave') world.players.delete(trader.id);
+    life.tick(9050, 0.05);
+    assert(marta.moving, action);
+    Object.assign(trader, { x: 5, scene: undefined, hitpoints: 100, reconnecting: false });
+    world.players.set(trader.id, trader);
+    life.tick(9100, 0.05);
+    assert(marta.moving, 'returning to range does not reopen the interaction');
+    life.close();
+  }
+});
+
+test('remote or invalid interactions cannot stop residents and multiple traders release independently', () => {
+  const { world, life } = setup();
+  const trader = world.players.get('p')!;
+  const marta = world.npcs![0];
+  trader.x = 1000;
+  life.interact(trader, marta.id);
+  life.tick(9000, 0.05);
+  assert(marta.moving);
+  Object.assign(trader, { x: marta.x, y: marta.y - 15 });
+  life.interact(trader, 'unknown');
+  life.tick(9050, 0.05);
+  assert(marta.moving);
+  const second = player('q', marta.x, marta.y - 15);
+  world.players.set(second.id, second);
+  life.interact(trader, marta.id);
+  life.interact(second, marta.id);
+  life.interact(trader, null);
+  life.tick(9100, 0.05);
+  assert.equal(marta.moving, false, 'another active trader still holds Marta');
+  life.interact(second, null);
+  life.tick(9150, 0.05);
+  assert(marta.moving);
+  life.close();
 });
 
 test('residents choose separate destinations and leave the circuit with randomized pauses', () => {

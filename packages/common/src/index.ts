@@ -47,6 +47,7 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('unequip'), slot: z.string().min(1).max(128) }),
   z.object({ type: z.literal('trade'), id: z.string().min(1).max(64), buying: z.boolean() }),
   z.object({ type: z.literal('sellAll') }),
+  z.object({ type: z.literal('npcInteraction'), npcId: z.string().min(1).max(64).nullable() }),
   z.object({
     type: z.literal('storeItem'),
     tab: z.number().int().min(0).max(2),

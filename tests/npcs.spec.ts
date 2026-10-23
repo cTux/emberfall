@@ -3,6 +3,34 @@ import type { DialogueResult } from '../packages/server/src/npc-models.ts';
 let response: DialogueResult = { status: 'unavailable' };
 test.use({ npcDialogue: { generate: async () => response } });
 
+test('Marta walks near a player, stops for trading, and resumes when the window closes', async ({
+  page,
+  game,
+}) => {
+  response = { status: 'busy' };
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.locator('canvas').first()).toHaveAttribute('data-npcs', '4');
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
+  Object.assign(marta, { x: 1000, y: 1000 });
+  Object.assign(player, { x: 1000, y: 985 });
+  await expect.poll(() => marta.moving, { timeout: 12_000 }).toBe(true);
+  await page.keyboard.press('e');
+  const trading = page.getByRole('dialog', { name: marta.name });
+  await expect(trading).toBeVisible();
+  await expect.poll(() => marta.moving).toBe(false);
+  const stopped = { x: marta.x, y: marta.y };
+  await expect(
+    page.getByRole('button', { name: `Close ${marta.name}`, exact: true }),
+  ).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(trading).not.toBeVisible();
+  await expect.poll(() => marta.moving).toBe(true);
+  await expect.poll(() => Math.hypot(marta.x - stopped.x, marta.y - stopped.y)).toBeGreaterThan(2);
+});
+
 test('LLM outage gives every villager a visible silence debuff and one red village announcement', async ({
   page,
   game,

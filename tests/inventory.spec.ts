@@ -63,12 +63,13 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await page.screenshot({ path: 'test-results/inventory-narrow.png' });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.keyboard.press('Escape');
-  player.x = INNKEEPER.x;
-  player.y = INNKEEPER.y - 15;
+  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
   const trader = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
+    player.x = marta.x;
+    player.y = marta.y - 15;
     await page.keyboard.press('e');
-    await expect(trader).toBeVisible();
+    await expect(trader).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(trader.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();
   for (const width of [1280, 883, 320]) {
@@ -118,8 +119,8 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondPage.getByRole('button', { name: /^Join Playtest Default/ }).click();
     await expect(secondPage.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
     const buyer = [...world.players.values()].find((p) => p.name === 'Buyer')!;
-    buyer.x = INNKEEPER.x;
-    buyer.y = INNKEEPER.y - 15;
+    buyer.x = marta.x;
+    buyer.y = marta.y - 15;
     buyer.coins = 1;
     await expect(secondPage.getByLabel('Buyer: 1 coins')).toBeVisible();
     await secondPage.locator('canvas').click({ position: { x: 5, y: 5 } });

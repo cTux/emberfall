@@ -15,8 +15,11 @@ Innkeeper starts beside its right wall and walks between village stops with paus
 Oswin the Steward lives at the Hall, Bram the Craftsman at the Workshop, and Nell the
 Pathfinder at the Lodge. Storehouse already provides storage and gets no extra resident.
 Each resident has a name, personality and a home building. The server owns their
-positions, walking state and conversations. Residents pause within 78 units of a
-living connected village player, keeping Marta still while trading. E within 68 units opens her compact shared trading window, titled
+positions, walking state and conversations. Nearby players do not interrupt walking.
+Marta pauses while a living connected village player has her trading window open
+and remains in interaction range. Closing the window, leaving range or the village,
+dying or disconnecting releases that player's interaction; another active trader
+can keep her paused. E within 68 units opens her compact shared trading window, titled
 with her name. Her name uses the player's font, outline
 and placement above the sprite, adding a highlighted background and `(E)` while
 in range of her current position. Marta sells consumables and buys collected items; see CHAR-04 for the shared

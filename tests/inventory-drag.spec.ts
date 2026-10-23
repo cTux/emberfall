@@ -148,12 +148,13 @@ test('native vendor drags buy and sell once, including buyback, without bypassin
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
-  player.x = INNKEEPER.x;
-  player.y = INNKEEPER.y + 35;
+  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
   player.backpack = [{ id: 'drag-helmet', itemId: 'loot-helmet', quantity: 1 }];
   player.coins = 0;
   const dialog = page.getByRole('dialog', { name: INNKEEPER.name, exact: true });
   await expect(async () => {
+    player.x = marta.x;
+    player.y = marta.y + 35;
     await page.keyboard.press('e');
     await expect(dialog).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 10000 });
