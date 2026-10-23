@@ -4,7 +4,14 @@ import type { GraphicsSettings } from './graphics';
 import { drawVillagePaths } from './paths';
 import { castShadow } from './lighting';
 import { villageSprites, TORCH_LIGHTS, lightTexture, workstationArt } from './village';
-import { environmentArt, wardrobeArt, innkeeperArt, terrainArt, terrainTile } from './art';
+import {
+  environmentArt,
+  plantArt,
+  wardrobeArt,
+  innkeeperArt,
+  terrainArt,
+  terrainTile,
+} from './art';
 
 const nature = new Image();
 nature.src = clientAsset('/assets/nature.png');
@@ -31,7 +38,7 @@ let cached:
 /** Shared across Arena remounts. Wait for all assets, including failed loads. */
 export function villageBackground(graphics: GraphicsSettings) {
   if (
-    [environmentArt, wardrobeArt, innkeeperArt, workstationArt].some(
+    [environmentArt, plantArt, wardrobeArt, innkeeperArt, workstationArt].some(
       (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== 'true',
     ) ||
     !terrainArt.complete ||
