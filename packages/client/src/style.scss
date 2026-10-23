@@ -7,7 +7,7 @@ body {
 
 .chat {
   position: absolute;
-  z-index: 2;
+  z-index: 1301;
   bottom: 16px;
   left: 16px;
   width: min(320px, calc(100vw - 96px));
@@ -84,6 +84,20 @@ canvas {
   .in-world .chat {
     bottom: 84px;
   }
+
+  body:has([role='dialog']) {
+    [class~='MuiDialog-container'] {
+      align-items: flex-start;
+    }
+
+    [class~='MuiDialog-paper'] {
+      max-height: min(480px, max(120px, calc(100dvh - 300px)));
+    }
+
+    .chat-log {
+      max-height: min(100px, 15dvh);
+    }
+  }
 }
 
 .connection {
@@ -118,14 +132,6 @@ canvas {
   left: 50%;
   transform: translate(-50%, -50%);
   width: min(400px, calc(100vw - 32px));
-}
-
-.notice {
-  position: absolute;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  width: min(600px, calc(100vw - 32px));
 }
 
 .scene-clock {

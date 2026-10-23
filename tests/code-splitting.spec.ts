@@ -87,7 +87,8 @@ test('a slow or failed panel chunk leaves its window closable and the lobby usab
   await expect(page.getByRole('status').filter({ hasText: 'Loading…' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Close Settings' })).toBeVisible();
   release();
-  await expect(page.getByRole('alert')).toContainText('Could not load this content');
+  await expect(page.getByRole('log')).toContainText('System: Could not load this content');
+  await expect(page.getByRole('alert')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Reload', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Close Settings' }).click();
   await expect(page.getByRole('table')).toBeVisible();

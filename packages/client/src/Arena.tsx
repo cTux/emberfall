@@ -1,3 +1,4 @@
+import { useChat } from './ChatProvider';
 import { resourceNodes, resourceState, nearbyResource } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
 import {
@@ -29,7 +30,7 @@ import { movementFacing } from './facing';
 import { LocalMovement } from './local-movement';
 import { gameAudio } from './audio';
 import { createCritterMotion } from './critter-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
 import {
@@ -112,7 +113,7 @@ export function Arena({
     handleProps: dpsHandle,
   } = useDraggable('panel.dps', !!world);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const [renderError, setRenderError] = useState(false);
+  const { reportError } = useChat();
   const latest = useRef(world);
   const sender = useRef(send);
   const activate = useRef(onInteract);
@@ -136,13 +137,12 @@ export function Arena({
     const element = canvas.current!;
     const renderer = new PixiContext(element);
     let disposed = false;
-    void renderer.ready
-      .then(() => {
-        if (!disposed) setRenderError(false);
-      })
-      .catch(() => {
-        if (!disposed) setRenderError(true);
-      });
+    void renderer.ready.catch(() => {
+      if (!disposed)
+        reportError(
+          'The game renderer could not start. Enable browser hardware acceleration and reload.',
+        );
+    });
     const presentation = new PresentationWorld();
     const ctx = renderer as unknown as CanvasRenderingContext2D;
     const knight = characterImages.warrior.walk;
@@ -1172,14 +1172,9 @@ export function Arena({
       presentation.clear();
       audio.dispose();
     };
-  }, [playerId, interaction, onCursorAim, onHitpoints]);
+  }, [playerId, interaction, onCursorAim, onHitpoints, reportError]);
   return (
     <>
-      {renderError && (
-        <p role='alert'>
-          The game renderer could not start. Enable browser hardware acceleration and reload.
-        </p>
-      )}
       <canvas
         ref={canvas}
         width={ARENA.width}
