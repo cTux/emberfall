@@ -27,7 +27,9 @@ const chapters = [
             <kbd>WASD</kbd> or <kbd>↑ ↓ ← →</kbd> — move.
           </li>
           <li>
-            <kbd>E</kbd> — interact near buildings, Marta the Innkeeper, or the blue portal.
+            <kbd>E</kbd> or left click — interact with a hovered building, Marta the Innkeeper, or
+            portal. Yellow outlines are thick in range and thin out of range. E also works nearby
+            without hovering.
           </li>
           <li>
             <kbd>I</kbd> — open or close Inventory and character stats.

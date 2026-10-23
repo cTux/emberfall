@@ -6,9 +6,9 @@ Status: implemented baseline. Goal: Stage a party in the village and run one coo
 
 The lobby is a five-building village with a connected path network and a central square. Buildings use the original Ninja Adventure house tileset. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors remain unimplemented; Marta provides shared item trading.
 
-The create/join browser shows a forest backdrop; entering a world takes players to its village. E interacts within 68 units of a blue portal or building doorway, with an in-range nameplate. Buildings currently open service placeholders. All windows have a draggable title and close button; closed browser/death windows have a reopen control. Text selection is disabled throughout the game.
+The create/join browser shows a forest backdrop; entering a world takes players to its village. E interacts within 68 units of a blue portal or building doorway. Buildings currently open service placeholders. All windows have a draggable title and close button; closed browser/death windows have a reopen control. Text selection is disabled throughout the game.
 
-Lobby buildings and portals show interaction availability directly in their existing nameplate: a lighter background and `(E) Building name` while in range. They no longer show a separate tooltip.
+Hovering a functional building, NPC or item shows a yellow sprite outline: thick (3 world units) within interaction range and thin (1 world unit) outside it. Names and nameplate backgrounds stay unchanged, without an `(E)` prefix. E or a left click activates the hovered target while in range; outside range neither activates it. E without a hovered target retains the nearby interaction. Decorative scenery has no interaction outline. Completed-forest return portals use the same feedback and input, including across wrapped seams.
 
 In the new runtime, the Inn remains scenery without an interaction or nameplate. Marta the
 Innkeeper starts beside its right wall and walks between village stops with pauses.
@@ -21,8 +21,7 @@ and remains in interaction range. Closing the window, leaving range or the villa
 dying or disconnecting releases that player's interaction; another active trader
 can keep her paused. E within 68 units opens her compact shared trading window, titled
 with her name. Her name uses the player's font, outline
-and placement above the sprite, adding a highlighted background and `(E)` while
-in range of her current position. Marta sells consumables and buys collected items; see CHAR-04 for the shared
+and placement above the sprite, unchanged by hover or range. Marta sells consumables and buys collected items; see CHAR-04 for the shared
 stock, gold and transaction rules.
 
 ## SCENE-06 — Village life

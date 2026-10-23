@@ -1,3 +1,10 @@
+import {
+  sceneryInteraction,
+  pickInteraction,
+  interactionInRange,
+  drawInteractionOutline,
+} from './interaction-targets';
+import type { InteractionTarget } from './interaction-targets';
 import { npcScenery } from './npc-art';
 import { drawNpcWork } from './npc-work';
 import { alignLocalPickups } from './pickup-presentation';
@@ -42,7 +49,13 @@ import type { GraphicsSettings } from './graphics';
 import { castShadow, makeMask, spriteMask } from './lighting';
 import type { Caster, Light } from './lighting';
 import { TORCH_LIGHTS, lightTexture, drawTorchFire } from './village';
-import { forestRenderer, drawFog, drawPortal, drawPlayerDetails } from './forest';
+import {
+  forestRenderer,
+  drawFog,
+  drawPortal,
+  portalInteraction,
+  drawPlayerDetails,
+} from './forest';
 import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from './combat-effects';
 import type { Preferences } from './preferences';
 
@@ -67,6 +80,7 @@ export function Arena({
   latency,
   interaction,
   onCursorAim,
+  onInteract,
   onHitpoints,
 }: {
   world: WorldState | null;
@@ -77,6 +91,7 @@ export function Arena({
   latency: number | null;
   interaction: RefObject<Interaction | null>;
   onCursorAim: (reader: (() => { aimX: number; aimY: number }) | null) => void;
+  onInteract: (source: Interaction) => void;
   onHitpoints: (hp: Record<string, number>) => void;
 }) {
   const {
@@ -88,6 +103,7 @@ export function Arena({
   const [renderError, setRenderError] = useState(false);
   const latest = useRef(world);
   const sender = useRef(send);
+  const activate = useRef(onInteract);
   const quality = useRef(graphics);
   const prefs = useRef(preferences);
   const frameRate = useRef<number | null>(null);
@@ -98,9 +114,10 @@ export function Arena({
   useEffect(() => {
     latest.current = world;
     sender.current = send;
+    activate.current = onInteract;
     quality.current = graphics;
     prefs.current = preferences;
-  }, [world, send, graphics, preferences]);
+  }, [world, send, graphics, preferences, onInteract]);
   useEffect(() => {
     const element = canvas.current!;
     const renderer = new PixiContext(element);
@@ -158,6 +175,16 @@ export function Arena({
     let pointer: { x: number; y: number } | undefined;
     let held = false;
     let pointerInside = false;
+    let targets: InteractionTarget[] = [];
+    let hovered: InteractionTarget | null = null;
+    const pointerPoint = () =>
+      pointerInside && pointer && !blocked()
+        ? {
+            x: inputCamera.x + pointer.x * inputCamera.width,
+            y: inputCamera.y + pointer.y * inputCamera.height,
+          }
+        : undefined;
+    const confirmedPlayer = () => latest.current?.players.find((p) => p.id === playerId);
     let combat: Extract<ClientMessage, { type: 'combatInput' }> | undefined;
     let inputCamera: { x: number; y: number; width: number; height: number } = {
       x: 0,
@@ -190,6 +217,12 @@ export function Arena({
     const pointerDown = (event: PointerEvent) => {
       if (event.button !== 0 || blocked()) return;
       pointerMove(event);
+      const target = pickInteraction(targets, pointerPoint());
+      if (target) {
+        held = false;
+        if (interactionInRange(target, confirmedPlayer())) activate.current(target.source);
+        return;
+      }
       held = true;
       sendMovement();
     };
@@ -402,15 +435,35 @@ export function Arena({
         onHitpoints(hp);
       }
       const authoritative = latest.current;
-      const player = authoritative?.players.find((p) => p.id === playerId);
-      interaction.current = player
+      const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
+      const nearby = authoritativePlayer
         ? nearbyInteraction(
-            player,
+            authoritativePlayer,
             authoritative?.scene?.phase === 'ended',
             authoritative?.scene?.portals,
             authoritative?.npcs,
           )
         : null;
+      targets = [];
+      if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
+        targets = view.scene.portals.map((portal) =>
+          portalInteraction(
+            { id: 'return', name: 'Return to village', ...portal },
+            local.x + wrappedDelta(portal.x, local.x, FOREST.width),
+            local.y + wrappedDelta(portal.y, local.y, FOREST.height),
+          ),
+        );
+      }
+      hovered = pickInteraction(targets, pointerPoint());
+      interaction.current = hovered
+        ? interactionInRange(hovered, authoritativePlayer)
+          ? hovered.source
+          : null
+        : nearby;
+      element.dataset.interactionTarget = hovered?.source.id ?? '';
+      element.dataset.interactionRange = hovered
+        ? String(interactionInRange(hovered, authoritativePlayer))
+        : '';
       if (local?.scene !== previousScene) {
         positions.clear();
         previousScene = local?.scene;
@@ -439,7 +492,8 @@ export function Arena({
           prefs.current,
           now,
           delta,
-          interaction.current,
+          hovered,
+          !!hovered && interactionInRange(hovered, authoritativePlayer),
         );
         renderer.present();
         frame = requestAnimationFrame(draw);
@@ -483,6 +537,26 @@ export function Arena({
             object.y < cameraY + viewHeight + 200,
         );
       const portal = project(LOBBY_PORTAL.x, LOBBY_PORTAL.y);
+      const portalTarget = portalInteraction(
+        { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL },
+        portal.x,
+        portal.y,
+      );
+      targets = [
+        ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
+        portalTarget,
+      ].sort((a, b) => a.y + a.height - b.y - b.height);
+      hovered = pickInteraction(targets, pointerPoint());
+      interaction.current = hovered
+        ? interactionInRange(hovered, authoritativePlayer)
+          ? hovered.source
+          : null
+        : nearby;
+      element.dataset.interactionTarget = hovered?.source.id ?? '';
+      element.dataset.interactionRange = hovered
+        ? String(interactionInRange(hovered, authoritativePlayer))
+        : '';
+
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
       ctx.imageSmoothingEnabled = false;
       if (prepared)
@@ -679,10 +753,11 @@ export function Arena({
             now,
             quality.current.bloom,
             'Forest portal',
-            interaction.current?.id === 'portal',
+            hovered === portalTarget ? hovered : null,
             quality.current.shadows,
             quality.current.wavingVegetation,
             obstacleOpacity({ x: portal.x, y: portal.y + 8, width: 64, height: 80 }, local),
+            interactionInRange(portalTarget, authoritativePlayer),
           );
           continue;
         }
@@ -754,6 +829,8 @@ export function Arena({
             );
           if (object.npc?.workstationId)
             drawNpcWork(ctx, object.npc, object.x, object.y, serverTime, quality.current.particles);
+          if (hovered && hovered.source.id === object.id.replace(/^(building|npc):/, ''))
+            drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
@@ -764,16 +841,8 @@ export function Arena({
               object.y - object.height - 9,
               object.name,
               object.npc?.silenced ? '#ff8794' : undefined,
-              object.id === 'npc:innkeeper' && interaction.current?.id === 'innkeeper',
             );
-          else if (object.name)
-            drawNameBadge(
-              ctx,
-              object.x,
-              object.y,
-              object.name,
-              object.id === `building:${interaction.current?.id}`,
-            );
+          else if (object.name) drawNameBadge(ctx, object.x, object.y, object.name);
           continue;
         }
         const player = layer.player!;

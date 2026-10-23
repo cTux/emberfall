@@ -216,19 +216,13 @@ export function drawCharacterName(
   y: number,
   name: string,
   color = '#ffffff',
-  active = false,
 ) {
   ctx.save();
   ctx.font = '8px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  const label = active ? `(E) ${name}` : name;
+  const label = name;
   const metrics = ctx.measureText(label);
-  if (active) {
-    const width = Math.ceil(metrics.width) + 12;
-    ctx.fillStyle = '#786747';
-    ctx.fillRect(x - width / 2, y - 2, width, 13);
-  }
   ctx.strokeStyle = '#101817';
   ctx.lineWidth = 2;
   ctx.lineJoin = 'round';
@@ -238,19 +232,13 @@ export function drawCharacterName(
   ctx.restore();
 }
 
-export function drawNameBadge(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  name: string,
-  active: boolean,
-) {
+export function drawNameBadge(ctx: CanvasRenderingContext2D, x: number, y: number, name: string) {
   ctx.save();
   ctx.font = '9px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
-  const label = active ? `(E) ${name}` : name;
+  const label = name;
   const width = ctx.measureText(label).width + 12;
-  ctx.fillStyle = active ? '#786747' : '#302d20';
+  ctx.fillStyle = '#302d20';
   ctx.fillRect(x - width / 2, y - 20, width, 13);
   ctx.fillStyle = '#e0c995';
   ctx.fillText(label, x, y - 10);
