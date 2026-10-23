@@ -91,6 +91,7 @@ export function Arena({
   onCursorAim,
   onInteract,
   onHitpoints,
+  onCatSpeech,
 }: {
   world: WorldState | null;
   playerId: string;
@@ -102,6 +103,7 @@ export function Arena({
   onCursorAim: (reader: (() => { aimX: number; aimY: number }) | null) => void;
   onInteract: (source: Interaction) => void;
   onHitpoints: (hp: Record<string, number>) => void;
+  onCatSpeech: (text: string) => void;
 }) {
   const {
     ref: dpsRef,
@@ -113,6 +115,7 @@ export function Arena({
   const latest = useRef(world);
   const sender = useRef(send);
   const activate = useRef(onInteract);
+  const catSpoke = useRef(onCatSpeech);
   const quality = useRef(graphics);
   const prefs = useRef(preferences);
   const frameRate = useRef<number | null>(null);
@@ -124,9 +127,10 @@ export function Arena({
     latest.current = world;
     sender.current = send;
     activate.current = onInteract;
+    catSpoke.current = onCatSpeech;
     quality.current = graphics;
     prefs.current = preferences;
-  }, [world, send, graphics, preferences, onInteract]);
+  }, [world, send, graphics, preferences, onInteract, onCatSpeech]);
   useEffect(() => {
     const element = canvas.current!;
     const renderer = new PixiContext(element);
@@ -571,7 +575,10 @@ export function Arena({
             name: 'Cat',
             x: cat.x,
             y: cat.y,
-            activate: () => catSpeech.pet(cat.id, performance.now()),
+            activate: () => {
+              const text = catSpeech.pet(cat.id, performance.now());
+              if (text) catSpoke.current(text);
+            },
           },
           x: cat.x - 12,
           y: cat.y - 24,
