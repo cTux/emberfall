@@ -36,6 +36,16 @@ are temporary per-world state, reset when the world empties or the server restar
 Marta retains her original idle art and uses a directional walking sheet; the other
 residents reuse existing character art with distinct names.
 
+Each resident has two outdoor workstations beside their home: Marta cooks and brews,
+Oswin mixes remedies and keeps records, Bram forges and smelts, and Nell practices
+archery and works leather. After 25–45 seconds of wandering, residents return to
+their next workstation, alternating between their two jobs. On arrival they face
+the equipment and animate working for 60–90 seconds of active work before wandering
+again. Player trading and directed speech, pending conversations and visible replies
+replace the work pose with the regular talking/idle pose. Work resumes at the same
+station with its remaining duration when conversation ends. Empty-village time does
+not consume work time. Workstations are scenery and grant no items or combat damage.
+
 A resident can greet a living connected player within 120 units or start a short
 exchange with another resident within 160 units. Automatic starts wait at least
 90 seconds per village, 180 seconds per NPC, and 240 seconds per greeted player

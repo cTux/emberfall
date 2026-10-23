@@ -82,6 +82,13 @@ Server tests live in [packages/server/src](../packages/server/src), game browser
 
 ## Start here by task
 
+Resident workstations: [SCENE-06](specs/scenes-and-village.md#scene-06--village-life),
+[registered work spots](../packages/core/src/mods/base/worlds/village.ts),
+[authoritative routines](../packages/server/src/npcs.ts),
+[work poses and effects](../packages/client/src/npc-art.ts),
+[server verification](../packages/server/src/npcs.test.ts) and
+[browser verification](../tests/npcs.spec.ts).
+
 New-runtime Innkeeper: [SCENE-01](specs/scenes-and-village.md#scene-01--village-and-interactions),
 [runtime design](design/new-runtime.md), [shared village definition](../packages/core/src/definitions/worlds/village.ts)
 and [browser verification](../tests/innkeeper.spec.ts).
