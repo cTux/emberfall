@@ -65,7 +65,7 @@ export function makeMask(sprite: HTMLCanvasElement) {
   const mask = document.createElement('canvas');
   mask.width = sprite.width;
   mask.height = sprite.height;
-  const ctx = mask.getContext('2d')!;
+  const ctx = mask.getContext('2d', { willReadFrequently: true })!;
   ctx.drawImage(sprite, 0, 0);
   ctx.globalCompositeOperation = 'source-in';
   ctx.fillStyle = '#10161e';
@@ -107,7 +107,7 @@ export function spriteMask(
     const tile = document.createElement('canvas');
     tile.width = frameWidth;
     tile.height = frameHeight;
-    const ctx = tile.getContext('2d')!;
+    const ctx = tile.getContext('2d', { willReadFrequently: trimBottom })!;
     if (flip) {
       ctx.translate(frameWidth, 0);
       ctx.scale(-1, 1);
