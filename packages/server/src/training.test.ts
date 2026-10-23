@@ -1,6 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FOREST, TRAINING_ZONES, inTrainingZone, WARDROBE, forestDistance } from '@emberfall/core';
+import {
+  ARENA,
+  FOREST,
+  TRAINING_ZONES,
+  inTrainingZone,
+  WARDROBE,
+  forestDistance,
+  wrappedDelta,
+} from '@emberfall/core';
 import {
   tickTraining,
   tickDebuffs,
@@ -19,7 +27,7 @@ const hero = (): Player => ({
   id: 'p',
   name: 'Hero',
   color: 0,
-  x: 125,
+  x: TRAINING_ZONES[0].x - 15,
   y: 355,
 });
 
@@ -36,7 +44,7 @@ test('boar leaves its wardrobe spawn, follows its owner and attacks training tar
   p.y = 360;
   for (let now = 10050; now <= 12000; now += 50) tickTraining(s, [p], now, 0.05);
   assert(forestDistance(p.bear!, p) <= 20.01, 'boar must escape the wardrobe and follow');
-  p.x = 175;
+  p.x = TRAINING_ZONES[0].x + 35;
   p.y = 355;
   let bearHit = false;
   for (let now = 12050; now <= 16000; now += 50) {
@@ -122,7 +130,7 @@ test('training area boundaries gate server attacks, Bear hunting, and client swi
 
 test('all lobby classes damage dummies, Bear contributes, and forest players cannot attack them', async () => {
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'] as const) {
-    const p = { ...hero(), classId, x: 175 };
+    const p = { ...hero(), classId, x: TRAINING_ZONES[0].x + 35 };
     const s = tickTraining(undefined, [p], 10000, 0.05);
     for (let now = 10050; now < 11000; now += 50) tickTraining(s, [p], now, 0.05);
     assert(s.enemies[0].hitpoints < 1e9, classId);
@@ -155,7 +163,14 @@ test('boar reaches a stationary dummy from every side and keeps landing tusk att
     for (let now = 10050; now <= 12500; now += 50) tickTraining(s, [p], now, 0.05);
     const bear = p.bear!,
       dummy = s.enemies[0];
-    assert(Math.abs(Math.hypot(bear.x - dummy.x, bear.y - dummy.y) - 80) < 1e-6);
+    assert(
+      Math.abs(
+        Math.hypot(
+          wrappedDelta(bear.x, dummy.x, ARENA.width),
+          wrappedDelta(bear.y, dummy.y, ARENA.height),
+        ) - 80,
+      ) < 1e-6,
+    );
     assert.equal(bear.moving, false);
     assert(p.dps! >= 1.2, 'at least three boar hits, with player roots disabled');
     assert(s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5));

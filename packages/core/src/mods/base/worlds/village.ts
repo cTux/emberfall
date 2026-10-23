@@ -140,8 +140,8 @@ export const NPC_STOPS = [
   { x: 330, y: 440 },
 ] as const;
 export const TRAINING_ZONES = [
-  { x: 140, y: 355, radius: 270, clearingRadius: 135 },
-  { x: 820, y: 355, radius: 270, clearingRadius: 135 },
+  { x: 60, y: 355, radius: 270, clearingRadius: 135 },
+  { x: 1000, y: 355, radius: 270, clearingRadius: 135 },
 ] as const;
 export const BUILDINGS = [
   { id: 'inn', name: 'Inn', x: 235, y: 225, doorX: 219, sourceX: 0, sourceWidth: 64 },
