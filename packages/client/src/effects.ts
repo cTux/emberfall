@@ -4,7 +4,7 @@ import type { WorldState } from '@emberfall/common';
 export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {
   if (!text) return;
   ctx.save();
-  ctx.font = '13px "Alegreya Sans", sans-serif';
+  ctx.font = '10px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lines = [''];
@@ -14,8 +14,8 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
     if (line && ctx.measureText(next).width > 200) lines.push(word);
     else lines[lines.length - 1] = next;
   }
-  const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 20;
-  const height = lines.length * 17 + 14;
+  const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 16;
+  const height = lines.length * 13 + 10;
   const bottom = y - 48; // Two units above the player health bar; overlays the debuff area.
   const left = x - width / 2;
   const right = x + width / 2;
@@ -41,7 +41,7 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   ctx.shadowColor = 'transparent';
   ctx.stroke();
   ctx.fillStyle = '#f4ecd6';
-  lines.forEach((line, i) => ctx.fillText(line, x, top + 15.5 + i * 17));
+  lines.forEach((line, i) => ctx.fillText(line, x, top + 11.5 + i * 13));
   ctx.restore();
 }
 
