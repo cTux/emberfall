@@ -309,7 +309,7 @@ export function backpackViews(items: BackpackItem[]) {
         : gear?.stats.armor
           ? `Armor: ${gear.stats.armor}`
           : definition.kind === 'resource'
-            ? 'Gathered resource · stacks to 200'
+            ? ''
             : 'Weapon',
     };
   });
