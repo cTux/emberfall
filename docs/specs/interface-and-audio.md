@@ -49,6 +49,10 @@ example, Wardrobe, Gather tree or Return to village). It follows the same target
 and confirmed range as the E action in village and forest, including wrapped
 seams. It disappears when no action is available, the player dies, or a modal or
 text entry blocks gameplay input. Other players do not display this prompt.
+The prompt uses a dark rounded capsule with a thin bronze outline. Its left end
+and the raised E button are concentric, with equal left, top and bottom inset.
+The button has a filled shaded face, an evenly thick gold rim and a separate drop
+shadow. Highlights provide depth without changing the circular rim's thickness.
 The badge is visually separate from the message so a controller glyph can replace
 it later; controller support is outside this change.
 
