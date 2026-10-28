@@ -30,6 +30,9 @@ const nodes = Array.from({ length: 30 }, (_, index) => ({
   learned: false,
   available: true,
   rank: 0,
+  kind: [1, 3, 5, 7].includes(Math.floor(index / 3))
+    ? ('ability' as const)
+    : ('extension' as const),
 }));
 export const Interactive: Story = {
   args: { nodes, columns, points: 2, onLearn: () => {} },

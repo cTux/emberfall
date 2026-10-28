@@ -163,7 +163,9 @@ Sources: [MUI installation](https://mui.com/material-ui/getting-started/installa
 `TalentTree` presents three independent talent columns in a native scrollable
 layout. The host supplies column labels, row/column positions, level requirements,
 ranks, learned/available state, descriptions and icons. Themed tooltips describe
-both ranks and learning requirements. Buttons support keyboard and touch; the
+both active and passive talents. Optional `kind: 'ability'` adds a blue outline
+around the icon and an active-ability tooltip hint; passive styling is unchanged.
+Tooltips also describe both ranks and learning requirements. Buttons support keyboard and touch; the
 host owns point budgets, effects and learning callbacks. Right-click or F2 on an
 `ActionBar` slot invokes its optional `onChoose` callback, including during a
 cooldown. The host owns the learned-ability picker and saved assignments.

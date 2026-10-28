@@ -85,6 +85,11 @@ An optional controlled companion view adds a shorter, narrower HP row beneath th
 
 ## Content-driven views
 
+`TalentIcon` uses measured pixel boundaries for the uneven five-by-six class
+atlases, shared by the talent tree and action bar. `TalentTree` receives the
+catalog's optional `kind` and outlines active icons in `info.main`; rank borders
+and passive styling remain independent of this marker.
+
 Available classes, equipment slots and extra numeric stat rows derive from the
 initialized core catalog. Classes and enemies declare existing art families;
 equipment slots declare their labels and grid positions. Pure client content
@@ -96,6 +101,13 @@ receives view data and has no game-package dependency. See the
 [mod design](mods.md#make-registry-data-drive-gameplay).
 
 ## Rendering pipeline and caches
+
+`day-night.ts` derives the one-hour ambient sprite tint, daylight and local-light
+intensity from replicated epoch `serverNow`, independently of paused combat time.
+Arena and forest share it. Pixi multiplies ordinary image tints without changing
+text, geometry warnings, or additive light passes; no textures or shadow caches
+are rebuilt for the cycle. `effects.ts` scales sunlight shafts by daylight.
+The clock uses smooth interpolation between palette keys and wraps continuously.
 
 [art.ts](../../packages/client/src/art.ts) bakes softer entity tones once when
 loading packaged actor and scenery atlases. Dark pixels borrow a little color

@@ -42,6 +42,12 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
+Day/night cycle: [GRAPHICS-03](specs/graphics.md#graphics-03--scenery-and-atmosphere),
+[palette and clock](../packages/client/src/day-night.ts),
+[renderer](../packages/client/src/rendering/pixi-context.ts),
+[clock checks](../tests/day-night.test.ts) and
+[browser checks](../tests/day-night.spec.ts).
+
 Lobby portal navigation: [SCENE-03](specs/scenes-and-village.md#scene-03--voting-and-entry),
 [shared navigation renderer](../packages/client/src/navigation.ts) and
 [off-screen and wrapped direction checks](../tests/navigation.test.ts).

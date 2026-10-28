@@ -69,6 +69,7 @@ class Gradient {
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
  */
 export class PixiContext {
+  ambientTint = 0xffffff;
   readonly canvas: HTMLCanvasElement;
   readonly ecs = new World<Visual>();
   private stage = new Container();
@@ -669,7 +670,15 @@ export class PixiContext {
     }
     sprite.texture = texture;
     const tint = this.color(this.shadowPass ? this.state.shadowColor : this.state.spriteTint);
-    sprite.tint = tint.toNumber();
+    const base = tint.toNumber();
+    const ambient =
+      this.shadowPass || this.state.globalCompositeOperation !== 'source-over'
+        ? 0xffffff
+        : this.ambientTint;
+    sprite.tint =
+      (Math.round((((base >> 16) & 255) * ((ambient >> 16) & 255)) / 255) << 16) |
+      (Math.round((((base >> 8) & 255) * ((ambient >> 8) & 255)) / 255) << 8) |
+      Math.round(((base & 255) * (ambient & 255)) / 255);
     sprite.alpha *= tint.alpha;
     this.applyTransform(sprite, dx, dy, dw / sw, dh / sh);
     if (

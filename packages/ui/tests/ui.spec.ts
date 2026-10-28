@@ -801,6 +801,21 @@ test('talents support two keyboard ranks and a zero-point state', async ({ page 
   await expect(talent).toHaveAttribute('aria-disabled', 'true');
 });
 
+test('active talent icons have a distinct frame while passives keep their styling', async ({
+  page,
+}) => {
+  await page.goto(story('components-talenttree--interactive'));
+  const passive = page.locator('[data-talent-node="node-0"]');
+  const active = page.locator('[data-talent-node="node-3"]');
+  await expect(passive.locator(':scope > div').first()).toHaveCSS('outline-style', 'none');
+  await expect(active.locator(':scope > div').first()).toHaveCSS('outline-width', '2px');
+  await active.focus();
+  await expect(page.getByRole('tooltip')).toContainText('Active ability');
+  await page.keyboard.press('Enter');
+  await expect(active).toHaveAccessibleName(/rank 1 of 2/);
+  await expect(active.locator(':scope > div').first()).toHaveCSS('outline-width', '2px');
+});
+
 test('talent columns fit narrow screens without spending points', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto(story('components-talenttree--interactive'));

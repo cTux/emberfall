@@ -31,6 +31,7 @@ import type { GraphicsSettings } from './graphics';
 import type { Preferences } from './preferences';
 import { castShadow, spriteMask, makeMask } from './lighting';
 import type { Caster } from './lighting';
+import { dayNight } from './day-night';
 import { lightTexture } from './village';
 import {
   drawPlayerHealth,
@@ -256,6 +257,8 @@ export function forestRenderer(
       lastScene = world?.scene?.id;
     }
     const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
+    const cycle = dayNight(world?.serverNow ?? 0);
+    (ctx as unknown as PixiContext).ambientTint = cycle.tint;
     if (
       environmentArt.naturalWidth &&
       terrainArt.complete &&
@@ -696,6 +699,7 @@ export function forestRenderer(
     if (world?.scene) drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles);
     if (quality.lighting) {
       ctx.save();
+      ctx.globalAlpha = cycle.lightAlpha;
       ctx.globalCompositeOperation = 'screen';
       for (const p of rendered.filter((a) => a.player && a.player.hitpoints > 0)) {
         const light = {
@@ -712,7 +716,7 @@ export function forestRenderer(
     }
     if (quality.particles) drawParticles(ctx, cameraX, cameraY, width, height, now);
     if (quality.fog) drawFog(ctx, cameraX, cameraY, width, height, now);
-    drawAtmosphere(ctx, cameraX, cameraY, width, height, now, quality);
+    drawAtmosphere(ctx, cameraX, cameraY, width, height, now, quality, cycle.daylight);
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near, true);
     if (quality.vignette) drawVignette(ctx, cameraX, cameraY, width, height);
     if (prefs.damageNumbers) drawDamageNumbers(ctx, world?.scene?.damage ?? [], near, serverTime);
