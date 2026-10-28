@@ -41,6 +41,12 @@ export const extensionMod: GameMod = {
     r.classes.register({
       id: 'fixture:scout',
       label: 'Scout',
+      details: {
+        weapon: 'Bow',
+        weaponDescription: 'Test bow',
+        spell: 'Scout bolt',
+        spellDescription: 'Test bolt',
+      },
       art: 'ranger',
       sprite: '/assets/ranger.png',
       attack: 'fixture:bolt',

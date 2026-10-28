@@ -31,7 +31,7 @@ import { companionCaster, drawCompanion } from './companion';
 import { critterCaster, drawCritter } from './critters';
 import { CatSpeech } from './cat-speech';
 import { drawNavigation } from './navigation';
-import { useDraggable } from '@emberfall/ui';
+import { DamageMeter } from './DamageMeter';
 import { PerformanceGraph } from './PerformanceGraph';
 import { movementFacing } from './facing';
 import { LocalMovement } from './local-movement';
@@ -118,11 +118,6 @@ export function Arena({
   onHitpoints: (hp: Record<string, number>) => void;
   onCatSpeech: (text: string) => void;
 }) {
-  const {
-    ref: dpsRef,
-    style: dpsStyle,
-    handleProps: dpsHandle,
-  } = useDraggable('panel.dps', !!world);
   const canvas = useRef<HTMLCanvasElement>(null);
   const { reportError } = useChat();
   const lootHints = useRef(new LootHints());
@@ -1338,21 +1333,7 @@ export function Arena({
         showFps={preferences.fps}
         showLatency={preferences.latency}
       />
-      {world && preferences.dps && (
-        <aside
-          className='dps-meter'
-          ref={dpsRef}
-          style={dpsStyle}
-          {...dpsHandle}
-          aria-label='Damage per second'
-          title='Your damage over the last 5 seconds, including ailments and your companion'
-        >
-          <strong>
-            {Math.round(world.players.find((player) => player.id === playerId)?.dps ?? 0)} DPS
-          </strong>
-          <small>Last 5 seconds</small>
-        </aside>
-      )}
+      {world && preferences.dps && <DamageMeter players={world.players} playerId={playerId} />}
     </>
   );
 }

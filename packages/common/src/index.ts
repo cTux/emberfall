@@ -159,6 +159,11 @@ export interface Player extends CharacterProgress {
   reconnecting?: boolean;
   chat?: string;
   dps?: number;
+  damageMeter?: {
+    classId: ClassId;
+    total: number;
+    abilities: Record<string, { damage: number; dps: number }>;
+  };
   bear?: Bear;
   classId?: ClassId;
   classes?: Record<ClassId, CharacterProgress>;
