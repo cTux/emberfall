@@ -1,6 +1,46 @@
 import { test, expect } from './fixtures';
-import { CLASS_IDS, TRAINING_ZONES, starterEquipment } from '../packages/core/src/index.ts';
+import {
+  CLASS_IDS,
+  TRAINING_ZONES,
+  starterEquipment,
+  learnTalent,
+  equipTalent,
+  talentNodeId,
+} from '../packages/core/src/index.ts';
 import { classDetails } from '../packages/client/src/class-details';
+
+test('action bar slots follow custom cursor size and native fallback', async ({ page, game }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  player.level = 20;
+  const nodeId = talentNodeId('warrior', 0, 1);
+  learnTalent(player, nodeId);
+  equipTalent(player, 0, nodeId);
+  const bar = page.getByRole('region', { name: 'Action bar', exact: true });
+  const ability = bar.getByRole('button', { name: 'Choose ability for slot 1: Cleaving Strike' });
+  await expect(ability).toBeVisible();
+  for (const size of [32, 48, 64, null]) {
+    await page.locator('body').evaluate((body, size) => {
+      body.dataset.customCursor = String(size !== null);
+      if (size !== null) body.dataset.cursorSize = String(size);
+    }, size);
+    for (const slot of [ability, bar.getByRole('button', { name: 'Empty ability slot 2' })]) {
+      await slot.hover();
+      await expect(slot).toHaveCSS(
+        'cursor',
+        size === null ? 'pointer' : new RegExp(`/${size}/pointer\\.png`),
+      );
+    }
+    await expect(bar.getByRole('group', { name: 'Slash', exact: true })).toHaveCSS(
+      'cursor',
+      size === null ? 'default' : new RegExp(`/${size}/default\\.png`),
+    );
+  }
+  await page.screenshot({ path: 'test-results/action-bar-cursors.png' });
+});
 
 test('action bar follows confirmed training and forest attacks, equipment and viewport', async ({
   page,

@@ -2,6 +2,39 @@ import { test, expect } from './fixtures';
 import { createTrainingScene, hitEnemy } from '../packages/core/src/index.ts';
 import { randomUUID } from 'node:crypto';
 
+test('DPS meter uses custom cursors and respects cursor preferences', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('switch', { name: 'DPS meter', exact: true }).check();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
+  const meter = page.getByLabel('Damage per second', { exact: true });
+  const header = meter.locator('header');
+  for (const size of [32, 48, 64, null]) {
+    await page.locator('body').evaluate((body, size) => {
+      body.dataset.customCursor = String(size !== null);
+      if (size !== null) body.dataset.cursorSize = String(size);
+    }, size);
+    const cursor = (name: string) => (size === null ? name : new RegExp(`/${size}/${name}\\.png`));
+    await expect(meter).toHaveCSS('cursor', cursor('default'));
+    await expect(header).toHaveCSS('cursor', cursor('grab'));
+    const box = (await header.boundingBox())!;
+    await page.mouse.move(box.x + 30, box.y + box.height / 2);
+    await page.mouse.down();
+    await expect(header).toHaveCSS('cursor', cursor('grabbing'));
+    await page.mouse.move(box.x + 50, box.y + box.height / 2 + 10);
+    await page.mouse.up();
+    await expect(header).toHaveCSS('cursor', cursor('grab'));
+    const row = meter.locator('button.damage-meter-row').first();
+    await expect(row).toHaveCSS('cursor', cursor('pointer'));
+    await row.click();
+    const back = meter.getByRole('button', { name: 'Back to party' });
+    await expect(back).toHaveCSS('cursor', cursor('pointer'));
+    await expect(meter.getByText('No damage recorded.')).toHaveCSS('cursor', cursor('default'));
+    await back.click();
+  }
+});
+
 test('DPS meter toggles independently of performance graphs and persists across reloads', async ({
   page,
 }) => {

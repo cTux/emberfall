@@ -220,7 +220,7 @@ canvas {
   padding: 3px;
   color: #fff;
   font-size: 12px;
-  cursor: default;
+  cursor: var(--cursor-default);
 
   header {
     display: flex;
@@ -229,14 +229,12 @@ canvas {
     min-height: 25px;
     padding: 0 6px;
     background: linear-gradient(#38433f, #18221e);
-    cursor: move;
   }
 
   header button {
     color: inherit;
     background: none;
     border: 0;
-    cursor: pointer;
     font-size: 20px;
   }
 }
@@ -267,10 +265,6 @@ canvas {
 
   > span:not(.damage-meter-bar) {
     position: relative;
-  }
-
-  &:is(button) {
-    cursor: pointer;
   }
 
   &:is(button):hover {
