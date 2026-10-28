@@ -50,6 +50,9 @@ and confirmed range as the E action in village and forest, including wrapped
 seams. It disappears when no action is available, the player dies, or a modal or
 text entry blocks gameplay input. Other players do not display this prompt.
 Speech bubbles draw above the prompt wherever they overlap.
+During gathering the player prompt is replaced by the thin yellow timed-activity
+bar above the resource, with a green zone, white indicator, remaining seconds and
+an E hint (see [VILLAGE-07](scenes-and-village.md#village-07--gathering)).
 Settings → Gameplay includes **Hide gathering hint during combat**, enabled by
 default, including for existing saved preferences. It hides only gathering prompts
 in active forest scenes and while inside a village training zone with active

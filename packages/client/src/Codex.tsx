@@ -29,8 +29,9 @@ const chapters = [
           <li>
             <kbd>E</kbd> or left click — interact with a hovered building, Marta the Innkeeper, or
             portal while in range. Yellow outlines are always thin. E also works nearby without
-            hovering. Trees, plants and rocks can be gathered the same way; trees allow five gathers
-            and resources restore after one hour.
+            hovering. Gathering takes five seconds. Press E as the white indicator crosses the green
+            zone above the resource to save two seconds per hit. There is no gathering cooldown.
+            Trees allow five gathers and resources restore after one hour.
           </li>
           <li>
             <kbd>I</kbd> — open or close Inventory and character stats.

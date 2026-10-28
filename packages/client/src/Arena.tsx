@@ -1,6 +1,7 @@
 import { useChat } from './ChatProvider';
-import { resourceNodes, resourceState, nearbyResource } from '@emberfall/core';
+import { resourceNodes, resourceState, nearbyResource, activityIndicator } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
+import { drawTimedActivity } from './timed-activity';
 import {
   sceneryInteraction,
   pickInteraction,
@@ -117,6 +118,7 @@ export function Arena({
   const canvas = useRef<HTMLCanvasElement>(null);
   const { reportError } = useChat();
   const latest = useRef(world);
+  const receivedAt = useRef(0);
   const sender = useRef(send);
   const activate = useRef(onInteract);
   const catSpoke = useRef(onCatSpeech);
@@ -130,6 +132,7 @@ export function Arena({
     snapshotAge: null,
   });
   useEffect(() => {
+    if (latest.current !== world) receivedAt.current = performance.now();
     latest.current = world;
     sender.current = send;
     activate.current = onInteract;
@@ -435,6 +438,37 @@ export function Arena({
       const authoritative = latest.current;
       const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
       const drawPrompt = () => {
+        const activity = authoritativePlayer?.gathering;
+        element.dataset.gathering = activity?.nodeId ?? '';
+        element.dataset.gatheringCheck = activity?.checkId ?? '';
+        if (activity && local) {
+          element.dataset.interactionPrompt = '';
+          const node = resourceNodes(local, 250).find((node) => node.id === activity.nodeId);
+          if (node) {
+            const activityTime =
+              (authoritative?.serverNow ?? 0) + Math.max(0, now - receivedAt.current);
+            element.dataset.gatheringIndicator = String(activityIndicator(activity, activityTime));
+            element.dataset.gatheringZone = String(activity.zoneStart);
+            drawTimedActivity(ctx, activity, node.x, node.y - node.size - 26, activityTime);
+            interaction.current = {
+              id: `gather:${node.id}`,
+              name: `Gather ${node.kind}`,
+              x: node.x,
+              y: node.y,
+              activate: () => {
+                if (blocked()) return;
+                sender.current({
+                  type: 'gather',
+                  nodeId: node.id,
+                  epoch: activity.epoch,
+                  checkId: activity.checkId,
+                  at: activityTime,
+                });
+              },
+            };
+          }
+          return;
+        }
         const hideGatheringHint =
           prefs.current.hideGatheringHintInCombat &&
           interaction.current?.id.startsWith('gather:') &&

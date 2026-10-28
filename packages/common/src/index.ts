@@ -39,6 +39,8 @@ export const clientMessage = z.discriminatedUnion('type', [
     type: z.literal('gather'),
     nodeId: z.string().min(1).max(64),
     epoch: z.string().min(1).max(64),
+    checkId: z.string().min(1).max(64).optional(),
+    at: z.number().finite().nonnegative().optional(),
   }),
   z.object({ type: z.literal('resetTalents'), classId: classSchema }),
   z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
@@ -135,6 +137,7 @@ export const clientMessage = z.discriminatedUnion('type', [
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export interface Player extends CharacterProgress {
+  gathering?: TimedActivity & { nodeId: string; epoch: string };
   // coins and storages project the account Storehouse, not the selected class.
   reconnecting?: boolean;
   chat?: string;
@@ -192,6 +195,14 @@ export interface WorldSummary {
 export interface ResourceState {
   remaining: number;
   restoresAt: number;
+}
+export interface TimedActivity {
+  startedAt: number;
+  endsAt: number;
+  durationMs: number;
+  zoneStart: number;
+  zoneAt: number;
+  checkId: string;
 }
 export interface WorldState {
   resources?: Record<string, ResourceState>;
