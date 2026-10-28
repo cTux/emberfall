@@ -5,6 +5,7 @@ export interface Preferences {
   customCursor: boolean;
   cursorSize: 32 | 48 | 64;
   autoAttack: boolean;
+  autoCastAbilities?: string[];
   autoTarget: boolean;
   autoLoot: boolean;
   lootHints: boolean;
@@ -45,6 +46,10 @@ export function loadPreferences(): Preferences {
   };
   try {
     const saved = JSON.parse(localStorage.getItem('emberfall-new.preferences') ?? '{}');
+    if (Array.isArray(saved?.autoCastAbilities))
+      result.autoCastAbilities = saved.autoCastAbilities
+        .filter((id: unknown) => typeof id === 'string' && id.length <= 128)
+        .slice(0, 128);
     if (typeof saved?.font === 'string' && Object.hasOwn(GAME_FONTS, saved.font))
       result.font = saved.font;
     for (const key of [

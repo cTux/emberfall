@@ -9,7 +9,8 @@ export interface ActionBarAbility {
   icon: ReactNode;
   cooldownMs: number;
   remainingMs: number;
-  onCast?: () => void;
+  autoCast?: boolean;
+  onToggleAutoCast?: () => void;
 }
 
 export interface ActionBarProps {
@@ -18,6 +19,36 @@ export interface ActionBarProps {
   autoFire?: boolean;
   autoTarget?: boolean;
   onChoose?: (slot: number, anchor: HTMLElement) => void;
+}
+
+function AutoCastBorder() {
+  return (
+    <svg
+      data-auto-cast-border
+      aria-hidden='true'
+      viewBox='0 0 100 100'
+      preserveAspectRatio='none'
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 2,
+        pointerEvents: 'none',
+      }}
+    >
+      <rect
+        x='3'
+        y='3'
+        width='94'
+        height='94'
+        fill='none'
+        stroke='currentColor'
+        strokeWidth='3'
+        strokeDasharray='12 8'
+      />
+    </svg>
+  );
 }
 
 function AbilityCooldown({ ability }: { ability: ActionBarAbility }) {
@@ -96,7 +127,23 @@ export function ActionBar({
             </Stack>
           }
         >
-          <ActionSlotStyled role='group' aria-label={baseAbility.name} tabIndex={0}>
+          <ActionSlotStyled
+            role='group'
+            aria-label={baseAbility.name}
+            tabIndex={0}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              baseAbility.onToggleAutoCast?.();
+            }}
+            onKeyDown={(event) => {
+              if (event.shiftKey && event.key === 'F10') {
+                event.preventDefault();
+                baseAbility.onToggleAutoCast?.();
+              }
+            }}
+            data-auto-cast={autoFire}
+          >
+            {autoFire && <AutoCastBorder />}
             {baseAbility.icon}
             <AbilityCooldown ability={baseAbility} />
             <ActionIndicatorStyled
@@ -130,37 +177,37 @@ export function ActionBar({
               role={onChoose ? 'button' : 'group'}
               tabIndex={onChoose ? 0 : undefined}
               aria-label={`Empty ability slot ${slot}`}
-              onContextMenu={(event) => {
-                event.preventDefault();
-                onChoose?.(slot - 1, event.currentTarget);
-              }}
+              onClick={(event) => onChoose?.(slot - 1, event.currentTarget)}
               onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === 'F2')
+                if (event.key === 'Enter' || event.key === ' ' || event.key === 'F2') {
+                  event.preventDefault();
                   onChoose?.(slot - 1, event.currentTarget);
+                }
               }}
             >
               <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
             </ActionSlotStyled>
           );
-        const remaining = Math.max(0, ability.remainingMs);
         return (
           <Tooltip
             describeChild
             key={slot}
-            title={`${ability.name} · ${(ability.cooldownMs / 1000).toFixed(1)}s cooldown · ${slot} to cast`}
+            title={`${ability.name} · ${(ability.cooldownMs / 1000).toFixed(1)}s cooldown · ${slot} to cast · LMB to choose · RMB to toggle auto-cast (${ability.autoCast ? 'On' : 'Off'})`}
           >
             <AbilityButtonStyled
               type='button'
-              aria-label={`Cast ${ability.name} (${slot})`}
-              aria-disabled={remaining > 0}
-              onClick={() => {
-                if (remaining <= 0) ability.onCast?.();
-              }}
+              aria-label={`Choose ability for slot ${slot}: ${ability.name}`}
+              data-auto-cast={!!ability.autoCast}
+              onClick={(event) => onChoose?.(slot - 1, event.currentTarget)}
               onContextMenu={(event) => {
                 event.preventDefault();
-                onChoose?.(slot - 1, event.currentTarget);
+                ability.onToggleAutoCast?.();
               }}
               onKeyDown={(event) => {
+                if (event.shiftKey && event.key === 'F10') {
+                  event.preventDefault();
+                  ability.onToggleAutoCast?.();
+                }
                 if (event.key === 'F2') onChoose?.(slot - 1, event.currentTarget);
               }}
               sx={{
@@ -170,6 +217,7 @@ export function ActionBar({
               }}
             >
               {ability.icon}
+              {ability.autoCast && <AutoCastBorder />}
               <AbilityCooldown ability={ability} />
               <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
             </AbilityButtonStyled>

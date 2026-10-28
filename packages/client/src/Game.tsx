@@ -560,6 +560,8 @@ export function Game({
               <WeaponActionBar
                 send={send}
                 onCast={castTalent}
+                setPreferences={setPreferences}
+                canAutoCast={!unavailable && !menu}
                 player={me}
                 now={world?.serverNow ?? 0}
                 preferences={preferences}

@@ -66,7 +66,9 @@ icon above its text on narrow screens. Its host window owns vertical scrolling;
 the tree does not create a nested scroll area. The window title and close button
 remain visible while scrolling through all ten rows.
 
-`ActionBar` displays an optional `baseAbility` and four controlled optional talent slots (`abilities`). Learned slots expose click callbacks, number badges and cooldown feedback; missing entries stay empty.
+`ActionBar` displays an optional `baseAbility` and four controlled optional talent slots (`abilities`). LMB invokes `onChoose`, including during cooldown; RMB invokes the ability
+`onToggleAutoCast` callback. `autoCast` displays marching dashed borders with a
+steady reduced-motion variant. Number badges and cooldown feedback remain; missing entries stay empty.
 Bottom-right hotkey badges show LMB and 1–4; a bottom-left target icon accompanies
 LMB. Controlled `autoFire` and `autoTarget` flags independently glow and pulse the
 base-slot indicators, with a steady glow for reduced motion. They default to false.

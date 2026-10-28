@@ -92,7 +92,9 @@ test('Mending Seed heals a party teammate through the server and shows its targe
     const nodeId = talentNodeId('druid', 2, 1);
     learnTalent(healer, nodeId);
     equipTalent(healer, 0, nodeId);
-    await expect(page.getByRole('button', { name: 'Cast Mending Seed (1)' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Choose ability for slot 1: Mending Seed' }),
+    ).toBeVisible();
     healer.hitpoints = healer.maxHitpoints * 0.8;
     patient.hitpoints = patient.maxHitpoints * 0.2;
     const before = patient.hitpoints;
@@ -111,7 +113,7 @@ test('Mending Seed heals a party teammate through the server and shows its targe
   }
 });
 
-test('three independent columns support rank learning, custom tooltips, RMB assignment, casts and saved loadouts', async ({
+test('three independent columns support rank learning, custom tooltips, LMB assignment, casts and saved loadouts', async ({
   page,
   game,
 }) => {
@@ -146,21 +148,46 @@ test('three independent columns support rank learning, custom tooltips, RMB assi
   await page.screenshot({ path: 'test-results/talents-narrow.png' });
   await page.keyboard.press('n');
   const bar = page.getByRole('region', { name: 'Action bar', exact: true });
-  await bar.getByRole('button', { name: 'Empty ability slot 1' }).click({ button: 'right' });
+  await bar.getByRole('button', { name: 'Empty ability slot 1' }).click();
   await page.getByRole('menuitem', { name: 'Cleaving Strike', exact: true }).click();
-  const cast = bar.getByRole('button', { name: 'Cast Cleaving Strike (1)' });
+  const cast = bar.getByRole('button', { name: 'Choose ability for slot 1: Cleaving Strike' });
   await expect(cast).toBeVisible();
   player.x = TRAINING_ZONES[0].x;
   player.y = TRAINING_ZONES[0].y;
   await page.mouse.move(190, 350);
   await page.keyboard.press('1');
   await expect.poll(() => player.talentCooldowns?.['talent:warrior:0'] ?? 0).toBeGreaterThan(0);
-  await expect(cast).toHaveAttribute('aria-disabled', 'true');
+  await expect(cast.getByRole('progressbar')).toBeVisible();
   await cast.click({ button: 'right' });
+  await expect(cast).toHaveAttribute('data-auto-cast', 'true');
+  await page.keyboard.press('f');
+  await expect(cast).toHaveAttribute('data-auto-cast', 'false');
+  const cooldown = player.talentCooldowns!['talent:warrior:0'];
+  player.talentCooldowns!['talent:warrior:0'] = 0;
+  await page.waitForTimeout(500);
+  expect(player.talentCooldowns!['talent:warrior:0']).toBe(0);
+  await page.keyboard.press('f');
+  await expect.poll(() => player.talentCooldowns!['talent:warrior:0']).toBeGreaterThan(cooldown);
+  await cast.click();
+  const clear = page.getByRole('menuitem', { name: 'Clear slot', exact: true });
+  const abilityTile = page.getByRole('menuitem', { name: 'Cleaving Strike', exact: true });
+  await expect(page.locator('.MuiMenu-paper')).toHaveCSS('transform', 'none');
+  expect((await clear.boundingBox())!.width).toBe((await abilityTile.boundingBox())!.width);
+  expect((await clear.boundingBox())!.height).toBe((await abilityTile.boundingBox())!.height);
+  await expect(clear.locator('img')).toHaveJSProperty('naturalWidth', 1254);
+  await page.screenshot({ path: 'test-results/action-bar-icon-picker.png' });
   await expect(page.getByRole('menuitem', { name: 'Cleaving Strike', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Cast Cleaving Strike (1)' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Choose ability for slot 1: Cleaving Strike' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Choose ability for slot 1: Cleaving Strike' }),
+  ).toHaveAttribute('data-auto-cast', 'true');
+  await page.getByRole('button', { name: 'Choose ability for slot 1: Cleaving Strike' }).click();
+  await page.getByRole('menuitem', { name: 'Clear slot', exact: true }).click();
+  await expect(bar.getByRole('button', { name: 'Empty ability slot 1' })).toBeVisible();
   player.x = BULLSEYE!.x;
   player.y = BULLSEYE!.y - 15;
   player.coins = 100;
@@ -212,7 +239,9 @@ test('all class columns, generated icons and confirmed cast effects render in th
       )!;
       equipTalent(player, 0, node.id);
       player.talentCooldowns = {};
-      await expect(page.getByRole('button', { name: `Cast ${node.name} (1)` })).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: `Choose ability for slot 1: ${node.name}` }),
+      ).toBeVisible();
       await page.mouse.move(780, 480);
       const before = world.training?.sequence ?? 0;
       await page.keyboard.press('1');

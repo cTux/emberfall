@@ -1,9 +1,10 @@
 import type { Player, ClientMessage } from '@emberfall/common';
-import { useState } from 'react';
-import { Menu, MenuItem } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import { Menu, MenuItem, Tooltip } from '@mui/material';
 import { TalentIcon } from './talent-icons';
 import {
   TALENT_TREE,
+  inTrainingZone,
   isTalentLearned,
   talentAbility,
   talentCooldownMs,
@@ -11,6 +12,7 @@ import {
 } from '@emberfall/core';
 import { characterStats } from '@emberfall/core';
 import { ActionBar } from '@emberfall/ui';
+import { clientAsset } from './urls';
 import { spellSrc } from './class-art';
 import { classDetails } from './class-details';
 import type { Preferences } from './preferences';
@@ -21,15 +23,53 @@ export function WeaponActionBar({
   preferences,
   onCast,
   send,
+  setPreferences,
+  canAutoCast,
 }: {
   player: Player;
   onCast: (slot: number) => void;
   send: (message: ClientMessage) => void;
   now: number;
-  preferences: Pick<Preferences, 'autoAttack' | 'autoTarget'>;
+  preferences: Preferences;
+  setPreferences: import('react').Dispatch<import('react').SetStateAction<Preferences>>;
+  canAutoCast: boolean;
 }) {
   const stats = characterStats(player);
   const [picker, setPicker] = useState<{ slot: number; anchor: HTMLElement } | null>(null);
+  const lastRequest = useRef(0);
+  useEffect(() => {
+    if (
+      !canAutoCast ||
+      picker ||
+      !preferences.autoAttack ||
+      player.hitpoints <= 0 ||
+      !stats.hasWeapon ||
+      document.hidden ||
+      (!player.scene && !inTrainingZone(player)) ||
+      now - lastRequest.current < 250
+    )
+      return;
+    lastRequest.current = now;
+    for (let slot = 0; slot < 4; slot++) {
+      const node = equippedTalent(player, slot);
+      const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot);
+      if (
+        node &&
+        ability &&
+        isTalentLearned(player, node.id) &&
+        preferences.autoCastAbilities?.includes(node.id) &&
+        now >= (player.talentCooldowns?.[ability.id] ?? 0)
+      )
+        onCast(slot);
+    }
+  }, [canAutoCast, picker, preferences, player, stats.hasWeapon, now, onCast]);
+  const tileStyle = {
+    p: 0,
+    minHeight: 0,
+    width: { xs: 44, sm: 52 },
+    height: { xs: 44, sm: 52 },
+    '& > img': { width: '100%', height: '100%' },
+  };
   const classId = player.classId ?? 'warrior';
   return (
     <div className='action-bar'>
@@ -44,7 +84,15 @@ export function WeaponActionBar({
                 icon: <TalentIcon classId={classId} index={node.column * 10 + node.row} />,
                 cooldownMs: talentCooldownMs(player, node.slot!),
                 remainingMs: (player.talentCooldowns?.[ability.id] ?? 0) - now,
-                onCast: () => onCast(slot),
+                autoCast:
+                  preferences.autoAttack && !!preferences.autoCastAbilities?.includes(node.id),
+                onToggleAutoCast: () =>
+                  setPreferences((value) => ({
+                    ...value,
+                    autoCastAbilities: value.autoCastAbilities?.includes(node.id)
+                      ? value.autoCastAbilities.filter((id) => id !== node.id)
+                      : [...(value.autoCastAbilities ?? []), node.id],
+                  })),
               }
             : undefined;
         })}
@@ -53,6 +101,8 @@ export function WeaponActionBar({
         baseAbility={
           stats.hasWeapon
             ? {
+                onToggleAutoCast: () =>
+                  setPreferences((value) => ({ ...value, autoAttack: !value.autoAttack })),
                 name: classDetails[classId].spell,
                 icon: <img src={spellSrc(classId)} alt='' draggable={false} />,
                 cooldownMs: stats.attackIntervalMs,
@@ -64,28 +114,42 @@ export function WeaponActionBar({
             : undefined
         }
       />
-      <Menu anchorEl={picker?.anchor} open={!!picker} onClose={() => setPicker(null)}>
-        <MenuItem
-          onClick={() => {
-            if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: null });
-            setPicker(null);
-          }}
-        >
-          Clear slot
-        </MenuItem>
+      <Menu
+        anchorEl={picker?.anchor}
+        open={!!picker}
+        onClose={() => setPicker(null)}
+        slotProps={{
+          list: { sx: { display: 'flex', flexWrap: 'wrap', gap: 1, p: 1, maxWidth: 300 } },
+        }}
+      >
+        <Tooltip title='Clear slot'>
+          <MenuItem
+            aria-label='Clear slot'
+            sx={tileStyle}
+            onClick={() => {
+              if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: null });
+              setPicker(null);
+            }}
+          >
+            <img src={clientAsset('/assets/action-bar/clear.png')} alt='' draggable={false} />
+          </MenuItem>
+        </Tooltip>
         {TALENT_TREE.filter(
           (node) =>
             node.classId === classId && node.kind === 'ability' && isTalentLearned(player, node.id),
         ).map((node) => (
-          <MenuItem
-            key={node.id}
-            onClick={() => {
-              if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: node.id });
-              setPicker(null);
-            }}
-          >
-            {node.name}
-          </MenuItem>
+          <Tooltip key={node.id} title={node.name}>
+            <MenuItem
+              aria-label={node.name}
+              sx={tileStyle}
+              onClick={() => {
+                if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: node.id });
+                setPicker(null);
+              }}
+            >
+              <TalentIcon classId={classId} index={node.column * 10 + node.row} />
+            </MenuItem>
+          </Tooltip>
         ))}
       </Menu>
     </div>

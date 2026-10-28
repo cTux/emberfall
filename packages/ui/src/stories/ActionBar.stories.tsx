@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ActionBar } from '../index';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -38,5 +39,30 @@ export const TalentCooldowns: Story = {
       { ...meta.args.baseAbility, name: 'Earthshatter', cooldownMs: 8000, remainingMs: 250 },
       { ...meta.args.baseAbility, name: 'Execution', cooldownMs: 12000, remainingMs: 0 },
     ],
+  },
+};
+
+export const Interactive: Story = {
+  render: function InteractiveActionBar(args) {
+    const [autoCast, setAutoCast] = useState(false);
+    const [chosen, setChosen] = useState(false);
+    return (
+      <>
+        <ActionBar
+          {...args}
+          onChoose={() => setChosen(true)}
+          abilities={[
+            {
+              ...meta.args.baseAbility,
+              name: 'Whirlwind',
+              remainingMs: 5000,
+              autoCast,
+              onToggleAutoCast: () => setAutoCast((value) => !value),
+            },
+          ]}
+        />
+        <div role='status'>{chosen ? 'Picker opened' : 'Picker closed'}</div>
+      </>
+    );
   },
 };
