@@ -67,7 +67,11 @@ master switch. Enabled abilities show an animated dashed border, steady under
 reduced motion. Manual casts use 1-4. Talent auto-casts request the existing
 server-validated cast at most once per slot per 250 ms when ready, alive, equipped,
 and in the forest or training area. Open game windows and the picker, unavailable
-connections, and hidden tabs pause requests. Aim uses the existing cursor aim.
+connections, and hidden tabs pause requests. With auto-target enabled, the server
+aims talent casts at the nearest living enemy within the ability's registered range,
+using wrapped distance in forest and training. With auto-target disabled or no
+eligible enemy, casts use cursor aim. Self-centered and ally-healing effects retain
+their existing targeting rules.
 
 ![Verified icon picker and generated red clear tile](../images/action-bar-icon-picker.png)
 

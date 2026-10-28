@@ -23,8 +23,12 @@ with an equally sized generated red clear tile. RMB toggles auto-cast. Enabled
 abilities show marching dashed borders (steady with reduced motion). Auto-attack
 is the master switch, preserving individual talent choices while off. Hover, keyboard focus or
 touch on an equipped ability opens a custom tooltip with its name, equipment
-cooldown and casting/automation controls. Tooltips share game windows' translucent
+cooldown and description, reusing the Talents description for learned abilities
+and the Wardrobe description for the base attack. Casting and automation instructions
+are omitted from tooltips; slot indicators still show their state. Tooltips share game windows' translucent
 black surface, brown border, square corners and theme typography.
+
+![Verified in-game talent action-bar tooltip with description](../images/action-bar-description.png)
 
 All game windows use compact, lighter title bars, wardrobe-brown borders and thin scrollbars. Every tabbed window places its tabs vertically outside its left border, with left-rounded brown frames and a filled gold-accented selected state. The rail moves with the window, stays within the viewport and scrolls independently of the content. Up/Down, Home and End navigate tabs. Backpack slots use matching brown borders and dark wood backgrounds, with 20 slots shown by default.
 The trader has Buy and Buyback tabs, with 20 Buyback slots. A small Sell all icon

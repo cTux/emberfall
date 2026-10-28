@@ -1,5 +1,6 @@
 import { test, expect } from './fixtures';
 import { CLASS_IDS, TRAINING_ZONES, starterEquipment } from '../packages/core/src/index.ts';
+import { classDetails } from '../packages/client/src/class-details';
 
 test('action bar follows confirmed training and forest attacks, equipment and viewport', async ({
   page,
@@ -11,6 +12,12 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const bar = page.getByRole('region', { name: 'Action bar', exact: true });
   await expect(bar).toBeVisible();
+  await bar.getByRole('group', { name: 'Slash', exact: true }).hover();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).toContainText('Cooldown:');
+  await expect(tooltip).toContainText(classDetails.warrior.spellDescription);
+  await expect(tooltip).not.toContainText(/Left mouse|Auto-/);
+  await page.mouse.move(0, 0);
   const fire = bar.getByRole('img', { name: /^Left mouse button/ });
   const target = bar.getByRole('img', { name: /^Auto-target/ });
   await expect(fire).toHaveAttribute('data-active', 'true');

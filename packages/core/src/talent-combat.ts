@@ -5,6 +5,7 @@ import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
 import { FOREST } from './scene.ts';
 import { inTrainingZone } from './world.ts';
 import { executeTalent } from './talent-effects.ts';
+import { nearestSpellTarget } from './class-combat.ts';
 type Game = ReturnType<typeof createGame>;
 export function talentAbility(player: Pick<Player, 'classId'>, slot: number, context: Game = game) {
   return context.registries.abilities
@@ -72,13 +73,17 @@ export function castTalentAbility(
     ...player.talentCooldowns,
     [ability.id]: now + talentCooldownMs(player, node.slot!, context),
   };
+  const target =
+    player.autoTarget !== false
+      ? nearestSpellTarget(player, scene.enemies, ability.range)
+      : undefined;
   executeTalent(
     scene,
     player,
     node.slot!,
     node.id,
     talentRank(player, node.id),
-    { x: request.aimX, y: request.aimY },
+    { x: target?.x ?? request.aimX, y: target?.y ?? request.aimY },
     now,
     context.rules.characterStats(player),
     players,

@@ -73,6 +73,72 @@ function cast(player: Player, scene: SceneState, now = 1000, players = [player])
   );
 }
 
+test('talent auto-target selects a living enemy in range across seams and preserves manual aim', () => {
+  for (const training of [false, true])
+    for (const autoTarget of [false, true]) {
+      const player = hero('mage'),
+        scene = arena();
+      player.autoTarget = autoTarget;
+      player.x = training ? TRAINING_ZONES[0].x : 10;
+      player.y = training ? TRAINING_ZONES[0].y : 1000;
+      if (training) player.scene = undefined;
+      scene.training = training;
+      ability(player, 0, 1);
+      const target = {
+        ...scene.enemies[0],
+        x: training ? player.x + 200 : FOREST.width - 190,
+        y: player.y,
+      };
+      scene.enemies = [
+        { ...target, id: 2, x: player.x, hitpoints: 0 },
+        target,
+        { ...target, id: 3, x: player.x + 701 },
+      ];
+      assert.equal(
+        castTalentAbility(
+          scene,
+          player,
+          {
+            slot: 0,
+            classId: 'mage',
+            epoch: training ? 'lobby' : scene.id,
+            aimX: player.x + 500,
+            aimY: player.y,
+          },
+          1000,
+        ),
+        true,
+      );
+      assert.equal(target.hitpoints < 1000, autoTarget);
+      assert.equal(scene.enemies[2].hitpoints, 1000);
+    }
+});
+
+test('talent auto-target falls back to cursor aim when no living enemy is in range', () => {
+  const player = hero('mage'),
+    scene = arena();
+  player.autoTarget = true;
+  ability(player, 0, 1);
+  const target = scene.enemies[0];
+  target.x = player.x + 701;
+  assert.equal(
+    castTalentAbility(
+      scene,
+      player,
+      {
+        slot: 0,
+        classId: 'mage',
+        epoch: scene.id,
+        aimX: player.x - 500,
+        aimY: player.y,
+      },
+      1000,
+    ),
+    true,
+  );
+  assert.equal(target.hitpoints, 1000);
+});
+
 test('Mending Seed and Renewal heal the lowest HP percentage in range, including wrapped party members', () => {
   for (const training of [false, true])
     for (const row of [1, 7])

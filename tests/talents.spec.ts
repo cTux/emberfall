@@ -9,6 +9,7 @@ import {
   learnTalent,
   equipTalent,
   talentNodeId,
+  talentDescription,
 } from '../packages/core/src/index.ts';
 
 test('talents use one vertical scrollbar and fit desktop, narrow and short windows', async ({
@@ -152,6 +153,15 @@ test('three independent columns support rank learning, custom tooltips, LMB assi
   await page.getByRole('menuitem', { name: 'Cleaving Strike', exact: true }).click();
   const cast = bar.getByRole('button', { name: 'Choose ability for slot 1: Cleaving Strike' });
   await expect(cast).toBeVisible();
+  await cast.hover();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).toContainText(
+    talentDescription(TALENT_TREE.find((node) => node.id === 'v2:warrior:0:1')!),
+  );
+  await expect(tooltip).not.toContainText(/LMB|RMB|auto-cast|to cast/);
+  await cast.focus();
+  await expect(tooltip).toBeVisible();
+  await tooltip.screenshot({ path: 'test-results/action-bar-description.png' });
   player.x = TRAINING_ZONES[0].x;
   player.y = TRAINING_ZONES[0].y;
   await page.mouse.move(190, 350);
