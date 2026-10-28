@@ -43,6 +43,15 @@ Codex uses the shared forest theme with chapter tabs for controls, worlds and pa
 
 ## UI-02 — Combat controls
 
+Holding either Alt key suppresses browser Alt behavior and shows thin green
+outlines on all visible interactive objects in village and forest, regardless of
+interaction range. This includes functional buildings, Marta, cats, portals and
+non-depleted gathering resources, and players eligible for Invite, Join or Accept
+party actions. Alt-modified text entry remains available for keyboard layouts that
+use AltGr. Releasing Alt restores normal yellow hover
+outlines. Losing focus or hiding the tab clears the held state; dialogs and text
+entry suppress the highlights. Alt does not change interaction range or actions.
+
 When an interaction is available, a compact prompt directly below the local
 player's name shows a circular E badge and the interaction's short name (for
 example, Wardrobe, Gather tree or Return to village). It follows the same target

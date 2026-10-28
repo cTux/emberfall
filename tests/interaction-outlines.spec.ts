@@ -52,12 +52,50 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
           if (data[i] > 220 && data[i + 1] > 180 && data[i + 2] < 45) count++;
         return count;
       };
+      const greenPixels = async (name: string) => {
+        const image = await canvas.screenshot({
+          path: `test-results/${graphicsPreset}-${name}.png`,
+        });
+        const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
+        let count = 0;
+        for (let i = 0; i < data.length; i += info.channels)
+          if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.18 && data[i + 2] < data[i + 1] * 0.18)
+            count++;
+        return count;
+      };
+      const altDefaultsPrevented = async (code: string, type: 'keydown' | 'keyup') =>
+        page.evaluate(
+          ({ code, type }) =>
+            !window.dispatchEvent(
+              new KeyboardEvent(type, {
+                key: 'Alt',
+                code,
+                bubbles: true,
+                cancelable: true,
+              }),
+            ),
+          { code, type },
+        );
       player.x = WARDROBE.x - 120;
       player.y = WARDROBE.y + 9;
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', false);
       await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       const thin = await yellowPixels('wardrobe-out-of-range');
       expect(thin).toBeGreaterThan(20);
+      const normalGreen = await greenPixels('alt-released');
+      expect(await altDefaultsPrevented('AltLeft', 'keydown')).toBe(true);
+      await expect.poll(() => greenPixels('alt-village')).toBeGreaterThan(normalGreen + 100);
+      expect(await altDefaultsPrevented('AltRight', 'keydown')).toBe(true);
+      expect(await altDefaultsPrevented('AltLeft', 'keyup')).toBe(true);
+      await expect.poll(() => greenPixels('alt-right-village')).toBeGreaterThan(normalGreen + 100);
+      expect(await altDefaultsPrevented('AltRight', 'keyup')).toBe(true);
+      await expect.poll(() => greenPixels('alt-released-again')).toBeLessThan(normalGreen + 20);
+      await page.keyboard.down('Alt');
+      await expect.poll(() => greenPixels('alt-before-blur')).toBeGreaterThan(normalGreen + 100);
+      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+      await expect.poll(() => greenPixels('alt-after-blur')).toBeLessThan(normalGreen + 20);
+      await page.keyboard.up('Alt');
+
       await page.mouse.click(720 + 120 * scale, 500 - 39 * scale);
       await page.keyboard.press('e');
       await expect(page.getByRole('dialog')).toBeHidden();
@@ -70,6 +108,25 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       const chat = page.getByRole('textbox', { name: 'Chat message' });
       await page.keyboard.press('Enter');
       await expect(chat).toBeFocused();
+      expect(
+        await chat.evaluate((input) =>
+          input.dispatchEvent(
+            new KeyboardEvent('keydown', {
+              key: '@',
+              code: 'KeyQ',
+              altKey: true,
+              ctrlKey: true,
+              bubbles: true,
+              cancelable: true,
+            }),
+          ),
+        ),
+      ).toBe(true);
+      await page.keyboard.down('Alt');
+      const chatGreen = await greenPixels('alt-chat');
+      await page.keyboard.up('Alt');
+      expect(await greenPixels('released-chat')).toBeLessThan(chatGreen + 20);
+
       await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       await chat.blur();
       await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Wardrobe');
@@ -138,6 +195,12 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       const portalThin = await yellowPixels('forest-out-of-range');
       expect(portalThin).toBeGreaterThan(20);
+      const forestGreen = await greenPixels('forest-alt-released');
+      await page.keyboard.down('Alt');
+      await expect.poll(() => greenPixels('alt-forest-seam')).toBeGreaterThan(forestGreen + 100);
+      await page.keyboard.up('Alt');
+      await expect.poll(() => greenPixels('forest-alt-release')).toBeLessThan(forestGreen + 20);
+
       await page.mouse.down();
       await page.mouse.up();
       expect(player.scene).toBe('forest');
@@ -156,3 +219,51 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
     });
   });
 }
+
+test('Alt outlines party candidates without changing E interaction', async ({
+  page,
+  browser,
+  game,
+}) => {
+  const context = await browser.newContext({ ignoreHTTPSErrors: true });
+  try {
+    const other = await context.newPage();
+    for (const [client, name] of [
+      [page, 'Alpha'],
+      [other, 'Bravo'],
+    ] as const) {
+      await client.goto('/');
+      await client.getByLabel('Your adventurer name').fill(name);
+      await client.getByRole('button', { name: /^Join Playtest Default/ }).click();
+      await expect(client.getByRole('button', { name: 'Leave world' })).toBeVisible();
+    }
+    const world = [...game.runtime.worlds.values()].find((w) => w.players.size === 2)!;
+    const a = [...world.players.values()].find((p) => p.name === 'Alpha')!;
+    const b = [...world.players.values()].find((p) => p.name === 'Bravo')!;
+    a.x = 1800;
+    a.y = 1800;
+    b.x = 1830;
+    b.y = 1800;
+    const canvas = page.locator('canvas');
+    await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Invite to party');
+    const candidateGreen = async () => {
+      const image = await page.screenshot({ clip: { x: 745, y: 445, width: 50, height: 90 } });
+      const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
+      let count = 0;
+      for (let i = 0; i < data.length; i += info.channels)
+        if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.18 && data[i + 2] < data[i + 1] * 0.18)
+          count++;
+      return count;
+    };
+    const before = await candidateGreen();
+    await page.keyboard.down('Alt');
+    await expect.poll(candidateGreen).toBeGreaterThan(before + 20);
+    await canvas.screenshot({ path: 'test-results/alt-party-player.png' });
+    await page.keyboard.up('Alt');
+    await expect.poll(candidateGreen).toBeLessThan(before + 10);
+    await page.keyboard.press('e');
+    await expect(other.locator('canvas')).toHaveAttribute('data-interaction-prompt', 'Accept');
+  } finally {
+    await context.close();
+  }
+});
