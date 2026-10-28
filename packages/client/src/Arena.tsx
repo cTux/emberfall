@@ -57,7 +57,7 @@ import {
 import { TICK_MS } from '@emberfall/core';
 import type { ClientMessage, WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
-import { castShadow, makeMask, spriteMask } from './lighting';
+import { castShadow, spriteMask } from './lighting';
 import type { Caster, Light } from './lighting';
 import { TORCH_LIGHTS, lightTexture, drawTorchFire } from './village';
 import {
@@ -153,34 +153,8 @@ export function Arena({
     let lastSlashAt = -Infinity,
       lastHit = 0,
       lastWarning = 0;
-    const playerMasks = new Map<HTMLImageElement, HTMLCanvasElement[]>();
     const characterMask = (image: HTMLImageElement, frame: number, facing: number) => {
-      if (!image.naturalWidth) return undefined;
-      let masks = playerMasks.get(image);
-      if (!masks) {
-        masks = [];
-        playerMasks.set(image, masks);
-      }
-      const index = frame * 4 + facing;
-      if (!masks[index]) {
-        const tile = document.createElement('canvas');
-        tile.width = tile.height = ACTOR_CELL;
-        tile
-          .getContext('2d')!
-          .drawImage(
-            image,
-            facing * ACTOR_CELL,
-            frame * ACTOR_CELL,
-            ACTOR_CELL,
-            ACTOR_CELL,
-            0,
-            0,
-            ACTOR_CELL,
-            ACTOR_CELL,
-          );
-        masks[index] = makeMask(tile);
-      }
-      return masks[index];
+      return spriteMask(image, facing, frame, false, ACTOR_CELL, false, ACTOR_CELL);
     };
     const villageCritters = createCritterMotion();
     const snapshots = new SnapshotBuffer(playerId);
