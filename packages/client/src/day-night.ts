@@ -20,9 +20,20 @@ export function dayNight(serverTime: number) {
   const blend = progress * progress * (3 - 2 * progress);
   const channel = (i: 1 | 2 | 3) => Math.round(255 * (from[i] + (to[i] - from[i]) * blend));
   const daylight = from[4] + (to[4] - from[4]) * blend;
+  const sun = phase < 0.7;
+  const orbit = (sun ? phase / 0.7 : (phase - 0.7) / 0.3) * Math.PI;
+  const elevation = Math.sin(orbit);
+  const length = 1.8 - elevation * 1.35;
   return {
     tint: (channel(1) << 16) | (channel(2) << 8) | channel(3),
     daylight,
     lightAlpha: 1 - daylight * 0.7,
+    celestial: sun ? 'sun' : 'moon',
+    // Both bodies travel east to west; their shadows fade at the horizon handoff.
+    shadow: {
+      x: Math.cos(orbit) * length,
+      y: length * 0.6,
+      opacity: (sun ? 0.26 : 0.12) * Math.min(1, elevation * 5),
+    },
   };
 }

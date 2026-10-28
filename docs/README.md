@@ -49,7 +49,8 @@ Damage number visibility: [UI-04](specs/interface-and-audio.md#ui-04--settings-a
 [toggle/persistence verification](../tests/damage-numbers.spec.ts).
 
 Day/night cycle: [GRAPHICS-03](specs/graphics.md#graphics-03--scenery-and-atmosphere),
-[palette and clock](../packages/client/src/day-night.ts),
+[palette, clock and sun/moon orbit](../packages/client/src/day-night.ts),
+[silhouette projections](../packages/client/src/lighting.ts),
 [renderer](../packages/client/src/rendering/pixi-context.ts),
 [clock checks](../tests/day-night.test.ts) and
 [browser checks](../tests/day-night.spec.ts).

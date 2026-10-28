@@ -112,10 +112,15 @@ receives view data and has no game-package dependency. See the
 ## Rendering pipeline and caches
 
 `day-night.ts` derives the one-hour ambient sprite tint, daylight and local-light
-intensity from replicated epoch `serverNow`, independently of paused combat time.
+intensity and a sun/moon shadow projection from replicated epoch `serverNow`,
+independently of paused combat time. The sun crosses the 70% daytime arc; the
+weaker moon crosses the remaining 30%. Elevation controls length and horizon fade.
 Arena and forest share it. Pixi multiplies ordinary image tints without changing
-text, geometry warnings, or additive light passes; no textures or shadow caches
-are rebuilt for the cycle. `effects.ts` scales sunlight shafts by daylight.
+text, geometry warnings, or additive light passes. Each Pixi context carries its
+current directional projection for all silhouette casters, including portals.
+Celestial shadows draw live; the ground cache retains only terrain and contact
+shading, while fixed torch occlusion remains cached. No textures are rebuilt for
+the cycle. `effects.ts` scales sunlight shafts by daylight.
 The clock uses smooth interpolation between palette keys and wraps continuously.
 
 [art.ts](../../packages/client/src/art.ts) bakes softer entity tones once when
@@ -181,7 +186,7 @@ cover scenery, combatants or their labels.
 
 - [village-background.ts](../../packages/client/src/village-background.ts) prepares village ground, grass and static passes only after the asset batch is ready and the village is first drawn. Its cache survives joins/leaves/reconnects; grass, shadow and contact-occlusion changes invalidate affected content.
 - [forest.ts](../../packages/client/src/forest.ts), [village.ts](../../packages/client/src/village.ts) and [paths.ts](../../packages/client/src/paths.ts) draw the world with visible-region and wrapped-seam handling.
-- [lighting.ts](../../packages/client/src/lighting.ts) caches sprite masks/static shadows and reuses scratch canvases; moving blockers and player lights update dynamically.
+- [lighting.ts](../../packages/client/src/lighting.ts) caches sprite masks and reuses scratch canvases; celestial projections, moving blockers and player lights update dynamically.
 - [combat-effects.ts](../../packages/client/src/combat-effects.ts), [effects.ts](../../packages/client/src/effects.ts), [danger.ts](../../packages/client/src/danger.ts) and [navigation.ts](../../packages/client/src/navigation.ts) render authoritative events, warnings and navigation.
 - [critters.ts](../../packages/client/src/critters.ts) derives decorative animal motion locally. These animals are not server actors or targets. The arena owns a bounded chicken motion state per mount, updates every chicken before culling, and supplies living village player positions. Chickens flee the nearest player within 70 world units at 80 units/second (normal wandering is 10), keep fleeing until 100 units clear, and walk back toward their wandering route. Wrapped deltas drive detection, travel and camera projection; elapsed steps are capped at 100 ms after pauses. Panic uses a faster 70 ms walking-frame cadence.
 
