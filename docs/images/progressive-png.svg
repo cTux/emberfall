@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="160" viewBox="0 0 640 160" role="img" aria-labelledby="title desc">
+  <title id="title">PNG loading order concept</title>
+  <desc id="desc">Sequential loading fills the top rows first. Interlaced loading shows a coarse whole image before refining it. Concept only.</desc>
+  <defs>
+    <pattern id="coarse" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#6baf85"/></pattern>
+  </defs>
+  <rect width="640" height="160" rx="8" fill="#18251e"/>
+  <g font-family="sans-serif" fill="#f0f6f2" font-size="16">
+    <text x="24" y="28">Sequential: rows first</text>
+    <text x="344" y="28">Interlaced: whole image first</text>
+    <text x="24" y="143" font-size="13">Concept preview — partial download</text>
+    <text x="344" y="143" font-size="13">Detail increases as more data arrives</text>
+  </g>
+  <rect x="24" y="44" width="272" height="72" fill="#33443a"/>
+  <rect x="24" y="44" width="272" height="24" fill="#6baf85"/>
+  <rect x="344" y="44" width="272" height="72" fill="#33443a"/>
+  <rect x="344" y="44" width="272" height="72" fill="url(#coarse)"/>
+</svg>

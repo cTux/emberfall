@@ -28,7 +28,7 @@ export default defineConfig(({ command, mode }) => {
       ViteImageOptimizer({
         test: /\.png$/i,
         includePublic: true,
-        png: { compressionLevel: 9, adaptiveFiltering: true, palette: false },
+        png: { compressionLevel: 9, adaptiveFiltering: true, palette: false, progressive: true },
       }),
       {
         name: 'client-version',
