@@ -7,22 +7,14 @@ export const GearTooltipStyled = styled(({ className, ...props }: TooltipProps) 
   createElement(Tooltip, { ...props, classes: { popper: className } }),
 )(({ theme }) => ({
   [`& .${tooltipClasses.tooltip}`]: {
-    width: 236,
+    backgroundColor: alpha(theme.palette.common.black, 0.94),
+    width: 250,
+    maxHeight: 'calc(100vh - 32px)',
+    overflowY: 'auto',
     maxWidth: 'calc(100vw - 32px)',
     boxSizing: 'border-box',
     padding: theme.spacing(1.25),
   },
-}));
-
-export const GearBadgeStyled = styled(ButtonBase)(({ theme }) => ({
-  position: 'relative',
-  width: 50,
-  height: 50,
-  flexShrink: 0,
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.05),
-  '&:hover': { backgroundColor: alpha(theme.palette.common.white, 0.12) },
-  '&.Mui-focusVisible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 1 },
 }));
 
 export const GearBadgeValueStyled = styled(Box)(({ theme }) => ({

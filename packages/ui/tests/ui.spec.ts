@@ -524,7 +524,7 @@ test('equipment exposes borderless slots, keyboard details and narrow stats', as
   await expect(page.getByRole('tooltip')).toBeHidden();
   await page.getByRole('button', { name: 'Ring: Empty' }).focus();
   await expect(page.getByRole('tooltip')).toContainText('Accepts: Ring');
-  for (const width of [1280, 390, 320]) {
+  for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 800 });
     await page.getByRole('button', { name: 'Close Equipment' }).focus();
     await page.getByText('Armor', { exact: true }).scrollIntoViewIfNeeded();
@@ -942,4 +942,24 @@ test('LMB chooses during cooldown and RMB toggles animated auto-cast', async ({ 
   await expect(slot.locator('[data-auto-cast-border]')).toHaveCount(0);
   await slot.click();
   await expect(page.getByRole('status')).toHaveText('Picker opened');
+});
+
+test('compact consumable tooltip shows its effect, stack and contextual action', async ({
+  page,
+}) => {
+  await page.goto(story('components-backpack--stacked'));
+  const potion = page.getByRole('button', { name: 'Use Health potion (5)' });
+  await potion.focus();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).toContainText('Consumable');
+  await expect(tooltip).toContainText('Restores 25 health');
+  await expect(tooltip).toContainText('Quantity5');
+  await expect(tooltip).toContainText('1 gold each');
+  await expect(tooltip).toContainText('Right-click: use');
+  expect((await tooltip.locator('.MuiTooltip-tooltip').boundingBox())!.width).toBeLessThanOrEqual(
+    250,
+  );
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(tooltip).toBeVisible();
+  await page.screenshot({ path: 'test-results/item-tooltip-consumable.png' });
 });

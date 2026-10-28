@@ -136,10 +136,19 @@ fallback image, allowed gear text and optional item name/icon/badges) and calcul
 stat rows. Slots are borderless and empty images are translucent. Focus/hover/touch
 opens a narrow translucent-black tooltip outside the window's scrollable content,
 without adding scrollbars or clipping details. Modal tooltips remain inside the
-dialog's focus scope, and Tab/Shift+Tab connect the slot and its first badge.
-Item badges use the bundled generated
-atlas, optional bottom-right values and host-supplied explanations accessible by
-mouse, keyboard and touch. It places character stats below the compact equipment grid. Optional item actions stay with the host. `Backpack` displays an unlimited controlled item grid, stacked counts, custom tooltips ending with price, and right-click/keyboard callbacks. `GoldBalance` is shared with the HUD and trader.
+dialog's focus scope, and Tab/Shift+Tab connect the slot and its first stat.
+`EquipmentPanel` and `Backpack` share an internal 250px item tooltip with 32px
+item artwork, type labels, prominent Power/Armor, readable stat rows and inline
+effect explanations. Stat rows retain host-supplied detail tooltips for hover and
+keyboard inspection. `EquipmentBadgeView` remains the input contract for these
+rows; the atlas is no longer used for item details. The host supplies metadata,
+weapon stats and contextual actions. Inventory prices are per item; resources
+omit a use hint while trade/storage retain their actual actions. Tooltips clamp
+long content to the viewport and scroll internally. `Backpack` keeps stacked
+counts and right-click/keyboard callbacks. `GoldBalance` is shared with HUD/trader.
+
+![Verified desktop weapon item tooltip](../../docs/images/compact-item-tooltips.png)
+
 Compose it inside `GameWindow` for dragging and focus management. Its Storybook
 stories cover starter and empty loadouts; gameplay rules remain in the host.
 

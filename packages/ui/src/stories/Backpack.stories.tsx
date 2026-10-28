@@ -21,6 +21,8 @@ const meta = {
         quantity: 5,
         price: 1,
         details: 'Restores 25 health',
+        subtitle: 'Consumable',
+        useAction: 'Use',
         icon: <img src={healthPotion} alt='' />,
       },
     ],

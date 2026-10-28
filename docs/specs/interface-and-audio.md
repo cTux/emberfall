@@ -176,23 +176,24 @@ it. Ignore repeats, modified shortcuts, text entry and other open dialogs. Use
 the existing modal focus, movement suppression and persisted drag-position rules.
 New-runtime windows use a wardrobe-brown solid border, with no divider under the title.
 
-The Inventory window opens with physical KeyI or the HUD action. Compact square backpack slots use item art when available and default equipment-slot art otherwise. Stack counts sit at the bottom right. Item tooltips end with the gold price. Right-click activates an item; Enter or Space provides the same action for keyboard users. Marta opens two compact backpacks, hers on the left and the player's on the right, each with the same gold display used in the HUD.
+The Inventory window opens with physical KeyI or the HUD action. Compact square backpack slots use item art when available and default equipment-slot art otherwise. Stack counts sit at the bottom right. Item tooltips share a compact 250px layout with the item artwork, name, type and gold price. Consumables show their effect and stack quantity; resources show their quantity without an equip/use hint. Contextual footers show equip, unequip, use, buy, sell, deposit or withdraw only where that action is available. Prices in inventories are per item. Right-click activates an item; Enter or Space provides the same action for keyboard users. Marta opens two compact backpacks, hers on the left and the player's on the right, each with the same gold display used in the HUD.
 
 The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
 amulet/off-hand/ring. Slots have no border. Empty slots show generated wardrobe-style
 equipment icons at 15% effective opacity; equipped weapons keep their full-brightness
 icon. Hover, focus or touch exposes a narrow translucent-black item tooltip with
-its name and generated icon badges instead of a description paragraph or stat rows.
-Tooltips render outside the window's scrollable content without creating a scrollbar
-or being clipped by its edges. Keyboard access to badges stays within the modal.
-Power, active range and cooldown come first. Numeric values sit at each badge's
-bottom-right corner; damage type and the final weapon effect have no number.
-Each badge exposes its own weapon-specific explanation on hover, keyboard focus
-or touch, including critical stats, swing/projectile details and ailment stacking.
+cream text, thin brown borders and the existing game font. Weapons show prominent
+Power, readable label/value rows and an amber effect heading with its explanation.
+Armor highlights its Armor value. Tooltips render outside the window's scrollable
+content without being clipped by its edges; unusually long details scroll inside
+the tooltip. Keyboard access to detailed stat explanations stays within the modal.
+Each stat row retains its weapon-specific explanation on hover or focus.
 Range follows the active auto-target/cursor-aim mode. Empty slots explain accepted
 gear types. Character stats derived from all equipment
 appear underneath equipment on the left, with the 20-slot backpack on the right. Attack timing is
 shown only as cooldown, without a duplicate attack-speed row.
+
+![Verified desktop weapon item tooltip](../images/compact-item-tooltips.png)
 
 Normal outgoing damage numbers use physical parchment, fire orange, poison lime
 and nature green. Critical numbers override the type color with white text and a

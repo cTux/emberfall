@@ -162,18 +162,24 @@ indicators sit above the cooldown sector: an LMB icon at bottom right and crossh
 at bottom left, each with an independent enabled glow and reduced-motion-aware
 pulse. The four reserved slots display 1–4 at bottom right.
 
-EquipmentPanel receives item badge labels, atlas keys, optional values and explanations
-from `client/equipment-view.tsx`, which derives them from shared equipment,
-attack and ailment definitions. The shared UI bundles a transparent generated icon
-atlas and presents 236px tooltips. `theme.tsx` applies shared `windowSurface`
-styles to game windows and MUI tooltips, including equipment and action-bar
-details; the client no longer needs a separate window skin. `ActionBar` uses
-a focusable ability group and a MUI tooltip for hover, keyboard and touch,
-showing host-supplied cooldown and automation settings. Item popups and badge explanations portal into the modal container
-(or the page for nonmodal stories) to avoid scrolling-content clipping while
-preserving modal focus and pointer interaction. Tab/Shift+Tab connect each slot
-with its first badge across the portal. Click/tap explicitly opens details;
-MUI handles hover/focus and closing. Gameplay calculations stay in the host.
+`EquipmentPanel` and `Backpack` compose the internal shared `ItemTooltip` layout.
+The client supplies names, existing artwork, type labels, Armor, weapon stat rows,
+effects, healing text and unit prices from registered content. Backpack, trading
+and storage use the same weapon details and current aiming mode. The layout uses
+250px, viewport-clamped tooltips with 32px artwork, compact stat rows and a shared
+price/action footer. Weapon Power and Armor receive a larger amber value; effect
+explanations remain readable inline. Resources omit gameplay action hints in the
+normal backpack; trader and storage hints reflect their host callbacks.
+
+`theme.tsx` applies shared `windowSurface` styles to game windows and MUI tooltips.
+Item popups and stat explanations portal into the modal container (or the page for
+nonmodal stories) to avoid scrolling-content clipping while preserving modal
+focus and pointer interaction. Tab/Shift+Tab connect equipped slots with their
+first stat across the portal; long tooltip content is viewport-clamped and scrollable.
+The existing `EquipmentBadgeView` input remains the stat/explanation contract,
+without rendering its old icon atlas. `ActionBar` keeps its existing focusable
+ability group and host-supplied cooldown and automation settings. Gameplay
+calculations stay in the host.
 
 Drawing combines predicted local presentation with buffered remote actors. The camera centers the local player and projects the nearest wrapped copy of terrain, entities, attachments, cursor aim and navigation arrows. Sort sprites/scenery by depth; faded scenery does not change its shadow or collision behavior.
 

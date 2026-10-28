@@ -62,8 +62,12 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
   ];
 }
 
-function weaponBadges(player: Player, classId: ClassId, weapon: string): EquipmentBadgeView[] {
-  const stats = characterStats({ ...player, classId, equipment: { weapon } });
+function weaponBadges(
+  player: Pick<Player, 'autoTarget'>,
+  classId: ClassId,
+  weapon: string,
+): EquipmentBadgeView[] {
+  const stats = characterStats({ classId, equipment: { weapon } });
   const { attack: abilityId, ailment } = PLAYER_DEFINITIONS[classId];
   const attack = ATTACK_DEFINITIONS[abilityId].kind;
   const range = player.autoTarget === false ? stats.manualRange : stats.range;
@@ -80,17 +84,18 @@ function weaponBadges(player: Player, classId: ClassId, weapon: string): Equipme
     {
       label: 'Range',
       icon: 'range',
-      value: number(range),
+      value: `${number(range)} units`,
       explanation: `Attack range: ${number(range)} units${attack === 'slash' ? '.' : player.autoTarget === false ? ' with cursor aim.' : ' with auto-target.'}`,
     },
     {
       label: 'Cooldown',
       icon: 'cooldown',
-      value: number(stats.attackIntervalMs / 1000),
+      value: `${number(stats.attackIntervalMs / 1000)} sec`,
       explanation: `Wait ${number(stats.attackIntervalMs / 1000)} seconds between attacks.`,
     },
     {
       label: 'Damage type',
+      value: capitalize(stats.damageType),
       icon:
         stats.damageType === 'physical'
           ? 'physical'
@@ -118,7 +123,7 @@ function weaponBadges(player: Player, classId: ClassId, weapon: string): Equipme
     badges.push({
       label: 'Active swing',
       icon: 'duration',
-      value: number(ATTACK_DEFINITIONS.slash.durationMs / 1000),
+      value: `${number(ATTACK_DEFINITIONS.slash.durationMs / 1000)} sec`,
       explanation: `The swing remains active for ${number(ATTACK_DEFINITIONS.slash.durationMs / 1000)} seconds. Each enemy can be hit once per swing.`,
     });
   } else {
@@ -132,7 +137,7 @@ function weaponBadges(player: Player, classId: ClassId, weapon: string): Equipme
     badges.push({
       label: 'Projectile speed',
       icon: 'speed',
-      value: number(definition.speed),
+      value: `${number(definition.speed)} units/sec`,
       explanation: `Projectiles travel at ${definition.speed} units per second.`,
     });
     if (attack === 'fireball') {
@@ -210,7 +215,10 @@ export function Equipment({
               name: gear.name,
               icon: itemIcon(gear.id),
               price: gear.price ?? 1,
-              details: gear.stats.armor ? `Armor: ${gear.stats.armor}` : undefined,
+              subtitle: GEAR_LABELS[gear.gearType],
+              primary: gear.stats.armor
+                ? { label: 'Armor', value: number(gear.stats.armor) }
+                : undefined,
               badges: itemClass ? weaponBadges(player, itemClass, gear.id) : [],
             }
           : undefined,
@@ -221,7 +229,7 @@ export function Equipment({
       <EquipmentPanel slots={slots} stats={equipmentStatRows(player)} />
       <Backpack
         label='Your backpack'
-        items={backpackViews(player.backpack ?? [])}
+        items={backpackViews(player.backpack ?? [], player)}
         coins={player.coins ?? 0}
         action='Use'
         inventory='backpack'
@@ -287,7 +295,7 @@ function itemIcon(itemId: string) {
     />
   );
 }
-export function backpackViews(items: BackpackItem[]) {
+export function backpackViews(items: BackpackItem[], player: Pick<Player, 'autoTarget'>) {
   return items.map((item) => {
     const definition = itemDefinition(item.itemId);
     const gear = GEAR_DEFINITIONS[item.itemId];
@@ -297,13 +305,14 @@ export function backpackViews(items: BackpackItem[]) {
       name: definition.name,
       icon: itemIcon(item.itemId),
       price: definition.price ?? 1,
-      details: potion
-        ? `Restores ${potion.healing} health`
-        : gear?.stats.armor
-          ? `Armor: ${gear.stats.armor}`
-          : definition.kind === 'resource'
-            ? ''
-            : 'Weapon',
+      subtitle: gear ? GEAR_LABELS[gear.gearType] : capitalize(definition.kind),
+      primary: gear?.stats.armor ? { label: 'Armor', value: number(gear.stats.armor) } : undefined,
+      stats:
+        gear && ITEM_CLASSES[item.itemId]
+          ? weaponBadges(player, ITEM_CLASSES[item.itemId], gear.id)
+          : [],
+      useAction: gear ? 'Equip' : potion ? 'Use' : undefined,
+      details: potion ? `Restores ${potion.healing} health` : '',
     };
   });
 }
@@ -354,7 +363,7 @@ export function Trading({
           >
             <Backpack
               label={label}
-              items={backpackViews(items)}
+              items={backpackViews(items, player)}
               coins={merchant.coins}
               action={action}
               inventory={`vendor-${id}`}
@@ -366,7 +375,7 @@ export function Trading({
             />
             <Backpack
               label='Your backpack'
-              items={backpackViews(player.backpack ?? [])}
+              items={backpackViews(player.backpack ?? [], player)}
               coins={player.coins ?? 0}
               action='Sell'
               inventory='backpack'
