@@ -25,7 +25,8 @@ Codex, inventory/trading, talents and storage load when their windows open.
 Keep URL-only artwork helpers in `class-art.ts` and talent icon presentation in
 `talent-icons.tsx`; importing atlas or panel modules from the entry point defeats
 these boundaries. Local loading/error boundaries keep windows closable and offer
-Reload if a chunk cannot load. Vite chooses shared chunks without a single vendor
+Reload if a chunk cannot load. Loading announcements remain available to screen
+readers without displaying a loading label. Vite chooses shared chunks without a single vendor
 bucket; `dist/.vite/manifest.json` records the production import graph.
 
 ## Responsibilities

@@ -24,7 +24,23 @@ class ContentBoundary extends Component<
   render() {
     if (this.state.failed) return <Button onClick={() => location.reload()}>Reload</Button>;
     return (
-      <Suspense fallback={<Typography role='status'>Loading…</Typography>}>
+      <Suspense
+        fallback={
+          <Typography
+            role='status'
+            sx={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              overflow: 'hidden',
+              clipPath: 'inset(50%)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Loading…
+          </Typography>
+        }
+      >
         {this.props.children}
       </Suspense>
     );
