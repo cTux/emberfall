@@ -153,9 +153,6 @@ export function Arena({
     let lastSlashAt = -Infinity,
       lastHit = 0,
       lastWarning = 0;
-    const characterMask = (image: HTMLImageElement, frame: number, facing: number) => {
-      return spriteMask(image, facing, frame, false, ACTOR_CELL, false, ACTOR_CELL);
-    };
     const villageCritters = createCritterMotion();
     const snapshots = new SnapshotBuffer(playerId);
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
@@ -694,10 +691,14 @@ export function Arena({
             Math.sin(player.attackAngle ?? 0),
             pos.facing,
           );
-        const mask = characterMask(
+        const mask = spriteMask(
           characterImages[player.classId ?? 'warrior'].walk,
-          frame,
           pos.facing,
+          frame,
+          false,
+          ACTOR_CELL,
+          false,
+          ACTOR_CELL,
         );
         if (mask && player.id === playerId) {
           const breath = idleBreath(now, frame);
