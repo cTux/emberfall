@@ -85,6 +85,9 @@ Nearby interaction prompt: [UI-02](specs/interface-and-audio.md#ui-02--combat-co
 [presentation design](design/presentation.md), [drawing helper](../packages/client/src/effects.ts),
 [Arena integration](../packages/client/src/Arena.tsx), and
 [village/forest browser coverage](../tests/interaction-outlines.spec.ts).
+The default-on combat gathering hint toggle is covered by
+[gathering scenarios](../tests/gathering.spec.ts) and
+[preference validation](../tests/preferences.test.ts).
 
 | Feature group                                    | Specification                                                   | Design                                                           | Verification entry points                                                                                                                                                                                                                               |
 | ------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

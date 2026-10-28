@@ -38,6 +38,11 @@ badge and short interaction name below the player's name at the displayed pose.
 It shares the world camera transform, stays above scenery but beneath speech
 bubbles, and exposes its current label as `data-interaction-prompt` for the
 interaction browser scenarios.
+The saved `hideGatheringHintInCombat` preference defaults to true. Arena suppresses
+only `gather:` prompt labels during active forest scenes or active village training
+inside a training zone, using confirmed state. Interaction selection and actions
+are unchanged. [Gathering coverage](../../tests/gathering.spec.ts) checks visibility,
+the setting override and persistence.
 The capsule uses semicircular ends; its left end shares the button's center.
 Concentric 6/5-unit circles form the button rim and face inside the capsule's
 8-unit radius. Native renderer gradients and separate shadows provide depth

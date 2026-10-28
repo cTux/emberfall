@@ -39,6 +39,7 @@ export function Settings({
       | 'autoAttack'
       | 'autoTarget'
       | 'autoLoot'
+      | 'hideGatheringHintInCombat'
       | 'bloodPuddles'
       | 'damageNumbers'
       | 'dps'
@@ -108,6 +109,7 @@ export function Settings({
                 Automatically collect nearby item drops. XP and gold are always collected.
               </Typography>
               {toggle('bloodPuddles', 'Blood puddles')}
+              {toggle('hideGatheringHintInCombat', 'Hide gathering hint during combat')}
               {toggle('damageNumbers', 'Floating damage numbers')}
               {toggle('dps', 'DPS meter')}
               {toggle('fps', 'FPS graph')}
