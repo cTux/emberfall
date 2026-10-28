@@ -46,6 +46,7 @@ for (const key of [
   'lootHints',
   'hideGatheringHintInCombat',
   'hideHealthBarsInTown',
+  'hideOtherPlayerEffects',
 ] as const)
   test(`${key} defaults on and accepts only saved booleans`, () => {
     const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
@@ -147,6 +148,39 @@ test('custom cursor preferences accept only supported sizes and booleans', () =>
     });
     assert.equal(loadPreferences().customCursor, true);
     assert.equal(loadPreferences().cursorSize, 48);
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'localStorage', original);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
+test('ability transparency validates saved values and combines with owner visibility', async () => {
+  const { abilityEffectOpacity } = await import('../packages/client/src/ability-effects.ts');
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  try {
+    for (const [value, expected] of [
+      [undefined, 0],
+      [0, 0],
+      [0.5, 0.5],
+      [1, 1],
+      [-1, 0],
+      [2, 1],
+      ['0.5', 0],
+    ] as const) {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: { getItem: () => JSON.stringify({ abilityEffectTransparency: value }) },
+      });
+      const prefs = loadPreferences();
+      assert.equal(prefs.abilityEffectTransparency, expected);
+      assert.equal(abilityEffectOpacity(prefs, 'me', 'me'), 1 - expected);
+      assert.equal(abilityEffectOpacity(prefs, 'me', 'other'), 0);
+      assert.equal(abilityEffectOpacity(prefs, 'me', undefined), 1 - expected);
+      assert.equal(
+        abilityEffectOpacity({ ...prefs, hideOtherPlayerEffects: false }, 'me', 'other'),
+        1 - expected,
+      );
+    }
   } finally {
     if (original) Object.defineProperty(globalThis, 'localStorage', original);
     else Reflect.deleteProperty(globalThis, 'localStorage');

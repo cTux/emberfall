@@ -142,6 +142,7 @@ export function talentVisual(
   now: number,
 ) {
   appendSceneEntities(scene, 'explosions', {
+    ownerId: player.id,
     id: ++scene.sequence,
     x: point.x,
     y: point.y,

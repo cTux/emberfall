@@ -4,6 +4,13 @@ Status: implemented. Implements [interface/audio](../specs/interface-and-audio.m
 
 ## Application and component boundaries
 
+Ability visibility lives in `emberfall-new.preferences`, independently of quality
+presets. `abilityEffectOpacity` filters by owner and supplies the alpha multiplier
+to both training and forest renderers. Explosions carry optional `ownerId` metadata
+from the shared combat/talent producers through existing scene replication; older
+ownerless visuals remain visible. Each effect multiplies its animation fade by
+the selected opacity. Enemy danger rendering uses its existing independent pass.
+
 Bundled item textures resolve through `class-art.ts`'s item lookup for both
 inventory views and world loot. Plant items reuse their own generated plant
 cells. Empty equipment-slot hints remain separate from item artwork.

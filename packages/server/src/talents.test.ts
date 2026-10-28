@@ -195,6 +195,7 @@ test('Mending Seed and Renewal heal the lowest HP percentage in range, including
         assert.equal(dead.hitpoints, 0);
         assert.equal(full.hitpoints, 100);
         assert.equal(scene.explosions?.[0].x, ally.x);
+        assert.equal(scene.explosions?.[0].ownerId, player.id);
         if (row === 7)
           assert.equal(talentIncomingDamage(scene, player, 100, 1001), learned === 2 ? 25 : 40);
       }

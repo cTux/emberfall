@@ -1,3 +1,5 @@
+import { abilityEffectOpacity } from './ability-effects';
+import type { Preferences } from './preferences';
 import { equipmentSlotArt } from './content-views';
 import { clientAsset } from './urls';
 import { itemArtName } from './class-art';
@@ -221,9 +223,17 @@ export function drawClassProjectiles(
   now: number,
   near: (x: number, y: number) => { x: number; y: number },
   particles = true,
+  preferences: Pick<Preferences, 'abilityEffectTransparency' | 'hideOtherPlayerEffects'> = {
+    abilityEffectTransparency: 0,
+    hideOtherPlayerEffects: false,
+  },
+  playerId = '',
 ) {
   ctx.save();
   for (const shot of scene.playerShots ?? []) {
+    const opacity = abilityEffectOpacity(preferences, playerId, shot.ownerId);
+    if (opacity === 0) continue;
+    ctx.globalAlpha = opacity;
     const p = near(shot.x, shot.y);
     ctx.save();
     ctx.translate(p.x, p.y);
@@ -272,6 +282,8 @@ export function drawClassProjectiles(
     ctx.restore();
   }
   for (const explosion of scene.explosions ?? []) {
+    const opacity = abilityEffectOpacity(preferences, playerId, explosion.ownerId);
+    if (opacity === 0) continue;
     const age = Math.max(0, (now - explosion.at) / (explosion.durationMs ?? 350));
     if (age >= 1) continue;
     const p = near(explosion.x, explosion.y);
@@ -281,7 +293,7 @@ export function drawClassProjectiles(
       if (talentCastArt.complete && talentCastArt.naturalWidth > 0) {
         const width = talentCastArt.naturalWidth / 4,
           height = talentCastArt.naturalHeight / 12;
-        ctx.globalAlpha = 1 - age * 0.5;
+        ctx.globalAlpha = opacity * (1 - age * 0.5);
         ctx.drawImage(
           talentCastArt,
           Math.min(3, Math.floor(age * 4)) * width,
@@ -309,7 +321,7 @@ export function drawClassProjectiles(
         '#82e6b3',
       ];
       ctx.fillStyle = colors[row];
-      ctx.globalAlpha = 1 - age;
+      ctx.globalAlpha = opacity * (1 - age);
       for (let index = 0; particles && index < 10; index++) {
         const angle = (index * Math.PI * 2) / 10 + explosion.id;
         const radius = 20 + age * 110;
@@ -325,7 +337,7 @@ export function drawClassProjectiles(
       }
       continue;
     }
-    ctx.globalAlpha = 1 - age;
+    ctx.globalAlpha = opacity * (1 - age);
     ctx.fillStyle = '#ffb53d44';
     ctx.strokeStyle = '#ffcb6b';
     ctx.lineWidth = 3;
