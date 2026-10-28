@@ -66,6 +66,21 @@ gzip/Brotli sizes. Reports are ignored by Git and stay outside deployed `dist`.
 Normal builds do not generate reports. Text compression runs in both build modes;
 see [serving and deployment](operations.md#deployment-and-cache-consistency).
 
+## Artwork delivery
+
+Apply the item/entity artwork rule in [AGENTS.md](../AGENTS.md) when adding or
+changing game content. Use the existing art as a style reference and the
+[client skill](../.agents/skills/emberfall-new-client/SKILL.md) for generation
+ownership. Save the selected generated asset in the client asset collection,
+retain transparency where required, and record its prompt, tool, generating
+agent/model, date, source/export dimensions and any mechanical packaging alongside
+the asset. Keep the collection's attribution and license notices.
+
+Wire the dedicated artwork into every affected presentation, including inventory
+and trading for items. Inspect the generated image and verify it at its actual
+display size in the client. Completion requires the asset, provenance and working
+consumer together; a gameplay-only implementation with placeholder art is unfinished.
+
 ## Browser and UI verification
 
 The independent runtime uses `pnpm dev`, `pnpm build`, and `pnpm start`.

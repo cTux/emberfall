@@ -9,7 +9,8 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 - Progression must not require a player choice or interrupt gameplay. Read [PROG-01](docs/specs/progression.md) before designing progression; no replacement system is selected yet.
 - Reuse shared simulation in forest and training. Preserve wrapped geometry in both areas. Keep UI presentation separate from client actions and server rules.
 - Core owns registries, bundled mods and content-aware rules; common owns contracts and pure geometry and must never import core. Start content work in [the core guide](packages/core/README.md) and preserve saved/wire IDs.
-- Keep credentials, SQLite data, certificates and generated output out of Git. Preserve asset credits and licenses.
+- Every item and entity must have its own generated image or sprite frames, matching the game's existing art style. Ship and wire that artwork with the feature; emoji, generic icons and another item's or entity's artwork do not satisfy this rule. Follow [artwork delivery](docs/development.md#artwork-delivery).
+- Keep credentials, SQLite data, certificates and generated build output out of Git. Commit shipped artwork with its credits and licenses.
 
 ## Find the right guidance
 
