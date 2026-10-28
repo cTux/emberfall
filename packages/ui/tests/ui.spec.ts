@@ -2,6 +2,37 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('performance diagnostics stay compact with readable labels and all traces', async ({
+  page,
+}, testInfo) => {
+  await page.goto(story('components-performancemonitor--network-diagnostics'));
+  const monitor = page.getByRole('complementary', { name: 'Performance monitor' });
+  await expect(monitor.getByLabel('Frame rate', { exact: true })).toHaveText('244 FPS');
+  await expect(monitor.getByLabel('Server latency', { exact: true })).toHaveText('11 ms');
+  await expect(monitor.getByLabel('Network scale')).toHaveText('0–145 ms');
+  for (const label of ['Input ack', 'Snapshot (local)', 'Ping']) {
+    await expect(monitor.getByText(label, { exact: true })).toBeVisible();
+  }
+  await expect(monitor.locator('svg path')).toHaveCount(4);
+  const bounds = await monitor.boundingBox();
+  expect(bounds!.width).toBeLessThanOrEqual(224);
+  expect(bounds!.height).toBeLessThanOrEqual(100);
+  expect(await monitor.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+    true,
+  );
+  await monitor.screenshot({ path: testInfo.outputPath('compact-performance-monitor.png') });
+
+  for (const [id, visible, hidden] of [
+    ['fps-only', 'Frame rate', 'Server latency'],
+    ['latency-only', 'Server latency', 'Frame rate'],
+  ]) {
+    await page.goto(story(`components-performancemonitor--${id}`));
+    await expect(monitor.getByLabel(visible, { exact: true })).toBeVisible();
+    await expect(monitor.getByLabel(hidden, { exact: true })).toHaveCount(0);
+    expect((await monitor.boundingBox())!.height).toBeLessThanOrEqual(100);
+  }
+});
+
 test('HUD tooltips show shortcuts while keeping accessible button names', async ({ page }) => {
   await page.goto(story('components-game-patterns--actions'));
   for (const [name, shortcut] of [
