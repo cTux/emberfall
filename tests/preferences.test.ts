@@ -41,28 +41,29 @@ test('font preferences accept only bundled families and preserve legacy defaults
   }
 });
 
-test('auto-loot defaults on and accepts only saved booleans', () => {
-  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
-  try {
-    for (const [saved, expected] of [
-      ['{}', true],
-      ['{"autoLoot":false}', false],
-      ['{"autoLoot":true}', true],
-      ['{"autoLoot":"false"}', true],
-      ['null', true],
-      ['invalid', true],
-    ] as const) {
-      Object.defineProperty(globalThis, 'localStorage', {
-        configurable: true,
-        value: { getItem: () => saved },
-      });
-      assert.equal(loadPreferences().autoLoot, expected);
+for (const key of ['autoLoot', 'hideGatheringHintInCombat'] as const)
+  test(`${key} defaults on and accepts only saved booleans`, () => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    try {
+      for (const [saved, expected] of [
+        ['{}', true],
+        [JSON.stringify({ [key]: false }), false],
+        [JSON.stringify({ [key]: true }), true],
+        [JSON.stringify({ [key]: 'false' }), true],
+        ['null', true],
+        ['invalid', true],
+      ] as const) {
+        Object.defineProperty(globalThis, 'localStorage', {
+          configurable: true,
+          value: { getItem: () => saved },
+        });
+        assert.equal(loadPreferences()[key], expected);
+      }
+    } finally {
+      if (original) Object.defineProperty(globalThis, 'localStorage', original);
+      else Reflect.deleteProperty(globalThis, 'localStorage');
     }
-  } finally {
-    if (original) Object.defineProperty(globalThis, 'localStorage', original);
-    else Reflect.deleteProperty(globalThis, 'localStorage');
-  }
-});
+  });
 
 for (const key of ['dps', 'fps', 'latency'] as const) {
   test(`${key} defaults off and accepts only saved booleans`, () => {

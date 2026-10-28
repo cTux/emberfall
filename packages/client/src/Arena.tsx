@@ -435,8 +435,20 @@ export function Arena({
       const authoritative = latest.current;
       const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
       const drawPrompt = () => {
+        const hideGatheringHint =
+          prefs.current.hideGatheringHintInCombat &&
+          interaction.current?.id.startsWith('gather:') &&
+          (authoritativePlayer?.scene === 'forest'
+            ? authoritative?.scene?.phase === 'active'
+            : authoritativePlayer &&
+              authoritative?.training?.phase === 'active' &&
+              inTrainingZone(authoritativePlayer));
         const label =
-          local && authoritativePlayer && authoritativePlayer.hitpoints > 0 && !blocked()
+          local &&
+          authoritativePlayer &&
+          authoritativePlayer.hitpoints > 0 &&
+          !blocked() &&
+          !hideGatheringHint
             ? (interaction.current?.name ?? '')
             : '';
         if (element.dataset.interactionPrompt !== label) element.dataset.interactionPrompt = label;

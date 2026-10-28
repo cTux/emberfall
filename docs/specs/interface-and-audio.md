@@ -50,6 +50,11 @@ and confirmed range as the E action in village and forest, including wrapped
 seams. It disappears when no action is available, the player dies, or a modal or
 text entry blocks gameplay input. Other players do not display this prompt.
 Speech bubbles draw above the prompt wherever they overlap.
+Settings → Gameplay includes **Hide gathering hint during combat**, enabled by
+default, including for existing saved preferences. It hides only gathering prompts
+in active forest scenes and while inside a village training zone with active
+training. Other prompts and E/click gathering remain available. Disabling it shows
+gathering prompts during combat; changes apply immediately and persist locally.
 The prompt uses a dark rounded capsule with a thin bronze outline. Its left end
 and the raised E button are concentric, with equal left, top and bottom inset.
 The button has a filled shaded face, an evenly thick gold rim and a separate drop

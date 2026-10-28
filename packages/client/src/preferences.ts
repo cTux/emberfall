@@ -7,6 +7,7 @@ export interface Preferences {
   autoAttack: boolean;
   autoTarget: boolean;
   autoLoot: boolean;
+  hideGatheringHintInCombat: boolean;
   bloodPuddles: boolean;
   damageNumbers: boolean;
   dps: boolean;
@@ -26,6 +27,7 @@ export function loadPreferences(): Preferences {
     autoAttack: true,
     autoTarget: true,
     autoLoot: true,
+    hideGatheringHintInCombat: true,
     bloodPuddles: true,
     damageNumbers: true,
     dps: false,
@@ -46,6 +48,7 @@ export function loadPreferences(): Preferences {
       'autoAttack',
       'autoTarget',
       'autoLoot',
+      'hideGatheringHintInCombat',
       'bloodPuddles',
       'damageNumbers',
       'dps',
