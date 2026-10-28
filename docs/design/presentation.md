@@ -113,6 +113,8 @@ MUI handles hover/focus and closing. Gameplay calculations stay in the host.
 
 Drawing combines predicted local presentation with buffered remote actors. The camera centers the local player and projects the nearest wrapped copy of terrain, entities, attachments, cursor aim and navigation arrows. Sort sprites/scenery by depth; faded scenery does not change its shadow or collision behavior.
 
+`navigation.ts` includes the registered lobby portal as a blue Forest portal target for village players, alongside same-scene party members. Forest players retain boss and completed-scene return portal targets. All targets share wrapped projection and on-screen suppression; `tests/navigation.test.ts` covers these navigation outcomes.
+
 - [village-background.ts](../../packages/client/src/village-background.ts) prepares village ground, grass and static passes only after the asset batch is ready and the village is first drawn. Its cache survives joins/leaves/reconnects; grass, shadow and contact-occlusion changes invalidate affected content.
 - [forest.ts](../../packages/client/src/forest.ts), [village.ts](../../packages/client/src/village.ts) and [paths.ts](../../packages/client/src/paths.ts) draw the world with visible-region and wrapped-seam handling.
 - [lighting.ts](../../packages/client/src/lighting.ts) caches sprite masks/static shadows and reuses scratch canvases; moving blockers and player lights update dynamically.

@@ -38,6 +38,10 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
+Lobby portal navigation: [SCENE-03](specs/scenes-and-village.md#scene-03--voting-and-entry),
+[shared navigation renderer](../packages/client/src/navigation.ts) and
+[off-screen and wrapped direction checks](../tests/navigation.test.ts).
+
 Interactive cats: [SCENE-06](specs/scenes-and-village.md#scene-06--village-life),
 [speech timing](../packages/client/src/cat-speech.ts),
 [client interaction](../packages/client/src/Arena.tsx) and

@@ -1,5 +1,5 @@
 import { wrappedDelta } from '@emberfall/common';
-import { FOREST } from '@emberfall/core';
+import { FOREST, LOBBY_PORTAL } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
 
 export function edgeArrow(x: number, y: number, width: number, height: number) {
@@ -16,6 +16,8 @@ export function drawNavigation(ctx: CanvasRenderingContext2D, world: WorldState,
   const targets = world.players
     .filter((p) => p.id !== id && p.scene === me.scene && p.hitpoints > 0)
     .map((p) => ({ x: p.x, y: p.y, name: p.name, color: '#89e5c5' }));
+  if (me.scene !== 'forest')
+    targets.push({ ...LOBBY_PORTAL, name: 'Forest portal', color: '#70d8ff' });
   if (me.scene === 'forest') {
     const boss = world.scene?.enemies.find((e) => e.kind === 'boss' && e.hitpoints > 0);
     if (boss)
