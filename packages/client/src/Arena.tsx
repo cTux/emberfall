@@ -1,3 +1,5 @@
+import { LootHints } from './loot-hints';
+import { drawLootHints } from './loot-hint-rendering';
 import { partyInteraction } from './interaction-targets';
 import { drawPartyOutline } from './effects';
 import { useChat } from './ChatProvider';
@@ -121,6 +123,7 @@ export function Arena({
   } = useDraggable('panel.dps', !!world);
   const canvas = useRef<HTMLCanvasElement>(null);
   const { reportError } = useChat();
+  const lootHints = useRef(new LootHints());
   const latest = useRef(world);
   const receivedAt = useRef(0);
   const sender = useRef(send);
@@ -136,7 +139,16 @@ export function Arena({
     snapshotAge: null,
   });
   useEffect(() => {
+    lootHints.current = new LootHints();
+  }, [playerId]);
+  useEffect(() => {
     if (latest.current !== world) receivedAt.current = performance.now();
+    const confirmedPlayer = world?.players.find((player) => player.id === playerId);
+    lootHints.current.observe(
+      confirmedPlayer ? (confirmedPlayer.backpack ?? []) : undefined,
+      preferences.lootHints,
+      performance.now(),
+    );
     latest.current = world;
     sender.current = send;
     activate.current = onInteract;
@@ -144,7 +156,7 @@ export function Arena({
     quality.current = graphics;
     prefs.current = preferences;
     fontFamily.current = selectedFont;
-  }, [world, send, graphics, preferences, onInteract, onCatSpeech, selectedFont]);
+  }, [world, playerId, send, graphics, preferences, onInteract, onCatSpeech, selectedFont]);
   useEffect(() => {
     const element = canvas.current!;
     const renderer = new PixiContext(element);
@@ -374,6 +386,7 @@ export function Arena({
         frameTotal = 0;
         frameCount = 0;
       }
+      element.dataset.lootHintCount = '0';
       renderer.begin();
       renderer.fontFamily = fontFamily.current;
       ctx.imageSmoothingEnabled = quality.current.smoothTextures;
@@ -630,6 +643,8 @@ export function Arena({
           highlightInteractions,
         );
         drawPrompt();
+        if (local && prefs.current.lootHints)
+          drawLootHints(ctx, lootHints.current.hints, local, now);
         renderer.present();
         frame = requestAnimationFrame(draw);
         return;
@@ -1260,6 +1275,7 @@ export function Arena({
             })
           : 0,
       );
+      if (local && prefs.current.lootHints) drawLootHints(ctx, lootHints.current.hints, local, now);
       renderer.present();
       frame = requestAnimationFrame(draw);
     }

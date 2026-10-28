@@ -41,7 +41,12 @@ test('font preferences accept only bundled families and preserve legacy defaults
   }
 });
 
-for (const key of ['autoLoot', 'hideGatheringHintInCombat', 'hideHealthBarsInTown'] as const)
+for (const key of [
+  'autoLoot',
+  'lootHints',
+  'hideGatheringHintInCombat',
+  'hideHealthBarsInTown',
+] as const)
   test(`${key} defaults on and accepts only saved booleans`, () => {
     const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
     try {

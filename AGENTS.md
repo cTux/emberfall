@@ -10,6 +10,7 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 - Reuse shared simulation in forest and training. Preserve wrapped geometry in both areas. Keep UI presentation separate from client actions and server rules.
 - Core owns registries, bundled mods and content-aware rules; common owns contracts and pure geometry and must never import core. Start content work in [the core guide](packages/core/README.md) and preserve saved/wire IDs.
 - Every item and entity must have its own generated image or sprite frames, matching the game's existing art style. Ship and wire that artwork with the feature; emoji, generic icons and another item's or entity's artwork do not satisfy this rule. Follow [artwork delivery](docs/development.md#artwork-delivery).
+- Every new feature must update its affected documentation and include a committed visual representation (animated or static image) embedded in those docs. Label concept previews separately from verified gameplay captures.
 - Keep credentials, SQLite data, certificates and generated build output out of Git. Commit shipped artwork with its credits and licenses.
 
 ## Find the right guidance
