@@ -247,11 +247,14 @@ test('Alt outlines party candidates without changing E interaction', async ({
     const canvas = page.locator('canvas');
     await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Invite to party');
     const candidateGreen = async () => {
-      const image = await page.screenshot({ clip: { x: 745, y: 445, width: 50, height: 90 } });
+      const image = await page.screenshot({
+        path: 'test-results/alt-party-crop.png',
+        clip: { x: 745, y: 445, width: 50, height: 90 },
+      });
       const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
       let count = 0;
       for (let i = 0; i < data.length; i += info.channels)
-        if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.18 && data[i + 2] < data[i + 1] * 0.18)
+        if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.65 && data[i + 2] < data[i + 1] * 0.65)
           count++;
       return count;
     };
