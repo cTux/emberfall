@@ -218,6 +218,18 @@ test('action bar presents ready, cooling and unequipped slots on narrow screens'
   await expect(bar.locator('img')).toHaveCount(0);
 });
 
+test('backpack passes modifier keys for mouse and keyboard actions', async ({ page }) => {
+  await page.goto(story('components-backpack--modifiers'));
+  const potion = page.getByRole('button', { name: 'Use Health potion (5)' });
+  await potion.click({ button: 'right', modifiers: ['Shift'] });
+  await expect(page.getByRole('status')).toHaveText('potion: Shift=true, Ctrl=false');
+  await potion.focus();
+  await potion.press('Control+Shift+Enter');
+  await expect(page.getByRole('status')).toHaveText('potion: Shift=true, Ctrl=true');
+  await potion.press('Space');
+  await expect(page.getByRole('status')).toHaveText('potion: Shift=false, Ctrl=false');
+});
+
 test('inventory dragging moves once, ignores unrelated drops and preserves keyboard actions', async ({
   page,
 }) => {

@@ -189,8 +189,10 @@ window, item icons, tooltips, scrolling and narrow-viewport behavior are reused.
 ## Acceptance
 
 - Drag an item between the visible backpack and Storehouse or vendor inventory.
-  Storehouse moves whole stacks; vendor drops buy/sell one item at the existing
-  price. Dropping onto another storage tab moves the whole stack to that tab;
+  Storehouse moves whole stacks; vendor drops buy/sell one item, up to 10 with
+  Shift, or the whole selected stack with Ctrl (which takes priority over Shift).
+  The same modifiers apply to vendor RMB and Enter/Space, including Buyback.
+  Prices scale per item. Dropping onto another storage tab moves the whole stack to that tab;
   dropping a backpack item onto a storage tab deposits there. Cancelled drags,
   same-inventory drops and unrelated browser drags do nothing. Server rejection
   (full destination, insufficient gold, stale item or invalid proximity) preserves

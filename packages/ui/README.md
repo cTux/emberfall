@@ -88,6 +88,10 @@ accept named source inventories and call a host-owned `(inventory, itemId)` acti
 The host chooses transfer/trade commands; the shared UI never moves items itself.
 Unconfigured sources, same-inventory and unrelated browser drops are ignored.
 Existing RMB and Enter/Space actions remain available without dragging.
+`Backpack.onUse` receives the item's ID and Shift/Ctrl modifiers;
+drop callbacks receive those modifiers as their third argument. The trader host
+uses Shift for up to 10 items and Ctrl for the whole stack, with Ctrl taking
+priority. Other inventory hosts retain their existing actions.
 `EquipmentSlotView.drop` uses the same inventory drop contract for individual
 equipment slots. The host validates item compatibility and sends the equip action.
 

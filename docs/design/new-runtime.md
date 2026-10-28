@@ -373,9 +373,18 @@ alongside results in the verification record.
 ## Inventory, loot and shared trading
 
 `core/content/rules.ts` owns validated 20-slot backpack entries, stack merging,
-gear exchange, consumable use, one-item trades and atomic whole-backpack sales.
+gear exchange, consumable use, quantity-aware trades and atomic whole-backpack sales.
 Merchant buyback is a separate newest-first queue capped at 20 entries, including
-whole consumable stacks from Sell all. Buying returns one item per action.
+whole consumable stacks from Sell all and modifier sales. Trade commands accept
+an optional `amount` of `1`, `10` or `'stack'`, defaulting to one for older callers.
+Core resolves the amount against the current source stack and validates the total
+price and destination before mutating either owner. The client maps Ctrl to
+`'stack'`, Shift to `10`, and unmodified actions to `1` for RMB, Enter/Space and
+vendor drops. Storehouse and item-use actions keep their existing behavior.
+
+Concept diagram of the implemented controls (not a gameplay capture):
+
+![Trade quantity controls](../images/trade-quantity.svg)
 Legacy merchant gear stock migrates to buyback; potion stock stays in Buy.
 Stable entry IDs make stale
 commands harmless. Gear definitions are the single source of armor and price.

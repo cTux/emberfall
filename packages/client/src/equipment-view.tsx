@@ -317,6 +317,13 @@ export function Trading({
   send: (message: ClientMessage) => void;
 }) {
   const [tab, setTab] = useState('buy');
+  const trade = (id: string, buying: boolean, modifiers: { shiftKey: boolean; ctrlKey: boolean }) =>
+    send({
+      type: 'trade',
+      id,
+      buying,
+      amount: modifiers.ctrlKey ? 'stack' : modifiers.shiftKey ? 10 : 1,
+    });
   return (
     <ChapterTabs
       label='Trader inventory'
@@ -353,9 +360,9 @@ export function Trading({
               inventory={`vendor-${id}`}
               drop={{
                 accepts: ['backpack'],
-                onDrop: (_, id) => send({ type: 'trade', id, buying: false }),
+                onDrop: (_, id, modifiers) => trade(id, false, modifiers),
               }}
-              onUse={(id) => send({ type: 'trade', id, buying: true })}
+              onUse={(id, modifiers) => trade(id, true, modifiers)}
             />
             <Backpack
               label='Your backpack'
@@ -365,7 +372,7 @@ export function Trading({
               inventory='backpack'
               drop={{
                 accepts: ['vendor-buy', 'vendor-buyback'],
-                onDrop: (_, id) => send({ type: 'trade', id, buying: true }),
+                onDrop: (_, id, modifiers) => trade(id, true, modifiers),
               }}
               headerActions={
                 <Tooltip title='Sell all'>
@@ -381,7 +388,7 @@ export function Trading({
                   </span>
                 </Tooltip>
               }
-              onUse={(id) => send({ type: 'trade', id, buying: false })}
+              onUse={(id, modifiers) => trade(id, false, modifiers)}
             />
           </Box>
         ),

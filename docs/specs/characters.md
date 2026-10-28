@@ -53,8 +53,12 @@ entries, newest first, shared by everyone in the world. Older entries expire.
 Sold items never enter regular stock. Sell all, beside the player's gold balance,
 sells every backpack item (including consumable stacks) in one atomic action;
 equipped items remain equipped. If Marta cannot afford the entire sale, nothing changes.
-Right-click sells one player item or buys one merchant item
-for its listed price. Each transfer updates both inventories and gold balances
+Right-click sells one player item or buys one merchant item. Hold Shift to trade
+up to 10 items from the selected stack; hold Ctrl to trade the whole selected stack,
+including Buyback. Ctrl takes priority when both are held. Enter/Space and vendor
+drops use the same modifiers. The listed per-item price scales with the quantity;
+the entire trade is rejected if the buyer lacks gold or inventory space.
+Each transfer updates both inventories and gold balances
 atomically. Insufficient gold, stale items, incompatible gear and trading outside
 Marta's village interaction range are rejected without changing saved state.
 Merchant stock and gold survive restarts for worlds that still exist.

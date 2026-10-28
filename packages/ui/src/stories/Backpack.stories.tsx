@@ -29,6 +29,22 @@ const meta = {
 export default meta;
 export const Stacked: StoryObj<typeof meta> = {};
 export const Empty: StoryObj<typeof meta> = { args: { items: [] } };
+export const Modifiers: StoryObj<typeof meta> = {
+  render: function Modifiers(args) {
+    const [lastAction, setLastAction] = useState('No action');
+    return (
+      <>
+        <Backpack
+          {...args}
+          onUse={(id, modifiers) =>
+            setLastAction(`${id}: Shift=${modifiers.shiftKey}, Ctrl=${modifiers.ctrlKey}`)
+          }
+        />
+        <output>{lastAction}</output>
+      </>
+    );
+  },
+};
 export const Storage: StoryObj<typeof meta> = {
   args: { label: 'Storage 1', slots: 40, coins: undefined, action: 'Withdraw' },
 };
