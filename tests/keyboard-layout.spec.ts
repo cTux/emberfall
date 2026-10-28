@@ -124,6 +124,7 @@ test('movement follows physical keys across layouts and layout changes', async (
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  await expect(page.locator('canvas')).toHaveAttribute('data-renderer', 'pixijs-webgl');
 
   const sendKey = (type: string, code: string, key: string) =>
     page.evaluate(
