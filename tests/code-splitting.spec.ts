@@ -84,7 +84,11 @@ test('a slow or failed panel chunk leaves its window closable and the lobby usab
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Loading…' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Loading…' })).toHaveCSS(
+    'clip-path',
+    'inset(50%)',
+  );
+  await page.screenshot({ path: 'test-results/quiet-loading-panel.png' });
   await expect(page.getByRole('button', { name: 'Close Settings' })).toBeVisible();
   release();
   await expect(page.getByRole('log')).toContainText('System: Could not load this content');
