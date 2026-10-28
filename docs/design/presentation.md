@@ -38,6 +38,10 @@ badge and short interaction name below the player's name at the displayed pose.
 It shares the world camera transform, stays above scenery but beneath speech
 bubbles, and exposes its current label as `data-interaction-prompt` for the
 interaction browser scenarios.
+The capsule uses semicircular ends; its left end shares the button's center.
+Concentric 6/5-unit circles form the button rim and face inside the capsule's
+8-unit radius. Native renderer gradients and separate shadows provide depth
+without changing geometry or adding image assets.
 
 [main.tsx](../../packages/client/src/main.tsx) owns the connection, browser identity, recovery and screen composition. [Arena.tsx](../../packages/client/src/Arena.tsx) owns input capture and animation-frame drawing. Settings, Codex, chat and performance sampling are client concerns; server actions stay in the client host.
 

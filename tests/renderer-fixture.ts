@@ -1,5 +1,9 @@
 import { PixiContext } from '../packages/client/src/rendering/pixi-context';
-import { drawVignette, drawAtmosphere } from '../packages/client/src/effects';
+import {
+  drawVignette,
+  drawAtmosphere,
+  drawInteractionPrompt,
+} from '../packages/client/src/effects';
 import {
   drawDebuffs,
   drawClassProjectiles,
@@ -61,6 +65,17 @@ export async function compare() {
     }
   };
   compare('vignette center', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 128, 128);
+  const prompt = (ctx: CanvasRenderingContext2D) => {
+    ctx.scale(4, 4);
+    drawInteractionPrompt(ctx, 32, 48, '');
+  };
+  compare('prompt rounded corner', prompt, 81, 69);
+  compare('prompt face highlight', prompt, 101, 89);
+  compare('prompt face shade', prompt, 123, 111);
+  compare('prompt rim left', prompt, 89, 100);
+  compare('prompt rim right', prompt, 134, 100);
+  compare('prompt rim top', prompt, 112, 77);
+  compare('prompt rim bottom', prompt, 112, 122);
   compare('fog blending', (ctx) => drawFog(ctx, 0, 0, 256, 256, 1000), 128, 128);
   compare('vignette edge', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 5, 128);
   compare(
