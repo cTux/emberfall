@@ -33,6 +33,7 @@ export function castTalentAbility(
   request: { slot: number; classId: string; epoch: string; aimX: number; aimY: number },
   now: number,
   context: Game = game,
+  players: Player[] = [player],
 ) {
   const node = equippedTalent(player, request.slot);
   const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot, context);
@@ -80,6 +81,8 @@ export function castTalentAbility(
     { x: request.aimX, y: request.aimY },
     now,
     context.rules.characterStats(player),
+    players,
+    ability.range,
   );
   return true;
 }

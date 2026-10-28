@@ -67,6 +67,13 @@ Scene entities, projectiles, drops, damage events, companion state and DPS histo
 
 ## Verification
 
+Talent casts receive server-owned world players. Shared healing selection in
+`talent-effects.ts` filters party, area and run membership before comparing
+remaining HP fractions using wrapped distance. Scheduled grove pulses and
+healing opportunities reselect from the current tick's players, so departures,
+deaths and changed injuries apply before each heal. Immediate heals use the
+registered ability range and emit their cast feedback at the recipient.
+
 Drive explicit timestamps rather than sleeping through two-minute runs. Use [scenes.test.ts](../../packages/server/src/scenes.test.ts), [classes.test.ts](../../packages/server/src/classes.test.ts), [enemies.test.ts](../../packages/server/src/enemies.test.ts), [training.test.ts](../../packages/server/src/training.test.ts) and [pass-through.test.ts](../../packages/server/src/pass-through.test.ts).
 
 For changed combat, test the same effect in forest and training, wrapped overlap, duplicate hits/casts, dead targets, membership scaling verify visible warnings and lifecycle behavior.

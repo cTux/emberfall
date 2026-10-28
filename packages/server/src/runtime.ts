@@ -426,6 +426,8 @@ export async function createRuntime(
             player,
             message,
             now,
+            undefined,
+            [...world!.players.values()],
           );
         return;
       }

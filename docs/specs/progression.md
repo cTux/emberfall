@@ -70,6 +70,19 @@ training never grants rewards. Cast feedback uses class/column animation sheets
 and particles from confirmed events. The catalog and tooltips define the current
 rank effects; they are initial balance values.
 
+Targeted healing chooses the living injured party member with the lowest
+remaining health percentage within the effect's wrapped radius, including the
+caster. Equal percentages retain player order. Mending Seed and Renewal use
+their registered 700-unit range around the caster; Healing Grove chooses one
+recipient per second within 200 units of its fixed cast position. Healing
+opportunities choose one recipient within 60 units of the consumed enemy.
+Disconnected players, players in other areas or forest runs and players outside the caster's party
+are excluded. Solo players can heal themselves. Passive self-healing and Bear's
+own heal retain their dedicated recipients; Renewal's damage reduction stays
+on the caster. No eligible recipient means no healing, without refunding the cast.
+
+![Healing target selection concept, not a gameplay capture](../images/healing-target-selection.svg)
+
 The village bullseye retains its 50-account-coin reset, living-character and
 proximity requirements, and save-before-publication transaction. Reset refunds
 spent ranks and clears equipped abilities. Existing ability cooldowns remain.
