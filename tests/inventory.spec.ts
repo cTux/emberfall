@@ -205,7 +205,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondTrader
       .getByRole('button', { name: 'Buy Health potion (5)' })
       .click({ button: 'right' });
-    await expect(secondTrader.getByRole('alert')).toContainText('Not enough gold');
+    await expect(secondPage.getByRole('log', { name: 'Latest chat messages' })).toContainText(
+      'Not enough gold',
+    );
     expect(world.merchant!.backpack[0].quantity).toBe(5);
     await page.screenshot({ path: 'test-results/innkeeper-trading.png' });
     // Moving away rejects an action even if the trader window remains open.
@@ -214,7 +216,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondTrader
       .getByRole('button', { name: 'Sell Helmet', exact: true })
       .click({ button: 'right' });
-    await expect(secondTrader.getByRole('alert')).toContainText('Trade near Marta');
+    await expect(secondPage.getByRole('log', { name: 'Latest chat messages' })).toContainText(
+      'Trade near Marta',
+    );
     expect(buyer.backpack!.length).toBe(1);
   } finally {
     await context.close();
