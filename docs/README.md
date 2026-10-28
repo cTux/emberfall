@@ -77,6 +77,11 @@ Bottom-center action bar: [UI-01](specs/interface-and-audio.md#ui-01--hud-and-wi
 [presentation design](design/presentation.md), [controlled component](../packages/ui/src/components/ActionBar.tsx)
 and [replicated cooldown/gear coverage](../tests/action-bar.spec.ts).
 
+Nearby interaction prompt: [UI-02](specs/interface-and-audio.md#ui-02--combat-controls),
+[presentation design](design/presentation.md), [drawing helper](../packages/client/src/effects.ts),
+[Arena integration](../packages/client/src/Arena.tsx), and
+[village/forest browser coverage](../tests/interaction-outlines.spec.ts).
+
 | Feature group                                    | Specification                                                   | Design                                                           | Verification entry points                                                                                                                                                                                                                               |
 | ------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Worlds, recovery and chat                        | [WORLD/CHAT](specs/worlds-and-chat.md)                          | [Network](design/network-and-persistence.md)                     | `worlds.test.ts`, `reconnect.test.ts`, `chat.test.ts`, `gameplay.spec.ts`, `reconnect.spec.ts`, `chat-presentation.spec.ts`, `npc-chat.test.ts`, `npc-models.test.ts`, `npcs.spec.ts`                                                                   |

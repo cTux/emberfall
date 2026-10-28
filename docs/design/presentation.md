@@ -31,6 +31,13 @@ fallbacks; an out-of-range hover cannot activate another nearby object. Names an
 badges have no interaction-dependent styling. Browser coverage is in
 [interaction outlines](../../tests/interaction-outlines.spec.ts).
 
+Arena draws the local player's interaction prompt after world rendering in both
+areas, using the selected E action, confirmed living state and existing input
+blocking. `drawInteractionPrompt` in `effects.ts` places a separate circular E
+badge and short interaction name below the player's name at the displayed pose.
+It shares the world camera transform, stays above scenery, and exposes its current
+label as `data-interaction-prompt` for the interaction browser scenarios.
+
 [main.tsx](../../packages/client/src/main.tsx) owns the connection, browser identity, recovery and screen composition. [Arena.tsx](../../packages/client/src/Arena.tsx) owns input capture and animation-frame drawing. Settings, Codex, chat and performance sampling are client concerns; server actions stay in the client host.
 
 `ChatProvider` in the client entry point keeps one chat outside account, game and lazy-loading boundaries. Account handlers, the game connection and content boundaries report private system errors there; Game supplies the filtered world conversation and send action. Local errors and newly received conversation entries share arrival order and the ten-message display limit. Joining another world replaces its conversation while retaining private errors.

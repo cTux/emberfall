@@ -200,6 +200,34 @@ export function drawDamageFlash(
 export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>> & {
   activate?: () => void;
 };
+
+export function drawInteractionPrompt(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  label: string,
+) {
+  ctx.save();
+  ctx.font = '9px "Alegreya Sans", sans-serif';
+  ctx.textBaseline = 'middle';
+  const width = 18 + ctx.measureText(label).width;
+  const left = x - width / 2;
+  const centerY = y - 23;
+  ctx.fillStyle = '#101817ee';
+  ctx.fillRect(left - 3, centerY - 8, width + 6, 16);
+  ctx.beginPath();
+  ctx.arc(left + 6, centerY, 6, 0, Math.PI * 2);
+  ctx.strokeStyle = '#e0c995';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.fillStyle = '#f4ecd6';
+  ctx.textAlign = 'center';
+  ctx.fillText('E', left + 6, centerY);
+  ctx.textAlign = 'left';
+  ctx.fillText(label, left + 18, centerY);
+  ctx.restore();
+}
+
 export function drawCharacterName(
   ctx: CanvasRenderingContext2D,
   x: number,

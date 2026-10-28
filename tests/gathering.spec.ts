@@ -23,6 +23,7 @@ test('each village plant appears in inventory with its own name and artwork afte
     const node = VILLAGE_RESOURCES.find((n) => n.kind === 'plant' && n.variant === variant)!;
     Object.assign(player, { x: node.x, y: node.y - 15 });
     await expect(canvas).toHaveAttribute('data-resource', node.id);
+    await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather plant');
     await expect(async () => {
       await page.keyboard.press('e');
       expect(world.resources?.[node.id]?.remaining).toBe(0);
@@ -91,6 +92,7 @@ test('click and E gather replicated resources in village and forest, show deplet
     await page.mouse.click(viewport.width / 2, viewport.height / 2 - 45 * scale);
   };
   await expect(canvas).toHaveAttribute('data-resource', tree.id);
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather tree');
   await clickTree();
   await expect.poll(() => world.resources?.[tree.id]?.remaining).toBe(4);
   await expect(canvas).toHaveAttribute('data-resource-health', '4');
@@ -125,6 +127,7 @@ test('click and E gather replicated resources in village and forest, show deplet
   player.y = wrap(plant.y + 25, FOREST.height);
   await page.mouse.move(-1, -1);
   await expect(canvas).toHaveAttribute('aria-label', 'Forest combat scene.');
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', /^Gather /);
   await expect(async () => {
     await page.keyboard.press('e');
     expect(world.resources?.[plant.id]?.remaining).toBe(0);
