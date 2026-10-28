@@ -6,6 +6,7 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 
 - Use single quotes for code string literals and JSX attribute values. Follow Oxfmt's escape-minimizing exceptions; JSON retains double quotes.
 - Emberfall is an online-only cooperative browser game. The server owns movement validation, damage, health, deaths, rewards and saves; client prediction is presentation only.
+- Verify browser behavior on desktop. Skip mobile devices, mobile emulation, touch-only scenarios and phone-sized viewport/layout checks unless the user explicitly requests mobile testing; missing mobile coverage is not a completion or merge blocker.
 - Progression must not require a player choice or interrupt gameplay. Read [PROG-01](docs/specs/progression.md) before designing progression; no replacement system is selected yet.
 - Reuse shared simulation in forest and training. Preserve wrapped geometry in both areas. Keep UI presentation separate from client actions and server rules.
 - Core owns registries, bundled mods and content-aware rules; common owns contracts and pure geometry and must never import core. Start content work in [the core guide](packages/core/README.md) and preserve saved/wire IDs.
