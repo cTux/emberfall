@@ -1,5 +1,5 @@
-const WORLD_BAR_HEIGHT = 11;
-const BORDER = 2;
+const WORLD_BAR_HEIGHT = 7;
+const BORDER = 1;
 
 export function drawWorldBar(
   ctx: CanvasRenderingContext2D,

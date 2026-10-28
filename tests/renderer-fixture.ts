@@ -69,12 +69,12 @@ export async function compare() {
   };
   compare('vignette center', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 128, 128);
   const health = (ctx: CanvasRenderingContext2D) => drawPlayerHealth(ctx, 100, 93, 50, 100, 'Hero');
-  compare('health border top', health, 90, 89);
-  compare('health fill top', health, 90, 91);
-  compare('health fill bottom', health, 90, 97);
+  compare('health border top', health, 90, 93);
+  compare('health fill top', health, 90, 94);
+  compare('health fill bottom', health, 90, 98);
   compare('health border bottom', health, 82, 99);
   compare('health empty track', health, 110, 94);
-  compare('health outside frame', health, 90, 88);
+  compare('health outside frame', health, 90, 92);
   compare(
     'tree health border',
     (ctx) =>
@@ -84,7 +84,7 @@ export async function compare() {
         { remaining: 3, restoresAt: 5000 },
       ),
     90,
-    89,
+    93,
   );
   compare(
     'gathering border',
@@ -104,7 +104,7 @@ export async function compare() {
         2500,
       ),
     90,
-    89,
+    93,
   );
   const prompt = (ctx: CanvasRenderingContext2D) => {
     ctx.scale(4, 4);
