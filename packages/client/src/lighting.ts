@@ -7,8 +7,11 @@ export interface Light {
   strength: number;
   owner?: string;
 }
-// Distant sun: its rays have the same direction across the entire village.
-export const SUN = { x: -6000, y: -8000, height: 10000 } as const;
+export interface DirectionalShadow {
+  x: number;
+  y: number;
+  opacity: number;
+}
 export interface Caster {
   id: string;
   x: number;
@@ -23,12 +26,13 @@ export function shadowProjection(
   caster: { x: number; y: number; height: number },
   light?: Light,
   bottomInset = 0,
+  directional: DirectionalShadow = { x: 0.6, y: 0.8, opacity: 0.26 },
 ) {
   if (!light)
     return {
-      x: (-SUN.x / SUN.height) * caster.height,
-      y: (-SUN.y / SUN.height) * caster.height,
-      opacity: 0.26,
+      x: directional.x * caster.height,
+      y: directional.y * caster.height,
+      opacity: directional.opacity,
     };
   const dx = caster.x - light.x,
     dy = caster.y - bottomInset - light.y;
@@ -47,8 +51,13 @@ export function shadowProjection(
 export function castShadow(ctx: CanvasRenderingContext2D, caster: Caster, light?: Light) {
   if (light?.owner === caster.id) return;
   const bottomInset = (maskBottomInsets.get(caster.mask) ?? 0) * caster.height;
-  const projection = shadowProjection(caster, light, bottomInset);
-  if (!projection) return;
+  const projection = shadowProjection(
+    caster,
+    light,
+    bottomInset,
+    (ctx as unknown as PixiContext).directionalShadow,
+  );
+  if (!projection || projection.opacity <= 0) return;
   ctx.save();
   (ctx as unknown as PixiContext).occlusion = false;
   ctx.globalAlpha = projection.opacity;

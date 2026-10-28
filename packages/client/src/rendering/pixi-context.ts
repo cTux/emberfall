@@ -14,6 +14,7 @@ import type { BindGroup, Renderer, GradientOptions, LinearGradientOptions } from
 import './soft-light';
 import { playerCutoutRuns, PLAYER_CUTOUT_MARGIN } from './player-cutout';
 import { World } from 'miniplex';
+import type { DirectionalShadow } from '../lighting';
 
 type Paint = string | Gradient;
 type PathCommand = {
@@ -70,6 +71,7 @@ class Gradient {
  */
 export class PixiContext {
   ambientTint = 0xffffff;
+  directionalShadow?: DirectionalShadow;
   readonly canvas: HTMLCanvasElement;
   readonly ecs = new World<Visual>();
   private stage = new Container();

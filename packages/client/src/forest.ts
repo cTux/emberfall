@@ -260,6 +260,7 @@ export function forestRenderer(
     const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
     const cycle = dayNight(world?.serverNow ?? 0);
     (ctx as unknown as PixiContext).ambientTint = cycle.tint;
+    (ctx as unknown as PixiContext).directionalShadow = cycle.shadow;
     if (
       environmentArt.naturalWidth &&
       terrainArt.complete &&
@@ -315,13 +316,13 @@ export function forestRenderer(
     });
     const trees = resourceNodes(
       { x: cx, y: cy, scene: 'forest' },
-      Math.hypot(width, height) / 2 + 150,
+      Math.hypot(width, height) / 2 + 300,
     ).filter(
       (t) =>
-        t.x > cameraX - 100 &&
-        t.x < cameraX + width + 100 &&
-        t.y > cameraY - 50 &&
-        t.y < cameraY + height + 150,
+        t.x > cameraX - 300 &&
+        t.x < cameraX + width + 300 &&
+        t.y > cameraY - 300 &&
+        t.y < cameraY + height + 300,
     );
     const casters: Caster[] = trees.map((node) =>
       resourceScenery(node, resourceState(world?.resources, node, serverTime)),

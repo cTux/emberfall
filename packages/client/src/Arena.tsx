@@ -407,7 +407,10 @@ export function Arena({
       const view = latest.current ? snapshots.render(now) : null;
       const cycle = dayNight(view?.serverNow ?? 0);
       renderer.ambientTint = cycle.tint;
+      renderer.directionalShadow = cycle.shadow;
       element.dataset.daylight = cycle.daylight.toFixed(3);
+      element.dataset.celestial = cycle.celestial;
+      element.dataset.shadowDirection = `${cycle.shadow.x.toFixed(3)},${cycle.shadow.y.toFixed(3)}`;
       element.dataset.partyRequests = view?.partyRequests?.map((r) => r.fromId).join(',') ?? '';
       const local = latest.current ? localMovement.render(latest.current, now) : undefined;
       let localSwing = false;
@@ -697,10 +700,10 @@ export function Arena({
         .map((object) => ({ ...object, ...project(object.x, object.y) }))
         .filter(
           (object) =>
-            object.x > cameraX - 200 &&
-            object.x < cameraX + viewWidth + 200 &&
-            object.y > cameraY - 200 &&
-            object.y < cameraY + viewHeight + 200,
+            object.x > cameraX - object.width / 2 - object.height * 2 &&
+            object.x < cameraX + viewWidth + object.width / 2 + object.height * 2 &&
+            object.y > cameraY - object.height * 2 &&
+            object.y < cameraY + viewHeight + object.height * 2,
         );
       const portal = project(LOBBY_PORTAL.x, LOBBY_PORTAL.y);
       const portalTarget = portalInteraction(
@@ -823,10 +826,7 @@ export function Arena({
       for (const id of positions.keys()) if (!liveIds.has(id)) positions.delete(id);
       // Use the reconciled positions consistently for bodies, lanterns and shadows.
       const dynamic: Caster[] = [];
-      if (quality.current.shadows)
-        for (const object of visibleScenery)
-          if (object.frames || object.npc || object.id.startsWith('tree:') || object.kind)
-            castShadow(ctx, object);
+      if (quality.current.shadows) for (const object of visibleScenery) castShadow(ctx, object);
       for (const player of players) {
         const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
         const ix = player.inputX ?? 0,

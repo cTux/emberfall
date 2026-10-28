@@ -3,7 +3,6 @@ import { ARENA } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { drawVillagePaths } from './paths';
 import { resourceStateArt } from './gathering';
-import { castShadow } from './lighting';
 import { villageSprites, TORCH_LIGHTS, lightTexture, workstationArt } from './village';
 import {
   environmentArt,
@@ -119,9 +118,8 @@ export function villageBackground(graphics: GraphicsSettings) {
   drawVillagePaths(ctx, floor);
   const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
   for (const object of scenery.filter((object) => !/^(tree|plant|rock):/.test(object.id))) {
-    // Bounds include the full directional sun projection and contact shading.
+    // Only contact shading is static; celestial shadows follow the live orbit.
     wrapped(object.x, object.y, object.width + object.height, () => {
-      if (graphics.shadows && !object.frames) castShadow(ctx, object);
       if (graphics.ambientOcclusion) {
         ctx.save();
         ctx.translate(object.x, object.y);

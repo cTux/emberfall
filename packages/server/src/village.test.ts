@@ -11,11 +11,10 @@ import {
   moveActor,
   nearbyInteraction,
 } from '@emberfall/core';
-import { shadowProjection, SUN } from '../../client/src/lighting.ts';
+import { shadowProjection } from '../../client/src/lighting.ts';
 
 test('distant sun is directional; nearby lights cast opposite shadows with bounded reach', async () => {
   const body = { x: 400, y: 350, height: 48 };
-  assert(SUN.x < -1000 && SUN.y < -1000);
   assert.deepEqual(shadowProjection(body), shadowProjection({ ...body, x: 800, y: 100 }));
   const left = shadowProjection(body, { x: 350, y: 350, height: 85, radius: 145, strength: 0.24 });
   const right = shadowProjection(body, { x: 450, y: 350, height: 85, radius: 145, strength: 0.24 });
