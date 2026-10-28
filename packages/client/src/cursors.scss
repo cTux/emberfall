@@ -51,7 +51,7 @@ body[data-custom-cursor='false'] {
   --cursor-text: text;
 }
 
-body :is(button, a[href], [role='button'], [role='tab']) {
+body :is(button, a[href], [role='button'], [role='tab'], [role='combobox'], [role='option'], [role='menuitem']) {
   cursor: var(--cursor-pointer);
 }
 
@@ -71,7 +71,8 @@ body :is([data-drag-handle], [draggable='true']):active {
   cursor: var(--cursor-grabbing);
 }
 
-body :is(:disabled, [aria-disabled='true']) {
+body :is(:disabled, [aria-disabled='true']),
+body [role='combobox'][aria-disabled='true'] {
   cursor: var(--cursor-disabled);
 }
 

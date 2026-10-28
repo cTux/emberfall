@@ -121,6 +121,30 @@ const createGameTheme = (fontBaseUrl: string) =>
       },
       MuiTextField: { defaultProps: { size: 'small', fullWidth: true } },
       MuiFormControl: { defaultProps: { size: 'small' } },
+      MuiMenu: {
+        styleOverrides: {
+          paper: ({ theme }) => ({
+            ...windowSurface(theme),
+            backgroundColor: theme.palette.wood.dark,
+          }),
+        },
+      },
+      MuiMenuItem: {
+        styleOverrides: {
+          root: ({ theme }) => ({
+            '&:hover, &.Mui-focusVisible': { backgroundColor: theme.palette.wood.light },
+            '&.Mui-selected': {
+              color: theme.palette.primary.main,
+              backgroundColor: theme.palette.wood.light,
+              '&:hover, &.Mui-focusVisible': { backgroundColor: theme.palette.wood.light },
+            },
+            '&.Mui-focusVisible': {
+              outline: `2px solid ${theme.palette.primary.main}`,
+              outlineOffset: -3,
+            },
+          }),
+        },
+      },
       MuiPaper: {
         defaultProps: { variant: 'outlined' },
         styleOverrides: {
