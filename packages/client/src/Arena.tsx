@@ -171,6 +171,7 @@ export function Arena({
     let previousHp = '';
     const keys = new Set<string>();
     const altKeys = new Set<string>();
+    let altHeldAt = Infinity;
     let pointer: { x: number; y: number } | undefined;
     let held = false;
     let pointerInside = false;
@@ -241,8 +242,13 @@ export function Arena({
     const key = (event: KeyboardEvent, down: boolean) => {
       if (event.code === 'AltLeft' || event.code === 'AltRight') {
         if (latest.current) event.preventDefault();
-        if (down) altKeys.add(event.code);
-        else altKeys.delete(event.code);
+        if (down) {
+          if (altKeys.size === 0) altHeldAt = performance.now();
+          altKeys.add(event.code);
+        } else {
+          altKeys.delete(event.code);
+          if (altKeys.size === 0) altHeldAt = Infinity;
+        }
         return;
       }
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
@@ -274,6 +280,7 @@ export function Arena({
     const reset = () => {
       keys.clear();
       altKeys.clear();
+      altHeldAt = Infinity;
       held = false;
       pointerInside = false;
       element.dataset.cursor = 'default';
@@ -544,7 +551,7 @@ export function Arena({
           view?.resources?.[element.dataset.resource]?.remaining ?? '',
         );
       };
-      const highlightInteractions = altKeys.size > 0 && !blocked();
+      const highlightInteractions = now - altHeldAt > 500 && !blocked();
       const outlinedTargets = () => {
         const highlighted = highlightInteractions;
         for (const target of targets) target.highlighted = highlighted;
