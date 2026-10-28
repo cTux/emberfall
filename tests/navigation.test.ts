@@ -29,13 +29,19 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
   const labels: string[] = [];
   const angles: number[] = [];
   const colors: string[] = [];
+  let arrowX = 0;
+  let arrowY = 0;
+  let labelBox = { x: 0, y: 0, width: 0, height: 0 };
   const context = {
     canvas: { width: 800, height: 600, clientWidth: 800, clientHeight: 600 },
     getTransform: () => ({ e: 400 - player.x, f: 300 - player.y }),
     save() {},
     restore() {},
     setTransform() {},
-    translate() {},
+    translate(x: number, y: number) {
+      arrowX = x;
+      arrowY = y;
+    },
     rotate: (angle: number) => angles.push(angle),
     beginPath() {},
     moveTo() {},
@@ -46,7 +52,9 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
       colors.push(this.fillStyle);
     },
     fillStyle: '',
-    fillRect() {},
+    fillRect(x: number, y: number, width: number, height: number) {
+      labelBox = { x, y, width, height };
+    },
     measureText: () => ({ width: 70 }),
     fillText: (label: string) => labels.push(label),
   };
@@ -68,6 +76,25 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
   draw();
   assert.deepEqual(labels, ['Forest portal']);
   assert.equal(angles[0], 0);
+
+  for (let degrees = 0; degrees < 360; degrees += 5) {
+    const angle = (degrees * Math.PI) / 180;
+    player.x = LOBBY_PORTAL.x - Math.cos(angle) * 1500;
+    player.y = LOBBY_PORTAL.y - Math.sin(angle) * 1500;
+    draw();
+    assert.equal(labels.length, 1);
+    assert.ok(
+      labelBox.x > arrowX + 14 ||
+        labelBox.x + labelBox.width < arrowX - 14 ||
+        labelBox.y > arrowY + 14 ||
+        labelBox.y + labelBox.height < arrowY - 14,
+      `label overlaps arrow at ${degrees} degrees`,
+    );
+    assert.ok(labelBox.x >= 5 && labelBox.x + labelBox.width <= 795);
+    assert.ok(labelBox.y >= 0 && labelBox.y + labelBox.height <= 600);
+  }
+  player.x = FOREST.width - 100;
+  player.y = LOBBY_PORTAL.y;
 
   world.players[0].scene = 'forest';
   draw();
