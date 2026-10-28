@@ -125,6 +125,10 @@ Totals cover the current connected character session, including training and for
 
 ![Verified desktop ability breakdown with ability icons](../images/damage-meter-abilities.png)
 
+The Bear ability icon shows one idle frame cropped from its companion sprite sheet.
+
+![Verified desktop Bear ability icon showing one bear](../images/damage-meter-bear.png)
+
 ## UI-04 — Settings and music
 
 New runtime: Settings → Account displays the saved game nickname and
