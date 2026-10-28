@@ -64,6 +64,19 @@ test('character names match player labels at the same offset above their sprites
   assert.deepEqual(innkeeper.backgrounds, []);
 });
 
+test('hiding overhead health preserves the name position and width', () => {
+  const visible = recordingContext();
+  const hidden = recordingContext();
+  const width = drawPlayerHealth(visible.ctx, 100, 154, 10, 10, 'Marta');
+  assert.equal(
+    drawPlayerHealth(hidden.ctx, 100, 154, 10, 10, 'Marta', undefined, false, false),
+    width,
+  );
+  assert.equal(visible.backgrounds.length, 3);
+  assert.deepEqual(hidden.backgrounds, []);
+  assert.deepEqual(hidden.text, visible.text);
+});
+
 test('overhead player and boss health match gathering thickness and borders without moving names', () => {
   const gathering = recordingContext();
   drawTimedActivity(

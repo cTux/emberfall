@@ -110,6 +110,9 @@ Tree health bars use replicated remaining gathers and disappear on depletion or 
 `world-bar.ts` draws the shared 7-unit frame (5-unit fill, 1-unit border) for
 gathering and every overhead health bar. Health bars keep their bottom anchors,
 widths and colors; names stay fixed while debuffs and speech clear the new top.
+The default-on `hideHealthBarsInTown` browser preference suppresses village
+health fills/frames in `Arena.tsx` and `companion.ts`, preserving actor names.
+The forest renderer retains its normal health bars independently of this setting.
 
 The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders
 the optional base ability and four reserved slots, with an SVG cooldown sector

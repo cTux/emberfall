@@ -51,6 +51,12 @@ Their existing widths, health colors and name positions remain unchanged. Bars
 grow upward, with speech bubbles and debuff rows kept clear of the frame.
 HUD and party health meters retain their existing styling.
 
+Settings → Gameplay includes a saved **Hide health bars in town** toggle, enabled
+by default for new and existing players. It hides overhead player, companion,
+training dummy and resource-tree health bars in the village, while preserving
+names, status effects, party HUD meters and gathering progress. Disabling it
+restores town bars immediately. Forest health bars remain visible either way.
+
 In the new client, all player projectiles (arrows, fireballs and Druid roots) have
 a thin, one-world-unit light-green silhouette outline in training and forest,
 at every graphics preset. Their class art, size, animation and flight remain intact.

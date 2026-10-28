@@ -8,6 +8,7 @@ export interface Preferences {
   autoTarget: boolean;
   autoLoot: boolean;
   hideGatheringHintInCombat: boolean;
+  hideHealthBarsInTown: boolean;
   bloodPuddles: boolean;
   damageNumbers: boolean;
   dps: boolean;
@@ -28,6 +29,7 @@ export function loadPreferences(): Preferences {
     autoTarget: true,
     autoLoot: true,
     hideGatheringHintInCombat: true,
+    hideHealthBarsInTown: true,
     bloodPuddles: true,
     damageNumbers: true,
     dps: false,
@@ -49,6 +51,7 @@ export function loadPreferences(): Preferences {
       'autoTarget',
       'autoLoot',
       'hideGatheringHintInCombat',
+      'hideHealthBarsInTown',
       'bloodPuddles',
       'damageNumbers',
       'dps',

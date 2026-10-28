@@ -352,6 +352,7 @@ export function drawPlayerHealth(
   name: string,
   color = '#ffffff',
   boss = false,
+  showHealth = true,
 ) {
   ctx.save();
   ctx.font = '8px "Alegreya Sans", sans-serif';
@@ -361,14 +362,15 @@ export function drawPlayerHealth(
   const width = Math.max(boss ? 64 : 40, Math.ceil(metrics.width) + 12);
   const bottom = y + (boss ? 9 : 7);
   // Grow upward to preserve the existing name and sprite clearance.
-  drawWorldBar(
-    ctx,
-    x - width / 2,
-    bottom,
-    width,
-    hp / Math.max(1, max),
-    boss ? '#c084fc' : '#86d9a2',
-  );
+  if (showHealth)
+    drawWorldBar(
+      ctx,
+      x - width / 2,
+      bottom,
+      width,
+      hp / Math.max(1, max),
+      boss ? '#c084fc' : '#86d9a2',
+    );
   drawCharacterName(ctx, x, bottom, name, color);
   ctx.restore();
   return width;
