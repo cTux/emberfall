@@ -405,28 +405,26 @@ stacking, loot, unarmed casting and the replicated UI. `tests/auto-loot.spec.ts`
 ## Talent configuration
 
 [PROG-03](../specs/progression.md#prog-03--talents) uses core's immutable
-[talent graph](../../packages/core/src/talent-tree.ts) and registered
-[ability definitions](../../packages/core/src/mods/base/abilities/talents.ts).
-The graph is shared; only learned IDs live in existing per-class talent saves.
-Available points derive from normal level minus one and valid learned nodes.
-The server applies `learnTalent` to a detached player, saves it, then publishes
-the allocation; failures retain live points and nodes. `resetTalents` uses the
-same save-before-publish transaction for current-class talents and the 50-coin
-account charge. The server validates class and wrapped bullseye proximity; the
-client reuses the target sprite hover outline and click/E interaction for its
-confirmation. No database migration.
+[class talent catalog](../../packages/core/src/talent-catalog.ts), allocation
+rules and registered ability definitions. Three columns expose ten level-gated,
+two-rank nodes per class. Available points equal normal level minus spent ranks.
+Versioned per-class save normalization refunds old allocations once and repairs
+invalid or over-budget records without changing other progress.
 
-Talent casts use a separate server-owned cooldown map keyed by ability ID,
-retained across class switches. Forest and training use the same cast rules and
-wrapped hit paths. Projectile talents use registered arrow/fireball/roots
-mechanics and remain confirmed visuals rather than client-predicted casts.
-Warrior talents resolve immediate shared melee overlaps (Whirlwind uses a circle).
-The shared UI takes node views and callbacks; the client maps catalog data and
-composes a nonmodal draggable window. N toggles the window, 1–4 cast learned
-abilities toward a cursor world-position snapshot carried in the cast command.
-The server validates that position and forces manual aim for that cast without
-changing the base attack targeting mode. Combat inputs remain available while
-configuring.
+Learning, equipping and bullseye resets use detached mutations saved before
+publication. Four saved slots reference learned ability node IDs. Cooldowns are
+keyed by ability ID, so reassignment does not bypass recovery. Reset clears
+assignments and transient combat effects after the transaction succeeds.
+
+`talent-effects.ts` owns authoritative direct hits, scheduled pulses, ailments,
+consumption, companion commands, healing, barriers, control and triggered effects.
+The shared forest/training tick executes scheduled effects and invalidates them
+on death, class/scene departure or reset; pause/resume preserves their timing.
+Damage and deaths use the existing shared hit/reward path. Training grants no
+rewards. Confirmed explosion events carry the talent class and column for animated
+cast art and optional particles in both renderers. These visuals never apply
+client damage. The UI supplies independent columns and themed rank tooltips;
+right-click/F2 assignment uses the existing action bar.
 
 ## Parties and dimensions
 

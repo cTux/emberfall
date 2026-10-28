@@ -1,4 +1,3 @@
-import { TALENT_TREE, isTalentLearned } from '../talent-tree.ts';
 import { recoveryCooldownMs } from '../utils/recoveryCooldownMs.ts';
 import { z } from 'zod';
 import { progressSchema as progressShape, clientMessage as messageShape } from '@emberfall/common';
@@ -105,17 +104,9 @@ export function createRules(content: Registries) {
       if (slot === 'weapon') weapon = gear;
       for (const key of Object.keys(gear.stats) as string[]) stats[key] += gear.stats[key] ?? 0;
     }
-    let speedBonus = 0;
-    for (const node of TALENT_TREE) {
-      if (!isTalentLearned(player, node.id)) continue;
-      if (node.kind === 'power') stats.power += 1;
-      if (node.kind === 'speed') speedBonus += 0.1;
-      if (node.kind === 'criticalChance') stats.criticalChance += 0.05;
-      if (node.kind === 'criticalDamage') stats.criticalMultiplier += 0.1;
-    }
     const baseAttackRate = weapon?.stats.attacksPerSecond ?? 0;
     const cooldownRecoveryRate =
-      baseAttackRate > 0 ? stats.attacksPerSecond / baseAttackRate - 1 + speedBonus : -1;
+      baseAttackRate > 0 ? stats.attacksPerSecond / baseAttackRate - 1 : -1;
     const attackIntervalMs =
       baseAttackRate > 0
         ? recoveryCooldownMs(1000 / baseAttackRate, cooldownRecoveryRate)

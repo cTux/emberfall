@@ -558,6 +558,7 @@ export function Game({
             />
             {me && (
               <WeaponActionBar
+                send={send}
                 onCast={castTalent}
                 player={me}
                 now={world?.serverNow ?? 0}

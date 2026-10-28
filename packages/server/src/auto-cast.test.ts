@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FOREST, characterStats, tickPlayerCombat, createTrainingScene } from '@emberfall/core';
+import {
+  FOREST,
+  TRAINING_ZONES,
+  characterStats,
+  tickPlayerCombat,
+  createTrainingScene,
+} from '@emberfall/core';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 import type { Player, WorldState } from '@emberfall/common';
 
@@ -14,8 +20,8 @@ test('ranged auto-casts wait for a living target in range, then launch and damag
           name: 'Hero',
           color: 0,
           classId,
-          x: training ? 400 : 5,
-          y: training ? 355 : 5,
+          x: training ? TRAINING_ZONES[0].x : 5,
+          y: training ? TRAINING_ZONES[0].y - 15 : 5,
           scene: training ? undefined : 'forest',
           level: 1,
           experience: 0,
@@ -79,8 +85,8 @@ test('automatic projectile prediction stops empty cycles without mutating snapsh
             name: 'Hero',
             color: 0,
             classId,
-            x: 400,
-            y: 355,
+            x: TRAINING_ZONES[0].x,
+            y: TRAINING_ZONES[0].y - 15,
             scene: training ? undefined : 'forest',
             attackAt: 9100,
             level: 1,

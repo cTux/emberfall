@@ -41,7 +41,8 @@ test('combat feedback gates all classes on weapon, life, training, scene and inp
     assert.equal(combatCursor(world, player, pointer, true, false, false), 'default');
   }
   player.equipment = starterEquipment(player.classId!);
-  player.x += 1000;
+  player.x = 0;
+  player.y = 0;
   assert.equal(combatCursor(world, player, pointer, true, false, false), 'default');
   player.scene = 'forest';
   world.scene = { ...training, training: false, phase: 'ended' };

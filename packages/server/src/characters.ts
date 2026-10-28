@@ -5,7 +5,7 @@ import { dirname } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-sqlite';
 import { getTableName } from 'drizzle-orm';
 import { GameDatabase, VersionConflictError } from '@colyseus/database';
-import { game, type createGame } from '@emberfall/core';
+import { game, normalizeTalents, type createGame } from '@emberfall/core';
 import type { CharacterProgress, ClassId, Player, Merchant } from '@emberfall/common';
 
 export function createCharacterPersistence(context: ReturnType<typeof createGame> = game) {
@@ -35,6 +35,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     const progress = progressSchema.parse(value);
     progress.paragon = (progress.paragon ?? 0) + Math.max(0, progress.level - 20);
     progress.level = Math.min(20, progress.level);
+    normalizeTalents(progress, classId);
     progress.coins ??= 0;
     progress.backpack ??= [];
     progress.storages ??= freshStorages();
@@ -331,6 +332,8 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         classId,
         classes,
         talents: next.talents ?? {},
+        talentSlots: next.talentSlots,
+        talentVersion: next.talentVersion,
         attackAt: undefined,
         attackAngle: undefined,
         bear: undefined,

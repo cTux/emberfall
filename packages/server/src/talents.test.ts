@@ -1,416 +1,374 @@
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { Player, SceneState } from '@emberfall/common';
-import { clientMessage } from '@emberfall/common';
 import {
   TALENT_TREE,
-  BULLSEYE,
-  resetTalents,
+  TALENT_LEVELS,
+  talentNodeId,
+  talentRank,
   availableTalentPoints,
   canLearnTalent,
-  isTalentLearned,
   learnTalent,
+  equipTalent,
+  normalizeTalents,
   characterStats,
   castTalentAbility,
-  talentAbility,
-  talentCooldownMs,
-  tickPlayerShots,
+  resetTalents,
+  BULLSEYE,
   TRAINING_ZONES,
-  starterEquipment,
 } from '@emberfall/core';
+import {
+  talentAilmentChance,
+  talentIncomingDamage,
+  tickTalentEffects,
+} from '../../core/src/talent-effects.ts';
 import { CharacterStore, freshProgress } from './characters.ts';
 const hero = (classId = 'warrior'): Player => ({
   ...freshProgress(classId),
-  id: 'a',
+  id: 'hero',
   name: 'Hero',
   classId,
   level: 20,
-  x: 4790,
-  y: 1280,
+  x: 1000,
+  y: 1000,
   color: 0,
-  equipment: starterEquipment(classId),
+  scene: 'forest',
 });
-const arena = (training = false): SceneState => ({
+const arena = (): SceneState => ({
   id: 'test',
   type: 'Forest',
   difficulty: 'Easy',
   phase: 'active',
   ready: [],
   countdownAt: null,
-  endsAt: 1e9,
+  endsAt: null,
   nextSpawn: 1e9,
   sequence: 0,
-  enemies: [],
+  enemies: [{ id: 1, x: 1050, y: 1000, hitpoints: 1000, maxHitpoints: 1000, angle: 0 }],
   damage: [],
   portals: [],
-  training,
 });
-function learnPath(player: Player, slot: number) {
-  for (let step = 1; step <= 4; step++) learnTalent(player, `path-${slot}-${step}`);
+function ability(player: Player, column: number, row: number, rank = 1) {
+  const id = talentNodeId(player.classId!, column, row);
+  for (let i = 0; i < rank; i++) learnTalent(player, id);
+  equipTalent(player, 0, id);
+  return id;
 }
-
-test('points, prerequisites, duplicate requests and independent branches', () => {
-  const p = hero();
-  p.level = 1;
-  assert.equal(availableTalentPoints(p), 0);
-  assert.equal(isTalentLearned(p, 'center'), true);
-  assert.throws(() => learnTalent(p, 'center'));
-  assert.throws(() => learnTalent(p, 'unknown'));
-  assert.throws(() => learnTalent(p, 'path-0-1'));
-  p.level = 3;
-  assert.throws(() => learnTalent(p, 'path-0-2'));
-  learnTalent(p, 'path-0-1');
-  assert.equal(availableTalentPoints(p), 1);
-  assert.equal(canLearnTalent(p, 'path-0-2'), true);
-  assert.equal(canLearnTalent(p, 'path-1-1'), true);
-  assert.throws(() => learnTalent(p, 'path-0-1'));
-  learnTalent(p, 'path-0-2');
-  assert.equal(canLearnTalent(p, 'path-0-3'), false);
-  p.paragon = 100;
-  assert.equal(availableTalentPoints(p), 0);
-  for (const node of TALENT_TREE)
-    for (const child of node.next)
-      assert.equal(TALENT_TREE.find((n) => n.id === child)?.previous, node.id);
+function cast(player: Player, scene: SceneState, now = 1000) {
+  return castTalentAbility(
+    scene,
+    player,
+    {
+      slot: 0,
+      classId: player.classId!,
+      epoch: player.scene ? scene.id : 'lobby',
+      aimX: 1050,
+      aimY: 1000,
+    },
+    now,
+  );
+}
+test('all classes have thirty independent talents and twelve abilities, with a defensive third column', () => {
+  assert.equal(TALENT_TREE.length, 120);
+  for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
+    const nodes = TALENT_TREE.filter((node) => node.classId === classId);
+    assert.equal(nodes.length, 30);
+    assert.equal(nodes.filter((node) => node.kind === 'ability').length, 12);
+    assert.deepEqual(
+      nodes.filter((node) => node.column === 0).map((node) => node.level),
+      TALENT_LEVELS,
+    );
+  }
+});
+test('one starting point, two ranks, level-only gates, no stat bonuses and no paragon points', () => {
+  const player = hero();
+  player.level = 1;
+  assert.equal(availableTalentPoints(player), 1);
+  const first = talentNodeId('warrior', 0, 0),
+    high = talentNodeId('warrior', 2, 9);
+  assert.equal(canLearnTalent(player, high), false);
+  learnTalent(player, first);
+  assert.equal(availableTalentPoints(player), 0);
+  assert.throws(() => learnTalent(player, first));
+  player.level = 2;
+  learnTalent(player, first);
+  assert.equal(talentRank(player, first), 2);
+  assert.throws(() => learnTalent(player, first));
+  player.level = 20;
+  player.paragon = 999;
+  learnTalent(player, high);
+  assert.equal(availableTalentPoints(player), 17);
+  assert.throws(() => learnTalent(player, talentNodeId('mage', 0, 0)));
+  const learned = characterStats(player);
+  assert.deepEqual(learned, characterStats({ ...player, talents: {} }));
+});
+test('a whole column costs exactly twenty points; mixing columns and inactive extensions is allowed', () => {
+  for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
+    const player = hero(classId);
+    for (let row = 0; row < 10; row++)
+      for (let n = 0; n < 2; n++) learnTalent(player, talentNodeId(classId, 0, row));
+    assert.equal(availableTalentPoints(player), 0);
+    assert.throws(() => learnTalent(player, talentNodeId(classId, 1, 0)));
+  }
+  const player = hero();
+  learnTalent(player, talentNodeId('warrior', 0, 6));
+  learnTalent(player, talentNodeId('warrior', 2, 8));
+  assert.equal(availableTalentPoints(player), 18);
+});
+test('migration refunds old allocations once and repairs wrong-class, overbudget and locked ranks', () => {
+  const player = hero();
+  player.talentVersion = undefined;
+  player.talents = { 'path-0-1': 1, strength: 99 };
+  normalizeTalents(player, 'warrior');
+  assert.deepEqual(player.talents, {});
+  assert.equal(availableTalentPoints(player), 20);
+  ability(player, 1, 1, 2);
+  const snapshot = structuredClone(player);
+  normalizeTalents(player, 'warrior');
+  assert.deepEqual(player, snapshot);
+  player.talents![talentNodeId('mage', 0, 0)] = 1;
+  normalizeTalents(player, 'warrior');
+  assert.deepEqual(player.talents, {});
+  player.level = 1;
+  player.talents = { [talentNodeId('warrior', 0, 9)]: 2 };
+  normalizeTalents(player, 'warrior');
+  assert.equal(availableTalentPoints(player), 1);
+});
+test('abilities require learning and equipment, keep cooldown across slot changes, reject invalid authority', () => {
+  const player = hero(),
+    scene = arena();
+  assert.equal(cast(player, scene), false);
+  assert.throws(() => equipTalent(player, 0, talentNodeId('warrior', 0, 1)));
+  ability(player, 0, 1);
+  assert.equal(cast(player, scene), true);
+  assert(scene.enemies[0].hitpoints < 1000);
+  equipTalent(player, 1, player.talentSlots![0]);
   assert.equal(
-    clientMessage.safeParse({
-      type: 'talentCast',
-      slot: 4,
-      classId: 'warrior',
-      epoch: 'lobby',
-      aimX: 0,
-      aimY: 0,
-    }).success,
+    castTalentAbility(
+      scene,
+      player,
+      { slot: 1, classId: 'warrior', epoch: scene.id, aimX: 1050, aimY: 1000 },
+      1001,
+    ),
+    false,
+  );
+  assert.equal(cast(player, scene, 1001), false);
+  player.hitpoints = 0;
+  assert.equal(cast(player, scene, 20000), false);
+  player.hitpoints = 100;
+  scene.pausedAt = 1000;
+  assert.equal(cast(player, scene, 20000), false);
+  scene.pausedAt = undefined;
+  assert.equal(
+    castTalentAbility(
+      scene,
+      player,
+      { slot: 0, classId: 'mage', epoch: scene.id, aimX: 0, aimY: 0 },
+      20000,
+    ),
+    false,
+  );
+  assert.equal(
+    castTalentAbility(
+      scene,
+      player,
+      { slot: 0, classId: 'warrior', epoch: scene.id, aimX: NaN, aimY: 0 },
+      20000,
+    ),
     false,
   );
 });
-
-test('learned paths apply all four stat types and ignore legacy reserved data', () => {
-  const p = hero();
-  const before = characterStats(p);
-  p.talents = { strength: 99, 'path-0-4': 1 };
-  assert.equal(characterStats(p).power, before.power);
-  assert.equal(availableTalentPoints(p), 19);
-  p.talents = {};
-  for (let slot = 0; slot < 4; slot++) learnPath(p, slot);
-  const after = characterStats(p);
-  assert.equal(after.power, before.power + 3);
-  assert(Math.abs(after.attacksPerSecond - before.attacksPerSecond * 1.3) < 1e-9);
-  assert(Math.abs(after.criticalChance - before.criticalChance - 0.15) < 1e-9);
-  assert(Math.abs(after.criticalMultiplier - before.criticalMultiplier - 0.3) < 1e-9);
-});
-
-test('each class and slot casts its own learned ability with cooldown and authoritative restrictions in forest/training', (t) => {
-  t.mock.method(Math, 'random', () => 0.99);
+test('all twelve ability entries execute for every class and both ranks without non-finite damage', () => {
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'])
-    for (let slot = 0; slot < 4; slot++)
-      for (const training of [false, true]) {
-        const p = hero(classId);
-        const scene = arena(training);
-        if (training) {
-          p.x = TRAINING_ZONES[0].x;
-          p.y = TRAINING_ZONES[0].y;
-        } else p.scene = 'forest';
-        scene.enemies = [
-          { id: 1, x: training ? p.x + 40 : 10, y: p.y, hitpoints: 10000, angle: 0 },
-        ];
-        const request = {
-          slot,
-          classId,
-          epoch: training ? 'lobby' : scene.id,
-          aimX: scene.enemies[0].x,
-          aimY: scene.enemies[0].y,
-        };
-        assert.equal(castTalentAbility(scene, p, request, 1000), false);
-        learnPath(p, slot);
-        assert.equal(castTalentAbility(scene, p, { ...request, classId: 'fake' }, 1000), false);
-        assert.equal(castTalentAbility(scene, p, { ...request, epoch: 'stale' }, 1000), false);
-        assert.equal(
-          castTalentAbility(scene, p, request, 1000),
-          true,
-          `${classId}/${slot}/${training}`,
-        );
-        assert.equal(castTalentAbility(scene, p, request, 1001), false);
-        const ability = talentAbility(p, slot)!;
-        assert.equal(p.talentCooldowns![ability.id], 1000 + talentCooldownMs(p, slot));
-        if (classId !== 'warrior') {
-          assert(scene.playerShots!.every((shot) => shot.abilityId === ability.id));
-          tickPlayerShots(scene, [p], 1100, 0.2);
+    for (let column = 0; column < 3; column++)
+      for (const row of [1, 3, 5, 7])
+        for (const learned of [1, 2]) {
+          const player = hero(classId),
+            scene = arena();
+          player.bear = {
+            id: 'bear',
+            name: 'Bear',
+            x: 1000,
+            y: 1000,
+            hitpoints: 100,
+            maxHitpoints: 100,
+            returning: false,
+          };
+          ability(player, column, row, learned);
+          assert.equal(cast(player, scene), true, `${classId}:${column}:${row}:${learned}`);
+          for (let now = 1000; now <= 7000; now += 500) tickTalentEffects(scene, [player], now);
+          assert(scene.damage.every((event) => Number.isFinite(event.amount) && event.amount >= 0));
         }
-        assert(scene.damage.length > 0, `${classId}/${slot} must cause real damage`);
-        if (training) {
-          assert.equal(p.experience, 0);
-          assert.equal(scene.drops?.length ?? 0, 0);
-        }
-        p.hitpoints = 0;
-        assert.equal(castTalentAbility(scene, p, request, 100000), false);
-      }
 });
-
-test('allocations round trip per class without leaking across class changes', async () => {
-  const directory = mkdtempSync(join(tmpdir(), 'emberfall-talents-'));
-  const path = join(directory, 'save.sqlite');
-  let store = new CharacterStore(path);
+test('Open Wounds adds percentage points to existing bleed chance', () => {
+  const player = hero();
+  assert.equal(talentAilmentChance(player, 'bleed'), 0);
+  learnTalent(player, talentNodeId('warrior', 1, 0));
+  assert.equal(talentAilmentChance(player, 'bleed'), 0.2);
+  learnTalent(player, talentNodeId('warrior', 1, 0));
+  assert.equal(talentAilmentChance(player, 'bleed'), 0.35);
+  assert.equal(talentAilmentChance(player, 'poison'), 0);
+});
+test('shield wall reduces incoming damage; resetting cancels scheduled attacks', () => {
+  const player = hero(),
+    scene = arena();
+  ability(player, 2, 7, 2);
+  assert(cast(player, scene));
+  assert.equal(talentIncomingDamage(scene, player, 100, 1001), 25);
+  assert.equal(talentIncomingDamage(scene, player, 100, 5000), 100);
+  player.talents = {};
+  player.talentSlots = [];
+  ability(player, 0, 3);
+  assert(cast(player, scene, 20000));
+  player.coins = 50;
+  resetTalents(player);
+  tickTalentEffects(scene, [player], 25000);
+  assert.equal(scene.damage.length, 0);
+  assert.equal(availableTalentPoints(player), 20);
+  assert.equal(player.coins, 0);
+});
+test('training casts require the training zone and never award XP or drops', () => {
+  const player = hero(),
+    scene = arena();
+  scene.training = true;
+  player.scene = undefined;
+  ability(player, 0, 1);
+  assert.equal(cast(player, scene), false);
+  player.x = TRAINING_ZONES[0].x;
+  player.y = TRAINING_ZONES[0].y;
+  scene.enemies[0].x = player.x;
+  scene.enemies[0].y = player.y;
+  scene.enemies[0].hitpoints = 1;
+  assert.equal(
+    castTalentAbility(
+      scene,
+      player,
+      { slot: 0, classId: 'warrior', epoch: 'lobby', aimX: player.x, aimY: player.y },
+      1000,
+    ),
+    true,
+  );
+  assert.equal(scene.drops, undefined);
+});
+test('save failure cannot publish learned points or equipped slots; bullseye reset remains transactional', async (t) => {
+  const { createRuntime } = await import('./runtime.ts');
+  const { Peer } = await import('./network/peer.ts');
+  const runtime = await createRuntime();
+  const messages: { type: string; message?: string; characterToken?: string }[] = [];
+  const peer = new Peer(
+    (message) => messages.push(message),
+    () => {},
+  );
+  try {
+    runtime.connect(peer);
+    const world = [...runtime.worlds.values()][0];
+    peer.receive({ type: 'join', worldId: world.id, playerName: 'Talent hero', password: '' });
+    for (let i = 0; i < 200 && !world.players.size; i++)
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    const player = [...world.players.values()][0];
+    player.level = 20;
+    const id = talentNodeId('warrior', 0, 1);
+    const fail = t.mock.method(runtime.characters, 'save', () => {
+      throw new Error('failed save');
+    });
+    peer.receive({ type: 'learnTalent', nodeId: id });
+    assert.match(messages.at(-1)!.message!, /Unable to save/);
+    assert.equal(talentRank(player, id), 0);
+    fail.mock.restore();
+    peer.receive({ type: 'learnTalent', nodeId: id });
+    assert.equal(talentRank(player, id), 1);
+    peer.receive({ type: 'equipTalent', slot: 0, nodeId: id });
+    assert.equal(player.talentSlots?.[0], id);
+    player.coins = 100;
+    peer.receive({ type: 'resetTalents', classId: 'warrior' });
+    assert.equal(player.coins, 100);
+    player.x = BULLSEYE!.x;
+    player.y = BULLSEYE!.y - 15;
+    peer.receive({ type: 'resetTalents', classId: 'warrior' });
+    assert.equal(player.coins, 50);
+    assert.equal(availableTalentPoints(player), 20);
+    const token = messages.find((message) => message.type === 'joined')!.characterToken!;
+    const saved = runtime.characters.load(token)!;
+    assert.equal(saved.progress.coins, 50);
+    assert.equal(availableTalentPoints(saved.progress), 20);
+  } finally {
+    t.mock.restoreAll();
+    await runtime.close();
+  }
+});
+test('per-class allocations and selected abilities survive a save round trip', async () => {
+  const store = new CharacterStore(':memory:');
   await store.ready;
   try {
-    const saved = store.create('Hero');
-    const p = { ...hero(), ...saved.progress, classes: saved.classes };
-    p.level = 10;
-    learnPath(p, 0);
-    store.save(saved.id, p.name, p);
-    store.selectClass(saved.id, p, 'mage');
-    assert.equal(availableTalentPoints(p), 0);
-    assert.deepEqual(p.talents, {});
-    p.level = 6;
-    learnPath(p, 1);
-    store.selectClass(saved.id, p, 'warrior');
-    assert.equal(isTalentLearned(p, 'path-0-4'), true);
-    assert.equal(isTalentLearned(p, 'path-1-4'), false);
-    store.selectClass(saved.id, p, 'mage');
-    assert.equal(isTalentLearned(p, 'path-1-4'), true);
-    store.close();
-    store = new CharacterStore(path);
-    await store.ready;
-    const restored = store.load(saved.token);
-    assert.equal(isTalentLearned(restored.classes.warrior, 'path-0-4'), true);
-    assert.equal(isTalentLearned(restored.classes.mage, 'path-1-4'), true);
-    assert.equal(availableTalentPoints(restored.progress), 1);
-  } finally {
-    store.close();
-    rmSync(directory, { recursive: true });
-  }
-});
-
-test('learning command rejects duplicate/locked nodes and publishes only after saving', async (t) => {
-  const { createRuntime } = await import('./runtime.ts');
-  const { Peer } = await import('./network/peer.ts');
-  const runtime = await createRuntime();
-  const messages: { type: string; message?: string }[] = [];
-  const peer = new Peer(
-    (message) => messages.push(message),
-    () => {},
-  );
-  try {
-    runtime.connect(peer);
-    const world = [...runtime.worlds.values()][0];
-    peer.receive({ type: 'join', worldId: world.id, playerName: 'Talented', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    const p = [...world.players.values()][0];
-    p.level = 3;
-    peer.receive({ type: 'learnTalent', nodeId: 'path-0-2' });
-    assert.equal(availableTalentPoints(p), 2);
-    const fail = t.mock.method(runtime.characters, 'save', () => {
-      throw new Error('failed save');
-    });
-    peer.receive({ type: 'learnTalent', nodeId: 'path-0-1' });
-    assert.match(messages.at(-1)!.message!, /Unable to save/);
-    assert.equal(isTalentLearned(p, 'path-0-1'), false);
-    fail.mock.restore();
-    peer.receive({
-      type: 'learnTalent',
-      nodeId: 'path-0-1',
-      talents: { 'path-0-4': 1 },
+    const created = store.create('Talent hero');
+    const player = {
+      ...hero(),
+      ...created.progress,
+      classId: 'warrior',
       level: 20,
-    });
-    peer.receive({ type: 'learnTalent', nodeId: 'path-0-1' });
-    assert.equal(availableTalentPoints(p), 1);
-    assert.equal(p.level, 3);
-    assert.equal(isTalentLearned(p, 'path-0-4'), false);
+      classes: created.classes,
+    } as Player;
+    ability(player, 0, 1, 2);
+    store.save(created.id, player.name, player);
+    const loaded = store.load(created.token)!;
+    assert.equal(talentRank(loaded.progress, talentNodeId('warrior', 0, 1)), 2);
+    assert.equal(loaded.progress.talentSlots?.[0], talentNodeId('warrior', 0, 1));
+    assert.equal(availableTalentPoints(loaded.classes.mage), 1);
   } finally {
-    t.mock.restoreAll();
-    await runtime.close();
+    store.close();
   }
 });
 
-test('talent casts snapshot cursor aim across seams without changing base auto-target or requiring an enemy', () => {
-  for (const classId of ['ranger', 'mage', 'druid'])
-    for (let slot = 0; slot < 4; slot++) {
-      const p = hero(classId);
-      p.scene = 'forest';
-      p.autoTarget = true;
-      p.aimX = p.x - 100;
-      p.aimY = p.y;
-      learnPath(p, slot);
-      const scene = arena();
-      scene.enemies = [{ id: 1, x: p.x - 40, y: p.y, hitpoints: 1000, angle: 0 }];
-      const request = { slot, classId, epoch: scene.id, aimX: 10, aimY: p.y };
-      assert.equal(castTalentAbility(scene, p, { ...request, aimX: NaN }, 1000), false);
-      assert.equal(castTalentAbility(scene, p, { ...request, aimY: -1 }, 1000), false);
-      assert.equal(castTalentAbility(scene, p, { ...request, aimX: 4801 }, 1000), false);
-      assert.equal(p.talentCooldowns, undefined);
-      assert.equal(castTalentAbility(scene, p, request, 1000), true);
-      for (const shot of scene.playerShots!) {
-        assert.equal(shot.targetX, 10);
-        assert.equal(shot.targetY, p.y);
-        assert.equal(shot.targetId, undefined);
-      }
-      const angles = scene.playerShots!.map((shot) => shot.angle);
-      assert(Math.abs(angles.reduce((a, b) => a + b, 0) / angles.length) < 1e-9);
-      assert.equal(p.autoTarget, true);
-      assert.equal(p.aimX, p.x - 100);
-      scene.enemies = [];
-      assert.equal(castTalentAbility(scene, p, request, 100000), true);
-    }
+test('Rupture consumes only its owner wounds and spreads only at rank two', () => {
+  const player = hero(),
+    scene = arena();
+  ability(player, 1, 5, 2);
+  const target = scene.enemies[0];
+  target.debuffs = [
+    { kind: 'bleed', ownerId: player.id, stacks: 3, nextTick: 2000, expiresAt: 6000 },
+    { kind: 'bleed', ownerId: 'teammate', stacks: 2, nextTick: 2000, expiresAt: 6000 },
+  ];
+  scene.enemies.push({ id: 2, x: 1100, y: 1000, hitpoints: 1000, angle: 0 });
+  assert(cast(player, scene));
+  assert.equal(target.hitpoints, 970);
+  assert.equal(scene.enemies[1].hitpoints, 985);
+  assert.equal(target.debuffs.length, 1);
+  assert.equal(target.debuffs[0].ownerId, 'teammate');
 });
 
-test('directional Warrior talents strike toward the cursor, not the nearest enemy', (t) => {
-  t.mock.method(Math, 'random', () => 0.99);
-  for (const slot of [0, 2, 3]) {
-    const p = hero();
-    p.scene = 'forest';
-    p.autoTarget = true;
-    learnPath(p, slot);
-    const scene = arena();
-    scene.enemies = [
-      { id: 1, x: 4750, y: p.y, hitpoints: 1000, angle: 0 },
-      { id: 2, x: 50, y: p.y, hitpoints: 1000, angle: 0 },
-    ];
-    assert.equal(
-      castTalentAbility(
-        scene,
-        p,
-        { slot, classId: 'warrior', epoch: scene.id, aimX: 50, aimY: p.y },
-        1000,
-      ),
-      true,
-    );
-    assert.equal(scene.enemies[0].hitpoints, 1000);
-    assert(scene.enemies[1].hitpoints < 1000);
-    assert.equal(p.autoTarget, true);
-  }
-  for (const aim of [{}, { aimX: NaN, aimY: 0 }, { aimX: 0, aimY: Infinity }])
-    assert.equal(
-      clientMessage.safeParse({
-        type: 'talentCast',
-        slot: 0,
-        classId: 'mage',
-        epoch: 'lobby',
-        ...aim,
-      }).success,
-      false,
-    );
+test('Second Impact repeats once, and clearing a reset invalidates queued effects even after relearning', async (t) => {
+  t.mock.method(Math, 'random', () => 0);
+  const { clearTalentEffects } = await import('@emberfall/core');
+  const player = hero(),
+    scene = arena();
+  ability(player, 0, 1);
+  learnTalent(player, talentNodeId('warrior', 0, 2));
+  assert(cast(player, scene));
+  assert.equal(scene.damage.length, 1);
+  tickTalentEffects(scene, [player], 1300);
+  assert.equal(scene.damage.length, 2);
+  tickTalentEffects(scene, [player], 100000);
+  assert.equal(scene.damage.length, 2);
+  player.talentCooldowns = {};
+  assert(cast(player, scene, 200000));
+  clearTalentEffects(player);
+  tickTalentEffects(scene, [player], 200300);
+  assert.equal(scene.damage.length, 3);
 });
 
-test('expanded graph preserves existing allocations, has reachable forks and keeps nodes separate', () => {
-  const p = hero();
-  assert.equal(TALENT_TREE.length, 57);
-  assert.equal(TALENT_TREE.filter((node) => node.kind === 'ability').length, 4);
-  const byId = new Map(TALENT_TREE.map((node) => [node.id, node]));
-  for (let branch = 0; branch < 4; branch++) {
-    for (let step = 1; step <= 4; step++)
-      assert.equal(
-        byId.get(`path-${branch}-${step}`)!.previous,
-        step === 1 ? 'center' : `path-${branch}-${step - 1}`,
-      );
-    assert.equal(byId.get(`leaf-${branch}`)!.previous, `path-${branch}-2`);
-  }
-  const visited = new Set<string>();
-  function visit(id: string) {
-    assert(!visited.has(id), 'tree must be acyclic');
-    visited.add(id);
-    for (const child of byId.get(id)!.next) visit(child);
-  }
-  visit('center');
-  assert.equal(visited.size, TALENT_TREE.length);
-  for (let i = 0; i < TALENT_TREE.length; i++)
-    for (const other of TALENT_TREE.slice(i + 1))
-      assert(
-        Math.hypot(TALENT_TREE[i].x - other.x, TALENT_TREE[i].y - other.y) >= 54,
-        'nodes need room between their hit targets',
-      );
-  assert.equal(canLearnTalent(p, 'branch-0-1'), false);
-  learnTalent(p, 'path-0-1');
-  assert.equal(canLearnTalent(p, 'branch-0-1'), true);
-  const points = availableTalentPoints(p);
-  learnTalent(p, 'branch-0-1');
-  assert.equal(availableTalentPoints(p), points - 1);
-  assert.equal(canLearnTalent(p, 'branch-0-2'), true);
-  assert.equal(canLearnTalent(p, 'branch-0-3'), true);
-});
-
-test('bullseye reset charges once, refunds points and preserves reserved talents and cooldowns', () => {
-  const p = hero();
-  p.coins = 49;
-  learnPath(p, 0);
-  p.talents!.reserved = 7;
-  p.talentCooldowns = { 'talent:warrior:0': 10000 };
-  assert.throws(() => resetTalents(p), /50 coins/);
-  assert.equal(availableTalentPoints(p), 15);
-  assert.equal(p.coins, 49);
-  p.coins = 100;
-  resetTalents(p);
-  assert.equal(p.coins, 50);
-  assert.equal(availableTalentPoints(p), 19);
-  assert.deepEqual(p.talents, { reserved: 7 });
-  assert.deepEqual(p.talentCooldowns, { 'talent:warrior:0': 10000 });
-  assert.throws(() => resetTalents(p), /no talent points/);
-  assert.equal(p.coins, 50);
-});
-
-test('reset command enforces village proximity and class, and commits coins and talents together', async (t) => {
-  const { createRuntime } = await import('./runtime.ts');
-  const { Peer } = await import('./network/peer.ts');
-  const runtime = await createRuntime();
-  const messages: { type: string; message?: string }[] = [];
-  const peer = new Peer(
-    (message) => messages.push(message),
-    () => {},
-  );
-  try {
-    runtime.connect(peer);
-    const world = [...runtime.worlds.values()][0];
-    peer.receive({ type: 'join', worldId: world.id, playerName: 'Reset hero', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    const p = [...world.players.values()][0];
-    p.level = 5;
-    p.coins = 100;
-    learnPath(p, 0);
-    const command = { type: 'resetTalents', classId: p.classId! };
-    peer.receive(command);
-    assert.equal(p.coins, 100);
-    p.x = BULLSEYE!.x;
-    p.y = BULLSEYE!.y - 15;
-    peer.receive({ ...command, classId: 'mage' });
-    assert.equal(p.coins, 100);
-    p.scene = 'forest';
-    peer.receive(command);
-    assert.equal(p.coins, 100);
-    p.scene = undefined;
-    p.hitpoints = 0;
-    peer.receive(command);
-    assert.equal(p.coins, 100);
-    p.hitpoints = p.maxHitpoints;
-    p.coins = 49;
-    peer.receive(command);
-    assert.match(messages.at(-1)!.message!, /50 coins/);
-    assert.equal(isTalentLearned(p, 'path-0-4'), true);
-    p.coins = 100;
-    const fail = t.mock.method(runtime.characters, 'save', () => {
-      throw new Error('failed save');
-    });
-    peer.receive(command);
-    assert.match(messages.at(-1)!.message!, /Unable to save/);
-    assert.equal(p.coins, 100);
-    assert.equal(isTalentLearned(p, 'path-0-4'), true);
-    fail.mock.restore();
-    peer.receive(command);
-    assert.equal(p.coins, 50);
-    assert.equal(availableTalentPoints(p), 4);
-    peer.receive(command);
-    assert.equal(p.coins, 50);
-    const joined = messages.find((message) => message.type === 'joined') as unknown as {
-      characterToken: string;
-    };
-    const saved = runtime.characters.load(joined.characterToken);
-    assert.equal(saved.progress.coins, 50);
-    assert.deepEqual(saved.progress.talents, {});
-    assert.equal(saved.progress.level, 5);
-  } finally {
-    t.mock.restoreAll();
-    await runtime.close();
-  }
+test('defensive shelter protects nearby teammates without stacking barriers, and healing never revives dead players', () => {
+  const player = hero(),
+    ally = { ...hero(), id: 'ally' },
+    scene = arena();
+  ability(player, 2, 3, 2);
+  assert(cast(player, scene));
+  tickTalentEffects(scene, [player, ally], 1000);
+  const protectedDamage = talentIncomingDamage(scene, ally, 50, 1001);
+  assert.equal(protectedDamage, 50 - player.maxHitpoints * 0.1);
+  const druid = hero('druid');
+  ability(druid, 2, 3, 2);
+  ally.hitpoints = 0;
+  assert(cast(druid, scene));
+  tickTalentEffects(scene, [player, druid, ally], 1000);
+  assert.equal(ally.hitpoints, 0);
 });

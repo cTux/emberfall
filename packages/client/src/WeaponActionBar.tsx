@@ -1,6 +1,14 @@
-import type { Player } from '@emberfall/common';
-import { TalentIcon, talentIconIndex } from './talent-icons';
-import { TALENT_TREE, isTalentLearned, talentAbility, talentCooldownMs } from '@emberfall/core';
+import type { Player, ClientMessage } from '@emberfall/common';
+import { useState } from 'react';
+import { Menu, MenuItem } from '@mui/material';
+import { TalentIcon } from './talent-icons';
+import {
+  TALENT_TREE,
+  isTalentLearned,
+  talentAbility,
+  talentCooldownMs,
+  equippedTalent,
+} from '@emberfall/core';
 import { characterStats } from '@emberfall/core';
 import { ActionBar } from '@emberfall/ui';
 import { spellSrc } from './class-art';
@@ -12,25 +20,29 @@ export function WeaponActionBar({
   now,
   preferences,
   onCast,
+  send,
 }: {
   player: Player;
   onCast: (slot: number) => void;
+  send: (message: ClientMessage) => void;
   now: number;
   preferences: Pick<Preferences, 'autoAttack' | 'autoTarget'>;
 }) {
   const stats = characterStats(player);
+  const [picker, setPicker] = useState<{ slot: number; anchor: HTMLElement } | null>(null);
   const classId = player.classId ?? 'warrior';
   return (
     <div className='action-bar'>
       <ActionBar
+        onChoose={(slot, anchor) => setPicker({ slot, anchor })}
         abilities={[0, 1, 2, 3].map((slot) => {
-          const node = TALENT_TREE.find((entry) => entry.slot === slot)!;
-          const ability = talentAbility(player, slot);
-          return ability && isTalentLearned(player, node.id)
+          const node = equippedTalent(player, slot);
+          const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot);
+          return ability && node && isTalentLearned(player, node.id)
             ? {
                 name: ability.name!,
-                icon: <TalentIcon index={talentIconIndex(classId, slot)} />,
-                cooldownMs: talentCooldownMs(player, slot),
+                icon: <TalentIcon classId={classId} index={node.column * 10 + node.row} />,
+                cooldownMs: talentCooldownMs(player, node.slot!),
                 remainingMs: (player.talentCooldowns?.[ability.id] ?? 0) - now,
                 onCast: () => onCast(slot),
               }
@@ -52,6 +64,30 @@ export function WeaponActionBar({
             : undefined
         }
       />
+      <Menu anchorEl={picker?.anchor} open={!!picker} onClose={() => setPicker(null)}>
+        <MenuItem
+          onClick={() => {
+            if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: null });
+            setPicker(null);
+          }}
+        >
+          Clear slot
+        </MenuItem>
+        {TALENT_TREE.filter(
+          (node) =>
+            node.classId === classId && node.kind === 'ability' && isTalentLearned(player, node.id),
+        ).map((node) => (
+          <MenuItem
+            key={node.id}
+            onClick={() => {
+              if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: node.id });
+              setPicker(null);
+            }}
+          >
+            {node.name}
+          </MenuItem>
+        ))}
+      </Menu>
     </div>
   );
 }

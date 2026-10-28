@@ -24,6 +24,8 @@ export const progressSchema = z
     backpack: backpackSchema.optional(),
     storages: storagesSchema.optional(),
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),
+    talentVersion: z.number().int().nonnegative().optional(),
+    talentSlots: z.array(z.string().min(1).max(64).nullable()).length(4).optional(),
     level: z.number().int().min(1).max(10000),
     paragon: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
     experience: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER),
@@ -44,6 +46,11 @@ export const clientMessage = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('resetTalents'), classId: classSchema }),
   z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
+  z.object({
+    type: z.literal('equipTalent'),
+    slot: z.number().int().min(0).max(3),
+    nodeId: z.string().min(1).max(64).nullable(),
+  }),
   z.object({
     type: z.literal('talentCast'),
     aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
