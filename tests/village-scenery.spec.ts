@@ -106,7 +106,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       sizes: [
         ...new Set(
           scenery
-            .filter((object) => object.id.startsWith('tree:') || object.id.startsWith('building:'))
+            .filter((object) => object.id.startsWith('tree:') || object.id === 'building:wardrobe')
             .map((object) => object.sprite.width),
         ),
       ],

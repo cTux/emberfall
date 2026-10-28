@@ -17,7 +17,7 @@ entire interface, world labels, chat bubbles and damage numbers without rejoinin
 the world, and persists on this browser across reloads. Fonts and licenses ship
 locally; font loading failure retains a working font. Missing or invalid saved
 choices use Alegreya Sans. Graphics presets do not reset the font choice.
-Actor, NPC and scenery atlases retain twice their logical cell resolution (128px actors and 256px trees/buildings). Cached scenery frames preserve that detail; world sizes, anchors, animation timing and graphics settings stay unchanged.
+Actor, NPC and scenery atlases retain twice their logical cell resolution (128px actors and 256px trees). Village buildings use native-resolution crops of the approved regenerated sheet, with uniform scaling that preserves each building's source aspect ratio and existing world width. Their height follows that ratio, with a bottom-center ground anchor. Shadow masks use the same crops and dimensions; chimney smoke follows measured chimney positions. Cached scenery frames preserve that detail; animation timing and graphics settings stay unchanged.
 
 Entity artwork uses gentler, material-colored dark tones and slightly reduced
 contrast, preserving transparency, frame bounds and gameplay warning colors.

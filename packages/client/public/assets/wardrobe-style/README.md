@@ -6,6 +6,11 @@ Reference: LPC Wooden Furniture by bluecarrot16, Baŝto, Lanea Zimmerman (Sharm)
 
 Preview: run the new client and visit /?art-gallery . The gallery shares the game's actual atlas loader and animation selector. Static buildings and terrain remain static; existing world geometry, lighting, foliage sway, damage and save rules are unchanged. Font and audio assets are unchanged.
 
+## Village buildings
+
+See [building provenance and native source crops](BUILDINGS-README.md) for the
+three regenerated designs, their exact prompt and aspect-preserving placement.
+
 ## Village plants
 
 See [plant provenance and packaging](PLANTS-README.md) for the five generated

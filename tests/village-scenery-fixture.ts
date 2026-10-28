@@ -4,3 +4,5 @@ export { villageSprites } from '../packages/client/src/village';
 export { resourceScenery } from '../packages/client/src/gathering';
 export { GRAPHICS_PRESETS } from '../packages/client/src/graphics';
 export { ROCKS, PLANTS } from '../packages/core/src/index';
+export { buildingArt, buildingFrames } from '../packages/client/src/art';
+export { castShadow, shadowProjection } from '../packages/client/src/lighting';

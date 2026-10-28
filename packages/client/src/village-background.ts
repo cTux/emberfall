@@ -6,6 +6,7 @@ import { castShadow } from './lighting';
 import { villageSprites, TORCH_LIGHTS, lightTexture, workstationArt } from './village';
 import {
   environmentArt,
+  buildingArt,
   plantArt,
   wardrobeArt,
   innkeeperArt,
@@ -38,7 +39,7 @@ let cached:
 /** Shared across Arena remounts. Wait for all assets, including failed loads. */
 export function villageBackground(graphics: GraphicsSettings) {
   if (
-    [environmentArt, plantArt, wardrobeArt, innkeeperArt, workstationArt].some(
+    [environmentArt, buildingArt, plantArt, wardrobeArt, innkeeperArt, workstationArt].some(
       (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== 'true',
     ) ||
     !terrainArt.complete ||

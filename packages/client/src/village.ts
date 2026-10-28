@@ -2,10 +2,8 @@ import type { VillageNpc } from '@emberfall/common';
 import { WARDROBE, BUILDINGS, TORCHES, TREES, ROCKS, PLANTS } from '@emberfall/core';
 import { makeMask, castShadow } from './lighting';
 import type { Caster, Light } from './lighting';
-import { environmentArt, plantArt, wardrobeArt, loadArt } from './art';
+import { environmentArt, buildingArt, buildingFrames, plantArt, wardrobeArt, loadArt } from './art';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
-
-import { chimneyAnchors } from './ambient-art';
 
 export const workstationArt = loadArt('workstations', 4, 2, 128, true);
 
@@ -105,22 +103,28 @@ export function villageSprites(
         64,
       ),
     );
-  if (environmentArt.naturalWidth)
+  if (buildingArt.complete && buildingArt.naturalWidth)
     BUILDINGS.forEach((b, i) => {
+      const frame = buildingFrames[i % buildingFrames.length];
+      const width = b.sourceWidth * 2;
+      const scale = width / frame.width;
+      const height = frame.height * scale;
       add(
         `building:${b.id}`,
         b.x,
         b.y,
-        b.sourceWidth * 2,
-        96,
-        environmentArt,
-        (i % 3) * 128,
-        0,
-        128,
-        128,
+        width,
+        height,
+        buildingArt,
+        frame.x,
+        frame.y,
+        frame.width,
+        frame.height,
       );
-      const anchor = chimneyAnchors[i % 3];
-      objects.at(-1)!.chimney = { x: (anchor.x - 0.5) * b.sourceWidth * 2, y: (anchor.y - 1) * 96 };
+      objects.at(-1)!.chimney = {
+        x: frame.chimneyX * scale - width / 2,
+        y: frame.chimneyY * scale - height,
+      };
     });
   if (workstationArt.naturalWidth)
     for (const station of VILLAGE_DEFINITION.workstations)

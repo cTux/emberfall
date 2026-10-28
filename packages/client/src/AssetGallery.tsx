@@ -6,13 +6,15 @@ import {
   bearArt,
   wardrobeArt,
   environmentArt,
+  buildingArt,
+  buildingFrames,
   effectsArt,
   drawArt,
   artImages,
   artUrl,
 } from './art';
 import { actorFrame, playerFrame, idleBreath } from './animation';
-import { drawStonePortal, drawChimneySmoke, chimneyAnchors } from './ambient-art';
+import { drawStonePortal, drawChimneySmoke } from './ambient-art';
 
 const names = [
   'warrior',
@@ -111,16 +113,28 @@ export function AssetGallery() {
         ctx.fillText(name, 120 + i * 200, 798),
       );
       for (let i = 0; i < 9; i++) {
-        if (i === 6) drawTorchFire(ctx, 10 + i * 132 + 63, 1000, clock, true, false, 126, 160);
+        if (i < 3 && buildingArt.complete && buildingArt.naturalWidth) {
+          const frame = buildingFrames[i];
+          const scale = 126 / frame.width;
+          const height = frame.height * scale;
+          const x = 10 + i * 132;
+          const y = 1000 - height;
+          ctx.drawImage(
+            buildingArt,
+            frame.x,
+            frame.y,
+            frame.width,
+            frame.height,
+            x,
+            y,
+            126,
+            height,
+          );
+          drawChimneySmoke(ctx, x + frame.chimneyX * scale, y + frame.chimneyY * scale, clock);
+        } else if (i === 6)
+          drawTorchFire(ctx, 10 + i * 132 + 63, 1000, clock, true, false, 126, 160);
         else
           drawArt(ctx, environmentArt, i % 3, Math.floor(i / 3), 10 + i * 132, 840, 126, 160, 128);
-        if (i < 3)
-          drawChimneySmoke(
-            ctx,
-            10 + i * 132 + chimneyAnchors[i].x * 126,
-            840 + chimneyAnchors[i].y * 160,
-            clock,
-          );
       }
       canvas.current!.dataset.ready = String(
         artImages.every(
