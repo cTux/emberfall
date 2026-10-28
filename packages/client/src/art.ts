@@ -133,7 +133,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
         f.width,
         f.height,
         -width / 2,
-        actor ? cell - 3 - height : Math.round((cell - height) / 2),
+        actor || name === 'gathered' ? cell - 3 - height : Math.round((cell - height) / 2),
         width,
         height,
       );

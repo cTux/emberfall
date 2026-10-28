@@ -87,7 +87,22 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       return sprite.toDataURL();
     });
     ctx.drawImage(rocks[0].sprite, 760, 25, 128, 128);
+    const gatheredGroundGaps = (['tree', 'rock', 'plant'] as const).map((kind, index) => {
+      const object = fixture.resourceScenery(
+        { id: `anchor:${kind}`, kind, x: 0, y: 128, size: 128 },
+        { remaining: 0, restoresAt: Date.now() + 3600000 },
+      );
+      const { sprite } = object;
+      const pixels = sprite.getContext('2d')!.getImageData(0, 0, sprite.width, sprite.height).data;
+      let bottom = 0;
+      for (let y = 0; y < sprite.height; y++)
+        for (let x = 0; x < sprite.width; x++)
+          if (pixels[(y * sprite.width + x) * 4 + 3] >= 128) bottom = y + 1;
+      ctx.drawImage(sprite, 260 + index * 150, 240 - object.height, object.width, object.height);
+      return ((sprite.height - bottom) / sprite.height) * object.height;
+    });
     return {
+      gatheredGroundGaps,
       sizes: [
         ...new Set(
           scenery
@@ -116,6 +131,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
   expect(result.signatures).toBe(5);
   expect(result.masks).toBe(5);
   expect(result.sorted).toBe(true);
+  for (const gap of result.gatheredGroundGaps) expect(gap).toBeLessThanOrEqual(4);
   for (const count of result.opaque) expect(count).toBeGreaterThan(300);
   await page.locator('canvas').screenshot({ path: 'test-results/village-plants-rocks-atlas.png' });
 });
