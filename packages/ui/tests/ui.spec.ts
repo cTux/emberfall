@@ -816,15 +816,11 @@ test('active talent icons have a distinct frame while passives keep their stylin
   await expect(active.locator(':scope > div').first()).toHaveCSS('outline-width', '2px');
 });
 
-test('talent columns scroll on narrow screens without spending points', async ({ page }) => {
+test('talent columns fit narrow screens without spending points', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto(story('components-talenttree--interactive'));
-  const canvas = page.locator('[data-talent-scroll]');
-  await canvas.evaluate((element) => {
-    element.scrollLeft = 120;
-    element.scrollTop = 80;
-  });
-  await expect.poll(() => canvas.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  const canvas = page.locator('[data-talent-map]');
+  expect(await canvas.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   await expect(page.getByRole('status')).toHaveText('2 talent points available');
   await page.locator('[data-talent-node="node-2"]').focus();
   await page.keyboard.press('Enter');
