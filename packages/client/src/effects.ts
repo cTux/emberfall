@@ -374,7 +374,7 @@ export function drawPlayerHealth(
   return width;
 }
 
-const partyOutlines = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
+const partyOutlines = new WeakMap<HTMLCanvasElement, Map<boolean, HTMLCanvasElement>>();
 export function drawPartyOutline(
   ctx: CanvasRenderingContext2D,
   mask: HTMLCanvasElement,
@@ -382,15 +382,18 @@ export function drawPartyOutline(
   y: number,
   width: number,
   height: number,
+  highlighted = false,
 ) {
-  let outline = partyOutlines.get(mask);
+  let cache = partyOutlines.get(mask);
+  if (!cache) partyOutlines.set(mask, (cache = new Map()));
+  let outline = cache.get(highlighted);
   if (!outline) {
     const silhouette = document.createElement('canvas');
     silhouette.width = 48;
     silhouette.height = 48;
     silhouette.getContext('2d')!.drawImage(mask, 0, 0, 48, 48);
-    outline = hitOutline(silhouette, '#339dff', 1);
-    partyOutlines.set(mask, outline);
+    outline = hitOutline(silhouette, highlighted ? '#00ff00' : '#339dff', 1);
+    cache.set(highlighted, outline);
   }
   ctx.drawImage(outline, x - width / 48, y - height / 48, (width * 50) / 48, (height * 50) / 48);
 }

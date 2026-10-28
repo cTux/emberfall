@@ -10,6 +10,7 @@ import {
   pickInteraction,
   interactionInRange,
   drawInteractionOutline,
+  partyAction,
 } from './interaction-targets';
 import type { InteractionTarget } from './interaction-targets';
 import { npcScenery } from './npc-art';
@@ -169,6 +170,7 @@ export function Arena({
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
     let previousHp = '';
     const keys = new Set<string>();
+    const altKeys = new Set<string>();
     let pointer: { x: number; y: number } | undefined;
     let held = false;
     let pointerInside = false;
@@ -237,9 +239,16 @@ export function Arena({
     window.addEventListener('pointercancel', pointerUp);
     const positions = new Map<string, { x: number; y: number; facing: number }>();
     const key = (event: KeyboardEvent, down: boolean) => {
+      if (event.code === 'AltLeft' || event.code === 'AltRight') {
+        if (latest.current) event.preventDefault();
+        if (down) altKeys.add(event.code);
+        else altKeys.delete(event.code);
+        return;
+      }
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
       if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
         return;
+      if (event.altKey && latest.current) event.preventDefault();
       const value = event.code;
       if (
         ![
@@ -264,6 +273,7 @@ export function Arena({
     const up = (event: KeyboardEvent) => key(event, false);
     const reset = () => {
       keys.clear();
+      altKeys.clear();
       held = false;
       pointerInside = false;
       element.dataset.cursor = 'default';
@@ -534,6 +544,12 @@ export function Arena({
           view?.resources?.[element.dataset.resource]?.remaining ?? '',
         );
       };
+      const highlightInteractions = altKeys.size > 0 && !blocked();
+      const outlinedTargets = () => {
+        const highlighted = highlightInteractions;
+        for (const target of targets) target.highlighted = highlighted;
+        return highlighted ? targets : hovered ? [hovered] : [];
+      };
       targets = [];
       if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
         targets = view.scene.portals.map((portal) =>
@@ -595,7 +611,17 @@ export function Arena({
       }
       if (!view || local?.scene === 'forest') {
         element.dataset.catSpeech = '';
-        drawForest(ctx, view, playerId, quality.current, prefs.current, now, delta, hovered);
+        drawForest(
+          ctx,
+          view,
+          playerId,
+          quality.current,
+          prefs.current,
+          now,
+          delta,
+          outlinedTargets(),
+          highlightInteractions,
+        );
         drawPrompt();
         renderer.present();
         frame = requestAnimationFrame(draw);
@@ -879,6 +905,7 @@ export function Arena({
           dummy,
         })),
       ].sort((a, b) => a.y - b.y);
+      const outlines = outlinedTargets();
       const damageByTarget = new Map(training?.damage.map((hit) => [hit.target, hit]));
       for (const layer of layers) {
         renderer.occlusion = !!local && layer.y > local.y + 15;
@@ -920,7 +947,7 @@ export function Arena({
             now,
             quality.current.bloom,
             'Forest portal',
-            hovered === portalTarget ? hovered : null,
+            outlines.includes(portalTarget) ? portalTarget : null,
             quality.current.shadows,
             quality.current.wavingVegetation,
           );
@@ -928,7 +955,8 @@ export function Arena({
         }
         if (layer.critter) {
           drawCritter(ctx, layer.critter, quality.current.shadows);
-          if (hovered?.source.id === layer.critter.id) drawInteractionOutline(ctx, hovered);
+          const outline = outlines.find((target) => target.source.id === layer.critter!.id);
+          if (outline) drawInteractionOutline(ctx, outline);
           ctx.globalAlpha = 1;
           continue;
         }
@@ -991,12 +1019,12 @@ export function Arena({
             );
           if (object.npc?.workstationId)
             drawNpcWork(ctx, object.npc, object.x, object.y, serverTime, quality.current.particles);
-          if (
-            hovered &&
-            (hovered.source.id === object.id.replace(/^(building|npc|workstation):/, '') ||
-              hovered.source.id === `gather:${object.id}`)
-          )
-            drawInteractionOutline(ctx, hovered);
+          const outline = outlines.find(
+            (target) =>
+              target.source.id === object.id.replace(/^(building|npc|workstation):/, '') ||
+              target.source.id === `gather:${object.id}`,
+          );
+          if (outline) drawInteractionOutline(ctx, outline);
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
@@ -1079,7 +1107,8 @@ export function Arena({
             48 * idleBreath(now, spriteRow),
           );
         }
-        if (view?.partyRequests?.some((r) => r.fromId === player.id)) {
+        const highlightPlayer = highlightInteractions && !!partyAction(view, local, player);
+        if (highlightPlayer || view?.partyRequests?.some((r) => r.fromId === player.id)) {
           renderer.occlusion = false;
           const mask = spriteMask(
             knight,
@@ -1098,6 +1127,7 @@ export function Arena({
               pos.y + 18 - 48 * idleBreath(now, spriteRow),
               48,
               48 * idleBreath(now, spriteRow),
+              highlightPlayer,
             );
         }
         renderer.spriteTint = '#ffffff';

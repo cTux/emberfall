@@ -34,6 +34,9 @@ const chapters = [
             Trees allow five gathers and resources restore after one hour.
           </li>
           <li>
+            Hold <kbd>Alt</kbd> — show green outlines on all visible interactive objects.
+          </li>
+          <li>
             <kbd>I</kbd> — open or close Inventory and character stats.
           </li>
           <li>

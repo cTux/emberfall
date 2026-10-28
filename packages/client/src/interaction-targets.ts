@@ -20,6 +20,7 @@ export interface InteractionTarget {
   mask: HTMLCanvasElement;
   reach: { x: number; y: number };
   radius: number;
+  highlighted?: boolean;
 }
 
 export function sceneryInteraction(object: Scenery): InteractionTarget | null {
@@ -108,13 +109,14 @@ export function pickInteraction(
   return null;
 }
 
-const outlines = new WeakMap<HTMLCanvasElement, Map<number, HTMLCanvasElement>>();
+const outlines = new WeakMap<HTMLCanvasElement, Map<string, HTMLCanvasElement>>();
 export function drawInteractionOutline(ctx: CanvasRenderingContext2D, target: InteractionTarget) {
   // Bake at display size so wide houses and narrow NPCs have the same thickness.
   const radius = 1;
   const width = Math.round(target.width),
     height = Math.round(target.height);
-  const key = width * 10000 + height * 10 + radius;
+  const color = target.highlighted ? '#00ff00' : '#ffdf00';
+  const key = `${width}:${height}:${color}`;
   let cache = outlines.get(target.mask);
   if (!cache) outlines.set(target.mask, (cache = new Map()));
   let outline = cache.get(key);
@@ -123,7 +125,7 @@ export function drawInteractionOutline(ctx: CanvasRenderingContext2D, target: In
     mask.width = width;
     mask.height = height;
     mask.getContext('2d')!.drawImage(target.mask, 0, 0, width, height);
-    outline = hitOutline(mask, '#ffdf00', radius);
+    outline = hitOutline(mask, color, radius);
     cache.set(key, outline);
   }
   ctx.save();
@@ -148,15 +150,34 @@ export function partyInteraction(
   );
   candidates.sort((a, b) => forestDistance(player, a) - forestDistance(player, b));
   for (const target of candidates) {
-    const accepting = world.partyRequests?.some((r) => r.fromId === target.id);
-    const name = accepting
-      ? 'Accept'
-      : !player.partyId && target.partyId
-        ? 'Join party'
-        : !target.partyId && (!player.partyId || player.partyLeaderId === player.id)
-          ? 'Invite to party'
-          : null;
+    const name = partyAction(world, player, target);
     if (name) return { id: `party:${target.id}`, name, x: target.x, y: target.y };
   }
   return null;
+}
+
+export function partyAction(
+  world: import('@emberfall/common').WorldState | null | undefined,
+  player: Player | undefined,
+  target: Player,
+) {
+  if (
+    !world ||
+    !player ||
+    player.hitpoints <= 0 ||
+    player.reconnecting ||
+    target.id === player.id ||
+    target.scene !== player.scene ||
+    (target.scene && target.runId !== player.runId) ||
+    target.hitpoints <= 0 ||
+    target.reconnecting
+  )
+    return null;
+  return world.partyRequests?.some((r) => r.fromId === target.id)
+    ? 'Accept'
+    : !player.partyId && target.partyId
+      ? 'Join party'
+      : !target.partyId && (!player.partyId || player.partyLeaderId === player.id)
+        ? 'Invite to party'
+        : null;
 }

@@ -13,7 +13,7 @@ import { critterCaster, crittersAt, drawCritter } from './critters';
 import { drawNavigation } from './navigation';
 import { drawHitboxes } from './hitboxes';
 import type { Interaction } from './effects';
-import { drawInteractionOutline } from './interaction-targets';
+import { drawInteractionOutline, partyAction } from './interaction-targets';
 import type { InteractionTarget } from './interaction-targets';
 import {
   bloodPuddleRenderer,
@@ -248,7 +248,8 @@ export function forestRenderer(
     prefs: Preferences,
     now: number,
     _dt: number,
-    hovered: InteractionTarget | null,
+    outlines: readonly InteractionTarget[],
+    highlightInteractions: boolean,
   ) => {
     if (world?.scene?.id !== lastScene) {
       positions.clear();
@@ -505,7 +506,12 @@ export function forestRenderer(
           now,
           quality.bloom,
           'Return to village',
-          hovered?.source.x === portal.x && hovered.source.y === portal.y ? hovered : null,
+          outlines.find(
+            (target) =>
+              target.source.id === 'return' &&
+              target.source.x === portal.x &&
+              target.source.y === portal.y,
+          ) ?? null,
           quality.shadows,
           quality.wavingVegetation,
         );
@@ -548,7 +554,8 @@ export function forestRenderer(
         ctx.globalAlpha = 1;
         renderer.occlusion = false;
         drawResourceHealth(ctx, t, state);
-        if (hovered?.source.id === `gather:${t.id}`) drawInteractionOutline(ctx, hovered);
+        const outline = outlines.find((target) => target.source.id === `gather:${t.id}`);
+        if (outline) drawInteractionOutline(ctx, outline);
         continue;
       }
       const a = layer.actor!;
@@ -615,7 +622,18 @@ export function forestRenderer(
         a.size * breath,
       );
       (ctx as unknown as PixiContext).spriteTint = '#ffffff';
-      if (a.player && world?.partyRequests?.some((r) => r.fromId === a.player!.id))
+      const highlightPlayer =
+        highlightInteractions &&
+        !!a.player &&
+        !!partyAction(
+          world,
+          players.find((player) => player.id === playerId),
+          a.player,
+        );
+      if (
+        highlightPlayer ||
+        (a.player && world?.partyRequests?.some((r) => r.fromId === a.player!.id))
+      )
         drawPartyOutline(
           ctx,
           mask(a.image, a.facing, a.row),
@@ -623,6 +641,7 @@ export function forestRenderer(
           top + a.size * (1 - breath),
           a.size,
           a.size * breath,
+          highlightPlayer,
         );
       if (hit && (a.enemy || a.player?.id === playerId))
         drawTargetHit(
