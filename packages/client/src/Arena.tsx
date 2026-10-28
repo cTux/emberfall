@@ -1091,6 +1091,7 @@ export function Arena({
       drawAtmosphere(ctx, cameraX, cameraY, viewWidth, viewHeight, now, quality.current);
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawNavigation(ctx, view, playerId);
+      drawPrompt();
       for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
       const catMessages: string[] = [];
       for (const cat of critters) {
@@ -1119,7 +1120,6 @@ export function Arena({
             })
           : 0,
       );
-      drawPrompt();
       renderer.present();
       frame = requestAnimationFrame(draw);
     }

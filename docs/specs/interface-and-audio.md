@@ -49,6 +49,7 @@ example, Wardrobe, Gather tree or Return to village). It follows the same target
 and confirmed range as the E action in village and forest, including wrapped
 seams. It disappears when no action is available, the player dies, or a modal or
 text entry blocks gameplay input. Other players do not display this prompt.
+Speech bubbles draw above the prompt wherever they overlap.
 The badge is visually separate from the message so a controller glyph can replace
 it later; controller support is outside this change.
 
