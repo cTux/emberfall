@@ -60,7 +60,7 @@ export function drawDamageNumber(
   now: number,
 ) {
   const frame = damageTextFrame(hit, now);
-  if (!frame) return;
+  if (!frame || hit.amount <= 0) return;
   ctx.save();
   ctx.globalAlpha *= frame.alpha;
   ctx.translate(point.x + frame.x, point.y + frame.y);
@@ -75,7 +75,7 @@ export function drawDamageNumber(
     : hit.target.startsWith('enemy:')
       ? DAMAGE_COLORS[hit.damageType ?? 'physical']
       : '#ff8b81';
-  const value = String(Math.round(hit.amount));
+  const value = String(Math.max(1, Math.round(hit.amount)));
   ctx.strokeStyle = '#20150f';
   ctx.lineWidth = hit.critical ? 7 : 3;
   ctx.lineJoin = 'round';

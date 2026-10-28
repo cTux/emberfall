@@ -29,6 +29,8 @@ import {
   stepCombat,
   swordOverlapsEnemy,
   hitWithWeapon,
+  hitEnemy,
+  damagePerSecond,
   tickDebuffs,
   tickPlayerShots,
   fireClassAttack,
@@ -55,6 +57,70 @@ const scene = (training = true) => ({
   enemies: [target()],
   nextSpawn: 1e9,
   endsAt: 1e9,
+});
+
+test('positive enemy hits have a minimum of one in forest and training without inflating overkill', () => {
+  for (const training of [true, false]) {
+    const player = hero();
+    const arena = scene(training);
+    const enemy = arena.enemies[0];
+    hitEnemy(arena, enemy, 0, player, 1000);
+    assert.equal(arena.damage.length, 0);
+    assert.equal(enemy.hitpoints, 100);
+    hitEnemy(arena, enemy, 0.2, player, 1000);
+    assert.equal(enemy.hitpoints, 99);
+    assert.equal(arena.damage[0].amount, 1);
+    enemy.hitpoints = 0.2;
+    hitEnemy(arena, enemy, 0.1, player, 1001);
+    assert.equal(enemy.hitpoints, 0);
+    assert.equal(arena.damage[1].amount, 0.2);
+    assert.equal(damagePerSecond(player, 1001), 1.2 / 5);
+    hitEnemy(arena, enemy, 1, player, 1002);
+    assert.equal(arena.damage.length, 2);
+  }
+});
+
+test('armor cannot reduce incoming player or Bear damage below one', () => {
+  const context = createGame([
+    baseMod,
+    {
+      id: 'minimum-damage-test',
+      register(r) {
+        r.items.register({
+          id: 'minimum-damage-ring',
+          kind: 'gear',
+          name: 'Armor ring',
+          gearType: 'ring',
+          stats: { armor: 10000 },
+        });
+      },
+    },
+  ]);
+  for (const bear of [false, true]) {
+    const player = hero(bear ? 'druid' : 'warrior');
+    player.scene = 'forest';
+    player.autoAttack = false;
+    player.equipment!.ring = 'minimum-damage-ring';
+    const arena = scene(false);
+    if (bear) tickCompanion(player, arena, 1000, 0, context);
+    const target = bear ? player.bear! : player;
+    if (bear) target.x = player.x - 100;
+    const enemy = arena.enemies[0];
+    enemy.x = target.x;
+    enemy.attack = {
+      startedAt: 1000,
+      endsAt: 2000,
+      x: target.x,
+      y: target.y,
+      radius: 100,
+      ranged: false,
+    };
+    const before = target.hitpoints;
+    stepCombat(arena, [player], 2000, 0, context);
+    assert.equal(target.hitpoints, before - 1);
+    assert.equal(arena.damage.at(-1)!.amount, 1);
+    assert.equal(arena.damage.at(-1)!.target, target.id);
+  }
 });
 
 test('Warrior and Bear use 75-unit melee geometry, including wrapped model boundaries', () => {
