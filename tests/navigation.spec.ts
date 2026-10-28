@@ -27,12 +27,12 @@ test('lobby portal navigation renders in the village and across a wrapped edge',
           await new Promise(requestAnimationFrame);
           const source = element as HTMLCanvasElement;
           const sample = document.createElement('canvas');
-          sample.width = source.width;
-          sample.height = source.height;
+          sample.width = source.clientWidth;
+          sample.height = source.clientHeight;
           const context = sample.getContext('2d')!;
-          context.drawImage(source, 0, 0);
-          return [28, source.width - 28].map((x) => {
-            const pixels = context.getImageData(x - 8, source.height / 2 - 8, 16, 16).data;
+          context.drawImage(source, 0, 0, sample.width, sample.height);
+          return [28, sample.width - 28].map((x) => {
+            const pixels = context.getImageData(x - 8, sample.height / 2 - 8, 16, 16).data;
             let blue = 0;
             for (let i = 0; i < pixels.length; i += 4)
               if (pixels[i] > 80 && pixels[i] < 150 && pixels[i + 1] > 180 && pixels[i + 2] > 220)
