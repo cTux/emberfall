@@ -9,6 +9,36 @@ async function drag(page: Page, handle: Locator, dx: number, dy: number) {
   await page.mouse.up();
 }
 
+test('performance overlay stays compact and draggable with both traces enabled', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Your adventurer name').fill('Compact hero');
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  for (const name of ['FPS graph', 'Latency graph'])
+    await page.getByRole('switch', { name, exact: true }).check();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  const panel = page.locator('.performance-stats');
+  await expect(panel.locator('[data-series]')).toHaveCount(4);
+  await expect(panel.getByLabel('Frame rate', { exact: true })).not.toHaveText('— FPS');
+  const bounds = (await panel.boundingBox())!;
+  expect(bounds.width).toBe(224);
+  expect(bounds.height).toBeLessThanOrEqual(100);
+  await drag(page, panel, 100, 40);
+  await expect(panel).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 100, 40)');
+  await page.screenshot({ path: 'test-results/compact-performance-desktop.png' });
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('switch', { name: 'FPS graph', exact: true }).uncheck();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
+  await expect(panel.locator('[data-series="fps"]')).toHaveCount(0);
+  await expect(panel.locator('[data-series="latency"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('switch', { name: 'Latency graph', exact: true }).uncheck();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
+  await expect(panel).toBeHidden();
+});
+
 test('optional HUD widgets start centered without moving party frames', async ({ page }) => {
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Centered hero');

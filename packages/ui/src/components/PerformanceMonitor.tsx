@@ -50,36 +50,37 @@ export function PerformanceMonitor({
           sample.at !== undefined && current?.at !== undefined
             ? 10 + ((sample.at - current.at + 30000) * 240) / 30000
             : 10 + (index * 240) / Math.max(1, recent.length - 1);
-        const point = `${connected ? 'L' : 'M'}${x},${70 - (Math.max(0, value) / max) * 60}`;
+        const point = `${connected ? 'L' : 'M'}${x},${50 - (Math.max(0, value) / max) * 44}`;
         connected = true;
         return point;
       })
       .join(' ');
   };
   return (
-    <Paper component='aside' aria-label='Performance monitor' sx={{ p: 1.5 }}>
-      <Stack direction='row' spacing={2}>
+    <Paper component='aside' aria-label='Performance monitor' sx={{ px: 1, py: 0.5 }}>
+      <Stack direction='row' spacing={1} sx={{ alignItems: 'baseline' }}>
         {showFps && (
-          <Typography aria-label='Frame rate' color='success.main'>
+          <Typography variant='caption' aria-label='Frame rate' color='success.main'>
             {current?.fps == null ? '—' : Math.round(current.fps)} FPS
           </Typography>
         )}
         {showLatency && (
-          <Typography aria-label='Server latency' color='info.main'>
+          <Typography variant='caption' aria-label='Server latency' color='info.main'>
             {current?.latency == null ? '—' : Math.round(current.latency)} ms
           </Typography>
         )}
+        {showLatency && diagnostics && (
+          <Typography variant='caption' aria-label='Network scale' color='text.secondary'>
+            0–{Math.ceil(networkMax)} ms
+          </Typography>
+        )}
       </Stack>
-      {showLatency && diagnostics && (
-        <Typography variant='caption' aria-label='Network scale' color='text.secondary'>
-          Network 0–{Math.ceil(networkMax)} ms
-        </Typography>
-      )}
       <svg
-        viewBox={diagnostics && showLatency ? '0 0 260 110' : '0 0 260 80'}
+        viewBox='0 0 260 56'
         role='img'
         aria-label='Performance history over the last 30 seconds'
         width='100%'
+        style={{ display: 'block' }}
       >
         {showFps && (
           <path
@@ -120,18 +121,22 @@ export function PerformanceMonitor({
               fill='none'
               strokeWidth='2'
             />
-            <text x='10' y='92' fill={theme.palette.warning.main}>
-              Input ack
-            </text>
-            <text x='250' y='92' textAnchor='end' fill={theme.palette.info.main}>
-              Ping
-            </text>
-            <text x='10' y='106' fill={theme.palette.boss.main}>
-              Snapshot age (local)
-            </text>
           </>
         )}
       </svg>
+      {showLatency && diagnostics && (
+        <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
+          <Typography variant='caption' color='warning.main'>
+            Input ack
+          </Typography>
+          <Typography variant='caption' color='boss.main'>
+            Snapshot (local)
+          </Typography>
+          <Typography variant='caption' color='info.main'>
+            Ping
+          </Typography>
+        </Stack>
+      )}
     </Paper>
   );
 }
