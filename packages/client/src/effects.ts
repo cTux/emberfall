@@ -194,7 +194,8 @@ export function drawDamageFlash(
   if (age < 0 || age > 280) return;
   ctx.save();
   ctx.resetTransform();
-  ctx.fillStyle = `rgba(255,25,35,${0.22 * (1 - age / 280)})`;
+  ctx.globalAlpha *= 0.22 * (1 - age / 280);
+  ctx.fillStyle = '#ff1923';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.restore();
 }
