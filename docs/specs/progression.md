@@ -46,6 +46,11 @@ The earned point budget equals normal level, including one point at level 1 and
 spent ranks. N or the HUD opens the voluntary three-column window. Each node
 shows its rank and level, with themed tooltips describing both ranks and affected
 abilities. Level-up never opens this window or waits for allocation.
+Active ability icons have a blue outline and an active-ability tooltip hint;
+passive icons keep their existing presentation. Both the tree and action bar
+crop artwork to its authored frame, without neighboring icon strips.
+
+![Verified talent window with blue active-ability frames](../images/talent-icon-alignment.png)
 
 Every column has abilities in rows unlocked at levels 2, 6, 10 and 14. Rank 1
 unlocks an ability; rank 2 improves its effects. Right-clicking an action-bar slot,

@@ -7,7 +7,9 @@ fallback, external stock art, or generated text was used.
 ## Runtime layout
 
 `{warrior,ranger,mage,druid}-icons.png` are native 1145 x 1374 PNGs: five
-columns, six rows, and 229 x 229 pixels per cell. Read row-major with
+columns and six rows with uneven authored frame boundaries. The measured
+pixel boundaries in `src/talent-icons.tsx` crop each complete frame; do not
+divide these sheets into equal 229 x 229 cells. Read row-major with
 `index = talentColumn * 10 + talentRow`; the 30 motifs per class follow
 `TALENT_NAMES` in `packages/core/src/talent-catalog.ts`. These are opaque UI
 tiles with their own dark backgrounds and bronze frames.
