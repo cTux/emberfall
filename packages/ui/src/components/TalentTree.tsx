@@ -86,7 +86,7 @@ export function TalentTree({ nodes, points, columns = [], onLearn }: TalentTreeP
                   justifyContent: 'flex-start',
                   textAlign: 'left',
                   border: 1,
-                  borderColor: node.learned ? 'primary.main' : 'divider',
+                  borderColor: node.learned ? 'primary.main' : 'transparent',
                   bgcolor: 'background.paper',
                   opacity: node.learned || node.available ? 1 : 0.5,
                   '&:focus-visible': { outline: '2px solid', outlineColor: 'info.main' },

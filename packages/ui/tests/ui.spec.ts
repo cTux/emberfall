@@ -791,14 +791,30 @@ test('server rows join once from every cell and keyboard, respecting disabled st
 test('talents support two keyboard ranks and a zero-point state', async ({ page }) => {
   await page.goto(story('components-talenttree--interactive'));
   const talent = page.locator('[data-talent-node="node-0"]');
+  await expect(talent).toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
+  const initialSize = await talent.boundingBox();
   await talent.focus();
+  await expect(talent).toHaveCSS('outline-style', 'solid');
   await page.keyboard.press('Enter');
   await expect(page.getByRole('status')).toHaveText('1 talent point available');
   await expect(talent).toHaveAccessibleName(/rank 1 of 2/);
+  await expect(talent).not.toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
+  expect(await talent.boundingBox()).toEqual(initialSize);
   await page.keyboard.press('Space');
   await expect(page.getByRole('status')).toHaveText('0 talent points available');
   await expect(talent).toHaveAccessibleName(/rank 2 of 2/);
   await expect(talent).toHaveAttribute('aria-disabled', 'true');
+  await expect(talent).not.toHaveCSS('border-top-color', 'rgba(0, 0, 0, 0)');
+  await expect(page.locator('[data-talent-node="node-1"]')).toHaveCSS(
+    'border-top-color',
+    'rgba(0, 0, 0, 0)',
+  );
+  await talent.blur();
+  await page.mouse.move(1270, 890);
+  await expect(page.getByRole('tooltip')).toBeHidden();
+  await page.screenshot({ path: 'test-results/talent-learned-borders-desktop.png' });
+  await page.setViewportSize({ width: 320, height: 700 });
+  await page.screenshot({ path: 'test-results/talent-learned-borders-narrow.png' });
 });
 
 test('active talent icons have a distinct frame while passives keep their styling', async ({
