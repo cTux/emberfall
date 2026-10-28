@@ -43,6 +43,15 @@ Codex uses the shared forest theme with chapter tabs for controls, worlds and pa
 
 ## UI-02 — Combat controls
 
+When an interaction is available, a compact prompt directly below the local
+player's name shows a circular E badge and the interaction's short name (for
+example, Wardrobe, Gather tree or Return to village). It follows the same target
+and confirmed range as the E action in village and forest, including wrapped
+seams. It disappears when no action is available, the player dies, or a modal or
+text entry blocks gameplay input. Other players do not display this prompt.
+The badge is visually separate from the message so a controller glyph can replace
+it later; controller support is outside this change.
+
 The client uses an original WoW-inspired ivory/bronze cursor set with ember accents:
 a pointing armored glove for the default cursor, a brighter glove for actionable UI hover,
 text entry, open/closed drag hands and a barred disabled state. The glove's

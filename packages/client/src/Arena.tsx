@@ -35,6 +35,7 @@ import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
 import {
   drawPlayerHealth,
+  drawInteractionPrompt,
   drawTargetHit,
   drawChatBubble,
   drawParticles,
@@ -427,6 +428,14 @@ export function Arena({
       }
       const authoritative = latest.current;
       const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
+      const drawPrompt = () => {
+        const label =
+          local && authoritativePlayer && authoritativePlayer.hitpoints > 0 && !blocked()
+            ? (interaction.current?.name ?? '')
+            : '';
+        if (element.dataset.interactionPrompt !== label) element.dataset.interactionPrompt = label;
+        if (local && label) drawInteractionPrompt(ctx, local.x, local.y, label);
+      };
       let nearby = authoritativePlayer
         ? nearbyInteraction(
             authoritativePlayer,
@@ -517,6 +526,7 @@ export function Arena({
       if (!view || local?.scene === 'forest') {
         element.dataset.catSpeech = '';
         drawForest(ctx, view, playerId, quality.current, prefs.current, now, delta, hovered);
+        drawPrompt();
         renderer.present();
         frame = requestAnimationFrame(draw);
         return;
@@ -1109,6 +1119,7 @@ export function Arena({
             })
           : 0,
       );
+      drawPrompt();
       renderer.present();
       frame = requestAnimationFrame(draw);
     }

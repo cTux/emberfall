@@ -55,6 +55,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       player.x = WARDROBE.x - 120;
       player.y = WARDROBE.y + 9;
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', false);
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       const thin = await yellowPixels('wardrobe-out-of-range');
       expect(thin).toBeGreaterThan(20);
       await page.mouse.click(720 + 120 * scale, 500 - 39 * scale);
@@ -63,6 +64,16 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
 
       player.x = WARDROBE.x - 35;
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', true);
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Wardrobe');
+      await page.mouse.move(0, 0);
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Wardrobe');
+      const chat = page.getByRole('textbox', { name: 'Chat message' });
+      await page.keyboard.press('Enter');
+      await expect(chat).toBeFocused();
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
+      await chat.blur();
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Wardrobe');
+      await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', true);
       const nearby = await yellowPixels('wardrobe-in-range');
       expect(nearby).toBeGreaterThan(20);
       expect(nearby).toBeLessThan(thin * 1.5);
@@ -70,6 +81,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await page.mouse.up();
       const wardrobe = page.getByRole('dialog', { name: 'Wardrobe' });
       await expect(wardrobe).toBeVisible();
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       await expect(canvas).toHaveAttribute('data-interaction-target', '');
       await closeDialog();
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', true);
@@ -81,6 +93,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       player.x = hall.doorX;
       player.y = hall.y + 9;
       await hover(hall.x, hall.y - 40, 'hall', true);
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', hall.name);
       await page.mouse.down();
       await page.mouse.up();
       await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible();
@@ -91,6 +104,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         player.x = marta.x - 35;
         player.y = marta.y + 9;
         await hover(marta.x, marta.y - 24, 'innkeeper', true);
+        await expect(canvas).toHaveAttribute('data-interaction-prompt', marta.name);
         await page.mouse.down();
         await page.mouse.up();
         await expect(page.getByRole('dialog', { name: marta.name })).toBeVisible();
@@ -100,6 +114,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       player.x = LOBBY_PORTAL.x - 35;
       player.y = LOBBY_PORTAL.y + 9;
       await hover(LOBBY_PORTAL.x, LOBBY_PORTAL.y - 30, 'portal', true);
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Forest portal');
       await page.mouse.down();
       await page.mouse.up();
       await expect(page.getByRole('dialog', { name: 'Forest portal' })).toBeVisible();
@@ -120,6 +135,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       player.y = 300;
       await expect(canvas).toHaveAttribute('aria-label', 'Forest combat scene.');
       await hover(FOREST.width - 12, 270, 'return', false);
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       const portalThin = await yellowPixels('forest-out-of-range');
       expect(portalThin).toBeGreaterThan(20);
       await page.mouse.down();
@@ -127,12 +143,15 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       expect(player.scene).toBe('forest');
       player.x = 12;
       await hover(FOREST.width - 12, 270, 'return', true);
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Return to village');
       const portalNearby = await yellowPixels('forest-in-range');
       expect(portalNearby).toBeGreaterThan(10);
       expect(portalNearby).toBeLessThan(portalThin * 1.5);
       await page.mouse.down();
       await page.mouse.up();
       await expect.poll(() => player.scene).toBeUndefined();
+      player.hitpoints = 0;
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       expect(errors).toEqual([]);
     });
   });
