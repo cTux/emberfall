@@ -994,7 +994,7 @@ export function Arena({
             portal.y,
             now,
             quality.current.bloom,
-            'Forest portal',
+            null,
             outlines.includes(portalTarget) ? portalTarget : null,
             quality.current.shadows,
             quality.current.wavingVegetation,
