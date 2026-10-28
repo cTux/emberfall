@@ -3,10 +3,11 @@ import { ARENA, TREES, ROCKS, PLANTS } from './world.ts';
 import { FOREST, forestTrees, wrappedDelta } from './scene.ts';
 import { addItem } from './inventory.ts';
 import { PLANT_KINDS } from './plants.ts';
+import { startTimedActivity } from './timed-activity.ts';
 
 export const GATHER_RANGE = 65;
 export const RESOURCE_RESTORE_MS = 60 * 60 * 1000;
-export const GATHER_INTERVAL_MS = 400;
+export const GATHER_DURATION_MS = 5000;
 export interface ResourceNode {
   id: string;
   kind: 'tree' | 'plant' | 'rock' | 'stone';
@@ -87,7 +88,54 @@ export function nearbyResource(
         Math.hypot(b.x - player.x, b.y - player.y - 15),
     )[0];
 }
-const lastGather = new WeakMap<Player, number>();
+export function gatheringNode(
+  player: Player,
+  states: Record<string, ResourceState> | undefined,
+  nodeId: string,
+  now: number,
+) {
+  if (player.hitpoints <= 0 || player.reconnecting)
+    throw new Error('You cannot gather while dead or disconnected.');
+  const node = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE).find(
+    (n) => n.id === nodeId,
+  );
+  if (!node) throw new Error('Move closer to this resource.');
+  if (resourceState(states, node, now)?.remaining === 0)
+    throw new Error('This resource is restoring.');
+  return node;
+}
+
+export function startGathering(
+  player: Player,
+  states: Record<string, ResourceState> | undefined,
+  nodeId: string,
+  epoch: string,
+  now: number,
+) {
+  gatheringNode(player, states, nodeId, now);
+  player.gathering = { ...startTimedActivity(now, GATHER_DURATION_MS), nodeId, epoch };
+}
+
+export function tickGathering(
+  player: Player,
+  states: Record<string, ResourceState>,
+  epoch: string,
+  now: number,
+) {
+  const activity = player.gathering;
+  if (!activity) return;
+  try {
+    if (activity.epoch !== epoch) throw new Error('Area changed.');
+    gatheringNode(player, states, activity.nodeId, now);
+  } catch {
+    delete player.gathering;
+    return;
+  }
+  if (now < activity.endsAt) return;
+  delete player.gathering;
+  return gatherResource(player, states, activity.nodeId, now);
+}
+
 export function gatherResource(
   player: Player,
   states: Record<string, ResourceState>,
@@ -95,13 +143,7 @@ export function gatherResource(
   now: number,
   roll: () => number = Math.random,
 ) {
-  if (player.hitpoints <= 0) throw new Error('You cannot gather while dead.');
-  if (now - (lastGather.get(player) ?? -Infinity) < GATHER_INTERVAL_MS)
-    throw new Error('Wait before gathering again.');
-  const node = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE).find(
-    (n) => n.id === nodeId,
-  );
-  if (!node) throw new Error('Move closer to this resource.');
+  const node = gatheringNode(player, states, nodeId, now);
   const previous = resourceState(states, node, now);
   const remaining = previous?.remaining ?? (node.kind === 'tree' ? 5 : 1);
   if (!remaining) throw new Error('This resource is restoring.');
@@ -128,7 +170,6 @@ export function gatherResource(
         ? now + RESOURCE_RESTORE_MS
         : (previous?.restoresAt ?? now + RESOURCE_RESTORE_MS),
   };
-  lastGather.set(player, now);
   return items;
 }
 export function restoreResources(states: Record<string, ResourceState> | undefined, now: number) {

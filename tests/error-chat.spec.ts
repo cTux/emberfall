@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { gatherResource, VILLAGE_RESOURCES } from '../packages/core/src/index.ts';
+import { VILLAGE_RESOURCES } from '../packages/core/src/index.ts';
 
 test('account and login failures appear only in chat before joining and Retry recovers', async ({
   page,
@@ -28,10 +28,14 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
   const player = [...world.players.values()][0];
-  const tree = VILLAGE_RESOURCES.find((entry) => entry.kind === 'tree')!;
+  const tree = VILLAGE_RESOURCES.find((entry) => entry.kind === 'plant')!;
   player.x = tree.x;
   player.y = tree.y + 5;
-  gatherResource(player, (world.resources ??= {}), tree.id, Date.now() + 60_000);
+  player.backpack = Array.from({ length: 20 }, () => ({
+    id: crypto.randomUUID(),
+    itemId: 'warrior-sword',
+    quantity: 1,
+  }));
   await expect(page.locator('canvas')).toHaveAttribute('data-resource', tree.id);
   const peer = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
   try {
@@ -43,17 +47,19 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
     await expect(page.locator('.party')).toHaveAttribute('aria-label', /2\/32 adventurers/);
     for (let count = 1; count <= 12; count++) {
       await page.keyboard.press('e');
+      await expect.poll(() => !!player.gathering).toBe(true);
+      player.gathering!.endsAt = Date.now() - 1;
       await expect
         .poll(() => log.locator('.chat-danger').count())
         .toBeGreaterThanOrEqual(Math.min(count, 8));
     }
     await expect(log.locator(':scope > div')).toHaveCount(10);
-    await expect(log).toContainText('System: Wait before gathering again.');
+    await expect(log).toContainText('System: The destination inventory is full.');
     await expect(page.locator('.notice')).toHaveCount(0);
-    await expect(friend.getByRole('log')).not.toContainText('Wait before gathering again.');
-    expect(world.chat?.some((message) => message.text === 'Wait before gathering again.')).toBe(
-      false,
-    );
+    await expect(friend.getByRole('log')).not.toContainText('The destination inventory is full.');
+    expect(
+      world.chat?.some((message) => message.text === 'The destination inventory is full.'),
+    ).toBe(false);
     await page.getByRole('button', { name: 'Inventory (I)' }).click();
     await expect(page.getByRole('dialog', { name: 'Inventory', exact: true })).toBeVisible();
     await expect(log).toBeVisible();

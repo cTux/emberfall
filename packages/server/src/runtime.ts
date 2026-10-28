@@ -1,4 +1,10 @@
-import { gatherResource, restoreResources } from '@emberfall/core';
+import {
+  startGathering,
+  gatheringNode,
+  tickGathering,
+  checkTimedActivity,
+  restoreResources,
+} from '@emberfall/core';
 import type { ResourceState } from '@emberfall/common';
 import {
   learnTalent,
@@ -258,6 +264,7 @@ export async function createRuntime(
         const player = worlds.get(session.worldId)?.players.get(session.id);
         if (player) {
           player.reconnecting = true;
+          delete player.gathering;
           player.inputX = player.inputY = 0;
         }
         session.reconnectTimer = setTimeout(() => {
@@ -344,7 +351,19 @@ export async function createRuntime(
         const epoch = player.scene === 'forest' ? world.scene?.id : 'lobby';
         if (message.epoch !== epoch) return;
         try {
-          gatherResource(player, (world.resources ??= {}), message.nodeId, now);
+          const activity = player.gathering;
+          if (message.checkId) {
+            if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) return;
+            gatheringNode(player, world.resources, message.nodeId, now);
+            if (
+              message.at === undefined ||
+              !checkTimedActivity(activity, message.checkId, message.at, now)
+            )
+              return;
+            tickGathering(player, (world.resources ??= {}), epoch, now);
+          } else if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) {
+            startGathering(player, world.resources, message.nodeId, epoch!, now);
+          }
           broadcastState(world, now);
         } catch (cause) {
           error(cause instanceof Error ? cause.message : 'Unable to gather.');
@@ -558,6 +577,7 @@ export async function createRuntime(
         }
         try {
           characters.selectClass(session.characterId, player, message.classId);
+          delete player.gathering;
           send(ws, { type: 'state', world: state(world!, now, player) });
         } catch {
           error('Unable to save class change. Your current class has been kept.');
@@ -578,7 +598,9 @@ export async function createRuntime(
           return;
         }
         try {
+          const previousArea = player.scene;
           sceneAction(world, player, message, now);
+          if (player.scene !== previousArea) delete player.gathering;
           session.x = 0;
           session.y = 0;
         } catch (cause) {
@@ -824,6 +846,23 @@ export async function createRuntime(
         restoreResources(world.resources, wallTime);
         for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);
+        for (const player of world.players.values()) {
+          try {
+            tickGathering(
+              player,
+              (world.resources ??= {}),
+              player.scene === 'forest' ? (world.scene?.id ?? '') : 'lobby',
+              wallTime,
+            );
+          } catch (cause) {
+            for (const [ws, session] of sessions)
+              if (session.id === player.id)
+                send(ws, {
+                  type: 'error',
+                  message: cause instanceof Error ? cause.message : 'Unable to gather.',
+                });
+          }
+        }
         if (world.players.size) villageLife(world, now).tick(now, TICK_MS / 1000);
         broadcastState(world, now);
       }

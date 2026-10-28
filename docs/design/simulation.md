@@ -80,5 +80,15 @@ using wall-clock deadlines independently of combat pause. Gather commands includ
 the current area epoch and node ID, never rewards. Core validates range and builds
 a detached inventory before committing the gather and independent tree rolls.
 The client renders generated depleted art and tree health from this state.
+`timed-activity.ts` supplies a reusable five-second activity clock, ping-pong
+indicator and one green target. Successful checks remove two seconds and move
+the target away from the indicator. `Player.gathering` is transient replicated
+state, not saved progress. The runtime starts it and validates it on every tick,
+then invokes the existing atomic reward rule only on completion. Cancellation
+discards the attempt. Each target has a server-generated ID, so stale/replayed
+checks cannot apply to its replacement. Input timestamps must be within 500 ms
+of server receipt and after the current target appeared; range and area are always
+checked at receipt. The client extrapolates the latest server clock for smooth
+display and sends that displayed time, without sending outcomes or rewards.
 Resource inventory entries use registered `resource` definitions and stack to
 200; insertion plans capacity before mutation and splits overflow into new IDs.

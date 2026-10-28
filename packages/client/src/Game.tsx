@@ -398,6 +398,10 @@ export function Game({
     });
   };
   const interact = (source = interaction.current) => {
+    if (me?.gathering && interaction.current?.activate && source?.id.startsWith('gather:')) {
+      interaction.current.activate();
+      return;
+    }
     if (!source) return;
     if (source.activate) {
       source.activate();
@@ -501,6 +505,7 @@ export function Game({
       }
       if (
         event.code === 'KeyE' &&
+        !menu &&
         !document.querySelector('[role="dialog"][aria-modal="true"]') &&
         !typing
       )

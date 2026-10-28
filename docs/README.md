@@ -170,6 +170,8 @@ Talents: [rules](specs/progression.md#prog-03--talents),
 [browser scenario](../tests/talents.spec.ts).
 
 Resource gathering: [VILLAGE-07](specs/scenes-and-village.md#village-07--gathering),
-implemented by [shared rules](../packages/core/src/gathering.ts) and verified by
+implemented by [shared rules](../packages/core/src/gathering.ts), reusable
+[timed activities](../packages/core/src/timed-activity.ts) and the
+[progress bar](../packages/client/src/timed-activity.ts), and verified by
 [gathering tests](../packages/server/src/gathering.test.ts) and
 [browser gathering checks](../tests/gathering.spec.ts).
