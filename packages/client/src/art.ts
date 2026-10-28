@@ -171,6 +171,18 @@ export const actorArt = (name: string) => {
   return image;
 };
 export const environmentArt = loadArt('environment', 3, 3, 128, true);
+// Keep the approved buildings at native resolution, without square-cell repackaging.
+export const buildingArt = new Image();
+buildingArt.onload = () => {
+  buildingArt.dataset.artReady = 'true';
+};
+artImages.push(buildingArt);
+buildingArt.src = artUrl('buildings');
+export const buildingFrames = [
+  { x: 38, y: 41, width: 638, height: 652, chimneyX: 453, chimneyY: 0 },
+  { x: 751, y: 19, width: 661, height: 674, chimneyX: 521, chimneyY: 6 },
+  { x: 1461, y: 89, width: 689, height: 605, chimneyX: 539, chimneyY: 0 },
+] as const;
 export const plantArt = loadArt('plants', 5, 1, 64, true);
 export const wardrobeArt = loadArt('wardrobe', 4, 1, 128, true);
 export const innkeeperArt = loadArt('innkeeper', 4, 1, 64, true);

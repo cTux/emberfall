@@ -1,11 +1,6 @@
 import { loadArt, drawArt } from './art';
 
 export const portalArt = loadArt('portal-stone', 1, 1, 128, true);
-export const chimneyAnchors = [
-  { x: 0.68, y: 0.055 },
-  { x: 0.75, y: 0.055 },
-  { x: 0.78, y: 0.055 },
-];
 
 // Small reusable textures, not per-frame canvas uploads or blur filters.
 function puff(color: string) {
