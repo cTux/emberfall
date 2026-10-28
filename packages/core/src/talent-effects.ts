@@ -209,6 +209,7 @@ function healingTarget(
       (ally !== owner && (!owner.partyId || ally.partyId !== owner.partyId)) ||
       ally.scene !== owner.scene ||
       ally.runId !== owner.runId ||
+      ally.reconnecting ||
       ally.hitpoints <= 0 ||
       ally.hitpoints >= ally.maxHitpoints ||
       forestDistance(ally, point) > radius

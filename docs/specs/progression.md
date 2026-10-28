@@ -71,7 +71,7 @@ caster. Equal percentages retain player order. Mending Seed and Renewal use
 their registered 700-unit range around the caster; Healing Grove chooses one
 recipient per second within 200 units of its fixed cast position. Healing
 opportunities choose one recipient within 60 units of the consumed enemy.
-Players in other areas or forest runs and players outside the caster's party
+Disconnected players, players in other areas or forest runs and players outside the caster's party
 are excluded. Solo players can heal themselves. Passive self-healing and Bear's
 own heal retain their dedicated recipients; Renewal's damage reduction stays
 on the caster. No eligible recipient means no healing, without refunding the cast.

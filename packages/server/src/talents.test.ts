@@ -104,6 +104,7 @@ test('Mending Seed and Renewal heal the lowest HP percentage in range, including
         };
         const otherRun = { ...player, id: 'run', runId: 'other', hitpoints: 1 };
         const dead = { ...player, id: 'dead', hitpoints: 0 };
+        const disconnected = { ...player, id: 'disconnected', hitpoints: 1, reconnecting: true };
         const full = { ...player, id: 'full', hitpoints: 100 };
         ability(player, 2, row, learned);
         const players = [
@@ -114,6 +115,7 @@ test('Mending Seed and Renewal heal the lowest HP percentage in range, including
           otherArea,
           otherRun,
           dead,
+          disconnected,
           full,
           ally,
         ];
@@ -122,7 +124,7 @@ test('Mending Seed and Renewal heal the lowest HP percentage in range, including
         assert.equal(ally.hitpoints, 200 + 1000 * fraction);
         assert.equal(player.hitpoints, 80);
         assert.equal(lessInjured.hitpoints, 30);
-        for (const excluded of [outside, stranger, otherArea, otherRun])
+        for (const excluded of [outside, stranger, otherArea, otherRun, disconnected])
           assert.equal(excluded.hitpoints, 1);
         assert.equal(dead.hitpoints, 0);
         assert.equal(full.hitpoints, 100);
