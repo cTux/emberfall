@@ -7,6 +7,7 @@ import {
   inTrainingZone,
   isTalentLearned,
   talentAbility,
+  talentDescription,
   talentCooldownMs,
   equippedTalent,
 } from '@emberfall/core';
@@ -81,6 +82,7 @@ export function WeaponActionBar({
           return ability && node && isTalentLearned(player, node.id)
             ? {
                 name: ability.name!,
+                description: talentDescription(node),
                 icon: <TalentIcon classId={classId} index={node.column * 10 + node.row} />,
                 cooldownMs: talentCooldownMs(player, node.slot!),
                 remainingMs: (player.talentCooldowns?.[ability.id] ?? 0) - now,
@@ -104,6 +106,7 @@ export function WeaponActionBar({
                 onToggleAutoCast: () =>
                   setPreferences((value) => ({ ...value, autoAttack: !value.autoAttack })),
                 name: classDetails[classId].spell,
+                description: classDetails[classId].spellDescription,
                 icon: <img src={spellSrc(classId)} alt='' draggable={false} />,
                 cooldownMs: stats.attackIntervalMs,
                 remainingMs:

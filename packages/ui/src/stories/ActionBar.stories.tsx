@@ -13,6 +13,7 @@ const meta = {
     autoTarget: true,
     baseAbility: {
       name: 'Slash',
+      description: 'Swing your weapon at nearby enemies.',
       icon: <FontAwesomeIcon icon={faBurst} size='2x' aria-hidden='true' />,
       cooldownMs: 1000,
       remainingMs: 0,

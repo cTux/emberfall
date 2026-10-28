@@ -6,6 +6,7 @@ import { AbilityButtonStyled, ActionIndicatorStyled, ActionSlotStyled } from './
 
 export interface ActionBarAbility {
   name: string;
+  description?: string;
   icon: ReactNode;
   cooldownMs: number;
   remainingMs: number;
@@ -121,9 +122,7 @@ export function ActionBar({
               <Typography variant='body2'>
                 Cooldown: {duration / 1000} {duration === 1000 ? 'second' : 'seconds'}
               </Typography>
-              <Typography variant='body2'>Left mouse button to cast</Typography>
-              <Typography variant='body2'>Auto-fire: {autoFire ? 'On' : 'Off'} (F)</Typography>
-              <Typography variant='body2'>Auto-target: {autoTarget ? 'On' : 'Off'} (G)</Typography>
+              <Typography variant='body2'>{baseAbility.description}</Typography>
             </Stack>
           }
         >
@@ -192,7 +191,17 @@ export function ActionBar({
           <Tooltip
             describeChild
             key={slot}
-            title={`${ability.name} · ${(ability.cooldownMs / 1000).toFixed(1)}s cooldown · ${slot} to cast · LMB to choose · RMB to toggle auto-cast (${ability.autoCast ? 'On' : 'Off'})`}
+            placement='top'
+            enterTouchDelay={0}
+            title={
+              <Stack spacing={0.5}>
+                <Typography sx={{ fontWeight: 700 }}>{ability.name}</Typography>
+                <Typography variant='body2'>
+                  Cooldown: {ability.cooldownMs / 1000} seconds
+                </Typography>
+                <Typography variant='body2'>{ability.description}</Typography>
+              </Stack>
+            }
           >
             <AbilityButtonStyled
               type='button'
