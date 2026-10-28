@@ -59,7 +59,7 @@ import {
   inTrainingZone,
 } from '@emberfall/core';
 import { TICK_MS } from '@emberfall/core';
-import type { ClientMessage, WorldState } from '@emberfall/common';
+import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import { castShadow, spriteMask } from './lighting';
 import type { Caster, Light } from './lighting';
@@ -299,6 +299,7 @@ export function Arena({
     }
     const input = setInterval(sendMovement, TICK_MS);
     let frame = 0;
+    let gatheringClock: { activity: NonNullable<Player['gathering']>; offset: number } | undefined;
     let wardrobeOpenedAt = 0;
     let wardrobeActive = false;
     let previous = performance.now();
@@ -440,14 +441,26 @@ export function Arena({
       const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
       const drawPrompt = () => {
         const activity = authoritativePlayer?.gathering;
+        if (!activity) gatheringClock = undefined;
         element.dataset.gathering = activity?.nodeId ?? '';
         element.dataset.gatheringCheck = activity?.checkId ?? '';
         if (activity && local) {
           element.dataset.interactionPrompt = '';
           const node = resourceNodes(local, 250).find((node) => node.id === activity.nodeId);
           if (node) {
-            const activityTime =
-              (authoritative?.serverNow ?? 0) + Math.max(0, now - receivedAt.current);
+            if (
+              !gatheringClock ||
+              gatheringClock.activity.startedAt !== activity.startedAt ||
+              gatheringClock.activity.nodeId !== activity.nodeId ||
+              gatheringClock.activity.epoch !== activity.epoch
+            ) {
+              // Packet arrival jitter must not restart the fill or indicator clock.
+              gatheringClock = {
+                activity,
+                offset: (authoritative?.serverNow ?? 0) - Math.min(now, receivedAt.current),
+              };
+            }
+            const activityTime = now + gatheringClock.offset;
             element.dataset.gatheringIndicator = String(activityIndicator(activity, activityTime));
             element.dataset.gatheringZone = String(activity.zoneStart);
             drawTimedActivity(ctx, activity, node.x, node.y - node.size - 26, activityTime);
