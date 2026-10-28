@@ -137,6 +137,16 @@ Settings groups are Gameplay, Graphics and Sound. Preferences persist locally; m
 
 Auto-loot items is enabled by default. Disabling it stops attracting and collecting item drops for that player; nearby players can still collect them. XP and gold pickup stay automatic. The preference applies immediately and persists across reloads.
 
+**Hide other players' damage numbers** is enabled by default in Gameplay settings,
+including for existing saved preferences without this option. While enabled, floating
+numbers show only damage dealt by your character (including attributed companion and
+ailment damage) or taken by your character. Disabling it shows all scene damage numbers.
+It applies immediately in forest and village training and persists locally. The
+**Floating damage numbers** toggle still hides all numbers independently. These
+settings do not change combat, health, damage events or DPS totals.
+
+![Verified desktop Gameplay settings with other players' damage numbers hidden by default](../images/damage-number-settings.png)
+
 The new client's Gameplay settings include **Debug mode: show hitboxes**, disabled
 by default and persisted locally. It takes effect immediately in village, training
 and forest at every graphics preset. Show whole-model damage circles and projectile

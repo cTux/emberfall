@@ -44,6 +44,7 @@ export function Settings({
       | 'hideHealthBarsInTown'
       | 'bloodPuddles'
       | 'damageNumbers'
+      | 'hideOtherPlayerDamageNumbers'
       | 'dps'
       | 'fps'
       | 'latency'
@@ -115,6 +116,7 @@ export function Settings({
               {toggle('hideGatheringHintInCombat', 'Hide gathering hint during combat')}
               {toggle('hideHealthBarsInTown', 'Hide health bars in town')}
               {toggle('damageNumbers', 'Floating damage numbers')}
+              {toggle('hideOtherPlayerDamageNumbers', "Hide other players' damage numbers")}
               {toggle('dps', 'DPS meter')}
               {toggle('fps', 'FPS graph')}
               {toggle('latency', 'Latency graph')}

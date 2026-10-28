@@ -42,6 +42,12 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
+Damage number visibility: [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music),
+[shared renderer](../packages/client/src/damage-text.ts),
+[saved preference](../packages/client/src/preferences.ts),
+[ownership checks](../tests/damage-text.test.ts) and
+[toggle/persistence verification](../tests/damage-numbers.spec.ts).
+
 Day/night cycle: [GRAPHICS-03](specs/graphics.md#graphics-03--scenery-and-atmosphere),
 [palette and clock](../packages/client/src/day-night.ts),
 [renderer](../packages/client/src/rendering/pixi-context.ts),

@@ -47,6 +47,7 @@ for (const key of [
   'hideGatheringHintInCombat',
   'hideHealthBarsInTown',
   'hideOtherPlayerEffects',
+  'hideOtherPlayerDamageNumbers',
 ] as const)
   test(`${key} defaults on and accepts only saved booleans`, () => {
     const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
