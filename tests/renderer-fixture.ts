@@ -72,7 +72,7 @@ export async function compare() {
   compare('health border top', health, 90, 89);
   compare('health fill top', health, 90, 91);
   compare('health fill bottom', health, 90, 97);
-  compare('health border bottom', health, 90, 99);
+  compare('health border bottom', health, 82, 99);
   compare('health empty track', health, 110, 94);
   compare('health outside frame', health, 90, 88);
   compare(

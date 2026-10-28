@@ -60,7 +60,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     'tree health border',
     'gathering border',
   ])
-    expect(results[sample].actual).toEqual([40, 39, 27, 255]);
+    expect(results[sample].actual, sample).toEqual([40, 39, 27, 255]);
   expect(results['health fill top'].actual).toEqual([134, 217, 162, 255]);
   expect(results['health fill bottom'].actual).toEqual([134, 217, 162, 255]);
   expect(results['health empty track'].actual).toEqual([105, 90, 49, 255]);
