@@ -219,6 +219,96 @@ test('targeted healing handles solo, full health, ties and overhealing', () => {
   assert.equal(ally.hitpoints, 50);
 });
 
+test('direct heals select own and party Bears by health percentage in forest and training', () => {
+  for (const training of [false, true])
+    for (const row of [1, 7])
+      for (const ownBear of [false, true]) {
+        const player = hero('druid'),
+          scene = arena();
+        scene.training = training;
+        if (training) player.scene = undefined;
+        player.partyId = 'party';
+        player.x = training ? TRAINING_ZONES[0].x : 10;
+        player.y = training ? TRAINING_ZONES[0].y : 1000;
+        player.hitpoints = 50;
+        player.maxHitpoints = 100;
+        const ally = { ...player, id: 'ally', hitpoints: 100 };
+        const owner = ownBear ? player : ally;
+        owner.bear = {
+          id: 'bear',
+          name: 'Bear',
+          x: training ? player.x + 20 : FOREST.width - 10,
+          y: player.y,
+          hitpoints: 30,
+          maxHitpoints: 150,
+          returning: false,
+        };
+        ability(player, 2, row, 2);
+        assert(cast(player, scene, 1000, [player, ally]));
+        assert.equal(owner.bear.hitpoints, 30 + 150 * (row === 1 ? 0.2 : 0.35));
+        assert.equal(player.hitpoints, 50);
+        assert.equal(scene.explosions?.[0].x, owner.bear.x);
+      }
+});
+
+test('healing excludes dead, full, distant and ineligible owners Bears', () => {
+  for (const excluded of ['dead', 'full', 'distant', 'party', 'area', 'run', 'disconnected']) {
+    const player = hero('druid'),
+      scene = arena();
+    player.partyId = 'party';
+    player.hitpoints = player.maxHitpoints;
+    const ally = { ...player, id: 'ally' };
+    ally.bear = {
+      id: 'bear',
+      name: 'Bear',
+      x: player.x,
+      y: player.y,
+      hitpoints: 1,
+      maxHitpoints: 150,
+      returning: false,
+    };
+    if (excluded === 'dead') ally.bear.hitpoints = 0;
+    if (excluded === 'full') ally.bear.hitpoints = 150;
+    if (excluded === 'distant') ally.bear.x += 701;
+    if (excluded === 'party') ally.partyId = 'other';
+    if (excluded === 'area') ally.scene = undefined;
+    if (excluded === 'run') ally.runId = 'other';
+    if (excluded === 'disconnected') ally.reconnecting = true;
+    const before = ally.bear.hitpoints;
+    ability(player, 2, 1);
+    assert(cast(player, scene, 1000, [player, ally]));
+    assert.equal(ally.bear.hitpoints, before, excluded);
+  }
+});
+
+test('grove pulses reselect Bears and stop healing after their owner leaves', () => {
+  const player = hero('druid'),
+    scene = arena();
+  player.partyId = 'party';
+  player.maxHitpoints = 100;
+  player.hitpoints = 100;
+  const ally = { ...player, id: 'ally' };
+  ally.bear = {
+    id: 'bear',
+    name: 'Bear',
+    x: player.x + 200,
+    y: player.y,
+    hitpoints: 10,
+    maxHitpoints: 150,
+    returning: false,
+  };
+  ability(player, 2, 3, 2);
+  assert(cast(player, scene));
+  tickTalentEffects(scene, [player, ally], 1000);
+  assert.equal(ally.bear.hitpoints, 16);
+  player.hitpoints = 1;
+  tickTalentEffects(scene, [player, ally], 2000);
+  assert.equal(player.hitpoints, 5);
+  player.hitpoints = 100;
+  tickTalentEffects(scene, [player], 3000);
+  assert.equal(ally.bear.hitpoints, 16);
+});
+
 test('Healing Grove reselects one injured party member per pulse within its fixed radius', () => {
   const player = hero('druid'),
     scene = arena();
@@ -258,13 +348,24 @@ test('healing opportunities choose the most injured nearby party member and are 
   ];
   const ally = { ...player, id: 'ally', x: 1110, hitpoints: 10 };
   const stranger = { ...ally, id: 'stranger', partyId: undefined, hitpoints: 1 };
+  ally.bear = {
+    id: 'bear',
+    name: 'Bear',
+    x: 1050,
+    y: 1000,
+    hitpoints: 1,
+    maxHitpoints: 150,
+    returning: false,
+  };
   assert(cast(player, scene));
   tickTalentEffects(scene, [player, stranger, ally], 1000);
-  assert.equal(ally.hitpoints, 13);
+  assert.equal(ally.hitpoints, 10);
+  assert.equal(ally.bear.hitpoints, 5.5);
   assert.equal(player.hitpoints, 80);
   assert.equal(stranger.hitpoints, 1);
   tickTalentEffects(scene, [player, ally], 2000);
-  assert.equal(ally.hitpoints, 13);
+  assert.equal(ally.hitpoints, 10);
+  assert.equal(ally.bear.hitpoints, 5.5);
 });
 test('all classes have thirty independent talents and twelve abilities, with a defensive third column', () => {
   assert.equal(TALENT_TREE.length, 120);

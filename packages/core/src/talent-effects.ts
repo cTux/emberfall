@@ -209,7 +209,8 @@ function strike(
     source,
   );
 }
-function heal(player: Player, fraction: number) {
+type HealingTarget = Pick<Player, 'x' | 'y' | 'hitpoints' | 'maxHitpoints'>;
+function heal(player: HealingTarget, fraction: number) {
   player.hitpoints = Math.min(
     player.maxHitpoints,
     player.hitpoints + player.maxHitpoints * fraction,
@@ -221,20 +222,29 @@ function healingTarget(
   point: { x: number; y: number },
   radius: number,
 ) {
-  let target: Player | undefined;
+  let target: HealingTarget | undefined;
   for (const ally of players) {
     if (
       (ally !== owner && (!owner.partyId || ally.partyId !== owner.partyId)) ||
       ally.scene !== owner.scene ||
       ally.runId !== owner.runId ||
-      ally.reconnecting ||
-      ally.hitpoints <= 0 ||
-      ally.hitpoints >= ally.maxHitpoints ||
-      forestDistance(ally, point) > radius
+      ally.reconnecting
     )
       continue;
-    if (!target || ally.hitpoints / ally.maxHitpoints < target.hitpoints / target.maxHitpoints)
-      target = ally;
+    for (const candidate of [ally, ally.bear]) {
+      if (
+        !candidate ||
+        candidate.hitpoints <= 0 ||
+        candidate.hitpoints >= candidate.maxHitpoints ||
+        forestDistance(candidate, point) > radius
+      )
+        continue;
+      if (
+        !target ||
+        candidate.hitpoints / candidate.maxHitpoints < target.hitpoints / target.maxHitpoints
+      )
+        target = candidate;
+    }
   }
   return target;
 }

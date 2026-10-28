@@ -50,7 +50,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
       `Consume your ${wound} stacks on the aimed enemy to immediately deal 150% / 200% of their remaining whole-second damage. Rank 2 splashes half the burst to nearby enemies. 14s base cooldown.`,
       `When an enemy dies with your damaging ailments, spread 1 / 2 fresh stacks to up to 2 / 4 nearby enemies.`,
       `Strike an aimed area four times over 1.5s, dealing 30% / 45% weapon damage and applying 2 / 3 ${wound} stacks each time. Rank 2 expands its radius. 18s base cooldown.`,
-      `${ability(1, 2)} consuming at least three stacks leaves a six-second healing opportunity. The injured party member with the lowest health percentage within 60 units heals for 3% / 5% maximum health, including you.`,
+      `${ability(1, 2)} consuming at least three stacks leaves a six-second healing opportunity. The injured party member or Bear with the lowest health percentage within 60 units heals for 3% / 5% maximum health, including you.`,
       'Your direct offensive ability hits against enemies with five of your ailment stacks have a 20% / 35% chance to deal 80% / 130% additional weapon damage. Two-second cooldown per target.',
     ][node.row];
   return [
@@ -58,17 +58,17 @@ export function talentDescription(node: Readonly<TalentNode>) {
       ? 'Every fifth weapon hit heals you for 2% / 4% maximum health. Weapon hits can also prepare a reactive guard.'
       : 'Weapon hits have a 15% / 25% chance to prepare a three-second guard. The next incoming hit is reduced by 40% / 60%. Four-second trigger cooldown.',
     node.classId === 'druid'
-      ? 'Heal the injured party member with the lowest health percentage within 700 units for 12% / 20% of their maximum health, including yourself. 6s base cooldown.'
+      ? 'Heal the injured party member or Bear with the lowest health percentage within 700 units for 12% / 20% of their maximum health, including yourself. 6s base cooldown.'
       : 'Strike nearby enemies for 90% / 140% weapon damage, interrupt attacks and stun ordinary enemies for 0.6s / 1s. 6s base cooldown.',
     `${ability(2, 0)} releases fragments into up to 2 / 4 enemies near the aimed location, dealing 35% / 50% weapon damage each.`,
     node.classId === 'druid'
-      ? 'Create a six-second healing grove. Each second, heal the injured party member with the lowest health percentage within 200 units for 2.5% / 4% of their maximum health, including yourself. 10s base cooldown.'
+      ? 'Create a six-second healing grove. Each second, heal the injured party member or Bear with the lowest health percentage within 200 units for 2.5% / 4% of their maximum health, including yourself. 10s base cooldown.'
       : 'Create a six-second shelter. Nearby allies receive a refreshed barrier absorbing 6% / 10% of your maximum health. Barriers expire after 1.2s and do not add together. 10s base cooldown.',
     `${ability(2, 1)} also repeatedly immobilizes nearby ordinary enemies for 0.8s / 1.4s. Bosses are immune.`,
     'Gain a five-second barrier absorbing 15% / 25% maximum health. Interrupt nearby enemies and slow ordinary enemies. Rank 2 expands the affected area. 14s base cooldown.',
     'When your guard or barrier prevents damage, release a 60% / 100% weapon-damage counterwave. Two-second trigger cooldown.',
     node.classId === 'druid'
-      ? 'Heal the injured party member with the lowest health percentage within 700 units for 20% / 35% of their maximum health, including yourself. Reduce your incoming damage by 60% / 75% for 2s / 3s. 18s base cooldown.'
+      ? 'Heal the injured party member or Bear with the lowest health percentage within 700 units for 20% / 35% of their maximum health, including yourself. Reduce your incoming damage by 60% / 75% for 2s / 3s. 18s base cooldown.'
       : 'Reduce incoming damage by 60% / 75% for 2s / 3s. 18s base cooldown.',
     `${ability(2, 3)} also repeatedly shields nearby allies for 3% / 5% of their maximum health. Each barrier lasts one second and does not add together.`,
     node.classId === 'druid'

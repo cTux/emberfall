@@ -3,13 +3,13 @@
   <g font-family="sans-serif" fill="#f5f0dc" text-anchor="middle">
     <text x="360" y="30" font-size="20">Healing target selection — concept</text>
     <rect x="28" y="60" width="470" height="140" rx="12" fill="#284635" stroke="#82b889"/>
-    <text x="263" y="84" font-size="14">Party members inside the ability radius</text>
+    <text x="263" y="84" font-size="14">Party members and Bears inside the ability radius</text>
     <text x="110" y="120" font-size="17">Caster: 80%</text>
-    <text x="277" y="120" font-size="17">Ally: 25%</text>
+    <text x="277" y="120" font-size="17">Bear: 25%</text>
     <text x="420" y="120" font-size="17">Ally: 60%</text>
     <path d="M110 155 H255" stroke="#b8e495" stroke-width="3"/>
     <path d="m245 148 12 7-12 7" fill="none" stroke="#b8e495" stroke-width="3"/>
-    <text x="300" y="165" font-size="15" fill="#b8e495">Heal 25% ally</text>
+    <text x="300" y="165" font-size="15" fill="#b8e495">Heal 25% Bear</text>
     <text x="602" y="111" font-size="17">Ally: 5%</text>
     <text x="602" y="140" font-size="14">Outside radius</text>
     <text x="602" y="165" font-size="14">Excluded</text>
