@@ -13,7 +13,7 @@ for players.
 
 The create/join browser shows a forest backdrop; entering a world takes players to its village. E interacts within 68 units of a blue portal or building doorway. Buildings currently open service placeholders. All windows have a draggable title and close button; closed browser/death windows have a reopen control. Text selection is disabled throughout the game.
 
-Hovering a functional building, NPC or item shows a yellow sprite outline: thick (3 world units) within interaction range and thin (1 world unit) outside it. Names and nameplate backgrounds stay unchanged, without an `(E)` prefix. E or a left click activates the hovered target while in range; outside range neither activates it. E without a hovered target retains the nearby interaction. Decorative scenery has no interaction outline. Completed-forest return portals use the same feedback and input, including across wrapped seams.
+Hovering a functional building, NPC or item shows a thin yellow sprite outline (1 world unit) both within and outside interaction range. Names and nameplate backgrounds stay unchanged, without an `(E)` prefix. E or a left click activates the hovered target while in range; outside range neither activates it. E without a hovered target retains the nearby interaction. Decorative scenery has no interaction outline. Completed-forest return portals use the same feedback and input, including across wrapped seams.
 
 In the new runtime, the Inn remains scenery without an interaction or nameplate. Marta the
 Innkeeper starts beside its right wall and walks between village stops with pauses.

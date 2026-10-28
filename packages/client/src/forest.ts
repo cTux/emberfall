@@ -77,7 +77,6 @@ export function drawPortal(
   shadows: boolean,
   _waving: boolean,
   opacity = 1,
-  inRange = false,
 ) {
   if (portalArt.naturalWidth) {
     if (shadows)
@@ -97,7 +96,7 @@ export function drawPortal(
     }
     drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
     ctx.restore();
-    if (outline) drawInteractionOutline(ctx, outline, inRange);
+    if (outline) drawInteractionOutline(ctx, outline);
     drawNameBadge(ctx, x, y - 72, name);
     return;
   }
@@ -155,7 +154,7 @@ export function drawPortal(
   }
   ctx.restore();
   ctx.restore();
-  if (outline) drawInteractionOutline(ctx, outline, inRange);
+  if (outline) drawInteractionOutline(ctx, outline);
   drawNameBadge(ctx, x, y - 60, name);
 }
 const fogTexture = document.createElement('canvas');
@@ -248,7 +247,6 @@ export function forestRenderer(
     now: number,
     _dt: number,
     hovered: InteractionTarget | null,
-    inRange: boolean,
   ) => {
     if (world?.scene?.id !== lastScene) {
       positions.clear();
@@ -507,8 +505,6 @@ export function forestRenderer(
           hovered?.source.x === portal.x && hovered.source.y === portal.y ? hovered : null,
           quality.shadows,
           quality.wavingVegetation,
-          1,
-          inRange,
         );
         continue;
       }
@@ -549,7 +545,7 @@ export function forestRenderer(
         ctx.globalAlpha = 1;
         renderer.occlusion = false;
         drawResourceHealth(ctx, t, state);
-        if (hovered?.source.id === `gather:${t.id}`) drawInteractionOutline(ctx, hovered, inRange);
+        if (hovered?.source.id === `gather:${t.id}`) drawInteractionOutline(ctx, hovered);
         continue;
       }
       const a = layer.actor!;

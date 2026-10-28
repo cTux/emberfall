@@ -16,7 +16,7 @@ const sharp =
 for (const graphicsPreset of ['Low', 'High'] as const) {
   test.describe(graphicsPreset, () => {
     test.use({ graphicsPreset });
-    test('hover outlines reflect range and clicks share E interactions', async ({ page, game }) => {
+    test('hover outlines stay thin and clicks share E interactions', async ({ page, game }) => {
       test.setTimeout(180000);
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
@@ -55,7 +55,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       player.x = WARDROBE.x - 120;
       player.y = WARDROBE.y + 9;
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', false);
-      const thin = await yellowPixels('wardrobe-thin');
+      const thin = await yellowPixels('wardrobe-out-of-range');
       expect(thin).toBeGreaterThan(20);
       await page.mouse.click(720 + 120 * scale, 500 - 39 * scale);
       await page.keyboard.press('e');
@@ -63,7 +63,9 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
 
       player.x = WARDROBE.x - 35;
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', true);
-      expect(await yellowPixels('wardrobe-thick')).toBeGreaterThan(thin * 1.5);
+      const nearby = await yellowPixels('wardrobe-in-range');
+      expect(nearby).toBeGreaterThan(20);
+      expect(nearby).toBeLessThan(thin * 1.5);
       await page.mouse.down();
       await page.mouse.up();
       const wardrobe = page.getByRole('dialog', { name: 'Wardrobe' });
@@ -118,13 +120,16 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       player.y = 300;
       await expect(canvas).toHaveAttribute('aria-label', 'Forest combat scene.');
       await hover(FOREST.width - 12, 270, 'return', false);
-      expect(await yellowPixels('forest-thin')).toBeGreaterThan(20);
+      const portalThin = await yellowPixels('forest-out-of-range');
+      expect(portalThin).toBeGreaterThan(20);
       await page.mouse.down();
       await page.mouse.up();
       expect(player.scene).toBe('forest');
       player.x = 12;
       await hover(FOREST.width - 12, 270, 'return', true);
-      expect(await yellowPixels('forest-thick')).toBeGreaterThan(20);
+      const portalNearby = await yellowPixels('forest-in-range');
+      expect(portalNearby).toBeGreaterThan(10);
+      expect(portalNearby).toBeLessThan(portalThin * 1.5);
       await page.mouse.down();
       await page.mouse.up();
       await expect.poll(() => player.scene).toBeUndefined();
