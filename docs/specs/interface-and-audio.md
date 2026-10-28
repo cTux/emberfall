@@ -43,7 +43,8 @@ Codex uses the shared forest theme with chapter tabs for controls, worlds and pa
 
 ## UI-02 — Combat controls
 
-Holding either Alt key suppresses browser Alt behavior and shows thin green
+Holding either Alt key suppresses browser Alt behavior. After holding Alt for more
+than 0.5 seconds, it shows thin green
 outlines on all visible interactive objects in village and forest, regardless of
 interaction range. This includes functional buildings, Marta, cats, portals and
 non-depleted gathering resources, and players eligible for Invite, Join or Accept

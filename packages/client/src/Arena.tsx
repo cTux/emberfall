@@ -171,6 +171,7 @@ export function Arena({
     let previousHp = '';
     const keys = new Set<string>();
     const altKeys = new Set<string>();
+    let altHeldAt = Infinity;
     let pointer: { x: number; y: number } | undefined;
     let held = false;
     let pointerInside = false;
@@ -241,8 +242,13 @@ export function Arena({
     const key = (event: KeyboardEvent, down: boolean) => {
       if (event.code === 'AltLeft' || event.code === 'AltRight') {
         if (latest.current) event.preventDefault();
-        if (down) altKeys.add(event.code);
-        else altKeys.delete(event.code);
+        if (down) {
+          if (altKeys.size === 0) altHeldAt = performance.now();
+          altKeys.add(event.code);
+        } else {
+          altKeys.delete(event.code);
+          if (altKeys.size === 0) altHeldAt = Infinity;
+        }
         return;
       }
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
@@ -274,6 +280,7 @@ export function Arena({
     const reset = () => {
       keys.clear();
       altKeys.clear();
+      altHeldAt = Infinity;
       held = false;
       pointerInside = false;
       element.dataset.cursor = 'default';
@@ -544,7 +551,7 @@ export function Arena({
           view?.resources?.[element.dataset.resource]?.remaining ?? '',
         );
       };
-      const highlightInteractions = altKeys.size > 0 && !blocked();
+      const highlightInteractions = now - altHeldAt > 500 && !blocked();
       const outlinedTargets = () => {
         const highlighted = highlightInteractions;
         for (const target of targets) target.highlighted = highlighted;
@@ -634,10 +641,13 @@ export function Arena({
           { x: local?.x ?? 480, y: local?.y ?? 320 },
           Math.max(el.width, el.height) / scale + 200,
         ).map((node) => {
-          const object = prepared?.scenery.find((o) => o.id === node.id);
           const state = resourceState(view.resources, node, view.serverNow ?? now);
+          const tree =
+            node.kind === 'tree' && state?.remaining !== 0
+              ? prepared?.scenery.find((object) => object.id === node.id)
+              : undefined;
           return {
-            ...(state?.remaining === 0 || !object ? resourceScenery(node, state) : object),
+            ...(tree ?? resourceScenery(node, state)),
             kind: node.kind,
             gathered: state?.remaining === 0,
           };

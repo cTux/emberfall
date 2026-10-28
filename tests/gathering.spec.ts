@@ -186,9 +186,13 @@ test('click and E gather replicated resources in village and forest, show deplet
   await page.keyboard.press('e');
   await expect(canvas).toHaveAttribute('data-gathering', plant.id);
   await page.screenshot({ path: 'test-results/gathering-active-forest.png' });
-  await expect.poll(() => world.resources?.[plant.id]?.remaining, { timeout: 7000 }).toBe(0);
+  await expect
+    .poll(() => game.runtime.parties(world).run(player).resources?.[plant.id]?.remaining, {
+      timeout: 7000,
+    })
+    .toBe(0);
   expect(player.backpack!.some((i) => i.itemId === 'plant')).toBe(true);
-  await expect(canvas).toHaveAttribute('data-depleted-resources', '2');
+  await expect(canvas).toHaveAttribute('data-depleted-resources', '1');
   await page.screenshot({ path: 'test-results/gathering-forest-plant.png' });
   await page.getByRole('button', { name: 'Inventory (I)' }).click();
   await expect(inventory.getByRole('button', { name: 'Use Plant', exact: true })).toBeVisible();

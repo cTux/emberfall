@@ -4,6 +4,15 @@ Status: implemented. Implements [interface/audio](../specs/interface-and-audio.m
 
 ## Application and component boundaries
 
+Bundled item textures resolve through `class-art.ts`'s item lookup for both
+inventory views and world loot. Plant items reuse their own generated plant
+cells. Empty equipment-slot hints remain separate from item artwork.
+Storehouse and Lodge load dedicated native images; their aspect-preserving world
+dimensions also size their alpha masks. Resource-state sprites keep their authored
+128px ground anchors through native loading. `resourceScenery` caches each kind,
+variant and live/depleted state together with its shadow mask; restoration selects
+the cached live state in both village and forest. NPC sprite choices are unchanged.
+
 The host's `cursors.scss` supplies transparent PNG native cursors with explicit
 hotspots and system fallbacks, including portaled UI. Preferences supply a body-level
 size attribute selecting pre-sized 32/48/64 px PNGs and hotspots measured in each
@@ -24,7 +33,8 @@ in [cursor scenarios](../../tests/cursors.spec.ts).
 `interaction-targets.ts` picks opaque pixels of functional scenery and portals in
 display depth order, using the same wrapped camera as rendering. It caches yellow hover and green held-Alt
 one-world-unit silhouette outlines per finite sprite frame, display size and color.
-Arena tracks both Alt keys, prevents their browser defaults, and clears them on
+Arena tracks both Alt keys and the start of a continuous hold, shows green outlines
+only after more than 500 ms, prevents their browser defaults, and clears them on
 blur or visibility change. Its existing interaction targets supply green outlines
 in depth order while gameplay input is unblocked, without changing picking or range.
 Range uses confirmed player positions and the existing entrance/NPC/portal geometry.
