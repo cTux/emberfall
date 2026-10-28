@@ -33,7 +33,8 @@ in [cursor scenarios](../../tests/cursors.spec.ts).
 `interaction-targets.ts` picks opaque pixels of functional scenery and portals in
 display depth order, using the same wrapped camera as rendering. It caches yellow hover and green held-Alt
 one-world-unit silhouette outlines per finite sprite frame, display size and color.
-Arena tracks both Alt keys, prevents their browser defaults, and clears them on
+Arena tracks both Alt keys and the start of a continuous hold, shows green outlines
+only after more than 500 ms, prevents their browser defaults, and clears them on
 blur or visibility change. Its existing interaction targets supply green outlines
 in depth order while gameplay input is unblocked, without changing picking or range.
 Range uses confirmed player positions and the existing entrance/NPC/portal geometry.
