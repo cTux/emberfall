@@ -31,6 +31,7 @@ import { LocalMovement } from './local-movement';
 import { gameAudio } from './audio';
 import { createCritterMotion } from './critter-motion';
 import { useEffect, useRef } from 'react';
+import { useTheme } from '@mui/material';
 import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
 import {
@@ -121,6 +122,8 @@ export function Arena({
   const catSpoke = useRef(onCatSpeech);
   const quality = useRef(graphics);
   const prefs = useRef(preferences);
+  const selectedFont = useTheme().typography.fontFamily ?? 'sans-serif';
+  const fontFamily = useRef(selectedFont);
   const frameRate = useRef<number | null>(null);
   const networkTiming = useRef<{ inputDelay: number | null; snapshotAge: number | null }>({
     inputDelay: null,
@@ -133,7 +136,8 @@ export function Arena({
     catSpoke.current = onCatSpeech;
     quality.current = graphics;
     prefs.current = preferences;
-  }, [world, send, graphics, preferences, onInteract, onCatSpeech]);
+    fontFamily.current = selectedFont;
+  }, [world, send, graphics, preferences, onInteract, onCatSpeech, selectedFont]);
   useEffect(() => {
     const element = canvas.current!;
     const renderer = new PixiContext(element);
@@ -347,8 +351,10 @@ export function Arena({
         frameCount = 0;
       }
       renderer.begin();
+      renderer.fontFamily = fontFamily.current;
       ctx.imageSmoothingEnabled = quality.current.smoothTextures;
-      const imageRendering = quality.current.smoothTextures ? 'auto' : 'pixelated';
+      // Sprite filtering is independent; CSS resampling must preserve smooth text.
+      const imageRendering = 'auto';
       if (element.style.imageRendering !== imageRendering)
         element.style.imageRendering = imageRendering;
       const delta = Math.min(0.1, (now - previous) / 1000);

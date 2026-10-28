@@ -70,6 +70,10 @@ test('ability tooltips share window surfaces and support hover, keyboard and tou
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(story('components-gamewindow--playground'));
+  await expect(page.locator('.game-window-surface')).toHaveCSS(
+    'font-family',
+    '"Alegreya Sans", sans-serif',
+  );
   const surface = await page.locator('.game-window-surface').evaluate((element) => {
     const style = getComputedStyle(element);
     return {

@@ -8,7 +8,15 @@ Settings contains Low, Balanced and High (default) presets, plus persistent indi
 
 **Smooth textures** enables linear texture filtering in both areas and is enabled
 in every preset. Disabling it restores nearest-neighbor pixel edges immediately;
-the choice persists across reloads. World text keeps its existing sharp sampling.
+the choice persists across reloads. World text uses smooth sampling independently
+of sprite filtering, and canvas CSS scaling stays smooth at fractional zoom.
+
+Settings → Graphics includes a **Font** selector for Alegreya Sans (default),
+Inter, Source Sans 3 and Atkinson Hyperlegible Next. The choice applies to the
+entire interface, world labels, chat bubbles and damage numbers without rejoining
+the world, and persists on this browser across reloads. Fonts and licenses ship
+locally; font loading failure retains a working font. Missing or invalid saved
+choices use Alegreya Sans. Graphics presets do not reset the font choice.
 Actor, NPC and scenery atlases retain twice their logical cell resolution (128px actors and 256px trees/buildings). Cached scenery frames preserve that detail; world sizes, anchors, animation timing and graphics settings stay unchanged.
 
 Entity artwork uses gentler, material-colored dark tones and slightly reduced

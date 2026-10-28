@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./fonts": "./src/fonts.ts"
   },
   "scripts": {
     "storybook": "storybook dev -p 6006 --host 127.0.0.1 --no-open",

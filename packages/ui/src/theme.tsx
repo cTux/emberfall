@@ -1,6 +1,7 @@
-import { useMemo, type ReactNode } from 'react';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { CssBaseline, GlobalStyles, ThemeProvider, createTheme } from '@mui/material';
 import { windowSurface } from './window-surface';
+import { GAME_FONTS, type GameFont } from './fonts';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -19,7 +20,41 @@ declare module '@mui/material/LinearProgress' {
 }
 
 // One source of truth: forest surfaces, parchment text, ember actions.
-const createGameTheme = (fontBaseUrl: string) =>
+const fontFaces = (fontBaseUrl: string) => [
+  ...Object.entries(GAME_FONTS)
+    .filter(([family]) => family !== 'Alegreya Sans')
+    .flatMap(([family, file]) =>
+      ['normal', 'italic'].map((style) => ({
+        '@font-face': {
+          fontFamily: family,
+          fontStyle: style,
+          fontWeight: '400 700',
+          fontDisplay: 'swap' as const,
+          src: `url('${fontBaseUrl}${file}-${style === 'italic' ? 'Italic' : 'Variable'}.ttf') format('truetype')`,
+        },
+      })),
+    ),
+  ...[400, 500, 700].map((weight) => ({
+    '@font-face': {
+      fontFamily: 'Alegreya Sans',
+      fontStyle: 'normal' as const,
+      fontWeight: weight,
+      fontDisplay: 'swap' as const,
+      src: `url('${fontBaseUrl}AlegreyaSans-${weight === 400 ? 'Regular' : weight === 500 ? 'Medium' : 'Bold'}.ttf') format('truetype')`,
+    },
+  })),
+  {
+    '@font-face': {
+      fontFamily: 'Alegreya Sans',
+      fontStyle: 'italic' as const,
+      fontWeight: 400,
+      fontDisplay: 'swap' as const,
+      src: `url('${fontBaseUrl}AlegreyaSans-Italic.ttf') format('truetype')`,
+    },
+  },
+];
+
+const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') =>
   createTheme({
     palette: {
       mode: 'dark',
@@ -37,7 +72,7 @@ const createGameTheme = (fontBaseUrl: string) =>
     },
     typography: {
       fontSize: 14,
-      fontFamily: '"Alegreya Sans", sans-serif',
+      fontFamily,
       h1: { fontSize: '2rem', fontWeight: 700 },
       h2: { fontSize: '1.25rem', fontWeight: 700 },
       h3: { fontSize: '1.2rem', fontWeight: 700 },
@@ -47,24 +82,6 @@ const createGameTheme = (fontBaseUrl: string) =>
     components: {
       MuiCssBaseline: {
         styleOverrides: (theme) => [
-          ...[400, 500, 700].map((weight) => ({
-            '@font-face': {
-              fontFamily: 'Alegreya Sans',
-              fontStyle: 'normal' as const,
-              fontWeight: weight,
-              fontDisplay: 'swap' as const,
-              src: `url('${fontBaseUrl}AlegreyaSans-${weight === 400 ? 'Regular' : weight === 500 ? 'Medium' : 'Bold'}.ttf') format('truetype')`,
-            },
-          })),
-          {
-            '@font-face': {
-              fontFamily: 'Alegreya Sans',
-              fontStyle: 'italic' as const,
-              fontWeight: 400,
-              fontDisplay: 'swap' as const,
-              src: `url('${fontBaseUrl}AlegreyaSans-Italic.ttf') format('truetype')`,
-            },
-          },
           {
             '*, *::before, *::after': { userSelect: 'none' },
             '*': {
@@ -182,22 +199,43 @@ const createGameTheme = (fontBaseUrl: string) =>
     },
   });
 
-export const gameTheme = createGameTheme('/fonts/');
+export const gameTheme = createGameTheme();
 
 export function GameUiProvider({
   children,
   fontBaseUrl = '/fonts/',
+  font = 'Alegreya Sans',
 }: {
   children: ReactNode;
   /** Host asset directory, including a trailing slash. */
   fontBaseUrl?: string;
+  font?: GameFont;
 }) {
-  const theme = useMemo(
-    () => (fontBaseUrl === '/fonts/' ? gameTheme : createGameTheme(fontBaseUrl)),
-    [fontBaseUrl],
-  );
+  const [loadedFont, setLoadedFont] = useState('sans-serif');
+  const faces = useMemo(() => fontFaces(fontBaseUrl), [fontBaseUrl]);
+  useEffect(() => {
+    let active = true;
+    // Load before switching: Pixi caches rasterized text, including fallback glyphs.
+    void Promise.all(
+      ['400', '500', '700', 'italic 400'].map((weight) =>
+        document.fonts.load(`${weight} 16px "${font}"`),
+      ),
+    ).then(
+      () => {
+        if (active) setLoadedFont(`"${font}", sans-serif`);
+      },
+      () => {
+        /* Retain the working font when an asset cannot load. */
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [font, fontBaseUrl]);
+  const theme = useMemo(() => createGameTheme(loadedFont), [loadedFont]);
   return (
     <ThemeProvider theme={theme}>
+      <GlobalStyles styles={faces} />
       <CssBaseline />
       {children}
     </ThemeProvider>

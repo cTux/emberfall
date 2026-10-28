@@ -80,11 +80,11 @@ test('smooth textures apply live in village and forest, follow presets and persi
   }
   await smooth.uncheck();
   await close.click();
-  await expect(canvas).toHaveCSS('image-rendering', 'pixelated');
+  await expect(canvas).toHaveCSS('image-rendering', 'auto');
   await page.screenshot({ path: 'test-results/softer-village-nearest.png' });
   await page.reload();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  await expect(canvas).toHaveCSS('image-rendering', 'pixelated');
+  await expect(canvas).toHaveCSS('image-rendering', 'auto');
   await settings.click();
   await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
   await expect(smooth).not.toBeChecked();
@@ -113,7 +113,7 @@ test('smooth textures apply live in village and forest, follow presets and persi
   await settings.click();
   await smooth.uncheck();
   await close.click();
-  await expect(canvas).toHaveCSS('image-rendering', 'pixelated');
+  await expect(canvas).toHaveCSS('image-rendering', 'auto');
   player.x = 4790;
   player.y = 2550;
   await page.setViewportSize({ width: 390, height: 844 });

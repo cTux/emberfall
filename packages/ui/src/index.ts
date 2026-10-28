@@ -1,4 +1,5 @@
 export { GameUiProvider, gameTheme } from './theme';
+export { GAME_FONTS, type GameFont } from './fonts';
 export { GameWindow, type GameWindowProps } from './components/GameWindow/GameWindow';
 export { StatusMeter, type StatusMeterProps } from './components/StatusMeter';
 export { PartyCard, type PartyCardProps } from './components/PartyCard';
