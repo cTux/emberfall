@@ -256,11 +256,12 @@ function PlantIcon({ variant }: { variant: number }) {
 }
 
 function itemIcon(itemId: string) {
+  if (itemId === 'empty-bottle')
+    return <img src={clientAsset('/assets/wardrobe-style/empty-bottle.png')} alt='' />;
   const plantVariant = PLANT_KINDS.findIndex((kind) => kind === itemId);
   if (plantVariant !== -1 || itemId === 'plant') return <PlantIcon variant={plantVariant} />;
   if (itemDefinition(itemId).kind === 'resource') {
     const icons: Record<string, string> = {
-      'empty-bottle': '🧴',
       log: '🪵',
       stick: '🌿',
       leaf: '🍃',

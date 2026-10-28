@@ -21,8 +21,14 @@ test('Marta sells bottles and announces refreshed stock in yellow system chat', 
   }).toPass({ intervals: [200], timeout: 6000 });
   const bottle = trader.getByRole('button', { name: 'Buy Empty bottle (200)', exact: true });
   await expect(bottle).toBeVisible();
+  const bottleImage = bottle.locator('img');
+  await expect(bottleImage).toHaveAttribute('src', '/assets/wardrobe-style/empty-bottle.png');
+  await expect
+    .poll(() => bottleImage.evaluate((image: HTMLImageElement) => image.naturalWidth))
+    .toBeGreaterThan(0);
   await bottle.hover();
   await expect(page.getByRole('tooltip')).toContainText('1 gold');
+  await page.screenshot({ path: 'test-results/empty-bottle-trading.png' });
   await bottle.click({ button: 'right' });
   await expect(
     trader.getByRole('button', { name: 'Buy Empty bottle (199)', exact: true }),
