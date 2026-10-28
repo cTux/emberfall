@@ -71,11 +71,13 @@ export function drawNavigation(ctx: CanvasRenderingContext2D, world: WorldState,
     ctx.textAlign = 'center';
     const label = target.name.length > 20 ? target.name.slice(0, 19) + '…' : target.name;
     const box = ctx.measureText(label).width + 12;
+    const offset =
+      (Math.abs(Math.cos(arrow.angle)) * box) / 2 + Math.abs(Math.sin(arrow.angle)) * 8.5 + 20;
     const lx = Math.max(
       box / 2 + 5,
-      Math.min(width - box / 2 - 5, arrow.x - Math.cos(arrow.angle) * 30),
+      Math.min(width - box / 2 - 5, arrow.x - Math.cos(arrow.angle) * offset),
     );
-    const ly = Math.max(20, Math.min(height - 10, arrow.y - Math.sin(arrow.angle) * 28));
+    const ly = Math.max(20, Math.min(height - 10, arrow.y - Math.sin(arrow.angle) * offset + 3.5));
     ctx.fillStyle = '#101817dd';
     ctx.fillRect(lx - box / 2, ly - 12, box, 17);
     ctx.fillStyle = target.color;
