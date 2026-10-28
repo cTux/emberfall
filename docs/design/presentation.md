@@ -199,3 +199,9 @@ blur filters, procedural tool rectangles, persistent emitters or new textures.
 Use [rendering/audio](../../tests/rendering.spec.ts) and the [UI suite](../../packages/ui/tests/ui.spec.ts), selecting cases relevant to the change. Validate desktop/narrow screens, keyboard focus and reduced motion for UI work.
 
 For measured frame budgets use the opt-in browser scenario in [development](../development.md). The original snapshot benchmark is retired. Passing tests and builds do not establish hardware performance or subjective audio quality.
+
+Action-bar assignment uses LMB and a host-owned icon menu with a generated red clear
+tile. RMB invokes controlled auto-cast callbacks. WeaponActionBar saves per-ability
+choices in browser preferences and requests ready casts at 250 ms intervals using
+the existing server-validated command. The global auto-attack setting gates these
+requests. The shared UI renders an SVG dashed border with reduced-motion support.

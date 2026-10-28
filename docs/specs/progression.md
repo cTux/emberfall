@@ -53,12 +53,23 @@ crop artwork to its authored frame, without neighboring icon strips.
 ![Verified talent window with blue active-ability frames](../images/talent-icon-alignment.png)
 
 Every column has abilities in rows unlocked at levels 2, 6, 10 and 14. Rank 1
-unlocks an ability; rank 2 improves its effects. Right-clicking an action-bar slot,
-or pressing F2 while it is focused, opens a picker of learned abilities and a
-clear action. Four slots can be assigned independently. Cooldowns belong to the
+unlocks an ability; rank 2 improves its effects. Left-clicking an action-bar slot,
+or pressing F2 while it is focused, opens an icon picker of learned abilities and an equally sized generated red X
+clear tile. Names remain available in tooltips and accessible labels. Four slots can be assigned independently. Cooldowns belong to the
 ability, so assigning it to another slot or to multiple slots cannot bypass its
 cooldown. Assignments and ranks save independently per class; the server validates
 ownership, life, class, area epoch, training eligibility and cooldowns.
+
+Right-clicking an equipped ability toggles its browser-saved auto-cast choice.
+The saved Auto-attack option (F) is the master switch; disabling it pauses talent
+auto-casts without clearing those choices. RMB on the base ability toggles that
+master switch. Enabled abilities show an animated dashed border, steady under
+reduced motion. Manual casts use 1-4. Talent auto-casts request the existing
+server-validated cast at most once per slot per 250 ms when ready, alive, equipped,
+and in the forest or training area. Open game windows and the picker, unavailable
+connections, and hidden tabs pause requests. Aim uses the existing cursor aim.
+
+![Verified icon picker and generated red clear tile](../images/action-bar-icon-picker.png)
 
 Warrior columns are Weapon Mastery, Bloodletting and Guardian. Open Wounds adds
 20 or 35 percentage points to the existing weapon Bleed chance. Ranger columns

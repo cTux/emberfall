@@ -861,14 +861,30 @@ test('talent abilities share the base radial cooldown and countdown at every vie
     await expect(ending).toHaveAttribute('aria-valuetext', '0.3 seconds remaining');
     await expect(ending).toHaveText('0.3');
     await expect(
-      bar.getByRole('button', { name: 'Cast Whirlwind (2)', exact: true }),
-    ).toBeDisabled();
+      bar.getByRole('button', { name: 'Choose ability for slot 2: Whirlwind', exact: true }),
+    ).toBeEnabled();
     await expect(
-      bar.getByRole('button', { name: 'Cast Execution (4)', exact: true }),
+      bar.getByRole('button', { name: 'Choose ability for slot 4: Execution', exact: true }),
     ).toBeEnabled();
     await expect(bar.getByRole('progressbar', { name: 'Execution cooldown' })).toHaveCount(0);
     const bounds = (await bar.boundingBox())!;
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
     await bar.screenshot({ path: `test-results/talent-cooldowns-${width}.png` });
   }
+});
+
+test('LMB chooses during cooldown and RMB toggles animated auto-cast', async ({ page }) => {
+  await page.goto(story('components-actionbar--interactive'));
+  const slot = page.getByRole('button', { name: 'Choose ability for slot 1: Whirlwind' });
+  await slot.click({ button: 'right' });
+  await expect(slot).toHaveAttribute('data-auto-cast', 'true');
+  await expect(page.getByRole('status')).toHaveText('Picker closed');
+  const border = slot.locator('[data-auto-cast-border] rect');
+  await expect(border).toHaveCSS('animation-name', 'auto-cast-dashes');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(border).toHaveCSS('animation-name', 'none');
+  await slot.click({ button: 'right' });
+  await expect(slot.locator('[data-auto-cast-border]')).toHaveCount(0);
+  await slot.click();
+  await expect(page.getByRole('status')).toHaveText('Picker opened');
 });

@@ -1,6 +1,17 @@
 import { Paper, ButtonBase, alpha, styled } from '@mui/material';
 
+const autoCastStyle = {
+  '& [data-auto-cast-border]': { color: 'inherit' },
+  '& [data-auto-cast-border] rect': { animation: 'auto-cast-dashes 1s linear infinite' },
+  '@keyframes auto-cast-dashes': { to: { strokeDashoffset: -20 } },
+  '@media (prefers-reduced-motion: reduce)': {
+    '& [data-auto-cast-border] rect': { animation: 'none' },
+  },
+};
+
 export const ActionSlotStyled = styled(Paper)(({ theme }) => ({
+  ...autoCastStyle,
+  '& [data-auto-cast-border]': { color: theme.palette.primary.main },
   position: 'relative',
   width: theme.spacing(6.5),
   height: theme.spacing(6.5),
@@ -55,6 +66,8 @@ export const ActionIndicatorStyled = styled('span')(({ theme }) => ({
 }));
 
 export const AbilityButtonStyled = styled(ButtonBase)(({ theme }) => ({
+  ...autoCastStyle,
+  '& [data-auto-cast-border]': { color: theme.palette.primary.main },
   position: 'relative',
   width: theme.spacing(6.5),
   height: theme.spacing(6.5),
