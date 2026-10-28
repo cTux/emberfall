@@ -220,7 +220,7 @@ export function ActionBar({
                 if (event.key === 'F2') onChoose?.(slot - 1, event.currentTarget);
               }}
               sx={{
-                cursor: 'pointer',
+                cursor: 'var(--cursor-pointer, pointer)',
                 p: 0,
                 '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main' },
               }}
