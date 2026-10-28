@@ -2,8 +2,17 @@ import type { VillageNpc } from '@emberfall/common';
 import { WARDROBE, BUILDINGS, TORCHES, TREES, ROCKS, PLANTS } from '@emberfall/core';
 import { makeMask, castShadow } from './lighting';
 import type { Caster, Light } from './lighting';
-import { environmentArt, buildingArt, buildingFrames, plantArt, wardrobeArt, loadArt } from './art';
+import {
+  environmentArt,
+  buildingArt,
+  buildingFrames,
+  additionalBuildingArt,
+  plantArt,
+  wardrobeArt,
+  loadArt,
+} from './art';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
+import { resourceScenery } from './gathering';
 
 export const workstationArt = loadArt('workstations', 4, 2, 128, true);
 
@@ -85,7 +94,7 @@ export function villageSprites(
       add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
     );
     ROCKS.forEach((rock, i) =>
-      add(`rock:${i}`, rock.x, rock.y, rock.size, rock.size, environmentArt, 256, 256, 128, 128),
+      objects.push(resourceScenery({ ...rock, id: `rock:${i}`, kind: i % 2 ? 'stone' : 'rock' })),
     );
   }
   if (plantArt.naturalWidth)
@@ -105,7 +114,12 @@ export function villageSprites(
     );
   if (buildingArt.complete && buildingArt.naturalWidth)
     BUILDINGS.forEach((b, i) => {
-      const frame = buildingFrames[i % buildingFrames.length];
+      const additional = additionalBuildingArt[b.id];
+      const image = additional ?? buildingArt;
+      if (!image.complete || !image.naturalWidth) return;
+      const frame = additional
+        ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
+        : buildingFrames[i];
       const width = b.sourceWidth * 2;
       const scale = width / frame.width;
       const height = frame.height * scale;
@@ -115,16 +129,21 @@ export function villageSprites(
         b.y,
         width,
         height,
-        buildingArt,
+        image,
         frame.x,
         frame.y,
         frame.width,
         frame.height,
       );
-      objects.at(-1)!.chimney = {
-        x: frame.chimneyX * scale - width / 2,
-        y: frame.chimneyY * scale - height,
-      };
+      if (!additional) {
+        const chimney = buildingFrames[i];
+        objects.at(-1)!.chimney = {
+          x: chimney.chimneyX * scale - width / 2,
+          y: chimney.chimneyY * scale - height,
+        };
+      } else if (b.id === 'lodge') {
+        objects.at(-1)!.chimney = { x: 585 * scale - width / 2, y: 18 * scale - height };
+      }
     });
   if (workstationArt.naturalWidth)
     for (const station of VILLAGE_DEFINITION.workstations)

@@ -634,10 +634,13 @@ export function Arena({
           { x: local?.x ?? 480, y: local?.y ?? 320 },
           Math.max(el.width, el.height) / scale + 200,
         ).map((node) => {
-          const object = prepared?.scenery.find((o) => o.id === node.id);
           const state = resourceState(view.resources, node, view.serverNow ?? now);
+          const tree =
+            node.kind === 'tree' && state?.remaining !== 0
+              ? prepared?.scenery.find((object) => object.id === node.id)
+              : undefined;
           return {
-            ...(state?.remaining === 0 || !object ? resourceScenery(node, state) : object),
+            ...(tree ?? resourceScenery(node, state)),
             kind: node.kind,
             gathered: state?.remaining === 0,
           };

@@ -156,6 +156,10 @@ and [HUD](specs/interface-and-audio.md#ui-01--hud-and-windows), implemented by
 [restart tests](../packages/server/src/characters.test.ts), and
 [browser scenario](../tests/coins.spec.ts).
 
+Dedicated item/building artwork and gathered-state silhouettes: [graphics](specs/graphics.md),
+[item coverage](../tests/item-art.test.ts), [inventory and resource shadows](../tests/generated-art.spec.ts),
+and [native building masks](../tests/buildings.spec.ts).
+
 Marta's empty bottles and 30-minute stock refresh: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime),
 [merchant rules and persistence tests](../packages/server/src/merchant.test.ts),
 and [trading browser tests](../tests/inventory.spec.ts).

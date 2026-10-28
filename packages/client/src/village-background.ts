@@ -2,11 +2,13 @@ import { clientAsset } from './urls.ts';
 import { ARENA } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { drawVillagePaths } from './paths';
+import { resourceStateArt } from './gathering';
 import { castShadow } from './lighting';
 import { villageSprites, TORCH_LIGHTS, lightTexture, workstationArt } from './village';
 import {
   environmentArt,
   buildingArt,
+  additionalBuildingArt,
   plantArt,
   wardrobeArt,
   innkeeperArt,
@@ -39,7 +41,16 @@ let cached:
 /** Shared across Arena remounts. Wait for all assets, including failed loads. */
 export function villageBackground(graphics: GraphicsSettings) {
   if (
-    [environmentArt, buildingArt, plantArt, wardrobeArt, innkeeperArt, workstationArt].some(
+    [
+      environmentArt,
+      buildingArt,
+      ...Object.values(additionalBuildingArt),
+      ...resourceStateArt,
+      plantArt,
+      wardrobeArt,
+      innkeeperArt,
+      workstationArt,
+    ].some(
       (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== 'true',
     ) ||
     !terrainArt.complete ||
