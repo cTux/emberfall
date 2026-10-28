@@ -6,6 +6,16 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
   game,
 }) => {
   await page.goto('/');
+  await page.evaluate(() => {
+    window.addEventListener('keydown', (event) => {
+      if (event.code === 'F1') {
+        document.documentElement.dataset.f1Prevented = 'pending';
+        setTimeout(() => {
+          document.documentElement.dataset.f1Prevented = String(event.defaultPrevented);
+        });
+      }
+    });
+  });
   const codex = page.getByRole('dialog', { name: 'Codex', exact: true });
   const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
   for (const [name, shortcut] of [
@@ -19,6 +29,16 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
   }
   await page.keyboard.press('F1');
   await expect(codex).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-f1-prevented', 'true');
+  await page.keyboard.press('F1');
+  await expect(codex).toBeHidden();
+  await expect(page.locator('html')).toHaveAttribute('data-f1-prevented', 'true');
+  await page.keyboard.down('F1');
+  await expect(codex).toBeVisible();
+  await page.keyboard.down('F1');
+  await expect(codex).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-f1-prevented', 'true');
+  await page.keyboard.up('F1');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toBeHidden();
   await page.keyboard.press('Escape');
@@ -26,6 +46,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
   await page.keyboard.press('F1');
   await expect(settings).toBeVisible();
   await expect(codex).toBeHidden();
+  await expect(page.locator('html')).toHaveAttribute('data-f1-prevented', 'true');
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toBeHidden();
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
@@ -52,10 +73,24 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   for (const scene of ['village', 'forest']) {
-    await page.keyboard.press('F1');
-    await expect(codex).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog')).toBeHidden();
+    for (const [name, shortcut] of [
+      ['Codex', 'F1'],
+      ['Inventory', 'i'],
+      ['Talents', 'n'],
+    ]) {
+      const window = page.getByRole(name === 'Talents' ? 'region' : 'dialog', {
+        name,
+        exact: true,
+      });
+      await page.keyboard.press(shortcut);
+      await expect(window).toBeVisible();
+      await page.keyboard.press(shortcut);
+      await expect(window).toBeHidden();
+      await page.keyboard.press(shortcut);
+      await expect(window).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(window).toBeHidden();
+    }
     await page.keyboard.press('Escape');
     await expect(settings).toBeVisible();
     await page.screenshot({ path: `test-results/hotkeys-settings-${scene}.png` });

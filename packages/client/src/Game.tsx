@@ -429,6 +429,7 @@ export function Game({
   };
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
+      if (event.code === 'F1') event.preventDefault();
       if (event.repeat) return;
       const typing =
         event.target instanceof Element &&
@@ -495,16 +496,16 @@ export function Game({
       }
       if (
         (event.code === 'F1' || event.key === 'Escape') &&
-        !menu &&
         !typing &&
         !event.ctrlKey &&
         !event.altKey &&
         !event.metaKey &&
         !event.shiftKey &&
-        !document.querySelector('[role="dialog"][aria-modal="true"]')
+        ((event.code === 'F1' && menu === 'codex') ||
+          (!menu && !document.querySelector('[role="dialog"][aria-modal="true"]')))
       ) {
         event.preventDefault();
-        setMenu(event.code === 'F1' ? 'codex' : 'settings');
+        setMenu(event.code === 'F1' ? (menu === 'codex' ? null : 'codex') : 'settings');
         return;
       }
       if (

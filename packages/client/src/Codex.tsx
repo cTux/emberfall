@@ -40,7 +40,7 @@ const chapters = [
             <kbd>I</kbd> — open or close Inventory and character stats.
           </li>
           <li>
-            <kbd>F1</kbd> — open Codex.
+            <kbd>F1</kbd> — open or close Codex.
           </li>
           <li>
             <kbd>Esc</kbd> — close a window, or open Settings. Use the exit control to leave.
