@@ -713,6 +713,28 @@ test('server table keeps headers when empty and prevents full-server joins', asy
   await expect(page.getByRole('table')).toContainText('—');
 });
 
+test('world names stay on one line inside compact lobby columns', async ({ page }) => {
+  for (const width of [1280, 390, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto(story('screens-compositions--lobby'));
+    await page.getByLabel('Your adventurer name').fill('Astrid');
+    const name = page.locator('span[title="Playtest Default"]');
+    await expect(name).toHaveCSS('white-space', 'nowrap');
+    await expect(name).toHaveCSS('text-overflow', 'ellipsis');
+    expect(
+      await name.evaluate((element) => {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        return new Set(Array.from(range.getClientRects(), (rect) => Math.round(rect.top))).size;
+      }),
+    ).toBe(1);
+    const cell = name.locator('xpath=ancestor::td');
+    expect(await cell.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    await name.hover();
+    await page.screenshot({ path: `test-results/world-name-${width}.png` });
+  }
+});
+
 test('server rows join once from every cell and keyboard, respecting disabled states', async ({
   page,
 }) => {
@@ -721,6 +743,14 @@ test('server rows join once from every cell and keyboard, respecting disabled st
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(story('components-worldlist--row-interaction'));
     const row = page.getByRole('row').filter({ hasText: 'Northern grove' });
+    const join = row.getByRole('button');
+    await page.mouse.move(0, 0);
+    const restingBackground = await row.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
+    await join.hover();
+    await expect(join).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(row).not.toHaveCSS('background-color', restingBackground);
     const status = page.getByRole('status');
     for (let cell = 0; cell < 3; cell++) {
       await row
@@ -729,7 +759,6 @@ test('server rows join once from every cell and keyboard, respecting disabled st
         .click({ position: { x: 4, y: 4 } });
       await expect(status).toHaveText(`Joins: ${cell + 1}`);
     }
-    const join = row.getByRole('button');
     await join.click();
     await expect(status).toHaveText('Joins: 4');
     await join.focus();
