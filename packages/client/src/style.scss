@@ -208,21 +208,108 @@ canvas {
   display: block;
 }
 
-.dps-meter {
-  width: 235px;
-  padding: 8px;
-}
-
 .performance-stats > aside,
 .dps-meter {
-  background: #101c17d9;
-  border: 1px solid #8daba52e;
+  background: #101c17ed;
+  border: 1px solid #8daba54d;
   border-radius: 4px;
 }
 
-.dps-meter small {
-  float: right;
-  color: #a7c4bc;
+.dps-meter {
+  width: min(390px, calc(100vw - 80px));
+  padding: 3px;
+  color: #fff;
+  font-size: 12px;
+  cursor: default;
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 25px;
+    padding: 0 6px;
+    background: linear-gradient(#38433f, #18221e);
+    cursor: move;
+  }
+
+  header button {
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-size: 20px;
+  }
+
+  footer,
+  .damage-meter-columns {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 6px;
+    color: #b9c7c2;
+    font-size: 10px;
+  }
+}
+
+.damage-meter-rows {
+  max-height: 280px;
+  overflow: auto;
+}
+
+.damage-meter-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 28px;
+  margin-bottom: 2px;
+  padding: 4px 6px;
+  box-sizing: border-box;
+  border: 0;
+  background: color-mix(in srgb, var(--class-color) 20%, #151917);
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  text-shadow:
+    0 1px 2px #000,
+    1px 0 2px #000;
+
+  > span:not(.damage-meter-bar) {
+    position: relative;
+  }
+
+  &:is(button) {
+    cursor: pointer;
+  }
+
+  &:is(button):hover {
+    filter: brightness(1.2);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -2px;
+  }
+}
+
+.damage-meter-bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(transparent, #0004), var(--class-color);
+  pointer-events: none;
+}
+
+.damage-meter-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.damage-meter-values {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .departure-countdown {

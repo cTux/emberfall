@@ -135,6 +135,8 @@ function slash(
         context.registries.classes.require(owner.classId ?? 'warrior').ailment,
         1,
         context.rules.characterStats(owner),
+        false,
+        context,
       );
     else
       hitWithWeapon(
@@ -146,6 +148,7 @@ function slash(
         1,
         context.rules.companionStats(owner),
         true,
+        context,
       );
   }
 }

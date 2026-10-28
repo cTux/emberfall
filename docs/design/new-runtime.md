@@ -55,6 +55,20 @@ dummies without a zone fill or outline; shared wrapped geometry still gates atta
 
 Village dummies join the same foot-position render sort as scenery and actors. Foreground actor bodies and scenery share an inverse stencil mask of the reconciled local player’s current sprite silhouette, dilated by 10 game pixels. The cutout reveals previously drawn world layers while preserving opacity elsewhere; health bars keep full opacity. Frame silhouettes are rasterized and expanded once per source pose and integer display size, then reused as non-overlapping horizontal stencil spans. The renderer owns the reusable mask geometry and releases it on disposal. Shared player definitions own the reduced body and incoming-projectile hit radii.
 
+## Damage meter
+
+The authoritative `core/class-combat.ts` hit path accumulates each player's
+`damageMeter` totals and per-ability damage, alongside the bounded five-second
+hit history used for DPS. Weapon, companion, ailment and talent callers supply
+the damage source. `tickTraining` refreshes DPS for all players, including those
+in forest runs. Class changes discard the previous class's temporary meter.
+The existing per-player JSON projection carries the additive contract; saves
+exclude it. `client/DamageMeter.tsx` filters the current party, computes shares,
+sorts rows and owns the selected character. Its header reuses the persisted
+`panel.dps` drag position; row buttons do not initiate dragging. Server tests
+cover attribution and overkill; desktop browser tests cover replicated totals,
+party filtering, breakdown navigation and the existing visibility preference.
+
 ## Simulation and replication
 
 After authoritative forest combat (including kill credit and shared pickups),

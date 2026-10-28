@@ -112,6 +112,7 @@ test('registered ability parameters drive authoritative shots, prediction and pr
   scene.enemies = [enemy];
   tickPlayerShots(scene, [player], 1500, 0.5, context);
   assert.ok(enemy.hitpoints < 100);
+  assert(player.damageMeter!.abilities['Scout bolt'].damage > 0);
   const state = new SessionState();
   projectState(state, { id: 'w', name: 'W', hostId: 'p', players: [player], training: scene });
   assert.equal(materializeState(state)!.training!.playerShots![0].abilityId, 'fixture:bolt');

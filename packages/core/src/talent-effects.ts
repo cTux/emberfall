@@ -1,7 +1,7 @@
 import type { DebuffKind, Enemy, Player, SceneState } from '@emberfall/common';
 import { appendSceneEntities, wrap, wrappedDelta } from '@emberfall/common';
 import { forestDistance, FOREST } from './scene.ts';
-import { talentNodeId, talentRank } from './talent-tree.ts';
+import { TALENT_NAMES, talentNodeId, talentRank } from './talent-tree.ts';
 import { hitEnemy } from './class-combat.ts';
 import { characterStats } from './equipment.ts';
 import type { CharacterStats } from './content/rules.ts';
@@ -187,9 +187,26 @@ function control(enemy: Enemy, now: number, duration: number) {
   enemy.controlledUntil = Math.max(enemy.controlledUntil ?? 0, now + duration);
   enemy.attack = undefined;
 }
-function strike(scene: SceneState, player: Player, enemy: Enemy, scale: number, now: number) {
+function strike(
+  scene: SceneState,
+  player: Player,
+  enemy: Enemy,
+  scale: number,
+  now: number,
+  source: string,
+) {
   const stats = state(player, scene).stats ?? characterStats(player);
-  hitEnemy(scene, enemy, stats.power * scale, player, now, undefined, stats.damageType);
+  hitEnemy(
+    scene,
+    enemy,
+    stats.power * scale,
+    player,
+    now,
+    undefined,
+    stats.damageType,
+    false,
+    source,
+  );
 }
 function heal(player: Player, fraction: number) {
   player.hitpoints = Math.min(
@@ -255,7 +272,14 @@ export function talentIncomingDamage(
   if (prevented > 0 && retaliation && now >= value.reprisalAt) {
     value.reprisalAt = now + 2000;
     for (const enemy of area(scene, player, 130))
-      strike(scene, player, enemy, retaliation === 2 ? 1 : 0.6, now);
+      strike(
+        scene,
+        player,
+        enemy,
+        retaliation === 2 ? 1 : 0.6,
+        now,
+        TALENT_NAMES[player.classId ?? 'warrior'][2][6],
+      );
     talentVisual(scene, player, 2, player, now);
   }
   const rebirth = rank(player, 2, 9);
@@ -296,7 +320,14 @@ export function talentWeaponHit(
   ) {
     value.challengeHits ??= new Set();
     value.challengeHits.add(enemy.id);
-    strike(scene, player, enemy, rank(player, 2, 5) === 2 ? 1.2 : 0.5, now);
+    strike(
+      scene,
+      player,
+      enemy,
+      rank(player, 2, 5) === 2 ? 1.2 : 0.5,
+      now,
+      TALENT_NAMES[player.classId ?? 'warrior'][2][5],
+    );
   }
   if (guard && now >= value.guardReadyAt && Math.random() < (guard === 2 ? 0.25 : 0.15)) {
     value.guardUntil = now + 3000;
@@ -306,10 +337,26 @@ export function talentWeaponHit(
   const follow = rank(player, 0, 0);
   if (!companion && follow && value.hits % 3 === 0)
     for (const other of area(scene, enemy, 100))
-      if (other !== enemy) strike(scene, player, other, follow === 2 ? 0.7 : 0.4, now);
+      if (other !== enemy)
+        strike(
+          scene,
+          player,
+          other,
+          follow === 2 ? 0.7 : 0.4,
+          now,
+          TALENT_NAMES[player.classId ?? 'warrior'][0][0],
+        );
   if ((player.classId ?? 'warrior') === 'druid' && companion) {
     const bond = rank(player, 1, 0);
-    if (bond && value.hits % 3 === 0) strike(scene, player, enemy, bond === 2 ? 0.7 : 0.4, now);
+    if (bond && value.hits % 3 === 0)
+      strike(
+        scene,
+        player,
+        enemy,
+        bond === 2 ? 0.7 : 0.4,
+        now,
+        TALENT_NAMES[player.classId ?? 'warrior'][1][0],
+      );
     const rake = rank(player, 1, 2);
     if (rake && Math.random() < (rake === 2 ? 0.45 : 0.25))
       applyTalentAilment(enemy, player, 'bleed', 1, now);
@@ -322,11 +369,26 @@ export function talentWeaponHit(
         (entry) => entry.ownerId === player.id && entry.kind === 'roots' && entry.expiresAt > now,
       )
     )
-      strike(scene, player, enemy, shared === 2 ? 0.6 : 0.3, now);
+      strike(
+        scene,
+        player,
+        enemy,
+        shared === 2 ? 0.6 : 0.3,
+        now,
+        TALENT_NAMES[player.classId ?? 'warrior'][1][6],
+      );
     const instinct = rank(player, 1, 9);
     if (instinct && value.hits % 5 === 0)
       for (const other of area(scene, enemy, 160))
-        if (other !== enemy) strike(scene, player, other, instinct === 2 ? 1 : 0.6, now);
+        if (other !== enemy)
+          strike(
+            scene,
+            player,
+            other,
+            instinct === 2 ? 1 : 0.6,
+            now,
+            TALENT_NAMES[player.classId ?? 'warrior'][1][9],
+          );
   }
   if (
     player.classId !== 'warrior' &&
@@ -382,6 +444,7 @@ export function executeTalent(
   const column = Math.floor(slot / 4),
     tier = slot % 4;
   const classId = player.classId ?? 'warrior';
+  const ability = TALENT_NAMES[classId][column][[1, 3, 5, 7][tier]];
   state(player, scene).stats = stats;
   const origin = { x: player.x, y: player.y };
   const distance = forestDistance(player, aim);
@@ -428,7 +491,7 @@ export function executeTalent(
         if (recipient) heal(recipient, learned === 2 ? 0.2 : 0.12);
       } else
         for (const enemy of area(scene, origin, 150)) {
-          strike(scene, player, enemy, learned === 2 ? 1.4 : 0.9, now);
+          strike(scene, player, enemy, learned === 2 ? 1.4 : 0.9, now, ability);
           applyTalentAilment(enemy, player, 'roots', 1, now, learned === 2 ? 1000 : 600);
           enemy.attack = undefined;
           control(enemy, now, learned === 2 ? 1000 : 600);
@@ -436,7 +499,14 @@ export function executeTalent(
       const fragments = rank(player, 2, 2);
       if (fragments)
         for (const enemy of area(scene, aim, 250).slice(0, fragments === 2 ? 4 : 2))
-          strike(scene, player, enemy, fragments === 2 ? 0.5 : 0.35, now);
+          strike(
+            scene,
+            player,
+            enemy,
+            fragments === 2 ? 0.5 : 0.35,
+            now,
+            TALENT_NAMES[player.classId ?? 'warrior'][2][2],
+          );
     } else if (tier === 1) {
       schedule(scene, player, nodeId, now, 5000, 1000, (at, players) => {
         if (classId === 'druid') {
@@ -486,7 +556,14 @@ export function executeTalent(
     if (unbroken && tier === 0 && value.wallPrevented) {
       value.wallPrevented = false;
       for (const enemy of area(scene, origin, 150))
-        strike(scene, player, enemy, unbroken === 2 ? 1.12 : 0.45, now);
+        strike(
+          scene,
+          player,
+          enemy,
+          unbroken === 2 ? 1.12 : 0.45,
+          now,
+          TALENT_NAMES[player.classId ?? 'warrior'][2][9],
+        );
     }
     return;
   }
@@ -496,7 +573,7 @@ export function executeTalent(
     if (tier === 0 && primary) {
       bear.x = primary.x;
       bear.y = primary.y;
-      strike(scene, player, primary, learned === 2 ? 2.1 : 1.5, now);
+      strike(scene, player, primary, learned === 2 ? 2.1 : 1.5, now, ability);
     } else if (tier === 1) {
       bear.hitpoints = Math.min(
         bear.maxHitpoints,
@@ -506,14 +583,14 @@ export function executeTalent(
         applyTalentAilment(enemy, player, 'roots', 1, now, 1500);
     } else if (tier === 2)
       for (const enemy of area(scene, bear, 250)) {
-        strike(scene, player, enemy, learned === 2 ? 2.5 : 1.8, now);
+        strike(scene, player, enemy, learned === 2 ? 2.5 : 1.8, now, ability);
         applyTalentAilment(enemy, player, 'bleed', learned, now);
       }
     else
       schedule(scene, player, nodeId, now, 4000, 1000, (at) => {
         if (bear.hitpoints <= 0) return;
         for (const enemy of area(scene, bear, 180))
-          strike(scene, player, enemy, learned === 2 ? 1 : 0.6, at);
+          strike(scene, player, enemy, learned === 2 ? 1 : 0.6, at, ability);
       });
     const hunting = rank(player, 1, 4);
     if (hunting && tier === 1)
@@ -543,10 +620,11 @@ export function executeTalent(
       ) * (learned === 2 ? 2 : 1.5);
     const consumedStacks = wounds.reduce((sum, entry) => sum + entry.stacks, 0);
     primary.debuffs = primary.debuffs?.filter((entry) => !wounds.includes(entry));
-    hitEnemy(scene, primary, burst, player, now);
+    hitEnemy(scene, primary, burst, player, now, undefined, 'physical', false, ability);
     if (learned === 2)
       for (const enemy of area(scene, primary, 150))
-        if (enemy !== primary) hitEnemy(scene, enemy, burst * 0.5, player, now);
+        if (enemy !== primary)
+          hitEnemy(scene, enemy, burst * 0.5, player, now, undefined, 'physical', false, ability);
     const offering = rank(player, 1, 8);
     let orbConsumed = false;
     if (offering && consumedStacks >= 3)
@@ -564,7 +642,7 @@ export function executeTalent(
     const serrated = rank(player, 1, 2);
     if (column === 0 && serrated && Math.random() < (serrated === 2 ? 0.45 : 0.25))
       applyTalentAilment(enemy, player, ailment, 1, at);
-    strike(scene, player, enemy, scale, at);
+    strike(scene, player, enemy, scale, at, ability);
     if (column === 1) applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at);
     const deep = rank(player, 1, 9);
     if (
@@ -578,7 +656,14 @@ export function executeTalent(
       const timers = deepCuts.get(enemy) ?? new WeakMap<Player, number>();
       timers.set(player, at + 2000);
       deepCuts.set(enemy, timers);
-      strike(scene, player, enemy, deep === 2 ? 1.3 : 0.8, at);
+      strike(
+        scene,
+        player,
+        enemy,
+        deep === 2 ? 1.3 : 0.8,
+        at,
+        TALENT_NAMES[player.classId ?? 'warrior'][1][9],
+      );
     }
   };
   if (tier === 1 && column === 1 && primary) {
@@ -606,7 +691,14 @@ export function executeTalent(
       const advancing = rank(player, 0, 4);
       if (column === 0 && advancing && at === now + (count - 1) * 500)
         for (const enemy of area(scene, aim, 220))
-          strike(scene, player, enemy, advancing === 2 ? 1.1 : 0.7, at);
+          strike(
+            scene,
+            player,
+            enemy,
+            advancing === 2 ? 1.1 : 0.7,
+            at,
+            TALENT_NAMES[player.classId ?? 'warrior'][0][4],
+          );
     });
   } else
     for (const enemy of tier === 3 ? (primary ? [primary] : []) : targets)
@@ -631,7 +723,14 @@ export function executeTalent(
     value.fissure = { ...aim, until: now + 4000 };
   else if (tier === 0 && value.fissure && value.fissure.until > now) {
     for (const enemy of area(scene, value.fissure, 170))
-      strike(scene, player, enemy, rank(player, 0, 6) === 2 ? 1.5 : 0.9, now);
+      strike(
+        scene,
+        player,
+        enemy,
+        rank(player, 0, 6) === 2 ? 1.5 : 0.9,
+        now,
+        TALENT_NAMES[player.classId ?? 'warrior'][0][6],
+      );
     value.fissure = undefined;
   }
   const momentum = rank(player, 0, 8);
@@ -645,7 +744,15 @@ export function executeTalent(
   }
   if (tier === 0 && value.empoweredUntil && value.empoweredUntil > now) {
     value.empoweredUntil = undefined;
-    for (const enemy of targets) strike(scene, player, enemy, momentum === 2 ? 0.75 : 0.5, now);
+    for (const enemy of targets)
+      strike(
+        scene,
+        player,
+        enemy,
+        momentum === 2 ? 0.75 : 0.5,
+        now,
+        TALENT_NAMES[player.classId ?? 'warrior'][0][8],
+      );
   }
   value.sequence = value.sequence.filter((entry) => now - entry.at <= 6000 && entry.slot !== slot);
   value.sequence.push({ slot, at: now });
@@ -654,6 +761,13 @@ export function executeTalent(
     value.rhythmAt = now + 8000;
     value.sequence = [];
     for (const enemy of area(scene, player, 200))
-      strike(scene, player, enemy, rhythm === 2 ? 1.6 : 1, now);
+      strike(
+        scene,
+        player,
+        enemy,
+        rhythm === 2 ? 1.6 : 1,
+        now,
+        TALENT_NAMES[player.classId ?? 'warrior'][0][9],
+      );
   }
 }

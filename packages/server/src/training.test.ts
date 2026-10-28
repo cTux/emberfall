@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { executeTalent } from '../../core/src/talent-effects.ts';
 import assert from 'node:assert/strict';
 import {
   ARENA,
@@ -17,6 +18,7 @@ import {
   hitEnemy,
   fireClassAttack,
   damagePerSecond,
+  hitWithWeapon,
 } from '@emberfall/core';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 import { freshProgress } from './characters.ts';
@@ -229,4 +231,39 @@ test('Silence is a shared non-damaging debuff and expires without producing comb
   tickDebuffs(scene, [hero()], 5000);
   assert.equal(target.debuffs.length, 0);
   assert.equal(scene.damage.length, 0);
+});
+
+test('damage totals attribute weapons, Bear, ailments and talents, expire DPS and reset by class', () => {
+  const p = hero();
+  const scene = createTrainingScene(10000);
+  const enemy = scene.enemies[0];
+  enemy.x = p.x;
+  enemy.y = p.y;
+  enemy.hitpoints = 10000;
+  hitWithWeapon(scene, enemy, p, 10000);
+  assert(p.damageMeter!.abilities.Slash.damage > 0);
+  executeTalent(scene, p, 0, 'v2:warrior:0:1', 1, enemy, 10000);
+  assert(p.damageMeter!.abilities['Cleaving Strike'].damage > 0);
+  enemy.debuffs = [{ kind: 'bleed', ownerId: p.id, stacks: 2, nextTick: 11000, expiresAt: 12000 }];
+  tickDebuffs(scene, [p], 11000);
+  assert.equal(p.damageMeter!.abilities.Bleed.damage, 2);
+  hitWithWeapon(scene, enemy, p, 11000, undefined, 1, undefined, true);
+  assert(p.damageMeter!.abilities.Bear.damage > 0);
+  const total = p.damageMeter!.total;
+  enemy.hitpoints = 3;
+  hitEnemy(scene, enemy, 100, p, 11000, undefined, 'physical', false, 'Overkill');
+  hitEnemy(scene, enemy, 100, p, 11000);
+  assert.equal(p.damageMeter!.total, total + 3);
+  assert.equal(p.damageMeter!.abilities.Overkill.damage, 3);
+  assert.equal(damagePerSecond(p, 11000), p.damageMeter!.total / 5);
+  assert.equal(
+    Object.values(p.damageMeter!.abilities).reduce((sum, entry) => sum + entry.damage, 0),
+    p.damageMeter!.total,
+  );
+  assert.equal(damagePerSecond(p, 16000), 0);
+  assert(Object.values(p.damageMeter!.abilities).every((entry) => entry.dps === 0));
+  assert.equal(p.damageMeter!.total, total + 3);
+  p.classId = 'mage';
+  assert.equal(damagePerSecond(p, 16001), 0);
+  assert.equal(p.damageMeter, undefined);
 });

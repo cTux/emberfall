@@ -20,10 +20,16 @@ import { isChanced } from './utils/isChanced.ts';
 import { shouldDropItem } from './utils/shouldDropItem.ts';
 import { itemDropCount } from './utils/itemDropCount.ts';
 
-const damageHistory = new WeakMap<Player, { at: number; amount: number }[]>();
+const damageHistory = new WeakMap<Player, { at: number; amount: number; ability: string }[]>();
 export function damagePerSecond(player: Player, now: number) {
+  if (player.damageMeter && player.damageMeter.classId !== (player.classId ?? 'warrior')) {
+    player.damageMeter = undefined;
+    damageHistory.delete(player);
+  }
   const recent = (damageHistory.get(player) ?? []).filter((hit) => now - hit.at < 5000);
   damageHistory.set(player, recent);
+  for (const value of Object.values(player.damageMeter?.abilities ?? {})) value.dps = 0;
+  for (const hit of recent) player.damageMeter!.abilities[hit.ability].dps += hit.amount / 5;
   return recent.reduce((sum, hit) => sum + hit.amount, 0) / 5;
 }
 
@@ -36,13 +42,24 @@ export function hitEnemy(
   ailment?: DebuffKind,
   damageType: DamageType = 'physical',
   critical = false,
+  ability = 'Attack',
 ) {
   if (enemy.hitpoints <= 0) return;
   const dealt = Math.min(enemy.hitpoints, amount);
   enemy.hitpoints = Math.max(0, enemy.hitpoints - amount);
   if (owner) {
+    if (owner.damageMeter && owner.damageMeter.classId !== (owner.classId ?? 'warrior'))
+      damagePerSecond(owner, now);
+    const meter = (owner.damageMeter ??= {
+      classId: owner.classId ?? 'warrior',
+      total: 0,
+      abilities: {},
+    });
+    meter.total += dealt;
+    const entry = (meter.abilities[ability] ??= { damage: 0, dps: 0 });
+    entry.damage += dealt;
     const history = damageHistory.get(owner) ?? [];
-    history.push({ at: now, amount: dealt });
+    history.push({ at: now, amount: dealt, ability });
     damageHistory.set(owner, history);
   }
   appendSceneEntities(scene, 'damage', {
@@ -139,6 +156,8 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
           now,
           undefined,
           debuff.kind === 'burn' ? 'fire' : debuff.kind === 'poison' ? 'poison' : 'physical',
+          false,
+          debuff.kind[0].toUpperCase() + debuff.kind.slice(1),
         );
         debuff.nextTick += AILMENT_DEFINITIONS[debuff.kind].tickMs;
       }
@@ -166,6 +185,7 @@ export function hitWithWeapon(
   powerScale = 1,
   stats: CharacterStats = characterStats(owner),
   companion = false,
+  context: Game = game,
 ) {
   if (enemy.hitpoints <= 0) return;
   if (!stats.hasWeapon) return;
@@ -179,6 +199,9 @@ export function hitWithWeapon(
     ailment,
     stats.damageType,
     critical,
+    companion
+      ? 'Bear'
+      : (context.registries.classes.get(owner.classId ?? 'warrior')?.details?.spell ?? 'Attack'),
   );
   talentWeaponHit(scene, owner, enemy, now, companion, stats);
 }
@@ -374,6 +397,8 @@ export function tickPlayerShots(
               shot.ailment ?? 'poison',
               ability.powerScale ?? 1,
               stats,
+              false,
+              context,
             );
           }
         }
@@ -385,7 +410,17 @@ export function tickPlayerShots(
       if (shot.kind === 'roots') {
         const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds.at(-1));
         if (target) {
-          hitWithWeapon(scene, target, owner, now, undefined, ability.powerScale ?? 1, stats);
+          hitWithWeapon(
+            scene,
+            target,
+            owner,
+            now,
+            undefined,
+            ability.powerScale ?? 1,
+            stats,
+            false,
+            context,
+          );
           if (target.hitpoints > 0) applyRoots(target, owner.id, now);
           if (shot.hitIds.length <= ability.bounces) {
             const next = scene.enemies
@@ -428,6 +463,8 @@ export function tickPlayerShots(
             shot.ailment ?? 'burn',
             ability.powerScale ?? 1,
             stats,
+            false,
+            context,
           );
         else if (overlapsBody(shot, ability.splashRadius, enemyHitbox(enemy, context)))
           hitWithWeapon(
@@ -440,6 +477,8 @@ export function tickPlayerShots(
               ? (ability.splashDamage / ability.damage) * (ability.powerScale ?? 1)
               : 0,
             stats,
+            false,
+            context,
           );
       return false;
     }
