@@ -6,6 +6,14 @@ Reference: LPC Wooden Furniture by bluecarrot16, Baŝto, Lanea Zimmerman (Sharm)
 
 Preview: run the new client and visit /?art-gallery . The gallery shares the game's actual atlas loader and animation selector. Static buildings and terrain remain static; existing world geometry, lighting, foliage sway, damage and save rules are unchanged. Font and audio assets are unchanged.
 
+## Completed item and scenery artwork
+
+See [item icon provenance](ITEM-ART-README.md) for the sixteen dedicated inventory
+and ground-loot icons, [resource states](RESOURCE-STATES-README.md) for distinct
+stone and harvested-plant sprites, and [building extensions](BUILDING-EXTENSIONS-README.md)
+for the Storehouse and Lodge. Their alpha silhouettes drive the renderer's sun
+and local-light shadow masks; the images contain no baked cast shadows.
+
 ## Empty bottle
 
 `empty-bottle.png` is the dedicated generated crafting-resource inventory icon.

@@ -161,9 +161,21 @@ still affects the final canvas output.
 - Damage flashes restart on each hit, including ailments and killing blows; remote players do not receive the local sprite flash.
 - Check weapon visibility, debuff spacing/expiry, torch animation, animal shadows, portal bloom-off visibility and reduced-motion countdown.
 
-Gatherable resources retain their existing tree, rock and plant artwork until
-depleted. Generated stump, rubble and cut-stem sprites replace them during the
+Each bundled inventory item has dedicated generated artwork; equipment-slot hints
+are reserved for empty slots. Inventory, trading, storage and ground loot use the
+same item artwork. Plant items retain their matching generated plant silhouettes.
+Storehouse and Lodge have distinct generated building images matching the existing
+buildings' front-facing camera, chunky material detail, palette and proportions;
+existing NPC art is retained.
+
+Gatherable resources retain their tree, rock, stone and plant artwork until
+depleted. Stone nodes have their own live and depleted images, distinct from rocks.
+Each of the five named plants has its own harvested remnant. Generated stump,
+rubble and cut-stem sprites replace resources during the
 one-hour restoration cooldown. Partial tree health bars remain visible at every
 graphics preset; depleted resources do not receive active interaction outlines.
+Live and gathered states retain their ground anchors. Sun and local-light shadows
+derive from the alpha silhouette of the currently displayed state; old live-state
+shadows must disappear on depletion and return with the restored resource.
 
 Evidence: [player-cutout.spec.ts](../../tests/player-cutout.spec.ts).

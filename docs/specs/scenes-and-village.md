@@ -4,7 +4,7 @@ Status: implemented baseline. Goal: Stage a party in the village and run indepen
 
 ## SCENE-01 — Village and interactions
 
-The lobby is a five-building village with a connected path network and a central square. Buildings reuse three regenerated wardrobe-style designs, preserving their source proportions, world widths and ground positions. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors remain unimplemented; Marta provides shared item trading.
+The lobby is a five-building village with a connected path network and a central square. Each building has a distinct generated design in the same wardrobe style and front-facing camera, preserving source proportions, world widths and ground positions. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors remain unimplemented; Marta provides shared item trading.
 
 Seeded trees, mossy rocks and five plant kinds fill the surrounding village landscape.
 Paths, building approaches, the central square and training clearings stay open.

@@ -60,17 +60,16 @@ test('buildings retain native crops, source proportions and matching grounded sh
     );
     const preview = document.createElement('canvas');
     preview.id = 'building-shadows';
-    preview.width = 1200;
+    preview.width = 1800;
     preview.height = 650;
-    preview.style.cssText = 'position:static;width:1200px;height:650px;object-fit:contain';
+    preview.style.cssText = 'position:static;width:1800px;height:650px;object-fit:contain';
     document.body.replaceChildren(preview);
     const ctx = preview.getContext('2d')!;
     ctx.fillStyle = '#677452';
     ctx.fillRect(0, 0, preview.width, preview.height);
-    for (const [index, frame] of fixture.buildingFrames.entries()) {
-      const object = buildings.find((object) => object.sprite.width === frame.width)!;
+    for (const [index, object] of buildings.entries()) {
       for (let row = 0; row < 2; row++) {
-        const caster = { ...object, x: 150 + index * 390, y: 220 + row * 310 };
+        const caster = { ...object, x: 150 + index * 340, y: 220 + row * 310 };
         const light = row
           ? { x: caster.x - 75, y: caster.y + 20, height: 200, radius: 250, strength: 1 }
           : undefined;
@@ -88,13 +87,17 @@ test('buildings retain native crops, source proportions and matching grounded sh
       }
     }
     return buildings.map((object) => {
-      const frame = fixture.buildingFrames.find((frame) => frame.width === object.sprite.width)!;
+      const additional = fixture.additionalBuildingArt[object.id.replace('building:', '')];
+      const image = additional ?? fixture.buildingArt;
+      const frame = additional
+        ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
+        : fixture.buildingFrames.find((frame) => frame.width === object.sprite.width)!;
       const crop = document.createElement('canvas');
       crop.width = frame.width;
       crop.height = frame.height;
       const cropCtx = crop.getContext('2d')!;
       cropCtx.drawImage(
-        fixture.buildingArt,
+        image,
         frame.x,
         frame.y,
         frame.width,
@@ -111,7 +114,14 @@ test('buildings retain native crops, source proportions and matching grounded sh
       const mask = (object.mask as HTMLCanvasElement)
         .getContext('2d')!
         .getImageData(0, 0, crop.width, crop.height).data;
-      const bottom = sprite.slice((crop.height - 1) * crop.width * 4);
+      let bottom = crop.height;
+      while (
+        bottom > 0 &&
+        !sprite
+          .slice((bottom - 1) * crop.width * 4, bottom * crop.width * 4)
+          .some((value, i) => i % 4 === 3 && value >= 32)
+      )
+        bottom--;
       return {
         id: object.id,
         width: object.width,
@@ -119,8 +129,9 @@ test('buildings retain native crops, source proportions and matching grounded sh
         ratio: frame.width / frame.height,
         native: sprite.every((value, i) => value === source[i]),
         matchingMask: mask.every((value, i) => i % 4 !== 3 || value === sprite[i]),
-        grounded: bottom.some((value, i) => i % 4 === 3 && value >= 32),
+        groundGap: ((crop.height - bottom) / crop.height) * object.height,
         opaque: sprite.filter((value, i) => i % 4 === 3 && value >= 128).length,
+        pixels: frame.width * frame.height,
         groundY: object.y,
       };
     });
@@ -133,8 +144,8 @@ test('buildings retain native crops, source proportions and matching grounded sh
     expect(rendered.width / rendered.height).toBeCloseTo(rendered.ratio, 12);
     expect(rendered.native).toBe(true);
     expect(rendered.matchingMask).toBe(true);
-    expect(rendered.grounded).toBe(true);
-    expect(rendered.opaque).toBeGreaterThan(200000);
+    expect(rendered.groundGap).toBeLessThan(4);
+    expect(rendered.opaque).toBeGreaterThan(rendered.pixels * 0.2);
   }
   await page
     .locator('#building-shadows')

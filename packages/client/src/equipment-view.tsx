@@ -25,7 +25,7 @@ import type { GearType, Player, ClassId } from '@emberfall/common';
 import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
 import { PLAYER_DEFINITIONS } from '@emberfall/core/definitions/entities/players';
 import { AILMENT_DEFINITIONS } from '@emberfall/core/definitions/effects/ailments';
-import { weaponSrc } from './class-art';
+import { weaponSrc, itemArtName } from './class-art';
 
 const slotViews = registeredSlotViews();
 export const SLOT_POSITIONS = Object.fromEntries(slotViews.map((slot) => [slot.id, slot.position]));
@@ -256,20 +256,11 @@ function PlantIcon({ variant }: { variant: number }) {
 }
 
 function itemIcon(itemId: string) {
-  if (itemId === 'empty-bottle')
-    return <img src={clientAsset('/assets/wardrobe-style/empty-bottle.png')} alt='' />;
+  const art = itemArtName(itemId);
+  if (art) return <img src={clientAsset(`/assets/wardrobe-style/${art}.png`)} alt='' />;
   const plantVariant = PLANT_KINDS.findIndex((kind) => kind === itemId);
   if (plantVariant !== -1 || itemId === 'plant') return <PlantIcon variant={plantVariant} />;
-  if (itemDefinition(itemId).kind === 'resource') {
-    const icons: Record<string, string> = {
-      log: '🪵',
-      stick: '🌿',
-      leaf: '🍃',
-      rock: '🪨',
-      stone: '🪨',
-    };
-    return <span aria-hidden='true'>{icons[itemId] ?? '◆'}</span>;
-  }
+  if (itemDefinition(itemId).kind === 'resource') return <span aria-hidden='true'>◆</span>;
   const gear = GEAR_DEFINITIONS[itemId];
   const itemClass = ITEM_CLASSES[itemId];
   const slot = gear

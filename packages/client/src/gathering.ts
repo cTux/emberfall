@@ -1,25 +1,46 @@
 import type { ResourceNode } from '@emberfall/core';
 import type { ResourceState } from '@emberfall/common';
-import { environmentArt, gatheredArt, plantArt } from './art';
+import { environmentArt, gatheredArt, plantArt, loadNativeArt } from './art';
 import { makeMask } from './lighting';
 import type { Scenery } from './village';
 import { drawWorldBar } from './world-bar';
+import { PLANT_KINDS } from '@emberfall/core';
+
+const stoneArt = loadNativeArt('stone-node');
+const stoneGatheredArt = loadNativeArt('stone-gathered');
+const gatheredPlants = PLANT_KINDS.map((id) => loadNativeArt(`gathered-${id}`));
+export const resourceStateArt = [stoneArt, stoneGatheredArt, ...gatheredPlants];
 const frames = new Map<string, { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }>();
 export function resourceScenery(node: ResourceNode, state?: ResourceState): Scenery {
   const depleted = state?.remaining === 0;
-  const column = depleted
-    ? node.kind === 'tree'
-      ? 0
-      : node.kind === 'plant'
-        ? 2
-        : 1
-    : node.kind === 'tree'
-      ? 0
-      : 2;
-  const row = depleted ? 0 : node.kind === 'rock' || node.kind === 'stone' ? 2 : 1;
+  const dedicated =
+    node.kind === 'stone' || (depleted && node.kind === 'plant' && node.variant !== undefined);
+  const column = dedicated
+    ? 0
+    : depleted
+      ? node.kind === 'tree'
+        ? 0
+        : node.kind === 'plant'
+          ? 2
+          : 1
+      : node.kind === 'tree'
+        ? 0
+        : 2;
+  const row = dedicated || depleted ? 0 : node.kind === 'rock' ? 2 : 1;
   const plant = !depleted && node.kind === 'plant' && node.variant !== undefined;
-  const image = depleted ? gatheredArt : plant ? plantArt : environmentArt;
-  const key = `${depleted}:${column}:${row}:${plant ? node.variant : ''}`;
+  const image =
+    node.kind === 'stone'
+      ? depleted
+        ? stoneGatheredArt
+        : stoneArt
+      : depleted && node.kind === 'plant' && node.variant !== undefined
+        ? gatheredPlants[node.variant]
+        : depleted
+          ? gatheredArt
+          : plant
+            ? plantArt
+            : environmentArt;
+  const key = `${node.kind}:${depleted}:${column}:${row}:${node.variant ?? ''}`;
   let frame = frames.get(key);
   if (!frame || !image.naturalWidth || image.dataset.artReady !== 'true') {
     const sprite = document.createElement('canvas');
