@@ -51,6 +51,8 @@ without changing geometry or adding image assets.
 
 Use the existing theme → MUI defaults → colocated styled rules → small local `sx` hierarchy. Shared components expose typed data/callbacks, accessible labels and keyboard behavior. GameWindow supplies modal focus trapping/restoration and draggable titles; the client supplies persisted positions through context.
 
+Game owns the F1 Codex and Escape Settings shortcuts, guarded against typing, modifiers, repeats and open windows. HudActions accepts optional shortcut text for its tooltip while preserving the action's accessible name. Exit remains an explicit HUD action.
+
 GameWindow provides a left tab rail through a private context. ChapterTabs portals its vertical tablist into that rail, outside the bordered content surface but inside the dialog focus scope and draggable frame. Untabbed windows omit the empty rail; standalone ChapterTabs uses an inline vertical layout. The rail narrows on small screens and scrolls independently of window content.
 
 `WorldList` sends clicks anywhere in an available server row to the host's join callback. Its native name button remains the keyboard target and stops click propagation to avoid duplicate joins. Full worlds and the host's disabled state block both paths; hover and pointer styling apply only to available rows.

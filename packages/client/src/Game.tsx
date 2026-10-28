@@ -485,12 +485,19 @@ export function Game({
           setPreferences((p) => ({ ...p, [option]: !p[option] }));
         }
       }
-      if (event.key === 'Escape') {
-        if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
-        if (world) {
-          event.preventDefault();
-          setMenu('exit');
-        }
+      if (
+        (event.code === 'F1' || event.key === 'Escape') &&
+        !menu &&
+        !typing &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        !document.querySelector('[role="dialog"][aria-modal="true"]')
+      ) {
+        event.preventDefault();
+        setMenu(event.code === 'F1' ? 'codex' : 'settings');
+        return;
       }
       if (
         event.code === 'KeyE' &&
@@ -560,10 +567,17 @@ export function Game({
                     },
                   ]
                 : []),
-              { id: 'codex', label: 'Codex', icon: faBookOpen, onClick: () => setMenu('codex') },
+              {
+                id: 'codex',
+                label: 'Codex',
+                shortcut: 'F1',
+                icon: faBookOpen,
+                onClick: () => setMenu('codex'),
+              },
               {
                 id: 'settings',
                 label: 'Settings',
+                shortcut: 'Esc',
                 icon: faGear,
                 onClick: () => setMenu('settings'),
               },

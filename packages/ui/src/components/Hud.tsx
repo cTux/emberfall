@@ -32,6 +32,7 @@ export function ConnectionStatus({
 export interface HudAction {
   id: string;
   label: string;
+  shortcut?: string;
   icon: IconDefinition;
   disabled?: boolean;
   onClick: () => void;
@@ -40,7 +41,10 @@ export function HudActions({ actions }: { actions: HudAction[] }) {
   return (
     <Stack component='nav' aria-label='Game controls' direction='row' spacing={1}>
       {actions.map((action) => (
-        <Tooltip title={action.label} key={action.id}>
+        <Tooltip
+          title={action.shortcut ? `${action.label} (${action.shortcut})` : action.label}
+          key={action.id}
+        >
           <span>
             <IconButton
               aria-label={action.label}
