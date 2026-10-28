@@ -3,7 +3,10 @@ import {
   drawVignette,
   drawAtmosphere,
   drawInteractionPrompt,
+  drawPlayerHealth,
 } from '../packages/client/src/effects';
+import { drawResourceHealth } from '../packages/client/src/gathering';
+import { drawTimedActivity } from '../packages/client/src/timed-activity';
 import {
   drawDebuffs,
   drawClassProjectiles,
@@ -65,6 +68,44 @@ export async function compare() {
     }
   };
   compare('vignette center', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 128, 128);
+  const health = (ctx: CanvasRenderingContext2D) => drawPlayerHealth(ctx, 100, 93, 50, 100, 'Hero');
+  compare('health border top', health, 90, 89);
+  compare('health fill top', health, 90, 91);
+  compare('health fill bottom', health, 90, 97);
+  compare('health border bottom', health, 82, 99);
+  compare('health empty track', health, 110, 94);
+  compare('health outside frame', health, 90, 88);
+  compare(
+    'tree health border',
+    (ctx) =>
+      drawResourceHealth(
+        ctx,
+        { id: 'tree', kind: 'tree', x: 100, y: 140, size: 36 },
+        { remaining: 3, restoresAt: 5000 },
+      ),
+    90,
+    89,
+  );
+  compare(
+    'gathering border',
+    (ctx) =>
+      drawTimedActivity(
+        ctx,
+        {
+          startedAt: 0,
+          endsAt: 5000,
+          durationMs: 5000,
+          zoneStart: 0.7,
+          zoneAt: 0,
+          checkId: 'zone',
+        },
+        100,
+        91,
+        2500,
+      ),
+    90,
+    89,
+  );
   const prompt = (ctx: CanvasRenderingContext2D) => {
     ctx.scale(4, 4);
     drawInteractionPrompt(ctx, 32, 48, '');

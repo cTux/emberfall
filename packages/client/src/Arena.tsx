@@ -2,6 +2,7 @@ import { useChat } from './ChatProvider';
 import { resourceNodes, resourceState, nearbyResource, activityIndicator } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
 import { drawTimedActivity } from './timed-activity';
+import { drawWorldBar } from './world-bar';
 import {
   sceneryInteraction,
   pickInteraction,
@@ -882,11 +883,15 @@ export function Arena({
           }
           ctx.globalAlpha = 1;
           renderer.occlusion = false;
-          ctx.fillStyle = '#152018';
-          ctx.fillRect(dummy.x - 20, dummy.y - 46, 40, 5);
-          ctx.fillStyle = '#df7765';
-          ctx.fillRect(dummy.x - 19, dummy.y - 45, (38 * dummy.hitpoints) / dummy.maxHitpoints!, 3);
-          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 46, serverTime);
+          drawWorldBar(
+            ctx,
+            dummy.x - 20,
+            dummy.y - 41,
+            40,
+            dummy.hitpoints / dummy.maxHitpoints!,
+            '#df7765',
+          );
+          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 52, serverTime);
 
           continue;
         }

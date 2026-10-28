@@ -1,5 +1,6 @@
 import { resourceNodes, resourceState } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
+import { drawWorldBar } from './world-bar';
 import { game } from '@emberfall/core';
 import type { PixiContext } from './rendering/pixi-context';
 import { characterImages } from './characters';
@@ -636,18 +637,17 @@ export function forestRenderer(
             '#ffffff',
             true,
           );
-          drawDebuffs(ctx, a.enemy, a.x - width / 2, top - 10, serverTime);
+          drawDebuffs(ctx, a.enemy, a.x - width / 2, top - 12, serverTime);
         } else {
-          ctx.fillStyle = '#102020';
-          ctx.fillRect(a.x - 17, top - 8, 34, 5);
-          ctx.fillStyle = a.enemy.kind === 'elite' ? '#f4d447' : '#df7765';
-          ctx.fillRect(
-            a.x - 16,
-            top - 7,
-            (32 * a.enemy.hitpoints) / enemyMaxHealth(a.enemy, world?.scene?.difficulty),
-            3,
+          drawWorldBar(
+            ctx,
+            a.x - 17,
+            top - 3,
+            34,
+            a.enemy.hitpoints / enemyMaxHealth(a.enemy, world?.scene?.difficulty),
+            a.enemy.kind === 'elite' ? '#f4d447' : '#df7765',
           );
-          drawDebuffs(ctx, a.enemy, a.x - 17, top - 8, serverTime);
+          drawDebuffs(ctx, a.enemy, a.x - 17, top - 14, serverTime);
         }
       }
       if (a.player)

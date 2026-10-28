@@ -6,6 +6,8 @@ import {
   drawNameBadge,
   drawChatBubble,
 } from '../packages/client/src/effects.ts';
+import { drawWorldBar } from '../packages/client/src/world-bar.ts';
+import { drawTimedActivity } from '../packages/client/src/timed-activity.ts';
 
 function recordingContext() {
   const text: unknown[] = [];
@@ -60,6 +62,62 @@ test('character names match player labels at the same offset above their sprites
   drawCharacterName(innkeeper.ctx, 100, 218 - 48 - 9, 'Marta');
   assert.deepEqual(innkeeper.text, player.text);
   assert.deepEqual(innkeeper.backgrounds, []);
+});
+
+test('overhead player and boss health match gathering thickness and borders without moving names', () => {
+  const gathering = recordingContext();
+  drawTimedActivity(
+    gathering.ctx,
+    { startedAt: 0, endsAt: 5000, durationMs: 5000, zoneStart: 0.7, zoneAt: 0, checkId: 'zone' },
+    100,
+    98,
+    2500,
+  );
+  const frame = gathering.backgrounds.slice(0, 3) as [string, number, number, number, number][];
+  assert.deepEqual(frame, [
+    ['#28271b', 38, 96, 124, 11],
+    ['#695a31', 40, 98, 120, 7],
+    ['#ebc34b', 40, 98, 60, 7],
+  ]);
+  for (const boss of [false, true]) {
+    const health = recordingContext();
+    const width = drawPlayerHealth(
+      health.ctx,
+      100,
+      boss ? 98 : 100,
+      50,
+      100,
+      'Hero',
+      '#ffffff',
+      boss,
+    );
+    assert.equal(width, boss ? 64 : 40);
+    const rectangles = health.backgrounds as [string, number, number, number, number][];
+    assert.deepEqual(rectangles, [
+      ['#28271b', 100 - width / 2, 96, width, 11],
+      ['#695a31', 102 - width / 2, 98, width - 4, 7],
+      [boss ? '#c084fc' : '#86d9a2', 102 - width / 2, 98, (width - 4) / 2, 7],
+    ]);
+    assert.equal((health.text[0] as unknown[])[3], 113);
+  }
+});
+
+test('world bar fills clamp at empty and full while preserving the frame', () => {
+  for (const [fraction, expectedWidth] of [
+    [-1, 0],
+    [0, 0],
+    [0.5, 18],
+    [1, 36],
+    [2, 36],
+  ]) {
+    const context = recordingContext();
+    drawWorldBar(context.ctx, 10, 30, 40, fraction, '#df7765');
+    assert.deepEqual(context.backgrounds, [
+      ['#28271b', 10, 19, 40, 11],
+      ['#695a31', 12, 21, 36, 7],
+      ['#df7765', 12, 21, expectedWidth, 7],
+    ]);
+  }
 });
 
 test('character names and building badges keep their normal text and backgrounds', () => {

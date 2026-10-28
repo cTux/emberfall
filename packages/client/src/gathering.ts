@@ -3,6 +3,7 @@ import type { ResourceState } from '@emberfall/common';
 import { environmentArt, gatheredArt, plantArt } from './art';
 import { makeMask } from './lighting';
 import type { Scenery } from './village';
+import { drawWorldBar } from './world-bar';
 const frames = new Map<string, { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }>();
 export function resourceScenery(node: ResourceNode, state?: ResourceState): Scenery {
   const depleted = state?.remaining === 0;
@@ -51,8 +52,5 @@ export function drawResourceHealth(
   state?: ResourceState,
 ) {
   if (node.kind !== 'tree' || !state || state.remaining <= 0 || state.remaining >= 5) return;
-  ctx.fillStyle = '#18251d';
-  ctx.fillRect(node.x - 20, node.y - node.size - 10, 40, 6);
-  ctx.fillStyle = '#a4cf7b';
-  ctx.fillRect(node.x - 19, node.y - node.size - 9, (38 * state.remaining) / 5, 4);
+  drawWorldBar(ctx, node.x - 20, node.y - node.size - 4, 40, state.remaining / 5, '#a4cf7b');
 }
