@@ -59,6 +59,17 @@ Decorative cats and chickens wander in the village; raccoons appear in the fores
 
 ## GRAPHICS-04 — Combat readability
 
+Ability effects (player projectiles, explosions, talent casts and Warrior swings)
+draw directly above the background tiles in training and forest, below scenery,
+actors, loot, health bars and status icons. Enemy projectiles share this low pass;
+red ground warnings retain their existing pass and remain enabled at every preset.
+
+Verified forest capture from the isolated browser scenario: Druid talent art
+stays beneath combatants and their overhead labels (bundled artwork; see
+[credits](../assets.md)).
+
+![Ability effects beneath forest combatants](../images/ability-effect-layering.png)
+
 All overhead health bars (players, companions, bosses, regular and elite enemies,
 training dummies and partially gathered trees) match the gathering bar's
 5-world-unit fill and 1-unit dark border on every side (7 units total height).

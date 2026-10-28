@@ -287,6 +287,24 @@ export function forestRenderer(
     for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++)
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
         ctx.drawImage(ground, col * 320, row * 320);
+    if (world?.scene) {
+      drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles);
+      drawDanger(ctx, world.scene, serverTime, near, true);
+    }
+    const players =
+      world?.players.filter((p) => p.scene === 'forest' && p.runId === me?.runId) ?? [];
+    for (const player of players) {
+      const point = near(player.x, player.y);
+      drawPlayerAttack(
+        ctx,
+        player,
+        point.x,
+        point.y,
+        player.id === playerId ? now : serverTime,
+        quality.bloom,
+        world?.scene?.phase === 'active',
+      );
+    }
     drawBloodPuddles(ctx, world?.scene, serverTime, prefs.bloodPuddles, near, {
       x: cameraX,
       y: cameraY,
@@ -306,8 +324,6 @@ export function forestRenderer(
     const casters: Caster[] = trees.map((node) =>
       resourceScenery(node, resourceState(world?.resources, node, serverTime)),
     );
-    const players =
-      world?.players.filter((p) => p.scene === 'forest' && p.runId === me?.runId) ?? [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
       ...(world?.scene?.enemies ?? []).map((e) => ({
@@ -683,20 +699,9 @@ export function forestRenderer(
           drawDebuffs(ctx, a.enemy, a.x - 17, top - 14, serverTime);
         }
       }
-      if (a.player)
-        drawPlayerDetails(
-          ctx,
-          a.player,
-          a.x,
-          a.y,
-          a.facing,
-          a.player.id === playerId ? now : serverTime,
-          quality.bloom,
-          world?.scene?.phase === 'active',
-        );
+      if (a.player) drawPlayerDetails(ctx, a.player, a.x, a.y);
     }
     renderer.occlusion = false;
-    if (world?.scene) drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles);
     if (quality.lighting) {
       ctx.save();
       ctx.globalAlpha = cycle.lightAlpha;
@@ -717,7 +722,6 @@ export function forestRenderer(
     if (quality.particles) drawParticles(ctx, cameraX, cameraY, width, height, now);
     if (quality.fog) drawFog(ctx, cameraX, cameraY, width, height, now);
     drawAtmosphere(ctx, cameraX, cameraY, width, height, now, quality, cycle.daylight);
-    if (world?.scene) drawDanger(ctx, world.scene, serverTime, near, true);
     if (quality.vignette) drawVignette(ctx, cameraX, cameraY, width, height);
     if (prefs.damageNumbers) drawDamageNumbers(ctx, world?.scene?.damage ?? [], near, serverTime);
     drawDamageFlash(ctx, world, playerId);
@@ -738,10 +742,6 @@ export function drawPlayerDetails(
   p: Player,
   x: number,
   y: number,
-  facing: number,
-  now: number,
-  bloom: boolean,
-  inCombat: boolean,
   showVitals = true,
 ) {
   if (showVitals) {
@@ -759,6 +759,18 @@ export function drawPlayerDetails(
     ctx.restore();
     return;
   }
+}
+
+export function drawPlayerAttack(
+  ctx: CanvasRenderingContext2D,
+  p: Player,
+  x: number,
+  y: number,
+  now: number,
+  bloom: boolean,
+  inCombat: boolean,
+) {
+  if (p.reconnecting) return;
   const age = now - (p.attackAt ?? -Infinity);
   if (!characterStats(p).hasWeapon) return;
   const attackRange = defaultSpellRange(p);
