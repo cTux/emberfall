@@ -334,8 +334,16 @@ export function createRules(content: Registries) {
     player.equipment[slot] = null;
     syncEquipmentVitals(player);
   }
-  /** Transfer one item per action; both callers commit the two owners together. */
-  function tradeItem(player: Player, merchant: Merchant, id: string, buying: boolean) {
+  /** Both owners commit together; older callers still transfer one item. */
+  function tradeItem(
+    player: Player,
+    merchant: Merchant,
+    id: string,
+    buying: boolean,
+    amount: 1 | 10 | 'stack' = 1,
+  ) {
+    if (amount !== 1 && amount !== 10 && amount !== 'stack')
+      throw new Error('Invalid trade quantity.');
     const source = buying ? merchant : player;
     const target = buying ? player : merchant;
     const backpack =
@@ -345,17 +353,20 @@ export function createRules(content: Registries) {
     const index = backpack.findIndex((item) => item.id === id);
     if (index < 0) throw new Error('Item is no longer available.');
     const item = backpack[index];
-    const price = itemDefinition(item.itemId).price ?? 1;
+    const quantity = amount === 'stack' ? item.quantity : Math.min(amount, item.quantity);
+    const price = (itemDefinition(item.itemId).price ?? 1) * quantity;
+    if (!Number.isSafeInteger(price)) throw new Error('Trade price is too large.');
     if ((target.coins ?? 0) < price) throw new Error('Not enough gold.');
     if (!Number.isSafeInteger((source.coins ?? 0) + price))
       throw new Error('Gold balance is too large.');
-    const transferred = { id: crypto.randomUUID(), itemId: item.itemId, quantity: 1 };
+    const transferred = { id: crypto.randomUUID(), itemId: item.itemId, quantity };
     if (buying) addItem((player.backpack ??= []), transferred);
     else {
       merchant.buyback.unshift(transferred);
       merchant.buyback.length = Math.min(merchant.buyback.length, BUYBACK_SLOTS);
     }
-    if (--item.quantity === 0) backpack.splice(index, 1);
+    item.quantity -= quantity;
+    if (item.quantity === 0) backpack.splice(index, 1);
     target.coins = (target.coins ?? 0) - price;
     source.coins = (source.coins ?? 0) + price;
   }

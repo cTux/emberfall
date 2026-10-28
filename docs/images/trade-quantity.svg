@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="200" viewBox="0 0 720 200" role="img" aria-labelledby="title desc">
+  <title id="title">Trading quantity controls</title>
+  <desc id="desc">Right-click, Enter, Space or a vendor drop trades one item normally, up to ten with Shift, or the whole selected stack with Ctrl. Ctrl takes priority. The server validates total price and inventory space atomically.</desc>
+  <rect width="720" height="200" rx="12" fill="#15201b"/>
+  <g fill="#f1e4ca" font-family="sans-serif" text-anchor="middle">
+    <text x="360" y="30" font-size="20">Buy / Sell / Buyback</text>
+    <text x="360" y="57" font-size="14">Right-click · Enter / Space · Vendor drop</text>
+    <g font-size="18">
+      <text x="125" y="98">No modifier</text><text x="125" y="128">1 item</text>
+      <text x="360" y="98">Shift</text><text x="360" y="128">Up to 10 items</text>
+      <text x="595" y="98">Ctrl</text><text x="595" y="128">Whole stack</text>
+    </g>
+    <text x="360" y="176" font-size="14">Ctrl wins · Server checks total gold and space · All or nothing</text>
+  </g>
+</svg>

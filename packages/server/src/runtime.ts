@@ -527,7 +527,8 @@ export async function createRuntime(
           if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
           else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
           else if (message.type === 'resetTalents') resetTalents(next);
-          else if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
+          else if (message.type === 'trade')
+            tradeItem(next, merchant, message.id, message.buying, message.amount);
           else if (message.type === 'storeItem')
             transferStoredItem(next, message.tab, message.id, message.depositing);
           else if (message.type === 'moveStorageItem')

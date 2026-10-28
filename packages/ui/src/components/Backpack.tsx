@@ -21,7 +21,7 @@ export interface BackpackProps {
   slots?: number;
   inventory?: string;
   drop?: InventoryDrop;
-  onUse: (id: string) => void;
+  onUse: (id: string, modifiers: { shiftKey: boolean; ctrlKey: boolean }) => void;
 }
 /** Twenty slots by default; keep legacy overflow accessible until it is cleared. */
 export function Backpack({
@@ -87,12 +87,12 @@ export function Backpack({
               }}
               onContextMenu={(event) => {
                 event.preventDefault();
-                onUse(item.id);
+                onUse(item.id, event);
               }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
-                  onUse(item.id);
+                  onUse(item.id, event);
                 }
               }}
             >

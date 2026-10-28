@@ -39,6 +39,70 @@ const hero = (): Player => ({
 });
 const item = (itemId: string, quantity = 1) => ({ id: crypto.randomUUID(), itemId, quantity });
 
+test('trade amounts transfer ten or a whole stack at the total price, including buyback', () => {
+  const player = hero();
+  player.coins = 1000;
+  const merchant = freshMerchant();
+  const bottle = merchant.backpack.find((entry) => entry.itemId === 'empty-bottle')!;
+  tradeItem(player, merchant, bottle.id, true, 10);
+  assert.equal(bottle.quantity, 190);
+  assert.equal(player.backpack![0].quantity, 10);
+  assert.equal(player.coins, 990);
+  assert.equal(merchant.coins, 5010);
+  tradeItem(player, merchant, bottle.id, true, 'stack');
+  assert.equal(player.backpack![0].quantity, 200);
+  assert.equal(player.coins, 800);
+  assert.equal(merchant.coins, 5200);
+  assert(!merchant.backpack.some((entry) => entry.id === bottle.id));
+  tradeItem(player, merchant, player.backpack![0].id, false, 10);
+  assert.equal(player.backpack![0].quantity, 190);
+  assert.equal(merchant.buyback[0].quantity, 10);
+  assert.equal(player.coins, 810);
+  tradeItem(player, merchant, merchant.buyback[0].id, true, 'stack');
+  assert.equal(player.backpack![0].quantity, 200);
+  tradeItem(player, merchant, player.backpack![0].id, false, 'stack');
+  assert.equal(player.backpack!.length, 0);
+  assert.equal(merchant.buyback[0].quantity, 200);
+  assert.equal(player.coins, 1000);
+  assert.equal(merchant.coins, 5000);
+  const potion = merchant.backpack.find((entry) => entry.itemId === 'health-potion')!;
+  tradeItem(player, merchant, potion.id, true, 10);
+  assert.equal(player.backpack![0].quantity, 5);
+});
+
+test('bulk trades reject invalid amounts, insufficient gold, full inventory and overflow atomically', () => {
+  const player = hero();
+  const merchant = freshMerchant();
+  const bottle = merchant.backpack.find((entry) => entry.itemId === 'empty-bottle')!;
+  const rejectsUnchanged = (action: () => void, error: RegExp) => {
+    const before = structuredClone({ player, merchant });
+    assert.throws(action, error);
+    assert.deepEqual({ player, merchant }, before);
+  };
+  player.coins = 9;
+  rejectsUnchanged(() => tradeItem(player, merchant, bottle.id, true, 10), /gold/);
+  player.coins = 1000;
+  player.backpack = Array.from({ length: INVENTORY_SLOTS }, () => item('loot-helmet'));
+  rejectsUnchanged(() => tradeItem(player, merchant, bottle.id, true, 'stack'), /full/);
+  player.backpack = [item('empty-bottle', 20)];
+  merchant.coins = 9;
+  rejectsUnchanged(() => tradeItem(player, merchant, player.backpack![0].id, false, 10), /gold/);
+  merchant.coins = Number.MAX_SAFE_INTEGER;
+  rejectsUnchanged(() => tradeItem(player, merchant, bottle.id, true, 10), /balance/);
+  for (const amount of [0, -1, 2, 1.5, 'all', null, Number.MAX_SAFE_INTEGER]) {
+    assert.equal(
+      clientMessage.safeParse({ type: 'trade', id: bottle.id, buying: true, amount }).success,
+      false,
+    );
+  }
+  for (const amount of [undefined, 1, 10, 'stack']) {
+    assert.equal(
+      clientMessage.safeParse({ type: 'trade', id: bottle.id, buying: true, amount }).success,
+      true,
+    );
+  }
+});
+
 test('twenty slots reject purchases and unequipping without losing items or gold; stacks and swaps still work', () => {
   const player = hero();
   const merchant = freshMerchant();
