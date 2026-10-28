@@ -373,3 +373,24 @@ export function drawPlayerHealth(
   ctx.restore();
   return width;
 }
+
+const partyOutlines = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
+export function drawPartyOutline(
+  ctx: CanvasRenderingContext2D,
+  mask: HTMLCanvasElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  let outline = partyOutlines.get(mask);
+  if (!outline) {
+    const silhouette = document.createElement('canvas');
+    silhouette.width = 48;
+    silhouette.height = 48;
+    silhouette.getContext('2d')!.drawImage(mask, 0, 0, 48, 48);
+    outline = hitOutline(silhouette, '#339dff', 1);
+    partyOutlines.set(mask, outline);
+  }
+  ctx.drawImage(outline, x - width / 48, y - height / 48, (width * 50) / 48, (height * 50) / 48);
+}

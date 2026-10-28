@@ -18,6 +18,10 @@ export interface SceneWorld {
   players: Map<string, Player>;
   scene?: Scene;
   training?: SceneState;
+  skipTraining?: boolean;
+  runKey?: string;
+  voters?: Player[];
+  resources?: Record<string, import('@emberfall/common').ResourceState>;
 }
 export function returnToLobby(world: SceneWorld, player: Player) {
   if (player.scene)
@@ -115,6 +119,8 @@ function enterScene(world: SceneWorld, player: Player, now: number, offset = 0) 
     player.id,
   );
   player.scene = 'forest';
+  if (world.runKey) player.runId = world.runKey;
+  if (!world.players.has(player.id)) world.players.set(player.id, player);
   player.x = FOREST_PORTAL.x + offset;
   player.y = FOREST_PORTAL.y;
   player.hitpoints = player.maxHitpoints;
@@ -129,13 +135,13 @@ function enterScene(world: SceneWorld, player: Player, now: number, offset = 0) 
 export function reconcileVote(world: SceneWorld, now: number) {
   const scene = world.scene;
   if (!scene || !['voting', 'countdown'].includes(scene.phase)) return;
-  const ids = [...world.players.keys()].sort();
+  const ids = (world.voters?.map((p) => p.id) ?? [...world.players.keys()]).sort();
   const electorate = ids.join(',');
   if (scene.electorate !== electorate) {
     scene.countdownAt = null;
     scene.electorate = electorate;
   }
-  scene.ready = scene.ready.filter((id) => world.players.has(id));
+  scene.ready = scene.ready.filter((id) => ids.includes(id));
   if (ids.length && ids.every((id) => scene.ready.includes(id))) {
     scene.countdownAt ??= now + FOREST_DEFINITION.countdownMs;
     scene.phase = 'countdown';
@@ -146,11 +152,12 @@ export function reconcileVote(world: SceneWorld, now: number) {
 }
 export function tickScene(world: SceneWorld, now: number, dt: number) {
   const entities = simulationFor(world.players);
-  world.training ??= createTrainingScene(now);
+  if (!world.skipTraining) world.training ??= createTrainingScene(now);
   entities?.retain([world.training, world.scene]);
-  entities?.bind(world.training);
+  if (world.training) entities?.bind(world.training);
   if (world.scene) entities?.bind(world.scene);
-  world.training = tickTraining(world.training, [...world.players.values()], now, dt);
+  if (world.training)
+    world.training = tickTraining(world.training, [...world.players.values()], now, dt);
   reconcileVote(world, now);
   const scene = world.scene;
   if (!scene) return;
@@ -160,7 +167,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     scene.countdownAt = null;
     scene.nextSpawn = now;
     let index = 0;
-    for (const player of world.players.values()) {
+    for (const player of world.voters ?? world.players.values()) {
       enterScene(world, player, now, (index++ - world.players.size / 2) * 30);
     }
   }

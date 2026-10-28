@@ -54,7 +54,7 @@ test('profile village, training and forest frame budgets', async ({
       await page.keyboard.down('d');
     }
     if (scene === 'crowded') {
-      const forest = world.scene!;
+      const forest = game.runtime.parties(world).run([...world.players.values()][0]).scene!;
       player.x = 2400;
       player.y = 1280;
       player.hitpoints = player.maxHitpoints = 100000;

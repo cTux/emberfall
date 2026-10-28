@@ -14,7 +14,15 @@ export function drawNavigation(ctx: CanvasRenderingContext2D, world: WorldState,
   const me = world.players.find((p) => p.id === id);
   if (!me) return;
   const targets = world.players
-    .filter((p) => p.id !== id && p.scene === me.scene && p.hitpoints > 0)
+    .filter(
+      (p) =>
+        p.id !== id &&
+        !!me.partyId &&
+        p.partyId === me.partyId &&
+        p.scene === me.scene &&
+        p.runId === me.runId &&
+        p.hitpoints > 0,
+    )
     .map((p) => ({ x: p.x, y: p.y, name: p.name, color: '#89e5c5' }));
   if (me.scene !== 'forest')
     targets.push({ ...LOBBY_PORTAL, name: 'Forest portal', color: '#70d8ff' });

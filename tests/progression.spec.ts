@@ -16,21 +16,18 @@ test('XP bar follows authoritative leveling and saved paragon after rejoining', 
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
-  await expect(async () => {
-    await page.keyboard.press('e');
-    await expect(portal).toBeVisible();
-  }).toPass({ intervals: [200], timeout: 6000 });
-  await portal.getByRole('button', { name: 'Create', exact: true }).click();
-  await portal.getByRole('button', { name: "I'm ready" }).click();
+  await expect(page.locator('canvas')).toHaveAttribute('data-interaction-prompt', 'Forest portal');
+  await page.keyboard.press('e');
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
+  await page.getByRole('button', { name: "I'm ready" }).click();
   await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
-  world.scene!.nextSpawn = 1e15;
-  world.scene!.enemies = [];
-  world.scene!.spawns = [];
+  game.runtime.parties(world).run([...world.players.values()][0]).scene!.nextSpawn = 1e15;
+  game.runtime.parties(world).run([...world.players.values()][0]).scene!.enemies = [];
+  game.runtime.parties(world).run([...world.players.values()][0]).scene!.spawns = [];
   player.experience = 49;
-  world.scene!.drops = [
+  game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops = [
     {
-      id: ++world.scene!.sequence,
+      id: ++game.runtime.parties(world).run([...world.players.values()][0]).scene!.sequence,
       kind: 'experience',
       amount: 2.5,
       x: player.x,

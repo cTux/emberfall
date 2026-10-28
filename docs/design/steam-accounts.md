@@ -76,7 +76,9 @@ Account creation and nickname completion are transactional. Nested savepoints le
 account creation reuse existing character creation without partial records. Progress
 continues to use Colyseus cloud-save slot 0 and revision checks.
 
-A null nickname means first setup is incomplete. Profile failures permit manual
+A null or invalid nickname means nickname setup is incomplete. The account view
+projects an invalid legacy nickname as null and admission rejects it until renamed;
+the stored identity and progress remain intact. Profile failures permit manual
 entry; later Steam names cannot overwrite a chosen nickname. Rename updates the
 account and character metadata before live state. Autosave uses the canonical
 account nickname, so stale player data cannot undo a rename. Historical chat text

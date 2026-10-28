@@ -1,3 +1,5 @@
+import { partyInteraction } from './interaction-targets';
+import { drawPartyOutline } from './effects';
 import { useChat } from './ChatProvider';
 import { resourceNodes, resourceState, nearbyResource, activityIndicator } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
@@ -374,6 +376,7 @@ export function Arena({
       if (latest.current) snapshots.push(latest.current, now);
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) keys.clear();
       const view = latest.current ? snapshots.render(now) : null;
+      element.dataset.partyRequests = view?.partyRequests?.map((r) => r.fromId).join(',') ?? '';
       const local = latest.current ? localMovement.render(latest.current, now) : undefined;
       let localSwing = false;
       if (view && local) {
@@ -497,6 +500,7 @@ export function Arena({
             authoritative?.npcs,
           )
         : null;
+      nearby = partyInteraction(authoritative, authoritativePlayer) ?? nearby;
       if (!nearby && authoritativePlayer) {
         const node = nearbyResource(
           authoritativePlayer,
@@ -1061,6 +1065,27 @@ export function Arena({
             48,
             48 * idleBreath(now, spriteRow),
           );
+        }
+        if (view?.partyRequests?.some((r) => r.fromId === player.id)) {
+          renderer.occlusion = false;
+          const mask = spriteMask(
+            knight,
+            pos.facing,
+            spriteRow,
+            false,
+            ACTOR_CELL,
+            false,
+            ACTOR_CELL,
+          );
+          if (mask)
+            drawPartyOutline(
+              ctx,
+              mask,
+              pos.x - 24,
+              pos.y + 18 - 48 * idleBreath(now, spriteRow),
+              48,
+              48 * idleBreath(now, spriteRow),
+            );
         }
         renderer.spriteTint = '#ffffff';
         renderer.occlusion = false;

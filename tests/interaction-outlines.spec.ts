@@ -121,7 +121,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await closeDialog();
 
       // Isolate a completed forest with its portal across the horizontal seam.
-      world.scene = {
+      game.runtime.parties(world).run([...world.players.values()][0]).scene = {
         ...world.training!,
         id: 'outline-forest',
         electorate: '',

@@ -131,3 +131,32 @@ export function drawInteractionOutline(ctx: CanvasRenderingContext2D, target: In
   ctx.drawImage(outline, target.x - radius, target.y - radius);
   ctx.restore();
 }
+
+export function partyInteraction(
+  world: import('@emberfall/common').WorldState | null | undefined,
+  player: Player | undefined,
+): Interaction | null {
+  if (!world || !player || player.hitpoints <= 0 || player.reconnecting) return null;
+  const candidates = world.players.filter(
+    (p) =>
+      p.id !== player.id &&
+      p.scene === player.scene &&
+      (!p.scene || p.runId === player.runId) &&
+      p.hitpoints > 0 &&
+      !p.reconnecting &&
+      forestDistance(player, p) < INTERACTION_RADIUS,
+  );
+  candidates.sort((a, b) => forestDistance(player, a) - forestDistance(player, b));
+  for (const target of candidates) {
+    const accepting = world.partyRequests?.some((r) => r.fromId === target.id);
+    const name = accepting
+      ? 'Accept'
+      : !player.partyId && target.partyId
+        ? 'Join party'
+        : !target.partyId && (!player.partyId || player.partyLeaderId === player.id)
+          ? 'Invite to party'
+          : null;
+    if (name) return { id: `party:${target.id}`, name, x: target.x, y: target.y };
+  }
+  return null;
+}
