@@ -545,17 +545,7 @@ export function Arena({
       }
       if (!view || local?.scene === 'forest') {
         element.dataset.catSpeech = '';
-        drawForest(
-          ctx,
-          view,
-          playerId,
-          quality.current,
-          prefs.current,
-          now,
-          delta,
-          hovered,
-          !!hovered && interactionInRange(hovered, authoritativePlayer),
-        );
+        drawForest(ctx, view, playerId, quality.current, prefs.current, now, delta, hovered);
         renderer.present();
         frame = requestAnimationFrame(draw);
         return;
@@ -874,15 +864,12 @@ export function Arena({
             hovered === portalTarget ? hovered : null,
             quality.current.shadows,
             quality.current.wavingVegetation,
-            1,
-            interactionInRange(portalTarget, authoritativePlayer),
           );
           continue;
         }
         if (layer.critter) {
           drawCritter(ctx, layer.critter, quality.current.shadows);
-          if (hovered?.source.id === layer.critter.id)
-            drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
+          if (hovered?.source.id === layer.critter.id) drawInteractionOutline(ctx, hovered);
           ctx.globalAlpha = 1;
           continue;
         }
@@ -950,7 +937,7 @@ export function Arena({
             (hovered.source.id === object.id.replace(/^(building|npc|workstation):/, '') ||
               hovered.source.id === `gather:${object.id}`)
           )
-            drawInteractionOutline(ctx, hovered, interactionInRange(hovered, authoritativePlayer));
+            drawInteractionOutline(ctx, hovered);
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;

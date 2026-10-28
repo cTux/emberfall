@@ -109,13 +109,9 @@ export function pickInteraction(
 }
 
 const outlines = new WeakMap<HTMLCanvasElement, Map<number, HTMLCanvasElement>>();
-export function drawInteractionOutline(
-  ctx: CanvasRenderingContext2D,
-  target: InteractionTarget,
-  inRange: boolean,
-) {
+export function drawInteractionOutline(ctx: CanvasRenderingContext2D, target: InteractionTarget) {
   // Bake at display size so wide houses and narrow NPCs have the same thickness.
-  const radius = inRange ? 3 : 1;
+  const radius = 1;
   const width = Math.round(target.width),
     height = Math.round(target.height);
   const key = width * 10000 + height * 10 + radius;

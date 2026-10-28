@@ -23,7 +23,7 @@ in [cursor scenarios](../../tests/cursors.spec.ts).
 
 `interaction-targets.ts` picks opaque pixels of functional scenery and portals in
 display depth order, using the same wrapped camera as rendering. It caches yellow
-silhouette outlines per finite sprite frame and display size (1 or 3 world units).
+one-world-unit silhouette outlines per finite sprite frame and display size.
 Range uses confirmed player positions and the existing entrance/NPC/portal geometry.
 Arena routes in-range left clicks to Game's existing E action and suppresses combat
 for clicks on functional targets. Hovered targets take priority over nearby E

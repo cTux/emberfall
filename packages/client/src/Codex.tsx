@@ -28,9 +28,9 @@ const chapters = [
           </li>
           <li>
             <kbd>E</kbd> or left click — interact with a hovered building, Marta the Innkeeper, or
-            portal. Yellow outlines are thick in range and thin out of range. E also works nearby
-            without hovering. Trees, plants and rocks can be gathered the same way; trees allow five
-            gathers and resources restore after one hour.
+            portal while in range. Yellow outlines are always thin. E also works nearby without
+            hovering. Trees, plants and rocks can be gathered the same way; trees allow five gathers
+            and resources restore after one hour.
           </li>
           <li>
             <kbd>I</kbd> — open or close Inventory and character stats.
