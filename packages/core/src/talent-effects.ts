@@ -197,6 +197,28 @@ function heal(player: Player, fraction: number) {
     player.hitpoints + player.maxHitpoints * fraction,
   );
 }
+function healingTarget(
+  players: Player[],
+  owner: Player,
+  point: { x: number; y: number },
+  radius: number,
+) {
+  let target: Player | undefined;
+  for (const ally of players) {
+    if (
+      (ally !== owner && (!owner.partyId || ally.partyId !== owner.partyId)) ||
+      ally.scene !== owner.scene ||
+      ally.runId !== owner.runId ||
+      ally.hitpoints <= 0 ||
+      ally.hitpoints >= ally.maxHitpoints ||
+      forestDistance(ally, point) > radius
+    )
+      continue;
+    if (!target || ally.hitpoints / ally.maxHitpoints < target.hitpoints / target.maxHitpoints)
+      target = ally;
+  }
+  return target;
+}
 function shield(player: Player, scene: SceneState, amount: number, until: number) {
   const value = state(player, scene);
   value.barrier = Math.max(value.barrier, amount);
@@ -353,6 +375,8 @@ export function executeTalent(
   aim: { x: number; y: number },
   now: number,
   stats: CharacterStats = characterStats(player),
+  players: Player[] = [player],
+  healingRadius = 700,
 ) {
   const column = Math.floor(slot / 4),
     tier = slot % 4;
@@ -369,7 +393,11 @@ export function executeTalent(
       y: wrap(player.y + (dy / distance) * maxRange, FOREST.height),
     };
   }
-  talentVisual(scene, player, column, column === 2 ? origin : aim, now);
+  const recipient =
+    classId === 'druid' && column === 2 && (tier === 0 || tier === 3)
+      ? healingTarget(players, player, origin, healingRadius)
+      : undefined;
+  talentVisual(scene, player, column, recipient ?? (column === 2 ? origin : aim), now);
   let targets = area(
     scene,
     classId === 'warrior' && tier !== 2 ? origin : aim,
@@ -395,8 +423,9 @@ export function executeTalent(
     .sort((a, b) => forestDistance(a, aim) - forestDistance(b, aim))[0];
   if (column === 2) {
     if (tier === 0) {
-      if (classId === 'druid') heal(player, learned === 2 ? 0.2 : 0.12);
-      else
+      if (classId === 'druid') {
+        if (recipient) heal(recipient, learned === 2 ? 0.2 : 0.12);
+      } else
         for (const enemy of area(scene, origin, 150)) {
           strike(scene, player, enemy, learned === 2 ? 1.4 : 0.9, now);
           applyTalentAilment(enemy, player, 'roots', 1, now, learned === 2 ? 1000 : 600);
@@ -409,12 +438,15 @@ export function executeTalent(
           strike(scene, player, enemy, fragments === 2 ? 0.5 : 0.35, now);
     } else if (tier === 1) {
       schedule(scene, player, nodeId, now, 5000, 1000, (at, players) => {
-        for (const ally of players.filter(
-          (ally) => ally.hitpoints > 0 && forestDistance(ally, origin) <= 200,
-        )) {
-          if (classId === 'druid') heal(ally, learned === 2 ? 0.04 : 0.025);
-          else shield(ally, scene, player.maxHitpoints * (learned === 2 ? 0.1 : 0.06), at + 1200);
-        }
+        if (classId === 'druid') {
+          const ally = healingTarget(players, player, origin, 200);
+          if (ally) heal(ally, learned === 2 ? 0.04 : 0.025);
+        } else
+          for (const ally of players.filter(
+            (ally) => ally.hitpoints > 0 && forestDistance(ally, origin) <= 200,
+          )) {
+            shield(ally, scene, player.maxHitpoints * (learned === 2 ? 0.1 : 0.06), at + 1200);
+          }
         const hold = rank(player, 2, 4);
         if (hold)
           for (const enemy of area(scene, origin, 200)) {
@@ -438,7 +470,7 @@ export function executeTalent(
       value.wallUntil = now + (learned === 2 ? 3000 : 2000);
       value.wallRank = learned;
       value.wallPrevented = false;
-      if (classId === 'druid') heal(player, learned === 2 ? 0.35 : 0.2);
+      if (recipient) heal(recipient, learned === 2 ? 0.35 : 0.2);
       const shared = rank(player, 2, 8);
       if (shared)
         schedule(scene, player, nodeId, now, value.wallUntil - now, 500, (at, players) => {
@@ -519,12 +551,7 @@ export function executeTalent(
     if (offering && consumedStacks >= 3)
       schedule(scene, player, nodeId, now, 6000, 500, (_at, players) => {
         if (orbConsumed) return;
-        const ally = players.find(
-          (ally) =>
-            ally.hitpoints > 0 &&
-            ally.hitpoints < ally.maxHitpoints &&
-            forestDistance(ally, primary) <= 60,
-        );
+        const ally = healingTarget(players, player, primary, 60);
         if (ally) {
           heal(ally, offering === 2 ? 0.05 : 0.03);
           orbConsumed = true;

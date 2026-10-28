@@ -16,6 +16,8 @@ import {
   resetTalents,
   BULLSEYE,
   TRAINING_ZONES,
+  game,
+  FOREST,
 } from '@emberfall/core';
 import {
   talentAilmentChance,
@@ -54,7 +56,7 @@ function ability(player: Player, column: number, row: number, rank = 1) {
   equipTalent(player, 0, id);
   return id;
 }
-function cast(player: Player, scene: SceneState, now = 1000) {
+function cast(player: Player, scene: SceneState, now = 1000, players = [player]) {
   return castTalentAbility(
     scene,
     player,
@@ -66,8 +68,135 @@ function cast(player: Player, scene: SceneState, now = 1000) {
       aimY: 1000,
     },
     now,
+    game,
+    players,
   );
 }
+
+test('Mending Seed and Renewal heal the lowest HP percentage in range, including wrapped party members', () => {
+  for (const training of [false, true])
+    for (const row of [1, 7])
+      for (const learned of [1, 2]) {
+        const player = hero('druid'),
+          scene = arena();
+        scene.training = training;
+        player.partyId = 'party';
+        player.hitpoints = 80;
+        player.maxHitpoints = 100;
+        player.x = training ? TRAINING_ZONES[0].x : 10;
+        player.y = training ? TRAINING_ZONES[0].y : 1000;
+        if (training) player.scene = undefined;
+        const ally = {
+          ...player,
+          id: 'ally',
+          x: training ? player.x + 700 : FOREST.width - 690,
+          hitpoints: 200,
+          maxHitpoints: 1000,
+        };
+        const lessInjured = { ...player, id: 'less', hitpoints: 30 };
+        const outside = { ...player, id: 'outside', x: player.x + 701, hitpoints: 1 };
+        const stranger = { ...player, id: 'stranger', partyId: undefined, hitpoints: 1 };
+        const otherArea: Player = {
+          ...player,
+          id: 'area',
+          scene: training ? 'forest' : undefined,
+          hitpoints: 1,
+        };
+        const otherRun = { ...player, id: 'run', runId: 'other', hitpoints: 1 };
+        const dead = { ...player, id: 'dead', hitpoints: 0 };
+        const full = { ...player, id: 'full', hitpoints: 100 };
+        ability(player, 2, row, learned);
+        const players = [
+          player,
+          lessInjured,
+          outside,
+          stranger,
+          otherArea,
+          otherRun,
+          dead,
+          full,
+          ally,
+        ];
+        assert(cast(player, scene, 1000, players));
+        const fraction = row === 1 ? (learned === 2 ? 0.2 : 0.12) : learned === 2 ? 0.35 : 0.2;
+        assert.equal(ally.hitpoints, 200 + 1000 * fraction);
+        assert.equal(player.hitpoints, 80);
+        assert.equal(lessInjured.hitpoints, 30);
+        for (const excluded of [outside, stranger, otherArea, otherRun])
+          assert.equal(excluded.hitpoints, 1);
+        assert.equal(dead.hitpoints, 0);
+        assert.equal(full.hitpoints, 100);
+        assert.equal(scene.explosions?.[0].x, ally.x);
+        if (row === 7)
+          assert.equal(talentIncomingDamage(scene, player, 100, 1001), learned === 2 ? 25 : 40);
+      }
+});
+
+test('targeted healing handles solo, full health, ties and overhealing', () => {
+  const player = hero('druid'),
+    scene = arena();
+  player.maxHitpoints = 100;
+  player.hitpoints = 99;
+  ability(player, 2, 1, 2);
+  assert(cast(player, scene));
+  assert.equal(player.hitpoints, 100);
+  assert(cast(player, scene, 10000));
+  assert.equal(player.hitpoints, 100);
+  player.partyId = 'party';
+  player.hitpoints = 50;
+  const ally = { ...player, id: 'ally' };
+  assert(cast(player, scene, 20000, [player, ally]));
+  assert.equal(player.hitpoints, 70);
+  assert.equal(ally.hitpoints, 50);
+});
+
+test('Healing Grove reselects one injured party member per pulse within its fixed radius', () => {
+  const player = hero('druid'),
+    scene = arena();
+  player.partyId = 'party';
+  player.maxHitpoints = 100;
+  player.hitpoints = 100;
+  const first = { ...player, id: 'first', hitpoints: 10, x: player.x + 200 };
+  const second = { ...player, id: 'second', hitpoints: 11 };
+  const outside = { ...player, id: 'outside', hitpoints: 1, x: player.x + 201 };
+  const stranger = { ...player, id: 'stranger', hitpoints: 1, partyId: undefined };
+  ability(player, 2, 3, 2);
+  assert(cast(player, scene));
+  tickTalentEffects(scene, [player, second, outside, stranger, first], 1000);
+  assert.equal(first.hitpoints, 14);
+  assert.equal(second.hitpoints, 11);
+  player.x += 500;
+  tickTalentEffects(scene, [player, second, first], 2000);
+  assert.equal(second.hitpoints, 15);
+  first.partyId = 'left';
+  tickTalentEffects(scene, [player, second, first], 3000);
+  assert.equal(first.hitpoints, 14);
+  assert.equal(second.hitpoints, 19);
+  assert.equal(outside.hitpoints, 1);
+  assert.equal(stranger.hitpoints, 1);
+});
+
+test('healing opportunities choose the most injured nearby party member and are consumed once', () => {
+  const player = hero(),
+    scene = arena();
+  player.partyId = 'party';
+  player.maxHitpoints = 100;
+  player.hitpoints = 80;
+  ability(player, 1, 5);
+  learnTalent(player, talentNodeId('warrior', 1, 8));
+  scene.enemies[0].debuffs = [
+    { kind: 'bleed', ownerId: player.id, stacks: 3, nextTick: 2000, expiresAt: 6000 },
+  ];
+  const ally = { ...player, id: 'ally', x: 1110, hitpoints: 10 };
+  const stranger = { ...ally, id: 'stranger', partyId: undefined, hitpoints: 1 };
+  assert(cast(player, scene));
+  tickTalentEffects(scene, [player, stranger, ally], 1000);
+  assert.equal(ally.hitpoints, 13);
+  assert.equal(player.hitpoints, 80);
+  assert.equal(stranger.hitpoints, 1);
+  tickTalentEffects(scene, [player, ally], 2000);
+  assert.equal(ally.hitpoints, 13);
+});
 test('all classes have thirty independent talents and twelve abilities, with a defensive third column', () => {
   assert.equal(TALENT_TREE.length, 120);
   for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
