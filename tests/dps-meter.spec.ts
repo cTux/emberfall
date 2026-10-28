@@ -66,6 +66,16 @@ test('party damage bars drill into abilities and return with right click anywher
   const meter = page.getByLabel('Damage per second', { exact: true });
   const rows = meter.locator('button.damage-meter-row');
   await expect(rows).toHaveCount(4);
+  await expect(meter.locator('.damage-meter-columns, footer')).toHaveCount(0);
+  await expect(rows.first()).toHaveCSS('padding-left', '6px');
+  await expect(rows.filter({ hasText: 'Blade' }).locator('.damage-meter-icon img')).toHaveAttribute(
+    'src',
+    /warrior-portrait\.png$/,
+  );
+  await expect(rows.filter({ hasText: 'Ember' }).locator('.damage-meter-icon img')).toHaveAttribute(
+    'src',
+    /mage-portrait\.png$/,
+  );
   await expect(meter).not.toContainText('Outsider');
   await expect(rows.first().locator('.damage-meter-bar')).toHaveAttribute('style', 'width: 0%;');
   await rows.filter({ hasText: 'Willow' }).click();
@@ -93,11 +103,20 @@ test('party damage bars drill into abilities and return with right click anywher
   await expect(meter).toContainText('Blade — Abilities');
   await expect(meter.locator('.damage-meter-row').first()).toContainText('Slash');
   await expect(meter.locator('.damage-meter-row').first()).toContainText('500 / 100 / 83.3%');
+  await expect(
+    meter.locator('.damage-meter-row').first().locator('.damage-meter-icon img'),
+  ).toHaveAttribute('src', /warrior-spell\.png$/);
+  await expect(
+    meter
+      .locator('.damage-meter-row')
+      .filter({ hasText: 'Bleed' })
+      .locator('.damage-meter-icon img'),
+  ).toHaveAttribute('src', /bleed\.png$/);
   await meter.screenshot({ path: 'test-results/damage-meter-abilities.png' });
   for (const target of [
     meter.locator('header'),
     meter.locator('.damage-meter-row').first(),
-    meter.locator('footer'),
+    meter.locator('.damage-meter-icon').first(),
   ]) {
     await target.click({ button: 'right' });
     await expect(meter).toContainText('Damage done');
@@ -113,6 +132,15 @@ test('party damage bars drill into abilities and return with right click anywher
   player.partyId = undefined;
   await meter.getByRole('button', { name: 'Back to party' }).click();
   await expect(rows).toHaveCount(1);
+  hitEnemy(scene, enemy, 50, player, Date.now(), undefined, 'physical', false, 'Whirlwind');
+  await rows.first().click();
+  await expect(
+    meter
+      .locator('.damage-meter-row')
+      .filter({ hasText: 'Whirlwind' })
+      .locator('.damage-meter-icon > span'),
+  ).toHaveCSS('background-image', /warrior-icons\.png/);
+  await meter.getByRole('button', { name: 'Back to party' }).click();
   player.partyId = mage.partyId;
   await expect(rows).toHaveCount(4);
   await rows.filter({ hasText: 'Ember' }).click();

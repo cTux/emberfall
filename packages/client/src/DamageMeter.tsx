@@ -4,6 +4,10 @@ import { ButtonBase, IconButton } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
 import type { Player } from '@emberfall/common';
+import { TALENT_TREE } from '@emberfall/core';
+import { classSprite, spellSrc, statusSrc } from './class-art';
+import { TalentIcon } from './talent-icons';
+import { clientAsset } from './urls';
 
 const classColors: Record<string, string> = {
   warrior: '#c79c6e',
@@ -60,16 +64,36 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
           </IconButton>
         )}
       </header>
-      <div className='damage-meter-columns'>
-        <span>{selected ? 'Ability' : 'Character'}</span>
-        <span>Damage / DPS / %</span>
-      </div>
       <div className='damage-meter-rows'>
         {rows.map((row, index) => {
           const percent = denominator > 0 ? (row.damage / denominator) * 100 : 0;
+          const classId = row.classId ?? 'warrior';
+          const talent = selected
+            ? TALENT_TREE.find((node) => node.classId === classId && node.name === row.name)
+            : undefined;
+          const ailment = row.name.toLowerCase();
           const content = (
             <>
               <span className='damage-meter-bar' style={{ width: `${percent}%` }} />
+              <span className='damage-meter-icon' aria-hidden='true'>
+                {talent ? (
+                  <TalentIcon classId={classId} index={talent.column * 10 + talent.row} />
+                ) : (
+                  <img
+                    src={
+                      !selected
+                        ? classSprite(classId)
+                        : ailment === 'bleed' || ailment === 'burn' || ailment === 'poison'
+                          ? statusSrc(ailment)
+                          : row.name === 'Bear'
+                            ? clientAsset('/assets/wardrobe-style/bear-cub.png')
+                            : spellSrc(classId)
+                    }
+                    alt=''
+                    draggable={false}
+                  />
+                )}
+              </span>
               <span className='damage-meter-name'>
                 {index + 1}. {row.name}
               </span>
@@ -98,10 +122,6 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
         })}
         {selected && rows.length === 0 && <p>No damage recorded.</p>}
       </div>
-      <footer>
-        <span>Total: {number(denominator)}</span>
-        <span>DPS: last 5s · RMB: back</span>
-      </footer>
     </aside>
   );
 }
