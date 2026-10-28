@@ -46,6 +46,8 @@ The earned point budget equals normal level, including one point at level 1 and
 spent ranks. N or the HUD opens the voluntary three-column window. Each node
 shows its rank and level, with themed tooltips describing both ranks and affected
 abilities. Level-up never opens this window or waits for allocation.
+Only learned talents have a visible card border. Unlearned talents have no visible
+card border, whether available or locked; keyboard focus remains outlined.
 Active ability icons have a blue outline and an active-ability tooltip hint;
 passive icons keep their existing presentation. Both the tree and action bar
 crop artwork to its authored frame, without neighboring icon strips.

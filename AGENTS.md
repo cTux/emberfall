@@ -23,4 +23,4 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 - Package instructions: [common](packages/common/AGENTS.md), [core](packages/core/AGENTS.md), [server](packages/server/AGENTS.md), [client](packages/client/AGENTS.md), [UI](packages/ui/AGENTS.md).
 - [Test instructions](tests/AGENTS.md) and [documentation instructions](docs/AGENTS.md) apply in those subtrees. Reusable workflows are discoverable under `.agents/skills/`; load only the relevant skill.
 
-Use Node 24 and pnpm 11 with the committed lockfile. Keep changes focused, and do not turn a documentation task into a gameplay change. Create, push or merge PRs only within the user's requested scope; repository guidance is not standing authorization.
+Use Node 24 and pnpm 11 with the committed lockfile. Keep changes focused, and do not turn a documentation task into a gameplay change. After every batch of code changes requested by a user prompt, create a PR and merge it after verification and review checks pass. Respect branch protection and report blockers instead of bypassing checks.
