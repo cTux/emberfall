@@ -392,6 +392,12 @@ removes the entry before another can buy it. World deletion deletes merchant sta
 The existing protocol payload carries backpacks and merchant state without a
 second transport. UI components remain controlled; host callbacks send commands.
 
+Merchant state includes a persisted `refreshAt` deadline. The server checks it
+against wall time every tick, replaces regular stock and gold from `freshMerchant`,
+and retains buybacks. It saves before publishing stock or the system chat notice;
+failed writes retain the old state and retry at the autosave cadence. Legacy merchants without a deadline
+refresh once on load. Empty bottles use the existing resource stacking rules.
+
 Verification: `packages/server/src/inventory.test.ts` and
 `tests/inventory.spec.ts` cover transfers, failures, migration, restart,
 stacking, loot, unarmed casting and the replicated UI. `tests/auto-loot.spec.ts` covers the live setting, item pickup and reload persistence.

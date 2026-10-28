@@ -107,6 +107,7 @@ export const baseMod: GameMod = {
       healing: 25,
     });
     for (const [id, name] of Object.entries({
+      'empty-bottle': 'Empty bottle',
       log: 'Log',
       stick: 'Stick',
       leaf: 'Leaf',

@@ -254,7 +254,17 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     }
     merchant(worldId: string): Merchant {
       const row = this.db.prepare('SELECT data FROM merchants WHERE world_id=?').get(worldId);
-      return row ? merchantSchema.parse(JSON.parse(String(row.data))) : freshMerchant();
+      if (row) return merchantSchema.parse(JSON.parse(String(row.data)));
+      const merchant = freshMerchant();
+      this.saveMerchant(worldId, merchant);
+      return merchant;
+    }
+    saveMerchant(worldId: string, state: Merchant) {
+      this.db
+        .prepare(
+          'INSERT INTO merchants VALUES (?, ?) ON CONFLICT(world_id) DO UPDATE SET data=excluded.data',
+        )
+        .run(worldId, JSON.stringify(merchantSchema.parse(state)));
     }
     save(
       id: string,
@@ -295,12 +305,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
             version,
           );
         if (!result.changes) throw new VersionConflictError(id, 0, version);
-        if (merchant)
-          this.db
-            .prepare(
-              'INSERT INTO merchants VALUES (?, ?) ON CONFLICT(world_id) DO UPDATE SET data=excluded.data',
-            )
-            .run(merchant.worldId, JSON.stringify(merchantSchema.parse(merchant.state)));
+        if (merchant) this.saveMerchant(merchant.worldId, merchant.state);
         this.db
           .prepare(
             'UPDATE characters SET name=COALESCE((SELECT nickname FROM steam_accounts WHERE character_id=characters.id), ?), updated_at=? WHERE id=?',

@@ -43,7 +43,12 @@ Consumables stack by type; right-click consumes one. Health potions restore 25 H
 clamped to maximum HP, and are not consumed at full health or while dead.
 
 Marta has one shared backpack and gold balance per world, initially 5000 gold and
-five health potions. Buy shows regular stock; Buyback shows the latest 20 sold
+five health potions and 200 empty bottles at 1 gold each. Empty bottles are crafting
+resources that stack to 200; they cannot be consumed or equipped. Every 30 minutes,
+Marta's regular stock and gold reset to these initial amounts, preserving buybacks.
+The refresh deadline persists across restarts; overdue stock refreshes once when
+loaded. Each successful refresh posts a yellow world system message.
+Buy shows regular stock; Buyback shows the latest 20 sold
 entries, newest first, shared by everyone in the world. Older entries expire.
 Sold items never enter regular stock. Sell all, beside the player's gold balance,
 sells every backpack item (including consumable stacks) in one atomic action;

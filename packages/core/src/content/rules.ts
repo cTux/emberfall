@@ -201,6 +201,7 @@ export function createRules(content: Registries) {
   const BUYBACK_SLOTS = INVENTORY_SLOTS;
   const merchantSchema = z
     .object({
+      refreshAt: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
       coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
       backpack: backpackSchema,
       buyback: backpackSchema.refine((items) => items.length <= BUYBACK_SLOTS).optional(),
@@ -221,10 +222,14 @@ export function createRules(content: Registries) {
           .slice(0, BUYBACK_SLOTS),
     }));
   type Merchant = z.infer<typeof merchantSchema>;
-  function freshMerchant(): Merchant {
+  function freshMerchant(now = Date.now()): Merchant {
     return {
+      refreshAt: now + 30 * 60 * 1000,
       coins: 5000,
-      backpack: [{ id: crypto.randomUUID(), itemId: 'health-potion', quantity: 5 }],
+      backpack: [
+        { id: crypto.randomUUID(), itemId: 'health-potion', quantity: 5 },
+        { id: crypto.randomUUID(), itemId: 'empty-bottle', quantity: 200 },
+      ],
       buyback: [],
     };
   }
