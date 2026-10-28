@@ -61,6 +61,11 @@ Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, S
 
 ## Game components
 
+`TalentTree` keeps its three columns within the available width, stacking each
+icon above its text on narrow screens. Its host window owns vertical scrolling;
+the tree does not create a nested scroll area. The window title and close button
+remain visible while scrolling through all ten rows.
+
 `ActionBar` displays an optional `baseAbility` and four controlled optional talent slots (`abilities`). LMB invokes `onChoose`, including during cooldown; RMB invokes the ability
 `onToggleAutoCast` callback. `autoCast` displays marching dashed borders with a
 steady reduced-motion variant. Number badges and cooldown feedback remain; missing entries stay empty.

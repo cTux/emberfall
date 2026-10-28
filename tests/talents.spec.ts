@@ -11,6 +11,50 @@ import {
   talentNodeId,
 } from '../packages/core/src/index.ts';
 
+test('talents use one vertical scrollbar and fit desktop, narrow and short windows', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Your adventurer name').fill('Talent scrolling');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await page.getByRole('button', { name: 'Talents (N)' }).click();
+  const tree = page.getByRole('region', { name: 'Talents', exact: true });
+  for (const viewport of [
+    { width: 1440, height: 1000 },
+    { width: 320, height: 740 },
+    { width: 740, height: 320 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await expect(tree.locator('[data-talent-node]')).toHaveCount(30);
+    const scrollable = await tree
+      .locator('*')
+      .evaluateAll((elements) =>
+        elements
+          .filter(
+            (element) =>
+              /auto|scroll/.test(getComputedStyle(element).overflowY) &&
+              element.scrollHeight > element.clientHeight,
+          )
+          .map((element) => element.className),
+      );
+    expect(scrollable).toHaveLength(1);
+    expect(
+      await tree.evaluate((element) =>
+        [...element.querySelectorAll('*')].every((child) => child.scrollWidth <= child.clientWidth),
+      ),
+    ).toBe(true);
+    await tree.locator('[data-talent-node]').first().focus();
+    await page.mouse.move(0, 0);
+    await page.screenshot({ path: `test-results/talents-scroll-top-${viewport.width}.png` });
+    const last = tree.locator('[data-talent-node]').last();
+    await last.focus();
+    await expect(last).toBeInViewport();
+    await expect(tree.getByRole('button', { name: 'Close Talents' })).toBeInViewport();
+    await expect(tree.getByRole('status')).toHaveText('1 talent point available');
+    await page.screenshot({ path: `test-results/talents-scroll-${viewport.width}.png` });
+  }
+});
+
 test('Mending Seed heals a party teammate through the server and shows its targeting tooltip', async ({
   page,
   browser,
