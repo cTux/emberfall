@@ -141,8 +141,8 @@ Evidence: [scenes.test.ts](../../packages/server/src/scenes.test.ts), [pass-thro
 Trees, plants, rocks and stones in both areas can be gathered by clicking them
 or pressing E within 65 world units of their roots. Starting a gather takes five
 seconds, with no cooldown between gathers. A thin yellow progress bar directly
-above the resource shows remaining seconds, one small green zone and a moving
-vertical indicator. Pressing E inside the zone subtracts two seconds from the
+above the resource shows one small green zone and a moving vertical indicator,
+without text above or below the bar. Pressing E inside the zone subtracts two seconds from the
 remaining time and immediately replaces the zone. Misses have no penalty; the
 timer completes without input. Completion awards one gather, never before zero.
 Leaving range, dying, disconnecting or changing areas cancels the attempt without

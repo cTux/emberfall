@@ -18,17 +18,5 @@ export function drawTimedActivity(
   ctx.fillRect(left + width * activity.zoneStart, y, width * ACTIVITY_ZONE_WIDTH, 7);
   ctx.fillStyle = '#fff6dd';
   ctx.fillRect(left + width * activityIndicator(activity, now) - 0.75, y - 4, 1.5, 15);
-  ctx.font = '10px "Alegreya Sans", sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.strokeStyle = '#202318';
-  ctx.lineWidth = 3;
-  const time = `${(remaining / 1000).toFixed(1)}s`;
-  ctx.strokeText(time, x, y - 6);
-  ctx.fillText(time, x, y - 6);
-  ctx.font = '9px "Alegreya Sans", sans-serif';
-  ctx.textBaseline = 'top';
-  ctx.strokeText('E  Hit green: −2s', x, y + 13);
-  ctx.fillText('E  Hit green: −2s', x, y + 13);
   ctx.restore();
 }
