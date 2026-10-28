@@ -97,6 +97,13 @@ receives view data and has no game-package dependency. See the
 
 ## Rendering pipeline and caches
 
+`day-night.ts` derives the one-hour ambient sprite tint, daylight and local-light
+intensity from replicated epoch `serverNow`, independently of paused combat time.
+Arena and forest share it. Pixi multiplies ordinary image tints without changing
+text, geometry warnings, or additive light passes; no textures or shadow caches
+are rebuilt for the cycle. `effects.ts` scales sunlight shafts by daylight.
+The clock uses smooth interpolation between palette keys and wraps continuously.
+
 [art.ts](../../packages/client/src/art.ts) bakes softer entity tones once when
 loading packaged actor and scenery atlases. Dark pixels borrow a little color
 from adjacent opaque material, with a small contrast reduction. Alpha is preserved;
