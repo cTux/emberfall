@@ -115,13 +115,15 @@ The floating performance panel is 224 pixels wide with 8-pixel side padding. A c
 
 ![Verified desktop Storybook capture with supplied diagnostic samples](../images/compact-performance-monitor.png)
 
-The independently positioned DPS meter stays visible when the graph is hidden. It displays a compact Recount-style Damage done list: one row per current party member (only yourself when solo), ordered by total damage descending. Each row shows character name, total damage, rolling five-second DPS and percentage of party damage. Class-colored row backgrounds and bars show that percentage of total damage, with zero-width bars when no damage has been dealt. Warrior uses tan, Ranger green, Mage blue and Druid orange.
+The independently positioned DPS meter stays visible when the graph is hidden. It displays a compact Recount-style Damage done list: one row per current party member (only yourself when solo), ordered by total damage descending. Each row starts with a small class portrait followed by a padded rank and character name, total damage, rolling five-second DPS and percentage of party damage. Ability breakdown rows start with their existing spell, talent, ailment or companion artwork. Column headings and the total footer are omitted. Class-colored row backgrounds and bars show that percentage of total damage, with zero-width bars when no damage has been dealt. Warrior uses tan, Ranger green, Mage blue and Druid orange.
 
 Left-clicking a character opens their damage-dealing abilities, ordered by total damage, with damage, rolling DPS and percentage of that character's damage. Weapon attacks, named talent damage, ailments and Bear damage are attributed by the server through the shared hit path; overkill and hits on dead enemies are excluded. Right-click anywhere inside the meter returns to characters and suppresses the browser context menu. An accessible Back button provides the same action; character rows support keyboard activation. Drag the header to reposition it without interfering with row clicks.
 
 Totals cover the current connected character session, including training and forest, and reset on class change or a fresh character session. They are temporary, not saved progression. DPS retains the rolling five-second window divided by five and returns to zero after five seconds without damage. Leaving a party removes former members from the list; an unavailable selected character returns the display to the current party.
 
-![Verified desktop damage meter and ability breakdown](../images/damage-meter.png)
+![Verified desktop damage meter with character portraits](../images/damage-meter.png)
+
+![Verified desktop ability breakdown with ability icons](../images/damage-meter-abilities.png)
 
 ## UI-04 — Settings and music
 
