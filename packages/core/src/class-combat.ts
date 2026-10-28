@@ -449,6 +449,7 @@ export function tickPlayerShots(
         return false;
       }
       appendSceneEntities(scene, 'explosions', {
+        ownerId: shot.ownerId,
         id: ++scene.sequence,
         x: shot.x,
         y: shot.y,

@@ -148,6 +148,23 @@ export function Settings({
                   </MenuItem>
                 ))}
               </TextField>
+              <VolumeControl
+                label='Ability effect transparency'
+                value={preferences.abilityEffectTransparency}
+                onChange={(abilityEffectTransparency) =>
+                  setPreferences((p) => ({ ...p, abilityEffectTransparency }))
+                }
+              />
+              <Typography variant='caption' color='text.secondary'>
+                0%: fully visible. 100%: invisible. Applies to player ability images and particles.
+              </Typography>
+              <SettingToggle
+                label="Hide other players' ability effects"
+                checked={preferences.hideOtherPlayerEffects}
+                onChange={(hideOtherPlayerEffects) =>
+                  setPreferences((p) => ({ ...p, hideOtherPlayerEffects }))
+                }
+              />
               <Stack direction='row' spacing={1}>
                 {Object.entries(GRAPHICS_PRESETS).map(([preset, values]) => (
                   <Button

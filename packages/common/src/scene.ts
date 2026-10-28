@@ -85,6 +85,7 @@ export interface SceneState {
   pausedAt?: number;
   playerShots?: PlayerShot[];
   explosions?: {
+    ownerId?: string;
     id: number;
     x: number;
     y: number;

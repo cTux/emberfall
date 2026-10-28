@@ -726,6 +726,7 @@ test('fireball damages the actual collision target only once and splashes across
     [3, 1],
   );
   assert.equal(s.explosions!.length, 1);
+  assert.equal(s.explosions![0].ownerId, p.id);
 });
 
 test('class attacks fire once per cycle and ranged classes never deal a melee slash', (t) => {

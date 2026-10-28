@@ -68,6 +68,11 @@ DPS meter visibility: [UI-03](specs/interface-and-audio.md#ui-03--network-and-pe
 [saved preference](../packages/client/src/preferences.ts), [HUD](../packages/client/src/Arena.tsx)
 and [toggle/persistence verification](../tests/dps-meter.spec.ts).
 
+Ability effect visibility: [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readability),
+[opacity and ownership](../packages/client/src/ability-effects.ts),
+[saved preferences](../packages/client/src/preferences.ts) and
+[browser verification](../tests/ability-effects.spec.ts).
+
 Town health bar visibility: [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readability),
 [saved preference](../packages/client/src/preferences.ts),
 [toggle/persistence verification](../tests/town-health-bars.spec.ts) and

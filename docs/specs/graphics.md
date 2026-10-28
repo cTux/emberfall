@@ -59,6 +59,18 @@ Decorative cats and chickens wander in the village; raccoons appear in the fores
 
 ## GRAPHICS-04 — Combat readability
 
+Settings → Graphics includes a persistent **Ability effect transparency** slider
+from 0% (fully visible, default) to 100% (invisible), and **Hide other players'
+ability effects**, enabled by default for new and existing browsers. These apply
+immediately to player projectile images, explosions, talent images/particles and
+Warrior swings in training and forest. Quality presets preserve both choices.
+Enemy attacks, danger warnings, actors, status icons, damage numbers, loot and
+blood retain their existing presentation.
+
+Verified desktop settings capture from an isolated browser session:
+
+![Ability effect visibility settings](../images/ability-effect-settings.png)
+
 Ability effects (player projectiles, explosions, talent casts and Warrior swings)
 draw directly above the background tiles in training and forest, below scenery,
 actors, loot, health bars and status icons. Enemy projectiles share this low pass;

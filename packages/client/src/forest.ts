@@ -1,3 +1,4 @@
+import { abilityEffectOpacity } from './ability-effects';
 import { drawPartyOutline } from './effects';
 import { resourceNodes, resourceState } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
@@ -288,7 +289,7 @@ export function forestRenderer(
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
         ctx.drawImage(ground, col * 320, row * 320);
     if (world?.scene) {
-      drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles);
+      drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles, prefs, playerId);
       drawDanger(ctx, world.scene, serverTime, near, true);
     }
     const players =
@@ -303,6 +304,7 @@ export function forestRenderer(
         player.id === playerId ? now : serverTime,
         quality.bloom,
         world?.scene?.phase === 'active',
+        abilityEffectOpacity(prefs, playerId, player.id),
       );
     }
     drawBloodPuddles(ctx, world?.scene, serverTime, prefs.bloodPuddles, near, {
@@ -769,7 +771,9 @@ export function drawPlayerAttack(
   now: number,
   bloom: boolean,
   inCombat: boolean,
+  opacity = 1,
 ) {
+  if (opacity === 0) return;
   if (p.reconnecting) return;
   const age = now - (p.attackAt ?? -Infinity);
   if (!characterStats(p).hasWeapon) return;
@@ -783,6 +787,7 @@ export function drawPlayerAttack(
     const progress = age / PLAYER_ATTACK_DURATION,
       angle = (p.attackAngle ?? 0) - Math.PI / 2 + progress * Math.PI;
     ctx.save();
+    ctx.globalAlpha = opacity;
     ctx.translate(x, y);
     ctx.rotate(angle);
     if (bloom) {
@@ -796,7 +801,7 @@ export function drawPlayerAttack(
     ctx.stroke();
     ctx.fillStyle = '#a8ffce';
     for (let i = 0; i < 10; i++) {
-      ctx.globalAlpha = (1 - progress) * (1 - i / 14);
+      ctx.globalAlpha = opacity * (1 - progress) * (1 - i / 14);
       ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);
     }
     ctx.globalAlpha = 1;

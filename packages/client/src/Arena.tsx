@@ -1,3 +1,4 @@
+import { abilityEffectOpacity } from './ability-effects';
 import { LootHints } from './loot-hints';
 import { drawLootHints } from './loot-hint-rendering';
 import { partyInteraction } from './interaction-targets';
@@ -783,7 +784,15 @@ export function Arena({
         : undefined;
       const serverTime = view.serverNow ?? now;
       if (training) {
-        drawClassProjectiles(ctx, training, serverTime, project, quality.current.particles);
+        drawClassProjectiles(
+          ctx,
+          training,
+          serverTime,
+          project,
+          quality.current.particles,
+          prefs.current,
+          playerId,
+        );
       }
       const players = view.players
         .filter((p) => !p.scene)
@@ -802,6 +811,7 @@ export function Arena({
           player.id === playerId ? now : serverTime,
           quality.current.bloom,
           !!training && inTrainingZone(player),
+          abilityEffectOpacity(prefs.current, playerId, player.id),
         );
       if (training)
         drawLootAndBlood(ctx, training, serverTime, project, {
