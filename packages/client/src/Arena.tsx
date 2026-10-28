@@ -67,6 +67,7 @@ import { TICK_MS } from '@emberfall/core';
 import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import { castShadow, spriteMask } from './lighting';
+import { dayNight } from './day-night';
 import type { Caster, Light } from './lighting';
 import { TORCH_LIGHTS, lightTexture, drawTorchFire } from './village';
 import {
@@ -407,6 +408,9 @@ export function Arena({
       if (latest.current) snapshots.push(latest.current, now);
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) keys.clear();
       const view = latest.current ? snapshots.render(now) : null;
+      const cycle = dayNight(view?.serverNow ?? 0);
+      renderer.ambientTint = cycle.tint;
+      element.dataset.daylight = cycle.daylight.toFixed(3);
       element.dataset.partyRequests = view?.partyRequests?.map((r) => r.fromId).join(',') ?? '';
       const local = latest.current ? localMovement.render(latest.current, now) : undefined;
       let localSwing = false;
@@ -1218,10 +1222,10 @@ export function Arena({
             quality.current.shadows,
             texture,
           );
-          ctx.globalAlpha = 0.9 + Math.sin(now / 190 + i) * 0.1;
+          ctx.globalAlpha = cycle.lightAlpha * (0.9 + Math.sin(now / 190 + i) * 0.1);
           ctx.drawImage(movingLight, light.x - light.radius, light.y - light.radius);
         }
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = cycle.lightAlpha;
         for (const player of players) {
           const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
           const lantern: Light = {
@@ -1243,7 +1247,16 @@ export function Arena({
       if (quality.current.particles)
         drawParticles(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
       if (quality.current.fog) drawFog(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
-      drawAtmosphere(ctx, cameraX, cameraY, viewWidth, viewHeight, now, quality.current);
+      drawAtmosphere(
+        ctx,
+        cameraX,
+        cameraY,
+        viewWidth,
+        viewHeight,
+        now,
+        quality.current,
+        cycle.daylight,
+      );
       if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
       drawNavigation(ctx, view, playerId);
       drawPrompt();

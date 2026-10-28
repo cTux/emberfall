@@ -306,6 +306,7 @@ export function drawAtmosphere(
   height: number,
   now: number,
   settings: { colorGrading: boolean; lightShafts: boolean },
+  daylight = 1,
 ) {
   ctx.save();
   if (settings.colorGrading) {
@@ -314,6 +315,7 @@ export function drawAtmosphere(
     ctx.fillRect(x, y, width, height);
   }
   if (settings.lightShafts) {
+    ctx.globalAlpha *= daylight;
     ctx.globalCompositeOperation = 'screen';
     const slope = 0.6;
     const beamWidth = 160;

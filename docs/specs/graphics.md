@@ -34,6 +34,21 @@ Static sun shadows and static torch occlusion are cached; dynamic character bloc
 
 ## GRAPHICS-03 — Scenery and atmosphere
 
+Village and forest share a continuous, server-synchronized 60-real-minute day:
+6 minutes of dawn, 30 of daylight, 6 of dusk and 18 of night. World sprites
+blend from cool readable blue nights through warm dawn/dusk into natural daylight
+at every graphics preset. Text and geometry-based combat warnings retain their
+colors. Existing dynamic lights strengthen at night and sunlight shafts fade out.
+Rejoining or changing areas does not restart time. Sun shadow direction remains
+fixed; the cycle changes presentation only and never affects combat or saves.
+
+Verified gameplay captures from the isolated browser session (current server
+phase, Balanced graphics). These are implemented village and forest views,
+not the earlier generated concept. Both reuse bundled art; see [credits](../assets.md).
+
+![Day-night lighting in the village](../images/day-night-village.png)
+![Day-night lighting in the forest](../images/day-night-forest.png)
+
 Fog is animated, seamlessly tiled and layered; it is disabled by default in every preset and can be enabled individually. Saved individual fog preferences remain in effect on reload. Fog and flying particles use world coordinates with seamless repetition. Dense grass, paths and scenery share depth ordering with actors. The renderer draws baked fog sources with native Pixi sprites.
 
 Scenery in front of the local player has a fully transparent hole matching the player's current animated silhouette, expanded by 10 game pixels in every direction. The hole reveals the ground and previously drawn layers; the rest of each sprite stays fully opaque. The mask follows the reconciled position, facing and breathing pose, including across wrapped map edges, and disappears when the player moves clear or in front. This applies to village trees, buildings, wardrobe and torch posts, and forest trees. Players can walk through all scenery; shadows remain unchanged. In the new runtime, training dummies, enemies, other players, companions and decorative animals share this foot-position depth ordering and use the same silhouette cutout when covering the local player. Player ground identification rings are not drawn; sprite sizes stay unchanged.
