@@ -15,6 +15,7 @@ export interface Preferences {
   hideOtherPlayerEffects: boolean;
   bloodPuddles: boolean;
   damageNumbers: boolean;
+  hideOtherPlayerDamageNumbers: boolean;
   dps: boolean;
   fps: boolean;
   latency: boolean;
@@ -39,6 +40,7 @@ export function loadPreferences(): Preferences {
     hideOtherPlayerEffects: true,
     bloodPuddles: true,
     damageNumbers: true,
+    hideOtherPlayerDamageNumbers: true,
     dps: false,
     fps: false,
     latency: false,
@@ -67,6 +69,7 @@ export function loadPreferences(): Preferences {
       'hideOtherPlayerEffects',
       'bloodPuddles',
       'damageNumbers',
+      'hideOtherPlayerDamageNumbers',
       'dps',
       'fps',
       'latency',

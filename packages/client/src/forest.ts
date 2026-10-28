@@ -725,7 +725,14 @@ export function forestRenderer(
     if (quality.fog) drawFog(ctx, cameraX, cameraY, width, height, now);
     drawAtmosphere(ctx, cameraX, cameraY, width, height, now, quality, cycle.daylight);
     if (quality.vignette) drawVignette(ctx, cameraX, cameraY, width, height);
-    if (prefs.damageNumbers) drawDamageNumbers(ctx, world?.scene?.damage ?? [], near, serverTime);
+    if (prefs.damageNumbers)
+      drawDamageNumbers(
+        ctx,
+        world?.scene?.damage ?? [],
+        near,
+        serverTime,
+        prefs.hideOtherPlayerDamageNumbers ? playerId : undefined,
+      );
     drawDamageFlash(ctx, world, playerId);
     if (world) drawNavigation(ctx, world, playerId);
     for (const player of players) {

@@ -1199,7 +1199,13 @@ export function Arena({
       renderer.occlusion = false;
       if (training) {
         if (prefs.current.damageNumbers)
-          drawDamageNumbers(ctx, training.damage, project, serverTime);
+          drawDamageNumbers(
+            ctx,
+            training.damage,
+            project,
+            serverTime,
+            prefs.current.hideOtherPlayerDamageNumbers ? playerId : undefined,
+          );
       }
       if (quality.current.lighting) {
         ctx.save();

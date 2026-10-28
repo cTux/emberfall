@@ -48,9 +48,12 @@ export function drawDamageNumbers(
   hits: readonly DamageEvent[],
   project: (x: number, y: number) => { x: number; y: number },
   now: number,
+  onlyPlayerId?: string,
 ) {
-  for (const hit of combineDamageNumbers(hits))
+  for (const hit of combineDamageNumbers(hits)) {
+    if (onlyPlayerId && hit.ownerId !== onlyPlayerId && hit.target !== onlyPlayerId) continue;
     drawDamageNumber(ctx, hit, project(hit.x, hit.y), now);
+  }
 }
 /** Both combat areas render the same authoritative damage metadata. */
 export function drawDamageNumber(
