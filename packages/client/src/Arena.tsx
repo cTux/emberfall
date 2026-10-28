@@ -76,6 +76,7 @@ import {
   drawPortal,
   portalInteraction,
   drawPlayerDetails,
+  drawPlayerAttack,
 } from './forest';
 import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from './combat-effects';
 import type { Preferences } from './preferences';
@@ -787,12 +788,7 @@ export function Arena({
         : undefined;
       const serverTime = view.serverNow ?? now;
       if (training) {
-        drawLootAndBlood(ctx, training, serverTime, project, {
-          x: cameraX,
-          y: cameraY,
-          width: viewWidth,
-          height: viewHeight,
-        });
+        drawClassProjectiles(ctx, training, serverTime, project, quality.current.particles);
       }
       const players = view.players
         .filter((p) => !p.scene)
@@ -802,6 +798,23 @@ export function Arena({
           bear: p.bear ? { ...p.bear, ...project(p.bear.x, p.bear.y) } : undefined,
         }));
       const liveIds = new Set(players.map((p) => p.id));
+      for (const player of players)
+        drawPlayerAttack(
+          ctx,
+          player,
+          player.x,
+          player.y,
+          player.id === playerId ? now : serverTime,
+          quality.current.bloom,
+          !!training && inTrainingZone(player),
+        );
+      if (training)
+        drawLootAndBlood(ctx, training, serverTime, project, {
+          x: cameraX,
+          y: cameraY,
+          width: viewWidth,
+          height: viewHeight,
+        });
       for (const id of positions.keys()) if (!liveIds.has(id)) positions.delete(id);
       // Use the reconciled positions consistently for bodies, lanterns and shadows.
       const dynamic: Caster[] = [];
@@ -1176,21 +1189,10 @@ export function Arena({
           false,
           !prefs.current.hideHealthBarsInTown,
         );
-        drawPlayerDetails(
-          ctx,
-          player,
-          pos.x,
-          pos.y,
-          pos.facing,
-          player.id === playerId ? now : serverTime,
-          quality.current.bloom,
-          !!training && inTrainingZone(player),
-          false,
-        );
+        drawPlayerDetails(ctx, player, pos.x, pos.y, false);
       }
       renderer.occlusion = false;
       if (training) {
-        drawClassProjectiles(ctx, training, serverTime, project, quality.current.particles);
         if (prefs.current.damageNumbers)
           drawDamageNumbers(ctx, training.damage, project, serverTime);
       }
