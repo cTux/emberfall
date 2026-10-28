@@ -189,13 +189,19 @@ canvas {
   }
 }
 
-.performance-stats {
-  position: relative;
-  grid-column: 1;
-  width: min(264px, calc(100vw - 80px));
+.performance-stats,
+.dps-meter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
   cursor: move;
   touch-action: none;
   z-index: 1;
+}
+
+.performance-stats {
+  width: min(264px, calc(100vw - 80px));
 }
 
 .performance-stats svg {
@@ -203,13 +209,8 @@ canvas {
 }
 
 .dps-meter {
-  position: relative;
-  grid-column: 1;
   width: 235px;
   padding: 8px;
-  cursor: move;
-  touch-action: none;
-  z-index: 1;
 }
 
 .performance-stats > aside,

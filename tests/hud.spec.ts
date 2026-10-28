@@ -9,6 +9,43 @@ async function drag(page: Page, handle: Locator, dx: number, dy: number) {
   await page.mouse.up();
 }
 
+test('optional HUD widgets start centered without moving party frames', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Your adventurer name').fill('Centered hero');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  const party = page.locator('.party');
+  await expect(party).toBeVisible();
+  for (const viewport of [
+    { width: 1440, height: 1000 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const original = await party.boundingBox();
+    for (const name of ['DPS meter', 'FPS graph', 'Latency graph']) {
+      await page.keyboard.press('Escape');
+      await page.getByRole('switch', { name, exact: true }).check();
+      await page.getByRole('button', { name: 'Close Settings' }).click();
+      const panel =
+        name === 'DPS meter'
+          ? page.getByLabel('Damage per second', { exact: true })
+          : page.locator('.performance-stats');
+      await expect(panel).toBeVisible();
+      await expect.poll(() => party.boundingBox()).toEqual(original);
+      await expect
+        .poll(async () => {
+          const box = (await panel.boundingBox())!;
+          return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+        })
+        .toEqual({ x: viewport.width / 2, y: viewport.height / 2 });
+      await page.screenshot({ path: `test-results/centered-${name}-${viewport.width}.png` });
+      await page.keyboard.press('Escape');
+      await page.getByRole('switch', { name, exact: true }).uncheck();
+      await page.getByRole('button', { name: 'Close Settings' }).click();
+      await expect.poll(() => party.boundingBox()).toEqual(original);
+    }
+  }
+});
+
 test('Codex chapters have formatted content and loaded artwork without resizing', async ({
   page,
 }) => {
@@ -209,8 +246,9 @@ test('nickname persists in a new session, viewport is full, party bars and contr
     const graph = await next.locator('.performance-stats').boundingBox();
     const dps = await next.getByLabel('Damage per second', { exact: true }).boundingBox();
     const party = await next.locator('.party').boundingBox();
-    expect(dps!.y).toBeGreaterThanOrEqual(graph!.y + graph!.height);
-    expect(party!.y).toBeGreaterThanOrEqual(dps!.y + dps!.height);
+    expect(graph!.x + graph!.width / 2).toBe(viewport.width / 2);
+    expect(dps!.x + dps!.width / 2).toBe(viewport.width / 2);
+    expect(party!.y).toBe(14);
     await expect(next.getByLabel('Damage per second', { exact: true })).toContainText('0 DPS');
     const dot = await next.getByRole('status', { name: 'World server online' }).boundingBox();
     expect(dot!.x + dot!.width).toBe(viewport.width - 16);

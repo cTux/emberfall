@@ -4,6 +4,11 @@ Status: implemented baseline. Goal: Readable feedback and usable controls while 
 
 ## UI-01 — HUD and windows
 
+The optional DPS meter and FPS/latency monitor float independently of the party
+frames. Enabling or disabling them never moves party frames. With no saved drag
+offset, each widget starts at the viewport center; dragging retains its local
+offset across toggles and sessions, clamped to the viewport on resize.
+
 While in a world, a fixed bottom-center action bar shows the equipped weapon's
 base ability with the same ability icon as Wardrobe, followed by four empty ability
 slots. Unequipping the weapon hides only the base-ability slot. Every slot retains
@@ -98,11 +103,11 @@ With auto-target disabled, melee aim follows the cursor and ranged spells fly st
 
 ## UI-03 — Network and performance feedback
 
-Gameplay settings can independently show FPS, server latency and the DPS meter at the top left. The DPS meter, FPS graph and latency graph are disabled by default; their independent toggles apply immediately and persist across reloads. Existing saved visibility choices are preserved. Latency is a measured WebSocket ping/pong round trip in milliseconds, sampled every two seconds with a monotonic client clock. The toggle persists; a missing or disconnected measurement shows a dash.
+Gameplay settings can independently show FPS, server latency and the DPS meter. The DPS meter, FPS graph and latency graph are disabled by default; their independent toggles apply immediately and persist across reloads. Existing saved visibility choices are preserved. Latency is a measured WebSocket ping/pong round trip in milliseconds, sampled every two seconds with a monotonic client clock. The toggle persists; a missing or disconnected measurement shows a dash.
 
 The network graph plots ping, input acknowledgement delay, and local snapshot age as separate colored lines on the same millisecond axis. Input acknowledgement delay is the latest consumed command's send-to-snapshot delay, or the oldest outstanding command's age if greater. Local snapshot age includes time since receipt and interpolation backlog, but excludes network transit; it uses the monotonic client clock and differences between server timestamps. A low ping does not imply fresh movement acknowledgements or snapshots. Missing samples leave gaps in each line.
 
-The top-left performance panel overlays a green FPS trace and blue round-trip latency trace on one 30-second scrolling graph, sampled twice per second. The duplicate numeric caption is omitted; color-coded axis ranges (for example 0–240 FPS and 0–100 ms) describe the scales, not current readings. Both traces are disabled by default; the panel uses compact 8-pixel side padding. Each trace retains its own saved visibility toggle; disabling both hides the panel. When enabled, a DPS meter sits between the graph and party list (and stays visible when the graph is hidden). It shows your actual enemy damage over a rolling five-second window, divided by five, including damage over time and the companion; overkill is excluded. The server calculates it from the shared hit path, and it returns to zero after five seconds without damage.
+The floating performance panel overlays a green FPS trace and blue round-trip latency trace on one 30-second scrolling graph, sampled twice per second. The duplicate numeric caption is omitted; color-coded axis ranges (for example 0–240 FPS and 0–100 ms) describe the scales, not current readings. Both traces are disabled by default; the panel uses compact 8-pixel side padding. Each trace retains its own saved visibility toggle; disabling both hides the panel. The independently positioned DPS meter stays visible when the graph is hidden. It shows your actual enemy damage over a rolling five-second window, divided by five, including damage over time and the companion; overkill is excluded. The server calculates it from the shared hit path, and it returns to zero after five seconds without damage.
 
 ## UI-04 — Settings and music
 
