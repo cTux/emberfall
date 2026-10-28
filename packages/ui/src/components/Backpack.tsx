@@ -1,13 +1,14 @@
-import type { ReactNode } from 'react';
-import { Box, Typography } from '@mui/material';
+import { useRef, type ReactNode } from 'react';
+import { Box } from '@mui/material';
 import { GearTooltipStyled, BackpackSlotStyled, GearBadgeValueStyled } from './equipment.styles';
+import { ItemTooltip, type ItemTooltipView, type EquipmentBadgeView } from './ItemTooltip';
 import { GoldBalance } from './GoldBalance';
 import { INVENTORY_DRAG_PREFIX, inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
-export interface BackpackItemView {
+export interface BackpackItemView extends ItemTooltipView {
+  stats?: EquipmentBadgeView[];
+  useAction?: string;
   id: string;
-  name: string;
-  icon: ReactNode;
   quantity: number;
   details: string;
   price: number;
@@ -35,8 +36,15 @@ export function Backpack({
   drop,
   onUse,
 }: BackpackProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
   return (
-    <Box component='section' aria-label={label} sx={{ minWidth: 0 }} {...inventoryDropProps(drop)}>
+    <Box
+      ref={panelRef}
+      component='section'
+      aria-label={label}
+      sx={{ minWidth: 0 }}
+      {...inventoryDropProps(drop)}
+    >
       {(coins !== undefined || headerActions) && (
         <Box
           sx={{
@@ -61,18 +69,29 @@ export function Backpack({
         {items.map((item) => (
           <GearTooltipStyled
             key={item.id}
-            disableInteractive
+            disableInteractive={!item.stats?.length}
             arrow
             describeChild
             enterTouchDelay={0}
+            slotProps={{
+              popper: {
+                container: () => panelRef.current?.closest('.MuiDialog-container') ?? document.body,
+              },
+            }}
             title={
-              <Box>
-                <Typography variant='subtitle2'>{item.name}</Typography>
-                <Typography variant='body2'>{item.details}</Typography>
-                <Typography variant='body2' color='primary.main' sx={{ mt: 1 }}>
-                  {item.price} gold
-                </Typography>
-              </Box>
+              <ItemTooltip
+                item={item}
+                quantity={item.quantity}
+                stats={item.stats}
+                onBack={() =>
+                  panelRef.current
+                    ?.querySelector<HTMLButtonElement>(
+                      `[data-backpack-item="${CSS.escape(item.id)}"]`,
+                    )
+                    ?.focus()
+                }
+                action={action === 'Use' ? item.useAction : action}
+              />
             }
           >
             <BackpackSlotStyled
@@ -93,6 +112,16 @@ export function Backpack({
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   onUse(item.id, event);
+                  return;
+                }
+                if (event.key !== 'Tab' || event.shiftKey) return;
+                const tooltipId = event.currentTarget.getAttribute('aria-describedby');
+                const stat = tooltipId
+                  ? document.getElementById(tooltipId)?.querySelector<HTMLButtonElement>('button')
+                  : null;
+                if (stat) {
+                  event.preventDefault();
+                  stat.focus();
                 }
               }}
             >

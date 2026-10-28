@@ -27,7 +27,10 @@ test('Marta sells bottles and announces refreshed stock in yellow system chat', 
     .poll(() => bottleImage.evaluate((image: HTMLImageElement) => image.naturalWidth))
     .toBeGreaterThan(0);
   await bottle.hover();
-  await expect(page.getByRole('tooltip')).toContainText('1 gold');
+  await expect(page.getByRole('tooltip')).toContainText('Resource');
+  await expect(page.getByRole('tooltip')).toContainText('Quantity200');
+  await expect(page.getByRole('tooltip')).toContainText('1 gold each');
+  await expect(page.getByRole('tooltip')).toContainText('Right-click: buy');
   await page.screenshot({ path: 'test-results/empty-bottle-trading.png' });
   await bottle.click({ button: 'right' });
   await expect(
@@ -74,8 +77,17 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await expect(potionIcon).toHaveJSProperty('naturalWidth', 96);
   await backpack.getByRole('button', { name: 'Use Helmet', exact: true }).hover();
   const tooltip = page.getByRole('tooltip');
-  await expect(tooltip).toContainText('Armor: 1');
-  await expect(tooltip.locator('p').last()).toHaveText('1 gold');
+  await expect(tooltip).toContainText('1Armor');
+  await expect(tooltip).toContainText('1 gold each');
+  await expect(tooltip).toContainText('Right-click: equip');
+  await page.screenshot({ path: 'test-results/item-tooltip-armor.png' });
+  await backpack.getByRole('button', { name: 'Use Health potion (3)' }).hover();
+  const potionTooltip = page.getByRole('tooltip').filter({ hasText: 'Health potion' });
+  await expect(potionTooltip).toContainText('Consumable');
+  await expect(potionTooltip).toContainText('Restores 25 health');
+  await expect(potionTooltip).toContainText('Quantity3');
+  await expect(potionTooltip).toContainText('Right-click: use');
+  await page.screenshot({ path: 'test-results/item-tooltip-consumable.png' });
   await backpack
     .getByRole('button', { name: 'Use Helmet', exact: true })
     .click({ button: 'right' });
@@ -168,6 +180,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     buyer.coins = 1;
     await expect(secondPage.getByLabel('Buyer: 1 coins')).toBeVisible();
     await secondPage.locator('canvas').click({ position: { x: 5, y: 5 } });
+    // Keep the pointer near the teleported buyer rather than over distant scenery.
+    const canvas = (await secondPage.locator('canvas').boundingBox())!;
+    await secondPage.mouse.move(canvas.x + canvas.width / 2, canvas.y + canvas.height / 2);
     const secondTrader = secondPage.getByRole('dialog', { name: INNKEEPER.name });
     await expect(async () => {
       await secondPage.keyboard.press('e');
@@ -190,7 +205,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondTrader
       .getByRole('button', { name: 'Buy Health potion (5)' })
       .click({ button: 'right' });
-    await expect(secondTrader.getByRole('alert')).toContainText('Not enough gold');
+    await expect(secondPage.getByRole('log', { name: 'Latest chat messages' })).toContainText(
+      'Not enough gold',
+    );
     expect(world.merchant!.backpack[0].quantity).toBe(5);
     await page.screenshot({ path: 'test-results/innkeeper-trading.png' });
     // Moving away rejects an action even if the trader window remains open.
@@ -199,7 +216,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondTrader
       .getByRole('button', { name: 'Sell Helmet', exact: true })
       .click({ button: 'right' });
-    await expect(secondTrader.getByRole('alert')).toContainText('Trade near Marta');
+    await expect(secondPage.getByRole('log', { name: 'Latest chat messages' })).toContainText(
+      'Trade near Marta',
+    );
     expect(buyer.backpack!.length).toBe(1);
   } finally {
     await context.close();

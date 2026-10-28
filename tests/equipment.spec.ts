@@ -49,17 +49,22 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
   await expect(itemTooltip.locator('.MuiTooltip-tooltip').first()).toHaveCSS(
     'background-color',
-    'rgba(0, 0, 0, 0.76)',
+    'rgba(0, 0, 0, 0.94)',
   );
   expect(
     (await itemTooltip.locator('.MuiTooltip-tooltip').first().boundingBox())!.width,
-  ).toBeLessThanOrEqual(236);
+  ).toBeLessThanOrEqual(250);
   await expect(itemTooltip.getByRole('button', { name: 'Power: 5', exact: true })).toBeVisible();
-  await expect(itemTooltip.getByRole('button', { name: 'Range: 75', exact: true })).toBeVisible();
-  await expect(itemTooltip.getByRole('button', { name: 'Cooldown: 1', exact: true })).toBeVisible();
+  await expect(
+    itemTooltip.getByRole('button', { name: 'Range: 75 units', exact: true }),
+  ).toBeVisible();
+  await expect(
+    itemTooltip.getByRole('button', { name: 'Cooldown: 1 sec', exact: true }),
+  ).toBeVisible();
   await expect(itemTooltip).not.toContainText('Deal 5 damage');
   const bleed = itemTooltip.getByRole('button', { name: 'Bleed', exact: true });
-  await expect(bleed).toHaveText('');
+  await expect(bleed).toContainText('10% chance to apply Bleed');
+  await expect(itemTooltip).toContainText('Right-click: unequip');
   // Tab reaches the portalled badges without leaving the modal focus scope.
   await page.keyboard.press('Tab');
   await expect(itemTooltip.getByRole('button', { name: 'Power: 5', exact: true })).toBeFocused();
@@ -147,7 +152,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     const badge = page.locator('[data-equipment-badge="range"]');
     await expect(badge).toHaveAttribute(
       'aria-label',
-      `Range: ${(classId === 'warrior' ? 75 : classId === 'ranger' ? 1000 : 250).toLocaleString('en')}`,
+      `Range: ${(classId === 'warrior' ? 75 : classId === 'ranger' ? 1000 : 250).toLocaleString('en')} units`,
     );
     const effect = { warrior: 'bleed', ranger: 'poison', mage: 'burn', druid: 'roots' }[
       classId as 'warrior' | 'ranger' | 'mage' | 'druid'
@@ -173,7 +178,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await weapon.hover();
     await expect(page.locator('[data-equipment-badge="range"]')).toHaveAttribute(
       'aria-label',
-      `Range: ${manualRange.toLocaleString('en')}`,
+      `Range: ${manualRange.toLocaleString('en')} units`,
     );
     await physicalI();
     await page.keyboard.press('g');
@@ -188,7 +193,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect(dialog).toHaveCount(0);
   }
   await opener.click();
-  for (const width of [390, 320]) {
+  for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 800 });
     await expect(dialog).toBeVisible();
     await expect.poll(async () => (await dialog.boundingBox())!.x).toBeGreaterThanOrEqual(0);

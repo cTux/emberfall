@@ -62,7 +62,7 @@ export function Storehouse({
                 <Backpack
                   label={storage.name}
                   slots={STORAGE_SLOTS}
-                  items={backpackViews(storage.items)}
+                  items={backpackViews(storage.items, player)}
                   action='Withdraw'
                   inventory={`storage-${index}`}
                   drop={storageDrop(index)}
@@ -70,7 +70,7 @@ export function Storehouse({
                 />
                 <Backpack
                   label='Your backpack'
-                  items={backpackViews(player.backpack ?? [])}
+                  items={backpackViews(player.backpack ?? [], player)}
                   action='Deposit'
                   inventory='backpack'
                   drop={{

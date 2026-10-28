@@ -1,34 +1,10 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { Box, ButtonBase, Stack, Typography } from '@mui/material';
-import { GearTooltipStyled, GearBadgeStyled, GearBadgeValueStyled } from './equipment.styles';
-import badgeAtlas from '../assets/gear-badges.png';
+import { GearTooltipStyled } from './equipment.styles';
+import { ItemTooltip, type ItemTooltipView, type EquipmentBadgeView } from './ItemTooltip';
 import { inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
-const BADGE_CELLS = {
-  power: 0,
-  range: 1,
-  cooldown: 2,
-  physical: 3,
-  criticalChance: 4,
-  criticalDamage: 5,
-  bleed: 6,
-  poison: 7,
-  burn: 8,
-  roots: 9,
-  projectiles: 10,
-  speed: 11,
-  duration: 12,
-  splash: 13,
-  nature: 14,
-  magic: 15,
-} as const;
-
-export interface EquipmentBadgeView {
-  label: string;
-  icon: keyof typeof BADGE_CELLS;
-  value?: string;
-  explanation: string;
-}
+export type { EquipmentBadgeView } from './ItemTooltip';
 
 export interface EquipmentStatView {
   label: string;
@@ -40,13 +16,7 @@ export interface EquipmentSlotView {
   position: { column: number; row: number };
   fallback: ReactNode;
   accepts: string;
-  item?: {
-    name: string;
-    icon: ReactNode;
-    badges: EquipmentBadgeView[];
-    details?: string;
-    price?: number;
-  };
+  item?: ItemTooltipView & { badges: EquipmentBadgeView[] };
   onUnequip?(): void;
   drop?: InventoryDrop;
 }
@@ -83,7 +53,6 @@ function StatRows({ stats }: { stats: EquipmentStatView[] }) {
 export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [openSlot, setOpenSlot] = useState<string | null>(null);
-  const [openBadge, setOpenBadge] = useState<string | null>(null);
   return (
     <Box
       ref={panelRef}
@@ -115,7 +84,6 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
             onOpen={() => setOpenSlot(slot.id)}
             onClose={() => {
               setOpenSlot((current) => (current === slot.id ? null : current));
-              setOpenBadge(null);
             }}
             arrow
             describeChild
@@ -127,85 +95,25 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               },
             }}
             title={
-              <Stack spacing={1}>
-                <Typography variant='subtitle2'>
-                  {slot.item?.name ?? `Empty ${slot.label.toLowerCase()}`}
-                </Typography>
-                {slot.item ? (
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {slot.item.badges.map((badge, index) => {
-                      const cell = BADGE_CELLS[badge.icon];
-                      return (
-                        <GearTooltipStyled
-                          key={badge.label}
-                          open={openSlot === slot.id && openBadge === badge.label}
-                          onOpen={() => setOpenBadge(badge.label)}
-                          onClose={() =>
-                            setOpenBadge((current) => (current === badge.label ? null : current))
-                          }
-                          arrow
-                          describeChild
-                          title={
-                            <>
-                              <Typography variant='subtitle2'>{badge.label}</Typography>
-                              <Typography variant='body2'>{badge.explanation}</Typography>
-                            </>
-                          }
-                          enterTouchDelay={0}
-                          placement='bottom'
-                          slotProps={{
-                            popper: {
-                              container: () =>
-                                panelRef.current?.closest('.MuiDialog-container') ?? document.body,
-                            },
-                          }}
-                        >
-                          <GearBadgeStyled
-                            aria-label={`${badge.label}${badge.value ? `: ${badge.value}` : ''}`}
-                            data-equipment-badge={badge.icon}
-                            onClick={() => setOpenBadge(badge.label)}
-                            onKeyDown={(event) => {
-                              if (index !== 0 || event.key !== 'Tab' || !event.shiftKey) return;
-                              const slotButton = panelRef.current?.querySelector<HTMLButtonElement>(
-                                `[data-equipment-slot="${CSS.escape(slot.id)}"]`,
-                              );
-                              if (slotButton) {
-                                event.preventDefault();
-                                slotButton.focus();
-                              }
-                            }}
-                          >
-                            <Box
-                              aria-hidden='true'
-                              sx={{
-                                width: 40,
-                                height: 40,
-                                backgroundImage: `url(${badgeAtlas})`,
-                                backgroundSize: '400% 400%',
-                                backgroundPosition: `${((cell % 4) * 100) / 3}% ${(Math.floor(cell / 4) * 100) / 3}%`,
-                                imageRendering: 'pixelated',
-                              }}
-                            />
-                            {badge.value && (
-                              <GearBadgeValueStyled aria-hidden='true'>
-                                {badge.value}
-                              </GearBadgeValueStyled>
-                            )}
-                          </GearBadgeStyled>
-                        </GearTooltipStyled>
-                      );
-                    })}
-                  </Box>
-                ) : (
+              slot.item ? (
+                <ItemTooltip
+                  item={slot.item}
+                  action={slot.onUnequip ? 'Unequip' : undefined}
+                  stats={slot.item.badges}
+                  onBack={() =>
+                    panelRef.current
+                      ?.querySelector<HTMLButtonElement>(
+                        `[data-equipment-slot="${CSS.escape(slot.id)}"]`,
+                      )
+                      ?.focus()
+                  }
+                />
+              ) : (
+                <Stack spacing={0.5}>
+                  <Typography variant='subtitle2'>Empty {slot.label.toLowerCase()}</Typography>
                   <Typography variant='body2'>Accepts: {slot.accepts}</Typography>
-                )}
-                {slot.item?.details && <Typography variant='body2'>{slot.item.details}</Typography>}
-                {slot.item && (
-                  <Typography variant='body2' color='primary.main'>
-                    {slot.item.price ?? 1} gold
-                  </Typography>
-                )}
-              </Stack>
+                </Stack>
+              )
             }
           >
             <ButtonBase

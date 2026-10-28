@@ -48,6 +48,7 @@ const meta = {
             ...slot,
             item: {
               name: "Warrior's sword",
+              subtitle: 'Sword',
               icon: <img src={warriorWeapon} alt='' />,
               badges: [
                 {
@@ -70,6 +71,7 @@ const meta = {
                 },
                 {
                   label: 'Damage type',
+                  value: 'Physical',
                   icon: 'physical',
                   explanation: 'This sword deals physical damage.',
                 },
