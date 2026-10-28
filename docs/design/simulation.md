@@ -88,7 +88,8 @@ then invokes the existing atomic reward rule only on completion. Cancellation
 discards the attempt. Each target has a server-generated ID, so stale/replayed
 checks cannot apply to its replacement. Input timestamps must be within 500 ms
 of server receipt and after the current target appeared; range and area are always
-checked at receipt. The client extrapolates the latest server clock for smooth
-display and sends that displayed time, without sending outcomes or rewards.
+checked at receipt. The client anchors a frame clock to the first snapshot of
+each gathering attempt, so packet arrival jitter cannot restart either the fill
+or indicator. It sends that displayed time, without sending outcomes or rewards.
 Resource inventory entries use registered `resource` definitions and stack to
 200; insertion plans capacity before mutation and splits overflow into new IDs.

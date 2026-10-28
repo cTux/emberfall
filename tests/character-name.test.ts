@@ -103,6 +103,32 @@ test('overhead player and boss health match gathering thickness and borders with
   }
 });
 
+test('gathering fill and indicator retain fractional motion between frames', () => {
+  const activity = {
+    startedAt: 0,
+    endsAt: 5000,
+    durationMs: 5000,
+    zoneStart: 0.7,
+    zoneAt: 0,
+    checkId: 'zone',
+  };
+  let previousFill = 0;
+  let previousIndicator = 0;
+  for (const now of [300, 300.5, 301]) {
+    const context = recordingContext();
+    drawTimedActivity(context.ctx, activity, 100, 98, now);
+    const rectangles = context.backgrounds as [string, number, number, number, number][];
+    const fill = rectangles[2][3];
+    const indicator = rectangles[4][1];
+    assert.ok(Math.abs(fill - (122 * now) / 5000) < 1e-10);
+    assert.ok(Math.abs(indicator - (40 + (120 * now) / 1200 - 0.75)) < 1e-10);
+    assert.ok(fill > previousFill);
+    assert.ok(indicator > previousIndicator);
+    previousFill = fill;
+    previousIndicator = indicator;
+  }
+});
+
 test('world bar fills clamp at empty and full while preserving the frame', () => {
   for (const [fraction, expectedWidth] of [
     [-1, 0],
