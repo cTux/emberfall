@@ -76,7 +76,7 @@ export function drawPortal(
   y: number,
   now: number,
   bloom: boolean,
-  name: string,
+  name: string | null,
   outline: InteractionTarget | null,
   shadows: boolean,
   _waving: boolean,
@@ -101,7 +101,7 @@ export function drawPortal(
     drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
     ctx.restore();
     if (outline) drawInteractionOutline(ctx, outline);
-    drawNameBadge(ctx, x, y - 72, name);
+    if (name) drawNameBadge(ctx, x, y - 72, name);
     return;
   }
   if (shadows)
@@ -159,7 +159,7 @@ export function drawPortal(
   ctx.restore();
   ctx.restore();
   if (outline) drawInteractionOutline(ctx, outline);
-  drawNameBadge(ctx, x, y - 60, name);
+  if (name) drawNameBadge(ctx, x, y - 60, name);
 }
 const fogTexture = document.createElement('canvas');
 fogTexture.width = fogTexture.height = 512;

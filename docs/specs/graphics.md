@@ -197,6 +197,8 @@ atlas cell. Preserve retained original assets and their credits.
 ## Acceptance
 
 Village buildings, including the wardrobe, have no world-space name labels.
+The village Forest portal also has no overhead name badge; its interaction prompt,
+portal window title and off-screen navigation label remain visible when applicable.
 
 In the new client, world text, chat bubbles, portal labels and navigation
 are rendered with the world. Text textures use four times the font resolution for
