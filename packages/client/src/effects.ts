@@ -1,5 +1,6 @@
 import { nearbyInteraction } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
+import { drawWorldBar } from './world-bar.ts';
 
 export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {
   if (!text) return;
@@ -16,7 +17,7 @@ export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: numb
   }
   const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 16;
   const height = lines.length * 13 + 10;
-  const bottom = y - 48; // Two units above the player health bar; overlays the debuff area.
+  const bottom = y - 52; // Two units above the player health bar; overlays the debuff area.
   const left = x - width / 2;
   const right = x + width / 2;
   const top = bottom - height;
@@ -358,17 +359,17 @@ export function drawPlayerHealth(
   ctx.textBaseline = 'alphabetic';
   const metrics = ctx.measureText(name);
   const width = Math.max(boss ? 64 : 40, Math.ceil(metrics.width) + 12);
-  const height = boss ? 9 : 7;
-  ctx.fillStyle = '#101817';
-  ctx.fillRect(x - width / 2, y, width, height);
-  ctx.fillStyle = boss ? '#c084fc' : '#86d9a2';
-  ctx.fillRect(
-    x - width / 2 + 1,
-    y + 1,
-    (width - 2) * Math.max(0, Math.min(1, hp / Math.max(1, max))),
-    height - 2,
+  const bottom = y + (boss ? 9 : 7);
+  // Grow upward to preserve the existing name and sprite clearance.
+  drawWorldBar(
+    ctx,
+    x - width / 2,
+    bottom,
+    width,
+    hp / Math.max(1, max),
+    boss ? '#c084fc' : '#86d9a2',
   );
-  drawCharacterName(ctx, x, y + height, name, color);
+  drawCharacterName(ctx, x, bottom, name, color);
   ctx.restore();
   return width;
 }

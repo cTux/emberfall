@@ -104,6 +104,9 @@ replace full silhouettes immediately. Plants share the tree sway path; rocks sta
 Core resource identities match the existing village placements. Hover masks include
 living resources; depleted sprites remain visible during the server-owned cooldown.
 Tree health bars use replicated remaining gathers and disappear on depletion or restoration.
+`world-bar.ts` draws the shared 11-unit frame (7-unit fill, 2-unit border) for
+gathering and every overhead health bar. Health bars keep their bottom anchors,
+widths and colors; names stay fixed while debuffs and speech clear the new top.
 
 The controlled [ActionBar](../../packages/ui/src/components/ActionBar.tsx) renders
 the optional base ability and four reserved slots, with an SVG cooldown sector

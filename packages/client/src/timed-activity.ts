@@ -1,5 +1,6 @@
 import type { TimedActivity } from '@emberfall/common';
 import { activityIndicator, ACTIVITY_ZONE_WIDTH } from '@emberfall/core';
+import { drawWorldBar } from './world-bar.ts';
 
 export function drawTimedActivity(
   ctx: CanvasRenderingContext2D,
@@ -12,12 +13,7 @@ export function drawTimedActivity(
   const left = x - width / 2;
   const remaining = Math.max(0, activity.endsAt - now);
   ctx.save();
-  ctx.fillStyle = '#28271b';
-  ctx.fillRect(left - 2, y - 2, width + 4, 11);
-  ctx.fillStyle = '#695a31';
-  ctx.fillRect(left, y, width, 7);
-  ctx.fillStyle = '#ebc34b';
-  ctx.fillRect(left, y, width * Math.max(0, Math.min(1, 1 - remaining / activity.durationMs)), 7);
+  drawWorldBar(ctx, left - 2, y + 9, width + 4, 1 - remaining / activity.durationMs, '#ebc34b');
   ctx.fillStyle = '#81df4b';
   ctx.fillRect(left + width * activity.zoneStart, y, width * ACTIVITY_ZONE_WIDTH, 7);
   ctx.fillStyle = '#fff6dd';

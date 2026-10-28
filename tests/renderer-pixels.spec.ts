@@ -54,6 +54,17 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     .locator('[data-preview="battle-text"]')
     .screenshot({ path: 'test-results/battle-text-phases.png' });
   expect(errors).toEqual([]);
+  for (const sample of [
+    'health border top',
+    'health border bottom',
+    'tree health border',
+    'gathering border',
+  ])
+    expect(results[sample].actual).toEqual([40, 39, 27, 255]);
+  expect(results['health fill top'].actual).toEqual([134, 217, 162, 255]);
+  expect(results['health fill bottom'].actual).toEqual([134, 217, 162, 255]);
+  expect(results['health empty track'].actual).toEqual([105, 90, 49, 255]);
+  expect(results['health outside frame'].actual).toEqual([128, 144, 96, 255]);
   expect(results['prompt rounded corner'].actual).toEqual([128, 144, 96, 255]);
   expect(results['prompt face highlight'].actual[0]).toBeGreaterThan(
     results['prompt face shade'].actual[0] + 20,

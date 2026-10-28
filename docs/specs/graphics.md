@@ -44,6 +44,13 @@ Decorative cats and chickens wander in the village; raccoons appear in the fores
 
 ## GRAPHICS-04 — Combat readability
 
+All overhead health bars (players, companions, bosses, regular and elite enemies,
+training dummies and partially gathered trees) match the gathering bar's
+7-world-unit fill and 2-unit dark border on every side (11 units total height).
+Their existing widths, health colors and name positions remain unchanged. Bars
+grow upward, with speech bubbles and debuff rows kept clear of the thicker frame.
+HUD and party health meters retain their existing styling.
+
 In the new client, all player projectiles (arrows, fireballs and Druid roots) have
 a thin, one-world-unit light-green silhouette outline in training and forest,
 at every graphics preset. Their class art, size, animation and flight remain intact.
