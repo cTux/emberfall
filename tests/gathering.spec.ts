@@ -6,6 +6,7 @@ import {
   FOREST,
   PLANT_KINDS,
   itemDefinition,
+  inTrainingZone,
 } from '../packages/core/src/index.ts';
 
 test('each village plant appears in inventory with its own name and artwork after gathering', async ({
@@ -23,7 +24,10 @@ test('each village plant appears in inventory with its own name and artwork afte
     const node = VILLAGE_RESOURCES.find((n) => n.kind === 'plant' && n.variant === variant)!;
     Object.assign(player, { x: node.x, y: node.y - 15 });
     await expect(canvas).toHaveAttribute('data-resource', node.id);
-    await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather plant');
+    await expect(canvas).toHaveAttribute(
+      'data-interaction-prompt',
+      inTrainingZone(player) ? '' : 'Gather plant',
+    );
     await page.keyboard.press('e');
     await expect(canvas).toHaveAttribute('data-gathering', node.id);
     expect(world.resources?.[node.id]).toBeUndefined();
@@ -129,7 +133,8 @@ test('click and E gather replicated resources in village and forest, show deplet
   player.y = wrap(plant.y - 15, FOREST.height);
   await page.mouse.move(-1, -1);
   await expect(canvas).toHaveAttribute('aria-label', 'Forest combat scene.');
-  await expect(canvas).toHaveAttribute('data-interaction-prompt', /^Gather /);
+  await expect(canvas).toHaveAttribute('data-resource', plant.id);
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
   await page.keyboard.press('e');
   await expect(canvas).toHaveAttribute('data-gathering', plant.id);
   await page.screenshot({ path: 'test-results/gathering-active-forest.png' });
@@ -181,4 +186,61 @@ test('green-zone E hits shorten gathering, replace the zone and allow the next g
   player.x += 200;
   await expect(canvas).toHaveAttribute('data-gathering', '');
   expect(world.resources?.[next.id]).toBeUndefined();
+});
+
+test('combat gathering hint defaults hidden, toggles immediately and persists', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const player = [...world.players.values()][0];
+  const canvas = page.locator('canvas');
+  const rock = VILLAGE_RESOURCES.find((node) => node.kind === 'rock')!;
+  Object.assign(player, { x: rock.x, y: rock.y - 15 });
+  await page.mouse.move(-1, -1);
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather rock');
+  world.scene = {
+    ...world.training!,
+    id: 'hint-forest',
+    electorate: '',
+    training: false,
+    phase: 'active',
+    enemies: [],
+    endsAt: Date.now() + 60000,
+    nextSpawn: Date.now() + 60000,
+  };
+  const plant = resourceNodes({ x: 1, y: 1, scene: 'forest' }, 300).find(
+    (node) => node.kind === 'plant',
+  )!;
+  Object.assign(player, {
+    scene: 'forest',
+    x: wrap(plant.x, FOREST.width),
+    y: wrap(plant.y - 15, FOREST.height),
+  });
+  await expect(canvas).toHaveAttribute('data-resource', plant.id);
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
+  await page.screenshot({ path: 'test-results/gathering-hint-hidden-in-combat.png' });
+  const toggle = page.getByRole('switch', {
+    name: 'Hide gathering hint during combat',
+    exact: true,
+  });
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(toggle).toBeChecked();
+  await toggle.uncheck();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather plant');
+  await page.screenshot({ path: 'test-results/gathering-hint-shown-in-combat.png' });
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(toggle).not.toBeChecked();
+  await toggle.check();
+  await page.getByRole('button', { name: 'Close Settings' }).click();
+  world.scene.phase = 'ended';
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather plant');
+  world.scene.portals = [{ x: player.x, y: player.y }];
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Return to village');
 });

@@ -53,6 +53,11 @@ Speech bubbles draw above the prompt wherever they overlap.
 During gathering the player prompt is replaced by the thin yellow timed-activity
 bar above the resource, with a green zone, white indicator, remaining seconds and
 an E hint (see [VILLAGE-07](scenes-and-village.md#village-07--gathering)).
+Settings → Gameplay includes **Hide gathering hint during combat**, enabled by
+default, including for existing saved preferences. It hides only gathering prompts
+in active forest scenes and while inside a village training zone with active
+training. Other prompts and E/click gathering remain available. Disabling it shows
+gathering prompts during combat; changes apply immediately and persist locally.
 The prompt uses a dark rounded capsule with a thin bronze outline. Its left end
 and the raised E button are concentric, with equal left, top and bottom inset.
 The button has a filled shaded face, an evenly thick gold rim and a separate drop
