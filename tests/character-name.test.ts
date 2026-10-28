@@ -74,6 +74,7 @@ test('overhead player and boss health match gathering thickness and borders with
     2500,
   );
   const frame = gathering.backgrounds.slice(0, 3) as [string, number, number, number, number][];
+  assert.deepEqual(gathering.text, []);
   assert.deepEqual(frame, [
     ['#28271b', 38, 96, 124, 11],
     ['#695a31', 40, 98, 120, 7],
