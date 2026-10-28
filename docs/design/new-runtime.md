@@ -160,8 +160,16 @@ change. Camera translation and flicker alone do not upload a new texture.
 Village building and wardrobe sprites omit name badges. World text, chat bubbles,
 portal labels and navigation stay in the Pixi render pass. Pooled text uses cached
 textures rasterized at four times the font
-resolution, with nearest-neighbor sampling for sharper enlarged labels and
+resolution, with linear sampling to preserve strokes at fractional zoom in labels and
 damage numbers. Text density does not increase the world render resolution.
+
+The host loads the validated font preference before account/game composition and
+passes it to `GameUiProvider`. The provider loads regular, medium, bold and italic
+faces before applying the family, preventing fallback glyphs from entering Pixi's
+text cache. Arena shares the applied theme family with Pixi text and measurements;
+debug monospace labels remain monospace. Canvas CSS uses smooth resampling even
+when sprite textures use nearest sampling. The existing preference storage owns
+the font choice; shared UI owns no storage.
 
 The optional hitbox overlay runs after world effects in both village and forest.
 `client/hitboxes.ts` reads detached displayed poses and common collision,

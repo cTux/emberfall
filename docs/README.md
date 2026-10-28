@@ -16,6 +16,10 @@ testing and reuse: [common](../packages/common/README.md),
 
 An explicit product decision takes precedence over the baseline. If source and specification disagree, record the discrepancy and establish which behavior is intended before changing gameplay. Do not silently turn a documented defect or a proposed idea into a requirement. “Implemented” describes observed source behavior; linked tests are coverage references, not a claim that every scenario was executed in this documentation task.
 
+Font selection and zoom rendering are covered by [graphics requirements](specs/graphics.md#graphics-01--presets-and-renderer),
+the [shared UI guide](../packages/ui/README.md), [font browser checks](../tests/fonts.spec.ts)
+and [preference validation](../tests/preferences.test.ts).
+
 ## Bundled game mods
 
 [Mod requirements](specs/mods.md), [registry design](design/mods.md) and

@@ -1,4 +1,7 @@
+import { GAME_FONTS, type GameFont } from '@emberfall/ui/fonts';
+
 export interface Preferences {
+  font: GameFont;
   customCursor: boolean;
   cursorSize: 32 | 48 | 64;
   autoAttack: boolean;
@@ -17,6 +20,7 @@ export interface Preferences {
 }
 export function loadPreferences(): Preferences {
   const result: Preferences = {
+    font: 'Alegreya Sans',
     customCursor: true,
     cursorSize: 48,
     autoAttack: true,
@@ -35,6 +39,8 @@ export function loadPreferences(): Preferences {
   };
   try {
     const saved = JSON.parse(localStorage.getItem('emberfall-new.preferences') ?? '{}');
+    if (typeof saved?.font === 'string' && Object.hasOwn(GAME_FONTS, saved.font))
+      result.font = saved.font;
     for (const key of [
       'customCursor',
       'autoAttack',

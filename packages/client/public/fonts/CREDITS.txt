@@ -1,0 +1,10 @@
+Bundled without modification from https://github.com/google/fonts/tree/main/ofl:
+
+Inter: inter/Inter[opsz,wght].ttf and Inter-Italic[opsz,wght].ttf
+Source Sans 3: sourcesans3/SourceSans3[wght].ttf and SourceSans3-Italic[wght].ttf
+Atkinson Hyperlegible Next: atkinsonhyperlegiblenext/AtkinsonHyperlegibleNext[wght].ttf
+and AtkinsonHyperlegibleNext-Italic[wght].ttf
+
+Files are named *-Variable.ttf and *-Italic.ttf here for stable asset URLs.
+Each family is distributed under its accompanying *-OFL.txt license.
+Alegreya Sans is covered by OFL.txt.

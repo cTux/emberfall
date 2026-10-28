@@ -102,6 +102,7 @@ export class PixiContext {
   private path: PathCommand[] = [];
   private metrics = document.createElement('canvas').getContext('2d')!;
   private state: State = this.defaults();
+  fontFamily = '"Alegreya Sans", sans-serif';
   get imageSmoothingEnabled() {
     return this.state.imageSmoothingEnabled;
   }
@@ -235,6 +236,7 @@ export class PixiContext {
       visuals: this.ecs.size,
       textures: this.sources.size,
       gradients: this.gradients.size,
+      text: { fontFamily: this.fontFamily, scaleMode: 'linear', resolution: 4 },
       active: { ...this.cursors },
     };
   }
@@ -313,7 +315,7 @@ export class PixiContext {
           ? new Sprite()
           : kind === 'graphics'
             ? new Graphics()
-            : new Text({ text: '', resolution: 4, textureStyle: { scaleMode: 'nearest' } });
+            : new Text({ text: '', resolution: 4, textureStyle: { scaleMode: 'linear' } });
       object.eventMode = 'none';
       entity = this.ecs.add({ object, kind, active: true });
       this.pools[kind].push(entity);
@@ -898,7 +900,7 @@ export class PixiContext {
     return this.state.font;
   }
   set font(v: string) {
-    this.state.font = v;
+    this.state.font = v.replace('"Alegreya Sans", sans-serif', this.fontFamily);
   }
   get textAlign() {
     return this.state.textAlign;

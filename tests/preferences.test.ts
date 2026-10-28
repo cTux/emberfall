@@ -3,6 +3,44 @@ import assert from 'node:assert/strict';
 import { loadPreferences } from '../packages/client/src/preferences.ts';
 import { clientMessage } from '../packages/core/src/index.ts';
 
+test('font preferences accept only bundled families and preserve legacy defaults', () => {
+  const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  try {
+    for (const font of [
+      'Alegreya Sans',
+      'Inter',
+      'Source Sans 3',
+      'Atkinson Hyperlegible Next',
+      'unknown',
+      '__proto__',
+      123,
+      null,
+    ]) {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: { getItem: () => JSON.stringify({ font }) },
+      });
+      assert.equal(
+        loadPreferences().font,
+        typeof font === 'string' &&
+          ['Inter', 'Source Sans 3', 'Atkinson Hyperlegible Next'].includes(font)
+          ? font
+          : 'Alegreya Sans',
+      );
+    }
+    for (const saved of ['{}', 'null', 'invalid']) {
+      Object.defineProperty(globalThis, 'localStorage', {
+        configurable: true,
+        value: { getItem: () => saved },
+      });
+      assert.equal(loadPreferences().font, 'Alegreya Sans');
+    }
+  } finally {
+    if (original) Object.defineProperty(globalThis, 'localStorage', original);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  }
+});
+
 test('auto-loot defaults on and accepts only saved booleans', () => {
   const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
   try {

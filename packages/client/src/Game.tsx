@@ -37,7 +37,8 @@ import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFro
 import { faDoorOpen } from '@fortawesome/free-solid-svg-icons/faDoorOpen';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons/faGlobe';
 import { faShieldHalved } from '@fortawesome/free-solid-svg-icons/faShieldHalved';
-import { loadPreferences } from './preferences';
+import type { Preferences } from './preferences';
+import type { Dispatch, SetStateAction } from 'react';
 import { useChat } from './ChatProvider';
 import { loadGraphics } from './graphics';
 
@@ -63,11 +64,15 @@ export function Game({
   rename,
   logout,
   refresh,
+  preferences,
+  setPreferences,
 }: {
   account: AccountView;
   rename: () => void;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  preferences: Preferences;
+  setPreferences: Dispatch<SetStateAction<Preferences>>;
 }) {
   const socket = useRef<GameConnection | null>(null);
   const [status, setStatus] = useState('Connecting');
@@ -139,7 +144,6 @@ export function Game({
   const [settingsTab, setSettingsTab] = useState('gameplay');
   const [browserOpen, setBrowserOpen] = useState(true);
   const [deathWindow, setDeathWindow] = useState(true);
-  const [preferences, setPreferences] = useState(loadPreferences);
   useEffect(() => {
     document.body.dataset.customCursor = String(preferences.customCursor);
     document.body.dataset.cursorSize = String(preferences.cursorSize);

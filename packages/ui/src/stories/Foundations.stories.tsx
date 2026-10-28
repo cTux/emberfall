@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useState } from 'react';
+import { GameUiProvider, GAME_FONTS, type GameFont } from '../index';
 import {
   Alert,
   Box,
@@ -18,6 +20,36 @@ import {
 const meta = { title: 'Foundations/Theme', tags: ['autodocs'] } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
+export const Fonts: Story = {
+  render: function Fonts() {
+    const [font, setFont] = useState<GameFont>('Alegreya Sans');
+    return (
+      <GameUiProvider font={font}>
+        <Stack spacing={2}>
+          <TextField
+            select
+            label='Font'
+            value={font}
+            onChange={(event) => setFont(event.target.value as GameFont)}
+          >
+            {Object.keys(GAME_FONTS).map((family) => (
+              <MenuItem key={family} value={family}>
+                {family}
+              </MenuItem>
+            ))}
+          </TextField>
+          <Typography variant='h2'>Emberfall · Forest portal</Typography>
+          {[10, 12, 14, 18].map((fontSize) => (
+            <Typography key={fontSize} sx={{ fontSize }}>
+              {fontSize}px · Wanderer · Health 180/240 · Damage 1,280 · Il1 O0 rn m
+            </Typography>
+          ))}
+          <Button variant='contained'>Enter forest</Button>
+        </Stack>
+      </GameUiProvider>
+    );
+  },
+};
 export const Tokens: Story = {
   render: function Tokens() {
     const theme = useTheme();

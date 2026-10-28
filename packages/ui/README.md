@@ -18,7 +18,7 @@ Open http://localhost:6006. `build` produces the static Storybook in `packages/u
 
 ## Visual contract
 
-One dark forest theme: green-black surfaces, parchment text, wardrobe-brown borders and backpack slots, warm ember primary actions, green health, blue information, red danger. Alegreya Sans matches the game and is bundled locally under the SIL Open Font License. No external font service, game art dependency, gradients or ornamental frames.
+One dark forest theme: green-black surfaces, parchment text, wardrobe-brown borders and backpack slots, warm ember primary actions, green health, blue information, red danger. Alegreya Sans is the default; Inter, Source Sans 3 and Atkinson Hyperlegible Next are also bundled locally with SIL Open Font Licenses. No external font service, game art dependency, gradients or ornamental frames.
 
 `gameTheme` owns palette, typography, spacing, corners and MUI defaults. Use semantic colors such as `primary.main`, `text.secondary`, `divider`, `success` and `info`. Use the theme's spacing scale and responsive breakpoints. Preserve focus rings, readable contrast, reduced motion, labels, loading and disabled states. This library deliberately provides one color scheme.
 
@@ -45,6 +45,12 @@ function GameInterface() {
 Mount the provider once at the UI root. It includes `CssBaseline`; avoid mounting it over unrelated UI without reviewing its global effect. Serve `public/fonts` at `/fonts` in the host, or pass `fontBaseUrl` to `GameUiProvider` for your asset pipeline. Include the
 trailing slash, for example `fontBaseUrl='/emberfall/fonts/'` for a project site.
 Use the same directory for any font preload so the browser reuses that request. Source exports are intended for this TypeScript/Vite workspace, not direct unbundled Node imports.
+
+`GameUiProvider.font` accepts a `GameFont` from the exported `GAME_FONTS` catalog.
+The host owns selection and persistence. The provider loads the selected faces
+before changing the theme; failed loads retain the working family. All text uses
+the selected family, including headings. `@emberfall/ui/fonts` exposes the pure
+catalog for hosts and Node tests without importing React components.
 
 The host can theme native cursors with `--cursor-default` and `--cursor-pointer`;
 WorldList falls back to system cursors when they are absent. `useDraggable`
