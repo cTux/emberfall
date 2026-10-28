@@ -63,7 +63,16 @@ export function Chat({
     >
       <div className='chat-log' role='log' aria-label='Latest chat messages' ref={log}>
         {messages.map((message) => (
-          <div key={message.id} className={message.tone ? `chat-${message.tone}` : undefined}>
+          <div
+            key={message.id}
+            className={
+              message.tone
+                ? `chat-${message.tone}`
+                : message.playerId === ''
+                  ? 'chat-system'
+                  : undefined
+            }
+          >
             <b>{message.name}:</b> {message.text}
           </div>
         ))}

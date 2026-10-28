@@ -193,7 +193,7 @@ export class Accounts {
         const view: AccountView = {
           mode: 'steam',
           authenticated: !!account,
-          nickname: account?.nickname ?? null,
+          nickname: nicknameSchema.safeParse(account?.nickname).success ? account!.nickname : null,
           steamName: account?.steamName ?? '',
         };
         json(200, view);
@@ -212,7 +212,7 @@ export class Accounts {
       }
       this.limit(`account:${account.steamId}`, 30);
       if (req.method === 'POST' && url.pathname === '/api/account/ticket') {
-        if (!account.nickname) {
+        if (!nicknameSchema.safeParse(account.nickname).success) {
           json(409, { error: 'Choose your nickname first.' });
           return true;
         }

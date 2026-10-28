@@ -213,7 +213,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   // Fixture-arranged forest still uses real replicated gear and the same window.
-  world.scene = {
+  game.runtime.parties(world).run([...world.players.values()][0]).scene = {
     ...world.training!,
     id: 'equipment-forest',
     electorate: '',

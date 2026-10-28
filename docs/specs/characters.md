@@ -112,9 +112,9 @@ the account, character, class progress and equipment. Logging into the same Stea
 account from another browser recovers its linked character. Nicknames are never
 credentials. Existing duplicate-active-character protection remains in force.
 
-Nickname confirmation is required before joining a world. Names are trimmed and
-limited to 1–24 UTF-16 code units, without invisible/control characters. Duplicate
-names are allowed. Successful renames update live players. Steam names outside
+Nickname confirmation is required before joining a world. Names must contain 3–12 ASCII letters, digits or underscores, without spaces. Duplicate
+names are allowed; party commands reject ambiguous matches. Existing invalid names
+require a rename before admission, preserving account identity and saves. Successful renames update live players. Steam names outside
 the game limit remain visible as the initial draft with validation feedback,
 rather than being silently truncated to the game limit. Profile lookup failure
 allows manual entry without treating the Steam login as invalid. Closing first

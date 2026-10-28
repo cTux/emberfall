@@ -329,7 +329,7 @@ test('Pages client uses credentialed accounts, client redirects and origin-bound
         await call('/api/account/nickname', {
           method: 'PATCH',
           headers,
-          body: JSON.stringify({ nickname: 'Pages Hero' }),
+          body: JSON.stringify({ nickname: 'Pages_Hero' }),
         })
       ).status,
       200,

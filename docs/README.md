@@ -178,3 +178,8 @@ implemented by [shared rules](../packages/core/src/gathering.ts), reusable
 [progress bar](../packages/client/src/timed-activity.ts), and verified by
 [gathering tests](../packages/server/src/gathering.test.ts) and
 [browser gathering checks](../tests/gathering.spec.ts).
+
+Explicit [parties](specs/worlds-and-chat.md#party-01--explicit-parties) use
+[server membership and independent runs](../packages/server/src/parties.ts),
+[authoritative tests](../packages/server/src/parties.test.ts) and
+[browser verification](../tests/parties.spec.ts).

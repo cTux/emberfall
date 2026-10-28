@@ -115,6 +115,7 @@ export const clientMessage = z.discriminatedUnion('type', [
     aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
     aimY: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
   }),
+  z.object({ type: z.literal('partyInteract'), targetId: z.string().uuid() }),
   z.object({ type: z.literal('leave') }),
   z.object({ type: z.literal('selectClass'), classId: classSchema }),
   z.object({
@@ -137,6 +138,10 @@ export const clientMessage = z.discriminatedUnion('type', [
 ]);
 export type ClientMessage = z.infer<typeof clientMessage>;
 export interface Player extends CharacterProgress {
+  partyId?: string;
+  partyLeaderId?: string;
+  homeRunId?: string;
+  runId?: string;
   gathering?: TimedActivity & { nodeId: string; epoch: string };
   // coins and storages project the account Storehouse, not the selected class.
   reconnecting?: boolean;
@@ -205,6 +210,7 @@ export interface TimedActivity {
   checkId: string;
 }
 export interface WorldState {
+  partyRequests?: { fromId: string; expiresAt: number }[];
   resources?: Record<string, ResourceState>;
   npcs?: VillageNpc[];
   merchant?: Merchant;
@@ -218,6 +224,7 @@ export interface WorldState {
   serverNow?: number;
 }
 export interface ChatMessage {
+  recipientIds?: string[];
   dimension?: string;
   npcId?: string;
   tone?: 'danger' | 'success';

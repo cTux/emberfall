@@ -28,7 +28,7 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
   await expect.poll(() => current.autoLoot).toBe(false);
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
   current.scene = 'forest';
-  world.scene = {
+  game.runtime.parties(world).run([...world.players.values()][0]).scene = {
     ...createTrainingScene(Date.now()),
     id: 'auto-loot-test',
     electorate: '',
@@ -50,11 +50,15 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
   };
   await expect.poll(() => current.coins).toBe(1);
   expect(current.backpack?.length ?? 0).toBe(0);
-  expect(world.scene.drops).toHaveLength(1);
+  expect(game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops).toHaveLength(
+    1,
+  );
   await page.screenshot({ path: 'test-results/dropped-item-beam-forest.png' });
   await settings.click();
   await toggle.check();
   await expect.poll(() => current.autoLoot).toBe(true);
   await expect.poll(() => current.backpack?.[0]?.itemId).toBe('loot-helmet');
-  expect(world.scene.drops).toHaveLength(0);
+  expect(game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops).toHaveLength(
+    0,
+  );
 });

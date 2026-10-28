@@ -14,7 +14,9 @@ test('collected gold credits the account Storehouse across classes and rejoining
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
+  const portal = page
+    .getByRole('dialog')
+    .filter({ has: page.getByRole('heading', { name: 'Forest portal', exact: true }) });
   await expect(async () => {
     await page.keyboard.press('e');
     await expect(portal).toBeVisible();
@@ -23,12 +25,20 @@ test('collected gold credits the account Storehouse across classes and rejoining
   await portal.getByRole('button', { name: "I'm ready" }).click();
   await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
   player.coins = 999;
-  world.scene!.drops = [
-    { id: ++world.scene!.sequence, kind: 'gold', x: player.x, y: player.y, at: Date.now() - 300 },
+  game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops = [
+    {
+      id: ++game.runtime.parties(world).run([...world.players.values()][0]).scene!.sequence,
+      kind: 'gold',
+      x: player.x,
+      y: player.y,
+      at: Date.now() - 300,
+    },
   ];
   await expect(card.getByLabel('Coin hero: 1000 coins', { exact: true })).toHaveText('1k');
   expect(player.coins).toBe(1000);
-  expect(world.scene!.drops).toHaveLength(0);
+  expect(game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops).toHaveLength(
+    0,
+  );
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.screenshot({ path: testInfo.outputPath(`coins-forest-${width}.png`) });

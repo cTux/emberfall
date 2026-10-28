@@ -63,7 +63,7 @@ function NicknameDialog({
           disabled={pending}
           onChange={(event) => setValue(event.target.value)}
           error={!valid && value.length > 0}
-          helperText='1–24 characters. This is your name in Emberfall.'
+          helperText='3–12 ASCII letters, digits or underscores.'
         />
         {!account.steamName && account.nickname === null && (
           <Alert severity='info'>Steam's nickname is unavailable. Enter your nickname here.</Alert>

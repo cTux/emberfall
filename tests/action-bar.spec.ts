@@ -100,7 +100,7 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   player.equipment = starterEquipment('warrior');
   await expect(bar.getByRole('group')).toHaveCount(5);
 
-  world.scene = {
+  game.runtime.parties(world).run([...world.players.values()][0]).scene = {
     ...world.training!,
     id: 'action-bar-forest',
     electorate: '',

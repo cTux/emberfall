@@ -98,18 +98,22 @@ test('peers see a red reconnecting character in village and forest until recover
     remote.y = host.y;
     for (const area of ['village', 'forest'] as const) {
       if (area === 'forest') {
-        const { sceneAction, tickScene } = await import('../packages/server/src/scenes.ts');
+        const { sceneAction } = await import('../packages/server/src/scenes.ts');
         const { LOBBY_PORTAL } = await import('../packages/core/src/index.ts');
         for (const p of world.players.values()) {
           p.x = LOBBY_PORTAL.x;
           p.y = LOBBY_PORTAL.y - 15;
         }
         const now = Date.now();
-        sceneAction(world, host, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, now);
+        const parties = game.runtime.parties(world);
+        parties.request(host, remote, now);
+        parties.accept(remote, host.id, now);
+        const run = parties.run(host);
+        sceneAction(run, host, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, now);
         for (const p of world.players.values())
-          sceneAction(world, p, { type: 'ready', ready: true }, now);
-        tickScene(world, now + 5000, 0);
-        world.scene!.nextSpawn = 1e12;
+          sceneAction(run, p, { type: 'ready', ready: true }, now);
+        parties.tick(now + 5000, 0);
+        game.runtime.parties(world).run([...world.players.values()][0]).scene!.nextSpawn = 1e12;
         remote.x = host.x + 70;
         remote.y = host.y;
         await expect(page.getByLabel('Forest combat scene.')).toBeVisible();

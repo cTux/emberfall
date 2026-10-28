@@ -407,6 +407,10 @@ export function Game({
       source.activate();
       return;
     }
+    if (source.id.startsWith('party:')) {
+      send({ type: 'partyInteract', targetId: source.id.slice(6) });
+      return;
+    }
     if (source.id.startsWith('gather:')) {
       if (me)
         send({
@@ -529,7 +533,9 @@ export function Game({
   const canRegenerate =
     !!scene &&
     ['active', 'ended'].includes(scene.phase) &&
-    !hasLivingScenePlayers(world?.players ?? []);
+    !hasLivingScenePlayers(
+      world?.players.filter((p) => p.runId === (me?.scene ? me.runId : me?.homeRunId)) ?? [],
+    );
   return (
     <main>
       <section className={`stage ${world ? 'in-world' : ''}`} inert={!!menu && menu !== 'talents'}>
@@ -640,48 +646,50 @@ export function Game({
             spacing={1}
             aria-label={`${world.name}: ${world.players.length}/${worlds.find((entry) => entry.id === world.id)?.capacity ?? 8} adventurers`}
           >
-            {world.players.map((p) => (
-              <PartyCard
-                key={p.id}
-                name={p.name}
-                level={p.level}
-                paragon={p.paragon}
-                experience={{
-                  current: p.experience,
-                  required: experienceRequired(p.level, p.paragon),
-                }}
-                health={displayedHp[p.id] ?? p.hitpoints}
-                maxHealth={p.maxHitpoints}
-                coins={p.coins ?? 0}
-                companion={
-                  p.bear
-                    ? {
-                        name: p.bear.name,
-                        health: p.bear.hitpoints,
-                        maxHealth: p.bear.maxHitpoints,
-                        portrait: (
-                          <Box
-                            component='span'
-                            role='img'
-                            aria-label={`${p.bear.name} portrait`}
-                            sx={{
-                              backgroundImage: `url("${clientAsset('/assets/wardrobe-style/bear-cub.png')}")`,
-                              backgroundSize: '400% 200%',
-                              backgroundPosition: 'left top',
-                              backgroundRepeat: 'no-repeat',
-                              imageRendering: 'pixelated',
-                            }}
-                          />
-                        ),
-                      }
-                    : undefined
-                }
-                portrait={<img src={classSprite(p.classId)} alt='' />}
-                local={p.id === playerId}
-                host={p.id === world.hostId}
-                away={p.scene !== me?.scene}
-              />
-            ))}
+            {world.players
+              .filter((p) => p.id === playerId || (!!me?.partyId && p.partyId === me.partyId))
+              .map((p) => (
+                <PartyCard
+                  key={p.id}
+                  name={p.name}
+                  level={p.level}
+                  paragon={p.paragon}
+                  experience={{
+                    current: p.experience,
+                    required: experienceRequired(p.level, p.paragon),
+                  }}
+                  health={displayedHp[p.id] ?? p.hitpoints}
+                  maxHealth={p.maxHitpoints}
+                  coins={p.coins ?? 0}
+                  companion={
+                    p.bear
+                      ? {
+                          name: p.bear.name,
+                          health: p.bear.hitpoints,
+                          maxHealth: p.bear.maxHitpoints,
+                          portrait: (
+                            <Box
+                              component='span'
+                              role='img'
+                              aria-label={`${p.bear.name} portrait`}
+                              sx={{
+                                backgroundImage: `url("${clientAsset('/assets/wardrobe-style/bear-cub.png')}")`,
+                                backgroundSize: '400% 200%',
+                                backgroundPosition: 'left top',
+                                backgroundRepeat: 'no-repeat',
+                                imageRendering: 'pixelated',
+                              }}
+                            />
+                          ),
+                        }
+                      : undefined
+                  }
+                  portrait={<img src={classSprite(p.classId)} alt='' />}
+                  local={p.id === playerId}
+                  host={p.id === me?.partyLeaderId}
+                  away={p.scene !== me?.scene || p.runId !== me?.runId}
+                />
+              ))}
           </Stack>
         ) : browserOpen ? (
           <Box className='lobby'>
@@ -1034,7 +1042,12 @@ export function Game({
                           scene={scene.type}
                           difficulty={scene.difficulty}
                           ready={scene.ready.length}
-                          total={world.players.length}
+                          total={
+                            world.players.filter(
+                              (p) =>
+                                p.id === playerId || (!!me?.partyId && p.partyId === me.partyId),
+                            ).length
+                          }
                           voted={scene.ready.includes(playerId)}
                           countdown={scene.phase === 'countdown' ? departure : undefined}
                           disabled={unavailable}
@@ -1057,7 +1070,7 @@ export function Game({
                         >
                           Join scene
                         </Button>
-                        {canRegenerate && (
+                        {canRegenerate && (!me?.partyId || me.partyLeaderId === playerId) && (
                           <>
                             <Typography>
                               No living players remain inside. The scene is paused.
@@ -1085,6 +1098,8 @@ export function Game({
                             : 'You are already in this scene.'
                           : 'Scene created. Vote here when you are ready.'}
                       </Typography>
+                    ) : me?.partyId && me.partyLeaderId !== playerId ? (
+                      <Typography>The party leader creates the dimension.</Typography>
                     ) : (
                       <Stack
                         component='form'

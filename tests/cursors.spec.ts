@@ -56,7 +56,7 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
   await page.getByRole('button', { name: 'Close Settings' }).click();
 
   // Arrange a forest scene with one enemy across the horizontal seam.
-  world.scene = {
+  game.runtime.parties(world).run([...world.players.values()][0]).scene = {
     ...world.training!,
     id: 'cursor-forest',
     electorate: '',
@@ -74,7 +74,7 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
   await expect(canvas).toHaveAttribute('data-cursor', 'aim');
   await page.keyboard.press('g');
   await expect(async () => {
-    const enemy = world.scene!.enemies[0];
+    const enemy = game.runtime.parties(world).run([...world.players.values()][0]).scene!.enemies[0];
     const scale = Math.max(1440 / 960, 1000 / 640);
     const dx = ((enemy.x - player.x + FOREST.width * 1.5) % FOREST.width) - FOREST.width / 2;
     await page.mouse.move(720 + dx * scale, 500 + (enemy.y - 9 - player.y) * scale);

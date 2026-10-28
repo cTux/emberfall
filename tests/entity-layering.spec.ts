@@ -56,7 +56,7 @@ test('dummies, remote players and forest enemies layer around the local player',
   await portal.getByRole('button', { name: 'Create', exact: true }).click();
   await portal.getByRole('button', { name: "I'm ready" }).click();
   await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
-  const scene = world.scene!;
+  const scene = game.runtime.parties(world).run([...world.players.values()][0]).scene!;
   scene.nextSpawn = Date.now() + 600000;
   scene.spawns = [];
   scene.projectiles = [];

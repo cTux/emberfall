@@ -1,3 +1,4 @@
+import { Parties } from './parties.ts';
 import {
   startGathering,
   gatheringNode,
@@ -45,8 +46,7 @@ import type {
   Merchant,
 } from '@emberfall/common';
 import { CharacterStore } from './characters.ts';
-import { sceneAction, tickScene, reconcileVote, cleanupScene, sceneState } from './scenes.ts';
-import type { Scene } from './scenes.ts';
+import { sceneAction, tickScene, sceneState } from './scenes.ts';
 import { addChat } from './chat.ts';
 import { VillageLife } from './npcs.ts';
 import { OllamaNpcDialogue, type NpcDialogue } from './npc-models.ts';
@@ -66,7 +66,6 @@ interface World {
   salt: string;
   hash?: Buffer;
   players: Map<string, Player>;
-  scene?: Scene;
   training?: SceneState;
 }
 interface Session {
@@ -139,6 +138,17 @@ export async function createRuntime(
     }
     return life;
   };
+  const partyWorlds = new WeakMap<World, Parties>();
+  const parties = (world: World) => {
+    let value = partyWorlds.get(world);
+    if (!value) {
+      value = new Parties(world);
+      partyWorlds.set(world, value);
+    }
+    return value;
+  };
+  const resourceOwner = (world: World, player?: Player) =>
+    player?.scene ? parties(world).run(player) : world;
   let hashing = 0;
   const wss = new EventEmitter();
   const send = (ws: WebSocket, message: ServerMessage) => {
@@ -153,13 +163,25 @@ export async function createRuntime(
     id: world.id,
     name: world.name,
     hostId: world.hostId,
-    players: [...world.players.values()],
+    players: [...world.players.values()].filter(
+      (p) =>
+        !p.scene ||
+        !viewer?.scene ||
+        (p.partyId && p.partyId === viewer.partyId) ||
+        parties(world).key(p) === parties(world).key(viewer),
+    ),
+    partyRequests: viewer
+      ? parties(world)
+          .incoming(viewer, now)
+          .map(({ fromId, expiresAt }) => ({ fromId, expiresAt }))
+      : [],
     chat: (world.chat ?? [])
+      .filter((m) => !m.recipientIds || (!!viewer && m.recipientIds.includes(viewer.id)))
       .filter((m) => !m.dimension || m.dimension === (viewer?.scene ?? 'village'))
       .slice(-10),
     npcs: world.npcs,
-    resources: world.resources,
-    scene: sceneState(world.scene),
+    resources: resourceOwner(world, viewer).resources,
+    scene: sceneState(viewer ? parties(world).run(viewer).scene : undefined),
     training: world.training,
     serverNow: now,
     merchant: (world.merchant ??= characters.merchant(world.id)),
@@ -193,10 +215,9 @@ export async function createRuntime(
             player.id,
           );
       }
+      if (player) parties(world).leave(player, true);
       world.players.delete(session.id);
       if (player) serverLog.info('Player left world', { sessionId: session.id, worldId: world.id });
-      reconcileVote(world, Date.now());
-      cleanupScene(world);
       if (!world.players.size) {
         if (world !== permanentWorld && !shuttingDown) {
           characters.deleteWorld(world.id);
@@ -204,7 +225,6 @@ export async function createRuntime(
           serverLog.info('Empty world removed', { worldId: world.id });
         }
         world.hostId = '';
-        world.scene = undefined;
         world.chat = [];
         villageLives.get(world)?.close();
         villageLives.delete(world);
@@ -348,21 +368,27 @@ export async function createRuntime(
         const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!world || !player) return;
-        const epoch = player.scene === 'forest' ? world.scene?.id : 'lobby';
+        const epoch = player.scene === 'forest' ? parties(world).run(player).scene?.id : 'lobby';
         if (message.epoch !== epoch) return;
         try {
           const activity = player.gathering;
           if (message.checkId) {
             if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) return;
-            gatheringNode(player, world.resources, message.nodeId, now);
+            gatheringNode(player, resourceOwner(world, player).resources, message.nodeId, now);
             if (
               message.at === undefined ||
               !checkTimedActivity(activity, message.checkId, message.at, now)
             )
               return;
-            tickGathering(player, (world.resources ??= {}), epoch, now);
+            tickGathering(player, (resourceOwner(world, player).resources ??= {}), epoch, now);
           } else if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) {
-            startGathering(player, world.resources, message.nodeId, epoch!, now);
+            startGathering(
+              player,
+              resourceOwner(world, player).resources,
+              message.nodeId,
+              epoch!,
+              now,
+            );
           }
           broadcastState(world, now);
         } catch (cause) {
@@ -393,7 +419,7 @@ export async function createRuntime(
         const player = world?.players.get(session.id);
         if (player)
           castTalentAbility(
-            player.scene === 'forest' ? world!.scene : world!.training,
+            player.scene === 'forest' ? parties(world!).run(player).scene : world!.training,
             player,
             message,
             now,
@@ -405,7 +431,7 @@ export async function createRuntime(
         const player = world?.players.get(session.id);
         if (player)
           requestPlayerCast(
-            player.scene === 'forest' ? world!.scene : world!.training,
+            player.scene === 'forest' ? parties(world!).run(player).scene : world!.training,
             player,
             message,
             now,
@@ -543,9 +569,38 @@ export async function createRuntime(
           return;
         }
         session.chatAt = now;
+        if (message.text.startsWith('/')) {
+          try {
+            parties(world).command(player, message.text, now);
+          } catch (cause) {
+            parties(world).announce((cause as Error).message, [player.id]);
+          }
+          broadcastState(world, now);
+          return;
+        }
         player.chat = message.text;
         addChat(world, message.text, player);
         villageLife(world, now).hear(player, message.text, now);
+        broadcastState(world, now);
+        return;
+      }
+      if (message.type === 'partyInteract') {
+        const world = worlds.get(session.worldId ?? '');
+        const player = world?.players.get(session.id);
+        if (!world || !player) {
+          error('Join a world first.');
+          return;
+        }
+        if (now - (session.chatAt ?? 0) < 500) {
+          error('Please wait a moment.');
+          return;
+        }
+        session.chatAt = now;
+        try {
+          parties(world).interact(player, message.targetId, now);
+        } catch (cause) {
+          parties(world).announce((cause as Error).message, [player.id]);
+        }
         broadcastState(world, now);
         return;
       }
@@ -569,7 +624,7 @@ export async function createRuntime(
           !player ||
           !session.characterId ||
           player.scene ||
-          world?.scene?.phase === 'countdown' ||
+          (world && parties(world).run(player).scene?.phase === 'countdown') ||
           nearbyInteraction(player)?.id !== 'wardrobe'
         ) {
           error('Use the village wardrobe before the departure countdown to change class.');
@@ -599,7 +654,20 @@ export async function createRuntime(
         }
         try {
           const previousArea = player.scene;
-          sceneAction(world, player, message, now);
+          if (
+            message.type === 'createScene' &&
+            player.partyId &&
+            player.partyLeaderId !== player.id
+          )
+            throw new Error('Only the party leader can create a dimension.');
+          const run = parties(world).run(player);
+          const key = parties(world).key(player);
+          run.chat = world.chat;
+          sceneAction(run, player, message, now);
+          if (message.type === 'createScene') run.resources = {};
+          world.chat = run.chat;
+          if (player.scene) player.runId = key;
+          else delete player.runId;
           if (player.scene !== previousArea) delete player.gathering;
           session.x = 0;
           session.y = 0;
@@ -792,7 +860,6 @@ export async function createRuntime(
         });
         if (!world.hostId) world.hostId = session.id;
         addChat(world, `${playerName} joined.`, undefined, session.id);
-        reconcileVote(world, Date.now());
         send(ws, {
           type: 'joined',
           playerId: session.id,
@@ -816,17 +883,9 @@ export async function createRuntime(
     });
   });
   function broadcastState(world: World, now: number) {
-    const messages = new Map<string, ServerMessage>();
     for (const [ws, session] of sessions) {
       if (session.worldId !== world.id) continue;
-      const player = world.players.get(session.id);
-      const dimension = player?.scene ?? 'village';
-      let message = messages.get(dimension);
-      if (!message) {
-        message = { type: 'state', world: state(world, now, player) };
-        messages.set(dimension, message);
-      }
-      send(ws, message);
+      send(ws, { type: 'state', world: state(world, now, world.players.get(session.id)) });
     }
   }
   let simulationAt = Date.now();
@@ -840,18 +899,25 @@ export async function createRuntime(
         const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
         if (!player) continue;
-        stepMovement(session, player, world?.scene?.id, now, wallTime);
+        stepMovement(
+          session,
+          player,
+          world ? parties(world).run(player).scene?.id : undefined,
+          now,
+          wallTime,
+        );
       }
       for (const world of worlds.values()) {
         restoreResources(world.resources, wallTime);
         for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);
+        parties(world).tick(now, TICK_MS / 1000);
         for (const player of world.players.values()) {
           try {
             tickGathering(
               player,
-              (world.resources ??= {}),
-              player.scene === 'forest' ? (world.scene?.id ?? '') : 'lobby',
+              (resourceOwner(world, player).resources ??= {}),
+              player.scene === 'forest' ? (parties(world).run(player).scene?.id ?? '') : 'lobby',
               wallTime,
             );
           } catch (cause) {
@@ -943,5 +1009,6 @@ export async function createRuntime(
     close,
     characters,
     worlds,
+    parties,
   };
 }

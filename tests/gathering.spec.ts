@@ -163,7 +163,7 @@ test('click and E gather replicated resources in village and forest, show deplet
   await expect(canvas).toHaveAttribute('data-depleted-resources', '1');
   await page.screenshot({ path: 'test-results/gathering-restored-tree.png' });
 
-  world.scene = {
+  game.runtime.parties(world).run([...world.players.values()][0]).scene = {
     ...world.training!,
     id: 'gathering-forest',
     electorate: '',
@@ -250,7 +250,7 @@ test('combat gathering hint defaults hidden, toggles immediately and persists', 
   Object.assign(player, { x: rock.x, y: rock.y - 15 });
   await page.mouse.move(-1, -1);
   await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather rock');
-  world.scene = {
+  game.runtime.parties(world).run([...world.players.values()][0]).scene = {
     ...world.training!,
     id: 'hint-forest',
     electorate: '',
@@ -287,8 +287,10 @@ test('combat gathering hint defaults hidden, toggles immediately and persists', 
   await expect(toggle).not.toBeChecked();
   await toggle.check();
   await page.getByRole('button', { name: 'Close Settings' }).click();
-  world.scene.phase = 'ended';
+  game.runtime.parties(world).run([...world.players.values()][0]).scene!.phase = 'ended';
   await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather plant');
-  world.scene.portals = [{ x: player.x, y: player.y }];
+  game.runtime.parties(world).run([...world.players.values()][0]).scene!.portals = [
+    { x: player.x, y: player.y },
+  ];
   await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Return to village');
 });

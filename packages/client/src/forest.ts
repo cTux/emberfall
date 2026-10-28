@@ -1,3 +1,4 @@
+import { drawPartyOutline } from './effects';
 import { resourceNodes, resourceState } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
 import { drawWorldBar } from './world-bar';
@@ -301,7 +302,8 @@ export function forestRenderer(
     const casters: Caster[] = trees.map((node) =>
       resourceScenery(node, resourceState(world?.resources, node, serverTime)),
     );
-    const players = world?.players.filter((p) => p.scene === 'forest') ?? [];
+    const players =
+      world?.players.filter((p) => p.scene === 'forest' && p.runId === me?.runId) ?? [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
       ...(world?.scene?.enemies ?? []).map((e) => ({
@@ -613,6 +615,15 @@ export function forestRenderer(
         a.size * breath,
       );
       (ctx as unknown as PixiContext).spriteTint = '#ffffff';
+      if (a.player && world?.partyRequests?.some((r) => r.fromId === a.player!.id))
+        drawPartyOutline(
+          ctx,
+          mask(a.image, a.facing, a.row),
+          left,
+          top + a.size * (1 - breath),
+          a.size,
+          a.size * breath,
+        );
       if (hit && (a.enemy || a.player?.id === playerId))
         drawTargetHit(
           ctx,

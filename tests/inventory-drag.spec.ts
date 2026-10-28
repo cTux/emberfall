@@ -55,7 +55,7 @@ test('native inventory drags equip compatible slots and swap gear without consum
   expect(player.equipment!.helmet).toBe('loot-helmet');
 
   await page.keyboard.press('Escape');
-  world.scene = {
+  game.runtime.parties(world).run([...world.players.values()][0]).scene = {
     ...world.training!,
     id: 'inventory-drag-forest',
     electorate: '',
