@@ -6,6 +6,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Typography,
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons/faLock';
@@ -51,14 +52,21 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
                     : 'var(--cursor-pointer, pointer)',
                 }}
               >
-                <TableCell sx={{ overflowWrap: 'anywhere' }}>
+                <TableCell>
                   <Button
                     disabled={joinDisabled}
                     onClick={(event) => {
                       event.stopPropagation();
                       onJoin(world);
                     }}
-                    sx={{ justifyContent: 'flex-start', textAlign: 'left', minWidth: 0, px: 0 }}
+                    sx={{
+                      justifyContent: 'flex-start',
+                      textAlign: 'left',
+                      minWidth: 0,
+                      maxWidth: '100%',
+                      px: 0,
+                      '&:hover': { backgroundColor: 'transparent' },
+                    }}
                     aria-label={`Join ${world.name}${world.locked ? ', password protected' : ''}${world.players >= world.capacity ? ', full' : ''}, ${world.players}/${world.capacity}`}
                     startIcon={
                       world.locked ? (
@@ -66,7 +74,9 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
                       ) : undefined
                     }
                   >
-                    {world.name}
+                    <Typography component='span' noWrap sx={{ font: 'inherit' }} title={world.name}>
+                      {world.name}
+                    </Typography>
                   </Button>
                 </TableCell>
                 <TableCell align='right'>
