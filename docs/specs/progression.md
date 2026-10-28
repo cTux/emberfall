@@ -87,9 +87,9 @@ training never grants rewards. Cast feedback uses class/column animation sheets
 and particles from confirmed events. The catalog and tooltips define the current
 rank effects; they are initial balance values.
 
-Targeted healing chooses the living injured party member with the lowest
+Targeted healing chooses the living injured party member or Bear companion with the lowest
 remaining health percentage within the effect's wrapped radius, including the
-caster. Equal percentages retain player order. Mending Seed and Renewal use
+caster and their Bear. Bears use their own position and maximum HP and their owner's party, area and run membership. Equal percentages retain player order, checking each player before their Bear. Mending Seed and Renewal use
 their registered 700-unit range around the caster; Healing Grove chooses one
 recipient per second within 200 units of its fixed cast position. Healing
 opportunities choose one recipient within 60 units of the consumed enemy.

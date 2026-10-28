@@ -76,7 +76,7 @@ Scene entities, projectiles, drops, damage events, companion state and DPS histo
 
 Talent casts receive server-owned world players. Shared healing selection in
 `talent-effects.ts` filters party, area and run membership before comparing
-remaining HP fractions using wrapped distance. Scheduled grove pulses and
+remaining HP fractions using wrapped distance. Living injured Bears participate with their own position and HP; membership comes from their owner. Scheduled grove pulses and
 healing opportunities reselect from the current tick's players, so departures,
 deaths and changed injuries apply before each heal. Immediate heals use the
 registered ability range and emit their cast feedback at the recipient.

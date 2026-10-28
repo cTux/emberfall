@@ -102,11 +102,23 @@ test('Mending Seed heals a party teammate through the server and shows its targe
     await page.keyboard.press('1');
     await expect.poll(() => patient.hitpoints).toBe(before + patient.maxHitpoints * 0.12);
     expect(healer.hitpoints).toBe(healer.maxHitpoints * 0.8);
+    await expect.poll(() => healer.bear).toBeTruthy();
+    healer.bear!.hitpoints = healer.bear!.maxHitpoints * 0.1;
+    const bearBefore = healer.bear!.hitpoints;
+    healer.talentCooldowns = {};
+    await page.keyboard.press('1');
+    await expect
+      .poll(() => healer.bear!.hitpoints)
+      .toBe(bearBefore + healer.bear!.maxHitpoints * 0.12);
+    expect(patient.hitpoints).toBe(before + patient.maxHitpoints * 0.12);
     await expect(other.locator('.party')).toContainText('Healer');
     await page.getByRole('button', { name: 'Talents (N)' }).click();
     await page.locator(`[data-talent-node='${nodeId}']`).hover();
     await expect(page.getByRole('tooltip').filter({ hasText: 'Mending Seed' })).toContainText(
       'lowest health percentage within 700 units',
+    );
+    await expect(page.getByRole('tooltip').filter({ hasText: 'Mending Seed' })).toContainText(
+      'party member or Bear',
     );
     await page.screenshot({ path: 'test-results/party-healing-tooltip.png' });
   } finally {
