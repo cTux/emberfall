@@ -15,7 +15,7 @@ export function drawTimedActivity(
   ctx.save();
   drawWorldBar(ctx, left - 2, y + 9, width + 4, 1 - remaining / activity.durationMs, '#ebc34b');
   ctx.fillStyle = '#81df4b';
-  ctx.fillRect(left + width * activity.zoneStart, y, width * ACTIVITY_ZONE_WIDTH, 7);
+  ctx.fillRect(left + width * activity.zoneStart, y + 3, width * ACTIVITY_ZONE_WIDTH, 5);
   ctx.fillStyle = '#fff6dd';
   ctx.fillRect(left + width * activityIndicator(activity, now) - 0.75, y - 4, 1.5, 15);
   ctx.restore();

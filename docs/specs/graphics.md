@@ -46,9 +46,9 @@ Decorative cats and chickens wander in the village; raccoons appear in the fores
 
 All overhead health bars (players, companions, bosses, regular and elite enemies,
 training dummies and partially gathered trees) match the gathering bar's
-7-world-unit fill and 2-unit dark border on every side (11 units total height).
+5-world-unit fill and 1-unit dark border on every side (7 units total height).
 Their existing widths, health colors and name positions remain unchanged. Bars
-grow upward, with speech bubbles and debuff rows kept clear of the thicker frame.
+grow upward, with speech bubbles and debuff rows kept clear of the frame.
 HUD and party health meters retain their existing styling.
 
 In the new client, all player projectiles (arrows, fireballs and Druid roots) have

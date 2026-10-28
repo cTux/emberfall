@@ -76,9 +76,9 @@ test('overhead player and boss health match gathering thickness and borders with
   const frame = gathering.backgrounds.slice(0, 3) as [string, number, number, number, number][];
   assert.deepEqual(gathering.text, []);
   assert.deepEqual(frame, [
-    ['#28271b', 38, 96, 124, 11],
-    ['#695a31', 40, 98, 120, 7],
-    ['#ebc34b', 40, 98, 60, 7],
+    ['#28271b', 38, 100, 124, 7],
+    ['#695a31', 39, 101, 122, 5],
+    ['#ebc34b', 39, 101, 61, 5],
   ]);
   for (const boss of [false, true]) {
     const health = recordingContext();
@@ -95,9 +95,9 @@ test('overhead player and boss health match gathering thickness and borders with
     assert.equal(width, boss ? 64 : 40);
     const rectangles = health.backgrounds as [string, number, number, number, number][];
     assert.deepEqual(rectangles, [
-      ['#28271b', 100 - width / 2, 96, width, 11],
-      ['#695a31', 102 - width / 2, 98, width - 4, 7],
-      [boss ? '#c084fc' : '#86d9a2', 102 - width / 2, 98, (width - 4) / 2, 7],
+      ['#28271b', 100 - width / 2, 100, width, 7],
+      ['#695a31', 101 - width / 2, 101, width - 2, 5],
+      [boss ? '#c084fc' : '#86d9a2', 101 - width / 2, 101, (width - 2) / 2, 5],
     ]);
     assert.equal((health.text[0] as unknown[])[3], 113);
   }
@@ -107,16 +107,16 @@ test('world bar fills clamp at empty and full while preserving the frame', () =>
   for (const [fraction, expectedWidth] of [
     [-1, 0],
     [0, 0],
-    [0.5, 18],
-    [1, 36],
-    [2, 36],
+    [0.5, 19],
+    [1, 38],
+    [2, 38],
   ]) {
     const context = recordingContext();
     drawWorldBar(context.ctx, 10, 30, 40, fraction, '#df7765');
     assert.deepEqual(context.backgrounds, [
-      ['#28271b', 10, 19, 40, 11],
-      ['#695a31', 12, 21, 36, 7],
-      ['#df7765', 12, 21, expectedWidth, 7],
+      ['#28271b', 10, 23, 40, 7],
+      ['#695a31', 11, 24, 38, 5],
+      ['#df7765', 11, 24, expectedWidth, 5],
     ]);
   }
 });
