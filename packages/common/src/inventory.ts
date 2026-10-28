@@ -40,11 +40,13 @@ export const storehouseSchema = z.object({
 });
 export const BUYBACK_SLOTS = INVENTORY_SLOTS;
 export const merchantSchema = z.object({
+  refreshAt: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   backpack: backpackSchema,
   buyback: backpackSchema.refine((items) => items.length <= BUYBACK_SLOTS).optional(),
 });
 export interface Merchant {
+  refreshAt?: number;
   coins: number;
   backpack: BackpackItem[];
   buyback: BackpackItem[];

@@ -48,6 +48,7 @@ import type {
 import { CharacterStore } from './characters.ts';
 import { sceneAction, tickScene, sceneState } from './scenes.ts';
 import { addChat } from './chat.ts';
+import { refreshMerchant } from './merchant.ts';
 import { VillageLife } from './npcs.ts';
 import { OllamaNpcDialogue, type NpcDialogue } from './npc-models.ts';
 import type { VillageNpc } from '@emberfall/common';
@@ -184,7 +185,7 @@ export async function createRuntime(
     scene: sceneState(viewer ? parties(world).run(viewer).scene : undefined),
     training: world.training,
     serverNow: now,
-    merchant: (world.merchant ??= characters.merchant(world.id)),
+    merchant: world.merchant,
   });
   const list = () => ({
     type: 'worlds' as const,
@@ -805,6 +806,7 @@ export async function createRuntime(
             return;
           }
         }
+        world.merchant ??= characters.merchant(world.id);
         if (active()) {
           error('This character is already playing in another tab.');
           return;
@@ -908,6 +910,11 @@ export async function createRuntime(
         );
       }
       for (const world of worlds.values()) {
+        try {
+          refreshMerchant(world, characters, wallTime);
+        } catch (cause) {
+          serverLog.error(`Unable to refresh merchant stock for ${world.id}`, cause);
+        }
         restoreResources(world.resources, wallTime);
         for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);

@@ -260,6 +260,7 @@ function itemIcon(itemId: string) {
   if (plantVariant !== -1 || itemId === 'plant') return <PlantIcon variant={plantVariant} />;
   if (itemDefinition(itemId).kind === 'resource') {
     const icons: Record<string, string> = {
+      'empty-bottle': '🧴',
       log: '🪵',
       stick: '🌿',
       leaf: '🍃',

@@ -1,6 +1,43 @@
 import { test, expect } from './fixtures';
 import { INNKEEPER } from '../packages/core/src/index.ts';
 
+test('Marta sells bottles and announces refreshed stock in yellow system chat', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Your adventurer name').fill('Bottle buyer');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByLabel('World chat')).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  player.coins = 10;
+  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  const trader = page.getByRole('dialog', { name: INNKEEPER.name });
+  await expect(async () => {
+    Object.assign(player, { x: marta.x, y: marta.y - 15 });
+    await page.keyboard.press('e');
+    await expect(trader).toBeVisible({ timeout: 1000 });
+  }).toPass({ intervals: [200], timeout: 6000 });
+  const bottle = trader.getByRole('button', { name: 'Buy Empty bottle (200)', exact: true });
+  await expect(bottle).toBeVisible();
+  await bottle.hover();
+  await expect(page.getByRole('tooltip')).toContainText('1 gold');
+  await bottle.click({ button: 'right' });
+  await expect(
+    trader.getByRole('button', { name: 'Buy Empty bottle (199)', exact: true }),
+  ).toBeVisible();
+  expect(player.coins).toBe(9);
+  expect(player.backpack!.find((item) => item.itemId === 'empty-bottle')!.quantity).toBe(1);
+  world.merchant!.refreshAt = Date.now() - 1;
+  await expect(bottle).toBeVisible();
+  const notice = page
+    .getByRole('log')
+    .getByText('System: Marta the Innkeeper has refreshed her stock.', { exact: true });
+  await expect(notice).toBeVisible();
+  await expect(notice).toHaveCSS('color', 'rgb(244, 211, 94)');
+});
+
 test('inventory equips, unequips and consumes stacks; shared trading transfers items and gold', async ({
   page,
   game,

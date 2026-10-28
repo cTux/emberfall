@@ -151,6 +151,10 @@ and [HUD](specs/interface-and-audio.md#ui-01--hud-and-windows), implemented by
 [restart tests](../packages/server/src/characters.test.ts), and
 [browser scenario](../tests/coins.spec.ts).
 
+Marta's empty bottles and 30-minute stock refresh: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime),
+[merchant rules and persistence tests](../packages/server/src/merchant.test.ts),
+and [trading browser tests](../tests/inventory.spec.ts).
+
 New-runtime inventory, loot and trading: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime)
 and [UI-06](specs/interface-and-audio.md#ui-06--inventory-and-trading-new-runtime),
 implemented by [equipment rules](../packages/core/src/equipment.ts),
