@@ -196,3 +196,8 @@ Explicit [parties](specs/worlds-and-chat.md#party-01--explicit-parties) use
 [server membership and independent runs](../packages/server/src/parties.ts),
 [authoritative tests](../packages/server/src/parties.test.ts) and
 [browser verification](../tests/parties.spec.ts).
+
+Loot hints: [behavior and animated concept](specs/graphics.md),
+[renderer](../packages/client/src/loot-hint-rendering.ts),
+[receipt tracking tests](../tests/loot-hints.test.ts), and
+[browser coverage](../tests/loot-hints.spec.ts).

@@ -7,3 +7,5 @@
 - Keep detailed component guidance in `packages/ui/README.md`, which is rendered in Storybook. Keep third-party attribution with shipped assets.
 - Validate formatting, relative paths/anchors and requirement-to-design coverage. Linked tests identify coverage; do not claim they ran without execution evidence.
 - Keep root AGENTS short; place package-specific rules in the relevant package. Follow [skill maintenance](development.md#maintaining-documentation-and-skills) for repo skills.
+
+- New features require documentation and an embedded animated or static image. Commit the visual with the docs, identify concept previews versus gameplay captures, and preserve artwork credits.

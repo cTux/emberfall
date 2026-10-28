@@ -39,6 +39,7 @@ export function Settings({
       | 'autoAttack'
       | 'autoTarget'
       | 'autoLoot'
+      | 'lootHints'
       | 'hideGatheringHintInCombat'
       | 'hideHealthBarsInTown'
       | 'bloodPuddles'
@@ -109,6 +110,7 @@ export function Settings({
               <Typography variant='caption' color='text.secondary'>
                 Automatically collect nearby item drops. XP and gold are always collected.
               </Typography>
+              {toggle('lootHints', 'Loot hints')}
               {toggle('bloodPuddles', 'Blood puddles')}
               {toggle('hideGatheringHintInCombat', 'Hide gathering hint during combat')}
               {toggle('hideHealthBarsInTown', 'Hide health bars in town')}
