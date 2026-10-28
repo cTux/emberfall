@@ -5,6 +5,7 @@ export interface TalentNodeView {
   name: string;
   description: string;
   icon?: ReactNode;
+  kind?: 'ability' | 'extension';
   learned: boolean;
   available: boolean;
   rank: number;
@@ -53,6 +54,11 @@ export function TalentTree({ nodes, points, columns = [], onLearn }: TalentTreeP
                       {node.name} · {node.rank}/2
                     </Typography>
                     <Typography variant='body2'>{node.description}</Typography>
+                    {node.kind === 'ability' && (
+                      <Typography variant='body2'>
+                        Active ability · assign to the action bar.
+                      </Typography>
+                    )}
                     <Typography variant='body2'>
                       Requires level {node.level}. No prerequisite talents.
                     </Typography>
@@ -85,7 +91,18 @@ export function TalentTree({ nodes, points, columns = [], onLearn }: TalentTreeP
                     '&:focus-visible': { outline: '2px solid', outlineColor: 'info.main' },
                   }}
                 >
-                  <Box sx={{ width: 40, height: 40, flexShrink: 0 }}>{node.icon}</Box>
+                  <Box
+                    sx={{
+                      width: 40,
+                      height: 40,
+                      flexShrink: 0,
+                      outline: node.kind === 'ability' ? '2px solid' : undefined,
+                      outlineColor: 'info.main',
+                      outlineOffset: 1,
+                    }}
+                  >
+                    {node.icon}
+                  </Box>
                   <Stack>
                     <Typography variant='body2'>{node.name}</Typography>
                     <Typography variant='caption' color='text.secondary'>

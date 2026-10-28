@@ -94,6 +94,14 @@ test('all class columns, generated icons and confirmed cast effects render in th
     for (const column of TALENT_COLUMNS[classId])
       await expect(tree.getByText(column, { exact: true })).toBeVisible();
     await expect(tree.locator('[data-talent-node]')).toHaveCount(30);
+    for (const node of TALENT_TREE.filter((node) => node.classId === classId)) {
+      const icon = tree.locator(`[data-talent-node="${node.id}"] > div`).first();
+      await expect(icon).toHaveCSS('outline-style', node.kind === 'ability' ? 'solid' : 'none');
+    }
+    // The last authored row is taller than the preceding rows, not a 229px cell.
+    const lastIcon = tree.locator(`[data-talent-node="v2:${classId}:2:9"] span[aria-hidden]`);
+    const size = await lastIcon.evaluate((element) => getComputedStyle(element).backgroundSize);
+    expect(Number.parseFloat(size.split(' ')[1])).toBeLessThan(550);
     await page.mouse.move(0, 0);
     await page.screenshot({ path: `test-results/talents-${classId}.png` });
     await page.keyboard.press('n');
