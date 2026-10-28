@@ -35,8 +35,9 @@ Arena draws the local player's interaction prompt after world rendering in both
 areas, using the selected E action, confirmed living state and existing input
 blocking. `drawInteractionPrompt` in `effects.ts` places a separate circular E
 badge and short interaction name below the player's name at the displayed pose.
-It shares the world camera transform, stays above scenery, and exposes its current
-label as `data-interaction-prompt` for the interaction browser scenarios.
+It shares the world camera transform, stays above scenery but beneath speech
+bubbles, and exposes its current label as `data-interaction-prompt` for the
+interaction browser scenarios.
 The capsule uses semicircular ends; its left end shares the button's center.
 Concentric 6/5-unit circles form the button rim and face inside the capsule's
 8-unit radius. Native renderer gradients and separate shadows provide depth
