@@ -129,7 +129,13 @@ test('cursor enable and size settings apply immediately and persist across reloa
   const size = dialog.getByRole('combobox', { name: 'Cursor size', exact: true });
   await expect(toggle).toBeChecked();
   await expect(body).toHaveCSS('cursor', /\/48\/default\.png/);
+  await expect(size).toHaveCSS('cursor', /\/48\/pointer\.png/);
   await size.click();
+  await expect(page.getByRole('option', { name: 'Medium · 48 px' })).toHaveCSS(
+    'cursor',
+    /\/48\/pointer\.png/,
+  );
+  await page.screenshot({ path: 'test-results/cursor-settings-dropdown.png' });
   await page.getByRole('option', { name: 'Large · 64 px' }).click();
   await expect(body).toHaveCSS('cursor', /\/64\/default\.png/);
   await expect(dialog.getByRole('heading', { name: 'Settings', exact: true })).toHaveCSS(
@@ -139,12 +145,19 @@ test('cursor enable and size settings apply immediately and persist across reloa
   await page.screenshot({ path: 'test-results/cursor-settings.png' });
   await toggle.uncheck();
   await expect(size).toHaveAttribute('aria-disabled', 'true');
+  await expect(size).toHaveCSS('cursor', 'not-allowed');
   await expect(body).toHaveCSS('cursor', 'default');
   await expect(dialog.getByRole('heading', { name: 'Settings', exact: true })).toHaveCSS(
     'cursor',
     'grab',
   );
   await expect(page.getByRole('button', { name: 'Close Settings' })).toHaveCSS('cursor', 'pointer');
+  await dialog.getByRole('tab', { name: 'Graphics', exact: true }).click();
+  const frameLimit = dialog.getByRole('combobox', { name: 'Frame rate limit', exact: true });
+  await expect(frameLimit).toHaveCSS('cursor', 'pointer');
+  await frameLimit.click();
+  await expect(page.getByRole('option', { name: '30 FPS' })).toHaveCSS('cursor', 'pointer');
+  await page.keyboard.press('Escape');
   await page.reload();
   await expect(body).toHaveAttribute('data-custom-cursor', 'false');
   await expect(body).toHaveAttribute('data-cursor-size', '64');
@@ -173,6 +186,10 @@ test('cursor enable and size settings apply immediately and persist across reloa
   await toggle.check();
   await expect(body).toHaveCSS('cursor', /\/64\/default\.png/);
   await size.click();
+  await expect(page.getByRole('option', { name: 'Small · 32 px' })).toHaveCSS(
+    'cursor',
+    /\/64\/pointer\.png/,
+  );
   await page.getByRole('option', { name: 'Small · 32 px' }).click();
   await expect(body).toHaveCSS('cursor', /\/32\/default\.png/);
   await page.reload();

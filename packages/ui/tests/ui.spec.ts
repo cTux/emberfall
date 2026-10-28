@@ -2,6 +2,54 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('settings dropdowns share window surfaces and wood selection states', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto(story('screens-compositions--settings'));
+    await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
+    const surface = page.locator('.game-window-surface');
+    const colors = await surface.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        border: style.borderTop,
+        radius: style.borderRadius,
+      };
+    });
+    const select = page.getByRole('combobox', { name: 'Frame rate limit', exact: true });
+    await select.focus();
+    await page.keyboard.press('ArrowDown');
+    const list = page.getByRole('listbox');
+    const menu = page.locator('.MuiMenu-paper');
+    await expect(list).toBeVisible();
+    await expect(menu).toHaveCSS('background-color', 'rgb(40, 26, 20)');
+    await expect(menu).toHaveCSS('border-top', colors.border);
+    await expect(menu).toHaveCSS('border-radius', colors.radius);
+    const selected = page.getByRole('option', { name: 'Display refresh rate' });
+    await expect(selected).toHaveCSS('background-color', 'rgb(88, 53, 36)');
+    await expect(selected).toHaveCSS('color', 'rgb(230, 190, 128)');
+    await page.keyboard.press('ArrowDown');
+    const option = page.getByRole('option', { name: '30 FPS' });
+    await expect(option).toBeFocused();
+    await expect(option).toHaveCSS('outline-style', 'solid');
+    await expect(option).toHaveCSS('background-color', 'rgb(88, 53, 36)');
+    await page.keyboard.press('Enter');
+    await expect(select).toHaveText('30 FPS');
+    await expect(select).toBeFocused();
+    await select.click();
+    await page.getByRole('option', { name: '60 FPS' }).hover();
+    await expect(page.getByRole('option', { name: '60 FPS' })).toHaveCSS(
+      'background-color',
+      'rgb(88, 53, 36)',
+    );
+    const box = (await menu.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: `test-results/settings-dropdown-${width}.png` });
+    await page.keyboard.press('Escape');
+  }
+});
+
 test('equipment slots accept inventory drops and retain keyboard unequipping', async ({ page }) => {
   await page.goto(story('components-equipmentpanel--drag-to-equip'));
   const item = page.getByRole('button', { name: 'Use Helmet', exact: true });
