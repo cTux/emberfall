@@ -927,14 +927,15 @@ export function Arena({
           }
           ctx.globalAlpha = 1;
           renderer.occlusion = false;
-          drawWorldBar(
-            ctx,
-            dummy.x - 20,
-            dummy.y - 41,
-            40,
-            dummy.hitpoints / dummy.maxHitpoints!,
-            '#df7765',
-          );
+          if (!prefs.current.hideHealthBarsInTown)
+            drawWorldBar(
+              ctx,
+              dummy.x - 20,
+              dummy.y - 41,
+              40,
+              dummy.hitpoints / dummy.maxHitpoints!,
+              '#df7765',
+            );
           drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 52, serverTime);
 
           continue;
@@ -968,6 +969,8 @@ export function Arena({
             layer.bear.y,
             view?.serverNow ?? now,
             quality.current.shadows,
+            1,
+            !prefs.current.hideHealthBarsInTown,
           );
           continue;
         }
@@ -1028,7 +1031,7 @@ export function Arena({
           if (object.chimney && quality.current.particles)
             drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
           ctx.globalAlpha = 1;
-          if (object.id.startsWith('tree:'))
+          if (object.id.startsWith('tree:') && !prefs.current.hideHealthBarsInTown)
             drawResourceHealth(
               ctx,
               { ...object, kind: 'tree', size: object.width },
@@ -1141,6 +1144,8 @@ export function Arena({
           player.maxHitpoints,
           player.name,
           colors[player.color],
+          false,
+          !prefs.current.hideHealthBarsInTown,
         );
         drawPlayerDetails(
           ctx,

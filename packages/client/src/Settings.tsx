@@ -40,6 +40,7 @@ export function Settings({
       | 'autoTarget'
       | 'autoLoot'
       | 'hideGatheringHintInCombat'
+      | 'hideHealthBarsInTown'
       | 'bloodPuddles'
       | 'damageNumbers'
       | 'dps'
@@ -110,6 +111,7 @@ export function Settings({
               </Typography>
               {toggle('bloodPuddles', 'Blood puddles')}
               {toggle('hideGatheringHintInCombat', 'Hide gathering hint during combat')}
+              {toggle('hideHealthBarsInTown', 'Hide health bars in town')}
               {toggle('damageNumbers', 'Floating damage numbers')}
               {toggle('dps', 'DPS meter')}
               {toggle('fps', 'FPS graph')}

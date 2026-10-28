@@ -36,6 +36,7 @@ export function drawCompanion(
   now: number,
   shadows = false,
   opacity = 1,
+  showHealth = true,
 ) {
   ctx.save();
   if (!shadows) {
@@ -82,6 +83,9 @@ export function drawCompanion(
     bear.hitpoints,
     bear.maxHitpoints,
     dead ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s` : 'Bear',
+    undefined,
+    false,
+    showHealth,
   );
   const age = now - (bear.attackAt ?? -Infinity);
   if (!dead && !bear.returning && age >= 0 && age < PLAYER_ATTACK_DURATION) {

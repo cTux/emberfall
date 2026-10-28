@@ -62,6 +62,11 @@ DPS meter visibility: [UI-03](specs/interface-and-audio.md#ui-03--network-and-pe
 [saved preference](../packages/client/src/preferences.ts), [HUD](../packages/client/src/Arena.tsx)
 and [toggle/persistence verification](../tests/dps-meter.spec.ts).
 
+Town health bar visibility: [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readability),
+[saved preference](../packages/client/src/preferences.ts),
+[toggle/persistence verification](../tests/town-health-bars.spec.ts) and
+[name preservation checks](../tests/character-name.test.ts).
+
 Softer entity tones and optional texture filtering:
 [GRAPHICS-01](specs/graphics.md#graphics-01--presets-and-renderer),
 [atlas tone transform](../packages/client/src/art-tones.ts),
