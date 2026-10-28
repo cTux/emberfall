@@ -80,6 +80,11 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
                   <TalentIcon classId={classId} index={talent.column * 10 + talent.row} />
                 ) : (
                   <img
+                    style={
+                      selected && row.name === 'Bear'
+                        ? { width: '400%', height: '200%' }
+                        : undefined
+                    }
                     src={
                       !selected
                         ? classSprite(classId)

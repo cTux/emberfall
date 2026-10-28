@@ -131,6 +131,14 @@ test('party damage bars drill into abilities and return with right click anywher
   await expect(rows.first()).toHaveCSS('--class-color', '#c79c6e');
   await expect(rows.nth(2)).toHaveCSS('--class-color', '#ff7d0a');
   await expect(rows.nth(3)).toHaveCSS('--class-color', '#abd473');
+  await rows.filter({ hasText: 'Willow' }).click();
+  const bearIcon = meter.locator('.damage-meter-icon img');
+  await expect(bearIcon).toHaveAttribute('src', /bear-cub\.png$/);
+  await expect(bearIcon).toHaveCSS('width', '96px');
+  await expect(bearIcon).toHaveCSS('height', '48px');
+  await expect(bearIcon.locator('..')).toHaveCSS('overflow', 'hidden');
+  await meter.screenshot({ path: 'test-results/damage-meter-bear.png' });
+  await meter.getByRole('button', { name: 'Back to party' }).click();
   await meter.screenshot({ path: 'test-results/damage-meter-party.png' });
   await rows.first().click();
   await expect(meter).toContainText('Blade — Abilities');
