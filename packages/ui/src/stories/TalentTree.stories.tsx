@@ -8,57 +8,45 @@ const meta = {
 } satisfies Meta<typeof TalentTree>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-const nodes = [
-  {
-    id: 'center',
-    size: 22,
-    previous: null,
-    x: 320,
-    y: 320,
-    name: 'Origin',
-    description: 'Free starting node',
-    learned: true,
-    available: false,
-  },
-  {
-    id: 'power',
-    previous: 'center',
-    x: 320,
-    y: 250,
-    name: '+1 power',
-    description: 'Increase weapon power',
-    learned: false,
-    available: true,
-  },
-  {
-    id: 'ability',
-    size: 34,
-    previous: 'power',
-    x: 320,
-    y: 180,
-    name: 'Whirlwind',
-    description: 'Strike surrounding enemies',
-    learned: false,
-    available: false,
-  },
-];
+const columns = ['Weapon Mastery', 'Bloodletting', 'Guardian'];
+const nodes = Array.from({ length: 30 }, (_, index) => ({
+  id: `node-${index}`,
+  previous: null,
+  x: index % 3,
+  y: Math.floor(index / 3),
+  column: index % 3,
+  row: Math.floor(index / 3),
+  level: index < 3 ? 1 : Math.floor(index / 3) * 2,
+  name:
+    index === 0
+      ? 'Follow Through'
+      : index === 1
+        ? 'Open Wounds'
+        : index === 2
+          ? 'Reactive Guard'
+          : `Talent ${index + 1}`,
+  description:
+    'Rank 1 unlocks a combat interaction. Rank 2 improves its effect. No prerequisite talents.',
+  learned: false,
+  available: true,
+  rank: 0,
+}));
 export const Interactive: Story = {
-  args: { nodes, points: 2, onLearn: () => {} },
+  args: { nodes, columns, points: 2, onLearn: () => {} },
   render: function Example() {
-    const [learned, setLearned] = useState(['center']);
+    const [ranks, setRanks] = useState<Record<string, number>>({});
+    const points = 2 - Object.values(ranks).reduce((sum, value) => sum + value, 0);
     return (
       <TalentTree
+        columns={columns}
         nodes={nodes.map((node) => ({
           ...node,
-          learned: learned.includes(node.id),
-          available:
-            !learned.includes(node.id) &&
-            !!node.previous &&
-            learned.includes(node.previous) &&
-            learned.length < 3,
+          rank: ranks[node.id] ?? 0,
+          learned: !!ranks[node.id],
+          available: points > 0 && (ranks[node.id] ?? 0) < 2,
         }))}
-        points={3 - learned.length}
-        onLearn={(id) => setLearned([...learned, id])}
+        points={points}
+        onLearn={(id) => setRanks({ ...ranks, [id]: (ranks[id] ?? 0) + 1 })}
       />
     );
   },
@@ -66,61 +54,8 @@ export const Interactive: Story = {
 export const NoPoints: Story = {
   args: {
     nodes: nodes.map((node) => ({ ...node, available: false })),
+    columns,
     points: 0,
     onLearn: () => {},
-  },
-};
-
-export const Branching: Story = {
-  args: {
-    points: 7,
-    onLearn: () => {},
-    nodes: [
-      {
-        id: 'origin',
-        previous: null,
-        x: 400,
-        y: 350,
-        size: 22,
-        name: 'Origin',
-        description: 'Origin',
-        learned: true,
-        available: false,
-      },
-      ...[
-        ['a', 'origin', 330, 275],
-        ['b', 'a', 220, 260],
-        ['c', 'b', 160, 155],
-        ['d', 'a', 350, 165],
-        ['e', 'd', 440, 100],
-        ['f', 'b', 140, 350],
-        ['g', 'origin', 500, 400],
-        ['h', 'g', 560, 520],
-        ['i', 'g', 630, 335],
-        ['j', 'origin', 310, 440],
-        ['k', 'j', 200, 490],
-        ['l', 'j', 350, 550],
-      ].map(([id, previous, x, y]) => ({
-        id: String(id),
-        previous: String(previous),
-        x: Number(x),
-        y: Number(y),
-        name: `Power ${id}`,
-        description: '+1 power',
-        learned: ['a', 'b'].includes(String(id)),
-        available: ['d', 'f', 'g', 'j'].includes(String(id)),
-      })),
-      {
-        id: 'spell',
-        previous: 'c',
-        x: 80,
-        y: 100,
-        size: 34,
-        name: 'Sweeping strike',
-        description: '2× power',
-        learned: false,
-        available: false,
-      },
-    ],
   },
 };

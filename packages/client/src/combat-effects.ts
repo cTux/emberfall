@@ -1,10 +1,13 @@
 import { equipmentSlotArt } from './content-views';
+import { clientAsset } from './urls';
 import { TRANSIENT_EFFECTS } from '@emberfall/core/definitions/effects/transient';
 import { statusImages } from './combat-assets';
 import { effectsArt, pickupArt, drawArt, loadArt } from './art';
 import { EQUIPMENT_SLOTS, GEAR_DEFINITIONS, SLOT_GEAR_TYPES } from '@emberfall/core';
 import { hitOutline } from './effects';
 import type { SceneState, LootDrop, DamageEvent, DebuffIndicator } from '@emberfall/common';
+export const talentCastArt = new Image();
+talentCastArt.src = clientAsset('/assets/talents/cast-effects.png');
 
 export function bloodPuddleRenderer() {
   const puddles = new Map<number, Pick<DamageEvent, 'id' | 'x' | 'y' | 'at'>>();
@@ -218,6 +221,7 @@ export function drawClassProjectiles(
   scene: SceneState,
   now: number,
   near: (x: number, y: number) => { x: number; y: number },
+  particles = true,
 ) {
   ctx.save();
   for (const shot of scene.playerShots ?? []) {
@@ -269,9 +273,59 @@ export function drawClassProjectiles(
     ctx.restore();
   }
   for (const explosion of scene.explosions ?? []) {
-    const age = Math.max(0, (now - explosion.at) / 350);
+    const age = Math.max(0, (now - explosion.at) / (explosion.durationMs ?? 350));
     if (age >= 1) continue;
     const p = near(explosion.x, explosion.y);
+    if (explosion.talentClass) {
+      const classIndex = ['warrior', 'ranger', 'mage', 'druid'].indexOf(explosion.talentClass);
+      const row = Math.max(0, classIndex) * 3 + (explosion.talentColumn ?? 0);
+      if (talentCastArt.complete && talentCastArt.naturalWidth > 0) {
+        const width = talentCastArt.naturalWidth / 4,
+          height = talentCastArt.naturalHeight / 12;
+        ctx.globalAlpha = 1 - age * 0.5;
+        ctx.drawImage(
+          talentCastArt,
+          Math.min(3, Math.floor(age * 4)) * width,
+          row * height,
+          width,
+          height,
+          p.x - 100,
+          p.y - 100,
+          200,
+          200,
+        );
+      }
+      const colors = [
+        '#ffd18a',
+        '#e96060',
+        '#9ccfe8',
+        '#d3eb97',
+        '#9ed966',
+        '#b6d8bd',
+        '#ffb357',
+        '#d3a8f0',
+        '#a7e5ff',
+        '#c4eaa1',
+        '#d8bb83',
+        '#82e6b3',
+      ];
+      ctx.fillStyle = colors[row];
+      ctx.globalAlpha = 1 - age;
+      for (let index = 0; particles && index < 10; index++) {
+        const angle = (index * Math.PI * 2) / 10 + explosion.id;
+        const radius = 20 + age * 110;
+        ctx.beginPath();
+        ctx.arc(
+          p.x + Math.cos(angle) * radius,
+          p.y + Math.sin(angle) * radius,
+          3 * (1 - age) + 1,
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+      }
+      continue;
+    }
     ctx.globalAlpha = 1 - age;
     ctx.fillStyle = '#ffb53d44';
     ctx.strokeStyle = '#ffcb6b';

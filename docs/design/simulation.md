@@ -48,8 +48,8 @@ HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% ble
 and enemy hit resolution applies the owner's armor. UI shows the resulting
 cooldown without also showing attacks per second.
 
-`characterStats().cooldownRecoveryRate` combines gear speed relative to the
-equipped weapon's base attacks per second with additive talent speed bonuses.
+`characterStats().cooldownRecoveryRate` uses gear speed relative to the
+equipped weapon's base attacks per second; talents do not grant character stats.
 Both base attacks and talent casts use `recoveryCooldownMs(baseMs, rate)`:
 `baseMs / (1 + rate)`, with nonpositive recovery returning `Infinity`. Base attack
 cooldown comes from the weapon's base rate; talent casts retain their registered

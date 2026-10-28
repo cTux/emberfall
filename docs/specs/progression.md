@@ -35,37 +35,44 @@ displays server-confirmed progress and uses the shared requirement formula.
 
 ## PROG-03 — Talents
 
-Each normal level above 1 grants one talent point (level minus one, less learned
-nodes); paragon grants none. Existing characters receive their earned budget.
-N or the HUD opens a voluntary, scrollable linked tree shared by every class.
-Dragging the tree pans its canvas with mouse, pen or touch. Node tooltips stay
-hidden during a drag, and releasing a drag does not learn a talent. Clicking or
-using the keyboard still learns available nodes.
-The empty center is free. Curved links connect an irregular branching layout
-with 52 stat nodes and four ability nodes. Stat nodes remain 46px; ability nodes
-are 34px and the empty center is 22px. Every other node costs one point and
-requires its previous node; learning unlocks its children. Allocations save independently per
-class using the existing save lifecycle, including transactional learning.
+Each class has three independent columns with ten rows. Rows unlock at normal
+levels 1, 2, 4, 6, 8, 10, 12, 14, 16 and 18. Every talent has two ranks, costing
+one point per rank. There are no prerequisite nodes or required column spending;
+extensions may be purchased before the abilities they affect. Talents change
+combat mechanics rather than permanently increasing character stats.
 
-Four paths grant +1 power, +10% attack speed, +5 percentage points critical
-chance and +10 percentage points critical damage. Attack speed bonuses add
-with gear speed bonuses as one recovery rate for attacks and talent casts:
-`cooldown = base cooldown / (1 + increased speed - reduced speed)`. Percentages
-are fractions (100% is 1); +100% speed halves the cooldown. Gear contributions
-to attacks per second are normalized by the equipped weapon's base rate before
-adding talent bonuses. A net reduction of 100% or more prevents attacks/casts.
-Four ability nodes unlock class-specific abilities in fixed action-bar slots
-1–4, cast by number key or click toward the cursor independently of the base
-attack's auto-target setting. Each class has four distinct abilities using its existing attack family. Server validation
-owns prerequisites, budget, learned abilities, area eligibility and cooldowns.
-The village bullseye offers a voluntary confirmation to reset the current class's
-talents for 50 account coins. Confirming refunds its spent points and removes
-its talent stats and ability unlocks; cancelling changes nothing. The server
-requires a living character near the bullseye, sufficient coins and spent points,
-and saves the charge and reset together before publishing either. Other classes,
-level, XP, reserved unknown entries and ability cooldowns are preserved.
-No automatic allocation or forced prompt is introduced. Legacy reserved
-unknown talent entries remain saved but grant no effects and consume no points.
+The earned point budget equals normal level, including one point at level 1 and
+20 at level 20; paragon grants none. Unspent points equal that budget minus valid
+spent ranks. N or the HUD opens the voluntary three-column window. Each node
+shows its rank and level, with themed tooltips describing both ranks and affected
+abilities. Level-up never opens this window or waits for allocation.
+
+Every column has abilities in rows unlocked at levels 2, 6, 10 and 14. Rank 1
+unlocks an ability; rank 2 improves its effects. Right-clicking an action-bar slot,
+or pressing F2 while it is focused, opens a picker of learned abilities and a
+clear action. Four slots can be assigned independently. Cooldowns belong to the
+ability, so assigning it to another slot or to multiple slots cannot bypass its
+cooldown. Assignments and ranks save independently per class; the server validates
+ownership, life, class, area epoch, training eligibility and cooldowns.
+
+Warrior columns are Weapon Mastery, Bloodletting and Guardian. Open Wounds adds
+20 or 35 percentage points to the existing weapon Bleed chance. Ranger columns
+are Marksmanship, Venom and Survival; Mage columns are Fire, Arcane and Frost
+Ward; Druid columns are Nature Magic, Beastbond and Restoration. Every third
+column provides defensive effects. Beastbond commands require a living Bear.
+Effects use shared authoritative forest/training combat and wrapped geometry;
+training never grants rewards. Cast feedback uses class/column animation sheets
+and particles from confirmed events. The catalog and tooltips define the current
+rank effects; they are initial balance values.
+
+The village bullseye retains its 50-account-coin reset, living-character and
+proximity requirements, and save-before-publication transaction. Reset refunds
+spent ranks and clears equipped abilities. Existing ability cooldowns remain.
+Allocation version 2 refunds all old talent trees once, for every saved class,
+including offline players when their save is loaded. Normal level, paragon, XP,
+items, account currency and identity are preserved. Invalid class allocations,
+locked ranks and over-budget records are refunded rather than granting effects.
+The migration is idempotent, so new valid allocations survive later loads.
 
 ## Acceptance for any future implementation
 

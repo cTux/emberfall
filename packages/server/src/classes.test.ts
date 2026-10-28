@@ -97,7 +97,7 @@ test('class records migrate legacy progress, save independently, and survive res
     assert.equal(restored.classes.ranger.coins, undefined);
     assert.equal(restored.classes.warrior.coins, undefined);
     assert.equal(restored.classes.warrior.experience, 234);
-    assert.deepEqual(restored.classes.warrior.talents, { strength: 2 });
+    assert.deepEqual(restored.classes.warrior.talents, {});
     assert.equal(restored.classes.druid.maxHitpoints, 100);
     store.selectClass(old.id, player, 'druid');
     player.experience = 42;

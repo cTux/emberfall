@@ -1,4 +1,5 @@
 import { game, type createGame } from './game.ts';
+import { talentAilmentChance, talentWeaponHit, talentEnemyDeath } from './talent-effects.ts';
 type Game = ReturnType<typeof createGame>;
 import { appendSceneEntities, wrappedDelta, wrap } from '@emberfall/common';
 import { LOOT_ITEM_IDS } from './definitions/equipment.ts';
@@ -65,10 +66,12 @@ export function hitEnemy(
     ailment &&
     ailment !== 'roots' &&
     owner &&
-    isChanced(AILMENT_DEFINITIONS[ailment].chance * 100)
+    isChanced((AILMENT_DEFINITIONS[ailment].chance + talentAilmentChance(owner, ailment)) * 100)
   ) {
     enemy.debuffs ??= [];
-    let debuff = enemy.debuffs.find((d) => d.kind === ailment && d.expiresAt >= now);
+    let debuff = enemy.debuffs.find(
+      (d) => d.kind === ailment && d.ownerId === owner.id && d.expiresAt >= now,
+    );
     if (!debuff) {
       debuff = {
         kind: ailment,
@@ -77,14 +80,16 @@ export function hitEnemy(
         nextTick: now + AILMENT_DEFINITIONS[ailment].tickMs,
         ownerId: owner.id,
       };
-      enemy.debuffs = enemy.debuffs.filter((d) => d.kind !== ailment);
+      enemy.debuffs = enemy.debuffs.filter((d) => d.kind !== ailment || d.ownerId !== owner.id);
       enemy.debuffs.push(debuff);
     }
     debuff.stacks++;
     debuff.expiresAt = now + AILMENT_DEFINITIONS[ailment].durationMs;
     debuff.ownerId = owner.id;
   }
-  if (enemy.hitpoints > 0 || scene.training) return;
+  if (enemy.hitpoints > 0) return;
+  if (owner) talentEnemyDeath(scene, owner, enemy, now);
+  if (scene.training) return;
   if (owner) owner.experience++;
   scene.drops ??= [];
   appendSceneEntities(scene, 'drops', {
@@ -160,6 +165,7 @@ export function hitWithWeapon(
   ailment?: DebuffKind,
   powerScale = 1,
   stats: CharacterStats = characterStats(owner),
+  companion = false,
 ) {
   if (enemy.hitpoints <= 0) return;
   if (!stats.hasWeapon) return;
@@ -174,6 +180,7 @@ export function hitWithWeapon(
     stats.damageType,
     critical,
   );
+  talentWeaponHit(scene, owner, enemy, now, companion, stats);
 }
 
 function applyRoots(target: Enemy, ownerId: string, now: number) {
@@ -333,7 +340,7 @@ export function tickPlayerShots(
   context: Game = game,
 ) {
   scene.explosions = (scene.explosions ?? []).filter(
-    (e) => now - e.at < TRANSIENT_EFFECTS.explosion.lifetimeMs,
+    (e) => now - e.at < (e.durationMs ?? TRANSIENT_EFFECTS.explosion.lifetimeMs),
   );
   scene.playerShots = (scene.playerShots ?? []).filter((shot) => {
     const owner = players.find(

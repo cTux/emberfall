@@ -693,7 +693,7 @@ export function forestRenderer(
         );
     }
     renderer.occlusion = false;
-    if (world?.scene) drawClassProjectiles(ctx, world.scene, serverTime, near);
+    if (world?.scene) drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles);
     if (quality.lighting) {
       ctx.save();
       ctx.globalCompositeOperation = 'screen';

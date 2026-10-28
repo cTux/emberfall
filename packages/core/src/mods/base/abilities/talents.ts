@@ -1,39 +1,36 @@
 import type { AbilityDefinition } from '../../../content/contracts.ts';
-const names: Record<string, string[]> = {
-  warrior: ['Sweeping strike', 'Whirlwind', 'Earthshatter', 'Execution'],
-  ranger: ['Triple shot', 'Arrow fan', 'Power shot', 'Venom volley'],
-  mage: ['Flame burst', 'Ember barrage', 'Meteor', 'Starfire'],
-  druid: ['Thorn spear', 'Vine chain', 'Wild roots', 'Spirit seed'],
-};
-export const TALENT_ABILITIES: readonly AbilityDefinition[] = Object.entries(names).flatMap(
-  ([classId, titles]) =>
-    titles.map((name, slot) => ({
-      id: `talent:${classId}:${slot}`,
-      name,
-      classId,
-      talentSlot: slot,
-      kind:
-        classId === 'warrior'
-          ? 'slash'
-          : classId === 'ranger'
-            ? 'arrow'
-            : classId === 'mage'
-              ? 'fireball'
-              : 'roots',
-      range: classId === 'warrior' ? [125, 110, 185, 85][slot] : 700,
-      manualRange: classId === 'warrior' ? [125, 110, 185, 85][slot] : 1000,
-      damage: [2, 1, 3, 1.5][slot],
-      powerScale: [2, 1, 3, 1.5][slot],
-      intervalMs: [5000, 8000, 10000, 12000][slot],
-      durationMs: 260,
-      aimSmoothingSeconds: 0.08,
-      speed: classId === 'ranger' ? 700 : 420,
-      count: classId === 'warrior' ? 0 : [3, 7, 1, 4][slot],
-      spreadRadians: [0.12, 0.2, 0, 0.25][slot],
-      piercing: classId === 'ranger',
-      splashRadius: [100, 70, 160, 120][slot],
-      splashDamage: [1, 0.5, 2, 1][slot],
-      bounces: [0, 5, 3, 1][slot],
-      bounceRadius: 300,
-    })),
+import { TALENT_NAMES } from '../../../talent-catalog.ts';
+export const TALENT_ABILITIES: readonly AbilityDefinition[] = Object.entries(TALENT_NAMES).flatMap(
+  ([classId, columns]) =>
+    columns.flatMap((names, column) =>
+      [1, 3, 5, 7].map((row, tier) => ({
+        id: `talent:${classId}:${column * 4 + tier}`,
+        name: names[row],
+        classId,
+        talentSlot: column * 4 + tier,
+        kind:
+          classId === 'warrior'
+            ? 'slash'
+            : classId === 'ranger'
+              ? 'arrow'
+              : classId === 'mage'
+                ? 'fireball'
+                : 'roots',
+        range: classId === 'warrior' ? [125, 110, 185, 85][tier] : 700,
+        manualRange: classId === 'warrior' ? [125, 110, 185, 85][tier] : 1000,
+        damage: [1.5, 1.35, 1.8, 1.8][tier],
+        powerScale: [1.5, 1.35, 1.8, 1.8][tier],
+        intervalMs: [6000, 10000, 14000, 18000][tier],
+        durationMs: 260,
+        aimSmoothingSeconds: 0.08,
+        speed: classId === 'ranger' ? 700 : 420,
+        count: classId === 'warrior' ? 0 : [3, 4, 1, 5][tier],
+        spreadRadians: 0.12,
+        piercing: classId === 'ranger',
+        splashRadius: [100, 120, 160, 140][tier],
+        splashDamage: [0.75, 0.6, 1.2, 1][tier],
+        bounces: [0, 3, 1, 4][tier],
+        bounceRadius: 300,
+      })),
+    ),
 );

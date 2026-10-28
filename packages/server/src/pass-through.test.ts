@@ -11,6 +11,8 @@ import {
   moveActor,
   moveForestActor,
   forestDistance,
+  wrap,
+  wrappedDelta,
 } from '@emberfall/core';
 import { movePlayer, tickCompanion } from '@emberfall/core';
 import type { Player, WorldState } from '@emberfall/common';
@@ -70,7 +72,10 @@ test('server movement, prediction and interpolation pass through every scenery k
             }
           : undefined,
       };
-      const expected = { x: player.x + dx, y: player.y + dy };
+      const expected = {
+        x: wrap(player.x + dx, ARENA.width),
+        y: wrap(player.y + dy, ARENA.height),
+      };
       const server = { ...player };
       movePlayer(server, dx / 90, dy / 90, 0.5);
       assert(Math.abs(server.x - expected.x) < 1e-9);
@@ -89,8 +94,20 @@ test('server movement, prediction and interpolation pass through every scenery k
       const middle = buffer.render(100)!;
       const alpha = (middle.serverNow! - 10000) / 100;
       assert(alpha > 0 && alpha < 1);
-      assert(Math.abs(middle.players[0].x - (player.x + dx * alpha)) < 1e-9);
-      assert(Math.abs(middle.players[0].y - (player.y + dy * alpha)) < 1e-9);
+      assert(
+        Math.abs(
+          wrappedDelta(middle.players[0].x, wrap(player.x + dx * alpha, ARENA.width), ARENA.width),
+        ) < 1e-9,
+      );
+      assert(
+        Math.abs(
+          wrappedDelta(
+            middle.players[0].y,
+            wrap(player.y + dy * alpha, ARENA.height),
+            ARENA.height,
+          ),
+        ) < 1e-9,
+      );
       const arrived = buffer.render(500)!.players[0];
       assert(Math.abs(arrived.x - expected.x) < 1e-9);
       assert(Math.abs(arrived.y - expected.y) < 1e-9);

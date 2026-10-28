@@ -1,5 +1,7 @@
 export * from './talent-tree.ts';
+export * from './talent-description.ts';
 export * from './talent-combat.ts';
+export { clearTalentEffects } from './talent-effects.ts';
 export { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
 export { isChanced } from './utils/isChanced.ts';
 export { isMultiChanced } from './utils/isMultiChanced.ts';

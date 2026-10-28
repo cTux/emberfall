@@ -1,12 +1,10 @@
 import type { Player, SceneState } from '@emberfall/common';
 import { game, type createGame } from './game.ts';
-import { TALENT_TREE, isTalentLearned } from './talent-tree.ts';
+import { TALENT_TREE, isTalentLearned, talentRank } from './talent-tree.ts';
 import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
-import { fireClassAttack, hitWithWeapon } from './class-combat.ts';
-import { FOREST, forestDistance } from './scene.ts';
+import { FOREST } from './scene.ts';
 import { inTrainingZone } from './world.ts';
-import { swordOverlapsEnemy, playerAimAngle } from './simulation.ts';
-
+import { executeTalent } from './talent-effects.ts';
 type Game = ReturnType<typeof createGame>;
 export function talentAbility(player: Pick<Player, 'classId'>, slot: number, context: Game = game) {
   return context.registries.abilities
@@ -14,6 +12,14 @@ export function talentAbility(player: Pick<Player, 'classId'>, slot: number, con
     .find(
       (ability) => ability.classId === (player.classId ?? 'warrior') && ability.talentSlot === slot,
     );
+}
+export function equippedTalent(player: Player, slot: number) {
+  return TALENT_TREE.find(
+    (node) =>
+      node.id === player.talentSlots?.[slot] &&
+      node.classId === (player.classId ?? 'warrior') &&
+      node.kind === 'ability',
+  );
 }
 export function talentCooldownMs(player: Player, slot: number, context: Game = game) {
   return recoveryCooldownMs(
@@ -28,12 +34,15 @@ export function castTalentAbility(
   now: number,
   context: Game = game,
 ) {
-  const node = TALENT_TREE.find((entry) => entry.slot === request.slot);
-  const ability = talentAbility(player, request.slot, context);
+  const node = equippedTalent(player, request.slot);
+  const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot, context);
   if (
     !scene ||
     !node ||
     !ability ||
+    !Number.isInteger(request.slot) ||
+    request.slot < 0 ||
+    request.slot > 3 ||
     !Number.isFinite(request.aimX) ||
     !Number.isFinite(request.aimY) ||
     request.aimX < 0 ||
@@ -43,7 +52,7 @@ export function castTalentAbility(
     !isTalentLearned(player, node.id) ||
     player.hitpoints <= 0 ||
     !context.rules.characterStats(player).hasWeapon ||
-    !Number.isFinite(talentCooldownMs(player, request.slot, context)) ||
+    !Number.isFinite(talentCooldownMs(player, node.slot!, context)) ||
     scene.phase !== 'active' ||
     scene.pausedAt !== undefined ||
     request.classId !== (player.classId ?? 'warrior') ||
@@ -52,37 +61,25 @@ export function castTalentAbility(
     now < (player.talentCooldowns?.[ability.id] ?? -Infinity)
   )
     return false;
+  if (
+    player.classId === 'druid' &&
+    node.column === 1 &&
+    (!player.bear || player.bear.hitpoints <= 0)
+  )
+    return false;
   player.talentCooldowns = {
     ...player.talentCooldowns,
-    [ability.id]: now + talentCooldownMs(player, request.slot, context),
+    [ability.id]: now + talentCooldownMs(player, node.slot!, context),
   };
-  // Snapshot cursor aim without changing the base attack's targeting preferences.
-  const aimed = { ...player, autoTarget: false, aimX: request.aimX, aimY: request.aimY };
-  if (ability.kind === 'slash') {
-    const actor = { ...aimed, attackAngle: playerAimAngle(aimed, scene.enemies) };
-    for (const enemy of scene.enemies) {
-      const overlaps =
-        request.slot === 1
-          ? forestDistance(player, enemy) <= ability.range
-          : swordOverlapsEnemy(actor, enemy, ability.range, context);
-      if (enemy.hitpoints > 0 && overlaps)
-        hitWithWeapon(
-          scene,
-          enemy,
-          player,
-          now,
-          'bleed',
-          ability.powerScale ?? 1,
-          context.rules.characterStats(player),
-        );
-    }
-  } else
-    fireClassAttack(
-      scene,
-      { ...aimed, attackAt: now, attackId: undefined },
-      now,
-      context,
-      ability.id,
-    );
+  executeTalent(
+    scene,
+    player,
+    node.slot!,
+    node.id,
+    talentRank(player, node.id),
+    { x: request.aimX, y: request.aimY },
+    now,
+    context.rules.characterStats(player),
+  );
   return true;
 }

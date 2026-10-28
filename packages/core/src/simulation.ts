@@ -1,5 +1,6 @@
 type Game = ReturnType<typeof createGame>;
 import { game, type createGame } from './game.ts';
+import { tickTalentEffects, talentIncomingDamage, shiftTalentEffects } from './talent-effects.ts';
 import { PLAYER_BODY_RADIUS } from './definitions/entities/players.ts';
 import { modelHitbox, enemyHitbox, overlapsBody } from './hitboxes.ts';
 import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
@@ -135,7 +136,17 @@ function slash(
         1,
         context.rules.characterStats(owner),
       );
-    else hitWithWeapon(scene, enemy, owner, now, 'bleed', 1, context.rules.companionStats(owner));
+    else
+      hitWithWeapon(
+        scene,
+        enemy,
+        owner,
+        now,
+        'bleed',
+        1,
+        context.rules.companionStats(owner),
+        true,
+      );
   }
 }
 
@@ -395,6 +406,7 @@ export function stepCombat(
   }
   if (scene.pausedAt !== undefined) {
     const delay = Math.max(0, now - scene.pausedAt);
+    shiftTalentEffects(scene, players, delay);
     // Keep every combat deadline's remaining duration when the scene resumes.
     const keys = [
       'at',
@@ -409,6 +421,8 @@ export function stepCombat(
       'attackAt',
       'hurtAt',
       'resurrectAt',
+      'controlledUntil',
+      'challengedUntil',
     ] as const;
     const shift = (value: Partial<Record<(typeof keys)[number], number | null>>) => {
       for (const key of keys) if (typeof value[key] === 'number') value[key] += delay;
@@ -573,7 +587,9 @@ export function stepCombat(
     if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) return;
     const owner = 'returning' in target ? alive.find((p) => p.bear === target) : target;
     const reduction = owner ? context.rules.characterStats(owner).damageReduction : 0;
-    damage = Math.min(target.hitpoints, damage * (1 - reduction));
+    damage *= 1 - reduction;
+    if (!('returning' in target)) damage = talentIncomingDamage(scene, target, damage, now);
+    damage = Math.min(target.hitpoints, damage);
     target.hitpoints = Math.max(0, target.hitpoints - damage);
     target.hurtAt = now;
     if ('returning' in target && target.hitpoints === 0)
@@ -590,6 +606,7 @@ export function stepCombat(
     });
   };
   for (const enemy of scene.enemies) {
+    if ((enemy.controlledUntil ?? 0) > now) continue;
     const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
     const damage = enemyAttributes(
       enemy.archetype ?? EnemyKind.Skeleton,
@@ -597,12 +614,18 @@ export function stepCombat(
       scene.difficulty,
       context,
     ).damage;
-    const target = combatants
-      .filter((p) => p.hitpoints > 0)
-      .reduce<Player | Bear | undefined>(
-        (best, p) => (!best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best),
-        undefined,
-      );
+    const challenged =
+      (enemy.challengedUntil ?? 0) > now
+        ? combatants.find((player) => player.id === enemy.challengedBy && player.hitpoints > 0)
+        : undefined;
+    const target =
+      challenged ??
+      combatants
+        .filter((p) => p.hitpoints > 0)
+        .reduce<Player | Bear | undefined>(
+          (best, p) => (!best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best),
+          undefined,
+        );
     if (enemy.attack) {
       const attack = enemy.attack;
       if (now < attack.endsAt) continue;
@@ -738,6 +761,7 @@ export function tickPlayerCombat(
   dt: number,
   context: Game = game,
 ) {
+  tickTalentEffects(scene, alive, now);
   for (const player of alive) {
     const stats = context.rules.characterStats(player);
     const ability = context.registries.abilities.require(

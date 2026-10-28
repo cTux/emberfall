@@ -32,6 +32,9 @@ export interface PlayerShot {
   targetY?: number;
 }
 export interface Enemy {
+  controlledUntil?: number;
+  challengedBy?: string;
+  challengedUntil?: number;
   maxHitpoints?: number;
   debuffs?: Debuff[];
   name?: string;
@@ -81,7 +84,15 @@ export interface SceneState {
   training?: boolean;
   pausedAt?: number;
   playerShots?: PlayerShot[];
-  explosions?: { id: number; x: number; y: number; at: number }[];
+  explosions?: {
+    id: number;
+    x: number;
+    y: number;
+    at: number;
+    talentClass?: string;
+    talentColumn?: number;
+    durationMs?: number;
+  }[];
   drops?: LootDrop[];
   spawns?: (Enemy & { spawnsAt: number; warnedAt: number })[];
   projectiles?: {

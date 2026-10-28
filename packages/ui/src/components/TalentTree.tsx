@@ -1,215 +1,100 @@
 import { Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 export interface TalentNodeView {
   id: string;
-  previous: string | null;
-  x: number;
-  y: number;
   name: string;
   description: string;
   icon?: ReactNode;
-  size?: number;
   learned: boolean;
   available: boolean;
+  rank: number;
+  level: number;
+  column: number;
+  row: number;
 }
 export interface TalentTreeProps {
   nodes: readonly TalentNodeView[];
   points: number;
+  columns?: readonly string[];
   onLearn: (id: string) => void;
 }
-export function TalentTree({ nodes, points, onLearn }: TalentTreeProps) {
-  const scroll = useRef<HTMLDivElement>(null);
-  const drag = useRef<{
-    pointerId: number;
-    x: number;
-    y: number;
-    left: number;
-    top: number;
-    moved: boolean;
-  } | null>(null);
-  const suppressClick = useRef(false);
-  const [dragging, setDragging] = useState(false);
-  const [tooltip, setTooltip] = useState<string | null>(null);
-  const finishDrag = () => {
-    drag.current = null;
-    setDragging(false);
-  };
-  const width = Math.max(640, ...nodes.map((node) => node.x + 48));
-  const height = Math.max(640, ...nodes.map((node) => node.y + 48));
-  const origin = nodes.find((node) => node.previous === null);
-  const originX = origin?.x ?? width / 2;
-  const originY = origin?.y ?? height / 2;
-  useLayoutEffect(() => {
-    const element = scroll.current;
-    if (!element) return;
-    const center = () => {
-      element.scrollTop = Math.max(0, originY - element.clientHeight / 2);
-      element.scrollLeft = Math.max(0, originX - element.clientWidth / 2);
-    };
-    center();
-    const observer = new ResizeObserver(center);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [originX, originY]);
+export function TalentTree({ nodes, points, columns = [], onLearn }: TalentTreeProps) {
   return (
-    <Stack spacing={1}>
+    <Stack spacing={2}>
       <Typography role='status'>
         {points} talent {points === 1 ? 'point' : 'points'} available
       </Typography>
-      <Box
-        ref={scroll}
-        data-talent-scroll
-        onPointerDown={(event) => {
-          if (event.button !== 0 || !event.isPrimary || drag.current) return;
-          suppressClick.current = false;
-          drag.current = {
-            pointerId: event.pointerId,
-            x: event.clientX,
-            y: event.clientY,
-            left: event.currentTarget.scrollLeft,
-            top: event.currentTarget.scrollTop,
-            moved: false,
-          };
-          // Keep the original target so a tap still clicks its node.
-          (event.target as Element).setPointerCapture(event.pointerId);
-        }}
-        onPointerMove={(event) => {
-          const start = drag.current;
-          if (!start || start.pointerId !== event.pointerId) return;
-          const dx = event.clientX - start.x;
-          const dy = event.clientY - start.y;
-          if (!start.moved) {
-            if (Math.hypot(dx, dy) < 5) return;
-            start.moved = true;
-            suppressClick.current = true;
-            setTooltip(null);
-            setDragging(true);
-          }
-          event.currentTarget.scrollLeft = start.left - dx;
-          event.currentTarget.scrollTop = start.top - dy;
-          event.preventDefault();
-        }}
-        onPointerUp={(event) => {
-          if (drag.current?.pointerId !== event.pointerId) return;
-          finishDrag();
-          const target = event.target as Element;
-          if (target.hasPointerCapture(event.pointerId)) {
-            target.releasePointerCapture(event.pointerId);
-          }
-        }}
-        onPointerCancel={finishDrag}
-        onLostPointerCapture={finishDrag}
-        onDragStart={(event) => event.preventDefault()}
-        onClickCapture={(event) => {
-          if (!suppressClick.current || event.detail === 0) return;
-          event.preventDefault();
-          event.stopPropagation();
-          suppressClick.current = false;
-        }}
-        sx={{
-          overflow: 'auto',
-          touchAction: 'none',
-          userSelect: 'none',
-          cursor: dragging ? 'grabbing' : 'grab',
-          '& button': { cursor: 'inherit' },
-          maxHeight: 340,
-          border: 1,
-          borderColor: 'divider',
-          bgcolor: 'background.default',
-        }}
-      >
-        <Box data-talent-map sx={{ position: 'relative', width, height }}>
-          <svg
-            width={width}
-            height={height}
-            aria-hidden='true'
-            style={{ position: 'absolute', inset: 0 }}
-          >
-            {nodes.map((node, index) => {
-              const parent = nodes.find((entry) => entry.id === node.previous);
-              if (!parent) return null;
-              const dx = node.x - parent.x;
-              const dy = node.y - parent.y;
-              const length = Math.hypot(dx, dy) || 1;
-              const direction = index % 2 ? 1 : -1;
-              const bend = Math.min(36, length * 0.24) * direction;
-              const controlX = (parent.x + node.x) / 2 - (dy / length) * bend;
-              const controlY = (parent.y + node.y) / 2 + (dx / length) * bend;
-              return (
-                <path
-                  key={node.id}
-                  d={`M ${parent.x} ${parent.y} Q ${controlX} ${controlY} ${node.x} ${node.y}`}
-                  fill='none'
-                  strokeLinecap='round'
-                  stroke={node.learned ? '#e7ad65' : parent.learned ? '#8daba5' : '#384c41'}
-                  strokeWidth={node.learned ? 3 : 2}
-                />
-              );
-            })}
-          </svg>
-          {nodes.map((node) => (
-            <Tooltip
-              describeChild
-              key={node.id}
-              open={!dragging && tooltip === node.id}
-              onOpen={() => {
-                if (!drag.current?.moved) setTooltip(node.id);
-              }}
-              onClose={() => setTooltip((current) => (current === node.id ? null : current))}
-              slotProps={{ transition: { timeout: 0 } }}
-              title={
-                <>
-                  <strong>{node.name}</strong>
-                  {node.description !== node.name && (
-                    <>
-                      <br />
-                      {node.description}
-                    </>
-                  )}
-                  {(node.learned || node.available) && (
-                    <>
-                      <br />
-                      {node.learned ? 'Learned' : 'Learn for 1 talent point'}
-                    </>
-                  )}
-                </>
-              }
-              enterTouchDelay={0}
-            >
-              <ButtonBase
-                data-talent-node={node.id}
-                aria-label={`${node.name}: ${node.learned ? 'Learned' : node.available ? 'Available' : 'Locked'}`}
-                aria-disabled={!node.available}
-                onClick={() => {
-                  if (node.available) onLearn(node.id);
-                }}
-                sx={{
-                  position: 'absolute',
-                  left: node.x - (node.size ?? 46) / 2,
-                  top: node.y - (node.size ?? 46) / 2,
-                  width: node.size ?? 46,
-                  height: node.size ?? 46,
-                  borderRadius: '50%',
-                  overflow: 'hidden',
-                  border: node.learned ? 3 : 2,
-                  borderColor: node.learned
-                    ? 'primary.main'
-                    : node.available
-                      ? 'info.main'
-                      : 'divider',
-                  bgcolor: 'background.paper',
-                  opacity: node.learned || node.available ? 1 : 0.45,
-                  '&:focus-visible': {
-                    outline: '3px solid',
-                    outlineColor: 'text.primary',
-                    outlineOffset: 3,
-                  },
-                }}
-              >
-                {node.icon}
-              </ButtonBase>
-            </Tooltip>
+      <Box data-talent-scroll sx={{ overflow: 'auto', maxHeight: '65vh' }}>
+        <Box
+          data-talent-map
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, minmax(150px, 1fr))',
+            gap: 1,
+            minWidth: 480,
+          }}
+        >
+          {columns.map((name) => (
+            <Typography key={name} sx={{ textAlign: 'center', fontWeight: 700 }}>
+              {name}
+            </Typography>
           ))}
+          {[...nodes]
+            .sort((a, b) => a.row - b.row || a.column - b.column)
+            .map((node) => (
+              <Tooltip
+                key={node.id}
+                describeChild
+                placement='top'
+                enterTouchDelay={0}
+                title={
+                  <Stack spacing={1}>
+                    <Typography sx={{ fontWeight: 700 }}>
+                      {node.name} · {node.rank}/2
+                    </Typography>
+                    <Typography variant='body2'>{node.description}</Typography>
+                    <Typography variant='body2'>
+                      Requires level {node.level}. No prerequisite talents.
+                    </Typography>
+                    <Typography variant='body2'>
+                      {node.available
+                        ? 'Learn the next rank for 1 point.'
+                        : node.rank >= 2
+                          ? 'Fully learned.'
+                          : 'Requires the indicated level and an available point.'}
+                    </Typography>
+                  </Stack>
+                }
+              >
+                <ButtonBase
+                  data-talent-node={node.id}
+                  aria-label={`${node.name}: rank ${node.rank} of 2, ${node.available ? 'Available' : 'Locked'}`}
+                  aria-disabled={!node.available}
+                  onClick={() => {
+                    if (node.available) onLearn(node.id);
+                  }}
+                  sx={{
+                    p: 1,
+                    gap: 1,
+                    justifyContent: 'flex-start',
+                    textAlign: 'left',
+                    border: 1,
+                    borderColor: node.learned ? 'primary.main' : 'divider',
+                    bgcolor: 'background.paper',
+                    opacity: node.learned || node.available ? 1 : 0.5,
+                    '&:focus-visible': { outline: '2px solid', outlineColor: 'info.main' },
+                  }}
+                >
+                  <Box sx={{ width: 40, height: 40, flexShrink: 0 }}>{node.icon}</Box>
+                  <Stack>
+                    <Typography variant='body2'>{node.name}</Typography>
+                    <Typography variant='caption' color='text.secondary'>
+                      Lv {node.level} · {node.rank}/2
+                    </Typography>
+                  </Stack>
+                </ButtonBase>
+              </Tooltip>
+            ))}
         </Box>
       </Box>
     </Stack>

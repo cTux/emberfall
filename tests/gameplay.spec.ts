@@ -91,8 +91,13 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
     world.training!.playerShots = [];
     for (const enemy of world.training!.enemies) enemy.debuffs = [];
     const previousHit = world.training!.sequence;
-    player.x = TRAINING_ZONES[0].x - 65;
+    player.x = TRAINING_ZONES[0].x + 65;
     player.y = TRAINING_ZONES[0].y;
+    // Exercise companion combat here; forest chasing is covered below.
+    if (classId === 'druid' && player.bear) {
+      player.bear.x = player.x;
+      player.bear.y = player.y;
+    }
     // Damage records live for 800ms; 1s polling can miss every 1s companion hit.
     await expect
       .poll(() => world.training!.damage.some((hit) => hit.id > previousHit), {
@@ -219,18 +224,8 @@ test('druid roots visibly bounce through authoritative training with one refresh
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
-  player.x = WARDROBE.x;
-  player.y = WARDROBE.y - 15;
-  await expect(async () => {
-    await page.keyboard.press('e');
-    await expect(page.getByRole('dialog', { name: 'Wardrobe' })).toBeVisible();
-  }).toPass({ intervals: [200], timeout: 6000 });
-  await page
-    .getByRole('dialog', { name: 'Wardrobe' })
-    .getByRole('button', { name: /^Druid/ })
-    .click();
-  await page.getByRole('button', { name: 'Close Wardrobe', exact: true }).click();
-  await expect.poll(() => player.classId).toBe('druid');
+  player.classId = 'druid';
+  player.equipment = starterEquipment('druid');
   const zone = TRAINING_ZONES[1];
   player.x = zone.x - 120;
   player.y = zone.y;

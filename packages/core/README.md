@@ -220,8 +220,10 @@ These utilities live in `src/utils` and are exported from `@emberfall/core`.
 Run `pnpm --filter @emberfall/core typecheck` and
 `pnpm --filter @emberfall/core test` from the repository root.
 
-Talent node IDs and topology live in `talent-tree.ts`; allocations remain per
-class and points derive from normal level. `characterStats` includes learned
-bonuses. Registered abilities optionally provide `classId`, `talentSlot`, `name`
-and `powerScale`; `talent-combat.ts` validates learned slots and cooldowns before
-using the shared combat families. See [PROG-03](../../docs/specs/progression.md#prog-03--talents).
+Class talent names and column identities live in `talent-catalog.ts`; point,
+rank, loadout and migration rules live in `talent-tree.ts`. `talent-effects.ts`
+owns authoritative triggered and scheduled effects; `talent-combat.ts` validates
+equipped casts. `talent-description.ts` supplies rank tooltips. Talents never
+contribute permanent values to `characterStats`. Registered talent ability
+indices run from 0 to 11 per class; four saved action slots reference learned
+node IDs. See [PROG-03](../../docs/specs/progression.md#prog-03--talents).

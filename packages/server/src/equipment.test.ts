@@ -14,6 +14,8 @@ import {
   canEquip,
   clientMessage,
   learnTalent,
+  equipTalent,
+  talentNodeId,
   talentAbility,
   talentCooldownMs,
   castTalentAbility,
@@ -199,7 +201,7 @@ test('every class starts with exactly its compatible weapon and preserves base s
   }
 });
 
-test('gear and talent speed share additive attack and cast recovery in training and forest', () => {
+test('gear recovery applies to attacks and equipped talent casts in training and forest', () => {
   for (const gearSpeed of [-1.5, -0.5, 0, 0.25, 0.5, 1]) {
     const context = createGame([
       baseMod,
@@ -220,15 +222,15 @@ test('gear and talent speed share additive attack and cast recovery in training 
       for (const classId of CLASS_IDS) {
         const player = hero(classId);
         player.level = 20;
-        for (let slot = 0; slot < 4; slot++)
-          for (let step = 1; step <= 4; step++) learnTalent(player, `path-${slot}-${step}`);
+        learnTalent(player, talentNodeId(classId, 0, 1));
+        equipTalent(player, 0, talentNodeId(classId, 0, 1));
         player.equipment!.ring = 'speed-ring';
         if (!training) player.scene = 'forest';
         else Object.assign(player, { x: 140, y: 340 });
         const arena = scene(training);
         Object.assign(arena.enemies[0], { x: player.x + 20, y: player.y, hitpoints: 100000 });
         const stats = context.rules.characterStats(player);
-        const multiplier = 1 + gearSpeed + 0.3;
+        const multiplier = 1 + gearSpeed;
         const interval = multiplier > 0 ? 1000 / multiplier : Infinity;
         if (Number.isFinite(interval)) assert(Math.abs(stats.attackIntervalMs - interval) < 1e-9);
         else assert.equal(stats.attackIntervalMs, Infinity);

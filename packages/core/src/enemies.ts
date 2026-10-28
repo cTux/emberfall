@@ -41,7 +41,7 @@ export function enemyMaxHealth(
 /** Local tree detours and solid crowd bodies, used by the authoritative server. */
 export function moveEnemies(
   enemies: Enemy[],
-  players: { x: number; y: number; hitpoints: number }[],
+  players: { id?: string; x: number; y: number; hitpoints: number }[],
   dt: number,
   now = 0,
   context: ReturnType<typeof createGame> = game,
@@ -58,14 +58,20 @@ export function moveEnemies(
     cells.get(cell)!.add(enemy);
   }
   for (const enemy of enemies) {
-    if (enemy.attack) continue;
+    if (enemy.attack || (enemy.controlledUntil ?? 0) > now) continue;
     const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
-    const target = players
-      .filter((p) => p.hitpoints > 0)
-      .reduce<(typeof players)[number] | undefined>(
-        (best, p) => (!best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best),
-        undefined,
-      );
+    const challenged =
+      (enemy.challengedUntil ?? 0) > now
+        ? players.find((player) => player.id === enemy.challengedBy && player.hitpoints > 0)
+        : undefined;
+    const target =
+      challenged ??
+      players
+        .filter((p) => p.hitpoints > 0)
+        .reduce<(typeof players)[number] | undefined>(
+          (best, p) => (!best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best),
+          undefined,
+        );
     if (!target) continue;
     const targetDistance = forestDistance(enemy, target);
     if (stats.behavior === 'ranged' && targetDistance < ENEMY_RULES.casterStopRange) continue;

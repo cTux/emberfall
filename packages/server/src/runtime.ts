@@ -9,7 +9,9 @@ import {
 import type { ResourceState } from '@emberfall/common';
 import {
   learnTalent,
+  equipTalent,
   resetTalents,
+  clearTalentEffects,
   BULLSEYE,
   forestDistance,
   INTERACTION_RADIUS,
@@ -472,6 +474,7 @@ export async function createRuntime(
       }
       if (
         message.type === 'learnTalent' ||
+        message.type === 'equipTalent' ||
         message.type === 'resetTalents' ||
         message.type === 'useItem' ||
         message.type === 'unequip' ||
@@ -520,6 +523,7 @@ export async function createRuntime(
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
           if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
+          else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
           else if (message.type === 'resetTalents') resetTalents(next);
           else if (message.type === 'trade') tradeItem(next, merchant, message.id, message.buying);
           else if (message.type === 'storeItem')
@@ -540,6 +544,8 @@ export async function createRuntime(
           );
           Object.assign(player, {
             talents: next.talents,
+            talentSlots: next.talentSlots,
+            talentVersion: next.talentVersion,
             backpack: next.backpack,
             storages: next.storages,
             equipment: next.equipment,
@@ -547,6 +553,7 @@ export async function createRuntime(
             hitpoints: next.hitpoints,
             maxHitpoints: next.maxHitpoints,
           });
+          if (message.type === 'resetTalents') clearTalentEffects(player);
           if (trading) world.merchant = merchant;
           send(ws, { type: 'state', world: state(world, now, player) });
         } catch (failure) {

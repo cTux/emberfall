@@ -4,6 +4,10 @@ Use licensed project assets and preserve their original credits. Asgard’s Fall
 
 ## Sprites and icons
 
+Class talents use four generated 30-icon atlases and a transparent 48-frame
+cast-effects atlas. Exact prompts, dimensions, ordering and attribution are in
+[the talent artwork notes](../packages/client/public/assets/talents/README.md).
+
 The new client uses the [wardrobe-style collection](../packages/client/public/assets/wardrobe-style/README.md):
 generated actor and animal animations, village/forest scenery, a regenerated opening
 wardrobe, weapons, portraits, status icons, lantern/portal/projectile frames,

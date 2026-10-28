@@ -155,9 +155,10 @@ XP; positive paragon is shown beside the normal level. The host owns XP requirem
 
 Sources: [MUI installation](https://mui.com/material-ui/getting-started/installation/), [MUI theming](https://mui.com/material-ui/customization/theming/), [Storybook React + Vite](https://storybook.js.org/docs/get-started/frameworks/react-vite/).
 
-`TalentTree` presents controlled node views with previous links, coordinates,
-learned/available state, descriptions and icons. It centers a scrollable canvas
-sized to the supplied graph on its origin, with curved links and optional
-per-node sizes; node buttons support keyboard/touch tooltips and learning callbacks. The host computes points, prerequisites and effects.
-Drag the canvas or a node to pan with mouse, pen or touch. Tooltips hide while
-dragging, and releasing a drag does not activate a node.
+`TalentTree` presents three independent talent columns in a native scrollable
+layout. The host supplies column labels, row/column positions, level requirements,
+ranks, learned/available state, descriptions and icons. Themed tooltips describe
+both ranks and learning requirements. Buttons support keyboard and touch; the
+host owns point budgets, effects and learning callbacks. Right-click or F2 on an
+`ActionBar` slot invokes its optional `onChoose` callback, including during a
+cooldown. The host owns the learned-ability picker and saved assignments.

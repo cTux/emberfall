@@ -1161,7 +1161,7 @@ export function Arena({
       }
       renderer.occlusion = false;
       if (training) {
-        drawClassProjectiles(ctx, training, serverTime, project);
+        drawClassProjectiles(ctx, training, serverTime, project, quality.current.particles);
         if (prefs.current.damageNumbers)
           drawDamageNumbers(ctx, training.damage, project, serverTime);
       }
