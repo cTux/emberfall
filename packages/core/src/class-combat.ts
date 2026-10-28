@@ -37,7 +37,8 @@ export function hitEnemy(
   damageType: DamageType = 'physical',
   critical = false,
 ) {
-  if (enemy.hitpoints <= 0) return;
+  if (enemy.hitpoints <= 0 || amount <= 0) return;
+  amount = Math.max(1, amount);
   const dealt = Math.min(enemy.hitpoints, amount);
   enemy.hitpoints = Math.max(0, enemy.hitpoints - amount);
   if (owner) {

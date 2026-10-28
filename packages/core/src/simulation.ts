@@ -589,11 +589,13 @@ export function stepCombat(
     const reduction = owner ? context.rules.characterStats(owner).damageReduction : 0;
     damage *= 1 - reduction;
     if (!('returning' in target)) damage = talentIncomingDamage(scene, target, damage, now);
+    else if (damage > 0) damage = Math.max(1, damage);
     damage = Math.min(target.hitpoints, damage);
     target.hitpoints = Math.max(0, target.hitpoints - damage);
     target.hurtAt = now;
     if ('returning' in target && target.hitpoints === 0)
       target.resurrectAt = now + BEAR_DEFINITION.resurrectionMs;
+    if (damage <= 0) return;
     appendSceneEntities(scene, 'damage', {
       id: ++scene.sequence,
       x: target.x,

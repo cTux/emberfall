@@ -42,6 +42,11 @@ Experience shards, coins and new-runtime gear attract after the initial hop towa
 
 DPS is actual enemy damage over the previous five seconds divided by five, including ailments and Bear and excluding overkill. It returns to zero after five seconds without damage.
 
+Positive hits deal at least 1 damage after scaling and mitigation, capped by the
+target's remaining HP. Fully absorbed hits and zero-damage effects emit no damage
+number. Floating numbers round to whole numbers with a minimum of 1 for positive
+damage, including finishing hits against targets with less than 1 HP remaining.
+
 In the new runtime, players, enemies, training dummies and Bear have one circular damage hitbox centered on the whole visible model. Its diameter matches the rendered model size (48 units for players and Bear; 32–68 for enemy archetypes). Projectiles and melee overlap these bodies using wrapped geometry in both forest and training. Debug mode draws the same damage bodies without feet or projectile terrain overlays. Movement separation and terrain avoidance retain their existing rules; player movement still passes through scenery. Decorative scenery remains non-damageable.
 
 ## New-runtime equipment

@@ -79,7 +79,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   for (const edge of ['shaft left feather', 'shaft right feather'])
     expect(results[edge].actual[0]).toBeLessThanOrEqual(129);
   expect(results['shaft after camera move'].actual).toEqual(results['shaft center'].actual);
-  expect(groupedLabels).toEqual(['8']);
+  expect(groupedLabels).toEqual(['8', '1']);
   for (const phases of battleTextPixels) {
     const [start, pop, settled, fading, expired] = phases;
     expect(pop.height).toBeGreaterThan(start.height);

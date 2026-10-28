@@ -614,7 +614,7 @@ test('each ailment stacks, refreshes its timer, ticks once per second, and expir
     assert.equal(e.debuffs!.length, 0);
     tickDebuffs(s, [p], 9000);
     assert.equal(e.hitpoints, before - 8);
-    for (let i = 0; i < 100; i++) hitEnemy(s, e, 0, p, 10000, kind);
+    for (let i = 0; i < 100; i++) hitEnemy(s, e, 1, p, 10000, kind);
     assert.equal(e.debuffs![0].stacks, 100);
   }
 });

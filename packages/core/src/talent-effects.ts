@@ -259,6 +259,7 @@ export function talentIncomingDamage(
     talentVisual(scene, player, 2, player, now);
   }
   const rebirth = rank(player, 2, 9);
+  if (amount > 0) amount = Math.max(1, amount);
   if (
     player.classId === 'druid' &&
     rebirth &&

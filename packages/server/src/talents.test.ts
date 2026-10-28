@@ -569,3 +569,12 @@ test('defensive shelter protects nearby teammates without stacking barriers, and
   tickTalentEffects(scene, [player, druid, ally], 1000);
   assert.equal(ally.hitpoints, 0);
 });
+
+test('minimum incoming damage triggers Rebirth before a fractional-HP lethal hit', () => {
+  const player = hero('druid');
+  const scene = arena();
+  learnTalent(player, talentNodeId('druid', 2, 9));
+  player.hitpoints = 0.8;
+  assert.equal(talentIncomingDamage(scene, player, 0.2, 1000), 0);
+  assert.equal(talentIncomingDamage(scene, player, 0.2, 1001), 1);
+});

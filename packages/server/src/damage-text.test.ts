@@ -4,6 +4,7 @@ import type { DamageEvent } from '@emberfall/common';
 import {
   combineDamageNumbers,
   damageTextFrame,
+  drawDamageNumber,
   drawDamageNumbers,
 } from '../../client/src/damage-text.ts';
 
@@ -17,6 +18,24 @@ const hit = (overrides: Partial<DamageEvent> = {}): DamageEvent => ({
   x: 20,
   y: 30,
   ...overrides,
+});
+
+test('positive finishing hits display at least one and zero damage displays no number', () => {
+  const labels: string[] = [];
+  const ctx = {
+    globalAlpha: 1,
+    save() {},
+    restore() {},
+    translate() {},
+    scale() {},
+    strokeText() {},
+    fillText(value: string) {
+      labels.push(value);
+    },
+  } as unknown as CanvasRenderingContext2D;
+  for (const amount of [0, 0.01, 0.49, 1, 1.5])
+    drawDamageNumber(ctx, hit({ amount }), { x: 0, y: 0 }, 1000);
+  assert.deepEqual(labels, ['1', '1', '1', '2']);
 });
 
 test('combines projectiles and fractional critical damage without mutating events', () => {
