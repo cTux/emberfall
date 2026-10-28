@@ -52,6 +52,11 @@ for (const client of ['client']) {
     for (const path of [join('nested', 'sprite.PNG'), join('assets', bundled)]) {
       const output = await readFile(join(root, 'dist', path));
       assert.ok(output.length < original.length, `${path} should shrink`);
+      assert.equal(
+        (await sharp(output).metadata()).isProgressive,
+        true,
+        `${path} should interlace`,
+      );
       assert.deepEqual(
         await sharp(output).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
         await sharp(original).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
