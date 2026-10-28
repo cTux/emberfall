@@ -122,7 +122,7 @@ When no living players remain in a generated scene (everyone died or left; inter
 
 ## SCENE-05 — Boss and return
 
-At timer expiry, regular spawning continues and one Brute Boss with 300 Easy HP before party scaling with an orange health bar appears. The scene stays active until the boss dies; only then do remaining enemies disappear and a fixed blue return portal appears at each participant's feet, including players far from the original clearing. E near it returns a player to the village. A dead player can return immediately using their death window while teammates continue. Escape opens a confirmation: leaving a scene returns to the village without removing party membership; leaving the village exits the world. Escape while a modal is open closes that window first.
+At timer expiry, regular spawning continues and one Brute Boss with 300 Easy HP before party scaling with an orange health bar appears. The scene stays active until the boss dies; only then do remaining enemies disappear and a fixed blue return portal appears at each participant's feet, including players far from the original clearing. E near it returns a player to the village. A dead player can return immediately using their death window while teammates continue. The exit control opens a confirmation: leaving a scene returns to the village without removing party membership; leaving the village exits the world. Escape opens Settings, or closes the current window first.
 
 ## Acceptance
 

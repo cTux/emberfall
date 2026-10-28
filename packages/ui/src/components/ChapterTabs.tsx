@@ -47,7 +47,7 @@ export function ChapterTabs({
               {chapter.title}
             </Typography>
           }
-          title={chapter.title}
+          title={chapter.onRename ? `${chapter.title} · Rename (F2)` : chapter.title}
           disabled={chapter.disabled}
           {...inventoryDropProps(chapter.disabled ? undefined : chapter.drop)}
           onContextMenu={

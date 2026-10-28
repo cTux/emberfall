@@ -1,4 +1,83 @@
 import { test, expect } from './fixtures';
+import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
+
+test('menu hotkeys show in tooltips and open safely in lobby, village and forest', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  const codex = page.getByRole('dialog', { name: 'Codex', exact: true });
+  const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
+  for (const [name, shortcut] of [
+    ['Codex', 'F1'],
+    ['Settings', 'Esc'],
+  ]) {
+    await page.getByRole('button', { name, exact: true }).hover();
+    await expect(page.getByRole('tooltip')).toHaveText(`${name} (${shortcut})`);
+    await page.mouse.move(700, 400);
+    await expect(page.getByRole('tooltip')).toBeHidden();
+  }
+  await page.keyboard.press('F1');
+  await expect(codex).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(settings).toBeVisible();
+  await page.keyboard.press('F1');
+  await expect(settings).toBeVisible();
+  await expect(codex).toBeHidden();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+
+  for (const name of ['Talents (N)', 'Inventory (I)']) {
+    await page.getByRole('button', { name, exact: true }).hover();
+    await expect(page.getByRole('tooltip')).toHaveText(name);
+    await page.mouse.move(700, 400);
+    await expect(page.getByRole('tooltip')).toBeHidden();
+  }
+  await page.keyboard.press('Control+F1');
+  await page.keyboard.press('Shift+Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await page.keyboard.press('Enter');
+  const chat = page.getByRole('textbox', { name: 'Chat message', exact: true });
+  await expect(chat).toBeFocused();
+  await chat.press('F1');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await chat.press('Escape');
+  await expect(chat).toBeHidden();
+  await expect(page.getByRole('dialog')).toBeHidden();
+
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  for (const scene of ['village', 'forest']) {
+    await page.keyboard.press('F1');
+    await expect(codex).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(settings).toBeVisible();
+    await page.screenshot({ path: `test-results/hotkeys-settings-${scene}.png` });
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    expect(world.players.has(player.id)).toBe(true);
+    if (scene === 'village') {
+      player.x = LOBBY_PORTAL.x;
+      player.y = LOBBY_PORTAL.y - 15;
+      const portal = page.getByRole('dialog', { name: 'Forest portal' });
+      await expect(async () => {
+        await page.keyboard.press('e');
+        await expect(portal).toBeVisible();
+      }).toPass({ intervals: [200], timeout: 6000 });
+      await portal.getByRole('button', { name: 'Create', exact: true }).click();
+      await portal.getByRole('button', { name: "I'm ready" }).click();
+      await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
+    }
+  }
+  await page.getByRole('button', { name: 'Leave world' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+});
 
 test('movement follows physical keys across layouts and layout changes', async ({ page, game }) => {
   const movement = () => {

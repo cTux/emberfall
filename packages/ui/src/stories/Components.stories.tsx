@@ -145,8 +145,8 @@ export const Actions: Story = {
   render: () => (
     <HudActions
       actions={[
-        { id: 'codex', label: 'Codex', icon: faBookOpen, onClick() {} },
-        { id: 'settings', label: 'Settings', icon: faGear, onClick() {} },
+        { id: 'codex', label: 'Codex', shortcut: 'F1', icon: faBookOpen, onClick() {} },
+        { id: 'settings', label: 'Settings', shortcut: 'Esc', icon: faGear, onClick() {} },
       ]}
     />
   ),

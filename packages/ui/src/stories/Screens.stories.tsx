@@ -312,7 +312,8 @@ export const Codex: Story = {
                   title: 'Controls',
                   content: (
                     <Typography>
-                      WASD or arrow keys to move. E to interact. Escape to close menus or leave.
+                      WASD or arrow keys to move. E to interact. F1 opens Codex. Escape closes menus
+                      or opens Settings.
                     </Typography>
                   ),
                 },
@@ -375,8 +376,8 @@ export const Hud: Story = {
           </Stack>
           <HudActions
             actions={[
-              { id: 'codex', label: 'Codex', icon: faBookOpen, onClick() {} },
-              { id: 'settings', label: 'Settings', icon: faGear, onClick() {} },
+              { id: 'codex', label: 'Codex', shortcut: 'F1', icon: faBookOpen, onClick() {} },
+              { id: 'settings', label: 'Settings', shortcut: 'Esc', icon: faGear, onClick() {} },
               { id: 'leave', label: 'Leave world', icon: faRightFromBracket, onClick() {} },
             ]}
           />

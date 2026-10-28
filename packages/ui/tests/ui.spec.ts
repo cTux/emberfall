@@ -2,6 +2,21 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('HUD tooltips show shortcuts while keeping accessible button names', async ({ page }) => {
+  await page.goto(story('components-game-patterns--actions'));
+  for (const [name, shortcut] of [
+    ['Codex', 'F1'],
+    ['Settings', 'Esc'],
+  ]) {
+    const action = page.getByRole('button', { name, exact: true });
+    await action.focus();
+    await expect(page.getByRole('tooltip')).toHaveText(`${name} (${shortcut})`);
+    await action.blur();
+    await page.mouse.move(700, 400);
+    await expect(page.getByRole('tooltip')).toBeHidden();
+  }
+});
+
 test('settings dropdowns share window surfaces and wood selection states', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const width of [1280, 320]) {
@@ -244,6 +259,7 @@ test('storage supports forty slots and optional tab rename by mouse or keyboard'
   await expect(page.getByRole('tab', { name: 'Renamed storage' })).toBeVisible();
   await page.reload();
   const tab = page.getByRole('tab', { name: 'Storage 1' });
+  await expect(tab).toHaveAttribute('title', 'Storage 1 · Rename (F2)');
   await tab.focus();
   await tab.press('F2');
   await expect(page.getByRole('tab', { name: 'Renamed storage' })).toBeFocused();
