@@ -1,5 +1,5 @@
 import { Matrix, type Graphics } from 'pixi.js';
-import type { Paint } from './paints';
+import { Gradient, type Paint } from './paints';
 
 type State = {
   imageSmoothingEnabled: boolean;
@@ -24,6 +24,7 @@ type State = {
 
 /** Shared drawing state for the command adapter; reset once per rendered frame. */
 export class DrawingState {
+  private metrics = document.createElement('canvas').getContext('2d')!;
   fontFamily = '"Alegreya Sans", sans-serif';
   protected state: State = this.defaults();
   protected drawMatrix = new Matrix();
@@ -181,5 +182,27 @@ export class DrawingState {
   }
   set shadowOffsetY(v: number) {
     this.state.shadowOffsetY = v;
+  }
+  createLinearGradient(x0: number, y0: number, x1: number, y1: number) {
+    return new Gradient({
+      type: 'linear',
+      textureSpace: 'global',
+      start: { x: x0, y: y0 },
+      end: { x: x1, y: y1 },
+    });
+  }
+  createRadialGradient(x0: number, y0: number, r0: number, x1: number, y1: number, r1: number) {
+    return new Gradient({
+      type: 'radial',
+      textureSpace: 'global',
+      center: { x: x0, y: y0 },
+      innerRadius: r0,
+      outerCenter: { x: x1, y: y1 },
+      outerRadius: r1,
+    });
+  }
+  measureText(value: string) {
+    this.metrics.font = this.state.font;
+    return this.metrics.measureText(value);
   }
 }

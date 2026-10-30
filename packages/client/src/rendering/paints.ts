@@ -12,7 +12,18 @@ export class Gradient {
   }
 }
 
-export class GradientPaints {
+export class Paints {
+  private colors = new Map<string, Color>();
+  color(value: string) {
+    let color = this.colors.get(value);
+    if (!color) {
+      color = new Color(value);
+      if (this.colors.size >= 512) this.colors.delete(this.colors.keys().next().value!);
+      this.colors.set(value, color);
+    }
+    return color;
+  }
+
   private entries = new Map<string, { texture: Texture; used: number }>();
   get size() {
     return this.entries.size;
@@ -104,6 +115,7 @@ export class GradientPaints {
       }
   }
   destroy() {
+    this.colors.clear();
     for (const entry of this.entries.values()) entry.texture.destroy(true);
     this.entries.clear();
   }
