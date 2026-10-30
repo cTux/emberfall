@@ -43,3 +43,4 @@ export * from './definitions/equipment.ts';
 
 export * from './gathering.ts';
 export * from './timed-activity.ts';
+export * from './item-stats.ts';

@@ -47,6 +47,7 @@ export class Parties {
     return run;
   }
   private sync(run: SceneWorld, key: string) {
+    run.rewardPlayers = [...this.world.players.values()];
     run.voters = [...this.world.players.values()].filter((p) => this.home(p) === key);
     for (const id of run.players.keys())
       if (!this.world.players.has(id) || this.key(this.world.players.get(id)!) !== key)

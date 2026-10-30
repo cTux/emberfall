@@ -6,7 +6,13 @@ import { itemArtName } from './class-art';
 import { TRANSIENT_EFFECTS } from '@emberfall/core/definitions/effects/transient';
 import { statusImages } from './combat-assets';
 import { effectsArt, pickupArt, drawArt, loadArt } from './art';
-import { EQUIPMENT_SLOTS, GEAR_DEFINITIONS, SLOT_GEAR_TYPES } from '@emberfall/core';
+import {
+  EQUIPMENT_SLOTS,
+  GEAR_DEFINITIONS,
+  SLOT_GEAR_TYPES,
+  rarityColor,
+  itemRarity,
+} from '@emberfall/core';
 import { hitOutline } from './effects';
 import type { SceneState, LootDrop, DamageEvent, DebuffIndicator } from '@emberfall/common';
 export const talentCastArt = new Image();
@@ -133,8 +139,9 @@ export function drawLootAndBlood(
     ctx.fill();
     if (drop.kind === 'item') {
       const beam = ctx.createLinearGradient(p.x, p.y - 36, p.x, p.y);
-      beam.addColorStop(0, '#ffe6a800');
-      beam.addColorStop(1, '#ffe6a8aa');
+      const color = rarityColor[itemRarity(drop)];
+      beam.addColorStop(0, `${color}00`);
+      beam.addColorStop(1, `${color}aa`);
       ctx.fillStyle = beam;
       ctx.fillRect(p.x - 3, p.y - 36, 6, 36);
       const gear = GEAR_DEFINITIONS[drop.itemId ?? ''];
@@ -342,7 +349,7 @@ export function drawClassProjectiles(
     ctx.strokeStyle = '#ffcb6b';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 100 * (0.3 + age * 0.7), 0, Math.PI * 2);
+    ctx.arc(p.x, p.y, (explosion.radius ?? 100) * (0.3 + age * 0.7), 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
   }

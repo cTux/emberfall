@@ -137,7 +137,13 @@ for (const [index, gearType] of LOOT_GEAR_TYPES.entries()) {
   const id = `loot-${gearType}`;
   GEAR_DEFINITIONS[id] = { id, name: LOOT_NAMES[index], gearType, stats: { armor: 1 }, price: 1 };
 }
-export const LOOT_ITEM_IDS = LOOT_GEAR_TYPES.map((type) => `loot-${type}`);
+export const LOOT_ITEM_IDS = [
+  ...LOOT_GEAR_TYPES.map((type) => `loot-${type}`),
+  'warrior-sword',
+  'ranger-bow',
+  'mage-staff',
+  'druid-staff',
+];
 export const STARTER_WEAPONS = {
   warrior: 'warrior-sword',
   ranger: 'ranger-bow',

@@ -143,6 +143,14 @@ existing saved/wire IDs and use the [extension checks](../../docs/plans/mods.md#
 
 ## Balance configs
 
+Item roll configuration is exported through `item-stats.ts`, with enums in
+`src/enums/items.ts` and each balance map in `src/configs`. See
+[ITEM-01–03](../../docs/specs/item-rolls.md) for allowed stats, weights, exact
+values and party-wide reward rolls. `rules.rollItem(id)` generates server-owned
+instances. Inventory entries and optional `equipmentItems[slot]` retain rolls;
+`characterStats(player).bonuses` exposes summed affixes separately from intrinsic
+attributes. Missing metadata preserves existing stats and means Common.
+
 Each balance table has its own `.ts` file and is exported from core:
 
 | Config                           | Values                                                           |

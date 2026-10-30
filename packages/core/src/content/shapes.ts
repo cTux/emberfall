@@ -84,6 +84,7 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
     count: nonnegative.int(),
     spreadRadians: nonnegative,
     piercing: z.boolean(),
+    pierce: nonnegative.int().optional(),
     splashRadius: nonnegative,
     splashDamage: nonnegative,
     bounces: nonnegative.int(),

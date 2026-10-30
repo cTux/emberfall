@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="170" viewBox="0 0 700 170">
+<rect width="700" height="170" rx="12" fill="#111b23"/>
+<text x="24" y="28" fill="#e9e2ce" font-family="sans-serif" font-size="16">Rarity borders and drop beams — concept preview</text>
+<defs><linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop stop-color="white" stop-opacity="0"/><stop offset="1" stop-color="white" stop-opacity="0.8"/></linearGradient><mask id="fade"><rect width="700" height="170" fill="url(#beam)"/></mask></defs>
+<g font-family="sans-serif" font-size="14" text-anchor="middle">
+<g fill="#ffffff"><rect x="49" y="44" width="46" height="72" mask="url(#fade)"/><rect x="47" y="100" width="50" height="42" rx="5" fill="#20303b" stroke="#ffffff" stroke-width="2"/><text x="72" y="162">Common</text></g>
+<g fill="#1eff00"><rect x="187" y="44" width="46" height="72" mask="url(#fade)"/><rect x="185" y="100" width="50" height="42" rx="5" fill="#20303b" stroke="#1eff00" stroke-width="2"/><text x="210" y="162">Uncommon</text></g>
+<g fill="#0070dd"><rect x="327" y="44" width="46" height="72" mask="url(#fade)"/><rect x="325" y="100" width="50" height="42" rx="5" fill="#20303b" stroke="#0070dd" stroke-width="2"/><text x="350" y="162">Rare</text></g>
+<g fill="#a335ee"><rect x="467" y="44" width="46" height="72" mask="url(#fade)"/><rect x="465" y="100" width="50" height="42" rx="5" fill="#20303b" stroke="#a335ee" stroke-width="2"/><text x="490" y="162">Epic</text></g>
+<g fill="#ff8000"><rect x="605" y="44" width="46" height="72" mask="url(#fade)"/><rect x="603" y="100" width="50" height="42" rx="5" fill="#20303b" stroke="#ff8000" stroke-width="2"/><text x="628" y="162">Legendary</text></g>
+</g></svg>

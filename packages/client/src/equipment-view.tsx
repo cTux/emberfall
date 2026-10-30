@@ -1,6 +1,6 @@
 import { clientAsset } from './urls.ts';
 import { registeredSlotViews, additionalStatViews } from './content-views';
-import { game } from '@emberfall/core';
+import { game, itemRarity, rarityColor, ItemStat, itemStatWeight } from '@emberfall/core';
 import { useEffect, useRef, useState } from 'react';
 import { plantArt, environmentArt } from './art';
 import { resourceScenery } from './gathering';
@@ -58,6 +58,12 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: 'Maximum health', value: number(stats.maxHitpoints) },
     { label: 'Armor', value: number(stats.armor) },
     { label: 'Damage reduction', value: percent(stats.damageReduction) },
+    ...Object.entries(stats.bonuses)
+      .filter(([, value]) => value > 0)
+      .map(([stat, value]) => ({
+        label: `Bonus ${stat.replace(/([A-Z])/g, ' $1').toLowerCase()}`,
+        value: `${number(value)}${[ItemStat.Power, ItemStat.Armor, ItemStat.MaximumHealth].includes(stat as typeof ItemStat.Power) || itemStatWeight[stat as ItemStat] < 1 ? '' : '%'}`,
+      })),
     ...additionalStatViews(player),
   ];
 }
@@ -79,7 +85,7 @@ function weaponBadges(
       explanation:
         attack === 'slash'
           ? `Deal ${number(stats.power)} damage to each enemy struck, once per swing, in a forward half-disc.`
-          : `Each projectile deals ${number(stats.power)} damage to its target.${attack === 'arrow' ? ' Arrows pierce and damage every enemy in their path.' : ''}`,
+          : `Each projectile deals ${number(stats.power)} damage to its target.${attack === 'arrow' ? ' Base arrows penetrate three targets after the first hit.' : ''}`,
     },
     {
       label: 'Range',
@@ -167,6 +173,25 @@ function weaponBadges(
   }
   return badges;
 }
+function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadgeView[] {
+  return Object.entries(item?.stats ?? {}).map(([stat, value]) => {
+    const label = `Bonus ${stat.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
+    const flat =
+      stat === ItemStat.Power ||
+      stat === ItemStat.Armor ||
+      stat === ItemStat.MaximumHealth ||
+      itemStatWeight[stat as ItemStat] < 1;
+    return {
+      label,
+      icon: 'magic',
+      value: `+${number(value)}${flat ? '' : '%'}`,
+      explanation:
+        stat === ItemStat.GoldIncrease || stat === ItemStat.ExpIncrease
+          ? "Adds to the whole party's chance for additional drops. Each full 100% guarantees an extra copy."
+          : `${label}: +${number(value)}${flat ? '' : '%'}. Equipped bonuses add together.`,
+    };
+  });
+}
 export function Equipment({
   player,
   send,
@@ -179,6 +204,7 @@ export function Equipment({
   const slots: EquipmentSlotView[] = EQUIPMENT_SLOTS.map((id) => {
     const gear = GEAR_DEFINITIONS[equipment[id] ?? ''];
     const itemClass = gear ? ITEM_CLASSES[gear.id] : undefined;
+    const instance = player.equipmentItems?.[id];
     return {
       id,
       onUnequip: gear ? () => send({ type: 'unequip', slot: id }) : undefined,
@@ -213,13 +239,18 @@ export function Equipment({
         gear && canEquip(id, gear, classId)
           ? {
               name: gear.name,
+              rarity: capitalize(itemRarity(instance)),
+              rarityColor: rarityColor[itemRarity(instance)],
               icon: itemIcon(gear.id),
               price: gear.price ?? 1,
               subtitle: GEAR_LABELS[gear.gearType],
               primary: gear.stats.armor
                 ? { label: 'Armor', value: number(gear.stats.armor) }
                 : undefined,
-              badges: itemClass ? weaponBadges(player, itemClass, gear.id) : [],
+              badges: [
+                ...(itemClass ? weaponBadges(player, itemClass, gear.id) : []),
+                ...rolledBadges(instance),
+              ],
             }
           : undefined,
     };
@@ -303,14 +334,18 @@ export function backpackViews(items: BackpackItem[], player: Pick<Player, 'autoT
     return {
       ...item,
       name: definition.name,
+      rarity: capitalize(itemRarity(item)),
+      rarityColor: rarityColor[itemRarity(item)],
       icon: itemIcon(item.itemId),
       price: definition.price ?? 1,
       subtitle: gear ? GEAR_LABELS[gear.gearType] : capitalize(definition.kind),
       primary: gear?.stats.armor ? { label: 'Armor', value: number(gear.stats.armor) } : undefined,
-      stats:
-        gear && ITEM_CLASSES[item.itemId]
+      stats: [
+        ...(gear && ITEM_CLASSES[item.itemId]
           ? weaponBadges(player, ITEM_CLASSES[item.itemId], gear.id)
-          : [],
+          : []),
+        ...rolledBadges(item),
+      ],
       useAction: gear ? 'Equip' : potion ? 'Use' : undefined,
       details: potion ? `Restores ${potion.healing} health` : '',
     };

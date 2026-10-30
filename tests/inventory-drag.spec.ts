@@ -66,6 +66,7 @@ test('native inventory drags equip compatible slots and swap gear without consum
   };
   player.scene = 'forest';
   player.equipment = {};
+  player.equipmentItems = undefined;
   player.backpack = [{ id: 'forest-sword', itemId: STARTER_WEAPONS.warrior, quantity: 1 }];
   await expect(page.getByRole('status').filter({ hasText: /Forest/ })).toBeVisible();
   await opener.click();
@@ -131,7 +132,7 @@ test('native drags deposit, move between storage tabs and withdraw; full and sam
     .dragTo(backpack, { targetPosition: { x: 12, y: 12 } });
   await page.screenshot({ path: 'test-results/inventory-drag-storehouse.png' });
   await dialog.getByRole('button', { name: 'Close Storehouse' }).click();
-  await expect(page.getByRole('alert')).toContainText('full');
+  await expect(page.getByRole('log')).toContainText('full');
   expect(player.storages![2].items[0].quantity).toBe(5);
   expect(player.backpack).toHaveLength(20);
   await page.reload();
@@ -165,7 +166,7 @@ test('native vendor drags buy and sell once, including buyback, without bypassin
     .getByRole('button', { name: 'Buy Health potion (5)' })
     .dragTo(backpack, { targetPosition: { x: 12, y: 12 } });
   await dialog.getByRole('button', { name: `Close ${INNKEEPER.name}` }).click();
-  await expect(page.getByRole('alert')).toContainText('Not enough gold');
+  await expect(page.getByRole('log')).toContainText('Not enough gold');
   expect(player.coins).toBe(0);
   expect(world.merchant!.backpack[0].quantity).toBe(5);
   await expect(async () => {

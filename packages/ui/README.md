@@ -4,6 +4,12 @@ A source-exported React component library used by the game client and Storybook.
 
 ## Run and verify
 
+`Backpack` and `EquipmentPanel` accept host-supplied item `rarity` labels and
+`rarityColor` values. Filled slots retain this border on hover; `ItemTooltip`
+shows the label and colored name alongside host-supplied rolled stat badges.
+The `EquipmentPanel/Rarities` story previews all five gear qualities. Sampling,
+stat aggregation, storage and reward rules remain in core/server.
+
 From the repository root:
 
 ```sh

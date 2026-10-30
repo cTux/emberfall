@@ -14,6 +14,7 @@ export interface Scene extends SceneState {
   electorate: string;
 }
 export interface SceneWorld {
+  rewardPlayers?: Player[];
   chat?: ChatMessage[];
   players: Map<string, Player>;
   scene?: Scene;
@@ -173,7 +174,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
   }
   if (scene.phase !== 'active' && scene.phase !== 'ended') return;
   const living = [...world.players.values()].filter((player) => player.hitpoints > 0);
-  stepCombat(scene, [...world.players.values()], now, dt);
+  stepCombat(scene, [...world.players.values()], now, dt, undefined, world.rewardPlayers);
   for (const player of world.players.values()) Object.assign(player, levelUp(player));
   for (const player of living)
     if (player.hitpoints <= 0) addChat(world, `${player.name} died.`, undefined, player.id);

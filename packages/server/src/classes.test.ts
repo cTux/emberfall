@@ -641,7 +641,7 @@ test('proc boundary is ten percent; DOT kills use the same loot, XP and boss com
   );
 });
 
-test('ranger arrows pierce every target once, wrap, and expire at 1000 units', (t) => {
+test('ranger arrows hit each of the first four targets once, wrap, and expire at 1000 units', (t) => {
   t.mock.method(Math, 'random', () => 0.5);
   const s = scene(),
     p = { ...hero(), classId: 'ranger' as const, x: FOREST.width - 60 };

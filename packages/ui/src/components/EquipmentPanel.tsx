@@ -120,6 +120,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
               aria-label={`${slot.label}: ${slot.item?.name ?? 'Empty'}`}
               data-equipment-slot={slot.id}
               data-equipped={!!slot.item}
+              data-rarity={slot.item?.rarity?.toLowerCase()}
               {...inventoryDropProps(slot.drop)}
               onClick={() => setOpenSlot(slot.id)}
               onContextMenu={(event) => {
@@ -150,7 +151,8 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                 flexDirection: 'column',
                 gap: 0.5,
                 p: 0.5,
-                border: 0,
+                border: slot.item ? '1px solid' : 0,
+                borderColor: slot.item?.rarityColor ?? '#ffffff',
                 borderRadius: 1,
                 '&:hover': { bgcolor: 'action.hover' },
                 '&.Mui-focusVisible': {

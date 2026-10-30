@@ -69,6 +69,7 @@ export type AbilityDefinition = Widen<typeof ATTACK_DEFINITIONS.slash> & {
   count: number;
   spreadRadians: number;
   piercing: boolean;
+  pierce?: number;
   splashRadius: number;
   splashDamage: number;
   bounces: number;

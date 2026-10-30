@@ -1,5 +1,17 @@
 import { recoveryCooldownMs } from '../utils/recoveryCooldownMs.ts';
 import { z } from 'zod';
+import { inventoryItemSchema } from '@emberfall/common';
+import {
+  ItemStat,
+  Rarity,
+  itemRarity,
+  itemTypeStats,
+  itemStatWeight,
+  rarityStatCount,
+  statValue,
+  rollRarity,
+  rollItemStats,
+} from '../item-stats.ts';
 import { progressSchema as progressShape, clientMessage as messageShape } from '@emberfall/common';
 import type {
   Player,
@@ -12,6 +24,7 @@ import type {
 } from '@emberfall/common';
 import type { Registries } from './contracts.ts';
 export interface CharacterStats extends GearStats {
+  bonuses: Readonly<Record<ItemStat, number>>;
   attributes: Readonly<Record<string, number>>;
   damageType: DamageType;
   hasWeapon: boolean;
@@ -19,7 +32,7 @@ export interface CharacterStats extends GearStats {
   cooldownRecoveryRate: number;
   damageReduction: number;
 }
-export type EquipmentOwner = Pick<Player, 'classId' | 'equipment' | 'talents'>;
+export type EquipmentOwner = Pick<Player, 'classId' | 'equipment' | 'equipmentItems' | 'talents'>;
 export function createRules(content: Registries) {
   const EQUIPMENT_SLOTS = content.slots.values().map((slot) => slot.id);
   const SLOT_GEAR_TYPES = Object.fromEntries(
@@ -91,9 +104,13 @@ export function createRules(content: Registries) {
   function equippedItems(player: EquipmentOwner) {
     return player.equipment ?? starterEquipment(player.classId ?? 'warrior');
   }
-  /** Definitions are immutable content; only equipped IDs belong to character saves. */
+  /** Definitions stay immutable; equipped instances preserve each item's rolled stats. */
   function characterStats(player: EquipmentOwner): CharacterStats {
     const stats = { ...INNATE_STATS };
+    const bonuses = Object.fromEntries(Object.values(ItemStat).map((stat) => [stat, 0])) as Record<
+      ItemStat,
+      number
+    >;
     const equipment = equippedItems(player);
     const classId = player.classId ?? 'warrior';
     let weapon: GearDefinition | undefined;
@@ -103,7 +120,19 @@ export function createRules(content: Registries) {
       if (!gear || !canEquip(slot, gear, classId)) continue;
       if (slot === 'weapon') weapon = gear;
       for (const key of Object.keys(gear.stats) as string[]) stats[key] += gear.stats[key] ?? 0;
+      const instance = player.equipmentItems?.[slot];
+      if (instance?.itemId === id)
+        for (const [stat, value] of Object.entries(instance.stats ?? {}))
+          bonuses[stat as ItemStat] += value;
     }
+    stats.power += bonuses.power;
+    stats.armor += bonuses.armor;
+    stats.maxHitpoints += bonuses.maximumHealth;
+    stats.criticalChance += bonuses.criticalChance / 100;
+    stats.criticalMultiplier += bonuses.criticalDamage / 100;
+    stats.attacksPerSecond *= 1 + bonuses.attackSpeed / 100;
+    stats.range *= 1 + bonuses.range / 100;
+    stats.manualRange *= 1 + bonuses.range / 100;
     const baseAttackRate = weapon?.stats.attacksPerSecond ?? 0;
     const cooldownRecoveryRate =
       baseAttackRate > 0 ? stats.attacksPerSecond / baseAttackRate - 1 : -1;
@@ -117,6 +146,7 @@ export function createRules(content: Registries) {
     stats.armor = Math.max(0, stats.armor);
     return {
       ...stats,
+      bonuses: Object.freeze(bonuses),
       attributes: Object.freeze({ ...stats }),
       damageType: weapon?.damageType ?? 'physical',
       hasWeapon: !!weapon,
@@ -142,27 +172,53 @@ export function createRules(content: Registries) {
   function itemDefinition(id: string) {
     return content.items.require(id);
   }
-  const backpackSchema = z
-    .array(
-      z
-        .object({
-          id: z.string().min(1).max(64),
-          itemId: z.string().refine((id) => content.items.has(id), 'Unknown item'),
-          quantity: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-        })
-        .refine((item) => {
-          const definition = content.items.get(item.itemId);
-          return (
-            definition?.kind === 'consumable' ||
-            (definition?.kind === 'resource' ? item.quantity <= 200 : item.quantity === 1)
-          );
-        }),
+  const itemSchema = inventoryItemSchema.refine((item) => {
+    const definition = content.items.get(item.itemId);
+    if (
+      !definition ||
+      (item.rarity !== undefined && !Object.values(Rarity).includes(item.rarity as Rarity))
     )
+      return false;
+    const rarity = itemRarity(item);
+    const entries = Object.entries(item.stats ?? {});
+    if (definition.kind !== 'gear')
+      return (
+        rarity === Rarity.Common &&
+        entries.length === 0 &&
+        (definition.kind === 'consumable' || item.quantity <= 200)
+      );
+    if (item.quantity !== 1) return false;
+    if (item.stats === undefined) return rarity === Rarity.Common;
+    return (
+      entries.length === rarityStatCount[rarity] &&
+      entries.every(
+        ([stat, value]) =>
+          itemTypeStats[definition.gearType]?.includes(stat as ItemStat) &&
+          (rarity === Rarity.Legendary || itemStatWeight[stat as ItemStat] === 1) &&
+          value === statValue(stat as ItemStat, rarity),
+      )
+    );
+  }, 'Invalid item definition, rarity or rolled stats');
+  const backpackSchema = z
+    .array(itemSchema)
     .refine(
       (items) => new Set(items.map((item) => item.id)).size === items.length,
       'Duplicate item identity',
     );
   type BackpackItem = z.infer<typeof backpackSchema>[number];
+  function rollItem(itemId: string, random = Math.random): BackpackItem {
+    const definition = itemDefinition(itemId);
+    if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType])
+      return { id: crypto.randomUUID(), itemId, quantity: 1 };
+    const rarity = rollRarity(random);
+    return {
+      id: crypto.randomUUID(),
+      itemId,
+      quantity: 1,
+      rarity,
+      stats: rollItemStats(definition.gearType, rarity, random),
+    };
+  }
   const INVENTORY_SLOTS = 20;
   const STORAGE_SLOTS = 40;
   const storageNameSchema = z
@@ -220,6 +276,10 @@ export function createRules(content: Registries) {
       backpack: [
         { id: crypto.randomUUID(), itemId: 'health-potion', quantity: 5 },
         { id: crypto.randomUUID(), itemId: 'empty-bottle', quantity: 200 },
+        ...content.items
+          .values()
+          .filter((item) => item.kind === 'gear' && item.loot)
+          .map((item) => rollItem(item.id)),
       ],
       buyback: [],
     };
@@ -321,17 +381,27 @@ export function createRules(content: Registries) {
     if (!slot) throw new Error('Your class cannot equip this item.');
     player.equipment = { ...equippedItems(player) };
     const previous = player.equipment[slot];
-    if (previous) backpack[index] = { id: crypto.randomUUID(), itemId: previous, quantity: 1 };
+    if (previous)
+      backpack[index] = player.equipmentItems?.[slot] ?? {
+        id: crypto.randomUUID(),
+        itemId: previous,
+        quantity: 1,
+      };
     else backpack.splice(index, 1);
     player.equipment[slot] = item.itemId;
+    player.equipmentItems = { ...player.equipmentItems, [slot]: item };
     syncEquipmentVitals(player);
   }
   function unequipItem(player: Player, slot: EquipmentSlot) {
     player.equipment = { ...equippedItems(player) };
     const itemId = player.equipment[slot];
     if (!itemId) throw new Error('This equipment slot is empty.');
-    addItem((player.backpack ??= []), { id: crypto.randomUUID(), itemId, quantity: 1 });
+    addItem(
+      (player.backpack ??= []),
+      player.equipmentItems?.[slot] ?? { id: crypto.randomUUID(), itemId, quantity: 1 },
+    );
     player.equipment[slot] = null;
+    if (player.equipmentItems) delete player.equipmentItems[slot];
     syncEquipmentVitals(player);
   }
   /** Both owners commit together; older callers still transfer one item. */
@@ -359,7 +429,7 @@ export function createRules(content: Registries) {
     if ((target.coins ?? 0) < price) throw new Error('Not enough gold.');
     if (!Number.isSafeInteger((source.coins ?? 0) + price))
       throw new Error('Gold balance is too large.');
-    const transferred = { id: crypto.randomUUID(), itemId: item.itemId, quantity };
+    const transferred = { ...item, id: crypto.randomUUID(), quantity };
     if (buying) addItem((player.backpack ??= []), transferred);
     else {
       merchant.buyback.unshift(transferred);
@@ -395,6 +465,25 @@ export function createRules(content: Registries) {
 
   const classSchema = z.string().refine((id) => content.classes.has(id), 'Unknown class');
   const progressSchema = progressShape.superRefine((progress, ctx) => {
+    for (const [slot, item] of Object.entries(progress.equipmentItems ?? {})) {
+      if (
+        !content.slots.has(slot) ||
+        progress.equipment?.[slot] !== item.itemId ||
+        !itemSchema.safeParse(item).success
+      )
+        ctx.addIssue({
+          code: 'custom',
+          path: ['equipmentItems', slot],
+          message: 'Invalid equipped item instance',
+        });
+    }
+    const instances = [
+      ...Object.values(progress.equipmentItems ?? {}),
+      ...(progress.backpack ?? []),
+      ...(progress.storages ?? []).flatMap((storage) => storage.items),
+    ];
+    if (new Set(instances.map((item) => item.id)).size !== instances.length)
+      ctx.addIssue({ code: 'custom', message: 'Duplicate owned item identity' });
     for (const [key, schema] of [
       ['equipment', equipmentSchema],
       ['backpack', backpackSchema],
@@ -433,6 +522,7 @@ export function createRules(content: Registries) {
     syncEquipmentVitals,
     companionStats,
     itemDefinition,
+    rollItem,
     CONSUMABLES,
     backpackSchema,
     INVENTORY_SLOTS,

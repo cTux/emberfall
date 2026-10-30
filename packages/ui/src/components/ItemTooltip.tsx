@@ -27,6 +27,8 @@ export interface EquipmentBadgeView {
 }
 
 export interface ItemTooltipView {
+  rarity?: string;
+  rarityColor?: string;
   name: string;
   icon: ReactNode;
   subtitle?: string;
@@ -58,11 +60,16 @@ export function ItemTooltip({
           {item.icon}
         </Box>
         <Box sx={{ minWidth: 0 }}>
-          <Typography variant='subtitle2' sx={{ fontWeight: 700 }}>
+          <Typography variant='subtitle2' sx={{ fontWeight: 700, color: item.rarityColor }}>
             {item.name}
           </Typography>
-          {item.subtitle && (
+          {(item.subtitle || item.rarity) && (
             <Typography variant='body2' color='text.secondary'>
+              {item.rarity && (
+                <Box component='span' sx={{ color: item.rarityColor }}>
+                  {item.rarity}{' '}
+                </Box>
+              )}
               {item.subtitle}
             </Typography>
           )}

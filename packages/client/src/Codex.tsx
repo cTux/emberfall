@@ -116,10 +116,11 @@ const chapters = [
         </p>
         <h4>Weapons & projectiles</h4>
         <p>
-          Warrior slashes for 5 damage; ranger arrows deal 5 damage and pierce all targets for 1000
-          units. Ranger and mage fire two projectiles, 3° either side of the aim direction, with 6°
-          between them. Mage fireballs travel up to 250 units with auto-target enabled, deal 3
-          damage to the direct target, and explode within 100 units for 1 damage to other enemies.
+          Warrior slashes for 5 damage; ranger arrows deal 5 damage and penetrate three targets
+          after the first hit for 1000 units. Ranger and mage fire two projectiles, 3° either side
+          of the aim direction, with 6° between them. Mage fireballs travel up to 250 units with
+          auto-target enabled, deal 3 damage to the direct target, and explode within 100 units for
+          1 damage to other enemies.
         </p>
         <h4>Ailments</h4>
         <p>

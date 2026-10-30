@@ -122,6 +122,36 @@ export const Empty: StoryObj<typeof meta> = {
   args: { slots, stats: [{ label: 'Power', value: '0' }] },
 };
 
+export const Rarities: StoryObj<typeof meta> = {
+  render: function Rarities() {
+    const colors = [
+      ['Common', '#ffffff'],
+      ['Uncommon', '#1eff00'],
+      ['Rare', '#0070dd'],
+      ['Epic', '#a335ee'],
+      ['Legendary', '#ff8000'],
+    ];
+    return (
+      <Backpack
+        label='Rarity examples'
+        action='Inspect'
+        slots={5}
+        onUse={() => {}}
+        items={colors.map(([rarity, rarityColor]) => ({
+          id: rarity,
+          name: 'Example weapon',
+          icon: <img src={warriorWeapon} alt='' />,
+          rarity,
+          rarityColor,
+          quantity: 1,
+          details: 'Rarity is supplied by the host.',
+          price: 1,
+        }))}
+      />
+    );
+  },
+};
+
 export const DragToEquip: StoryObj<typeof meta> = {
   render: function DragToEquip(args) {
     const [equipped, setEquipped] = useState(false);
