@@ -10,6 +10,7 @@ export interface BackpackItemView extends ItemTooltipView {
   useAction?: string;
   id: string;
   quantity: number;
+  stackable: boolean;
   details: string;
   price: number;
 }
@@ -81,7 +82,7 @@ export function Backpack({
             title={
               <ItemTooltip
                 item={item}
-                quantity={item.quantity}
+                quantity={item.stackable ? item.quantity : undefined}
                 stats={item.stats}
                 onBack={() =>
                   panelRef.current
@@ -131,7 +132,10 @@ export function Backpack({
                 }
               }}
             >
-              <Box aria-hidden='true' sx={{ pointerEvents: 'none' }}>
+              <Box
+                aria-hidden='true'
+                sx={{ display: 'grid', placeItems: 'center', pointerEvents: 'none' }}
+              >
                 {item.icon}
               </Box>
               {item.quantity > 1 && (

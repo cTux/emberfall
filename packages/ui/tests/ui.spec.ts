@@ -369,6 +369,21 @@ test('external modal tabs scroll, navigate and stay with the window at viewport 
   ).toBe(true);
 });
 
+test('inventory artwork stays centered inside every filled slot', async ({ page }, testInfo) => {
+  for (const state of ['stacked', 'full', 'storage', 'selling']) {
+    await page.goto(story(`components-backpack--${state}`));
+    const slots = page.locator('[data-backpack-item]');
+    await expect(slots.first()).toBeVisible();
+    for (const slot of await slots.all()) {
+      const bounds = (await slot.boundingBox())!;
+      const icon = (await slot.locator('img').boundingBox())!;
+      expect(Math.abs(icon.x + icon.width / 2 - bounds.x - bounds.width / 2)).toBeLessThan(1);
+      expect(Math.abs(icon.y + icon.height / 2 - bounds.y - bounds.height / 2)).toBeLessThan(1);
+    }
+  }
+  await page.screenshot({ path: testInfo.outputPath('centered-inventory-icons.png') });
+});
+
 test('backpacks show twenty wood-colored slots and tabs sit outside the left window border', async ({
   page,
 }) => {
@@ -1003,4 +1018,22 @@ test('incompatible gear explains its restriction in red on hover and keyboard fo
   await expect(tooltip.getByText('Your class cannot equip this item.')).toBeVisible();
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(tooltip).toBeVisible();
+});
+
+test('item tooltips show quantity only for stackable items, including stacks of one', async ({
+  page,
+}) => {
+  await page.goto(story('components-backpack--single'));
+  await page.getByRole('button', { name: 'Use Health potion', exact: true }).focus();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).toContainText('Quantity1');
+  await expect(tooltip).toContainText('1 gold each');
+
+  await page.goto(story('components-equipmentpanel--rarities'));
+  await page.getByRole('button', { name: 'Inspect Example weapon', exact: true }).first().hover();
+  await expect(tooltip).toContainText('Example weapon');
+  await expect(tooltip).not.toContainText('Quantity');
+  await expect(tooltip).toContainText('1 gold');
+  await expect(tooltip).not.toContainText('gold each');
+  await page.screenshot({ path: 'test-results/item-tooltip-unstackable.png' });
 });

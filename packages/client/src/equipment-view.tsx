@@ -340,6 +340,7 @@ export function backpackViews(
         : undefined;
     return {
       ...item,
+      stackable: definition.kind !== 'gear',
       name: definition.name,
       rarity: capitalize(itemRarity(item)),
       rarityColor: rarityColor[itemRarity(item)],

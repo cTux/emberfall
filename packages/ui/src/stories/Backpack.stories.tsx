@@ -20,6 +20,7 @@ const meta = {
         id: 'potion',
         name: 'Health potion',
         quantity: 5,
+        stackable: true,
         price: 1,
         details: 'Restores 25 health',
         subtitle: 'Consumable',
@@ -31,12 +32,16 @@ const meta = {
 } satisfies Meta<typeof Backpack>;
 export default meta;
 export const Stacked: StoryObj<typeof meta> = {};
+export const Single: StoryObj<typeof meta> = {
+  args: { items: [{ ...meta.args.items[0], quantity: 1 }] },
+};
 export const Empty: StoryObj<typeof meta> = { args: { items: [] } };
 export const RestrictedGear: StoryObj<typeof meta> = {
   args: {
     items: [
       {
         id: 'sword',
+        stackable: false,
         name: "Warrior's sword",
         quantity: 1,
         price: 1,
