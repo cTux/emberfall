@@ -401,13 +401,13 @@ Concept diagram of the implemented controls (not a gameplay capture):
 ![Trade quantity controls](../images/trade-quantity.svg)
 Legacy merchant gear stock migrates to buyback; potion stock stays in Buy.
 Stable entry IDs make stale
-commands harmless. Gear definitions are the single source of armor and price.
+commands harmless. Gear definitions remain the source of intrinsic stats and base prices; core's bound `itemPrice` combines the base price, rarity multiplier and normalized rolled stat score for both UI and transactions.
 Per-class progress includes the backpack; older saves default to an empty array.
 Forest kill drops join the existing wrapped pickup system; training exits before
 rewards. The saved client `autoLoot` preference travels in validated combat input; the server excludes players with it disabled from item attraction and collection, without changing XP/gold eligibility. Missing fields retain automatic pickup for older clients. The client renders confirmed inventory and never grants items or coins.
 
 `runtime.ts` derives item ownership from the authenticated session. Trading also
-checks village proximity. Item commands mutate a detached copy, save first, then
+checks village proximity to Marta or Bram and validates the command's `npcId` against that NPC's live wrapped range, even when merchant ranges overlap. Older commands without `npcId` retain nearby-trader selection. The existing merchant record contains Bram's inventory, gold and buyback under `craftsman`, committed atomically with Marta's state. Decoding older records moves regular gear to Bram without rerolling and preserves Marta's buybacks and gold. Item commands mutate a detached copy, save first, then
 publish live state. `characters.ts` stores shared merchant state by world ID and
 commits it with the character save in one SQLite transaction. Single-process
 synchronous commands serialize competing buyers; the first successful transfer
@@ -417,7 +417,7 @@ second transport. UI components remain controlled; host callbacks send commands.
 
 Merchant state includes a persisted `refreshAt` deadline. The server checks it
 against wall time every tick, replaces regular stock and gold from `freshMerchant`,
-and retains buybacks. It saves before publishing stock or the system chat notice;
+and retains both merchants' buybacks. It saves before publishing stock or the system chat notice;
 failed writes retain the old state and retry at the autosave cadence. Legacy merchants without a deadline
 refresh once on load. Empty bottles use the existing resource stacking rules.
 

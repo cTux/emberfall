@@ -294,7 +294,7 @@ test('buyback keeps the latest 20 sales separate, migrates legacy gear, and reje
     tradeItem(player, merchant, entry.id, false);
     ids.push(merchant.buyback[0].id);
   }
-  assert.equal(merchant.backpack.length, 2 + LOOT_ITEM_IDS.length);
+  assert.equal(merchant.backpack.length, 2);
   assert.equal(merchant.buyback.length, BUYBACK_SLOTS);
   assert.deepEqual(
     merchant.buyback.map((entry) => entry.id),
@@ -443,7 +443,7 @@ test('session-owned commands reject remote trading and retain live items after a
     assert.match((messages.at(-1) as { message: string }).message, /Unable to save/);
     assert.deepEqual(player, before);
     assert.equal(world.merchant!.coins, 5000);
-    assert.equal(world.merchant!.backpack.length, 2 + LOOT_ITEM_IDS.length);
+    assert.equal(world.merchant!.backpack.length, 2);
     failSave.mock.restore();
     peer.receive({ type: 'trade', id: player.backpack[0].id, buying: false, coins: 99999 });
     assert.equal(player.backpack.length, 0);

@@ -4,7 +4,7 @@ Status: implemented baseline. Goal: Stage a party in the village and run indepen
 
 ## SCENE-01 — Village and interactions
 
-The lobby is a five-building village with a connected path network and a central square. Each building has a distinct generated design in the same wardrobe style and front-facing camera, preserving source proportions, world widths and ground positions. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors remain unimplemented; Marta provides shared item trading.
+The lobby is a five-building village with a connected path network and a central square. Each building has a distinct generated design in the same wardrobe style and front-facing camera, preserving source proportions, world widths and ground positions. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors remain unimplemented; Marta and Bram provide shared item trading.
 
 Seeded trees, mossy rocks and five plant kinds fill the surrounding village landscape.
 Paths, building approaches, the central square and training clearings stay open.
@@ -21,12 +21,12 @@ Oswin the Steward lives at the Hall, Bram the Craftsman at the Workshop, and Nel
 Pathfinder at the Lodge. Storehouse already provides storage and gets no extra resident.
 Each resident has a name, personality and a home building. The server owns their
 positions, walking state and conversations. Nearby players do not interrupt walking.
-Marta pauses while a living connected village player has her trading window open
+Marta and Bram pause while a living connected village player has their trading window open
 and remains in interaction range. Closing the window, leaving range or the village,
 dying or disconnecting releases that player's interaction; another active trader
-can keep her paused. E within 68 units opens her compact shared trading window, titled
-with her name. Her name uses the player's font, outline
-and placement above the sprite, unchanged by hover or range. Marta sells consumables and buys collected items; see CHAR-04 for the shared
+can keep that merchant paused. E within 68 units opens their compact shared trading window, titled
+with their name. Their names use the player's font, outline
+and placement above the sprite, unchanged by hover or range. Marta sells consumables and resources; Bram sells gear. Both buy collected items; see CHAR-04 for the shared
 stock, gold and transaction rules.
 
 ## SCENE-06 — Village life

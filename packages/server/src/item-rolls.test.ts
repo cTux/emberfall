@@ -173,10 +173,12 @@ test('all gear pools include reward stats, distinct configured values and restri
 test('every generated loot and merchant gear item validates; old items remain untouched Common', () => {
   for (const id of LOOT_ITEM_IDS) assert(backpackSchema.safeParse([rollItem(id)]).success);
   const merchant = freshMerchant();
-  assert.equal(merchant.backpack.length, 2 + LOOT_ITEM_IDS.length);
+  assert.equal(merchant.backpack.length, 2);
+  assert.equal(merchant.craftsman.backpack.length, LOOT_ITEM_IDS.length);
+  assert(backpackSchema.safeParse(merchant.craftsman.backpack).success);
   assert(backpackSchema.safeParse(merchant.backpack).success);
   assert(
-    merchant.backpack
+    merchant.craftsman.backpack
       .filter((item) => GEAR_DEFINITIONS[item.itemId])
       .every((item) => item.rarity && item.stats),
   );
