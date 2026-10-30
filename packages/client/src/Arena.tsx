@@ -1,25 +1,22 @@
+import { VillagePlayers } from './village-players';
+import { villageLayers } from './village-layers';
+import { drawVillageLayer } from './village-layer-rendering';
 import { FrameBudget } from './frame-budget';
 import { createArenaInput } from './arena-input';
 import { abilityEffectOpacity } from './ability-effects';
 import { LootHints } from './loot-hints';
 import { drawLootHints } from './loot-hint-rendering';
 import { partyInteraction } from './interaction-targets';
-import { drawPartyOutline } from './effects';
+
 import { useChat } from './ChatProvider';
 import { resourceNodes, resourceState, nearbyResource, activityIndicator } from '@emberfall/core';
-import { resourceScenery, drawResourceHealth } from './gathering';
+import { resourceScenery } from './gathering';
 import { drawTimedActivity } from './timed-activity';
-import { drawWorldBar } from './world-bar';
-import {
-  sceneryInteraction,
-  pickInteraction,
-  interactionInRange,
-  drawInteractionOutline,
-  partyAction,
-} from './interaction-targets';
+
+import { sceneryInteraction, pickInteraction, interactionInRange } from './interaction-targets';
 import type { InteractionTarget } from './interaction-targets';
 import { npcScenery } from './npc-art';
-import { drawNpcWork } from './npc-work';
+
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
@@ -27,16 +24,16 @@ import { PixiContext } from './rendering/pixi-context';
 import { PresentationWorld } from './presentation/world';
 import { villageImages, villageBackground, drawVillageBackground } from './village-background';
 import { characterImages } from './characters';
-import { ACTOR_CELL, playerFrame, idleBreath } from './animation';
-import { actorArt, environmentArt, wardrobeArt, drawArt } from './art';
-import { drawChimneySmoke } from './ambient-art';
-import { companionCaster, drawCompanion } from './companion';
-import { critterCaster, drawCritter } from './critters';
+
+import { actorArt } from './art';
+
+import { companionCaster } from './companion';
+import { critterCaster } from './critters';
 import { CatSpeech } from './cat-speech';
 import { drawNavigation } from './navigation';
 import { DamageMeter } from './DamageMeter';
 import { PerformanceGraph } from './PerformanceGraph';
-import { movementFacing } from './facing';
+
 import { LocalMovement } from './local-movement';
 import { gameAudio } from './audio';
 import { createCritterMotion } from './critter-motion';
@@ -45,16 +42,11 @@ import { useTheme } from '@mui/material';
 import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
 import {
-  drawPlayerHealth,
   drawInteractionPrompt,
-  drawTargetHit,
   drawChatBubble,
   drawParticles,
   drawVignette,
-  drawNameBadge,
-  drawCharacterName,
   drawAtmosphere,
-  drawVegetation,
 } from './effects';
 import type { Interaction } from './effects';
 import { wrappedDelta } from '@emberfall/common';
@@ -68,31 +60,14 @@ import {
 } from '@emberfall/core';
 import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
-import { castShadow, spriteMask } from './lighting';
+import { castShadow } from './lighting';
 import { dayNight } from './day-night';
-import type { Caster, Light } from './lighting';
-import { TORCH_LIGHTS, lightTexture, drawTorchFire } from './village';
-import {
-  forestRenderer,
-  drawFog,
-  drawPortal,
-  portalInteraction,
-  drawPlayerDetails,
-  drawPlayerAttack,
-} from './forest';
+import type { Light } from './lighting';
+import { TORCH_LIGHTS, lightTexture } from './village';
+import { forestRenderer, drawFog, portalInteraction, drawPlayerAttack } from './forest';
 import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from './combat-effects';
 import type { Preferences } from './preferences';
 
-const colors = [
-  '#efd086',
-  '#86d9b6',
-  '#99b9ef',
-  '#ef99b3',
-  '#c8a4ed',
-  '#edaa79',
-  '#a4cf7b',
-  '#ddd',
-];
 const NPC_SILENCE = { debuffs: [{ kind: 'silence' as const }] };
 
 export function Arena({
@@ -192,7 +167,7 @@ export function Arena({
     onCursorAim(input.currentAim);
     let hovered: InteractionTarget | null = null;
     const catSpeech = new CatSpeech();
-    const positions = new Map<string, { x: number; y: number; facing: number }>();
+    const villagePlayers = new VillagePlayers();
     let frame = 0;
     let gatheringClock: { activity: NonNullable<Player['gathering']>; offset: number } | undefined;
     let wardrobeOpenedAt = 0;
@@ -442,7 +417,7 @@ export function Arena({
         ? String(interactionInRange(hovered, authoritativePlayer))
         : '';
       if (local?.scene !== previousScene) {
-        positions.clear();
+        villagePlayers.clear();
         previousScene = local?.scene;
       }
       const fps = budget.sample(now);
@@ -627,7 +602,6 @@ export function Arena({
           ...project(p.x, p.y),
           bear: p.bear ? { ...p.bear, ...project(p.bear.x, p.bear.y) } : undefined,
         }));
-      const liveIds = new Set(players.map((p) => p.id));
       for (const player of players)
         drawPlayerAttack(
           ctx,
@@ -646,56 +620,9 @@ export function Arena({
           width: viewWidth,
           height: viewHeight,
         });
-      for (const id of positions.keys()) if (!liveIds.has(id)) positions.delete(id);
       // Use the reconciled positions consistently for bodies, lanterns and shadows.
-      const dynamic: Caster[] = [];
       if (quality.current.shadows) for (const object of visibleScenery) castShadow(ctx, object);
-      for (const player of players) {
-        const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
-        const ix = player.inputX ?? 0,
-          iy = player.inputY ?? 0;
-        if (Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
-        const frame = playerFrame(
-          player.id === playerId ? now : serverTime,
-          Math.hypot(ix, iy) > 0,
-          player.hitpoints > 0,
-          player.attackAt,
-        );
-        if (frame === 5 || frame === 6)
-          pos.facing = movementFacing(
-            Math.cos(player.attackAngle ?? 0),
-            Math.sin(player.attackAngle ?? 0),
-            pos.facing,
-          );
-        const mask = spriteMask(
-          characterImages[player.classId ?? 'warrior'].walk,
-          pos.facing,
-          frame,
-          false,
-          ACTOR_CELL,
-          false,
-          ACTOR_CELL,
-        );
-        if (mask && player.id === playerId) {
-          const breath = idleBreath(now, frame);
-          renderer.setPlayerCutout(
-            mask,
-            player.x - 24,
-            player.y + 18 - 48 * breath,
-            48,
-            48 * breath,
-          );
-        }
-        if (mask)
-          dynamic.push({
-            id: player.id,
-            x: player.x,
-            y: player.y + 15,
-            width: 48,
-            height: 48,
-            mask,
-          });
-      }
+      const dynamic = villagePlayers.prepare(ctx, players, playerId, now, serverTime);
       for (const critter of critters) {
         const caster = critterCaster(critter);
         if (caster) dynamic.push(caster);
@@ -713,311 +640,32 @@ export function Arena({
         if (caster) dynamic.push(caster);
       }
       if (quality.current.shadows) for (const caster of dynamic) castShadow(ctx, caster);
-      const layers = [
-        {
-          y: portal.y + 8,
-          object: null,
-          player: null,
-          bear: null,
-          critter: null,
-          portal,
-          dummy: null,
-        },
-        ...visibleScenery.map((object) => ({
-          y: object.y,
-          object,
-          player: null,
-          bear: null,
-          critter: null,
-          portal: null,
-          dummy: null,
-        })),
-        ...players.map((player) => ({
-          y: player.y + 15,
-          object: null,
-          player,
-          bear: null,
-          critter: null,
-          portal: null,
-          dummy: null,
-        })),
-        ...players.flatMap((p) =>
-          p.bear
-            ? [
-                {
-                  y: p.bear.y + 18,
-                  object: null,
-                  player: null,
-                  bear: p.bear,
-                  critter: null,
-                  portal: null,
-                  dummy: null,
-                },
-              ]
-            : [],
-        ),
-        ...critters.map((critter) => ({
-          y: critter.y,
-          object: null,
-          player: null,
-          bear: null,
-          critter,
-          portal: null,
-          dummy: null,
-        })),
-        ...(training?.enemies ?? []).map((dummy) => ({
-          y: dummy.y + 15,
-          object: null,
-          player: null,
-          bear: null,
-          critter: null,
-          portal: null,
-          dummy,
-        })),
-      ].sort((a, b) => a.y - b.y);
+      const layers = villageLayers(visibleScenery, players, critters, training, portal);
       const outlines = outlinedTargets();
       const damageByTarget = new Map(training?.damage.map((hit) => [hit.target, hit]));
+      const layerFrame = {
+        view,
+        local,
+        playerId,
+        now,
+        serverTime,
+        quality: quality.current,
+        preferences: prefs.current,
+        highlightInteractions,
+        portal,
+        portalTarget,
+        outlines,
+        damageByTarget,
+        wardrobeOpen: interaction.current?.id === 'wardrobe',
+        wardrobeOpenedAt,
+      };
       for (const layer of layers) {
         renderer.occlusion = !!local && layer.y > local.y + 15;
-        if (layer.dummy) {
-          const dummy = layer.dummy;
-          if (environmentArt.naturalWidth) {
-            drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
-            const hit = damageByTarget.get(`enemy:${dummy.id}`);
-            if (hit)
-              drawTargetHit(
-                ctx,
-                spriteMask(environmentArt, 1, 2, false, 128, false, 128)!,
-                dummy.x - 24,
-                dummy.y - 30,
-                48,
-                48,
-                serverTime - hit.at,
-              );
-          }
-          ctx.globalAlpha = 1;
-          renderer.occlusion = false;
-          if (!prefs.current.hideHealthBarsInTown)
-            drawWorldBar(
-              ctx,
-              dummy.x - 20,
-              dummy.y - 41,
-              40,
-              dummy.hitpoints / dummy.maxHitpoints!,
-              '#df7765',
-            );
-          drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 52, serverTime);
-
+        if (!layer.player) {
+          drawVillageLayer(ctx, layer, layerFrame);
           continue;
         }
-        if (layer.portal) {
-          drawPortal(
-            ctx,
-            portal.x,
-            portal.y,
-            now,
-            quality.current.bloom,
-            null,
-            outlines.includes(portalTarget) ? portalTarget : null,
-            quality.current.shadows,
-            quality.current.wavingVegetation,
-          );
-          continue;
-        }
-        if (layer.critter) {
-          drawCritter(ctx, layer.critter, quality.current.shadows);
-          const outline = outlines.find((target) => target.source.id === layer.critter!.id);
-          if (outline) drawInteractionOutline(ctx, outline);
-          ctx.globalAlpha = 1;
-          continue;
-        }
-        if (layer.bear) {
-          drawCompanion(
-            ctx,
-            layer.bear,
-            layer.bear.x,
-            layer.bear.y,
-            view?.serverNow ?? now,
-            quality.current.shadows,
-            1,
-            !prefs.current.hideHealthBarsInTown,
-          );
-          continue;
-        }
-        if (layer.object) {
-          const object = layer.object;
-
-          const vegetation =
-            !object.gathered && (object.id.startsWith('tree:') || object.id.startsWith('plant:'));
-          if (vegetation)
-            drawVegetation(
-              ctx,
-              object.sprite,
-              object.x,
-              object.y,
-              object.width,
-              object.height,
-              now,
-              quality.current.wavingVegetation,
-            );
-          else if (object.id === 'building:wardrobe') {
-            const open = interaction.current?.id === 'wardrobe';
-            drawArt(
-              ctx,
-              wardrobeArt,
-              open ? Math.min(3, Math.floor((now - wardrobeOpenedAt) / 100)) : 0,
-              0,
-              object.x - object.width / 2,
-              object.y - object.height,
-              object.width,
-              object.height,
-              128,
-            );
-          } else if (object.id.startsWith('torch:'))
-            drawTorchFire(
-              ctx,
-              object.x,
-              object.y,
-              now,
-              quality.current.particles,
-              quality.current.bloom,
-            );
-          else
-            ctx.drawImage(
-              object.sprite,
-              object.x - object.width / 2,
-              object.y - object.height,
-              object.width,
-              object.height,
-            );
-          if (object.npc?.workstationId)
-            drawNpcWork(ctx, object.npc, object.x, object.y, serverTime, quality.current.particles);
-          const outline = outlines.find(
-            (target) =>
-              target.source.id === object.id.replace(/^(building|npc|workstation):/, '') ||
-              target.source.id === `gather:${object.id}`,
-          );
-          if (outline) drawInteractionOutline(ctx, outline);
-          if (object.chimney && quality.current.particles)
-            drawChimneySmoke(ctx, object.x + object.chimney.x, object.y + object.chimney.y, now);
-          ctx.globalAlpha = 1;
-          if (object.id.startsWith('tree:') && !prefs.current.hideHealthBarsInTown)
-            drawResourceHealth(
-              ctx,
-              { ...object, kind: 'tree', size: object.width },
-              resourceState(
-                view.resources,
-                { ...object, kind: 'tree', size: object.width },
-                view.serverNow ?? now,
-              ),
-            );
-          if (object.name && object.npc)
-            drawCharacterName(
-              ctx,
-              object.x,
-              object.y - object.height - 9,
-              object.name,
-              object.npc?.silenced ? '#ff8794' : undefined,
-            );
-          else if (object.name) drawNameBadge(ctx, object.x, object.y, object.name);
-          continue;
-        }
-        const player = layer.player!;
-        const knight = characterImages[player.classId ?? 'warrior'].walk;
-        const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
-        const dx = wrappedDelta(player.x, pos.x, ARENA.width);
-        const dy = wrappedDelta(player.y, pos.y, ARENA.height);
-        const ix = player.inputX ?? 0,
-          iy = player.inputY ?? 0;
-        const moving = Math.hypot(ix, iy) > 0;
-        const spriteRow = playerFrame(
-          player.id === playerId ? now : serverTime,
-          moving,
-          player.hitpoints > 0,
-          player.attackAt,
-        );
-        // Four directions share the same idle, walk, action and fallen rows.
-        if (moving) pos.facing = movementFacing(ix, iy, pos.facing);
-        if (spriteRow === 5 || spriteRow === 6)
-          pos.facing = movementFacing(
-            Math.cos(player.attackAngle ?? 0),
-            Math.sin(player.attackAngle ?? 0),
-            pos.facing,
-          );
-        pos.x = player.x;
-        pos.y = player.y;
-        positions.set(player.id, pos);
-        ctx.globalAlpha = 1;
-        renderer.spriteTint = player.reconnecting ? '#ff5555' : '#ffffff';
-        if (knight.complete && knight.naturalWidth) {
-          if (quality.current.motionBlur && moving) {
-            // Sprite-only temporal samples keep HUD text and the world sharp.
-            for (let sample = 3; sample > 0; sample--) {
-              ctx.globalAlpha = 0.09;
-              ctx.drawImage(
-                knight,
-                pos.facing * ACTOR_CELL,
-                spriteRow * ACTOR_CELL,
-                ACTOR_CELL,
-                ACTOR_CELL,
-                pos.x - 24 - dx * sample * 0.45,
-                pos.y - 30 - dy * sample * 0.45,
-                48,
-                48,
-              );
-            }
-            ctx.globalAlpha = 1;
-          }
-          ctx.drawImage(
-            knight,
-            pos.facing * ACTOR_CELL,
-            spriteRow * ACTOR_CELL,
-            ACTOR_CELL,
-            ACTOR_CELL,
-            pos.x - 24,
-            pos.y + 18 - 48 * idleBreath(now, spriteRow),
-            48,
-            48 * idleBreath(now, spriteRow),
-          );
-        }
-        const highlightPlayer = highlightInteractions && !!partyAction(view, local, player);
-        if (highlightPlayer || view?.partyRequests?.some((r) => r.fromId === player.id)) {
-          renderer.occlusion = false;
-          const mask = spriteMask(
-            knight,
-            pos.facing,
-            spriteRow,
-            false,
-            ACTOR_CELL,
-            false,
-            ACTOR_CELL,
-          );
-          if (mask)
-            drawPartyOutline(
-              ctx,
-              mask,
-              pos.x - 24,
-              pos.y + 18 - 48 * idleBreath(now, spriteRow),
-              48,
-              48 * idleBreath(now, spriteRow),
-              highlightPlayer,
-            );
-        }
-        renderer.spriteTint = '#ffffff';
-        renderer.occlusion = false;
-        ctx.globalAlpha = 1;
-        drawPlayerHealth(
-          ctx,
-          pos.x,
-          pos.y - 46,
-          player.hitpoints,
-          player.maxHitpoints,
-          player.name,
-          colors[player.color],
-          false,
-          !prefs.current.hideHealthBarsInTown,
-        );
-        drawPlayerDetails(ctx, player, pos.x, pos.y, false);
+        villagePlayers.draw(ctx, layer.player!, layerFrame);
       }
       renderer.occlusion = false;
       if (training) {
@@ -1063,7 +711,7 @@ export function Arena({
         }
         ctx.globalAlpha = cycle.lightAlpha;
         for (const player of players) {
-          const pos = positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
+          const pos = villagePlayers.pose(player);
           const lantern: Light = {
             x: pos.x + (pos.facing === 2 ? -15 : 12),
             y: pos.y + 15,
