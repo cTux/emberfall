@@ -77,6 +77,8 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   `rendering/paints.ts` owns normalized gradient ramp textures, camera-independent
   cache keys, expiry and destruction. `rendering/visual-pools.ts` owns pooled
   sprites/geometry/text, ordered placement, clip groups and release/trim rules.
+  `rendering/drawing-state.ts` owns saved styles and transforms, shared by the
+  command adapter without granting it unrelated Canvas APIs.
   Canvas 2D is used to bake assets, light masks and small glow primitives, not
   to upload a complete world frame as a texture.
 
