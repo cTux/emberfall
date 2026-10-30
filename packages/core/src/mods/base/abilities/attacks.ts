@@ -1,3 +1,4 @@
+import type { AbilityKind, AbilityDefinition } from '../../../content/contracts.ts';
 export const ATTACK_DEFINITIONS = {
   slash: {
     id: 'slash',
@@ -42,4 +43,7 @@ export const ATTACK_DEFINITIONS = {
     bounceRadius: 250,
     piercing: false,
   },
-} as const;
+} as const satisfies Record<
+  AbilityKind,
+  Pick<AbilityDefinition, 'id' | 'range' | 'damage'> & Partial<AbilityDefinition>
+>;

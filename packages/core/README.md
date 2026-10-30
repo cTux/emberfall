@@ -6,6 +6,11 @@ combat kernels; client prediction and health displays reuse the same helpers.
 
 ## Registries, mods and startup
 
+Engine authoring contracts in `src/content/contracts.ts` are independent of the
+base mod. Base attack, enemy, companion and ailment data use `satisfies` to check
+their fields without widening their inferred literals. Runtime startup still
+validates complete registered definitions and cross-content references.
+
 Core is the composition root for portable game rules and content. Common supplies
 contracts, structural schemas and pure geometry; common never imports core.
 `createGame(mods)` creates registries, invokes synchronous registration, validates

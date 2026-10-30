@@ -1,3 +1,4 @@
+import type { CompanionDefinition } from '../../../content/contracts.ts';
 export const BEAR_DEFINITION = {
   id: 'bear',
   name: 'Bear',
@@ -12,4 +13,4 @@ export const BEAR_DEFINITION = {
   decisionMs: 1000,
   resurrectionMs: 5000,
   attack: 'slash',
-} as const;
+} as const satisfies CompanionDefinition;

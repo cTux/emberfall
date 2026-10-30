@@ -1,8 +1,4 @@
-import type { GearDefinition } from '@emberfall/common';
-import type { ATTACK_DEFINITIONS } from '../mods/base/abilities/attacks.ts';
-import type { ENEMY_STATS } from '../mods/base/entities/enemies.ts';
-import type { BEAR_DEFINITION } from '../mods/base/entities/companions.ts';
-import type { AILMENT_DEFINITIONS } from '../mods/base/effects/ailments.ts';
+import type { GearDefinition, DebuffKind, DamageType } from '@emberfall/common';
 
 export type Widen<T> = T extends number
   ? number
@@ -50,7 +46,7 @@ export interface ClassDefinition {
   id: string;
   label: string;
   attack: string;
-  ailment: keyof typeof AILMENT_DEFINITIONS;
+  ailment: DebuffKind;
   companion?: string;
   sprite: string;
   art: ClassArt;
@@ -58,7 +54,13 @@ export interface ClassDefinition {
   details?: { weapon: string; weaponDescription: string; spell: string; spellDescription: string };
   gearTypes: readonly string[];
 }
-export type AbilityDefinition = Widen<typeof ATTACK_DEFINITIONS.slash> & {
+export interface AbilityDefinition {
+  id: string;
+  range: number;
+  damage: number;
+  intervalMs: number;
+  durationMs: number;
+  aimSmoothingSeconds: number;
   kind: AbilityKind;
   name?: string;
   classId?: string;
@@ -74,22 +76,46 @@ export type AbilityDefinition = Widen<typeof ATTACK_DEFINITIONS.slash> & {
   splashDamage: number;
   bounces: number;
   bounceRadius: number;
-};
-export type EnemyDefinition = Widen<typeof ENEMY_STATS.skeleton> & {
+}
+export interface EnemyDefinition {
+  speed: number;
+  radius: number;
+  size: number;
+  reach: number;
+  windup: number;
+  cooldown: number;
   id: string;
   behavior: 'melee' | 'ranged';
   art: EnemyArt;
   hitPoints: number;
   damage: number;
-};
-export type CompanionDefinition = Widen<typeof BEAR_DEFINITION>;
-export type AilmentDefinition = Widen<typeof AILMENT_DEFINITIONS.bleed> & {
+}
+export interface CompanionDefinition {
   id: string;
-  kind: keyof typeof AILMENT_DEFINITIONS;
+  name: string;
+  sprite: string;
+  healthMultiplier: number;
+  damageType: DamageType;
+  range: number;
+  huntRadius: number;
+  spacing: number;
+  returnRadius: number;
+  teleportRadius: number;
+  decisionMs: number;
+  resurrectionMs: number;
+  attack: string;
+}
+export interface AilmentDefinition {
+  chance: number;
+  durationMs: number;
+  tickMs: number;
+  damagePerStack: number;
+  id: string;
+  kind: DebuffKind;
   maxStacks?: number;
   slowFraction?: number;
   affectsBoss?: boolean;
-};
+}
 export interface DataDefinition {
   id: string;
   value: unknown;

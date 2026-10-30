@@ -7,15 +7,17 @@ Game content, semantic validation and shared rules live in [core](../core/README
 
 ## Where things belong
 
-| Location                               | Responsibility                                                      |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| `src/content.ts`                       | Open class/slot/item-related contracts and fixed damage type fields |
-| `src/enums`                            | Named built-in enemy type/kind and difficulty values                |
-| `src/index.ts`, `src/scene.ts`         | Structural commands, progress and mutable runtime state types       |
-| `src/equipment.ts`, `src/inventory.ts` | Structural inventory/equipment schemas and portable types           |
-| `src/geometry.ts`, `src/world.ts`      | Pure wrap/delta algorithms and scenery types                        |
-| `src/entities.ts`                      | Collection membership boundary for ECS and ordinary snapshots       |
-| `src/protocol/state.ts`                | Colyseus projection and detached snapshot reconstruction            |
+| Location                                              | Responsibility                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------- |
+| `src/content.ts`                                      | Open class/slot/item-related contracts and fixed damage type fields |
+| `src/enums`                                           | Named built-in enemy type/kind and difficulty values                |
+| `src/index.ts`                                        | Public compatibility exports                                        |
+| `src/progress.ts`, `src/commands.ts`                  | Structural progress and client command schemas                      |
+| `src/player.ts`, `src/world-state.ts`, `src/scene.ts` | Mutable player, world and scene contracts                           |
+| `src/equipment.ts`, `src/inventory.ts`                | Structural inventory/equipment schemas and portable types           |
+| `src/geometry.ts`, `src/world.ts`                     | Pure wrap/delta algorithms and scenery types                        |
+| `src/entities.ts`                                     | Collection membership boundary for ECS and ordinary snapshots       |
+| `src/protocol/state.ts`                               | Colyseus projection and detached snapshot reconstruction            |
 
 Content IDs are strings where registration is extensible. A structurally valid ID
 is not necessarily registered. Server command/save boundaries also use core's

@@ -1,3 +1,4 @@
+import type { EnemyArt, EnemyDefinition } from '../../../content/contracts.ts';
 export const BOSS_DEFINITIONS = {
   hollowWarden: { id: 'hollowWarden', name: 'The Hollow Warden', archetype: 'brute', kind: 'boss' },
 } as const;
@@ -6,7 +7,10 @@ export const ENEMY_STATS = {
   runner: { speed: 104, radius: 8, size: 32, reach: 32, windup: 500, cooldown: 900 },
   brute: { speed: 40, radius: 16, size: 68, reach: 65, windup: 1000, cooldown: 1600 },
   caster: { speed: 54, radius: 10, size: 44, reach: 260, windup: 900, cooldown: 1600 },
-} as const;
+} as const satisfies Record<
+  EnemyArt,
+  Omit<EnemyDefinition, 'id' | 'behavior' | 'art' | 'hitPoints' | 'damage'>
+>;
 
 export const ENEMY_RULES = {
   damageCooldownMs: 1000,
