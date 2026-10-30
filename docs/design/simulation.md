@@ -44,7 +44,10 @@ The new runtime shares `modelHitbox` in `core/hitboxes.ts` between authoritative
 
 Player base attacks and Bear share a 1000 ms cooldown in the runtime; it derives player and Bear attack timing from gear stats. `companionStats`
 inherits the owner's totals with physical damage, base 75-unit range (97.5 with learned Pack Howl) and 1.5× maximum
-HP overrides. Bear uses the shared weapon-hit path for critical hits and 10% bleed,
+HP overrides, with a further 1.3× maximum HP while either rank of Pack Howl is learned.
+The companion tick adds any maximum HP increase to living Bear's current HP, clamps it
+when maximum HP decreases, and resurrects Bear at its current full maximum HP.
+Bear uses the shared weapon-hit path for critical hits and 10% bleed,
 and enemy hit resolution applies the owner's armor. UI shows the resulting
 cooldown without also showing attacks per second.
 

@@ -31,10 +31,12 @@ test('learning Pack Howl enlarges Bear without casting and shows the permanent b
     autoAttack: false,
   });
   await expect.poll(() => player.bear?.size).toBe(48);
+  const baseHealth = player.bear!.maxHitpoints;
   await page.waitForTimeout(1500); // Let scene artwork finish loading before the comparison capture.
   await page.screenshot({ path: 'test-results/pack-howl-before.png' });
   learnTalent(player, talentNodeId('druid', 1, 3));
   await expect.poll(() => player.bear?.size).toBe(96);
+  await expect.poll(() => player.bear?.maxHitpoints).toBe(baseHealth * 1.3);
   expect(player.bear!.range).toBe(97.5);
   await page.waitForTimeout(300); // Allow the confirmed snapshot to reach the renderer.
   await page.screenshot({ path: 'test-results/pack-howl-learned.png' });
@@ -42,7 +44,7 @@ test('learning Pack Howl enlarges Bear without casting and shows the permanent b
   const card = page.locator(`[data-talent-node='${talentNodeId('druid', 1, 3)}']`);
   await card.hover();
   await expect(page.getByRole('tooltip', { name: /^Pack Howl/ })).toContainText(
-    "doubles Bear's size",
+    'increases its claw range and maximum health by 30%',
   );
 });
 

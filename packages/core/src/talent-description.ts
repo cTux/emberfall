@@ -17,7 +17,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
       'Every third Bear hit deals an additional 40% / 70% weapon damage.',
       'Command Bear to pounce at your target for 150% / 210% weapon damage. Requires a living Bear. 6s base cooldown.',
       'Bear hits have an additional 25% / 45% chance to apply one Bleed stack.',
-      "While learned, doubles Bear's size and increases its claw range by 30% at either rank. On cast, Bear heals for 20% / 30% of its maximum health and roots nearby ordinary enemies for 1.5s. Requires a living Bear. 10s base cooldown.",
+      "While learned, doubles Bear's size and increases its claw range and maximum health by 30% at either rank. On cast, Bear heals for 20% / 30% of its maximum health and roots nearby ordinary enemies for 1.5s. Requires a living Bear. 10s base cooldown.",
       'Pack Howl also applies 1 / 2 Bleed stacks to nearby enemies.',
       'Bear strikes nearby enemies for 180% / 250% weapon damage and applies 1 / 2 Bleed stacks. 14s base cooldown.',
       'Bear hits against enemies affected by your Roots deal an additional 30% / 60% weapon damage.',

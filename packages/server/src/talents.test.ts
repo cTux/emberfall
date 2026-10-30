@@ -76,7 +76,7 @@ function cast(player: Player, scene: SceneState, now = 1000, players = [player])
   );
 }
 
-test('learned Pack Howl doubles Bear size and expands actual claw reach at either rank until reset', () => {
+test('learned Pack Howl boosts Bear size, claw reach and health at either rank until reset', () => {
   for (const training of [false, true])
     for (const learned of [1, 2]) {
       const player = hero('druid'),
@@ -85,6 +85,9 @@ test('learned Pack Howl doubles Bear size and expands actual claw reach at eithe
       scene.training = training;
       tickCompanion(player, scene, 10000, 0);
       const bear = player.bear!;
+      const baseHealth = player.maxHitpoints * 1.5;
+      assert.equal(bear.maxHitpoints, baseHealth);
+      bear.hitpoints = baseHealth - 20;
       assert.equal(bear.size, 48);
       assert.equal(companionStats(player).range, 75);
       for (let i = 0; i < learned; i++) learnTalent(player, talentNodeId('druid', 1, 3));
@@ -93,6 +96,8 @@ test('learned Pack Howl doubles Bear size and expands actual claw reach at eithe
       scene.enemies = [{ id: 1, x: 72, y: bear.y + 6, angle: 0, hitpoints: 1000 }];
       tickCompanion(player, scene, 11000, 0);
       assert.equal(bear.size, 96);
+      assert.equal(bear.maxHitpoints, baseHealth * 1.3);
+      assert.equal(bear.hitpoints, baseHealth * 1.3 - 20);
       assert.equal(bear.range, 97.5);
       assert.equal(companionStats(player).manualRange, 97.5);
       assert.equal(modelHitbox(bear).radius, 48);
@@ -100,12 +105,16 @@ test('learned Pack Howl doubles Bear size and expands actual claw reach at eithe
       bear.hitpoints = 0;
       bear.resurrectAt = 12000;
       tickCompanion(player, scene, 12000, 0);
+      assert.equal(bear.maxHitpoints, baseHealth * 1.3);
+      assert.equal(bear.hitpoints, baseHealth * 1.3);
       assert.equal(bear.size, 96);
       assert.equal(bear.range, 97.5);
       player.coins = 50;
       resetTalents(player);
       scene.enemies[0].hitpoints = 1000;
       tickCompanion(player, scene, 13000, 0);
+      assert.equal(bear.maxHitpoints, baseHealth);
+      assert.equal(bear.hitpoints, baseHealth);
       assert.equal(bear.size, 48);
       assert.equal(bear.range, 75);
       assert.equal(modelHitbox(bear).radius, 24);

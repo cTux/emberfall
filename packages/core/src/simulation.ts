@@ -176,7 +176,7 @@ export function tickCompanion(
   const stats = context.rules.companionStats(player);
   bear.range = stats.range;
   bear.size = talentRank(player, talentNodeId('druid', 1, 3)) > 0 ? 96 : 48;
-  const max = player.maxHitpoints * BEAR_DEFINITION.healthMultiplier;
+  const max = stats.maxHitpoints;
   if (bear.hitpoints > 0)
     bear.hitpoints = Math.min(max, bear.hitpoints + Math.max(0, max - bear.maxHitpoints));
   bear.maxHitpoints = max;
