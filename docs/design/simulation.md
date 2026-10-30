@@ -11,6 +11,13 @@ Status: implemented. Implements [village/scenes](../specs/scenes-and-village.md)
 
 ## Ownership and tick order
 
+`simulation.ts` retains public exports while `core/src/simulation` owns focused
+systems. `forest.ts` orders membership scaling/pause, pickups, companions,
+spawning, ailments, player combat and enemy combat before boss completion.
+`player.ts` is shared with training; `melee.ts` owns swing deduplication.
+Companion decision caching is separate from lifecycle/movement, and the same
+catalog-derived enemy view is passed to spawning and enemy combat each tick.
+
 `class-combat.ts` preserves the public combat exports. Its implementation lives
 in `core/src/combat`: ability selection, damage/rewards, ailment ticking, weapon
 hits, projectile motion and projectile lifecycle each have one module.
