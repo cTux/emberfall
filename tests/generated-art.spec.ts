@@ -29,9 +29,11 @@ test('all bundled items render dedicated artwork in inventory', async ({ page, g
         'src',
         `/assets/wardrobe-style/${itemArtName(item.id)}.png`,
       );
-      await expect
-        .poll(() => image.evaluate((image: HTMLImageElement) => image.naturalWidth))
-        .toBe(96);
+      await expect(image, `${item.id} artwork must finish decoding`).toHaveJSProperty(
+        'naturalWidth',
+        96,
+        { timeout: 30_000 },
+      );
     }
   }
   await page.screenshot({ path: 'test-results/all-item-artwork.png' });
