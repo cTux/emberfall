@@ -54,11 +54,18 @@ production entrypoint.
   occupied NPC IDs to routines; both use the same canonical world entities.
   `npc-speech.ts` owns topic rotation, prompt context, bounded conversation
   history and speech/silence publication; it never performs model requests.
-- `runtime.ts` owns identity, membership, command validation, fixed tick order,
-  reconnect retention, chat and save scheduling.
+- `runtime.ts` wires startup, command validation, ordered dispatch and shutdown.
+  `runtime/world-membership.ts` owns world/party/NPC lifetimes and save-before-leave;
+  `sessions.ts` owns connection/reconnect retention; `admission.ts` owns join,
+  resume, password budgets and post-hash authorization checks. `projection.ts`
+  selects viewer-visible players, chat and run resources without credentials.
+- `runtime/realtime-commands.ts` and `world-commands.ts` use typed handler maps.
+  Real-time commands run before the busy-request guard; durable/world actions
+  run after it. `simulation.ts` preserves movement/world tick order and catch-up
+  clamping; `maintenance.ts` owns heartbeat, playtime and autosave timers.
 - `commands/character.ts` dispatches durable character actions through typed
-  handlers. Runtime validates identity, life and proximity first; the command
-  module mutates a detached copy, commits, then publishes live changes.
+  handlers. Its execution entry point validates identity, life and proximity,
+  mutates a detached copy, commits, then publishes live changes.
 - `ecs/simulation.ts` owns a Miniplex world per party. Components reference the
   canonical player and scene objects. Ordered query views preserve targeting
   tie-breaking when entities are removed. Scene disposal removes its components.

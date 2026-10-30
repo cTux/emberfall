@@ -8,7 +8,7 @@ const retryAt = new WeakMap<object, number>();
 
 export function refreshMerchant(
   world: { id: string; merchant?: Merchant; chat?: ChatMessage[] },
-  characters: CharacterStore,
+  characters: Pick<CharacterStore, 'saveMerchant'>,
   now: number,
 ) {
   if (!world.merchant || now < (world.merchant.refreshAt ?? 0) || now < (retryAt.get(world) ?? 0))
