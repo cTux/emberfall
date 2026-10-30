@@ -12,7 +12,7 @@ export { ARENA, WARDROBE, TRAINING_ZONES, BUILDINGS, TORCHES };
 export const BULLSEYE = VILLAGE_DEFINITION.workstations.find(
   (station) => station.id === 'lodge-target',
 );
-import { wrap, wrappedDelta } from './scene.ts';
+import { wrap, wrappedDelta } from '@emberfall/common';
 
 export const inTrainingZone = (player: { x: number; y: number }) =>
   TRAINING_ZONES.some(
