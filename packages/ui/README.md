@@ -152,6 +152,10 @@ weapon stats and contextual actions. Inventory prices are per item; resources
 omit a use hint while trade/storage retain their actual actions. Tooltips clamp
 long content to the viewport and scroll internally. `Backpack` keeps stacked
 counts and right-click/keyboard callbacks. `GoldBalance` is shared with HUD/trader.
+The host supplies optional `equipRestriction` text for incompatible gear; the
+shared tooltip shows it in red. Omit `useAction` when equipping is unavailable,
+while explicit trade/storage action hints remain. `Backpack/RestrictedGear`
+demonstrates the warning without importing gameplay rules.
 
 ![Verified desktop weapon item tooltip](../../docs/images/compact-item-tooltips.png)
 

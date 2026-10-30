@@ -326,11 +326,18 @@ function itemIcon(itemId: string) {
     />
   );
 }
-export function backpackViews(items: BackpackItem[], player: Pick<Player, 'autoTarget'>) {
+export function backpackViews(
+  items: BackpackItem[],
+  player: Pick<Player, 'autoTarget' | 'classId'>,
+) {
   return items.map((item) => {
     const definition = itemDefinition(item.itemId);
     const gear = GEAR_DEFINITIONS[item.itemId];
     const potion = CONSUMABLES[item.itemId as keyof typeof CONSUMABLES];
+    const equipRestriction =
+      gear && !EQUIPMENT_SLOTS.some((slot) => canEquip(slot, gear, player.classId ?? 'warrior'))
+        ? 'Your class cannot equip this item.'
+        : undefined;
     return {
       ...item,
       name: definition.name,
@@ -346,7 +353,8 @@ export function backpackViews(items: BackpackItem[], player: Pick<Player, 'autoT
           : []),
         ...rolledBadges(item),
       ],
-      useAction: gear ? 'Equip' : potion ? 'Use' : undefined,
+      equipRestriction,
+      useAction: gear ? (equipRestriction ? undefined : 'Equip') : potion ? 'Use' : undefined,
       details: potion ? `Restores ${potion.healing} health` : '',
     };
   });
