@@ -10,7 +10,7 @@ import amuletSlot from '../assets/item-icons/slot-amulet.png';
 import offHandSlot from '../assets/item-icons/slot-offHand.png';
 import ringSlot from '../assets/item-icons/slot-ring.png';
 import warriorWeapon from '../assets/item-icons/warrior-weapon.png';
-import { Backpack, EquipmentPanel, GameWindow } from '../index';
+import { Backpack, ChapterTabs, EquipmentPanel, GameWindow } from '../index';
 import type { EquipmentSlotView } from '../index';
 
 const slots: EquipmentSlotView[] = [
@@ -120,6 +120,35 @@ export default meta;
 export const Starter: StoryObj<typeof meta> = {};
 export const Empty: StoryObj<typeof meta> = {
   args: { slots, stats: [{ label: 'Power', value: '0' }] },
+};
+
+export const Inventory: StoryObj<typeof meta> = {
+  render: function Inventory(args) {
+    const [tab, setTab] = useState('equipment');
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <ChapterTabs
+          label='Inventory'
+          value={tab}
+          onChange={setTab}
+          showHeading={false}
+          chapters={[
+            {
+              id: 'equipment',
+              title: 'Equipment',
+              content: <EquipmentPanel slots={args.slots} stats={[]} />,
+            },
+            {
+              id: 'stats',
+              title: 'Stats',
+              content: <EquipmentPanel slots={[]} stats={args.stats} />,
+            },
+          ]}
+        />
+        <Backpack label='Your backpack' items={[]} coins={914} action='Use' onUse={() => {}} />
+      </div>
+    );
+  },
 };
 
 export const Rarities: StoryObj<typeof meta> = {

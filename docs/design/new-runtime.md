@@ -296,7 +296,14 @@ event queue, timers or combat mutations are needed.
 The UI exports a controlled EquipmentPanel with positioned slot views and stat
 rows, with no game-package dependency. Client configuration maps slots to grid
 coordinates and fallback images, passing definitions/totals into the UI. The
-existing GameWindow supplies dragging, focus and close behavior.
+existing GameWindow supplies dragging, focus and close behavior. The client owns
+the Equipment/Stats selection through ChapterTabs, which portals its vertical
+tabs into GameWindow's external rail. The backpack remains mounted beside the
+active panel. EquipmentPanel renders only the supplied slots or stat rows;
+fixed equal tracks keep base gear aligned in three columns and four rows.
+The shared backpack size is 44px; equipment cells use 1.2 times that size (52.8px)
+in both dimensions. The client presents core's calculated totals without repeating
+the raw equipped bonuses as separate rows.
 
 ## Wardrobe-style presentation assets
 

@@ -59,12 +59,6 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: 'Maximum health', value: number(stats.maxHitpoints) },
     { label: 'Armor', value: number(stats.armor) },
     { label: 'Damage reduction', value: percent(stats.damageReduction) },
-    ...Object.entries(stats.bonuses)
-      .filter(([, value]) => value > 0)
-      .map(([stat, value]) => ({
-        label: `Bonus ${stat.replace(/([A-Z])/g, ' $1').toLowerCase()}`,
-        value: `${number(value)}${[ItemStat.Power, ItemStat.Armor, ItemStat.MaximumHealth].includes(stat as typeof ItemStat.Power) || itemStatWeight[stat as ItemStat] < 1 ? '' : '%'}`,
-      })),
     ...additionalStatViews(player),
   ];
 }
@@ -200,6 +194,7 @@ export function Equipment({
   player: Player;
   send: (message: ClientMessage) => void;
 }) {
+  const [tab, setTab] = useState('equipment');
   const classId = player.classId ?? 'warrior';
   const equipment = equippedItems(player);
   const slots: EquipmentSlotView[] = EQUIPMENT_SLOTS.map((id) => {
@@ -258,7 +253,24 @@ export function Equipment({
   });
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 1.5 }}>
-      <EquipmentPanel slots={slots} stats={equipmentStatRows(player)} />
+      <ChapterTabs
+        label='Inventory'
+        value={tab}
+        onChange={setTab}
+        showHeading={false}
+        chapters={[
+          {
+            id: 'equipment',
+            title: 'Equipment',
+            content: <EquipmentPanel slots={slots} stats={[]} />,
+          },
+          {
+            id: 'stats',
+            title: 'Stats',
+            content: <EquipmentPanel slots={[]} stats={equipmentStatRows(player)} />,
+          },
+        ]}
+      />
       <Backpack
         label='Your backpack'
         items={backpackViews(player.backpack ?? [], player)}

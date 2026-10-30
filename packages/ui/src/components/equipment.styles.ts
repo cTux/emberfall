@@ -3,6 +3,9 @@ import { Box, ButtonBase, Tooltip, tooltipClasses } from '@mui/material';
 import type { TooltipProps } from '@mui/material';
 import { alpha, styled } from '@mui/material/styles';
 
+export const BACKPACK_SLOT_SIZE = 44;
+export const EQUIPMENT_SLOT_SIZE = BACKPACK_SLOT_SIZE * 1.2;
+
 export const GearTooltipStyled = styled(({ className, ...props }: TooltipProps) =>
   createElement(Tooltip, { ...props, classes: { popper: className } }),
 )(({ theme }) => ({

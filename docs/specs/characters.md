@@ -79,7 +79,14 @@ innate 100 maximum health, plus gear bonuses. Armor starts at
 zero and mitigates incoming damage by `armor / (100 + armor)`. Unequipped
 characters cannot attack. The server owns equipment and combat results.
 
-The equipment panel shows one Range row for the current targeting mode:
+Inventory has Equipment and Stats tabs in the external left rail used by Codex
+and NPC windows. The backpack and gold stay visible in both tabs. Equipment uses
+equal square cells in the base three-column, four-row layout, with consistent gaps
+and aligned edges; each equipment cell is 1.2 times the backpack cell per side.
+Stats shows calculated totals including equipped bonuses, without duplicate
+“Bonus…” rows.
+
+The Stats tab shows one Range row for the current targeting mode:
 automatic targeting uses automatic range, and manual targeting uses manual range.
 
 Starter weapons retain existing power/range/cadence and have a 5% critical chance

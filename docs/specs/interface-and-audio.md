@@ -186,7 +186,10 @@ available. The warning updates when the current class changes.
 ![Verified desktop class restriction tooltip](../images/item-equip-restriction.png)
 
 The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
-amulet/off-hand/ring. Slots have no border. Empty slots show generated wardrobe-style
+amulet/off-hand/ring. All cells are equal squares in a fixed three-column, four-row
+base grid, with aligned sides and equal gaps. Equipment cells are 52.8px per side,
+exactly 1.2 times the 44px backpack cells. Equipped slots retain their rarity border;
+empty slots have no border. Empty slots show generated wardrobe-style
 equipment icons at 15% effective opacity; equipped weapons keep their full-brightness
 icon. Hover, focus or touch exposes a narrow translucent-black item tooltip with
 cream text, thin brown borders and the existing game font. Weapons show prominent
@@ -197,8 +200,17 @@ the tooltip. Keyboard access to detailed stat explanations stays within the moda
 Each stat row retains its weapon-specific explanation on hover or focus.
 Range follows the active auto-target/cursor-aim mode. Empty slots explain accepted
 gear types. Character stats derived from all equipment
-appear underneath equipment on the left, with the 20-slot backpack on the right. Attack timing is
-shown only as cooldown, without a duplicate attack-speed row.
+appear in a separate Stats tab; Equipment is the default tab. Both tabs use the
+external left rail shared with Codex and NPC windows. The 20-slot backpack and
+gold remain visible on the right in either tab. Stats show calculated totals,
+including gear bonuses, without separate “Bonus…” rows. Attack timing is shown
+only as cooldown, without a duplicate attack-speed row.
+
+![Verified desktop inventory Equipment tab with aligned square gear cells](../images/inventory-equipment-tabs.png)
+
+![Verified desktop inventory Stats tab showing calculated totals](../images/inventory-stats-tabs.png)
+
+Verified gameplay captures from [equipment.spec.ts](../../tests/equipment.spec.ts).
 
 Unequipped compatible gear includes a compact comparison against the item in the
 slot that equipping would replace. Signed green gains and red losses cover base

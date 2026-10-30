@@ -1,6 +1,103 @@
 import { test, expect } from './fixtures';
 import { CLASS_IDS, CLASS_LABELS, WARDROBE, starterEquipment } from '../packages/core/src/index.ts';
 
+test('inventory tabs preserve the bag, aligned square gear and calculated stat totals', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  player.classId = 'druid';
+  player.equipment = {
+    weapon: 'druid-staff',
+    helmet: 'loot-helmet',
+    amulet: 'loot-amulet',
+    bodyArmor: 'loot-bodyArmor',
+    offHand: 'loot-natureFocus',
+    gloves: 'loot-gloves',
+    leggings: 'loot-leggings',
+    ring: 'loot-ring',
+    boots: 'loot-boots',
+  };
+  player.equipmentItems = {
+    helmet: {
+      id: 'rolled-helmet',
+      itemId: 'loot-helmet',
+      quantity: 1,
+      rarity: 'rare',
+      stats: { criticalChance: 2.8, criticalDamage: 14 },
+    },
+  };
+  player.coins = 914;
+  await page.keyboard.press('i');
+  const dialog = page.getByRole('dialog', { name: 'Inventory', exact: true });
+  const equipment = dialog.getByRole('tab', { name: 'Equipment', exact: true });
+  const statsTab = dialog.getByRole('tab', { name: 'Stats', exact: true });
+  const bag = dialog.getByRole('region', { name: 'Your backpack' });
+  await expect(equipment).toHaveAttribute('aria-selected', 'true');
+  const surface = (await dialog.locator('.game-window-surface').boundingBox())!;
+  for (const tab of [equipment, statsTab]) {
+    const box = (await tab.boundingBox())!;
+    expect(box.x + box.width).toBeLessThan(surface.x);
+  }
+  const positions = {
+    helmet: [2, 1],
+    amulet: [3, 1],
+    weapon: [1, 2],
+    bodyArmor: [2, 2],
+    offHand: [3, 2],
+    gloves: [1, 3],
+    leggings: [2, 3],
+    ring: [3, 3],
+    boots: [2, 4],
+  };
+  for (const width of [1440, 1024]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const bagBox = (await bag.locator('button').first().boundingBox())!;
+    expect(bagBox.width).toBe(44);
+    const origin = (await dialog.locator('[data-equipment-slot=helmet]').boundingBox())!;
+    for (const [id, [column, row]] of Object.entries(positions)) {
+      const box = (await dialog.locator(`[data-equipment-slot=${id}]`).boundingBox())!;
+      expect(box.width).toBeCloseTo(bagBox.width * 1.2, 1);
+      expect(box.height).toBe(box.width);
+      expect(box.x - origin.x).toBeCloseTo((column - 2) * (box.width + 4), 1);
+      expect(box.y - origin.y).toBeCloseTo((row - 1) * (box.height + 4), 1);
+    }
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.mouse.move(0, 0);
+  await page.screenshot({ path: 'test-results/inventory-equipment-tabs.png' });
+  const bagBox = await bag.boundingBox();
+  await equipment.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(statsTab).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(statsTab).toHaveAttribute('aria-selected', 'true');
+  await expect(dialog.locator('[data-equipment-slot]')).toHaveCount(0);
+  const stats = dialog.getByRole('region', { name: 'Character stats' });
+  await expect(stats).toContainText('Critical chance7.8%');
+  await expect(stats).toContainText('Critical damage164%');
+  await expect(stats).not.toContainText('Bonus');
+  await expect(bag).toBeVisible();
+  const after = (await bag.boundingBox())!;
+  expect(after.x).toBe(bagBox!.x);
+  expect(after.width).toBe(bagBox!.width);
+  await page.mouse.move(0, 0);
+  await page.screenshot({ path: 'test-results/inventory-stats-tabs.png' });
+  await page.keyboard.press('ArrowUp');
+  await expect(equipment).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog.locator('[data-equipment-slot]')).toHaveCount(9);
+  await dialog.locator('[data-equipment-slot=helmet]').click({ button: 'right' });
+  await statsTab.click();
+  await expect(stats).toContainText('Critical chance5%');
+  await expect(stats).toContainText('Critical damage150%');
+  await expect(bag.getByRole('button', { name: 'Use Helmet', exact: true })).toBeVisible();
+});
+
 test('equipment shows all class starters and stats; physical I, tooltips, dragging and responsive layout work', async ({
   page,
   game,
@@ -29,7 +126,9 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   await expect(dialog.locator('[data-equipment-slot]')).toHaveCount(9);
   await expect(dialog).not.toContainText(/mana/i);
   await expect(dialog.locator('[data-equipped="true"]')).toHaveCount(1);
+  await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
   await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText('150%');
+  await dialog.getByRole('tab', { name: 'Equipment', exact: true }).click();
   await physicalI('i', true);
   await expect(dialog).toBeVisible();
   const sword = dialog.getByRole('button', { name: "Weapon: Warrior's sword" });
@@ -146,11 +245,13 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     const type = { warrior: 'Physical', ranger: 'Poison', mage: 'Fire', druid: 'Nature' }[
       classId as 'warrior' | 'ranger' | 'mage' | 'druid'
     ];
+    await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
     await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText(type);
     await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText(
       'Cooldown1 sec',
     );
     await expect(dialog).not.toContainText('Attack speed');
+    await dialog.getByRole('tab', { name: 'Equipment', exact: true }).click();
     const weapon = dialog.locator('[data-equipment-slot="weapon"]');
     await weapon.hover();
     const badge = page.locator('[data-equipment-badge="range"]');
@@ -170,6 +271,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
       classId as 'warrior' | 'ranger' | 'mage' | 'druid'
     ];
     const manualRange = classId === 'warrior' ? 75 : 1000;
+    await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
     await expect(stats.getByText('Range', { exact: true })).toHaveCount(1);
     await expect(stats).toContainText(`Range${automaticRange.toLocaleString('en')} units`);
     await expect(stats).not.toContainText('Target range');
@@ -178,7 +280,9 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await page.keyboard.press('g');
     await expect.poll(() => player.autoTarget).toBe(false);
     await physicalI();
+    await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
     await expect(stats).toContainText(`Range${manualRange.toLocaleString('en')} units`);
+    await dialog.getByRole('tab', { name: 'Equipment', exact: true }).click();
     await weapon.hover();
     await expect(page.locator('[data-equipment-badge="range"]')).toHaveAttribute(
       'aria-label',
@@ -188,7 +292,9 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await page.keyboard.press('g');
     await expect.poll(() => player.autoTarget).toBe(true);
     await physicalI();
+    await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
     await expect(stats).toContainText(`Range${automaticRange.toLocaleString('en')} units`);
+    await dialog.getByRole('tab', { name: 'Equipment', exact: true }).click();
     await weapon.hover();
     await expect(page.locator(`[data-equipment-badge="${effect}"]`).last()).toBeVisible();
     expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
@@ -207,8 +313,10 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
         return box.x + box.width;
       })
       .toBeLessThanOrEqual(width);
+    await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
     await dialog.getByText('Damage reduction', { exact: true }).scrollIntoViewIfNeeded();
     await expect(dialog.getByText('Damage reduction', { exact: true })).toBeVisible();
+    await dialog.getByRole('tab', { name: 'Equipment', exact: true }).click();
     await dialog.locator('[data-equipment-slot="weapon"]').hover();
     await page.getByRole('button', { name: 'Roots', exact: true }).hover();
     await expect(page.getByRole('tooltip').last()).toContainText('Bosses are immune to roots.');
@@ -237,6 +345,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   await physicalI();
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('[data-equipped="true"]')).toHaveCount(0);
+  await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
   await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText('Power0');
   expect(errors).toEqual([]);
 });
