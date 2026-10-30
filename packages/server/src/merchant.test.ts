@@ -1,6 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { freshMerchant, tradeItem, backpackSchema, itemDefinition } from '@emberfall/core';
+import {
+  freshMerchant,
+  tradeItem,
+  backpackSchema,
+  itemDefinition,
+  LOOT_ITEM_IDS,
+} from '@emberfall/core';
 import type { ChatMessage, Merchant, Player, ServerMessage } from '@emberfall/common';
 import { CharacterStore, freshProgress } from './characters.ts';
 import { refreshMerchant } from './merchant.ts';
@@ -90,10 +96,7 @@ test('stock refresh saves before publishing, preserves buybacks and survives a r
     assert.equal(world.merchant.coins, 5000);
     assert.deepEqual(
       world.merchant.backpack.map((item) => [item.itemId, item.quantity]),
-      [
-        ['health-potion', 5],
-        ['empty-bottle', 200],
-      ],
+      [['health-potion', 5], ['empty-bottle', 200], ...LOOT_ITEM_IDS.map((id) => [id, 1])],
     );
     assert.deepEqual(world.merchant.buyback, before.merchant.buyback);
     assert.equal(world.chat?.length, 1);

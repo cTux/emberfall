@@ -552,6 +552,7 @@ export async function createRuntime(
             backpack: next.backpack,
             storages: next.storages,
             equipment: next.equipment,
+            equipmentItems: next.equipmentItems,
             coins: next.coins,
             hitpoints: next.hitpoints,
             maxHitpoints: next.maxHitpoints,

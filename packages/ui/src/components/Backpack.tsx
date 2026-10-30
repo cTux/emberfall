@@ -97,6 +97,12 @@ export function Backpack({
             <BackpackSlotStyled
               aria-label={`${action} ${item.name}${item.quantity > 1 ? ` (${item.quantity})` : ''}`}
               data-backpack-item={item.id}
+              data-rarity={item.rarity?.toLowerCase()}
+              sx={{
+                border: '1px solid',
+                borderColor: item.rarityColor ?? 'divider',
+                '&:hover': { borderColor: item.rarityColor ?? 'primary.main' },
+              }}
               draggable={!!inventory}
               onDragStart={(event) => {
                 if (!inventory) return;

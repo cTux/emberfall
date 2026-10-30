@@ -69,6 +69,8 @@ export interface DamageEvent {
   target: string;
 }
 export interface LootDrop {
+  rarity?: string;
+  stats?: Record<string, number>;
   /** Server-selected attraction target; presentation may attach to its reconciled pose. */
   collectorId?: string;
   amount?: number;
@@ -85,6 +87,7 @@ export interface SceneState {
   pausedAt?: number;
   playerShots?: PlayerShot[];
   explosions?: {
+    radius?: number;
     ownerId?: string;
     id: number;
     x: number;

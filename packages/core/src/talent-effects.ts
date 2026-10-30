@@ -5,6 +5,7 @@ import { TALENT_NAMES, talentNodeId, talentRank } from './talent-tree.ts';
 import { hitEnemy } from './class-combat.ts';
 import { characterStats } from './equipment.ts';
 import type { CharacterStats } from './content/rules.ts';
+import { isChanced } from './utils/isChanced.ts';
 
 export function rank(player: Player, column: number, row: number) {
   return talentRank(player, talentNodeId(player.classId ?? 'warrior', column, row));
@@ -178,7 +179,8 @@ export function applyTalentAilment(
   entry.stacks = kind === 'roots' ? 1 : Math.min(5, entry.stacks + stacks);
   entry.expiresAt = now + duration;
 }
-function area(scene: SceneState, point: { x: number; y: number }, radius: number) {
+function area(scene: SceneState, point: { x: number; y: number }, radius: number, player?: Player) {
+  radius *= 1 + (player ? characterStats(player).bonuses.areaOfEffect / 100 : 0);
   return scene.enemies.filter(
     (enemy) => enemy.hitpoints > 0 && forestDistance(point, enemy) <= radius,
   );
@@ -197,15 +199,16 @@ function strike(
   source: string,
 ) {
   const stats = state(player, scene).stats ?? characterStats(player);
+  const critical = isChanced(stats.criticalChance * 100);
   hitEnemy(
     scene,
     enemy,
-    stats.power * scale,
+    stats.power * scale * (critical ? stats.criticalMultiplier : 1),
     player,
     now,
     undefined,
     stats.damageType,
-    false,
+    critical,
     source,
   );
 }
@@ -453,6 +456,8 @@ export function executeTalent(
   players: Player[] = [player],
   healingRadius = 700,
 ) {
+  const effectArea = (scene: SceneState, point: { x: number; y: number }, radius: number) =>
+    area(scene, point, radius * (1 + stats.bonuses.areaOfEffect / 100));
   const column = Math.floor(slot / 4),
     tier = slot % 4;
   const classId = player.classId ?? 'warrior';
@@ -460,7 +465,7 @@ export function executeTalent(
   state(player, scene).stats = stats;
   const origin = { x: player.x, y: player.y };
   const distance = forestDistance(player, aim);
-  const maxRange = classId === 'warrior' ? 350 : 700;
+  const maxRange = (classId === 'warrior' ? 350 : 700) * (1 + stats.bonuses.range / 100);
   if (distance > maxRange) {
     const dx = wrappedDelta(aim.x, player.x, FOREST.width),
       dy = wrappedDelta(aim.y, player.y, FOREST.height);
@@ -474,7 +479,7 @@ export function executeTalent(
       ? healingTarget(players, player, origin, healingRadius)
       : undefined;
   talentVisual(scene, player, column, recipient ?? (column === 2 ? origin : aim), now);
-  let targets = area(
+  let targets = effectArea(
     scene,
     classId === 'warrior' && tier !== 2 ? origin : aim,
     learned === 2 ? 170 : 125,
@@ -491,18 +496,26 @@ export function executeTalent(
       const forward = dx * Math.cos(heading) + dy * Math.sin(heading),
         sideways = -dx * Math.sin(heading) + dy * Math.cos(heading);
       return tier === 0
-        ? forward >= 0 && Math.hypot(dx, dy) <= (learned === 2 ? 170 : 125)
-        : forward >= 0 && forward <= 350 && Math.abs(sideways) <= 65;
+        ? forward >= 0 &&
+            Math.hypot(dx, dy) <=
+              (learned === 2 ? 170 : 125) * (1 + stats.bonuses.areaOfEffect / 100)
+        : forward >= 0 &&
+            forward <= maxRange &&
+            Math.abs(sideways) <= 65 * (1 + stats.bonuses.areaOfEffect / 100);
     });
   const primary = [...scene.enemies]
-    .filter((enemy) => enemy.hitpoints > 0 && forestDistance(enemy, aim) < 180)
+    .filter(
+      (enemy) =>
+        enemy.hitpoints > 0 &&
+        forestDistance(enemy, aim) < 180 * (1 + stats.bonuses.areaOfEffect / 100),
+    )
     .sort((a, b) => forestDistance(a, aim) - forestDistance(b, aim))[0];
   if (column === 2) {
     if (tier === 0) {
       if (classId === 'druid') {
         if (recipient) heal(recipient, learned === 2 ? 0.2 : 0.12);
       } else
-        for (const enemy of area(scene, origin, 150)) {
+        for (const enemy of effectArea(scene, origin, 150)) {
           strike(scene, player, enemy, learned === 2 ? 1.4 : 0.9, now, ability);
           applyTalentAilment(enemy, player, 'roots', 1, now, learned === 2 ? 1000 : 600);
           enemy.attack = undefined;
@@ -510,7 +523,7 @@ export function executeTalent(
         }
       const fragments = rank(player, 2, 2);
       if (fragments)
-        for (const enemy of area(scene, aim, 250).slice(0, fragments === 2 ? 4 : 2))
+        for (const enemy of effectArea(scene, aim, 250).slice(0, fragments === 2 ? 4 : 2))
           strike(
             scene,
             player,
@@ -522,17 +535,24 @@ export function executeTalent(
     } else if (tier === 1) {
       schedule(scene, player, nodeId, now, 5000, 1000, (at, players) => {
         if (classId === 'druid') {
-          const ally = healingTarget(players, player, origin, 200);
+          const ally = healingTarget(
+            players,
+            player,
+            origin,
+            200 * (1 + stats.bonuses.areaOfEffect / 100),
+          );
           if (ally) heal(ally, learned === 2 ? 0.04 : 0.025);
         } else
           for (const ally of players.filter(
-            (ally) => ally.hitpoints > 0 && forestDistance(ally, origin) <= 200,
+            (ally) =>
+              ally.hitpoints > 0 &&
+              forestDistance(ally, origin) <= 200 * (1 + stats.bonuses.areaOfEffect / 100),
           )) {
             shield(ally, scene, player.maxHitpoints * (learned === 2 ? 0.1 : 0.06), at + 1200);
           }
         const hold = rank(player, 2, 4);
         if (hold)
-          for (const enemy of area(scene, origin, 200)) {
+          for (const enemy of effectArea(scene, origin, 200)) {
             applyTalentAilment(enemy, player, 'roots', 1, at, hold === 2 ? 1400 : 800);
             control(enemy, at, hold === 2 ? 1400 : 800);
           }
@@ -540,7 +560,7 @@ export function executeTalent(
     } else if (tier === 2) {
       state(player, scene).challengeHits = new Set();
       shield(player, scene, player.maxHitpoints * (learned === 2 ? 0.25 : 0.15), now + 5000);
-      for (const enemy of area(scene, origin, learned === 2 ? 250 : 200)) {
+      for (const enemy of effectArea(scene, origin, learned === 2 ? 250 : 200)) {
         if (classId === 'warrior') {
           enemy.challengedBy = player.id;
           enemy.challengedUntil = now + 3000;
@@ -558,7 +578,10 @@ export function executeTalent(
       if (shared)
         schedule(scene, player, nodeId, now, value.wallUntil - now, 500, (at, players) => {
           for (const ally of players.filter(
-            (ally) => ally !== player && ally.hitpoints > 0 && forestDistance(ally, player) <= 160,
+            (ally) =>
+              ally !== player &&
+              ally.hitpoints > 0 &&
+              forestDistance(ally, player) <= 160 * (1 + stats.bonuses.areaOfEffect / 100),
           ))
             shield(ally, scene, ally.maxHitpoints * (shared === 2 ? 0.05 : 0.03), at + 1000);
         });
@@ -567,7 +590,7 @@ export function executeTalent(
     const value = state(player, scene);
     if (unbroken && tier === 0 && value.wallPrevented) {
       value.wallPrevented = false;
-      for (const enemy of area(scene, origin, 150))
+      for (const enemy of effectArea(scene, origin, 150))
         strike(
           scene,
           player,
@@ -591,22 +614,22 @@ export function executeTalent(
         bear.maxHitpoints,
         bear.hitpoints + bear.maxHitpoints * (learned === 2 ? 0.3 : 0.2),
       );
-      for (const enemy of area(scene, bear, 200))
+      for (const enemy of effectArea(scene, bear, 200))
         applyTalentAilment(enemy, player, 'roots', 1, now, 1500);
     } else if (tier === 2)
-      for (const enemy of area(scene, bear, 250)) {
+      for (const enemy of effectArea(scene, bear, 250)) {
         strike(scene, player, enemy, learned === 2 ? 2.5 : 1.8, now, ability);
         applyTalentAilment(enemy, player, 'bleed', learned, now);
       }
     else
       schedule(scene, player, nodeId, now, 4000, 1000, (at) => {
         if (bear.hitpoints <= 0) return;
-        for (const enemy of area(scene, bear, 180))
+        for (const enemy of effectArea(scene, bear, 180))
           strike(scene, player, enemy, learned === 2 ? 1 : 0.6, at, ability);
       });
     const hunting = rank(player, 1, 4);
     if (hunting && tier === 1)
-      for (const enemy of area(scene, bear, 200))
+      for (const enemy of effectArea(scene, bear, 200))
         applyTalentAilment(enemy, player, 'bleed', hunting, now);
     return;
   }
@@ -634,7 +657,7 @@ export function executeTalent(
     primary.debuffs = primary.debuffs?.filter((entry) => !wounds.includes(entry));
     hitEnemy(scene, primary, burst, player, now, undefined, 'physical', false, ability);
     if (learned === 2)
-      for (const enemy of area(scene, primary, 150))
+      for (const enemy of effectArea(scene, primary, 150))
         if (enemy !== primary)
           hitEnemy(scene, enemy, burst * 0.5, player, now, undefined, 'physical', false, ability);
     const offering = rank(player, 1, 8);
@@ -650,11 +673,24 @@ export function executeTalent(
       });
     return;
   }
+  const hitIds = new Set<number>();
   const hit = (enemy: Enemy, at: number, scale: number) => {
+    hitIds.add(enemy.id);
+    const copies =
+      1 +
+      (classId === 'warrior'
+        ? stats.bonuses.additionalAttack
+        : classId === 'mage'
+          ? stats.bonuses.moreProjectiles
+          : 0);
+    for (let copy = 0; copy < copies && enemy.hitpoints > 0; copy++) {
+      strike(scene, player, enemy, scale, at, ability);
+      if (classId === 'warrior' && stats.bonuses.additionalAttack > 0)
+        talentWeaponHit(scene, player, enemy, at, false, stats);
+    }
     const serrated = rank(player, 1, 2);
     if (column === 0 && serrated && Math.random() < (serrated === 2 ? 0.45 : 0.25))
       applyTalentAilment(enemy, player, ailment, 1, at);
-    strike(scene, player, enemy, scale, at, ability);
     if (column === 1) applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at);
     const deep = rank(player, 1, 9);
     if (
@@ -692,17 +728,17 @@ export function executeTalent(
     }
     const trail = rank(player, 1, 4);
     if (trail)
-      for (const enemy of area(scene, primary, 150))
+      for (const enemy of effectArea(scene, primary, 150))
         applyTalentAilment(enemy, player, ailment, trail, now);
   } else if ((tier === 1 && column === 0) || (tier === 3 && column === 1)) {
     const count = column === 0 ? 3 : 4;
     schedule(scene, player, nodeId, now, (count - 1) * 500, 500, (at) => {
-      for (const enemy of area(scene, column === 0 ? player : aim, learned === 2 ? 170 : 125))
+      for (const enemy of effectArea(scene, column === 0 ? player : aim, learned === 2 ? 170 : 125))
         hit(enemy, at, column === 0 ? (learned === 2 ? 0.65 : 0.45) : learned === 2 ? 0.45 : 0.3);
       talentVisual(scene, player, column, column === 0 ? player : aim, at);
       const advancing = rank(player, 0, 4);
       if (column === 0 && advancing && at === now + (count - 1) * 500)
-        for (const enemy of area(scene, aim, 220))
+        for (const enemy of effectArea(scene, aim, 220))
           strike(
             scene,
             player,
@@ -725,16 +761,44 @@ export function executeTalent(
             ? 2.1
             : 1.5,
       );
+  if (column === 0 && (tier === 0 || tier === 2 || tier === 3)) {
+    let previous = primary ?? targets[0];
+    const extras =
+      classId === 'druid'
+        ? stats.bonuses.projectilesBounce
+        : classId === 'ranger'
+          ? stats.bonuses.projectilePierce
+          : 0;
+    for (let extra = 0; previous && extra < extras; extra++) {
+      const next = scene.enemies
+        .filter((enemy) => {
+          if (enemy.hitpoints <= 0 || hitIds.has(enemy.id)) return false;
+          if (classId === 'druid')
+            return forestDistance(previous!, enemy) <= 300 * (1 + stats.bonuses.range / 100);
+          const dx = wrappedDelta(enemy.x, player.x, FOREST.width);
+          const dy = wrappedDelta(enemy.y, player.y, FOREST.height);
+          return (
+            dx * Math.cos(heading) + dy * Math.sin(heading) >= 0 &&
+            Math.abs(-dx * Math.sin(heading) + dy * Math.cos(heading)) <= 32 &&
+            forestDistance(player, enemy) <= maxRange
+          );
+        })
+        .sort((a, b) => forestDistance(previous!, a) - forestDistance(previous!, b))[0];
+      if (!next) break;
+      hit(next, now, learned === 2 ? 2.1 : 1.5);
+      previous = next;
+    }
+  }
   const second = column === 0 ? rank(player, column, 2) : 0;
   if (second && tier === 0 && Math.random() < (second === 2 ? 0.5 : 0.25))
     schedule(scene, player, nodeId, now + 300, 0, 1, (at) => {
-      for (const enemy of area(scene, aim, 125)) hit(enemy, at, learned === 2 ? 1.05 : 0.75);
+      for (const enemy of effectArea(scene, aim, 125)) hit(enemy, at, learned === 2 ? 1.05 : 0.75);
     });
   const value = state(player, scene);
   if (column === 0 && tier === 2 && rank(player, 0, 6))
     value.fissure = { ...aim, until: now + 4000 };
   else if (tier === 0 && value.fissure && value.fissure.until > now) {
-    for (const enemy of area(scene, value.fissure, 170))
+    for (const enemy of effectArea(scene, value.fissure, 170))
       strike(
         scene,
         player,
@@ -772,7 +836,7 @@ export function executeTalent(
   if (rhythm && value.sequence.length >= 3 && now >= value.rhythmAt) {
     value.rhythmAt = now + 8000;
     value.sequence = [];
-    for (const enemy of area(scene, player, 200))
+    for (const enemy of effectArea(scene, player, 200))
       strike(
         scene,
         player,

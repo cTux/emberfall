@@ -334,6 +334,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         talents: next.talents ?? {},
         talentSlots: next.talentSlots,
         talentVersion: next.talentVersion,
+        equipmentItems: next.equipmentItems,
         attackAt: undefined,
         attackAngle: undefined,
         bear: undefined,

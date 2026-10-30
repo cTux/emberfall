@@ -60,7 +60,24 @@ test('failed item chance skips count rolls; successful normal chance can still y
 
 test('a successful 350 percent boss roll drops four independent items once and respects the shared cap', (t) => {
   for (const existing of [0, 512]) {
-    const rolls = [0.5, 0.49, 250.1 / 401, 0.49, 0.1, 0.2, 0.3, 0.4];
+    const rolls = [
+      0.5,
+      0.49,
+      250.1 / 401,
+      0.49,
+      0.1,
+      0.5,
+      0.5,
+      0.2,
+      0.5,
+      0.5,
+      0.3,
+      0.5,
+      0.5,
+      0.4,
+      0.5,
+      0.5,
+    ];
     t.mock.method(Math, 'random', () => {
       assert.ok(rolls.length, 'unexpected random roll');
       return rolls.shift()!;

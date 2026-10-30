@@ -16,6 +16,7 @@ export const ATTACK_DEFINITIONS = {
     count: 2,
     spreadRadians: Math.PI / 30,
     piercing: true,
+    pierce: 3,
   },
   fireball: {
     id: 'fireball',

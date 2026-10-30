@@ -19,6 +19,30 @@ import { EnemyType } from '@emberfall/common/enums';
 import { isChanced } from './utils/isChanced.ts';
 import { shouldDropItem } from './utils/shouldDropItem.ts';
 import { itemDropCount } from './utils/itemDropCount.ts';
+import { isMultiChanced } from './utils/isMultiChanced.ts';
+import type { AbilityDefinition } from './content/contracts.ts';
+
+const rewardPlayers = new WeakMap<SceneState, Player[]>();
+export function setRewardPlayers(scene: SceneState, players: Player[]) {
+  rewardPlayers.set(scene, players);
+}
+export function effectiveAbility(
+  player: Player,
+  ability: Readonly<AbilityDefinition>,
+  context: Game = game,
+) {
+  const { bonuses } = context.rules.characterStats(player);
+  return {
+    ...ability,
+    range: ability.range * (1 + bonuses.range / 100),
+    manualRange: ability.manualRange * (1 + bonuses.range / 100),
+    count: ability.count + (ability.kind === 'fireball' ? bonuses.moreProjectiles : 0),
+    bounces: ability.bounces + (ability.kind === 'roots' ? bonuses.projectilesBounce : 0),
+    pierce: (ability.pierce ?? 3) + (ability.kind === 'arrow' ? bonuses.projectilePierce : 0),
+    splashRadius: ability.splashRadius * (1 + bonuses.areaOfEffect / 100),
+    bounceRadius: ability.bounceRadius * (1 + bonuses.range / 100),
+  };
+}
 
 const damageHistory = new WeakMap<Player, { at: number; amount: number; ability: string }[]>();
 export function damagePerSecond(player: Player, now: number) {
@@ -109,31 +133,51 @@ export function hitEnemy(
   if (owner) talentEnemyDeath(scene, owner, enemy, now);
   if (scene.training) return;
   if (owner) owner.experience++;
+  const members = new Map(
+    (rewardPlayers.get(scene) ?? (owner ? [owner] : []))
+      .filter(
+        (player) => player.id === owner?.id || (owner?.partyId && player.partyId === owner.partyId),
+      )
+      .map((player) => [player.id, player]),
+  );
+  const bonuses = [...members.values()].map((player) => characterStats(player).bonuses);
+  const experienceCopies =
+    1 + isMultiChanced(bonuses.reduce((sum, stats) => sum + stats.expIncrease, 0));
   scene.drops ??= [];
-  appendSceneEntities(scene, 'drops', {
-    id: ++scene.sequence,
-    kind: 'experience',
-    amount: ENEMY_RULES.experiencePerMember ** Math.max(0, (scene.playerCount ?? 1) - 1),
-    x: enemy.x,
-    y: enemy.y,
-    at: now,
-  });
-  if (isChanced(PICKUP_DEFINITIONS.gold.chance * 100))
+  for (let copy = 0; copy < experienceCopies; copy++)
     appendSceneEntities(scene, 'drops', {
       id: ++scene.sequence,
-      kind: 'gold',
-      x: wrap(enemy.x + 10, FOREST.width),
+      kind: 'experience',
+      amount: ENEMY_RULES.experiencePerMember ** Math.max(0, (scene.playerCount ?? 1) - 1),
+      x: enemy.x,
       y: enemy.y,
       at: now,
     });
+  if (isChanced(PICKUP_DEFINITIONS.gold.chance * 100)) {
+    const goldCopies =
+      1 + isMultiChanced(bonuses.reduce((sum, stats) => sum + stats.goldIncrease, 0));
+    for (let copy = 0; copy < goldCopies; copy++)
+      appendSceneEntities(scene, 'drops', {
+        id: ++scene.sequence,
+        kind: 'gold',
+        x: wrap(enemy.x + 10, FOREST.width),
+        y: enemy.y,
+        at: now,
+      });
+  }
   const type = enemy.kind ?? EnemyType.Normal;
   if (shouldDropItem(type)) {
     const count = itemDropCount(type);
     for (let i = 0; i < count; i++) {
+      const item = game.rules.rollItem(
+        LOOT_ITEM_IDS[Math.floor(Math.random() * LOOT_ITEM_IDS.length)],
+      );
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,
         kind: 'item',
-        itemId: LOOT_ITEM_IDS[Math.floor(Math.random() * LOOT_ITEM_IDS.length)],
+        itemId: item.itemId,
+        rarity: item.rarity,
+        stats: item.stats,
         x: wrap(enemy.x - 10, FOREST.width),
         y: enemy.y,
         at: now,
@@ -173,7 +217,11 @@ export function defaultSpellRange(
 ) {
   const stats = context.rules.characterStats(player);
   if (!stats.hasWeapon) return 0;
-  return player.autoTarget === false ? stats.manualRange : stats.range;
+  const range = player.autoTarget === false ? stats.manualRange : stats.range;
+  const attack = context.registries.abilities.require(
+    context.registries.classes.require(player.classId ?? 'warrior').attack,
+  );
+  return range * (attack.kind === 'slash' ? 1 + stats.bonuses.areaOfEffect / 100 : 1);
 }
 
 /** Called only by authoritative hit resolution, never by cast prediction. */
@@ -190,21 +238,27 @@ export function hitWithWeapon(
 ) {
   if (enemy.hitpoints <= 0) return;
   if (!stats.hasWeapon) return;
-  const critical = isChanced(stats.criticalChance * 100);
-  hitEnemy(
-    scene,
-    enemy,
-    stats.power * powerScale * (critical ? stats.criticalMultiplier : 1),
-    owner,
-    now,
-    ailment,
-    stats.damageType,
-    critical,
-    companion
-      ? 'Bear'
-      : (context.registries.classes.get(owner.classId ?? 'warrior')?.details?.spell ?? 'Attack'),
-  );
-  talentWeaponHit(scene, owner, enemy, now, companion, stats);
+  const attacks =
+    !companion && context.registries.classes.require(owner.classId ?? 'warrior').art === 'warrior'
+      ? 1 + stats.bonuses.additionalAttack
+      : 1;
+  for (let attack = 0; attack < attacks && enemy.hitpoints > 0; attack++) {
+    const critical = isChanced(stats.criticalChance * 100);
+    hitEnemy(
+      scene,
+      enemy,
+      stats.power * powerScale * (critical ? stats.criticalMultiplier : 1),
+      owner,
+      now,
+      ailment,
+      stats.damageType,
+      critical,
+      companion
+        ? 'Bear'
+        : (context.registries.classes.get(owner.classId ?? 'warrior')?.details?.spell ?? 'Attack'),
+    );
+    talentWeaponHit(scene, owner, enemy, now, companion, stats);
+  }
 }
 
 function applyRoots(target: Enemy, ownerId: string, now: number) {
@@ -256,7 +310,9 @@ export function fireClassAttack(
 ) {
   const stats = context.rules.characterStats(player);
   if (!stats.hasWeapon) return;
-  const selected = abilityId ? context.registries.abilities.require(abilityId) : undefined;
+  const selected = abilityId
+    ? effectiveAbility(player, context.registries.abilities.require(abilityId), context)
+    : undefined;
   const range = selected
     ? player.autoTarget === false
       ? selected.manualRange
@@ -275,8 +331,12 @@ export function fireClassAttack(
       wrappedDelta(destination.y, player.y, FOREST.height),
       wrappedDelta(destination.x, player.x, FOREST.width),
     );
-    const attack = context.registries.abilities.require(
-      abilityId ?? context.registries.classes.require(player.classId ?? 'ranger').attack,
+    const attack = effectiveAbility(
+      player,
+      context.registries.abilities.require(
+        abilityId ?? context.registries.classes.require(player.classId ?? 'ranger').attack,
+      ),
+      context,
     );
     const ailment = context.registries.classes.require(player.classId ?? 'ranger').ailment;
     const defaultAilment =
@@ -335,6 +395,7 @@ export function advancePlayerShot(
   );
   const steps = Math.max(1, Math.ceil(distance / 6));
   for (let i = 0; i < steps; i++) {
+    if (shot.remaining <= 0) break;
     shot.x = wrap(shot.x + (Math.cos(shot.angle) * distance) / steps, FOREST.width);
     shot.y = wrap(shot.y + (Math.sin(shot.angle) * distance) / steps, FOREST.height);
     shot.remaining -= distance / steps;
@@ -374,7 +435,11 @@ export function tickPlayerShots(
         p.hitpoints > 0,
     );
     if (!owner) return false;
-    const ability = context.registries.abilities.require(shot.abilityId ?? shot.kind);
+    const ability = effectiveAbility(
+      owner,
+      context.registries.abilities.require(shot.abilityId ?? shot.kind),
+      context,
+    );
     const stats = context.rules.characterStats(owner);
     const impacted = advancePlayerShot(
       shot,
@@ -383,6 +448,10 @@ export function tickPlayerShots(
       () => {
         if (shot.kind === 'arrow') {
           for (const enemy of scene.enemies) {
+            if (shot.hitIds.length >= 1 + ability.pierce) {
+              shot.remaining = 0;
+              break;
+            }
             if (
               enemy.hitpoints <= 0 ||
               shot.hitIds.includes(enemy.id) ||
@@ -401,6 +470,7 @@ export function tickPlayerShots(
               false,
               context,
             );
+            if (shot.hitIds.length >= 1 + ability.pierce) shot.remaining = 0;
           }
         }
       },
@@ -454,6 +524,7 @@ export function tickPlayerShots(
         x: shot.x,
         y: shot.y,
         at: now,
+        radius: ability.splashRadius,
       });
       for (const enemy of scene.enemies)
         if (enemy.id === shot.hitIds[0])

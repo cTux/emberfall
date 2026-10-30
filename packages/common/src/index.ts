@@ -2,7 +2,13 @@ export * from './enums/index.ts';
 export { nicknameSchema, type AccountView } from './account.ts';
 import { z } from 'zod';
 import { Difficulty } from './enums/Difficulty.ts';
-import { backpackSchema, storagesSchema, storageNameSchema, type Merchant } from './inventory.ts';
+import {
+  backpackSchema,
+  inventoryItemSchema,
+  storagesSchema,
+  storageNameSchema,
+  type Merchant,
+} from './inventory.ts';
 export * from './inventory.ts';
 import { equipmentSchema } from './equipment.ts';
 export * from './equipment.ts';
@@ -21,6 +27,7 @@ const characterToken = z
 export const progressSchema = z
   .object({
     equipment: equipmentSchema.optional(),
+    equipmentItems: z.record(z.string(), inventoryItemSchema).optional(),
     backpack: backpackSchema.optional(),
     storages: storagesSchema.optional(),
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),

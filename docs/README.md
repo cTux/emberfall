@@ -42,6 +42,12 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
+Random gear rarity and stats: [ITEM-01–03](specs/item-rolls.md),
+[core configuration](../packages/core/src/item-stats.ts),
+[instance rules](../packages/core/src/content/rules.ts),
+[rule/persistence checks](../packages/server/src/item-rolls.test.ts) and
+[desktop verification](../tests/item-rarities.spec.ts).
+
 Damage number visibility: [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music),
 [shared renderer](../packages/client/src/damage-text.ts),
 [saved preference](../packages/client/src/preferences.ts),

@@ -13,7 +13,7 @@ import {
   drawLootAndBlood,
 } from '../packages/client/src/combat-effects';
 import { pickupArt, effectsArt, artImages } from '../packages/client/src/art';
-import { LOOT_ITEM_IDS } from '../packages/core/src/index';
+import { LOOT_ITEM_IDS, Rarity } from '../packages/core/src/index';
 import type { SceneState } from '../packages/common/src/index';
 import { statusImages } from '../packages/client/src/combat-assets';
 import { drawFog } from '../packages/client/src/forest';
@@ -476,6 +476,33 @@ export async function compare() {
       beside: red(5, -18),
     };
   });
+  pixi.begin();
+  const rarities = Object.values(Rarity);
+  drawLootAndBlood(
+    pixi as unknown as CanvasRenderingContext2D,
+    {
+      drops: rarities.map((rarity, id) => ({
+        id,
+        itemId: 'warrior-sword',
+        rarity,
+        kind: 'item',
+        x: 24 + id * 48,
+        y: 60,
+        at: 1000,
+      })),
+      damage: [],
+    } as unknown as SceneState,
+    1000,
+    (x, y) => ({ x, y }),
+    { x: 0, y: 0, width: 256, height: 256 },
+  );
+  pixi.present();
+  lootContext.clearRect(0, 0, 256, 256);
+  lootContext.drawImage(gpu, 0, 0);
+  const rarityPixels = rarities.map((rarity, index) => ({
+    rarity,
+    color: [...lootContext.getImageData(24 + index * 48, 57, 1, 1).data],
+  }));
   pixi.resize(850, 260);
   pixi.begin();
   pixi.fillStyle = '#17251d';
@@ -531,6 +558,7 @@ export async function compare() {
     groupedLabels,
     projectilePixels,
     lootPixels,
+    rarityPixels,
     battleTextPixels,
   };
 }

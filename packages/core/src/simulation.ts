@@ -22,6 +22,7 @@ import {
   tickPlayerShots,
   defaultSpellRange,
   nearestSpellTarget,
+  setRewardPlayers,
 } from './class-combat.ts';
 import { ENEMY_STATS, moveEnemies, spawnArchetype, enemyMaxHealth } from './enemies.ts';
 import type { Player, Bear, ClientMessage, SceneState, Enemy } from '@emberfall/common';
@@ -319,7 +320,8 @@ export function tickCompanion(
     startY = bear.y;
   const destinationDistance = forestDistance(bear, destination);
   if (destination !== player || destinationDistance > BEAR_DEFINITION.returnRadius) {
-    const speed = ARENA.speed;
+    const speed =
+      ARENA.speed * (1 + context.rules.characterStats(player).bonuses.movementSpeed / 100);
     if (forest) {
       const body: Enemy = {
         id: 1,
@@ -373,10 +375,11 @@ export function tickCompanion(
 export function movePlayer(player: Player, x: number, y: number, dt: number) {
   if (player.hitpoints <= 0) return;
   const length = Math.max(1, Math.hypot(x, y));
+  const speed = ARENA.speed * (1 + game.rules.characterStats(player).bonuses.movementSpeed / 100);
   const next = (player.scene === 'forest' ? moveForestActor : moveActor)(
     { x: player.x, y: player.y + 15 },
-    (x / length) * ARENA.speed * dt,
-    (y / length) * ARENA.speed * dt,
+    (x / length) * speed * dt,
+    (y / length) * speed * dt,
     PLAYER_BODY_RADIUS,
     false,
   );
@@ -389,7 +392,9 @@ export function stepCombat(
   now: number,
   dt: number,
   context: Game = game,
+  partyPlayers: Player[] = players,
 ) {
+  setRewardPlayers(scene, partyPlayers);
   const ENEMY_STATS = Object.fromEntries(context.registries.enemies.entries());
   const playerCount = players.filter((p) => p.scene === 'forest').length;
   const additionalPlayers = Math.max(0, playerCount - 1);
@@ -481,6 +486,8 @@ export function stepCombat(
           id: `${scene.id}:${drop.id}`,
           itemId: drop.itemId,
           quantity: 1,
+          rarity: drop.rarity,
+          stats: drop.stats,
         });
       else
         target.coins = Math.min(

@@ -36,14 +36,16 @@ from confirmed equipment. Removing the weapon disables its default attack.
 
 Forest enemies roll equipment chance and counts by enemy type as specified in
 [COMBAT-05](combat.md#combat-05--rewards-and-damage-accounting). Successful item
-rolls choose random non-weapon armor, jewelry and class-specific off-hand types.
-Every dropped item has 1 armor and costs 1 gold.
+rolls choose weapons, armor, jewelry and class-specific off-hands. New gear rolls
+rarity and stats according to [ITEM-01-03](item-rolls.md); existing intrinsic stats
+and prices are retained.
 Training grants no loot. Item pickup is automatic by default and can be disabled in Settings → Gameplay; XP and gold remain automatic.
 Consumables stack by type; right-click consumes one. Health potions restore 25 HP,
 clamped to maximum HP, and are not consumed at full health or while dead.
 
 Marta has one shared backpack and gold balance per world, initially 5000 gold and
-five health potions and 200 empty bottles at 1 gold each. Empty bottles are crafting
+five health potions, 200 empty bottles at 1 gold each, and one independently
+rolled item of every droppable gear definition. Empty bottles are crafting
 resources that stack to 200; they cannot be consumed or equipped. Every 30 minutes,
 Marta's regular stock and gold reset to these initial amounts, preserving buybacks.
 The refresh deadline persists across restarts; overdue stock refreshes once when

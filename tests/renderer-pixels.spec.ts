@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { test, expect } from './fixtures';
+import { LOOT_ITEM_IDS, rarityColor } from '../packages/core/src/index';
 
 test('Pixi preserves transparent vignette centers and SVG debuff pixels', async ({ page }) => {
   const errors: string[] = [];
@@ -43,6 +44,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     groupedLabels,
     projectilePixels,
     lootPixels,
+    rarityPixels,
     battleTextPixels,
   } = await page.evaluate(async () => {
     const fixture = (window as unknown as { RendererFixture: typeof import('./renderer-fixture') })
@@ -89,7 +91,18 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     expect(expired.count).toBe(0);
   }
   expect(battleTextPixels[1][1].height).toBeGreaterThan(battleTextPixels[0][1].height);
-  expect(lootPixels).toHaveLength(12);
+  expect(lootPixels).toHaveLength(LOOT_ITEM_IDS.length + 1);
+  for (const { rarity, color } of rarityPixels) {
+    const expected = [1, 3, 5].map((offset) =>
+      parseInt(rarityColor[rarity].slice(offset, offset + 2), 16),
+    );
+    expect(color[3], `${rarity} beam alpha`).toBeGreaterThan(30);
+    for (let channel = 0; channel < 3; channel++)
+      expect(
+        Math.abs(color[channel] - expected[channel]),
+        `${rarity} beam color`,
+      ).toBeLessThanOrEqual(4);
+  }
   for (const { itemId, colored, purple, beam, above, beside } of lootPixels) {
     expect(colored, `${itemId} visible icon`).toBeGreaterThan(30);
     expect(purple, `${itemId} has no placeholder square`).toBe(0);

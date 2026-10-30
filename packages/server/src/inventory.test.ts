@@ -294,7 +294,7 @@ test('buyback keeps the latest 20 sales separate, migrates legacy gear, and reje
     tradeItem(player, merchant, entry.id, false);
     ids.push(merchant.buyback[0].id);
   }
-  assert.equal(merchant.backpack.length, 2);
+  assert.equal(merchant.backpack.length, 2 + LOOT_ITEM_IDS.length);
   assert.equal(merchant.buyback.length, BUYBACK_SLOTS);
   assert.deepEqual(
     merchant.buyback.map((entry) => entry.id),
@@ -346,7 +346,7 @@ test('sell all transfers stacks and gold atomically, preserves equipment and rej
   assert.deepEqual({ player, merchant }, overflow);
 });
 
-test('successful item rolls drop non-weapon 1-armor 1-gold gear once across a wrapped seam; training drops none', (t) => {
+test('successful item rolls include weapons and preserve rolls across a wrapped pickup; training drops none', (t) => {
   for (const [index, id] of LOOT_ITEM_IDS.entries()) {
     const rolls = [0.5, 0, 0, (index + 0.5) / LOOT_ITEM_IDS.length];
     t.mock.method(Math, 'random', () => rolls.shift() ?? 0.5);
@@ -364,11 +364,12 @@ test('successful item rolls drop non-weapon 1-armor 1-gold gear once across a wr
     hitEnemy(scene, { id: 1, x: 8, y: 1280, hitpoints: 1, angle: 0 }, 2, player, 1000);
     const drop = scene.drops!.find((drop) => drop.kind === 'item')!;
     assert.equal(drop.itemId, id);
-    assert.equal(GEAR_DEFINITIONS[id].stats.armor, 1);
-    assert.equal(GEAR_DEFINITIONS[id].price, 1);
-    assert(!['sword', 'bow', 'fireStaff', 'natureStaff'].includes(GEAR_DEFINITIONS[id].gearType));
+    assert(GEAR_DEFINITIONS[id]);
+    assert.equal(drop.rarity, 'common');
+    assert.equal(Object.keys(drop.stats!).length, 1);
     stepCombat(scene, [player], 1400, 0.05);
     assert.equal(player.backpack!.length, 1);
+    assert.deepEqual(player.backpack![0].stats, drop.stats);
     stepCombat(scene, [player], 1450, 0.05);
     assert.equal(player.backpack!.length, 1);
     const training = createTrainingScene(0);
@@ -442,7 +443,7 @@ test('session-owned commands reject remote trading and retain live items after a
     assert.match((messages.at(-1) as { message: string }).message, /Unable to save/);
     assert.deepEqual(player, before);
     assert.equal(world.merchant!.coins, 5000);
-    assert.equal(world.merchant!.backpack.length, 2);
+    assert.equal(world.merchant!.backpack.length, 2 + LOOT_ITEM_IDS.length);
     failSave.mock.restore();
     peer.receive({ type: 'trade', id: player.backpack[0].id, buying: false, coins: 99999 });
     assert.equal(player.backpack.length, 0);

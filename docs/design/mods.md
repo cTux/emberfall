@@ -6,6 +6,20 @@ evidence and remaining verification are recorded in the [plan](../plans/mods.md)
 
 ## Ownership and dependency direction
 
+### Rolled gear instances
+
+[ITEM-01–03](../specs/item-rolls.md) adds core-owned rarity/stat configuration
+and weighted sampling. Common carries only structural optional `rarity`/`stats`
+fields on inventory/drop instances. Existing equipped definition IDs remain;
+optional `equipmentItems[slot]` retains the equipped instance and its rolls.
+Core validates that each instance matches its slot's definition ID, allowed
+stats, rarity count and configured exact values. Saves without instances retain
+their old stats and Common presentation. Equip, storage and trade move the
+instance; they never regenerate it. Server commands still save before publishing.
+Combat reads summed equipped bonuses, and the server binds the complete party
+roster to reward generation independently of hit credit. Client/UI receive
+rarity colors and stat descriptions from the host; common never imports core.
+
 Core is the composition root for the playable game: it constructs registries,
 loads bundled mods, validates content, prepares derived data and exposes shared
 rules to host adapters. It remains portable TypeScript with no DOM, database,

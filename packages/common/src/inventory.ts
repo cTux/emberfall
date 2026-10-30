@@ -1,12 +1,15 @@
 import { z } from 'zod';
+export const itemRollSchema = z.object({
+  rarity: z.string().min(1).max(32).optional(),
+  stats: z.record(z.string().min(1).max(64), z.number().finite().nonnegative()).optional(),
+});
+export const inventoryItemSchema = itemRollSchema.extend({
+  id: z.string().min(1).max(64),
+  itemId: z.string().min(1).max(128),
+  quantity: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
+});
 export const backpackSchema = z
-  .array(
-    z.object({
-      id: z.string().min(1).max(64),
-      itemId: z.string().min(1).max(128),
-      quantity: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-    }),
-  )
+  .array(inventoryItemSchema)
   .refine(
     (items) => new Set(items.map((item) => item.id)).size === items.length,
     'Duplicate item identity',
