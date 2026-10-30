@@ -6,12 +6,16 @@ Run commands from the repository root unless stated otherwise. Runtime setup and
 
 The [Verify workflow](../.github/workflows/verify.yml) always runs formatting,
 lint, typechecking, core and root Node suites, and builds on every pull request.
-[Browser selection](../scripts/ci-browser-tests.ts) maps changed paths to
-affected desktop scenario groups; documentation and Node-only test changes need
-no browser run. Multiple areas union their groups. Unmapped paths, dependencies,
-shared-runtime, workflow/selector changes and unavailable Git history fall back
-to the complete 11-file desktop baseline plus the shared UI selection. CI summaries record the
-selection. Desktop allowlists exclude existing mixed phone/touch scenarios.
+Browser tests are temporarily paused on pull requests while the architecture
+merge queue is processed. Formatting, lint, typechecking, core/root Node tests
+and build remain mandatory. The manual full release verification remains enabled.
+To restore affected browser checks, remove the `workflow_dispatch`-only condition
+from the **Select affected desktop browser scenarios** step in Verify.
+
+[Browser selection](../scripts/ci-browser-tests.ts) retains the affected-scenario
+mapping for that restoration. Unmapped and shared-runtime changes fall back to
+the complete 11-file desktop baseline plus shared UI checks. Desktop allowlists
+exclude existing mixed phone/touch scenarios.
 
 After the merge queue completes, run **Actions → Verify → Run workflow** on
 `main` (CLI: `gh workflow run verify.yml --ref main`). Manual runs always execute
