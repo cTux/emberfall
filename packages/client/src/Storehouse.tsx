@@ -3,7 +3,7 @@ import { Box, Button, Stack, TextField } from '@mui/material';
 import { Backpack, ChapterTabs, GameWindow, GoldBalance } from '@emberfall/ui';
 import { type Player, type ClientMessage } from '@emberfall/common';
 import { STORAGE_SLOTS, storageNameSchema } from '@emberfall/core';
-import { backpackViews } from './equipment-view';
+import { backpackViews } from './equipment/backpack';
 
 export function Storehouse({
   player,
