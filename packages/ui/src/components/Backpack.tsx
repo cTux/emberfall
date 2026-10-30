@@ -131,7 +131,10 @@ export function Backpack({
                 }
               }}
             >
-              <Box aria-hidden='true' sx={{ pointerEvents: 'none' }}>
+              <Box
+                aria-hidden='true'
+                sx={{ display: 'grid', placeItems: 'center', pointerEvents: 'none' }}
+              >
                 {item.icon}
               </Box>
               {item.quantity > 1 && (
