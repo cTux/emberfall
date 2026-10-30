@@ -46,6 +46,9 @@ production entrypoint.
   connection has a private Colyseus session room, preserving browsing and world
   transfers on one connection. A shared in-process party runtime owns combat;
   a Colyseus session room is not an independent copy of that combat world.
+- `npc-routines.ts` owns per-world walking, workstation timers and trade
+  interruptions. `npcs.ts` coordinates nonblocking dialogue and passes only
+  occupied NPC IDs to routines; both use the same canonical world entities.
 - `runtime.ts` owns identity, membership, command validation, fixed tick order,
   reconnect retention, chat and save scheduling.
 - `commands/character.ts` dispatches durable character actions through typed

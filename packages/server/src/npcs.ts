@@ -1,29 +1,16 @@
 import { randomUUID } from 'node:crypto';
-import { forestDistance, traderInRange, wrap, wrappedDelta } from '@emberfall/core';
+import { forestDistance, wrappedDelta } from '@emberfall/core';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
-import type { ChatMessage, Player, VillageNpc } from '@emberfall/common';
-import { simulationFor } from './ecs/simulation.ts';
+import type { Player } from '@emberfall/common';
+import { NpcRoutines } from './npc-routines.ts';
+import { villagePlayers, type NpcWorld } from './npc-world.ts';
+export type { NpcWorld } from './npc-world.ts';
 import type { NpcDialogue } from './npc-models.ts';
 import { spokenLine } from './npc-models.ts';
 
-export interface NpcWorld {
-  players: Map<string, Player>;
-  npcs?: VillageNpc[];
-  chat?: ChatMessage[];
-}
 const PLAYER_RANGE = 120;
 const NPC_RANGE = 160;
-const SPEED = 38;
 const REPLY_DELAY = 2000;
-const villagePlayers = (world: NpcWorld) =>
-  [...world.players.values()].filter((p) => !p.scene && p.hitpoints > 0 && !p.reconnecting);
-interface Routine {
-  stop: number;
-  pauseUntil: number;
-  returnAt: number;
-  station: number;
-  work?: { remaining: number; elapsed: number };
-}
 interface Conversation {
   speaker: string;
   playerId?: string;
@@ -45,8 +32,7 @@ export class VillageLife {
   private npcAt = new Map<string, number>();
   private replyAt = new Map<string, number>();
   private playerAt = new Map<string, number>();
-  private walks = new Map<string, Routine>();
-  private interactions = new Map<string, string>();
+  private routines: NpcRoutines;
   private memories = new Map<string, string[]>();
   private topics = new Map<string, { remaining: string[]; last?: string }>();
   private reply?: { at: number; conversation: Conversation };
@@ -58,62 +44,19 @@ export class VillageLife {
     this.world = world;
     this.dialogue = dialogue;
     this.random = random;
-    world.npcs = VILLAGE_DEFINITION.villagers.map((definition) => {
-      this.walks.set(definition.id, {
-        stop: this.chooseStop(),
-        pauseUntil: now + 5000 + this.random() * 4000,
-        returnAt: now + 25_000 + this.random() * 20_000,
-        station: 0,
-      });
-      return {
-        id: definition.id,
-        name: definition.name,
-        buildingId: definition.buildingId,
-        x: definition.x,
-        y: definition.y,
-        angle: Math.PI / 2,
-        moving: false,
-        silenced: false,
-      };
-    });
-    world.npcs = simulationFor(world.players)?.setVillagers(world.npcs) ?? world.npcs;
+    this.routines = new NpcRoutines(world, now, random);
     this.nextTalk = now + 10_000;
     this.lastTick = now;
-  }
-  private chooseStop(previous = -1) {
-    const stops = VILLAGE_DEFINITION.npcStops
-      .map((_, index) => index)
-      .filter((index) => index !== previous);
-    const claimed = new Set([...this.walks.values()].map((walk) => walk.stop));
-    const free = stops.filter((index) => !claimed.has(index));
-    const candidates = free.length ? free : stops;
-    return candidates[Math.floor(this.random() * candidates.length)];
   }
   close() {
     this.stopped = true;
     this.abort.abort();
-    simulationFor(this.world.players)?.setVillagers([]);
+    this.routines.close();
     this.reply = this.continuation = undefined;
-    this.interactions.clear();
   }
   interact(player: Player, npcId: string | null) {
-    this.interactions.delete(player.id);
-    if (
-      this.stopped ||
-      !npcId ||
-      !villagePlayers(this.world).includes(player) ||
-      !this.world.npcs?.some((npc) => npc.id === npcId) ||
-      !traderInRange(player, npcId, this.world.npcs)
-    )
-      return;
-    this.interactions.set(player.id, npcId);
-    const npc = this.world.npcs.find((npc) => npc.id === npcId)!;
-    npc.moving = false;
-    npc.workstationId = npc.workStartedAt = undefined;
-    npc.angle = Math.atan2(
-      wrappedDelta(player.y, npc.y, VILLAGE_DEFINITION.geometry.height),
-      wrappedDelta(player.x, npc.x, VILLAGE_DEFINITION.geometry.width),
-    );
+    if (this.stopped) return;
+    this.routines.interact(player, npcId);
   }
   hear(player: Player, text: string, now: number) {
     if (
@@ -150,93 +93,20 @@ export class VillageLife {
     if (this.stopped) return;
     const players = villagePlayers(this.world);
     const npcs = this.world.npcs ?? [];
-    for (const [playerId, npcId] of this.interactions) {
-      const player = players.find((p) => p.id === playerId);
-      if (!player || !traderInRange(player, npcId, npcs)) this.interactions.delete(playerId);
-    }
-    const interacting = new Set(this.interactions.values());
     const liveIds = new Set(this.world.players.keys());
     for (const map of [this.playerAt, this.replyAt])
       for (const id of map.keys()) if (!liveIds.has(id)) map.delete(id);
-    for (const npc of npcs) {
-      if ((npc.chatUntil ?? 0) < now) npc.chat = undefined;
-      const walk = this.walks.get(npc.id)!;
-      const occupied =
-        this.inFlight &&
-        (this.activeConversation?.speaker === npc.id ||
-          this.activeConversation?.otherNpc === npc.id);
-      const continuing =
-        this.continuation &&
-        (this.continuation.conversation.speaker === npc.id ||
-          this.continuation.conversation.otherNpc === npc.id);
-      npc.workstationId = npc.workStartedAt = undefined;
-      if (
-        !players.length ||
-        occupied ||
-        continuing ||
-        interacting.has(npc.id) ||
-        this.reply?.conversation.speaker === npc.id ||
-        (npc.chatUntil ?? 0) > now
-      ) {
-        npc.moving = false;
-        continue;
-      }
-      const returning = now >= walk.returnAt;
-      const stations = VILLAGE_DEFINITION.workstations.filter((s) => s.npcId === npc.id);
-      const station = stations[walk.station % stations.length];
-      if (walk.work && station) {
-        npc.moving = false;
-        npc.angle = Math.atan2(
-          wrappedDelta(station.y - 18, npc.y - 24, VILLAGE_DEFINITION.geometry.height),
-          wrappedDelta(station.x, npc.x, VILLAGE_DEFINITION.geometry.width),
-        );
-        npc.workstationId = station.id;
-        npc.workStartedAt = now - walk.work.elapsed;
-        const active = Math.max(0, dt * 1000);
-        walk.work.remaining -= active;
-        walk.work.elapsed += active;
-        if (walk.work.remaining <= 0) {
-          walk.work = undefined;
-          walk.station++;
-          walk.returnAt = now + 25_000 + this.random() * 20_000;
-          walk.pauseUntil = now + 5000 + this.random() * 4000;
-          walk.stop = this.chooseStop(walk.stop);
-          npc.workstationId = npc.workStartedAt = undefined;
-        }
-        continue;
-      }
-      if (!returning && now < walk.pauseUntil) {
-        npc.moving = false;
-        continue;
-      }
-      const target =
-        returning && station
-          ? station.worker
-          : VILLAGE_DEFINITION.npcStops[walk.stop % VILLAGE_DEFINITION.npcStops.length];
-      const dx = wrappedDelta(target.x, npc.x, VILLAGE_DEFINITION.geometry.width),
-        dy = wrappedDelta(target.y, npc.y, VILLAGE_DEFINITION.geometry.height);
-      const distance = Math.hypot(dx, dy);
-      const step = Math.min(distance, SPEED * dt);
-      if (distance < 1) {
-        npc.x = target.x;
-        npc.y = target.y;
-        if (returning && station) {
-          walk.work = { remaining: 60_000 + this.random() * 30_000, elapsed: 0 };
-          npc.workstationId = station.id;
-          npc.workStartedAt = now;
-          npc.angle = Math.atan2(station.y - npc.y + 6, station.x - npc.x);
-        } else {
-          walk.stop = this.chooseStop(walk.stop);
-          walk.pauseUntil = now + 5000 + this.random() * 4000;
-        }
-        npc.moving = false;
-      } else {
-        npc.angle = Math.atan2(dy, dx);
-        npc.x = wrap(npc.x + (dx / distance) * step, VILLAGE_DEFINITION.geometry.width);
-        npc.y = wrap(npc.y + (dy / distance) * step, VILLAGE_DEFINITION.geometry.height);
-        npc.moving = true;
-      }
+    const blocked = new Set<string>();
+    for (const conversation of [
+      this.inFlight ? this.activeConversation : undefined,
+      this.continuation?.conversation,
+    ]) {
+      if (!conversation) continue;
+      blocked.add(conversation.speaker);
+      if (conversation.otherNpc) blocked.add(conversation.otherNpc);
     }
+    if (this.reply) blocked.add(this.reply.conversation.speaker);
+    this.routines.tick(now, dt, players, blocked);
     if (!players.length || this.inFlight || now < this.retryAt) return;
     if (this.reply) {
       if (now < this.reply.at) return;
