@@ -101,6 +101,12 @@ consumer together; a gameplay-only implementation with placeholder art is unfini
 
 ## Browser and UI verification
 
+Renderer timing samples collect at least six complete frame intervals over a
+minimum three-second window, with a fifteen-second deadline for slow software GPUs.
+Reports retain the actual sample duration and are attached before assertions, so
+insufficient-frame failures keep their hardware/timing evidence. Resource bounds
+and the six-frame assertion remain unchanged.
+
 The CI desktop game suite allows four minutes per scenario because software
 rendering on hosted runners can make each browser input take several seconds.
 Assertion deadlines remain unchanged; local scenarios retain the 90-second budget.

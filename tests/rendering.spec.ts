@@ -1,3 +1,4 @@
+import { sampleFrameTiming } from './frame-timing';
 import { test, expect } from './fixtures';
 test.use({ graphicsPreset: 'High' });
 
@@ -22,33 +23,8 @@ test('High graphics uses viewport-sized WebGL with bounded cached resources', as
     })),
   ).toEqual({ width: 2160, height: 1500, canvas2d: false });
   await page.waitForTimeout(3000);
-  const timing = await page.evaluate(
-    () =>
-      new Promise<{ frames: number; averageMs: number; p95Ms: number }>((resolve) => {
-        const intervals: number[] = [];
-        let last = performance.now();
-        const start = last;
-        function frame(now: number) {
-          intervals.push(now - last);
-          last = now;
-          if (now - start < 3000) requestAnimationFrame(frame);
-          else {
-            const sorted = [...intervals].sort((a, b) => a - b);
-            resolve({
-              frames: intervals.length,
-              averageMs: intervals.reduce((sum, n) => sum + n, 0) / intervals.length,
-              p95Ms: sorted[Math.floor(sorted.length * 0.95)],
-            });
-          }
-        }
-        requestAnimationFrame(frame);
-      }),
-  );
+  const timing = await page.evaluate(sampleFrameTiming, undefined);
   const stats = JSON.parse((await canvas.getAttribute('data-render-stats'))!);
-  expect(stats.textures).toBeLessThan(150);
-  expect(stats.gradients).toBeLessThan(150);
-  expect(stats.visuals).toBeLessThan(5000);
-  expect(timing.frames).toBeGreaterThan(5);
   console.log('High village renderer measurement', JSON.stringify({ timing, stats }));
   await testInfo.attach('renderer-measurement', {
     body: JSON.stringify(
@@ -58,7 +34,7 @@ test('High graphics uses viewport-sized WebGL with bounded cached resources', as
         viewport: page.viewportSize(),
         preset: 'High',
         warmupMs: 3000,
-        sampleMs: 3000,
+        sampleMs: timing.sampleMs,
         timing,
         stats,
       },
@@ -67,6 +43,10 @@ test('High graphics uses viewport-sized WebGL with bounded cached resources', as
     ),
     contentType: 'application/json',
   });
+  expect(stats.textures).toBeLessThan(150);
+  expect(stats.gradients).toBeLessThan(150);
+  expect(stats.visuals).toBeLessThan(5000);
+  expect(timing.frames).toBeGreaterThan(5);
   await page.screenshot({ path: 'test-results/new-pixi-high-preview.png' });
   expect(errors).toEqual([]);
 });
