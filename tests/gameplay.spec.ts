@@ -46,7 +46,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   page,
   game,
 }) => {
-  test.setTimeout(120000);
+  test.setTimeout(Math.max(test.info().timeout, 120000));
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.addInitScript(() => {
