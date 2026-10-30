@@ -144,6 +144,7 @@ export const Rarities: StoryObj<typeof meta> = {
           rarity,
           rarityColor,
           quantity: 1,
+          stackable: false,
           details: 'Rarity is supplied by the host.',
           price: 1,
         }))}
@@ -188,6 +189,7 @@ export const DragToEquip: StoryObj<typeof meta> = {
                     name: 'Helmet',
                     icon: <img src={helmetSlot} alt='' />,
                     quantity: 1,
+                    stackable: false,
                     details: 'Armor: 1',
                     price: 1,
                   },

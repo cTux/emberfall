@@ -983,3 +983,21 @@ test('compact consumable tooltip shows its effect, stack and contextual action',
   await expect(tooltip).toBeVisible();
   await page.screenshot({ path: 'test-results/item-tooltip-consumable.png' });
 });
+
+test('item tooltips show quantity only for stackable items, including stacks of one', async ({
+  page,
+}) => {
+  await page.goto(story('components-backpack--single'));
+  await page.getByRole('button', { name: 'Use Health potion', exact: true }).focus();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).toContainText('Quantity1');
+  await expect(tooltip).toContainText('1 gold each');
+
+  await page.goto(story('components-equipmentpanel--rarities'));
+  await page.getByRole('button', { name: 'Inspect Example weapon', exact: true }).first().hover();
+  await expect(tooltip).toContainText('Example weapon');
+  await expect(tooltip).not.toContainText('Quantity');
+  await expect(tooltip).toContainText('1 gold');
+  await expect(tooltip).not.toContainText('gold each');
+  await page.screenshot({ path: 'test-results/item-tooltip-unstackable.png' });
+});

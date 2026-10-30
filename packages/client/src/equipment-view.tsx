@@ -333,6 +333,7 @@ export function backpackViews(items: BackpackItem[], player: Pick<Player, 'autoT
     const potion = CONSUMABLES[item.itemId as keyof typeof CONSUMABLES];
     return {
       ...item,
+      stackable: definition.kind !== 'gear',
       name: definition.name,
       rarity: capitalize(itemRarity(item)),
       rarityColor: rarityColor[itemRarity(item)],
