@@ -2,6 +2,17 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('ability tooltips round fractional cooldowns to one decimal place', async ({ page }) => {
+  await page.goto(story('components-actionbar--fractional-cooldowns'));
+  await page.getByRole('group', { name: 'Slash', exact: true }).focus();
+  await expect(page.getByRole('tooltip')).toContainText('Cooldown: 5.7 seconds');
+  await page.getByRole('button', { name: 'Choose ability for slot 1: Mending Seed' }).focus();
+  await expect(page.getByRole('tooltip', { name: /Mending Seed/ })).toContainText(
+    'Cooldown: 5.7 seconds',
+  );
+  await page.screenshot({ path: 'test-results/fractional-cooldown-tooltip.png' });
+});
+
 test('HUD actions show hotkey badges and retain keyboard focus and disabled states', async ({
   page,
 }) => {
