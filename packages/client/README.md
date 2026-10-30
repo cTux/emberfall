@@ -62,7 +62,10 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `presentation/world.ts` owns the Miniplex presentation entities. These are
   detached render/prediction objects, separate from Colyseus schemas and server
   ECS objects. Companions remain based on confirmed state.
-- `Arena.tsx` coordinates input, camera, audio and world rendering. Shared UI
+- `arena-input.ts` owns pointer/keyboard listeners, held-input state and the
+  fixed input timer, with one disposal path. Arena supplies live state readers
+  and passes movement into presentation-only prediction.
+- `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
 - `rendering/pixi-context.ts` translates existing drawing commands into pooled

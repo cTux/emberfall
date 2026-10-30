@@ -1,3 +1,4 @@
+import { createArenaInput } from './arena-input';
 import { abilityEffectOpacity } from './ability-effects';
 import { LootHints } from './loot-hints';
 import { drawLootHints } from './loot-hint-rendering';
@@ -55,7 +56,7 @@ import {
   drawVegetation,
 } from './effects';
 import type { Interaction } from './effects';
-import { wrap, wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/common';
 import {
   ARENA,
   FOREST,
@@ -64,7 +65,6 @@ import {
   nearbyInteraction,
   inTrainingZone,
 } from '@emberfall/core';
-import { TICK_MS } from '@emberfall/core';
 import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import { castShadow, spriteMask } from './lighting';
@@ -179,154 +179,19 @@ export function Arena({
     const snapshots = new SnapshotBuffer(playerId);
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
     let previousHp = '';
-    const keys = new Set<string>();
-    const altKeys = new Set<string>();
-    let altHeldAt = Infinity;
-    let pointer: { x: number; y: number } | undefined;
-    let held = false;
-    let pointerInside = false;
-    let targets: InteractionTarget[] = [];
+    const input = createArenaInput({
+      element,
+      world: () => latest.current,
+      player: () => latest.current?.players.find((p) => p.id === playerId),
+      preferences: () => prefs.current,
+      send: (message) => sender.current(message),
+      activate: (source) => activate.current(source),
+      move: (x, y, now) => localMovement.input(x, y, now),
+    });
+    onCursorAim(input.currentAim);
     let hovered: InteractionTarget | null = null;
     const catSpeech = new CatSpeech();
-    const pointerPoint = () =>
-      pointerInside && pointer && !blocked()
-        ? {
-            x: inputCamera.x + pointer.x * inputCamera.width,
-            y: inputCamera.y + pointer.y * inputCamera.height,
-          }
-        : undefined;
-    const confirmedPlayer = () => latest.current?.players.find((p) => p.id === playerId);
-    let combat: Extract<ClientMessage, { type: 'combatInput' }> | undefined;
-    let inputCamera: { x: number; y: number; width: number; height: number } = {
-      x: 0,
-      y: 0,
-      width: ARENA.width,
-      height: ARENA.height,
-    };
-    const blocked = () =>
-      !!document.querySelector('[role="dialog"][aria-modal="true"]') ||
-      document.hidden ||
-      document.activeElement instanceof HTMLInputElement ||
-      document.activeElement instanceof HTMLTextAreaElement;
-    const currentAim = () => ({
-      aimX: wrap(inputCamera.x + (pointer?.x ?? 0.5) * inputCamera.width, FOREST.width),
-      aimY: wrap(inputCamera.y + (pointer?.y ?? 0.5) * inputCamera.height, FOREST.height),
-    });
-    onCursorAim(currentAim);
-    const pointerMove = (event: PointerEvent) => {
-      pointerInside = true;
-      const rect = element.getBoundingClientRect();
-      pointer = {
-        x: (event.clientX - rect.left) / rect.width,
-        y: (event.clientY - rect.top) / rect.height,
-      };
-    };
-    const pointerLeave = () => {
-      pointerInside = false;
-      element.dataset.cursor = 'default';
-    };
-    const pointerDown = (event: PointerEvent) => {
-      if (event.button !== 0 || blocked()) return;
-      pointerMove(event);
-      const target = pickInteraction(targets, pointerPoint());
-      if (target) {
-        held = false;
-        if (interactionInRange(target, confirmedPlayer())) activate.current(target.source);
-        return;
-      }
-      held = true;
-      sendMovement();
-    };
-    const pointerUp = (event: PointerEvent) => {
-      if (event.button !== 0) return;
-      held = false;
-      sendMovement();
-    };
-    element.addEventListener('pointermove', pointerMove);
-    element.addEventListener('pointerenter', pointerMove);
-    element.addEventListener('pointerleave', pointerLeave);
-    element.addEventListener('pointerdown', pointerDown);
-    window.addEventListener('pointerup', pointerUp);
-    window.addEventListener('pointercancel', pointerUp);
     const positions = new Map<string, { x: number; y: number; facing: number }>();
-    const key = (event: KeyboardEvent, down: boolean) => {
-      if (event.code === 'AltLeft' || event.code === 'AltRight') {
-        if (latest.current) event.preventDefault();
-        if (down) {
-          if (altKeys.size === 0) altHeldAt = performance.now();
-          altKeys.add(event.code);
-        } else {
-          altKeys.delete(event.code);
-          if (altKeys.size === 0) altHeldAt = Infinity;
-        }
-        return;
-      }
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
-        return;
-      if (event.altKey && latest.current) event.preventDefault();
-      const value = event.code;
-      if (
-        ![
-          'KeyW',
-          'KeyA',
-          'KeyS',
-          'KeyD',
-          'ArrowUp',
-          'ArrowLeft',
-          'ArrowDown',
-          'ArrowRight',
-        ].includes(value)
-      )
-        return;
-      if (latest.current) event.preventDefault();
-      const changed = keys.has(value) !== down;
-      if (down) keys.add(value);
-      else keys.delete(value);
-      if (changed) sendMovement();
-    };
-    const down = (event: KeyboardEvent) => key(event, true);
-    const up = (event: KeyboardEvent) => key(event, false);
-    const reset = () => {
-      keys.clear();
-      altKeys.clear();
-      altHeldAt = Infinity;
-      held = false;
-      pointerInside = false;
-      element.dataset.cursor = 'default';
-      sendMovement();
-    };
-    window.addEventListener('keydown', down);
-    window.addEventListener('keyup', up);
-    window.addEventListener('blur', reset);
-    document.addEventListener('visibilitychange', reset);
-    const movement = () => ({
-      x:
-        Number(keys.has('KeyD') || keys.has('ArrowRight')) -
-        Number(keys.has('KeyA') || keys.has('ArrowLeft')),
-      y:
-        Number(keys.has('KeyS') || keys.has('ArrowDown')) -
-        Number(keys.has('KeyW') || keys.has('ArrowUp')),
-    });
-    function sendMovement() {
-      const current = latest.current;
-      if (!current) return;
-      if (blocked()) {
-        keys.clear();
-        held = false;
-      }
-      if (combat)
-        sender.current({
-          ...combat,
-          autoAttack: prefs.current.autoAttack,
-          autoTarget: prefs.current.autoTarget,
-          autoLoot: prefs.current.autoLoot,
-          attacking: held && !blocked(),
-        });
-      const { x, y } = movement();
-      localMovement.input(x, y, performance.now());
-    }
-    const input = setInterval(sendMovement, TICK_MS);
     let frame = 0;
     let gatheringClock: { activity: NonNullable<Player['gathering']>; offset: number } | undefined;
     let wardrobeOpenedAt = 0;
@@ -403,7 +268,7 @@ export function Arena({
       // Keep the original view scale independent of the walkable map size.
       const scale = Math.max(el.width / 960, el.height / 640);
       if (latest.current) snapshots.push(latest.current, now);
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) keys.clear();
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) input.clearKeys();
       const view = latest.current ? snapshots.render(now) : null;
       const cycle = dayNight(view?.serverNow ?? 0);
       renderer.ambientTint = cycle.tint;
@@ -417,21 +282,21 @@ export function Arena({
       if (view && local) {
         const width = el.width / scale,
           height = el.height / scale;
-        inputCamera = {
+        input.camera = {
           x: local.x - width / 2,
           y: local.y - height / 2,
           width,
           height,
         };
-        combat = {
+        input.combat = {
           type: 'combatInput',
           autoAttack: prefs.current.autoAttack,
           autoTarget: prefs.current.autoTarget,
           autoLoot: prefs.current.autoLoot,
-          attacking: held && !blocked(),
-          ...currentAim(),
+          attacking: input.held && !input.blocked(),
+          ...input.currentAim(),
         };
-        Object.assign(local, combat);
+        Object.assign(local, input.combat);
         localSwing = localMovement.animateAttack(local, view, now);
         localMovement.animateProjectiles(local, view, now, localSwing);
         alignLocalPickups(view, local);
@@ -440,14 +305,14 @@ export function Arena({
       const cursor = combatCursor(
         view,
         local,
-        pointerInside && pointer
+        input.pointer
           ? {
-              x: inputCamera.x + pointer.x * inputCamera.width,
-              y: inputCamera.y + pointer.y * inputCamera.height,
+              x: input.camera.x + input.pointer.x * input.camera.width,
+              y: input.camera.y + input.pointer.y * input.camera.height,
             }
           : undefined,
-        held,
-        blocked(),
+        input.held,
+        input.blocked(),
         prefs.current.autoTarget,
       );
       if (element.dataset.cursor !== cursor) element.dataset.cursor = cursor;
@@ -507,7 +372,7 @@ export function Arena({
               x: node.x,
               y: node.y,
               activate: () => {
-                if (blocked()) return;
+                if (input.blocked()) return;
                 sender.current({
                   type: 'gather',
                   nodeId: node.id,
@@ -532,7 +397,7 @@ export function Arena({
           local &&
           authoritativePlayer &&
           authoritativePlayer.hitpoints > 0 &&
-          !blocked() &&
+          !input.blocked() &&
           !hideGatheringHint
             ? (interaction.current?.name ?? '')
             : '';
@@ -568,15 +433,15 @@ export function Arena({
           view?.resources?.[element.dataset.resource]?.remaining ?? '',
         );
       };
-      const highlightInteractions = now - altHeldAt > 500 && !blocked();
+      const highlightInteractions = now - input.altHeldAt > 500 && !input.blocked();
       const outlinedTargets = () => {
         const highlighted = highlightInteractions;
-        for (const target of targets) target.highlighted = highlighted;
-        return highlighted ? targets : hovered ? [hovered] : [];
+        for (const target of input.targets) target.highlighted = highlighted;
+        return highlighted ? input.targets : hovered ? [hovered] : [];
       };
-      targets = [];
+      input.targets = [];
       if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
-        targets = view.scene.portals.map((portal) =>
+        input.targets = view.scene.portals.map((portal) =>
           portalInteraction(
             { id: 'return', name: 'Return to village', ...portal },
             local.x + wrappedDelta(portal.x, local.x, FOREST.width),
@@ -585,17 +450,17 @@ export function Arena({
         );
       }
       if (local?.scene === 'forest') {
-        targets.push(
-          ...resourceNodes(local, Math.hypot(inputCamera.width, inputCamera.height) / 2 + 150)
+        input.targets.push(
+          ...resourceNodes(local, Math.hypot(input.camera.width, input.camera.height) / 2 + 150)
             .filter(
               (node) => resourceState(view?.resources, node, view?.serverNow ?? 0)?.remaining !== 0,
             )
             .map((node) => sceneryInteraction(resourceScenery(node)))
             .filter((target) => target !== null),
         );
-        targets.sort((a, b) => a.y + a.height - b.y - b.height);
+        input.targets.sort((a, b) => a.y + a.height - b.y - b.height);
       }
-      hovered = pickInteraction(targets, pointerPoint());
+      hovered = pickInteraction(input.targets, input.pointerPoint());
       interaction.current = hovered
         ? interactionInRange(hovered, authoritativePlayer)
           ? hovered.source
@@ -742,12 +607,12 @@ export function Arena({
           radius: INTERACTION_RADIUS,
         });
       }
-      targets = [
+      input.targets = [
         ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
         ...cats,
         portalTarget,
       ].sort((a, b) => a.y + a.height - b.y - b.height);
-      hovered = pickInteraction(targets, pointerPoint());
+      hovered = pickInteraction(input.targets, input.pointerPoint());
       interaction.current = hovered
         ? interactionInRange(hovered, authoritativePlayer)
           ? hovered.source
@@ -1309,19 +1174,9 @@ export function Arena({
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
-      clearInterval(input);
+      input.dispose();
       window.removeEventListener('resize', resize);
       onCursorAim(null);
-      element.removeEventListener('pointermove', pointerMove);
-      element.removeEventListener('pointerenter', pointerMove);
-      element.removeEventListener('pointerleave', pointerLeave);
-      element.removeEventListener('pointerdown', pointerDown);
-      window.removeEventListener('pointerup', pointerUp);
-      window.removeEventListener('pointercancel', pointerUp);
-      window.removeEventListener('keydown', down);
-      window.removeEventListener('keyup', up);
-      window.removeEventListener('blur', reset);
-      document.removeEventListener('visibilitychange', reset);
 
       renderer.destroy();
       presentation.clear();
