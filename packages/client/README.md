@@ -77,6 +77,10 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   and drawing. `village-layers.ts` declares stable scene ordering, and
   `village-layer-rendering.ts` renders scenery, dummies, companions and portals
   from controlled frame inputs.
+- `village-frame.ts` prepares wrapped camera/scenery data and diagnostics;
+  `village-lighting.ts` draws world lights from those frame inputs. `VillageSpeech`
+  owns local cat speech and dialogue overlays. `environment-rendering.ts` shares
+  the same particle/fog/atmosphere/vignette order between forest and village.
 - `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
