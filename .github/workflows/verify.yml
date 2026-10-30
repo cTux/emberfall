@@ -40,7 +40,7 @@ jobs:
             -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
       - name: Verify desktop game behavior
         run: >-
-          pnpm test:browser --max-failures=1
+          pnpm test:browser --max-failures=1 --timeout=240000
           tests/gameplay.spec.ts tests/reconnect.spec.ts tests/rendering.spec.ts
           tests/renderer-lifetime.spec.ts tests/ability-effects.spec.ts tests/tactics.spec.ts
           tests/day-night.spec.ts tests/damage-numbers.spec.ts tests/damage-flash.spec.ts

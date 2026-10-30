@@ -101,6 +101,10 @@ consumer together; a gameplay-only implementation with placeholder art is unfini
 
 ## Browser and UI verification
 
+The CI desktop game suite allows four minutes per scenario because software
+rendering on hosted runners can make each browser input take several seconds.
+Assertion deadlines remain unchanged; local scenarios retain the 90-second budget.
+
 The independent runtime uses `pnpm dev`, `pnpm build`, and `pnpm start`.
 `pnpm start` sets up HTTPS and builds the runtime packages before launching,
 so a fresh checkout needs no separate build step after installing dependencies.
