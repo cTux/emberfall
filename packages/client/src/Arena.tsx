@@ -1,3 +1,4 @@
+import { FrameBudget } from './frame-budget';
 import { createArenaInput } from './arena-input';
 import { abilityEffectOpacity } from './ability-effects';
 import { LootHints } from './loot-hints';
@@ -196,21 +197,14 @@ export function Arena({
     let gatheringClock: { activity: NonNullable<Player['gathering']>; offset: number } | undefined;
     let wardrobeOpenedAt = 0;
     let wardrobeActive = false;
-    let previous = performance.now();
-    let resolutionScale = 1,
-      budgetAt = performance.now(),
-      frameTotal = 0,
-      frameCount = 0;
     const resize = () => {
-      const ratio = Math.min(devicePixelRatio * quality.current.resolution * resolutionScale, 3);
+      const ratio = Math.min(devicePixelRatio * quality.current.resolution * budget.scale, 3);
       renderer.resize(Math.round(innerWidth * ratio), Math.round(innerHeight * ratio));
     };
+    const budget = new FrameBudget(quality.current, performance.now(), resize);
     resize();
     window.addEventListener('resize', resize);
-    let previousSettings = quality.current;
     let previousScene: string | undefined;
-    let fpsAt = performance.now(),
-      fpsFrames = 0;
     function draw(now: number) {
       const openWardrobe = interaction.current?.id === 'wardrobe';
       if (openWardrobe && !wardrobeActive) wardrobeOpenedAt = now;
@@ -219,35 +213,10 @@ export function Arena({
         frame = requestAnimationFrame(draw);
         return;
       }
-      const limit = quality.current.frameLimit;
-      if (limit && now - previous + 0.5 < 1000 / limit) {
+      const delta = budget.begin(now, quality.current);
+      if (delta === undefined) {
         frame = requestAnimationFrame(draw);
         return;
-      }
-      if (now - previous < 200) {
-        frameTotal += now - previous;
-        frameCount++;
-      }
-      if (now - budgetAt > 2000) {
-        const target = 1000 / (limit || 60),
-          average = frameTotal / Math.max(1, frameCount);
-        const next = quality.current.adaptiveResolution
-          ? Math.max(
-              0.5,
-              Math.min(
-                1,
-                resolutionScale +
-                  (average > target * 1.18 ? -0.1 : average < target * 1.04 ? 0.05 : 0),
-              ),
-            )
-          : 1;
-        if (Math.abs(next - resolutionScale) > 0.001) {
-          resolutionScale = next;
-          resize();
-        }
-        budgetAt = now;
-        frameTotal = 0;
-        frameCount = 0;
       }
       element.dataset.lootHintCount = '0';
       renderer.begin();
@@ -257,13 +226,6 @@ export function Arena({
       const imageRendering = 'auto';
       if (element.style.imageRendering !== imageRendering)
         element.style.imageRendering = imageRendering;
-      const delta = Math.min(0.1, (now - previous) / 1000);
-      previous = now;
-      if (previousSettings !== quality.current) {
-        previousSettings = quality.current;
-        resolutionScale = 1;
-        resize();
-      }
       const el = element;
       // Keep the original view scale independent of the walkable map size.
       const scale = Math.max(el.width / 960, el.height / 640);
@@ -483,12 +445,8 @@ export function Arena({
         positions.clear();
         previousScene = local?.scene;
       }
-      fpsFrames++;
-      if (now - fpsAt >= 500) {
-        frameRate.current = Math.round((fpsFrames * 1000) / (now - fpsAt));
-        fpsFrames = 0;
-        fpsAt = now;
-      }
+      const fps = budget.sample(now);
+      if (fps !== undefined) frameRate.current = fps;
       if (localSwing && now - lastSlashAt >= 500) {
         lastSlashAt = now;
         audio.play('slash');

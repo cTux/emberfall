@@ -65,6 +65,8 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `arena-input.ts` owns pointer/keyboard listeners, held-input state and the
   fixed input timer, with one disposal path. Arena supplies live state readers
   and passes movement into presentation-only prediction.
+- `frame-budget.ts` owns drawing cadence, adaptive resolution thresholds and
+  FPS sampling; simulation time stays server-owned.
 - `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
