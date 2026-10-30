@@ -60,6 +60,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   keyboard subscriptions, browser preference persistence and world chat binding.
   `GamePanels.tsx` composes controlled lazy panel content; `Game.tsx` retains
   session-driven window state and interaction commands.
+- `equipment/` owns item artwork, stat and badge presentation, backpack view
+  models and the controlled trading panel. Storehouse consumes the backpack
+  model directly; `equipment-view.tsx` retains its lazy panel exports.
 - `codex/chapters.ts` declares chapter order while gameplay, character and
   credit content live in separate modules. Codex remains a lazy-loaded panel.
 - `settings-controls.ts` and `tactics-controls.ts` declare typed control labels,

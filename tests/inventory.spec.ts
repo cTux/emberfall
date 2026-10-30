@@ -331,7 +331,7 @@ test('Bram sells gear with the shared controls, stops for trading and keeps buyb
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory', exact: true })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   const bram = world.npcs!.find((npc) => npc.id === 'craftsman')!;

@@ -1,198 +1,39 @@
-import { clientAsset } from './urls.ts';
-import { itemComparison } from './item-comparison';
-import { registeredSlotViews, additionalStatViews } from './content-views';
-import { game, itemRarity, rarityColor, ItemStat, itemStatWeight } from '@emberfall/core';
-import { useEffect, useRef, useState } from 'react';
-import { plantArt, environmentArt } from './art';
-import { resourceScenery } from './gathering';
-import { Box, IconButton, Tooltip } from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
-import type { ClientMessage, BackpackItem } from '@emberfall/common';
-import { itemPrice, itemDefinition, CONSUMABLES, PLANT_KINDS } from '@emberfall/core';
+import { useState } from 'react';
+import { Box } from '@mui/material';
 import { Backpack, ChapterTabs, EquipmentPanel } from '@emberfall/ui';
-import type { EquipmentSlotView, EquipmentStatView, EquipmentBadgeView } from '@emberfall/ui';
+import type { EquipmentSlotView } from '@emberfall/ui';
 import {
+  game,
+  itemRarity,
+  rarityColor,
+  itemPrice,
   EQUIPMENT_SLOTS,
   SLOT_GEAR_TYPES,
   CLASS_GEAR_TYPES,
   GEAR_DEFINITIONS,
-  STARTER_WEAPONS,
   equippedItems,
-  characterStats,
   canEquip,
 } from '@emberfall/core';
-import type { GearType, Player, ClassId } from '@emberfall/common';
-import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
-import { PLAYER_DEFINITIONS } from '@emberfall/core/definitions/entities/players';
-import { AILMENT_DEFINITIONS } from '@emberfall/core/definitions/effects/ailments';
-import { weaponSrc, itemArtName } from './class-art';
+import type { ClientMessage, GearType, Player } from '@emberfall/common';
+import {
+  slotViews,
+  SLOT_POSITIONS,
+  SLOT_LABELS,
+  GEAR_LABELS,
+  ITEM_CLASSES,
+  number,
+  capitalize,
+} from './equipment/metadata';
+import { equipmentStatRows } from './equipment/stats';
+import { weaponBadges, rolledBadges } from './equipment/badges';
+import { itemIcon } from './equipment/item-icon';
+import { backpackViews } from './equipment/backpack';
 
-const slotViews = registeredSlotViews();
-export const SLOT_POSITIONS = Object.fromEntries(slotViews.map((slot) => [slot.id, slot.position]));
-const SLOT_LABELS = Object.fromEntries(
-  game.registries.slots.values().map((slot) => [slot.id, slot.label]),
-);
-const GEAR_LABELS = Object.fromEntries(
-  game.registries.gearTypes.values().map((type) => [type.id, type.label]),
-);
-const ITEM_CLASSES = Object.fromEntries(
-  Object.entries(STARTER_WEAPONS).map(([id, weapon]) => [weapon, id]),
-) as Record<string, ClassId>;
-const number = (value: number) =>
-  Number.isFinite(value) ? value.toLocaleString('en', { maximumFractionDigits: 2 }) : '—';
-const percent = (value: number) => `${number(value * 100)}%`;
-const capitalize = (value: string) => value[0].toUpperCase() + value.slice(1);
+export { SLOT_POSITIONS } from './equipment/metadata';
+export { equipmentStatRows } from './equipment/stats';
+export { backpackViews } from './equipment/backpack';
+export { Trading } from './equipment/Trading';
 
-export function equipmentStatRows(player: Player): EquipmentStatView[] {
-  const stats = characterStats(player);
-  return [
-    { label: 'Power', value: number(stats.power) },
-    { label: 'Damage type', value: stats.hasWeapon ? capitalize(stats.damageType) : '—' },
-    { label: 'Cooldown', value: `${number(stats.attackIntervalMs / 1000)} sec` },
-    { label: 'DOT Speed', value: `${number(stats.bonuses.dotSpeed)}%` },
-    {
-      label: 'Range',
-      value: `${number(player.autoTarget === false ? stats.manualRange : stats.range)} units`,
-    },
-    { label: 'Critical chance', value: percent(stats.criticalChance) },
-    { label: 'Critical damage', value: percent(stats.criticalMultiplier) },
-    { label: 'Maximum health', value: number(stats.maxHitpoints) },
-    { label: 'Armor', value: number(stats.armor) },
-    { label: 'Damage reduction', value: percent(stats.damageReduction) },
-    ...additionalStatViews(player),
-  ];
-}
-
-function weaponBadges(
-  player: Pick<Player, 'autoTarget'>,
-  classId: ClassId,
-  weapon: string,
-): EquipmentBadgeView[] {
-  const stats = characterStats({ classId, equipment: { weapon } });
-  const { attack: abilityId, ailment } = PLAYER_DEFINITIONS[classId];
-  const attack = ATTACK_DEFINITIONS[abilityId].kind;
-  const range = player.autoTarget === false ? stats.manualRange : stats.range;
-  const badges: EquipmentBadgeView[] = [
-    {
-      label: 'Power',
-      icon: 'power',
-      value: number(stats.power),
-      explanation:
-        attack === 'slash'
-          ? `Deal ${number(stats.power)} damage to each enemy struck, once per swing, in a forward half-disc.`
-          : `Each projectile deals ${number(stats.power)} damage to its target.${attack === 'arrow' ? ' Base arrows penetrate three targets after the first hit.' : ''}`,
-    },
-    {
-      label: 'Range',
-      icon: 'range',
-      value: `${number(range)} units`,
-      explanation: `Attack range: ${number(range)} units${attack === 'slash' ? '.' : player.autoTarget === false ? ' with cursor aim.' : ' with auto-target.'}`,
-    },
-    {
-      label: 'Cooldown',
-      icon: 'cooldown',
-      value: `${number(stats.attackIntervalMs / 1000)} sec`,
-      explanation: `Wait ${number(stats.attackIntervalMs / 1000)} seconds between attacks.`,
-    },
-    {
-      label: 'Damage type',
-      value: capitalize(stats.damageType),
-      icon:
-        stats.damageType === 'physical'
-          ? 'physical'
-          : stats.damageType === 'nature'
-            ? 'nature'
-            : stats.damageType === 'fire'
-              ? 'burn'
-              : 'poison',
-      explanation: `This weapon deals ${stats.damageType} damage.`,
-    },
-    {
-      label: 'Critical chance',
-      icon: 'criticalChance',
-      value: percent(stats.criticalChance),
-      explanation: `Each hit has a ${percent(stats.criticalChance)} chance to critically strike.`,
-    },
-    {
-      label: 'Critical damage',
-      icon: 'criticalDamage',
-      value: percent(stats.criticalMultiplier),
-      explanation: `Critical hits deal ${percent(stats.criticalMultiplier)} of normal damage.`,
-    },
-  ];
-  if (attack === 'slash') {
-    badges.push({
-      label: 'Active swing',
-      icon: 'duration',
-      value: `${number(ATTACK_DEFINITIONS.slash.durationMs / 1000)} sec`,
-      explanation: `The swing remains active for ${number(ATTACK_DEFINITIONS.slash.durationMs / 1000)} seconds. Each enemy can be hit once per swing.`,
-    });
-  } else {
-    const definition = ATTACK_DEFINITIONS[attack];
-    badges.push({
-      label: 'Projectiles',
-      icon: 'projectiles',
-      value: number(definition.count),
-      explanation: `Fire ${definition.count} projectiles per attack in a small spread.`,
-    });
-    badges.push({
-      label: 'Projectile speed',
-      icon: 'speed',
-      value: `${number(definition.speed)} units/sec`,
-      explanation: `Projectiles travel at ${definition.speed} units per second.`,
-    });
-    if (attack === 'fireball') {
-      const { splashRadius, splashDamage } = ATTACK_DEFINITIONS.fireball;
-      badges.push({
-        label: 'Splash damage',
-        icon: 'splash',
-        value: number(splashDamage),
-        explanation: `Fireballs explode on impact, dealing ${splashDamage} damage to other enemies within ${splashRadius} units.`,
-      });
-    }
-  }
-  if (ailment === 'roots') {
-    const duration = AILMENT_DEFINITIONS.roots.durationMs / 1000;
-    badges.push({
-      label: 'Roots',
-      icon: 'roots',
-      explanation: `One projectile bounces up to three times to the nearest unhit living enemy within 250 units of each impact for full power. Roots slow ordinary enemies by 10% for ${duration} seconds with one stack; hits refresh the duration. Bosses are immune to roots.`,
-    });
-  } else if (ailment === 'bleed' || ailment === 'poison' || ailment === 'burn') {
-    const definition = AILMENT_DEFINITIONS[ailment];
-    badges.push({
-      label: capitalize(ailment),
-      icon: ailment,
-      explanation: `Hits have a ${percent(definition.chance)} chance to apply ${capitalize(ailment)}. Each stack deals ${definition.damagePerStack} damage every ${definition.tickMs / 1000} second for ${definition.durationMs / 1000} seconds; new stacks refresh the duration.`,
-    });
-  }
-  return badges;
-}
-function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadgeView[] {
-  return Object.entries(item?.stats ?? {}).map(([stat, value]) => {
-    const label =
-      stat === ItemStat.DotSpeed
-        ? 'DOT Speed'
-        : capitalize(stat.replace(/([A-Z])/g, ' $1').toLowerCase());
-    const flat =
-      stat === ItemStat.Power ||
-      stat === ItemStat.Armor ||
-      stat === ItemStat.MaximumHealth ||
-      itemStatWeight[stat as ItemStat] < 1;
-    return {
-      label,
-      icon: 'magic',
-      value: `+${number(value)}${flat ? '' : '%'}`,
-      explanation:
-        stat === ItemStat.DotSpeed
-          ? 'Bleed, poison and burn tick faster: interval = base interval / (1 + DOT Speed / 100). Includes companion ailments; duration and damage per tick stay the same.'
-          : stat === ItemStat.GoldIncrease || stat === ItemStat.ExpIncrease
-            ? "Adds to the whole party's chance for additional drops. Each full 100% guarantees an extra copy."
-            : `${label}: +${number(value)}${flat ? '' : '%'}. Equipped bonuses add together.`,
-    };
-  });
-}
 export function Equipment({
   player,
   send,
@@ -286,191 +127,5 @@ export function Equipment({
         onUse={(id) => send({ type: 'useItem', id })}
       />
     </Box>
-  );
-}
-
-function PlantIcon({ variant }: { variant: number }) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  useEffect(() => {
-    const image = variant === -1 ? environmentArt : plantArt;
-    const draw = () => {
-      const { sprite } = resourceScenery({
-        id: 'inventory-plant',
-        kind: 'plant',
-        x: 0,
-        y: 0,
-        size: 32,
-        variant: variant === -1 ? undefined : variant,
-      });
-      const ctx = canvas.current?.getContext('2d');
-      ctx?.clearRect(0, 0, 32, 32);
-      ctx?.drawImage(sprite, 0, 0, 32, 32);
-    };
-    image.addEventListener('load', draw);
-    draw();
-    return () => image.removeEventListener('load', draw);
-  }, [variant]);
-  return <canvas ref={canvas} width={32} height={32} aria-hidden='true' />;
-}
-
-function itemIcon(itemId: string) {
-  const art = itemArtName(itemId);
-  if (art) return <img src={clientAsset(`/assets/wardrobe-style/${art}.png`)} alt='' />;
-  const plantVariant = PLANT_KINDS.findIndex((kind) => kind === itemId);
-  if (plantVariant !== -1 || itemId === 'plant') return <PlantIcon variant={plantVariant} />;
-  if (itemDefinition(itemId).kind === 'resource') return <span aria-hidden='true'>◆</span>;
-  const gear = GEAR_DEFINITIONS[itemId];
-  const itemClass = ITEM_CLASSES[itemId];
-  const slot = gear
-    ? EQUIPMENT_SLOTS.find((slot) =>
-        (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear.gearType),
-      )
-    : 'amulet';
-  const fallback =
-    slotViews.find((view) => view.id === slot)?.icon ??
-    clientAsset('/assets/wardrobe-style/slot-offHand.png');
-  return (
-    <img
-      src={
-        itemId === 'health-potion'
-          ? clientAsset('/assets/wardrobe-style/health-potion.png')
-          : itemClass
-            ? weaponSrc(itemClass)
-            : fallback
-      }
-      alt=''
-      onError={(event) => {
-        if (!event.currentTarget.src.endsWith(fallback)) event.currentTarget.src = fallback;
-      }}
-    />
-  );
-}
-export function backpackViews(
-  items: BackpackItem[],
-  player: Pick<Player, 'autoTarget' | 'classId' | 'equipment' | 'equipmentItems'>,
-) {
-  return items.map((item) => {
-    const definition = itemDefinition(item.itemId);
-    const gear = GEAR_DEFINITIONS[item.itemId];
-    const potion = CONSUMABLES[item.itemId as keyof typeof CONSUMABLES];
-    const equipRestriction =
-      gear && !EQUIPMENT_SLOTS.some((slot) => canEquip(slot, gear, player.classId ?? 'warrior'))
-        ? 'Your class cannot equip this item.'
-        : undefined;
-    return {
-      ...item,
-      stackable: definition.kind !== 'gear',
-      name: definition.name,
-      rarity: capitalize(itemRarity(item)),
-      rarityColor: rarityColor[itemRarity(item)],
-      icon: itemIcon(item.itemId),
-      price: itemPrice(item),
-      subtitle: gear ? GEAR_LABELS[gear.gearType] : capitalize(definition.kind),
-      comparison: itemComparison(item, player),
-      primary: gear?.stats.armor ? { label: 'Armor', value: number(gear.stats.armor) } : undefined,
-      stats: [
-        ...(gear && ITEM_CLASSES[item.itemId]
-          ? weaponBadges(player, ITEM_CLASSES[item.itemId], gear.id)
-          : []),
-        ...rolledBadges(item),
-      ],
-      equipRestriction,
-      useAction: gear ? (equipRestriction ? undefined : 'Equip') : potion ? 'Use' : undefined,
-      details: potion ? `Restores ${potion.healing} health` : '',
-    };
-  });
-}
-export function Trading({
-  player,
-  merchant,
-  craftsman = false,
-  send,
-}: {
-  player: Player;
-  merchant: import('@emberfall/common').Merchant;
-  craftsman?: boolean;
-  send: (message: ClientMessage) => void;
-}) {
-  const [tab, setTab] = useState('buy');
-  const trade = (id: string, buying: boolean, modifiers: { shiftKey: boolean; ctrlKey: boolean }) =>
-    send({
-      type: 'trade',
-      npcId: craftsman ? 'craftsman' : 'innkeeper',
-      id,
-      buying,
-      amount: modifiers.ctrlKey ? 'stack' : modifiers.shiftKey ? 10 : 1,
-    });
-  return (
-    <ChapterTabs
-      label='Trader inventory'
-      value={tab}
-      onChange={setTab}
-      showHeading={false}
-      chapters={[
-        {
-          id: 'buy',
-          title: 'Buy',
-          items: merchant.backpack,
-          action: 'Buy',
-          label: craftsman ? "Craftsman's backpack" : "Innkeeper's backpack",
-        },
-        {
-          id: 'buyback',
-          title: 'Buyback',
-          items: merchant.buyback,
-          action: 'Buy back',
-          label: 'Buyback',
-        },
-      ].map(({ id, title, items, action, label }) => ({
-        id,
-        title,
-        content: (
-          <Box
-            sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 1.5 }}
-          >
-            <Backpack
-              label={label}
-              items={backpackViews(items, player)}
-              coins={merchant.coins}
-              action={action}
-              inventory={`vendor-${id}`}
-              drop={{
-                accepts: ['backpack'],
-                onDrop: (_, id, modifiers) => trade(id, false, modifiers),
-              }}
-              onUse={(id, modifiers) => trade(id, true, modifiers)}
-            />
-            <Backpack
-              label='Your backpack'
-              items={backpackViews(player.backpack ?? [], player)}
-              coins={player.coins ?? 0}
-              action='Sell'
-              inventory='backpack'
-              drop={{
-                accepts: ['vendor-buy', 'vendor-buyback'],
-                onDrop: (_, id, modifiers) => trade(id, true, modifiers),
-              }}
-              headerActions={
-                <Tooltip title='Sell all'>
-                  <span>
-                    <IconButton
-                      aria-label='Sell all'
-                      disabled={!player.backpack?.length}
-                      onClick={() =>
-                        send({ type: 'sellAll', npcId: craftsman ? 'craftsman' : 'innkeeper' })
-                      }
-                      sx={{ color: 'primary.main', fontSize: '0.75rem', p: 0.5 }}
-                    >
-                      <FontAwesomeIcon icon={faSackDollar} aria-hidden='true' />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              }
-              onUse={(id, modifiers) => trade(id, false, modifiers)}
-            />
-          </Box>
-        ),
-      }))}
-    />
   );
 }
