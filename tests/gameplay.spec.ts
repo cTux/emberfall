@@ -70,10 +70,11 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   for (const classId of CLASS_IDS) {
     player.x = WARDROBE.x;
     player.y = WARDROBE.y - 15;
-    await expect(async () => {
-      await page.keyboard.press('e');
-      await expect(wardrobe).toBeVisible();
-    }).toPass({ intervals: [200], timeout: 6000 });
+    await expect(
+      page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
+    ).toHaveAttribute('data-interaction-prompt', 'Wardrobe');
+    await page.keyboard.press('e');
+    await expect(wardrobe).toBeVisible();
     const choice = wardrobe.getByRole('button', { name: new RegExp(`^${CLASS_LABELS[classId]}`) });
     if ((player.classId ?? 'warrior') !== classId) await choice.click();
     await expect(choice).toHaveAttribute('aria-pressed', 'true');
