@@ -58,7 +58,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   session-driven window state and interaction commands.
 - `snapshots.ts` interpolates confirmed remote state. `local-movement.ts`
   predicts bounded local movement and casts, reconciles acknowledgements and
-  replays pending input. Hits, health, loot and progress remain authoritative.
+  replays pending input. `local-attacks.ts` owns cast identity and swing timing;
+  `local-projectiles.ts` adopts and reconciles detached projectile visuals against
+  confirmed frames. Hits, health, loot and progress remain authoritative.
 - `presentation/world.ts` owns the Miniplex presentation entities. These are
   detached render/prediction objects, separate from Colyseus schemas and server
   ECS objects. Companions remain based on confirmed state.
