@@ -2,8 +2,6 @@ name: Verify
 
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -19,6 +17,8 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -31,21 +31,23 @@ jobs:
       - run: pnpm --filter @emberfall/core test
       - run: pnpm test
       - run: pnpm build
+      - name: Select affected desktop browser scenarios
+        id: browsers
+        run: node scripts/ci-browser-tests.ts select > "$RUNNER_TEMP/browser-selection.json"
       - run: pnpm exec playwright install --with-deps chromium
+        if: steps.browsers.outputs.browser == 'true'
       - name: Create disposable browser-test certificate
+        if: steps.browsers.outputs.game == 'true'
         run: |
           mkdir -p .certs
           openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
             -keyout .certs/localhost-key.pem -out .certs/localhost.pem \
             -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
-      - name: Verify desktop game behavior
-        run: >-
-          pnpm test:browser --max-failures=1 --timeout=240000
-          tests/gameplay.spec.ts tests/reconnect.spec.ts tests/rendering.spec.ts
-          tests/renderer-lifetime.spec.ts tests/ability-effects.spec.ts tests/tactics.spec.ts
-          tests/day-night.spec.ts tests/damage-numbers.spec.ts tests/damage-flash.spec.ts
-          tests/generated-art.spec.ts tests/entity-layering.spec.ts
+      - name: Verify affected desktop game behavior
+        if: steps.browsers.outputs.game == 'true'
+        run: node scripts/ci-browser-tests.ts game "$RUNNER_TEMP/browser-selection.json"
       - name: Verify desktop shared UI behavior
+        if: steps.browsers.outputs.ui == 'true'
         run: >-
           pnpm --filter @emberfall/ui test --max-failures=1 --grep
           'HUD actions|inventory slots stay fixed|performance diagnostics|equipment slots accept inventory drops|backpack passes modifier keys|inventory dragging moves|storage supports forty slots|dialog closes with Escape|tabs, settings and voting|meters expose clamped|performance and volume labels|connection states use colored|compact consumable tooltip|incompatible gear explains|item tooltips show quantity|repeated stat labels|unequipped gear shows'

@@ -4,14 +4,22 @@ Run commands from the repository root unless stated otherwise. Runtime setup and
 
 ## Commands
 
-The [Verify workflow](../.github/workflows/verify.yml) runs formatting, lint,
-typechecking, core and root Node suites, builds, and selected desktop browser regressions on
-pull requests and main. Browser tests use a disposable self-signed certificate
-and isolated test databases. Failed browser runs retain their reports as CI
-artifacts. The workflow lists its game scenarios and UI cases explicitly because
-some existing full-suite tests mix desktop, phone-sized and touch checks. Keep
-CI desktop-only unless mobile testing is explicitly requested. Run additional
-affected desktop cases locally for changes beyond this baseline selection.
+The [Verify workflow](../.github/workflows/verify.yml) always runs formatting,
+lint, typechecking, core and root Node suites, and builds on every pull request.
+[Browser selection](../scripts/ci-browser-tests.ts) maps changed paths to
+affected desktop scenario groups; documentation and Node-only test changes need
+no browser run. Multiple areas union their groups. Unmapped paths, dependencies,
+shared-runtime, workflow/selector changes and unavailable Git history fall back
+to the complete 11-file desktop baseline plus the shared UI selection. CI summaries record the
+selection. Desktop allowlists exclude existing mixed phone/touch scenarios.
+
+After the merge queue completes, run **Actions → Verify → Run workflow** on
+`main` (CLI: `gh workflow run verify.yml --ref main`). Manual runs always execute
+the complete desktop baseline and shared UI checks. A successful manual run on
+current `main` triggers Pages deployment of that exact SHA. Intermediate merges
+do not repeat the PR run. A stale release is rejected before building and
+before deployment. See [operations](operations.md#github-pages-client-with-a-server-on-your-machine).
+Browser tests use disposable certificates/databases; failures retain CI artifacts.
 Git checks text out with LF on every platform through `.gitattributes`.
 
 ```sh
@@ -23,7 +31,7 @@ pnpm test
 pnpm build
 ```
 
-The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, and `tests/*.test.ts`, including shared simulation, client helpers and asset checks. Build includes client, server and the static UI Storybook through Turborepo. The [GitHub Pages workflow](../.github/workflows/deploy-pages.yml) builds and deploys the client on pushes to `main`; local verification commands remain separate from deployment.
+The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, and `tests/*.test.ts`, including shared simulation, client helpers and asset checks. Build includes client, server and the static UI Storybook through Turborepo. The [GitHub Pages workflow](../.github/workflows/deploy-pages.yml) builds and deploys the fully verified client after a successful manual Verify run on current `main`; local verification commands remain separate from deployment.
 
 ## Lint policy
 

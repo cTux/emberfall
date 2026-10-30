@@ -50,8 +50,11 @@ callback reachability. See [account design](design/steam-accounts.md).
 ## GitHub Pages client with a server on your machine
 
 The [Pages workflow](../.github/workflows/deploy-pages.yml) builds only the client
-and deploys after every push to `main` (including merged pull requests). It also
-supports **Actions → Deploy client to GitHub Pages → Run workflow**. The server
+and deploys the exact SHA from a successful manual full desktop Verify run on
+current `main`. After the merge queue completes, use **Actions → Verify → Run
+workflow → main**, or `gh workflow run verify.yml --ref main`. PRs run affected checks without deploying; intermediate merges do not repeat
+those checks. The release is rejected if `main`
+advances before building or deployment; rerun Verify on the new head. The server
 must be deployed/restarted separately with a compatible protocol version.
 
 1. In the GitHub repository, open **Settings → Pages → Build and deployment**
@@ -61,7 +64,8 @@ must be deployed/restarted separately with a compatible protocol version.
    These are already the workflow defaults. `BASE_API` is a host/IP without a
    scheme, port or path. The client uses HTTPS and WSS. For a tunnel on standard
    HTTPS, use its hostname and `BASE_PORT=443`.
-3. Merge these changes into `main`. Pages publishes the client at
+3. Merge the intended release into `main`, then dispatch the full Verify run.
+   After it passes, Pages publishes the client at
    `https://ctux.github.io/emberfall/` for this repository. The workflow derives
    the asset base path from Pages configuration, including custom domains.
 4. On the machine running the server, configure the ignored root `.env` or
