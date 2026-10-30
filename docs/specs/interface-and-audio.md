@@ -39,7 +39,7 @@ All game windows use compact, lighter title bars, wardrobe-brown borders and thi
 The trader has Buy and Buyback tabs, with 20 Buyback slots. A small Sell all icon
 button sits at the top-right of the player's backpack, opposite the gold balance.
 
-The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. F1 opens Codex and Escape opens Settings when no window or text input is active, including before joining a world. Each window's opening hotkey also closes that window; Escape closes the current window first. Holding a hotkey does not repeatedly toggle its window, and F1 suppresses browser help even while a window is open. The top-right HUD orders Inventory, Talents, Codex, optional Portal vote, Settings and Leave world. Inventory uses a bag icon and Talents uses magic sparkles. I, N, F1 and Esc appear as small badges below the matching icons and in tooltips; actions without hotkeys omit badges. Leaving remains last, after Settings. HUD tooltips show each action's available hotkey; leaving uses the explicit exit control. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames belong to Steam accounts; see CHAR-05.
+The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. F1 opens Codex and Escape opens Settings when no window or text input is active, including before joining a world. Each window's opening hotkey also closes that window; Escape closes the current window first. Holding a hotkey does not repeatedly toggle its window, and F1 suppresses browser help even while a window is open. The top-right HUD orders Inventory, Talents, Tactics, Codex, optional Portal vote, Settings and Leave world. Inventory uses a bag icon and Talents uses magic sparkles. I, N, T, F1 and Esc appear as small badges below the matching icons and in tooltips; actions without hotkeys omit badges. Leaving remains last, after Settings. HUD tooltips show each action's available hotkey; leaving uses the explicit exit control. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames belong to Steam accounts; see CHAR-05.
 
 Party cards show server-owned `Nickname, lvl N` inside the HP bar, adding `P` and the paragon level when positive. A thinner blue XP bar directly below health shows current/required XP using the shared progression formula. The class portrait matches the health bar height; a crown marks the party leader in its top-right corner and a dimension icon marks players in another area in its top-left corner. Icons retain accessible labels and away players stay dimmed. Thin health bars also appear beneath player names.
 
@@ -52,6 +52,44 @@ Wardrobe shows all four classes in one compact row. Each card has its matching c
 During an active boss fight, forest players see a fixed top-center boss HUD with the boss name (The Hollow Warden), orange health bar and current/max HP, even when the boss is offscreen. It replaces the boss objective label and disappears on defeat or returning to the lobby; the scene-complete message then appears.
 
 Codex uses the shared forest theme with chapter tabs for controls, worlds and party, combat, the boss, character persistence, classes, and credits. Every chapter uses short sections, readable lists where appropriate, and relevant game artwork with accessible descriptions. Illustrations fit narrow screens without horizontal scrolling. Tabs support arrow keys, Home, and End; the book remains draggable and closable and keeps its size and position when switching chapters.
+
+### Tactics
+
+Tactics (T) appears immediately after Talents in the in-world HUD. Its draggable
+window uses the same three external left-side tabs as Codex: Offensive, Defensive
+and Positioning. T toggles it, Escape closes it, held keys do not repeat, and text
+entry or another modal prevents accidental opening. The world continues while it
+is open; gameplay input and automatic talent requests follow existing modal rules.
+
+Settings apply immediately after server confirmation and save per character class.
+Older saves without tactics retain nearest-target attacks, lowest-health healing,
+and Balanced companion behavior. Priority rows move with labeled up/down buttons;
+the first rule wins and later rules break ties, retaining entity order on full ties.
+Only living eligible targets in wrapped range participate. Manual cursor aiming,
+self-centered effects and fixed-recipient heals keep their dedicated behavior.
+
+Offensive orders Nearest enemy, Lowest health %, and Elite / boss first (bosses
+before elites before ordinary enemies). Keep current target retains a valid target
+within the current ability's range; it defaults off to preserve existing behavior.
+
+Defensive orders Lowest health %, Players before companions, and Self before
+allies. Include companions defaults on. Auto-heal below offers Any missing health,
+90%, 75%, or 50% HP. The threshold gates automatic targeted-heal casts and automatic
+Healing Grove casts; it does not block manual casts or later healing pulses.
+Party, area, run, connection and range checks always precede preferences.
+
+Positioning configures the current class's companion. Balanced preserves nearby
+hunting; Aggressive pursues across the preferred owner radius; Protect owner
+restricts engagements to 100 units around the owner; Passive follows without
+attacking. Close / Medium / Far set the preferred combat radius to 100 / 200 / 300
+units. Balanced engagements cap at the existing 200 units. All stances retain the
+500-unit teleport tether, return behavior, tree avoidance and resurrection rules.
+Target mode follows offensive priorities, assists the owner's current valid target
+(falling back to priorities), or chooses enemies nearest the owner. Avoid telegraphs
+and projectiles defaults on and controls the existing hazard avoidance. Companion
+controls are disabled for classes without a companion, with an explanation.
+
+![Verified Tactics window with external left-side tabs](../images/tactics.png)
 
 ## UI-02 — Combat controls
 

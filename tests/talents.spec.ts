@@ -151,7 +151,7 @@ test('Mending Seed heals a party teammate through the server and shows its targe
     await page.getByRole('button', { name: 'Talents' }).click();
     await page.locator(`[data-talent-node='${nodeId}']`).hover();
     await expect(page.getByRole('tooltip').filter({ hasText: 'Mending Seed' })).toContainText(
-      'lowest health percentage within 700 units',
+      'selected by Defensive Tactics',
     );
     await expect(page.getByRole('tooltip').filter({ hasText: 'Mending Seed' })).toContainText(
       'party member or Bear',

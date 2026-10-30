@@ -33,6 +33,7 @@ export function returnToLobby(world: SceneWorld, player: Player) {
   player.hitpoints = player.maxHitpoints;
   player.attackAt = undefined;
   player.attackAngle = undefined;
+  player.attackTargetId = undefined;
   if (player.bear) {
     player.bear.hitpoints = player.bear.maxHitpoints;
     player.bear.resurrectAt = undefined;
@@ -127,6 +128,7 @@ function enterScene(world: SceneWorld, player: Player, now: number, offset = 0) 
   player.hitpoints = player.maxHitpoints;
   player.attackAt = undefined;
   player.attackAngle = undefined;
+  player.attackTargetId = undefined;
   if (player.bear) {
     player.bear.x = player.x;
     player.bear.y = player.y;

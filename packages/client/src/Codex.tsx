@@ -58,7 +58,8 @@ const chapters = [
             cooldown.
           </li>
           <li>
-            <kbd>G</kbd> — toggle auto-target, which selects the nearest enemy.
+            <kbd>G</kbd> — toggle auto-target. <kbd>T</kbd> opens Tactics to choose attack and
+            healing priorities and companion positioning. Targets default to the nearest enemy.
           </li>
         </ul>
         <p>
@@ -237,10 +238,11 @@ const chapters = [
           Bear has 1.5 times your maximum HP, strikes with physical claws reaching 250 units,
           inherits your power, attack speed, critical stats and armor, and has a 10% chance per hit
           to inflict bleed. It revives five seconds after death and moves at your speed. It chases
-          the nearest enemy within 200 units of you, returns when more than 200 units away from you,
+          nearby enemies within 200 units of you by default, returns when outside its combat radius,
           and resumes hunting once back at your side. Bear keeps an 80-unit gap for claw attacks,
           backs away from close enemies, and tries to dodge attack warnings and incoming
-          projectiles.
+          projectiles. Tactics (T) configures its stance, distance, target preferences and hazard
+          avoidance; the 500-unit teleport tether always applies.
         </p>
         <h4>Per-class progress</h4>
         <p>

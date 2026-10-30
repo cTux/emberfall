@@ -1,4 +1,5 @@
 export * from './talent-tree.ts';
+export * from './tactics.ts';
 export * from './talent-description.ts';
 export * from './talent-combat.ts';
 export { clearTalentEffects } from './talent-effects.ts';

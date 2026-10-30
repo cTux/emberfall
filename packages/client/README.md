@@ -19,7 +19,7 @@ for repository settings, Steam variables, HTTPS and browser cookie limitations.
 `main.tsx` loads the account gate and shared UI first. `Game.tsx` loads only after
 account access succeeds; its world browser does not initialize Pixi or sprite
 atlases. Joining a world loads `Arena.tsx` and the action bar together. Settings,
-Codex, inventory/trading, talents and storage load when their windows open.
+Codex, inventory/trading, talents, tactics and storage load when their windows open.
 `?art-gallery` and `?class-movement` load only their selected gallery.
 
 Keep URL-only artwork helpers in `class-art.ts` and talent icon presentation in

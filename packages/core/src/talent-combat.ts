@@ -5,6 +5,8 @@ import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
 import { FOREST } from './scene.ts';
 import { inTrainingZone } from './world.ts';
 import { executeTalent } from './talent-effects.ts';
+import { healingTarget } from './tactics.ts';
+import { DEFAULT_TACTICS } from '@emberfall/common';
 import { nearestSpellTarget, setRewardPlayers, effectiveAbility } from './class-combat.ts';
 type Game = ReturnType<typeof createGame>;
 export function talentAbility(player: Pick<Player, 'classId'>, slot: number, context: Game = game) {
@@ -31,7 +33,14 @@ export function talentCooldownMs(player: Player, slot: number, context: Game = g
 export function castTalentAbility(
   scene: SceneState | undefined,
   player: Player,
-  request: { slot: number; classId: string; epoch: string; aimX: number; aimY: number },
+  request: {
+    slot: number;
+    classId: string;
+    epoch: string;
+    aimX: number;
+    aimY: number;
+    automatic?: boolean;
+  },
   now: number,
   context: Game = game,
   players: Player[] = [player],
@@ -71,6 +80,21 @@ export function castTalentAbility(
     (!player.bear || player.bear.hitpoints <= 0)
   )
     return false;
+  if (
+    request.automatic &&
+    player.classId === 'druid' &&
+    node.column === 2 &&
+    [8, 9, 11].includes(node.slot!)
+  ) {
+    const radius =
+      node.slot === 9
+        ? 200 * (1 + context.rules.characterStats(player).bonuses.areaOfEffect / 100)
+        : ability.range;
+    if (
+      !healingTarget(players, player, player, radius, (player.tactics ?? DEFAULT_TACTICS).healBelow)
+    )
+      return false;
+  }
   player.talentCooldowns = {
     ...player.talentCooldowns,
     [ability.id]: now + talentCooldownMs(player, node.slot!, context),

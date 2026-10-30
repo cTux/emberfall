@@ -476,6 +476,7 @@ export async function createRuntime(
         return;
       }
       if (
+        message.type === 'setTactics' ||
         message.type === 'learnTalent' ||
         message.type === 'equipTalent' ||
         message.type === 'resetTalents' ||
@@ -496,6 +497,10 @@ export async function createRuntime(
         const player = world?.players.get(session.id);
         if (!world || !player || !session.characterId || player.hitpoints <= 0) {
           error('Join a world with a living character first.');
+          return;
+        }
+        if (message.type === 'setTactics' && message.classId !== player.classId) {
+          error('Tactics must match your current class.');
           return;
         }
         villageLife(world, now);
@@ -525,7 +530,8 @@ export async function createRuntime(
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
           const trader = traderId === 'craftsman' ? merchant.craftsman! : merchant;
-          if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
+          if (message.type === 'setTactics') next.tactics = message.tactics;
+          else if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
           else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
           else if (message.type === 'resetTalents') resetTalents(next);
           else if (message.type === 'trade')
@@ -547,6 +553,7 @@ export async function createRuntime(
             trading ? { worldId: world.id, state: merchant } : undefined,
           );
           Object.assign(player, {
+            tactics: next.tactics,
             talents: next.talents,
             talentSlots: next.talentSlots,
             talentVersion: next.talentVersion,
@@ -558,6 +565,7 @@ export async function createRuntime(
             hitpoints: next.hitpoints,
             maxHitpoints: next.maxHitpoints,
           });
+          if (message.type === 'setTactics') player.attackTargetId = undefined;
           if (message.type === 'resetTalents') clearTalentEffects(player);
           if (trading) world.merchant = merchant;
           send(ws, { type: 'state', world: state(world, now, player) });

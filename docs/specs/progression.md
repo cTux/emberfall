@@ -70,7 +70,8 @@ reduced motion. Manual casts use 1-4. Talent auto-casts request the existing
 server-validated cast at most once per slot per 250 ms when ready, alive, equipped,
 and in the forest or training area. Open game windows and the picker, unavailable
 connections, and hidden tabs pause requests. With auto-target enabled, the server
-aims talent casts at the nearest living enemy within the ability's registered range,
+aims talent casts at a living enemy within the ability's registered range using
+the caster's Offensive Tactics (nearest first by default),
 using wrapped distance in forest and training. With auto-target disabled or no
 eligible enemy, casts use cursor aim. Self-centered and ally-healing effects retain
 their existing targeting rules.
@@ -95,14 +96,17 @@ training never grants rewards. Cast feedback uses class/column animation sheets
 and particles from confirmed events. The catalog and tooltips define the current
 rank effects; they are initial balance values.
 
-Targeted healing chooses the living injured party member or Bear companion with the lowest
-remaining health percentage within the effect's wrapped radius, including the
+Targeted healing chooses a living injured party member or Bear companion according
+to Defensive Tactics (lowest remaining health percentage first by default) within
+the effect's wrapped radius, including the
 caster and their Bear. Bears use their own position and maximum HP and their owner's party, area and run membership. Equal percentages retain player order, checking each player before their Bear. Mending Seed and Renewal use
 their registered 700-unit range around the caster; Healing Grove chooses one
 recipient per second within 200 units of its fixed cast position. Healing
 opportunities choose one recipient within 60 units of the consumed enemy.
 Disconnected players, players in other areas or forest runs and players outside the caster's party
-are excluded. Solo players can heal themselves. Passive self-healing and Bear's
+are excluded. Tactics can exclude companions, prefer self/players, and set an
+automatic healing threshold; manual casts and later healing pulses ignore that
+threshold. Solo players can heal themselves. Passive self-healing and Bear's
 own heal retain their dedicated recipients; Renewal's damage reduction stays
 on the caster. No eligible recipient means no healing, without refunding the cast.
 

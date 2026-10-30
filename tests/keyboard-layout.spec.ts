@@ -54,6 +54,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
 
   for (const [name, shortcut] of [
     ['Talents', 'N'],
+    ['Tactics', 'T'],
     ['Inventory', 'I'],
   ]) {
     await page.getByRole('button', { name, exact: true }).hover();
@@ -62,8 +63,8 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
     await expect(page.getByRole('tooltip')).toBeHidden();
   }
   const controls = page.getByRole('navigation', { name: 'Game controls' });
-  await expect(controls.getByRole('button')).toHaveText(['I', 'N', 'F1', 'Esc', '']);
-  await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'F1', 'Esc']);
+  await expect(controls.getByRole('button')).toHaveText(['I', 'N', 'T', 'F1', 'Esc', '']);
+  await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'T', 'F1', 'Esc']);
   await page.keyboard.press('Control+F1');
   await page.keyboard.press('Shift+Escape');
   await expect(page.getByRole('dialog')).toBeHidden();
@@ -83,6 +84,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
       ['Codex', 'F1'],
       ['Inventory', 'i'],
       ['Talents', 'n'],
+      ['Tactics', 't'],
     ]) {
       const window = page.getByRole(name === 'Talents' ? 'region' : 'dialog', {
         name,
@@ -97,7 +99,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
       await page.keyboard.press('Escape');
       await expect(window).toBeHidden();
     }
-    await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'F1', 'Esc']);
+    await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'T', 'F1', 'Esc']);
     await page.screenshot({ path: `test-results/hud-toolbar-${scene}.png` });
     if (scene === 'village') await controls.screenshot({ path: 'test-results/hud-toolbar.png' });
     await page.keyboard.press('Escape');

@@ -42,6 +42,13 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
+Tactics: [UI-01](specs/interface-and-audio.md#tactics),
+[controlled window](../packages/client/src/Tactics.tsx),
+[structural contract](../packages/common/src/tactics.ts),
+[shared selectors](../packages/core/src/tactics.ts),
+[authoritative checks](../packages/server/src/tactics.test.ts), and
+[desktop interactions](../tests/tactics.spec.ts).
+
 Village merchants: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime),
 [shared trading rules](design/new-runtime.md#inventory-loot-and-shared-trading),
 [merchant validation](../packages/server/src/merchant.test.ts) and

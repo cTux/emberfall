@@ -1,6 +1,7 @@
 import { BULLSEYE, TALENT_RESET_COST, availableTalentPoints } from '@emberfall/core';
 import { clientAsset, websocketUrl } from './urls.ts';
 import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
+import { faChessKnight } from '@fortawesome/free-solid-svg-icons/faChessKnight';
 import { experienceRequired, enemyMaxHealth, difficultyMultiplier } from '@emberfall/core';
 import type {
   AccountView,
@@ -47,6 +48,7 @@ const WeaponActionBar = lazy(() =>
   import('./WeaponActionBar').then((module) => ({ default: module.WeaponActionBar })),
 );
 const Talents = lazy(() => import('./Talents').then((module) => ({ default: module.Talents })));
+const Tactics = lazy(() => import('./Tactics').then((module) => ({ default: module.Tactics })));
 const Equipment = lazy(() =>
   import('./equipment-view').then((module) => ({ default: module.Equipment })),
 );
@@ -130,6 +132,7 @@ export function Game({
   const [menu, setMenu] = useState<
     | 'resetTalents'
     | 'talents'
+    | 'tactics'
     | 'codex'
     | 'settings'
     | 'portal'
@@ -393,11 +396,12 @@ export function Game({
     });
   }, [world, chatMessages, me?.scene, playerId, status, send, configureChat]);
   useEffect(() => () => configureChat(null), [configureChat]);
-  const castTalent = (slot: number) => {
+  const castTalent = (slot: number, automatic = false) => {
     const aim = cursorAim.current?.();
     if (!me || unavailable || !aim) return;
     send({
       type: 'talentCast',
+      automatic,
       ...aim,
       slot,
       classId: me.classId ?? 'warrior',
@@ -441,6 +445,21 @@ export function Game({
       const typing =
         event.target instanceof Element &&
         !!event.target.closest('input, textarea, select, [contenteditable=true]');
+      if (
+        event.code === 'KeyT' &&
+        world &&
+        !typing &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey &&
+        (menu === 'tactics' ||
+          (!menu && !document.querySelector('[role="dialog"][aria-modal="true"]')))
+      ) {
+        event.preventDefault();
+        setMenu(menu === 'tactics' ? null : 'tactics');
+        return;
+      }
       if (
         event.code === 'KeyN' &&
         world &&
@@ -594,6 +613,13 @@ export function Game({
                       shortcut: 'N',
                       icon: faWandMagicSparkles,
                       onClick: () => setMenu('talents'),
+                    },
+                    {
+                      id: 'tactics',
+                      label: 'Tactics',
+                      shortcut: 'T',
+                      icon: faChessKnight,
+                      onClick: () => setMenu('tactics'),
                     },
                   ]
                 : []),
@@ -877,35 +903,41 @@ export function Game({
           <GameWindow
             key={menu}
             modal={menu !== 'talents'}
-            height={menu === 'codex' ? 480 : menu === 'settings' ? 420 : undefined}
+            height={
+              menu === 'codex' || menu === 'tactics' ? 480 : menu === 'settings' ? 420 : undefined
+            }
             width={
               menu === 'talents'
                 ? 700
-                : menu === 'wardrobe'
-                  ? 600
-                  : menu === 'equipment' ||
-                      (menu === 'building' && (tradingNpcId || building === 'Storehouse'))
-                    ? 520
-                    : undefined
+                : menu === 'tactics'
+                  ? 460
+                  : menu === 'wardrobe'
+                    ? 600
+                    : menu === 'equipment' ||
+                        (menu === 'building' && (tradingNpcId || building === 'Storehouse'))
+                      ? 520
+                      : undefined
             }
             title={
               menu === 'resetTalents'
                 ? 'Reset talent points?'
                 : menu === 'talents'
                   ? 'Talents'
-                  : menu === 'codex'
-                    ? 'Codex'
-                    : menu === 'equipment'
-                      ? 'Inventory'
-                      : menu === 'settings'
-                        ? 'Settings'
-                        : menu === 'portal'
-                          ? 'Forest portal'
-                          : menu === 'wardrobe'
-                            ? 'Wardrobe'
-                            : menu === 'exit'
-                              ? 'Leave?'
-                              : building
+                  : menu === 'tactics'
+                    ? 'Tactics'
+                    : menu === 'codex'
+                      ? 'Codex'
+                      : menu === 'equipment'
+                        ? 'Inventory'
+                        : menu === 'settings'
+                          ? 'Settings'
+                          : menu === 'portal'
+                            ? 'Forest portal'
+                            : menu === 'wardrobe'
+                              ? 'Wardrobe'
+                              : menu === 'exit'
+                                ? 'Leave?'
+                                : building
             }
             onClose={() => setMenu(null)}
           >
@@ -956,6 +988,8 @@ export function Game({
                   <Talents player={me} send={send} />
                 ) : menu === 'codex' ? (
                   <Codex />
+                ) : menu === 'tactics' && me ? (
+                  <Tactics player={me} send={send} disabled={unavailable} />
                 ) : menu === 'equipment' && me ? (
                   <Equipment player={me} send={send} />
                 ) : menu === 'settings' ? (

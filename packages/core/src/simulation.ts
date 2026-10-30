@@ -1,5 +1,7 @@
 type Game = ReturnType<typeof createGame>;
 import { game, type createGame } from './game.ts';
+import { attackTarget } from './tactics.ts';
+import { DEFAULT_TACTICS, type Tactics } from '@emberfall/common';
 import { talentNodeId, talentRank } from './talent-tree.ts';
 import { tickTalentEffects, talentIncomingDamage, shiftTalentEffects } from './talent-effects.ts';
 import { PLAYER_BODY_RADIUS } from './definitions/entities/players.ts';
@@ -44,6 +46,7 @@ const companionDecisions = new WeakMap<
     at: number;
     scene: SceneState | undefined;
     forest: boolean;
+    tactics: Tactics;
     target: Enemy | undefined;
     following: boolean;
     destination: { x: number; y: number; hitpoints: number };
@@ -194,6 +197,14 @@ export function tickCompanion(
   }
   if (player.hitpoints <= 0) return;
   const forest = player.scene === 'forest';
+  const tactics = player.tactics ?? DEFAULT_TACTICS;
+  const preferredRadius = { close: 100, medium: 200, far: 300 }[tactics.distance];
+  const huntRadius =
+    tactics.stance === 'protect'
+      ? Math.min(100, preferredRadius)
+      : tactics.stance === 'aggressive'
+        ? preferredRadius
+        : Math.min(BEAR_DEFINITION.huntRadius, preferredRadius);
   const distance = forestDistance(bear, player);
   if (distance > BEAR_DEFINITION.teleportRadius) {
     bear.x = player.x;
@@ -203,26 +214,34 @@ export function tickCompanion(
     companionDecisions.delete(bear);
     return;
   }
-  if (distance > BEAR_DEFINITION.huntRadius) bear.returning = true;
+  if (distance > huntRadius) bear.returning = true;
   if (bear.returning && distance <= BEAR_DEFINITION.returnRadius) bear.returning = false;
   let decision = companionDecisions.get(bear);
   if (
     !decision ||
     now - decision.at >= BEAR_DEFINITION.decisionMs ||
     decision.scene !== scene ||
-    decision.forest !== forest
+    decision.forest !== forest ||
+    decision.tactics !== tactics
   ) {
+    const candidates = scene?.enemies.filter((e) => forestDistance(e, player) <= huntRadius) ?? [];
+    const assist =
+      tactics.companionTarget === 'assist'
+        ? candidates.find((e) => e.id === player.attackTargetId && e.hitpoints > 0)
+        : undefined;
     const target =
-      (forest || scene?.training) && scene?.phase === 'active' && !bear.returning
-        ? scene.enemies
-            .filter(
-              (e) => e.hitpoints > 0 && forestDistance(e, player) <= BEAR_DEFINITION.huntRadius,
-            )
-            .reduce<Enemy | undefined>(
-              (best, e) =>
-                !best || forestDistance(bear, e) < forestDistance(bear, best) ? e : best,
-              undefined,
-            )
+      tactics.stance !== 'passive' &&
+      (forest || scene?.training) &&
+      scene?.phase === 'active' &&
+      !bear.returning
+        ? (assist ??
+          attackTarget(
+            tactics.companionTarget === 'nearOwner' ? player : bear,
+            candidates,
+            Infinity,
+            tactics.companionTarget === 'nearOwner' ? DEFAULT_TACTICS : tactics,
+            decision?.target?.id,
+          ))
         : undefined;
     let destination: { x: number; y: number; hitpoints: number } = target ?? player;
     const heading = Math.atan2(
@@ -240,7 +259,7 @@ export function tickCompanion(
       };
     }
     const danger =
-      forest && scene?.phase === 'active'
+      tactics.avoidHazards && forest && scene?.phase === 'active'
         ? scene.enemies.find(
             (e) =>
               e.hitpoints > 0 &&
@@ -263,7 +282,7 @@ export function tickCompanion(
         hitpoints: 1,
       };
     }
-    if (forest && scene?.phase === 'active') {
+    if (tactics.avoidHazards && forest && scene?.phase === 'active') {
       const shot = scene.projectiles?.find((s) => {
         const dx = wrappedDelta(bear.x, s.x, FOREST.width),
           dy = wrappedDelta(bear.y, s.y, FOREST.height);
@@ -295,6 +314,7 @@ export function tickCompanion(
       at: now,
       scene,
       forest,
+      tactics,
       target,
       following: destination === player,
       destination: { ...destination },
@@ -306,7 +326,8 @@ export function tickCompanion(
     decision.target.hitpoints > 0 &&
     scene?.phase === 'active' &&
     scene.enemies.includes(decision.target) &&
-    forestDistance(decision.target, player) <= BEAR_DEFINITION.huntRadius
+    forestDistance(decision.target, player) <= huntRadius &&
+    tactics.stance !== 'passive'
       ? decision.target
       : undefined;
   const destination =
@@ -358,7 +379,7 @@ export function tickCompanion(
   bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > 0.001;
   if (bear.moving) bear.attackAngle = heading;
   if (target) bear.attackAngle = nearestEnemyAngle(bear, [target], heading);
-  if (forestDistance(bear, player) > BEAR_DEFINITION.huntRadius && forest) bear.returning = true;
+  if (forestDistance(bear, player) > huntRadius && forest) bear.returning = true;
   if (!target || bear.returning || !scene) {
     bear.attackAt = undefined;
     return;
@@ -723,13 +744,16 @@ export function stepCombat(
   }
 }
 
-export function playerAimAngle(player: Player, enemies: Enemy[]) {
+export function playerAimAngle(player: Player, enemies: Enemy[], context: Game = game) {
+  const target = nearestSpellTarget(player, enemies, context.rules.characterStats(player).range);
   return player.autoTarget === false && player.aimX !== undefined && player.aimY !== undefined
     ? Math.atan2(
         wrappedDelta(player.aimY, player.y, FOREST.height),
         wrappedDelta(player.aimX, player.x, FOREST.width),
       )
-    : nearestEnemyAngle(player, enemies, player.attackAngle);
+    : target
+      ? nearestEnemyAngle(player, [target], player.attackAngle)
+      : (player.attackAngle ?? 0);
 }
 
 /** Buffer slightly early requests for their due time; client IDs never bypass server cooldowns. */
@@ -776,6 +800,10 @@ export function tickPlayerCombat(
   tickTalentEffects(scene, alive, now);
   for (const player of alive) {
     const stats = context.rules.characterStats(player);
+    player.attackTargetId =
+      player.autoTarget === false
+        ? undefined
+        : nearestSpellTarget(player, scene.enemies, stats.range)?.id;
     const ability = context.registries.abilities.require(
       context.registries.classes.require(player.classId ?? 'warrior').attack,
     );
@@ -789,7 +817,7 @@ export function tickPlayerCombat(
     }
     player.attackAngle = smoothAttackAngle(
       player.attackAngle,
-      playerAimAngle(player, scene.enemies),
+      playerAimAngle(player, scene.enemies, context),
       dt,
       ability.aimSmoothingSeconds,
     );
