@@ -276,7 +276,7 @@ test('combat gathering hint defaults hidden, toggles immediately and persists', 
   await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
   await page.screenshot({ path: 'test-results/gathering-hint-hidden-in-combat.png' });
   const toggle = page.getByRole('switch', {
-    name: 'Hide gathering hint during combat',
+    name: 'Hide interact hint during combat',
     exact: true,
   });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();

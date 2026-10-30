@@ -75,7 +75,7 @@ Speech bubbles draw above the prompt wherever they overlap.
 During gathering the player prompt is replaced by the thin yellow timed-activity
 bar above the resource, with a green zone and white indicator, without text above
 or below it (see [VILLAGE-07](scenes-and-village.md#village-07--gathering)).
-Settings → Gameplay includes **Hide gathering hint during combat**, enabled by
+Settings → Gameplay includes **Hide interact hint during combat**, enabled by
 default, including for existing saved preferences. It hides only gathering prompts
 in active forest scenes and while inside a village training zone with active
 training. Other prompts and E/click gathering remain available. Disabling it shows
