@@ -22,7 +22,6 @@ test('item comparison includes gained and lost bonuses without unchanged base st
     },
   });
   assert.deepEqual(comparison, {
-    label: 'vs equipped Amulet',
     rows: [
       { label: 'Exp increase', value: '+20%', improved: true },
       { label: 'Gold increase', value: '-10%', improved: false },

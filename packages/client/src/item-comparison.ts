@@ -69,5 +69,5 @@ export function itemComparison(
       improved: delta < 0,
     });
   }
-  return { label: equipped ? `vs equipped ${equipped.name}` : 'vs empty slot', rows };
+  return { rows };
 }

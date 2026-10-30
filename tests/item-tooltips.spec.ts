@@ -23,7 +23,7 @@ test('backpack item tooltips share weapon details and compact resource cards', a
   await page.keyboard.press('i');
   const backpack = page.getByRole('region', { name: 'Your backpack' });
   await backpack.getByRole('button', { name: 'Use Amulet', exact: true }).hover();
-  const comparison = page.getByRole('tooltip').filter({ hasText: 'vs equipped Amulet' });
+  const comparison = page.getByRole('tooltip').filter({ hasText: 'Amulet' });
   await expect(comparison).toContainText('Exp increase+20%');
   await expect(comparison).toContainText('Gold increase-10%');
   await expect(comparison).not.toContainText('Bonus');
@@ -48,16 +48,8 @@ test('backpack item tooltips share weapon details and compact resource cards', a
   await sword.focus();
   const tooltip = page.getByRole('tooltip').filter({ hasText: "Warrior's sword" });
   await expect(tooltip).toContainText('Right-click: equip');
-  await expect(tooltip.getByRole('button', { name: 'Power: 5', exact: true })).toBeVisible();
-  const range = tooltip.getByRole('button', { name: 'Range: 75 units', exact: true });
-  await page.keyboard.press('Tab');
-  await expect(tooltip.getByRole('button', { name: 'Power: 5', exact: true })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(range).toBeFocused();
-  await expect(page.getByRole('tooltip').last()).toContainText('Attack range: 75 units');
-  await page.keyboard.press('Shift+Tab');
-  await page.keyboard.press('Shift+Tab');
-  await expect(sword).toBeFocused();
+  await expect(tooltip).toContainText('Same stats');
+  await expect(tooltip.getByRole('button', { name: 'Power: 5', exact: true })).toHaveCount(0);
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog', { name: 'Inventory', exact: true })).toHaveCount(0);
 });

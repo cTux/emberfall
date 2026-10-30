@@ -61,7 +61,6 @@ export const Comparison: StoryObj<typeof meta> = {
           },
         ],
         comparison: {
-          label: 'vs equipped Amulet',
           rows: [
             { label: 'Exp increase', value: '+20%', improved: true },
             { label: 'Gold increase', value: '-10%', improved: false },
@@ -73,9 +72,7 @@ export const Comparison: StoryObj<typeof meta> = {
 };
 export const SameStats: StoryObj<typeof meta> = {
   args: {
-    items: [
-      { ...Comparison.args!.items![0], comparison: { label: 'vs equipped Amulet', rows: [] } },
-    ],
+    items: [{ ...Comparison.args!.items![0], comparison: { rows: [] } }],
   },
 };
 export const RepeatedStats: StoryObj<typeof meta> = {
@@ -83,6 +80,7 @@ export const RepeatedStats: StoryObj<typeof meta> = {
     items: [
       {
         ...Comparison.args!.items![0],
+        comparison: undefined,
         stats: [
           { label: 'Power', icon: 'power', value: '5', explanation: 'Base weapon power.' },
           { label: 'Power', icon: 'magic', value: '+2', explanation: 'Additional rolled power.' },
