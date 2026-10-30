@@ -1,0 +1,62 @@
+name: Verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm fmt:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm --filter @emberfall/core test
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Create disposable browser-test certificate
+        run: |
+          mkdir -p .certs
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout .certs/localhost-key.pem -out .certs/localhost.pem \
+            -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
+      - name: Verify desktop game behavior
+        run: >-
+          pnpm test:browser --max-failures=1 --timeout=240000
+          tests/gameplay.spec.ts tests/reconnect.spec.ts tests/rendering.spec.ts
+          tests/renderer-lifetime.spec.ts tests/ability-effects.spec.ts tests/tactics.spec.ts
+          tests/day-night.spec.ts tests/damage-numbers.spec.ts tests/damage-flash.spec.ts
+          tests/generated-art.spec.ts tests/entity-layering.spec.ts
+      - name: Verify desktop shared UI behavior
+        run: >-
+          pnpm --filter @emberfall/ui test --max-failures=1 --grep
+          'HUD actions|inventory slots stay fixed|performance diagnostics|equipment slots accept inventory drops|backpack passes modifier keys|inventory dragging moves|storage supports forty slots|dialog closes with Escape|tabs, settings and voting|meters expose clamped|performance and volume labels|connection states use colored|compact consumable tooltip|incompatible gear explains|item tooltips show quantity|repeated stat labels|unequipped gear shows'
+      - name: Retain browser failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failures
+          path: |
+            test-results/
+            playwright-report/
+            packages/ui/test-results/
+            packages/ui/playwright-report/
+          if-no-files-found: ignore

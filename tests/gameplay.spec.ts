@@ -46,7 +46,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   page,
   game,
 }) => {
-  test.setTimeout(120000);
+  test.setTimeout(Math.max(test.info().timeout, 120000));
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.addInitScript(() => {
@@ -70,10 +70,11 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   for (const classId of CLASS_IDS) {
     player.x = WARDROBE.x;
     player.y = WARDROBE.y - 15;
-    await expect(async () => {
-      await page.keyboard.press('e');
-      await expect(wardrobe).toBeVisible();
-    }).toPass({ intervals: [200], timeout: 6000 });
+    await expect(
+      page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
+    ).toHaveAttribute('data-interaction-prompt', 'Wardrobe');
+    await page.keyboard.press('e');
+    await expect(wardrobe).toBeVisible();
     const choice = wardrobe.getByRole('button', { name: new RegExp(`^${CLASS_LABELS[classId]}`) });
     if ((player.classId ?? 'warrior') !== classId) await choice.click();
     await expect(choice).toHaveAttribute('aria-pressed', 'true');
@@ -172,10 +173,11 @@ test('bear chases and defeats a forest boss after portal entry, opening the retu
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
   const portal = page.getByRole('dialog', { name: 'Forest portal' });
-  await expect(async () => {
-    await page.keyboard.press('e');
-    await expect(portal).toBeVisible();
-  }).toPass({ intervals: [200], timeout: 6000 });
+  await expect(
+    page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
+  ).toHaveAttribute('data-interaction-prompt', 'Forest portal', { timeout: 15000 });
+  await page.keyboard.press('e');
+  await expect(portal).toBeVisible();
   await portal.getByRole('button', { name: 'Create', exact: true }).click();
   await portal.getByRole('button', { name: "I'm ready" }).click();
   await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
@@ -205,10 +207,13 @@ test('bear chases and defeats a forest boss after portal entry, opening the retu
   await expect(page.getByText('Scene complete · Return portal open')).toBeVisible();
   expect(scene.portals.length).toBeGreaterThan(0);
   await page.screenshot({ path: 'test-results/new-forest-return.png' });
-  await expect(async () => {
-    await page.keyboard.press('e');
-    await expect(page.getByLabel('Shared village. Move with WASD or arrow keys.')).toBeVisible();
-  }).toPass({ intervals: [200], timeout: 6000 });
+  await expect(page.getByLabel('Forest combat scene.', { exact: true })).toHaveAttribute(
+    'data-interaction-prompt',
+    'Return to village',
+    { timeout: 15000 },
+  );
+  await page.keyboard.press('e');
+  await expect(page.getByLabel('Shared village. Move with WASD or arrow keys.')).toBeVisible();
   expect(player.scene).toBeUndefined();
   expect(player.hitpoints).toBe(player.maxHitpoints);
   expect(errors).toEqual([]);
@@ -277,10 +282,11 @@ for (const [difficulty, multiplier] of [
     player.x = LOBBY_PORTAL.x;
     player.y = LOBBY_PORTAL.y - 15;
     const portal = page.getByRole('dialog', { name: 'Forest portal' });
-    await expect(async () => {
-      await page.keyboard.press('e');
-      await expect(portal).toBeVisible({ timeout: 500 });
-    }).toPass({ intervals: [200], timeout: 15000 });
+    await expect(
+      page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
+    ).toHaveAttribute('data-interaction-prompt', 'Forest portal', { timeout: 15000 });
+    await page.keyboard.press('e');
+    await expect(portal).toBeVisible();
     await expect(portal.getByRole('combobox', { name: 'Difficulty' })).toHaveText('Easy');
     await portal.getByRole('combobox', { name: 'Difficulty' }).click();
     for (const name of ['Easy', 'Medium', 'Hard'])
@@ -301,12 +307,11 @@ for (const [difficulty, multiplier] of [
     player.scene = undefined;
     player.x = LOBBY_PORTAL.x;
     player.y = LOBBY_PORTAL.y - 15;
-    await expect(async () => {
-      await page.keyboard.press('e');
-      await expect(portal.getByRole('button', { name: 'Regenerate scene' })).toBeVisible({
-        timeout: 500,
-      });
-    }).toPass({ intervals: [200], timeout: 15000 });
+    await expect(
+      page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
+    ).toHaveAttribute('data-interaction-prompt', 'Forest portal', { timeout: 15000 });
+    await page.keyboard.press('e');
+    await expect(portal.getByRole('button', { name: 'Regenerate scene' })).toBeVisible();
     await portal.getByRole('button', { name: 'Regenerate scene' }).click();
     await expect
       .poll(() => game.runtime.parties(world).run([...world.players.values()][0]).scene!.id)

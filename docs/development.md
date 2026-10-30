@@ -4,6 +4,16 @@ Run commands from the repository root unless stated otherwise. Runtime setup and
 
 ## Commands
 
+The [Verify workflow](../.github/workflows/verify.yml) runs formatting, lint,
+typechecking, core and root Node suites, builds, and selected desktop browser regressions on
+pull requests and main. Browser tests use a disposable self-signed certificate
+and isolated test databases. Failed browser runs retain their reports as CI
+artifacts. The workflow lists its game scenarios and UI cases explicitly because
+some existing full-suite tests mix desktop, phone-sized and touch checks. Keep
+CI desktop-only unless mobile testing is explicitly requested. Run additional
+affected desktop cases locally for changes beyond this baseline selection.
+Git checks text out with LF on every platform through `.gitattributes`.
+
 ```sh
 pnpm install --frozen-lockfile
 pnpm fmt:check
@@ -90,6 +100,10 @@ display size in the client. Completion requires the asset, provenance and workin
 consumer together; a gameplay-only implementation with placeholder art is unfinished.
 
 ## Browser and UI verification
+
+The CI desktop game suite allows four minutes per scenario because software
+rendering on hosted runners can make each browser input take several seconds.
+Assertion deadlines remain unchanged; local scenarios retain the 90-second budget.
 
 The independent runtime uses `pnpm dev`, `pnpm build`, and `pnpm start`.
 `pnpm start` sets up HTTPS and builds the runtime packages before launching,
