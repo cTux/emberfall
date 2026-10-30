@@ -1,3 +1,4 @@
+import { Gradient, GradientPaints, type Paint } from './paints';
 import {
   autoDetectRenderer,
   Container,
@@ -10,13 +11,12 @@ import {
   Color,
   BlurFilter,
 } from 'pixi.js';
-import type { BindGroup, Renderer, GradientOptions, LinearGradientOptions } from 'pixi.js';
+import type { BindGroup, Renderer } from 'pixi.js';
 import './soft-light';
 import { playerCutoutRuns, PLAYER_CUTOUT_MARGIN } from './player-cutout';
 import { World } from 'miniplex';
 import type { DirectionalShadow } from '../lighting';
 
-type Paint = string | Gradient;
 type PathCommand = {
   method:
     | 'moveTo'
@@ -56,15 +56,6 @@ type Visual = {
   styleKey?: string;
   frameTexture?: Texture;
 };
-class Gradient {
-  options: GradientOptions;
-  constructor(options: GradientOptions) {
-    this.options = options;
-  }
-  addColorStop(offset: number, color: string) {
-    (this.options.colorStops ??= []).push({ offset, color });
-  }
-}
 
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
@@ -91,7 +82,7 @@ export class PixiContext {
   private colors = new Map<string, Color>();
   private drawMatrix = new Matrix();
   private sources = new Map<CanvasImageSource, { texture: Texture; used: number }>();
-  private gradients = new Map<string, { texture: Texture; used: number }>();
+  private gradients = new GradientPaints();
   private frame = 0;
   private shadowPass = false;
   private shadowStrength = 0;
@@ -210,11 +201,7 @@ export class PixiContext {
     if (this.frame === 1 || this.frame % 60 === 0)
       this.canvas.dataset.renderStats = JSON.stringify(this.stats());
     if (this.frame % 120 === 0) {
-      for (const [key, entry] of this.gradients)
-        if (this.frame - entry.used > 120) {
-          entry.texture.destroy(true);
-          this.gradients.delete(key);
-        }
+      this.gradients.trim(this.frame);
       for (const [key, entry] of this.sources)
         if (this.frame - entry.used > 600) {
           entry.texture.destroy(true);
@@ -253,14 +240,13 @@ export class PixiContext {
     for (const entry of this.sources.values()) {
       entry.texture.destroy(true);
     }
-    for (const entry of this.gradients.values()) entry.texture.destroy(true);
+    this.gradients.destroy();
     for (const group of this.maskGroups) group.destroy();
     this.cutout.destroy();
     this.shadowRects.clear();
     this.renderer?.destroy();
     this.stage.destroy();
     this.sources.clear();
-    this.gradients.clear();
     this.colors.clear();
     this.childCursors.clear();
   }
@@ -443,86 +429,8 @@ export class PixiContext {
     this.shadowPass = false;
     this.restore();
   }
-  private paint(
-    value: Paint,
-  ): string | { texture: Texture; matrix: Matrix; textureSpace: 'global' } {
-    if (typeof value === 'string') return value;
-    const options = value.options;
-    // Texture ramps depend on color stops and relative shape, not world position.
-    // Moving the camera or a light only changes its matrix, never allocates a ramp.
-    let normalized: GradientOptions;
-    let matrix: Matrix;
-    if (options.type === 'radial') {
-      const outer = options.outerCenter!,
-        center = options.center!,
-        radius = Math.max(0.0001, options.outerRadius!);
-      normalized = {
-        type: 'radial',
-        textureSpace: 'global',
-        center: { x: (center.x - outer.x) / radius, y: (center.y - outer.y) / radius },
-        outerCenter: { x: 0, y: 0 },
-        innerRadius: options.innerRadius! / radius,
-        outerRadius: 1,
-        colorStops: options.colorStops,
-      };
-      matrix = new Matrix(
-        (radius * 2) / 256,
-        0,
-        0,
-        (radius * 2) / 256,
-        outer.x - radius,
-        outer.y - radius,
-      );
-    } else {
-      const linear = options as LinearGradientOptions;
-      const start = linear.start!,
-        end = linear.end!,
-        dx = end.x - start.x,
-        dy = end.y - start.y;
-      const distance = Math.max(0.0001, Math.hypot(dx, dy));
-      normalized = {
-        type: 'linear',
-        textureSpace: 'global',
-        start: { x: 0, y: 0 },
-        end: { x: 1, y: 0 },
-        colorStops: options.colorStops,
-      };
-      matrix = new Matrix(dx / 256, dy / 256, -dy / distance, dx / distance, start.x, start.y);
-    }
-    const key = JSON.stringify(normalized);
-    let entry = this.gradients.get(key);
-    if (!entry) {
-      // Bake only the reusable ramp, on a transparent surface. FillGradient's
-      // radial builder pre-fills the outer stop, making transparent centers opaque.
-      const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = normalized.type === 'radial' ? 256 : 1;
-      const ctx = canvas.getContext('2d')!;
-      const ramp =
-        normalized.type === 'radial'
-          ? ctx.createRadialGradient(
-              (normalized.center!.x + 1) * 128,
-              (normalized.center!.y + 1) * 128,
-              normalized.innerRadius! * 128,
-              128,
-              128,
-              128,
-            )
-          : ctx.createLinearGradient(0, 0, 256, 0);
-      for (const stop of normalized.colorStops!)
-        ramp.addColorStop(stop.offset, new Color(stop.color).toRgbaString());
-      ctx.fillStyle = ramp;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const texture = Texture.from(canvas, true);
-      texture.source.addressMode = 'clamp-to-edge';
-      entry = { texture, used: this.frame };
-      this.gradients.set(key, entry);
-    }
-    entry.used = this.frame;
-    return { texture: entry.texture, matrix, textureSpace: 'global' };
-  }
   private strokePaint() {
-    const paint = this.paint(this.state.strokeStyle);
+    const paint = this.gradients.paint(this.state.strokeStyle, this.frame);
     return typeof paint === 'string' ? { color: paint } : paint;
   }
   private geometry(): Graphics {
@@ -695,7 +603,9 @@ export class PixiContext {
     this.rectangleShadow(x, y, width, height);
     if (typeof this.state.fillStyle !== 'string') {
       const g = this.visual('graphics').object as Graphics;
-      g.clear().rect(x, y, width, height).fill(this.paint(this.state.fillStyle));
+      g.clear()
+        .rect(x, y, width, height)
+        .fill(this.gradients.paint(this.state.fillStyle, this.frame));
       return;
     }
     const sprite = this.visual('sprite').object as Sprite;
@@ -750,7 +660,7 @@ export class PixiContext {
   }
   fill() {
     this.shadow(() => this.fill());
-    this.geometry().fill(this.paint(this.state.fillStyle));
+    this.geometry().fill(this.gradients.paint(this.state.fillStyle, this.frame));
   }
   stroke() {
     this.shadow(() => this.stroke());
@@ -832,7 +742,7 @@ export class PixiContext {
       fontFamily: match?.[3] ?? 'sans-serif',
       fontSize: Number(match?.[2] ?? 10),
       fontWeight: (match?.[1] ?? 'normal') as 'normal' | 'bold',
-      fill: stroke ? 'transparent' : this.paint(this.state.fillStyle),
+      fill: stroke ? 'transparent' : this.gradients.paint(this.state.fillStyle, this.frame),
       stroke: stroke
         ? { ...this.strokePaint(), width: this.state.lineWidth, join: this.state.lineJoin }
         : undefined,
