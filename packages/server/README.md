@@ -48,6 +48,9 @@ production entrypoint.
   a Colyseus session room is not an independent copy of that combat world.
 - `runtime.ts` owns identity, membership, command validation, fixed tick order,
   reconnect retention, chat and save scheduling.
+- `commands/character.ts` dispatches durable character actions through typed
+  handlers. Runtime validates identity, life and proximity first; the command
+  module mutates a detached copy, commits, then publishes live changes.
 - `ecs/simulation.ts` owns a Miniplex world per party. Components reference the
   canonical player and scene objects. Ordered query views preserve targeting
   tie-breaking when entities are removed. Scene disposal removes its components.

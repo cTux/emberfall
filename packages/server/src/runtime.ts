@@ -1,3 +1,4 @@
+import { isCharacterCommand, commitCharacterCommand } from './commands/character.ts';
 import { Parties } from './parties.ts';
 import {
   startGathering,
@@ -7,17 +8,7 @@ import {
   restoreResources,
 } from '@emberfall/core';
 import type { ResourceState } from '@emberfall/common';
-import { DEFAULT_TACTICS } from '@emberfall/common';
-import {
-  learnTalent,
-  equipTalent,
-  resetTalents,
-  clearTalentEffects,
-  BULLSEYE,
-  forestDistance,
-  INTERACTION_RADIUS,
-  castTalentAbility,
-} from '@emberfall/core';
+import { BULLSEYE, forestDistance, INTERACTION_RADIUS, castTalentAbility } from '@emberfall/core';
 import { validateDefinitions } from '@emberfall/core/definitions/index';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
@@ -32,13 +23,7 @@ import {
   clientMessage,
   nearbyInteraction,
   syncEquipmentVitals,
-  useBackpackItem,
-  unequipItem,
-  tradeItem,
   traderInRange,
-  sellAll,
-  transferStoredItem,
-  moveStorageItem,
 } from '@emberfall/core';
 import { requestPlayerCast, TICK_MS } from '@emberfall/core';
 import type {
@@ -476,20 +461,7 @@ export async function createRuntime(
         error('Please wait for your previous request.');
         return;
       }
-      if (
-        message.type === 'setTactics' ||
-        message.type === 'moveTacticsPriority' ||
-        message.type === 'learnTalent' ||
-        message.type === 'equipTalent' ||
-        message.type === 'resetTalents' ||
-        message.type === 'useItem' ||
-        message.type === 'unequip' ||
-        message.type === 'trade' ||
-        message.type === 'sellAll' ||
-        message.type === 'storeItem' ||
-        message.type === 'renameStorage' ||
-        message.type === 'moveStorageItem'
-      ) {
+      if (isCharacterCommand(message)) {
         const trading = message.type === 'trade' || message.type === 'sellAll';
         const storing =
           message.type === 'storeItem' ||
@@ -529,64 +501,14 @@ export async function createRuntime(
           error('Use the bullseye in the village to reset your current class talents.');
           return;
         }
-        let saving = false;
+        let committed = false;
         try {
-          const next = structuredClone(player);
-          const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
-          const trader = traderId === 'craftsman' ? merchant.craftsman! : merchant;
-          if (message.type === 'setTactics')
-            next.tactics = { ...DEFAULT_TACTICS, ...player.tactics, ...message.tactics };
-          else if (message.type === 'moveTacticsPriority') {
-            next.tactics = { ...DEFAULT_TACTICS, ...player.tactics };
-            const order = [...next.tactics[message.list]];
-            const from = order.findIndex((rule) => rule === message.rule);
-            if (from < 0) throw new Error('Priority does not belong to this list.');
-            const to = from + message.direction;
-            if (to >= 0 && to < order.length) {
-              [order[from], order[to]] = [order[to], order[from]];
-              next.tactics = { ...next.tactics, [message.list]: order };
-            }
-          } else if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
-          else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
-          else if (message.type === 'resetTalents') resetTalents(next);
-          else if (message.type === 'trade')
-            tradeItem(next, trader, message.id, message.buying, message.amount);
-          else if (message.type === 'storeItem')
-            transferStoredItem(next, message.tab, message.id, message.depositing);
-          else if (message.type === 'moveStorageItem')
-            moveStorageItem(next, message.fromTab, message.toTab, message.id);
-          else if (message.type === 'renameStorage')
-            next.storages![message.tab].name = message.name;
-          else if (message.type === 'sellAll') sellAll(next, trader);
-          else if (message.type === 'unequip') unequipItem(next, message.slot);
-          else useBackpackItem(next, message.id);
-          saving = true;
-          characters.save(
-            session.characterId,
-            next.name,
-            next,
-            trading ? { worldId: world.id, state: merchant } : undefined,
-          );
-          Object.assign(player, {
-            tactics: next.tactics,
-            talents: next.talents,
-            talentSlots: next.talentSlots,
-            talentVersion: next.talentVersion,
-            backpack: next.backpack,
-            storages: next.storages,
-            equipment: next.equipment,
-            equipmentItems: next.equipmentItems,
-            coins: next.coins,
-            hitpoints: next.hitpoints,
-            maxHitpoints: next.maxHitpoints,
-          });
-          if (changingTactics) player.attackTargetId = undefined;
-          if (message.type === 'resetTalents') clearTalentEffects(player);
-          if (trading) world.merchant = merchant;
+          commitCharacterCommand(message, player, world, session.characterId, characters, traderId);
+          committed = true;
           send(ws, { type: 'state', world: state(world, now, player) });
         } catch (failure) {
           error(
-            !saving && failure instanceof Error
+            !committed && failure instanceof Error
               ? failure.message
               : 'Unable to save item action. Please retry.',
           );

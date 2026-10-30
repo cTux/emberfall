@@ -8,7 +8,8 @@ so no separate build is needed after installing dependencies.
 ## GitHub Pages
 
 The [deployment workflow](../../.github/workflows/deploy-pages.yml) publishes
-this client on pushes to `main`, using `BASE_API` and `BASE_PORT` as public
+this client after a successful manual full Verify run on current `main`, using
+`BASE_API` and `BASE_PORT` as public
 build variables. API/account requests and game traffic use the remote backend;
 assets, audio and version checks use the Pages base path. See
 [Pages setup and server configuration](../../docs/operations.md#github-pages-client-with-a-server-on-your-machine)
