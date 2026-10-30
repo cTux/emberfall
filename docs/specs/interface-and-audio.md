@@ -200,6 +200,14 @@ gear types. Character stats derived from all equipment
 appear underneath equipment on the left, with the 20-slot backpack on the right. Attack timing is
 shown only as cooldown, without a duplicate attack-speed row.
 
+Unequipped compatible gear includes a compact comparison against the item in the
+slot that equipping would replace. Signed green gains and red losses cover base
+stats and rolled bonuses, including bonuses absent from the candidate. Equal
+items show “Same stats”; empty slots compare against zero. This also applies in
+trading and storage. Consumables and class-incompatible gear omit comparison.
+
+![Verified desktop Storybook item comparison](../images/item-stat-comparison.png)
+
 ![Verified desktop weapon item tooltip](../images/compact-item-tooltips.png)
 
 Normal outgoing damage numbers use physical parchment, fire orange, poison lime

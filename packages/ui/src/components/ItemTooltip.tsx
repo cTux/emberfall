@@ -36,6 +36,10 @@ export interface ItemTooltipView {
   details?: string;
   equipRestriction?: string;
   price?: number;
+  comparison?: {
+    label: string;
+    rows: { label: string; value: string; improved: boolean }[];
+  };
 }
 
 /** Shared item layout; the host owns item rules and contextual actions. */
@@ -136,6 +140,37 @@ export function ItemTooltip({
           </ItemStatStyled>
         </GearTooltipStyled>
       ))}
+      {item.comparison && (
+        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 0.5 }}>
+          <Typography variant='caption' color='text.secondary'>
+            {item.comparison.label}
+          </Typography>
+          {item.comparison.rows.length ? (
+            item.comparison.rows.map((row) => (
+              <Stack
+                key={row.label}
+                direction='row'
+                spacing={1}
+                sx={{ justifyContent: 'space-between' }}
+              >
+                <Typography variant='body2' color='text.secondary'>
+                  {row.label}
+                </Typography>
+                <Typography
+                  variant='body2'
+                  sx={{ color: row.improved ? 'success.main' : 'error.main', whiteSpace: 'nowrap' }}
+                >
+                  {row.value}
+                </Typography>
+              </Stack>
+            ))
+          ) : (
+            <Typography variant='body2' color='text.secondary'>
+              Same stats
+            </Typography>
+          )}
+        </Box>
+      )}
       {quantity !== undefined && (
         <Stack direction='row' sx={{ justifyContent: 'space-between' }}>
           <Typography variant='body2' color='text.secondary'>

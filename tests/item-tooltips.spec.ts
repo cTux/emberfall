@@ -12,11 +12,20 @@ test('backpack item tooltips share weapon details and compact resource cards', a
   const player = [...world.players.values()][0];
   player.backpack = [
     { id: 'sword', itemId: 'warrior-sword', quantity: 1 },
+    { id: 'amulet', itemId: 'loot-amulet', quantity: 1, stats: { expIncrease: 20 } },
     { id: 'log', itemId: 'log', quantity: 12 },
     { id: 'herb', itemId: 'flowering-herb', quantity: 8 },
   ];
+  player.equipment = { weapon: 'warrior-sword', amulet: 'loot-amulet' };
+  player.equipmentItems = {
+    amulet: { id: 'old-amulet', itemId: 'loot-amulet', quantity: 1, stats: { goldIncrease: 10 } },
+  };
   await page.keyboard.press('i');
   const backpack = page.getByRole('region', { name: 'Your backpack' });
+  await backpack.getByRole('button', { name: 'Use Amulet', exact: true }).hover();
+  const comparison = page.getByRole('tooltip').filter({ hasText: 'vs equipped Amulet' });
+  await expect(comparison).toContainText('Bonus exp increase+20%');
+  await expect(comparison).toContainText('Bonus gold increase-10%');
   for (const [name, quantity] of [
     ['Log', 12],
     ['Flowering herb', 8],
@@ -27,6 +36,7 @@ test('backpack item tooltips share weapon details and compact resource cards', a
     await expect(tooltip).toContainText(`Quantity${quantity}`);
     await expect(tooltip).toContainText('1 gold each');
     await expect(tooltip).not.toContainText('Right-click:');
+    await expect(tooltip).not.toContainText('vs equipped');
     expect((await tooltip.locator('.MuiTooltip-tooltip').boundingBox())!.height).toBeLessThan(150);
     await page.screenshot({
       path: `test-results/item-tooltip-${name.toLowerCase().replaceAll(' ', '-')}.png`,

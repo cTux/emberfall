@@ -1,4 +1,5 @@
 import { clientAsset } from './urls.ts';
+import { itemComparison } from './item-comparison';
 import { registeredSlotViews, additionalStatViews } from './content-views';
 import { game, itemRarity, rarityColor, ItemStat, itemStatWeight } from '@emberfall/core';
 import { useEffect, useRef, useState } from 'react';
@@ -328,7 +329,7 @@ function itemIcon(itemId: string) {
 }
 export function backpackViews(
   items: BackpackItem[],
-  player: Pick<Player, 'autoTarget' | 'classId'>,
+  player: Pick<Player, 'autoTarget' | 'classId' | 'equipment' | 'equipmentItems'>,
 ) {
   return items.map((item) => {
     const definition = itemDefinition(item.itemId);
@@ -347,6 +348,7 @@ export function backpackViews(
       icon: itemIcon(item.itemId),
       price: definition.price ?? 1,
       subtitle: gear ? GEAR_LABELS[gear.gearType] : capitalize(definition.kind),
+      comparison: itemComparison(item, player),
       primary: gear?.stats.armor ? { label: 'Armor', value: number(gear.stats.armor) } : undefined,
       stats: [
         ...(gear && ITEM_CLASSES[item.itemId]

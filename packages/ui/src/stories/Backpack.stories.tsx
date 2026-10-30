@@ -4,6 +4,7 @@ import { Box, Button, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import healthPotion from '../assets/health-potion.png';
+import amulet from '../assets/item-icons/slot-amulet.png';
 import warriorWeapon from '../assets/item-icons/warrior-weapon.png';
 import { Backpack, EquipmentPanel, GameWindow } from '../index';
 
@@ -36,6 +37,47 @@ export const Single: StoryObj<typeof meta> = {
   args: { items: [{ ...meta.args.items[0], quantity: 1 }] },
 };
 export const Empty: StoryObj<typeof meta> = { args: { items: [] } };
+export const Comparison: StoryObj<typeof meta> = {
+  args: {
+    items: [
+      {
+        id: 'amulet',
+        name: 'Amulet',
+        quantity: 1,
+        stackable: false,
+        price: 1,
+        details: '',
+        subtitle: 'Amulet',
+        rarity: 'Rare',
+        useAction: 'Equip',
+        icon: <img src={amulet} alt='' />,
+        primary: { label: 'Armor', value: '1' },
+        stats: [
+          {
+            label: 'Bonus exp increase',
+            icon: 'magic',
+            value: '+20%',
+            explanation: 'Adds to party drops.',
+          },
+        ],
+        comparison: {
+          label: 'vs equipped Amulet',
+          rows: [
+            { label: 'Bonus exp increase', value: '+20%', improved: true },
+            { label: 'Bonus gold increase', value: '-10%', improved: false },
+          ],
+        },
+      },
+    ],
+  },
+};
+export const SameStats: StoryObj<typeof meta> = {
+  args: {
+    items: [
+      { ...Comparison.args!.items![0], comparison: { label: 'vs equipped Amulet', rows: [] } },
+    ],
+  },
+};
 export const RestrictedGear: StoryObj<typeof meta> = {
   args: {
     items: [

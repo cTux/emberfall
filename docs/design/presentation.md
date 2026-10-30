@@ -175,6 +175,13 @@ current class, supplying an optional `equipRestriction` to `ItemTooltipView`.
 The controlled tooltip renders that text with the theme's `error.main` color.
 Restricted gear omits `useAction`; explicit trade and storage actions remain.
 
+`item-comparison.ts` uses the shared equip-slot rules to compare candidate base
+contributions and rolled bonuses with the equipped definition and matching
+instance. It passes signed, formatted rows through `ItemTooltipView.comparison`;
+the shared tooltip renders them with semantic gain/loss colors. Unchanged rows
+are omitted, with “Same stats” for identical contributions. This compares items,
+not projected final character stats.
+
 `theme.tsx` applies shared `windowSurface` styles to game windows and MUI tooltips.
 Item popups and stat explanations portal into the modal container (or the page for
 nonmodal stories) to avoid scrolling-content clipping while preserving modal
