@@ -1,10 +1,10 @@
+import type { DrawingContext, WorldDrawingContext } from './rendering/drawing-context';
 import { abilityEffectOpacity } from './ability-effects';
 import { drawPartyOutline } from './effects';
 import { resourceNodes, resourceState } from '@emberfall/core';
 import { resourceScenery, drawResourceHealth } from './gathering';
 import { drawWorldBar } from './world-bar';
 import { game } from '@emberfall/core';
-import type { PixiContext } from './rendering/pixi-context';
 import { characterImages } from './characters';
 import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from './animation';
 import { actorArt, environmentArt, terrainArt, terrainTile } from './art';
@@ -71,7 +71,7 @@ export function portalInteraction(source: Interaction, x: number, y: number): In
 }
 
 export function drawPortal(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   now: number,
@@ -177,7 +177,7 @@ for (let i = 0; i < 36; i++) {
     }
 }
 export function drawFog(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   width: number,
@@ -243,7 +243,7 @@ export function forestRenderer(
     return spriteMask(image, column, row, false, ACTOR_CELL, false, ACTOR_CELL)!;
   }
   return (
-    ctx: CanvasRenderingContext2D,
+    ctx: WorldDrawingContext,
     world: WorldState | null,
     playerId: string,
     quality: GraphicsSettings,
@@ -259,8 +259,8 @@ export function forestRenderer(
     }
     const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
     const cycle = dayNight(world?.serverNow ?? 0);
-    (ctx as unknown as PixiContext).ambientTint = cycle.tint;
-    (ctx as unknown as PixiContext).directionalShadow = cycle.shadow;
+    ctx.ambientTint = cycle.tint;
+    ctx.directionalShadow = cycle.shadow;
     if (
       environmentArt.naturalWidth &&
       terrainArt.complete &&
@@ -504,7 +504,7 @@ export function forestRenderer(
         portal: null,
       })),
     ].sort((a, b) => a.y - b.y);
-    const renderer = ctx as unknown as PixiContext;
+    const renderer = ctx;
     const localActor = rendered.find((actor) => actor.id === playerId);
     if (localActor && localActor.image.naturalWidth) {
       const breath = idleBreath(now, localActor.row);
@@ -630,7 +630,7 @@ export function forestRenderer(
         );
         ctx.globalAlpha = bodyOpacity;
       }
-      (ctx as unknown as PixiContext).spriteTint = a.player?.reconnecting ? '#ff5555' : '#ffffff';
+      ctx.spriteTint = a.player?.reconnecting ? '#ff5555' : '#ffffff';
       const breath = idleBreath(now, a.row);
       ctx.drawImage(
         a.image,
@@ -643,7 +643,7 @@ export function forestRenderer(
         a.size,
         a.size * breath,
       );
-      (ctx as unknown as PixiContext).spriteTint = '#ffffff';
+      ctx.spriteTint = '#ffffff';
       const highlightPlayer =
         highlightInteractions &&
         !!a.player &&
@@ -748,7 +748,7 @@ export function forestRenderer(
   };
 }
 export function drawPlayerDetails(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   p: Player,
   x: number,
   y: number,
@@ -772,7 +772,7 @@ export function drawPlayerDetails(
 }
 
 export function drawPlayerAttack(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   p: Player,
   x: number,
   y: number,

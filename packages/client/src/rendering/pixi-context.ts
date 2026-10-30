@@ -1,3 +1,4 @@
+import type { WorldDrawingContext } from './drawing-context';
 import { DrawingState } from './drawing-state';
 import { VisualPools, type Visual } from './visual-pools';
 import { Gradient, GradientPaints } from './paints';
@@ -31,7 +32,7 @@ type PathCommand = {
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
  */
-export class PixiContext extends DrawingState {
+export class PixiContext extends DrawingState implements WorldDrawingContext {
   private visuals = new VisualPools();
   get ecs() {
     return this.visuals.ecs;

@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { abilityEffectOpacity } from './ability-effects';
 import type { Preferences } from './preferences';
 import { equipmentSlotArt } from './content-views';
@@ -22,7 +23,7 @@ export function bloodPuddleRenderer() {
   const puddles = new Map<number, Pick<DamageEvent, 'id' | 'x' | 'y' | 'at'>>();
   let sceneId: string | undefined;
   return (
-    ctx: CanvasRenderingContext2D,
+    ctx: DrawingContext,
     scene: SceneState | undefined,
     now: number,
     enabled: boolean,
@@ -116,7 +117,7 @@ function lootSprite(kind: LootDrop['kind']) {
 }
 
 export function drawLootAndBlood(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   scene: SceneState,
   now: number,
   near: (x: number, y: number) => { x: number; y: number },
@@ -186,11 +187,7 @@ export function drawLootAndBlood(
 }
 
 const projectileOutlines = new Map<string, HTMLCanvasElement>();
-function drawProjectileArt(
-  ctx: CanvasRenderingContext2D,
-  kind: 'arrow' | 'fireball' | 'roots',
-  now: number,
-) {
+function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'roots', now: number) {
   const arrow = kind === 'arrow';
   const image = arrow ? pickupArt : effectsArt;
   if (!image.naturalWidth || image.dataset.artReady !== 'true') return false;
@@ -225,7 +222,7 @@ function drawProjectileArt(
 }
 
 export function drawClassProjectiles(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   scene: SceneState,
   now: number,
   near: (x: number, y: number) => { x: number; y: number },
@@ -357,7 +354,7 @@ export function drawClassProjectiles(
 }
 
 export function drawDebuffs(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   target: { debuffs?: readonly DebuffIndicator[] },
   x: number,
   y: number,

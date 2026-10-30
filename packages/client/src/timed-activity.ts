@@ -1,9 +1,10 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import type { TimedActivity } from '@emberfall/common';
 import { activityIndicator, ACTIVITY_ZONE_WIDTH } from '@emberfall/core';
 import { drawWorldBar } from './world-bar.ts';
 
 export function drawTimedActivity(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   activity: TimedActivity,
   x: number,
   y: number,

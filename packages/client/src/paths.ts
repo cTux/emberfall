@@ -1,8 +1,9 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { ARENA, PATHS } from '@emberfall/core';
 import { terrainTile } from './art';
 
 /** Plain dirt at the buildings' 2x pixel scale, with continuous rounded joins. */
-export function drawVillagePaths(ctx: CanvasRenderingContext2D, floor: HTMLImageElement) {
+export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
   if (!floor.naturalWidth) return;
   const paths = document.createElement('canvas');
   paths.width = ARENA.width / 2;

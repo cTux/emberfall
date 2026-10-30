@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { wrappedDelta } from '@emberfall/common';
 import { FOREST, LOBBY_PORTAL } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
@@ -10,7 +11,7 @@ export function edgeArrow(x: number, y: number, width: number, height: number) {
   return { x: width / 2 + dx * ratio, y: height / 2 + dy * ratio, angle: Math.atan2(dy, dx) };
 }
 
-export function drawNavigation(ctx: CanvasRenderingContext2D, world: WorldState, id: string) {
+export function drawNavigation(ctx: DrawingContext, world: WorldState, id: string) {
   const me = world.players.find((p) => p.id === id);
   if (!me) return;
   const targets = world.players

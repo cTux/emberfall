@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import type { VillageNpc } from '@emberfall/common';
 import { WARDROBE, BUILDINGS, TORCHES, TREES, ROCKS, PLANTS } from '@emberfall/core';
 import { makeMask, castShadow } from './lighting';
@@ -179,7 +180,7 @@ let hangingLamp: { post: HTMLCanvasElement; lamp: HTMLCanvasElement } | undefine
 
 /** Split the existing painting once: one fixed post and one suspended lantern. */
 export function drawTorchFire(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   now: number,

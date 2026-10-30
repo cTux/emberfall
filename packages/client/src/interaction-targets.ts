@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import {
   GATHER_RANGE,
   BULLSEYE,
@@ -116,7 +117,7 @@ export function pickInteraction(
 }
 
 const outlines = new WeakMap<HTMLCanvasElement, Map<string, HTMLCanvasElement>>();
-export function drawInteractionOutline(ctx: CanvasRenderingContext2D, target: InteractionTarget) {
+export function drawInteractionOutline(ctx: DrawingContext, target: InteractionTarget) {
   // Bake at display size so wide houses and narrow NPCs have the same thickness.
   const radius = 1;
   const width = Math.round(target.width),

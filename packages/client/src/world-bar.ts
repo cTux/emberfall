@@ -1,8 +1,9 @@
+import type { DrawingContext } from './rendering/drawing-context';
 const WORLD_BAR_HEIGHT = 7;
 const BORDER = 1;
 
 export function drawWorldBar(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   left: number,
   bottom: number,
   width: number,

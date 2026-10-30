@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { crittersAt } from './critter-motion.ts';
 export { crittersAt } from './critter-motion.ts';
 import { spriteMask } from './lighting.ts';
@@ -25,7 +26,7 @@ export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
     : null;
 }
 export function drawCritter(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   critter: ReturnType<typeof crittersAt>[number],
   shadows = false,
 ) {
