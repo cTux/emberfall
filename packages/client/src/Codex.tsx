@@ -27,11 +27,11 @@ const chapters = [
             <kbd>WASD</kbd> or <kbd>↑ ↓ ← →</kbd> — move.
           </li>
           <li>
-            <kbd>E</kbd> or left click — interact with a hovered building, Marta the Innkeeper, or
-            portal while in range. Yellow outlines are always thin. E also works nearby without
-            hovering. Gathering takes five seconds. Press E as the white indicator crosses the green
-            zone above the resource to save two seconds per hit. There is no gathering cooldown.
-            Trees allow five gathers and resources restore after one hour.
+            <kbd>E</kbd> or left click — interact with a hovered building, Marta the Innkeeper, Bram
+            the Craftsman, or portal while in range. Yellow outlines are always thin. E also works
+            nearby without hovering. Gathering takes five seconds. Press E as the white indicator
+            crosses the green zone above the resource to save two seconds per hit. There is no
+            gathering cooldown. Trees allow five gathers and resources restore after one hour.
           </li>
           <li>
             Hold <kbd>Alt</kbd> for more than 0.5 seconds — show green outlines on all visible

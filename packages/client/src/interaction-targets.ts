@@ -45,7 +45,13 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
   const id = object.id.replace(/^(building|npc|workstation):/, '');
   const building = BUILDINGS.find((b) => b.id === id && b.id !== 'inn');
   const bullseye = !!BULLSEYE && object.id === `workstation:${BULLSEYE.id}`;
-  if (!building && !bullseye && object.id !== 'building:wardrobe' && object.id !== 'npc:innkeeper')
+  if (
+    !building &&
+    !bullseye &&
+    object.id !== 'building:wardrobe' &&
+    object.id !== 'npc:innkeeper' &&
+    object.id !== 'npc:craftsman'
+  )
     return null;
   return {
     source: {

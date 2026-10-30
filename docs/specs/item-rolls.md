@@ -85,3 +85,25 @@ Legendary orange `#ff8000`. Tooltips identify rarity and every rolled stat.
 
 Verification: [rule and persistence checks](../../packages/server/src/item-rolls.test.ts)
 and [desktop inventory/storage/trading checks](../../tests/item-rarities.spec.ts).
+
+## ITEM-04 — Gear prices
+
+Gear uses one per-item gold price for buying, selling and buyback, including
+Sell all, quantity modifiers, storage and equipped-item tooltips. The price is
+`ceil(base price × rarity multiplier + 5 × stat score)`. The rarity multiplier
+uses the existing Common 1, Uncommon 1.2, Rare 1.4, Epic 1.7 and Legendary 2
+values. Each rolled stat contributes `value / stat base value / stat weight`
+to the score: comparable stat units have comparable value, larger bonuses cost
+more, and scarce legendary affixes command a premium. Missing roll metadata
+means Common with no added stat score; intrinsic definition stats are unchanged.
+Consumable and resource prices retain their definition value (default 1 gold).
+All prices and resulting balances must be safe integers; rejected transactions
+leave items and balances unchanged.
+
+Bram sells rolled gear; Marta sells consumables and resources. Both support
+selling and independent buyback lists. Verified desktop gameplay capture:
+
+![Bram gear buyback with rarity-aware price](../images/bram-gear-buyback.png)
+
+Evidence: [merchant rules and command tests](../../packages/server/src/merchant.test.ts),
+[desktop rarity and buyback test](../../tests/item-rarities.spec.ts).

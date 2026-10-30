@@ -21,6 +21,8 @@ test('building interactions retain service names when scenery labels are absent 
 test('wardrobe and trader interactions retain names without scenery labels', () => {
   assert.equal(sceneryInteraction(scenery('building:wardrobe'))?.source.name, 'Wardrobe');
   assert.equal(sceneryInteraction(scenery('npc:innkeeper'))?.source.name, INNKEEPER.name);
+  const bram = { ...scenery('npc:craftsman'), npc: { name: 'Bram the Craftsman' } } as Scenery;
+  assert.equal(sceneryInteraction(bram)?.source.name, 'Bram the Craftsman');
   assert.equal(sceneryInteraction(scenery('building:inn')), null);
   assert.equal(sceneryInteraction(scenery('tree:1'))?.source.id, 'gather:tree:1');
 });

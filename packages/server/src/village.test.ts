@@ -35,12 +35,20 @@ test('village paths and door approaches are walkable while buildings and torch p
     assert(result.y >= building.y + 12);
     assert(result.y < building.y + 30);
     if (building.id === 'inn') continue;
-    assert.deepEqual(nearbyInteraction({ x: building.doorX, y: building.y + 30, hitpoints: 100 }), {
-      id: building.id,
-      name: building.name,
-      x: building.doorX,
-      y: building.y,
-    });
+    assert.deepEqual(
+      nearbyInteraction(
+        { x: building.doorX, y: building.y + 30, hitpoints: 100 },
+        false,
+        undefined,
+        [],
+      ),
+      {
+        id: building.id,
+        name: building.name,
+        x: building.doorX,
+        y: building.y,
+      },
+    );
   }
   for (const torch of TORCHES) {
     const result = moveActor({ x: torch.x - 30, y: torch.y }, 60, 0, 12);
@@ -78,4 +86,17 @@ test('Marta replaces the Inn interaction with living village-only wrapped proxim
   assert.equal(nearbyInteraction({ ...player, x: player.x + INTERACTION_RADIUS }), null);
   const inn = BUILDINGS.find((b) => b.id === 'inn')!;
   assert.equal(nearbyInteraction({ ...player, x: inn.doorX, y: inn.y + 9 }), null);
+});
+
+test('Bram owns live wrapped interaction range and unavailable NPCs do not use static positions', () => {
+  const bram = { id: 'craftsman', name: 'Bram the Craftsman', x: 1000, y: 1000 };
+  const player = { x: bram.x + ARENA.width, y: bram.y - 15, hitpoints: 100 };
+  assert.deepEqual(nearbyInteraction(player, false, undefined, [bram]), bram);
+  assert.equal(nearbyInteraction(player, false, undefined, []), null);
+  assert.equal(nearbyInteraction({ ...player, hitpoints: 0 }, false, undefined, [bram]), null);
+  assert.equal(nearbyInteraction({ ...player, scene: 'forest' }, false, undefined, [bram]), null);
+  assert.equal(
+    nearbyInteraction({ ...player, x: bram.x + INTERACTION_RADIUS }, false, undefined, [bram]),
+    null,
+  );
 });

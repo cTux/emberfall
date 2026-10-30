@@ -7,7 +7,7 @@ import {
 } from './definitions/worlds/forest.ts';
 export { FOREST, LOBBY_PORTAL, FOREST_PORTAL, INTERACTION_RADIUS };
 import { BUILDINGS, WARDROBE } from './world.ts';
-import { INNKEEPER } from './definitions/worlds/village.ts';
+import { INNKEEPER, VILLAGE_DEFINITION } from './definitions/worlds/village.ts';
 export { INNKEEPER };
 
 export { WARDROBE } from './world.ts';
@@ -76,6 +76,22 @@ export function moveForestActor(
   }
   return { x: wrap(x, FOREST.width), y: wrap(y, FOREST.height) };
 }
+export function traderInRange(
+  player: { x: number; y: number; scene?: string; hitpoints: number },
+  npcId: string,
+  npcs: readonly { id: string; x: number; y: number }[] | undefined,
+) {
+  return (
+    !player.scene &&
+    player.hitpoints > 0 &&
+    (npcId === 'innkeeper' || npcId === 'craftsman') &&
+    !!npcs?.some(
+      (npc) =>
+        npc.id === npcId &&
+        forestDistance({ x: player.x, y: player.y + 15 }, npc) < INTERACTION_RADIUS,
+    )
+  );
+}
 export function nearbyInteraction(
   player: { x: number; y: number; scene?: string; hitpoints: number },
   ended = false,
@@ -92,9 +108,11 @@ export function nearbyInteraction(
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
     return { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL };
   if (distance(WARDROBE) < 55) return { id: 'wardrobe', name: 'Wardrobe', ...WARDROBE };
-  const innkeeper = npcs?.find((npc) => npc.id === INNKEEPER.id) ?? (npcs ? undefined : INNKEEPER);
-  if (innkeeper && distance(innkeeper) < INTERACTION_RADIUS)
-    return { id: innkeeper.id, name: innkeeper.name, x: innkeeper.x, y: innkeeper.y };
+  const trader = (npcs ?? VILLAGE_DEFINITION.villagers).find(
+    (npc) =>
+      (npc.id === 'innkeeper' || npc.id === 'craftsman') && distance(npc) < INTERACTION_RADIUS,
+  );
+  if (trader) return { id: trader.id, name: trader.name, x: trader.x, y: trader.y };
   const building = BUILDINGS.find(
     (b) => b.id !== 'inn' && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
   );

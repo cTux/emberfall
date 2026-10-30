@@ -366,7 +366,14 @@ export function Game({
     );
   };
   const unavailable = status !== 'Connected' || pending;
-  const tradingNpcId = menu === 'building' && building === INNKEEPER.name ? INNKEEPER.id : null;
+  const tradingNpcId =
+    menu === 'building'
+      ? building === INNKEEPER.name
+        ? INNKEEPER.id
+        : building === 'Bram the Craftsman'
+          ? 'craftsman'
+          : null
+      : null;
   useEffect(() => {
     if (status === 'Connected' && socket.current?.readyState === GameConnection.OPEN)
       socket.current.send({ type: 'npcInteraction', npcId: tradingNpcId });
@@ -877,8 +884,7 @@ export function Game({
                 : menu === 'wardrobe'
                   ? 600
                   : menu === 'equipment' ||
-                      (menu === 'building' &&
-                        (building === INNKEEPER.name || building === 'Storehouse'))
+                      (menu === 'building' && (tradingNpcId || building === 'Storehouse'))
                     ? 520
                     : undefined
             }
@@ -1037,8 +1043,16 @@ export function Game({
                       );
                     })}
                   </Box>
-                ) : menu === 'building' && building === INNKEEPER.name && me && world?.merchant ? (
-                  <Trading player={me} merchant={world.merchant} send={send} />
+                ) : menu === 'building' && tradingNpcId && me && world?.merchant ? (
+                  <Trading
+                    key={tradingNpcId}
+                    player={me}
+                    merchant={
+                      tradingNpcId === 'craftsman' ? world.merchant.craftsman! : world.merchant
+                    }
+                    craftsman={tradingNpcId === 'craftsman'}
+                    send={send}
+                  />
                 ) : menu === 'building' && building === 'Storehouse' && me ? (
                   <Storehouse player={me} send={send} />
                 ) : menu === 'building' ? (

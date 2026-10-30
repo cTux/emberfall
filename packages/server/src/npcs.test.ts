@@ -922,3 +922,24 @@ test('each resident rotates all personal topics and player questions take priori
     }
   }
 });
+
+test('Bram remains paused for his own interaction when Marta is also in range', () => {
+  const { world, life } = setup();
+  try {
+    const hero = world.players.get('p')!;
+    const bram = world.npcs!.find((npc) => npc.id === 'craftsman')!;
+    Object.assign(hero, { x: 1000, y: 985 });
+    Object.assign(bram, { x: 1000, y: 1000 });
+    Object.assign(world.npcs![0], { x: 1020, y: 1000 });
+    life.interact(hero, bram.id);
+    const position = { x: bram.x, y: bram.y };
+    life.tick(9000, 0.05);
+    assert.equal(bram.moving, false);
+    assert.deepEqual({ x: bram.x, y: bram.y }, position);
+    Object.assign(hero, { x: 2000, y: 2000 });
+    life.tick(9050, 0.05);
+    assert.equal(bram.moving, true);
+  } finally {
+    life.close();
+  }
+});
