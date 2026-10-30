@@ -27,6 +27,12 @@ export const CoolingDown: Story = {
   args: { baseAbility: { ...meta.args.baseAbility, remainingMs: 650 } },
 };
 export const Unequipped: Story = { args: { baseAbility: undefined } };
+export const FractionalCooldowns: Story = {
+  args: {
+    baseAbility: { ...meta.args.baseAbility, cooldownMs: 5747.12643678161 },
+    abilities: [{ ...meta.args.baseAbility, name: 'Mending Seed', cooldownMs: 5747.12643678161 }],
+  },
+};
 export const Manual: Story = { args: { autoFire: false, autoTarget: false } };
 export const AutoFireOnly: Story = { args: { autoTarget: false } };
 export const AutoTargetOnly: Story = { args: { autoFire: false } };

@@ -120,7 +120,8 @@ export function ActionBar({
             <Stack spacing={0.5}>
               <Typography sx={{ fontWeight: 700 }}>{baseAbility.name}</Typography>
               <Typography variant='body2'>
-                Cooldown: {duration / 1000} {duration === 1000 ? 'second' : 'seconds'}
+                Cooldown: {Math.round(duration / 100) / 10}{' '}
+                {duration === 1000 ? 'second' : 'seconds'}
               </Typography>
               <Typography variant='body2'>{baseAbility.description}</Typography>
             </Stack>
@@ -197,7 +198,7 @@ export function ActionBar({
               <Stack spacing={0.5}>
                 <Typography sx={{ fontWeight: 700 }}>{ability.name}</Typography>
                 <Typography variant='body2'>
-                  Cooldown: {ability.cooldownMs / 1000} seconds
+                  Cooldown: {Math.round(ability.cooldownMs / 100) / 10} seconds
                 </Typography>
                 <Typography variant='body2'>{ability.description}</Typography>
               </Stack>
