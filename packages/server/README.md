@@ -42,6 +42,9 @@ client bearer/name fields cannot override them. The optional Steam argument on t
 server factory is omitted only by isolated legacy-protocol tests, never by the
 production entrypoint.
 
+- `account-options.ts` validates canonical HTTPS and client landing URLs;
+  `account-cookies.ts` owns strict cookie parsing and secure attributes.
+  `accounts.ts` retains login/session orchestration and HTTP authorization.
 - `worlds.ts` composes HTTP, Colyseus and the authoritative application. Each
   connection has a private Colyseus session room, preserving browsing and world
   transfers on one connection. A shared in-process party runtime owns combat;
