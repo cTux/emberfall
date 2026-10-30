@@ -7,25 +7,25 @@ wrapped geometry, forest/training parity and existing public exports.
 
 ## Delivery sequence
 
-| Batch | Scope                                                                            | Status      |
-| ----- | -------------------------------------------------------------------------------- | ----------- |
-| 1     | Remove world/scene geometry cycle and enforce package dependency direction       | In progress |
-| 2     | PR verification workflow including core suites and desktop browser checks        | Pending     |
-| 3     | Common contract modules and independent engine content contracts                 | Pending     |
-| 4     | Save codec and migrations separated from repository transactions                 | Pending     |
-| 5     | Server command groups, durable actions, sessions and runtime scheduling          | Pending     |
-| 6     | Combat damage, rewards, ailments and projectiles; remove talent dependency cycle | Pending     |
-| 7     | Talent definitions, mechanic dispatch, schedules and passive effects             | Pending     |
-| 8     | Simulation systems, explicit tick order and deterministic random seams           | Pending     |
-| 9     | Catalog-bound equipment, inventory, merchant and validation modules              | Pending     |
-| 10    | Client session/recovery hook, world browser, HUD and panel descriptors           | Pending     |
-| 11    | Arena input/frame/camera ownership and prediction separation                     | Pending     |
-| 12    | Renderer drawing contract, pools, textures, paths and text                       | Pending     |
-| 13    | Forest/village layers, effects, equipment views and artwork descriptors          | Pending     |
-| 14    | NPC routines/dialogue scheduling and account HTTP/cookie helpers                 | Pending     |
-| 15    | Settings/tactics descriptors, Codex chapters, village data and styles            | Pending     |
-| 16    | Large test/fixture/story groups and art packaging responsibilities               | Pending     |
-| 17    | Production-path replication and multi-world load measurements                    | Pending     |
+| Batch | Scope                                                                            | Status                                                                                                                  |
+| ----- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 1     | Remove world/scene geometry cycle and enforce package dependency direction       | Merged [#309](https://github.com/cTux/emberfall/pull/309); 387 root and 22 core tests, typecheck, lint and build passed |
+| 2     | PR verification workflow including core suites and desktop browser checks        | In progress                                                                                                             |
+| 3     | Common contract modules and independent engine content contracts                 | Pending                                                                                                                 |
+| 4     | Save codec and migrations separated from repository transactions                 | Pending                                                                                                                 |
+| 5     | Server command groups, durable actions, sessions and runtime scheduling          | Pending                                                                                                                 |
+| 6     | Combat damage, rewards, ailments and projectiles; remove talent dependency cycle | Pending                                                                                                                 |
+| 7     | Talent definitions, mechanic dispatch, schedules and passive effects             | Pending                                                                                                                 |
+| 8     | Simulation systems, explicit tick order and deterministic random seams           | Pending                                                                                                                 |
+| 9     | Catalog-bound equipment, inventory, merchant and validation modules              | Pending                                                                                                                 |
+| 10    | Client session/recovery hook, world browser, HUD and panel descriptors           | Pending                                                                                                                 |
+| 11    | Arena input/frame/camera ownership and prediction separation                     | Pending                                                                                                                 |
+| 12    | Renderer drawing contract, pools, textures, paths and text                       | Pending                                                                                                                 |
+| 13    | Forest/village layers, effects, equipment views and artwork descriptors          | Pending                                                                                                                 |
+| 14    | NPC routines/dialogue scheduling and account HTTP/cookie helpers                 | Pending                                                                                                                 |
+| 15    | Settings/tactics descriptors, Codex chapters, village data and styles            | Pending                                                                                                                 |
+| 16    | Large test/fixture/story groups and art packaging responsibilities               | Pending                                                                                                                 |
+| 17    | Production-path replication and multi-world load measurements                    | Pending                                                                                                                 |
 
 ## Verification and completion
 

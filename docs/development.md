@@ -4,6 +4,12 @@ Run commands from the repository root unless stated otherwise. Runtime setup and
 
 ## Commands
 
+The [Verify workflow](../.github/workflows/verify.yml) runs formatting, lint,
+typechecking, core and root Node suites, builds, and desktop browser suites on
+pull requests and main. Browser tests use a disposable self-signed certificate
+and isolated test databases. Failed browser runs retain their reports as CI
+artifacts. Git checks text out with LF on every platform through `.gitattributes`.
+
 ```sh
 pnpm install --frozen-lockfile
 pnpm fmt:check
