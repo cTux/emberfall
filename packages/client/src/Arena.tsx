@@ -1,3 +1,4 @@
+import { InteractionPresentation } from './interaction-presentation';
 import { VillageScene } from './village-scene';
 
 import { FrameBudget } from './frame-budget';
@@ -5,15 +6,12 @@ import { createArenaInput } from './arena-input';
 
 import { LootHints } from './loot-hints';
 import { drawLootHints } from './loot-hint-rendering';
-import { partyInteraction } from './interaction-targets';
 
 import { useChat } from './ChatProvider';
-import { resourceNodes, resourceState, nearbyResource, activityIndicator } from '@emberfall/core';
+import { resourceNodes, resourceState } from '@emberfall/core';
 import { resourceScenery } from './gathering';
-import { drawTimedActivity } from './timed-activity';
 
-import { sceneryInteraction, pickInteraction, interactionInRange } from './interaction-targets';
-import type { InteractionTarget } from './interaction-targets';
+import { sceneryInteraction } from './interaction-targets';
 
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
@@ -35,11 +33,11 @@ import { useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material';
 import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
-import { drawInteractionPrompt } from './effects';
+
 import type { Interaction } from './effects';
 import { wrappedDelta } from '@emberfall/common';
-import { ARENA, FOREST, nearbyInteraction, inTrainingZone } from '@emberfall/core';
-import type { ClientMessage, WorldState, Player } from '@emberfall/common';
+import { ARENA, FOREST } from '@emberfall/core';
+import type { ClientMessage, WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 
 import { dayNight } from './day-night';
@@ -142,10 +140,15 @@ export function Arena({
       move: (x, y, now) => localMovement.input(x, y, now),
     });
     onCursorAim(input.currentAim);
-    let hovered: InteractionTarget | null = null;
     const village = new VillageScene(playerId, (text) => catSpoke.current(text));
     let frame = 0;
-    let gatheringClock: { activity: NonNullable<Player['gathering']>; offset: number } | undefined;
+    const prompts = new InteractionPresentation({
+      element,
+      signal: interaction,
+      playerId,
+      send: (message) => sender.current(message),
+      blocked: input.blocked,
+    });
     let wardrobeOpenedAt = 0;
     let wardrobeActive = false;
     const resize = () => {
@@ -252,106 +255,17 @@ export function Arena({
         previousHp = hpKey;
         onHitpoints(hp);
       }
-      const authoritative = latest.current;
-      const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
-      const drawPrompt = () => {
-        const activity = authoritativePlayer?.gathering;
-        if (!activity) gatheringClock = undefined;
-        element.dataset.gathering = activity?.nodeId ?? '';
-        element.dataset.gatheringCheck = activity?.checkId ?? '';
-        if (activity && local) {
-          element.dataset.interactionPrompt = '';
-          const node = resourceNodes(local, 250).find((node) => node.id === activity.nodeId);
-          if (node) {
-            if (
-              !gatheringClock ||
-              gatheringClock.activity.startedAt !== activity.startedAt ||
-              gatheringClock.activity.nodeId !== activity.nodeId ||
-              gatheringClock.activity.epoch !== activity.epoch
-            ) {
-              // Packet arrival jitter must not restart the fill or indicator clock.
-              gatheringClock = {
-                activity,
-                offset: (authoritative?.serverNow ?? 0) - Math.min(now, receivedAt.current),
-              };
-            }
-            const activityTime = now + gatheringClock.offset;
-            element.dataset.gatheringIndicator = String(activityIndicator(activity, activityTime));
-            element.dataset.gatheringZone = String(activity.zoneStart);
-            drawTimedActivity(ctx, activity, node.x, node.y - node.size - 26, activityTime);
-            interaction.current = {
-              id: `gather:${node.id}`,
-              name: `Gather ${node.kind}`,
-              x: node.x,
-              y: node.y,
-              activate: () => {
-                if (input.blocked()) return;
-                sender.current({
-                  type: 'gather',
-                  nodeId: node.id,
-                  epoch: activity.epoch,
-                  checkId: activity.checkId,
-                  at: activityTime,
-                });
-              },
-            };
-          }
-          return;
-        }
-        const hideGatheringHint =
-          prefs.current.hideGatheringHintInCombat &&
-          interaction.current?.id.startsWith('gather:') &&
-          (authoritativePlayer?.scene === 'forest'
-            ? authoritative?.scene?.phase === 'active'
-            : authoritativePlayer &&
-              authoritative?.training?.phase === 'active' &&
-              inTrainingZone(authoritativePlayer));
-        const label =
-          local &&
-          authoritativePlayer &&
-          authoritativePlayer.hitpoints > 0 &&
-          !input.blocked() &&
-          !hideGatheringHint
-            ? (interaction.current?.name ?? '')
-            : '';
-        if (element.dataset.interactionPrompt !== label) element.dataset.interactionPrompt = label;
-        if (local && label) drawInteractionPrompt(ctx, local.x, local.y, label);
-      };
-      let nearby = authoritativePlayer
-        ? nearbyInteraction(
-            authoritativePlayer,
-            authoritative?.scene?.phase === 'ended',
-            authoritative?.scene?.portals,
-            authoritative?.npcs,
-          )
-        : null;
-      nearby = partyInteraction(authoritative, authoritativePlayer) ?? nearby;
-      if (!nearby && authoritativePlayer) {
-        const node = nearbyResource(
-          authoritativePlayer,
-          authoritative?.resources,
-          authoritative?.serverNow ?? 0,
-        );
-        if (node)
-          nearby = { id: `gather:${node.id}`, name: `Gather ${node.kind}`, x: node.x, y: node.y };
-      }
-      const updateGatherDiagnostics = () => {
-        element.dataset.resource = interaction.current?.id.startsWith('gather:')
-          ? interaction.current.id.slice(7)
-          : '';
-        element.dataset.depletedResources = String(
-          Object.values(view?.resources ?? {}).filter((state) => state.remaining === 0).length,
-        );
-        element.dataset.resourceHealth = String(
-          view?.resources?.[element.dataset.resource]?.remaining ?? '',
-        );
-      };
       const highlightInteractions = now - input.altHeldAt > 500 && !input.blocked();
-      const outlinedTargets = () => {
-        const highlighted = highlightInteractions;
-        for (const target of input.targets) target.highlighted = highlighted;
-        return highlighted ? input.targets : hovered ? [hovered] : [];
-      };
+      const interactionFrame = prompts.frame({
+        ctx,
+        authoritative: latest.current,
+        view,
+        local,
+        now,
+        receivedAt: receivedAt.current,
+        hideGatheringHintInCombat: prefs.current.hideGatheringHintInCombat,
+        highlightInteractions,
+      });
       input.targets = [];
       if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
         input.targets = view.scene.portals.map((portal) =>
@@ -373,25 +287,7 @@ export function Arena({
         );
         input.targets.sort((a, b) => a.y + a.height - b.y - b.height);
       }
-      hovered = pickInteraction(input.targets, input.pointerPoint());
-      interaction.current = hovered
-        ? interactionInRange(hovered, authoritativePlayer)
-          ? hovered.source
-          : hovered.source.id.startsWith('gather:')
-            ? nearby
-            : null
-        : nearby;
-      if (
-        nearby &&
-        !nearby.id.startsWith('gather:') &&
-        interaction.current?.id.startsWith('gather:')
-      )
-        interaction.current = nearby;
-      updateGatherDiagnostics();
-      element.dataset.interactionTarget = hovered?.source.id ?? '';
-      element.dataset.interactionRange = hovered
-        ? String(interactionInRange(hovered, authoritativePlayer))
-        : '';
+      interactionFrame.select(input.targets, input.pointerPoint());
       if (local?.scene !== previousScene) {
         village.clear();
         previousScene = local?.scene;
@@ -417,10 +313,10 @@ export function Arena({
           prefs.current,
           now,
           delta,
-          outlinedTargets(),
+          interactionFrame.outlines(),
           highlightInteractions,
         );
-        drawPrompt();
+        interactionFrame.draw();
         if (local && prefs.current.lootHints)
           drawLootHints(ctx, lootHints.current.hints, local, now);
         renderer.present();
@@ -439,37 +335,16 @@ export function Arena({
         ...cats,
         portalTarget,
       ].sort((a, b) => a.y + a.height - b.y - b.height);
-      hovered = pickInteraction(input.targets, input.pointerPoint());
-      interaction.current = hovered
-        ? interactionInRange(hovered, authoritativePlayer)
-          ? hovered.source
-          : hovered.source.id.startsWith('gather:')
-            ? nearby
-            : null
-        : (nearby ??
-          cats.find((cat) => interactionInRange(cat, authoritativePlayer))?.source ??
-          null);
-      if (
-        nearby &&
-        !nearby.id.startsWith('gather:') &&
-        interaction.current?.id.startsWith('gather:')
-      )
-        interaction.current = nearby;
-      updateGatherDiagnostics();
-      element.dataset.interactionTarget = hovered?.source.id ?? '';
-      element.dataset.interactionRange = hovered
-        ? String(interactionInRange(hovered, authoritativePlayer))
-        : '';
-
+      interactionFrame.select(input.targets, input.pointerPoint(), cats);
       const drawn = village.draw(ctx, villageFrame, {
         preferences: prefs.current,
         cycle,
         highlightInteractions,
-        outlines: outlinedTargets,
+        outlines: interactionFrame.outlines,
         wardrobeOpen: interaction.current?.id === 'wardrobe',
         wardrobeOpenedAt,
       });
-      drawPrompt();
+      interactionFrame.draw();
       Object.assign(element.dataset, village.overlays(ctx, villageFrame, drawn, prefs.current));
       if (local && prefs.current.lootHints) drawLootHints(ctx, lootHints.current.hints, local, now);
       renderer.present();
