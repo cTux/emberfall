@@ -47,7 +47,10 @@ export function itemComparison(
       });
       rows.push({
         label: bonus
-          ? `Bonus ${stat.replace(/([A-Z])/g, ' $1').toLowerCase()}`
+          ? `${stat[0].toUpperCase()}${stat
+              .slice(1)
+              .replace(/([A-Z])/g, ' $1')
+              .toLowerCase()}`
           : stat === 'manualRange'
             ? 'Range'
             : (metadata?.label ?? stat),

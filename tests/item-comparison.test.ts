@@ -24,8 +24,8 @@ test('item comparison includes gained and lost bonuses without unchanged base st
   assert.deepEqual(comparison, {
     label: 'vs equipped Amulet',
     rows: [
-      { label: 'Bonus exp increase', value: '+20%', improved: true },
-      { label: 'Bonus gold increase', value: '-10%', improved: false },
+      { label: 'Exp increase', value: '+20%', improved: true },
+      { label: 'Gold increase', value: '-10%', improved: false },
     ],
   });
 });
@@ -35,8 +35,8 @@ test('empty slots, equal stats and flat bonuses retain their units', () => {
     itemComparison({ ...item, stats: { armor: 2, moreProjectiles: 1 } }, { equipment: {} })?.rows,
     [
       { label: 'Armor', value: '+1', improved: true },
-      { label: 'Bonus armor', value: '+2', improved: true },
-      { label: 'Bonus more projectiles', value: '+1', improved: true },
+      { label: 'Armor', value: '+2', improved: true },
+      { label: 'More projectiles', value: '+1', improved: true },
     ],
   );
   assert.deepEqual(

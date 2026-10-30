@@ -24,8 +24,9 @@ test('backpack item tooltips share weapon details and compact resource cards', a
   const backpack = page.getByRole('region', { name: 'Your backpack' });
   await backpack.getByRole('button', { name: 'Use Amulet', exact: true }).hover();
   const comparison = page.getByRole('tooltip').filter({ hasText: 'vs equipped Amulet' });
-  await expect(comparison).toContainText('Bonus exp increase+20%');
-  await expect(comparison).toContainText('Bonus gold increase-10%');
+  await expect(comparison).toContainText('Exp increase+20%');
+  await expect(comparison).toContainText('Gold increase-10%');
+  await expect(comparison).not.toContainText('Bonus');
   for (const [name, quantity] of [
     ['Log', 12],
     ['Flowering herb', 8],
