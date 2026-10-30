@@ -1,4 +1,4 @@
-import type { PixiContext } from './rendering/pixi-context';
+import type { DrawingContext } from './rendering/drawing-context';
 export interface Light {
   x: number;
   y: number;
@@ -48,18 +48,13 @@ export function shadowProjection(
     opacity: 0.65 * (1 - distance / light.radius),
   };
 }
-export function castShadow(ctx: CanvasRenderingContext2D, caster: Caster, light?: Light) {
+export function castShadow(ctx: DrawingContext, caster: Caster, light?: Light) {
   if (light?.owner === caster.id) return;
   const bottomInset = (maskBottomInsets.get(caster.mask) ?? 0) * caster.height;
-  const projection = shadowProjection(
-    caster,
-    light,
-    bottomInset,
-    (ctx as unknown as PixiContext).directionalShadow,
-  );
+  const projection = shadowProjection(caster, light, bottomInset, ctx.directionalShadow);
   if (!projection || projection.opacity <= 0) return;
   ctx.save();
-  (ctx as unknown as PixiContext).occlusion = false;
+  ctx.occlusion = false;
   ctx.globalAlpha = projection.opacity;
   ctx.translate(caster.x, caster.y - bottomInset);
   ctx.transform(1, 0, -projection.x / caster.height, -projection.y / caster.height, 0, 0);

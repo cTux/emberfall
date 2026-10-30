@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { clientAsset } from './urls.ts';
 import { ARENA } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
@@ -149,7 +150,7 @@ export function villageBackground(graphics: GraphicsSettings) {
 
 /** Clip the source as well as the destination, including at the wrapping seams. */
 export function drawVillageBackground(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   background: HTMLCanvasElement,
   x: number,
   y: number,

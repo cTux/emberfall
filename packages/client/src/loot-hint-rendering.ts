@@ -1,10 +1,11 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { itemDefinition, PLANT_KINDS } from '@emberfall/core';
 import { itemArtName } from './class-art';
 import { drawArt, loadArt, plantArt } from './art';
 import { lootHintFrame, type LootHint } from './loot-hints';
 
 export function drawLootHints(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   hints: readonly LootHint[],
   player: { x: number; y: number },
   now: number,

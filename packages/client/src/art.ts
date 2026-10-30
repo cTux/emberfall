@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { clientAsset } from './urls.ts';
 import { ACTOR_CELL } from './animation';
 import { softenArtTones } from './art-tones';
@@ -254,7 +255,7 @@ export function terrainTile(column: number, size = 320) {
   return tile;
 }
 export function drawArt(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   image: HTMLImageElement,
   column: number,
   row: number,

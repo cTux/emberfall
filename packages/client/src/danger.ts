@@ -1,8 +1,9 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import type { SceneState } from '@emberfall/common';
 
 /** Gameplay warnings deliberately remain visible at every graphics preset. */
 export function drawDanger(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   scene: SceneState,
   now: number,
   near: (x: number, y: number) => { x: number; y: number },

@@ -167,7 +167,7 @@ export function Arena({
         );
     });
     const presentation = new PresentationWorld();
-    const ctx = renderer as unknown as CanvasRenderingContext2D;
+    const ctx = renderer;
     const knight = characterImages.warrior.walk;
     const { nature } = villageImages;
     const skeleton = actorArt('skeleton');

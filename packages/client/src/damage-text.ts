@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import type { DamageEvent, DamageType } from '@emberfall/common';
 
 export const DAMAGE_COLORS: Record<DamageType, string> = {
@@ -44,7 +45,7 @@ export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[
 }
 
 export function drawDamageNumbers(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   hits: readonly DamageEvent[],
   project: (x: number, y: number) => { x: number; y: number },
   now: number,
@@ -57,7 +58,7 @@ export function drawDamageNumbers(
 }
 /** Both combat areas render the same authoritative damage metadata. */
 export function drawDamageNumber(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   hit: DamageEvent,
   point: { x: number; y: number },
   now: number,

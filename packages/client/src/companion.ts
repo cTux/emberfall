@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { bearArt as image } from './art';
 import { PLAYER_ATTACK_DURATION } from '@emberfall/core';
 import { BEAR_DEFINITION } from '@emberfall/core/definitions/entities/companions';
@@ -32,7 +33,7 @@ export function companionCaster(bear: Bear, x: number, y: number, now: number, i
 }
 
 export function drawCompanion(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   bear: Bear,
   x: number,
   y: number,

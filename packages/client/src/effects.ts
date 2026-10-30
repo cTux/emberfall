@@ -1,8 +1,9 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { nearbyInteraction } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
 import { drawWorldBar } from './world-bar.ts';
 
-export function drawChatBubble(ctx: CanvasRenderingContext2D, x: number, y: number, text?: string) {
+export function drawChatBubble(ctx: DrawingContext, x: number, y: number, text?: string) {
   if (!text) return;
   ctx.save();
   ctx.font = '10px "Alegreya Sans", sans-serif';
@@ -63,7 +64,7 @@ export function vegetationSway(
 }
 
 export function drawVegetation(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   sprite: HTMLCanvasElement,
   x: number,
   y: number,
@@ -83,7 +84,7 @@ export function drawVegetation(
 }
 
 export function drawParticles(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   width: number,
@@ -106,7 +107,7 @@ export function drawParticles(
   ctx.restore();
 }
 export function drawVignette(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   width: number,
@@ -154,7 +155,7 @@ const hitSprites = new WeakMap<
   { outline: HTMLCanvasElement; tint: HTMLCanvasElement }
 >();
 export function drawTargetHit(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   mask: HTMLCanvasElement,
   x: number,
   y: number,
@@ -184,11 +185,7 @@ export function drawTargetHit(
   ctx.drawImage(sprites.tint, x, y, width, height);
   ctx.restore();
 }
-export function drawDamageFlash(
-  ctx: CanvasRenderingContext2D,
-  world: WorldState | null,
-  id: string,
-) {
+export function drawDamageFlash(ctx: DrawingContext, world: WorldState | null, id: string) {
   const hit = world?.scene?.damage.filter((d) => d.target === id).at(-1);
   const age = (world?.serverNow ?? 0) - (hit?.at ?? -10000);
   if (age < 0 || age > 280) return;
@@ -203,12 +200,7 @@ export type Interaction = NonNullable<ReturnType<typeof nearbyInteraction>> & {
   activate?: () => void;
 };
 
-export function drawInteractionPrompt(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  label: string,
-) {
+export function drawInteractionPrompt(ctx: DrawingContext, x: number, y: number, label: string) {
   ctx.save();
   ctx.font = '9px "Alegreya Sans", sans-serif';
   ctx.textBaseline = 'middle';
@@ -265,7 +257,7 @@ export function drawInteractionPrompt(
 }
 
 export function drawCharacterName(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   name: string,
@@ -286,7 +278,7 @@ export function drawCharacterName(
   ctx.restore();
 }
 
-export function drawNameBadge(ctx: CanvasRenderingContext2D, x: number, y: number, name: string) {
+export function drawNameBadge(ctx: DrawingContext, x: number, y: number, name: string) {
   ctx.save();
   ctx.font = '9px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
@@ -300,7 +292,7 @@ export function drawNameBadge(ctx: CanvasRenderingContext2D, x: number, y: numbe
 }
 
 export function drawAtmosphere(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   width: number,
@@ -347,7 +339,7 @@ export function drawAtmosphere(
 }
 
 export function drawPlayerHealth(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   hp: number,
@@ -381,7 +373,7 @@ export function drawPlayerHealth(
 
 const partyOutlines = new WeakMap<HTMLCanvasElement, Map<boolean, HTMLCanvasElement>>();
 export function drawPartyOutline(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   mask: HTMLCanvasElement,
   x: number,
   y: number,

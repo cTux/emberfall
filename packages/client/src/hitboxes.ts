@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { game } from '@emberfall/core';
 import { wrappedDelta, type WorldState } from '@emberfall/common';
 import {
@@ -162,7 +163,7 @@ export function worldHitboxes(
 
 /** Called after atmosphere/occlusion, using the same world transform as sprites. */
 export function drawHitboxes(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   world: WorldState,
   forest: boolean,
   view: { x: number; y: number; width: number; height: number },

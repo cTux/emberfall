@@ -1,3 +1,4 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import { loadArt, drawArt } from './art';
 
 export const portalArt = loadArt('portal-stone', 1, 1, 128, true);
@@ -19,7 +20,7 @@ const energy = puff('#3eacff');
 
 /** Only the aperture animates. Stone, silhouette and footprint are immutable. */
 export function drawStonePortal(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   x: number,
   y: number,
   width: number,
@@ -48,7 +49,7 @@ export function drawStonePortal(
 }
 
 /** Five slowly drifting puffs per visible chimney; fixed memory at all times. */
-export function drawChimneySmoke(ctx: CanvasRenderingContext2D, x: number, y: number, now: number) {
+export function drawChimneySmoke(ctx: DrawingContext, x: number, y: number, now: number) {
   ctx.save();
   const opacity = ctx.globalAlpha;
   for (let i = 0; i < 5; i++) {

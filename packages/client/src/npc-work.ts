@@ -1,9 +1,10 @@
+import type { DrawingContext } from './rendering/drawing-context';
 import type { VillageNpc } from '@emberfall/common';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 
 /** Small, bounded particle loops, anchored to the wrapped worker projection. */
 export function drawNpcWork(
-  ctx: CanvasRenderingContext2D,
+  ctx: DrawingContext,
   npc: VillageNpc,
   x: number,
   y: number,
