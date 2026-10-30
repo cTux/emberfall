@@ -56,6 +56,8 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   keyboard subscriptions, browser preference persistence and world chat binding.
   `GamePanels.tsx` composes controlled lazy panel content; `Game.tsx` retains
   session-driven window state and interaction commands.
+- `codex/chapters.ts` declares chapter order while gameplay, character and
+  credit content live in separate modules. Codex remains a lazy-loaded panel.
 - `settings-controls.ts` and `tactics-controls.ts` declare typed control labels,
   choices and relationships. Settings graphics and tactics priority lists are
   controlled views; their hosts retain preference updates and server commands.
