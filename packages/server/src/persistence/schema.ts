@@ -1,4 +1,24 @@
-import type { DatabaseSync } from 'node:sqlite';
+import { DatabaseSync } from 'node:sqlite';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
+
+export function openCharacterDatabase(path: string) {
+  if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
+  const db = new DatabaseSync(path);
+  if (
+    db
+      .prepare('PRAGMA table_info(characters)')
+      .all()
+      .some((column) => column.name === 'progress')
+  ) {
+    db.close();
+    throw new Error(
+      'Legacy database detected. Stop the server and back up the database, then run pnpm import-save from the repository root. It writes a separate database and prints the SAVE_PATH_NEW setting needed before restarting. To choose paths explicitly: pnpm import-save <legacy-backup.sqlite> <new-destination.sqlite>.',
+    );
+  }
+  db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;');
+  return db;
+}
 
 export function initializeCharacterTables(db: DatabaseSync) {
   db.exec(`CREATE TABLE IF NOT EXISTS characters (

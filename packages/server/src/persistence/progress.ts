@@ -91,5 +91,34 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
     return { classId, classes, storehouse, progress: { ...classes[classId], ...storehouse } };
   }
 
-  return { classIds: CLASS_IDS, freshProgress, classProgress, decodeProgress };
+  function selectClassProgress(player: Player, classId: ClassId) {
+    const previousId = player.classId ?? 'warrior';
+    const classes = { ...player.classes, [previousId]: progressSchema.parse(player) } as Record<
+      ClassId,
+      CharacterProgress
+    >;
+    const next = classProgress(classes[classId] ?? freshProgress(classId), classId);
+    delete next.coins;
+    delete next.storages;
+    delete classes[previousId].coins;
+    delete classes[previousId].storages;
+    const updated = {
+      ...player,
+      ...next,
+      classId,
+      classes,
+      talents: next.talents ?? {},
+      talentSlots: next.talentSlots,
+      talentVersion: next.talentVersion,
+      tactics: next.tactics,
+      attackTargetId: undefined,
+      equipmentItems: next.equipmentItems,
+      attackAt: undefined,
+      attackAngle: undefined,
+      bear: undefined,
+    };
+    return updated;
+  }
+
+  return { classIds: CLASS_IDS, freshProgress, classProgress, decodeProgress, selectClassProgress };
 }
