@@ -1,8 +1,8 @@
-import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, Stack, Tooltip, Typography } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { StatusMeter } from './StatusMeter';
-import { BossHealthStyled } from './styles';
+import { BossHealthStyled, HudActionButtonStyled, HudShortcutStyled } from './styles';
 
 export function ConnectionStatus({
   status,
@@ -46,13 +46,17 @@ export function HudActions({ actions }: { actions: HudAction[] }) {
           key={action.id}
         >
           <span>
-            <IconButton
+            <HudActionButtonStyled
               aria-label={action.label}
+              aria-keyshortcuts={action.shortcut === 'Esc' ? 'Escape' : action.shortcut}
               disabled={action.disabled}
               onClick={action.onClick}
             >
               <FontAwesomeIcon icon={action.icon} aria-hidden='true' />
-            </IconButton>
+              {action.shortcut && (
+                <HudShortcutStyled aria-hidden='true'>{action.shortcut}</HudShortcutStyled>
+              )}
+            </HudActionButtonStyled>
           </span>
         </Tooltip>
       ))}

@@ -63,7 +63,7 @@ test('world browser defers rendering and panels load only when opened', async ({
   expect(requests.some((path) => path.endsWith(chunk('Arena')))).toBe(true);
   expect(requests.some((path) => path.endsWith(chunk('WeaponActionBar')))).toBe(true);
   expect(requests.some((path) => path.endsWith(chunk('Talents')))).toBe(false);
-  await page.getByRole('button', { name: 'Talents (N)', exact: true }).click();
+  await page.getByRole('button', { name: 'Talents', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Talents', exact: true })).toBeVisible();
   await expect.poll(() => requests.some((path) => path.endsWith(chunk('Talents')))).toBe(true);
   await page.getByRole('button', { name: 'Close Talents' }).click();
