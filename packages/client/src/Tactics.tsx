@@ -1,17 +1,7 @@
-import { useState } from 'react';
-import {
-  Box,
-  Divider,
-  IconButton,
-  MenuItem,
-  Stack,
-  TextField,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowUp } from '@fortawesome/free-solid-svg-icons/faArrowUp';
-import { faArrowDown } from '@fortawesome/free-solid-svg-icons/faArrowDown';
+import { TacticsPriorities } from './TacticsPriorities';
+import { POSITIONING_CONTROLS } from './tactics-controls';
+import { Fragment, useState } from 'react';
+import { Box, Divider, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { ChapterTabs, SettingToggle } from '@emberfall/ui';
 import {
   DEFAULT_TACTICS,
@@ -20,14 +10,6 @@ import {
   type Tactics as TacticsValue,
 } from '@emberfall/common';
 import { game } from '@emberfall/core';
-
-const labels = {
-  nearest: 'Nearest enemy',
-  lowestHealth: 'Lowest health %',
-  elite: 'Elite / boss first',
-  players: 'Players before companions',
-  self: 'Self before allies',
-};
 
 export function Tactics({
   player,
@@ -49,55 +31,19 @@ export function Tactics({
     });
   const companion = !!game.registries.classes.require(player.classId ?? 'warrior').companion;
   const priorities = (key: 'offensive' | 'defensive') => (
-    <Stack component='ol' spacing={0.5} sx={{ m: 0, p: 0, listStyle: 'none' }}>
-      {value[key].map((rule, index) => (
-        <Stack
-          component='li'
-          key={rule}
-          direction='row'
-          spacing={1}
-          sx={{ alignItems: 'center', borderBottom: 1, borderColor: 'divider', py: 0.5 }}
-        >
-          <Typography color='primary' sx={{ width: 20 }}>
-            {index + 1}
-          </Typography>
-          <Typography sx={{ flex: 1 }}>{labels[rule]}</Typography>
-          {([-1, 1] as const).map((direction) => {
-            const name = `Move ${labels[rule]} ${direction < 0 ? 'up' : 'down'}`;
-            return (
-              <Tooltip title={name} key={direction}>
-                <span>
-                  <IconButton
-                    aria-label={name}
-                    size='small'
-                    disabled={
-                      disabled ||
-                      player.hitpoints <= 0 ||
-                      index + direction < 0 ||
-                      index + direction >= value[key].length
-                    }
-                    onClick={() => {
-                      send({
-                        type: 'moveTacticsPriority',
-                        classId: player.classId ?? 'warrior',
-                        list: key,
-                        rule,
-                        direction,
-                      });
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={direction < 0 ? faArrowUp : faArrowDown}
-                      aria-hidden='true'
-                    />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            );
-          })}
-        </Stack>
-      ))}
-    </Stack>
+    <TacticsPriorities
+      rules={value[key]}
+      disabled={unavailable}
+      onMove={(rule, direction) =>
+        send({
+          type: 'moveTacticsPriority',
+          classId: player.classId ?? 'warrior',
+          list: key,
+          rule,
+          direction,
+        })
+      }
+    />
   );
   const toggle = (key: 'keepTarget' | 'includeCompanions' | 'avoidHazards', label: string) => (
     <SettingToggle
@@ -110,7 +56,7 @@ export function Tactics({
   const select = (
     key: 'stance' | 'distance' | 'companionTarget',
     label: string,
-    choices: [string, string][],
+    choices: readonly (readonly [string, string])[],
   ) => (
     <TextField
       select
@@ -230,22 +176,9 @@ export function Tactics({
                 spacing={2}
                 sx={{ border: 0, m: 0, p: 0, minWidth: 0 }}
               >
-                {select('stance', 'Combat stance', [
-                  ['balanced', 'Balanced'],
-                  ['aggressive', 'Aggressive'],
-                  ['protect', 'Protect owner'],
-                  ['passive', 'Passive'],
-                ])}
-                {select('distance', 'Stay near owner', [
-                  ['close', 'Close · 100 units'],
-                  ['medium', 'Medium · 200 units'],
-                  ['far', 'Far · 300 units'],
-                ])}
-                {select('companionTarget', 'Attack target', [
-                  ['priorities', 'Follow offensive priorities'],
-                  ['assist', 'Assist my current target'],
-                  ['nearOwner', 'Enemies near me'],
-                ])}
+                {POSITIONING_CONTROLS.map(({ key, label, choices }) => (
+                  <Fragment key={key}>{select(key, label, choices)}</Fragment>
+                ))}
                 {toggle('avoidHazards', 'Avoid telegraphs and projectiles')}
               </Stack>
               <Divider />
