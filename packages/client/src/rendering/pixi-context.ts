@@ -1,3 +1,4 @@
+import { VisualPools, type Visual } from './visual-pools';
 import { Gradient, GradientPaints, type Paint } from './paints';
 import {
   autoDetectRenderer,
@@ -9,12 +10,10 @@ import {
   Matrix,
   Text,
   Color,
-  BlurFilter,
 } from 'pixi.js';
 import type { BindGroup, Renderer } from 'pixi.js';
 import './soft-light';
 import { playerCutoutRuns, PLAYER_CUTOUT_MARGIN } from './player-cutout';
-import { World } from 'miniplex';
 import type { DirectionalShadow } from '../lighting';
 
 type PathCommand = {
@@ -48,24 +47,18 @@ type State = {
   mask: Graphics | null;
   dash: number[];
 };
-type Visual = {
-  object: Container;
-  kind: 'sprite' | 'graphics' | 'text';
-  active: boolean;
-  blur?: BlurFilter;
-  styleKey?: string;
-  frameTexture?: Texture;
-};
 
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
  */
 export class PixiContext {
+  private visuals = new VisualPools();
+  get ecs() {
+    return this.visuals.ecs;
+  }
   ambientTint = 0xffffff;
   directionalShadow?: DirectionalShadow;
   readonly canvas: HTMLCanvasElement;
-  readonly ecs = new World<Visual>();
-  private stage = new Container();
   private cutout = new Graphics();
   private cutoutRuns?: ReturnType<typeof playerCutoutRuns>;
   private hasCutout = false;
@@ -76,9 +69,6 @@ export class PixiContext {
   private width = 1;
   private height = 1;
   readonly ready: Promise<void>;
-  private pools: Record<Visual['kind'], Visual[]> = { sprite: [], graphics: [], text: [] };
-  private cursors = { sprite: 0, graphics: 0, text: 0 };
-  private childCursors = new Map<Container, number>();
   private colors = new Map<string, Color>();
   private drawMatrix = new Matrix();
   private sources = new Map<CanvasImageSource, { texture: Texture; used: number }>();
@@ -87,10 +77,6 @@ export class PixiContext {
   private shadowPass = false;
   private shadowStrength = 0;
   private shadowRects = new Map<string, HTMLCanvasElement>();
-  private maskGroups: Container[] = [];
-  private maskCursor = 0;
-  private currentMask: Graphics | null = null;
-  private currentGroup?: Container;
   private stack: State[] = [];
   private stackDepth = 0;
   private path: PathCommand[] = [];
@@ -127,7 +113,6 @@ export class PixiContext {
   }
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.stage.eventMode = 'none';
     this.ready = autoDetectRenderer({
       canvas,
       preference: ['webgl'],
@@ -163,14 +148,7 @@ export class PixiContext {
   begin() {
     this.frame++;
     this.hasCutout = false;
-    this.childCursors.clear();
-    this.childCursors.set(this.stage, 0);
-    // Release previous clip ownership before pooled graphics take new roles.
-    for (const group of this.maskGroups) group.mask = null;
-    this.maskCursor = 0;
-    this.currentMask = null;
-    this.currentGroup = undefined;
-    this.cursors = { sprite: 0, graphics: 0, text: 0 };
+    this.visuals.begin();
     this.state = this.defaults();
     this.stackDepth = 0;
     this.path.length = 0;
@@ -180,12 +158,11 @@ export class PixiContext {
     // Clearing a pooled object's last mask reference can restore includeInBuild.
     // The cutout is only stencil geometry, never a visible stage child.
     this.cutout.includeInBuild = false;
-    for (const [parent, count] of this.childCursors)
-      if (parent.children.length > count) parent.removeChildren(count);
+    this.visuals.finish();
     if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height)
       this.renderer.resize(this.canvas.width, this.canvas.height);
     try {
-      this.renderer.render(this.stage);
+      this.renderer.render(this.visuals.stage);
     } finally {
       // Pixi 8.22 keeps its last filter input, sampler and backdrop bound even
       // after returning them to TexturePool. Resizing or disposing the view
@@ -207,17 +184,7 @@ export class PixiContext {
           entry.texture.destroy(true);
           this.sources.delete(key);
         }
-      for (const kind of ['sprite', 'graphics', 'text'] as const) {
-        const pool = this.pools[kind];
-        const keep = Math.max(this.cursors[kind] + 32, Math.ceil(pool.length * 0.75));
-        while (pool.length > keep) {
-          const entry = pool.pop()!;
-          this.ecs.remove(entry);
-          entry.frameTexture?.destroy();
-          entry.blur?.destroy();
-          entry.object.destroy();
-        }
-      }
+      this.visuals.trim();
     }
   }
   stats() {
@@ -227,28 +194,21 @@ export class PixiContext {
       textures: this.sources.size,
       gradients: this.gradients.size,
       text: { fontFamily: this.fontFamily, scaleMode: 'linear', resolution: 4 },
-      active: { ...this.cursors },
+      active: this.visuals.active,
     };
   }
   destroy() {
     this.disposed = true;
-    for (const entry of this.ecs) {
-      entry.frameTexture?.destroy();
-      entry.blur?.destroy();
-      entry.object.destroy();
-    }
+    this.visuals.destroy();
     for (const entry of this.sources.values()) {
       entry.texture.destroy(true);
     }
     this.gradients.destroy();
-    for (const group of this.maskGroups) group.destroy();
     this.cutout.destroy();
     this.shadowRects.clear();
     this.renderer?.destroy();
-    this.stage.destroy();
     this.sources.clear();
     this.colors.clear();
-    this.childCursors.clear();
   }
   /** Configure once before the depth-sorted bodies, using their world transform. */
   setPlayerCutout(mask: HTMLCanvasElement, x: number, y: number, width: number, height: number) {
@@ -261,7 +221,7 @@ export class PixiContext {
     }
     this.hasCutout = runs.length > 0;
     this.cutout.includeInBuild = false;
-    this.place(this.stage, this.cutout);
+    this.visuals.place(this.visuals.stage, this.cutout);
     this.applyTransform(this.cutout, x - PLAYER_CUTOUT_MARGIN, y - PLAYER_CUTOUT_MARGIN);
     this.transformedBounds(
       this.cutoutBounds,
@@ -295,66 +255,8 @@ export class PixiContext {
   set occlusion(enabled: boolean) {
     this.state.occlusion = enabled;
   }
-  private visual(kind: Visual['kind']): Visual {
-    const index = this.cursors[kind]++;
-    let entity = this.pools[kind][index];
-    if (!entity) {
-      const object =
-        kind === 'sprite'
-          ? new Sprite()
-          : kind === 'graphics'
-            ? new Graphics()
-            : new Text({ text: '', resolution: 4, textureStyle: { scaleMode: 'linear' } });
-      object.eventMode = 'none';
-      entity = this.ecs.add({ object, kind, active: true });
-      this.pools[kind].push(entity);
-    }
-    const object = entity.object;
-    entity.active = true;
-    object.visible = true;
-    object.alpha = this.state.globalAlpha;
-    // Sprites and text receive their final transform at the draw call below.
-    if (kind === 'graphics') object.setFromMatrix(this.state.matrix);
-    object.blendMode =
-      (
-        {
-          'source-over': 'normal',
-          lighter: 'add',
-          screen: 'screen',
-          multiply: 'multiply',
-          'soft-light': 'soft-light',
-        } as const
-      )[this.state.globalCompositeOperation as 'source-over'] ?? 'normal';
-    object.mask = null;
-    if (this.shadowPass && this.shadowStrength > 0) {
-      entity.blur ??= new BlurFilter({ quality: 2, resolution: 0.5 });
-      entity.blur.strength = this.shadowStrength;
-      if (object.filters?.[0] !== entity.blur) object.filters = [entity.blur];
-    } else if (object.filters?.length) object.filters = null;
-    if (this.state.mask) {
-      // One clip for a contiguous group, not one stencil pass for every portal
-      // pixel or particle. Children remain eligible for normal sprite batching.
-      if (this.currentMask !== this.state.mask || !this.currentGroup) {
-        const group = (this.maskGroups[this.maskCursor] ??= new Container());
-        this.maskCursor++;
-        group.mask = this.state.mask;
-        this.place(this.stage, group);
-        this.childCursors.set(group, 0);
-        this.currentMask = this.state.mask;
-        this.currentGroup = group;
-      }
-      this.place(this.currentGroup, object);
-    } else {
-      this.currentMask = null;
-      this.currentGroup = undefined;
-      this.place(this.stage, object);
-    }
-    return entity;
-  }
-  private place(parent: Container, object: Container) {
-    const index = this.childCursors.get(parent) ?? 0;
-    if (parent.children[index] !== object) parent.addChildAt(object, index);
-    this.childCursors.set(parent, index + 1);
+  private visual(kind: Visual['kind']) {
+    return this.visuals.visual(kind, this.state, this.shadowPass, this.shadowStrength);
   }
   private color(value: string) {
     let color = this.colors.get(value);
