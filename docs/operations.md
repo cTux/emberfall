@@ -51,10 +51,9 @@ callback reachability. See [account design](design/steam-accounts.md).
 
 The [Pages workflow](../.github/workflows/deploy-pages.yml) builds only the client
 and deploys the exact SHA from a successful manual full desktop Verify run on
-current `main`. After the merge queue completes, use **Actions → Verify → Run
+current `main`. For a release candidate, use **Actions → Verify → Run
 workflow → main**, or `gh workflow run verify.yml --ref main`. PRs run static
-checks, Node suites and builds without deploying. PR browser checks are temporarily
-paused during the refactor queue; see the [restoration instructions](development.md).
+checks, Node suites, builds and affected desktop browser checks without deploying.
 Intermediate merges do not repeat verification. The release is rejected if `main`
 advances before building or deployment; rerun Verify on the new head. The server
 must be deployed/restarted separately with a compatible protocol version.
