@@ -84,6 +84,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   owns path replay and dash/ellipse geometry; `rendering/image-textures.ts` owns
   source uploads, atlas frame reuse and dynamic texture revisions. Arena passes the adapter
   directly, without a cast that claims full Canvas API support.
+  `rendering/renderer-driver.ts` owns GPU startup, resize, filter-binding release
+  and shutdown. Player occlusion, baked glow primitives, text styling and shared
+  transform math have separate owners under `rendering/`.
   Canvas 2D is used to bake assets, light masks and small glow primitives, not
   to upload a complete world frame as a texture.
 
