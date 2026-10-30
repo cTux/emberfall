@@ -32,6 +32,10 @@ bucket; `dist/.vite/manifest.json` records the production import graph.
 
 ## Responsibilities
 
+`style.scss` preserves stylesheet order while `styles/scene.scss`,
+`styles/meters.scss` and `styles/feedback.scss` own scene layout, diagnostic
+meters and transient feedback. Cursor styles remain first.
+
 `Account.tsx` loads the server account before entering the game. First Steam login
 opens the nickname dialog; Settings → Account reuses it for editing. The nickname
 belongs to the account, while graphics/audio preferences remain in localStorage.
