@@ -151,7 +151,10 @@ rows; the atlas is no longer used for item details. The host supplies metadata,
 weapon stats and contextual actions. Inventory prices are per item; resources
 omit a use hint while trade/storage retain their actual actions. Tooltips clamp
 long content to the viewport and scroll internally. `Backpack` keeps stacked
-counts and right-click/keyboard callbacks. `GoldBalance` is shared with HUD/trader.
+counts and right-click/keyboard callbacks. The host supplies `stackable`; only
+stackable items show Quantity and per-item pricing, including stacks of one.
+Unstackable gear omits Quantity in backpack, trade and storage tooltips.
+`GoldBalance` is shared with HUD/trader.
 
 ![Verified desktop weapon item tooltip](../../docs/images/compact-item-tooltips.png)
 
