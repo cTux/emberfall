@@ -1,3 +1,5 @@
+import { createProgressCodec } from './persistence/progress.ts';
+import { initializeCharacterTables } from './persistence/schema.ts';
 import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
@@ -5,100 +7,18 @@ import { dirname } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-sqlite';
 import { getTableName } from 'drizzle-orm';
 import { GameDatabase, VersionConflictError } from '@colyseus/database';
-import { game, normalizeTalents, type createGame } from '@emberfall/core';
+import { game, type createGame } from '@emberfall/core';
 import type { CharacterProgress, ClassId, Player, Merchant } from '@emberfall/common';
 
 export function createCharacterPersistence(context: ReturnType<typeof createGame> = game) {
+  const { merchantSchema, freshMerchant, progressSchema, classSchema, storehouseSchema } =
+    context.rules;
   const {
-    merchantSchema,
-    freshMerchant,
-    freshStorages,
-    storehouseSchema,
-    addItem,
-    CONSUMABLES,
-    STORAGE_SLOTS,
-    progressSchema,
-    classSchema,
-    starterEquipment,
-    validateClassEquipment,
-    syncEquipmentVitals,
-  } = context.rules;
-  const CLASS_IDS = context.registries.classes.values().map((player) => player.id);
-  const INITIAL_PROGRESS = context.registries.settings.require('initialProgress')
-    .value as CharacterProgress;
-  const freshProgress = (classId?: ClassId): CharacterProgress => ({
-    ...structuredClone(INITIAL_PROGRESS),
-    storages: freshStorages(),
-    ...(classId ? { equipment: starterEquipment(classId) } : {}),
-  });
-  function classProgress(value: unknown, classId: ClassId): CharacterProgress {
-    const progress = progressSchema.parse(value);
-    progress.paragon = (progress.paragon ?? 0) + Math.max(0, progress.level - 20);
-    progress.level = Math.min(20, progress.level);
-    normalizeTalents(progress, classId);
-    progress.coins ??= 0;
-    progress.backpack ??= [];
-    progress.storages ??= freshStorages();
-    progress.equipment = validateClassEquipment(
-      progress.equipment ?? starterEquipment(classId),
-      classId,
-    );
-    const derived = { ...progress, classId } as Player;
-    syncEquipmentVitals(derived);
-    return progressSchema.parse(derived);
-  }
-  function decodeProgress(raw: string) {
-    const data = JSON.parse(raw);
-    if (data.classes)
-      for (const id of Object.keys(data.classes)) {
-        if (!context.registries.classes.has(id))
-          throw new Error(
-            `Save contains unknown class '${id}'; load its mod before opening this save`,
-          );
-      }
-    if (data.formatVersion !== undefined && data.formatVersion !== 1 && data.formatVersion !== 2)
-      throw new Error('Unsupported save format');
-    const classId: ClassId = data.classes ? classSchema.parse(data.classId) : 'warrior';
-    const classes = Object.fromEntries(
-      CLASS_IDS.map((id) => [
-        id,
-        classProgress(
-          data.classes?.[id] ?? (id === 'warrior' && !data.classes ? data : freshProgress(id)),
-          id,
-        ),
-      ]),
-    ) as Record<ClassId, CharacterProgress>;
-    let storehouse;
-    if (data.formatVersion === 2) storehouse = storehouseSchema.parse(data.storehouse);
-    else {
-      storehouse = { coins: 0, storages: freshStorages() };
-      const order = [classId, ...CLASS_IDS.filter((id) => id !== classId)];
-      for (const id of order) {
-        const progress = classes[id];
-        storehouse.coins += progress.coins ?? 0;
-        for (const [tab, storage] of progress.storages!.entries()) {
-          const destination = storehouse.storages[tab];
-          const defaultName = `Storage ${tab + 1}`;
-          if (destination.name === defaultName && storage.name !== defaultName)
-            destination.name = storage.name;
-          for (const item of storage.items) {
-            const stacks =
-              Object.hasOwn(CONSUMABLES, item.itemId) &&
-              destination.items.some((entry) => entry.itemId === item.itemId);
-            if (destination.items.length < STORAGE_SLOTS || stacks)
-              addItem(destination.items, item, STORAGE_SLOTS);
-            else addItem(progress.backpack!, item, Number.MAX_SAFE_INTEGER);
-          }
-        }
-      }
-      storehouse = storehouseSchema.parse(storehouse);
-    }
-    for (const id of CLASS_IDS) {
-      delete classes[id].coins;
-      delete classes[id].storages;
-    }
-    return { classId, classes, storehouse, progress: { ...classes[classId], ...storehouse } };
-  }
+    classIds: CLASS_IDS,
+    freshProgress,
+    classProgress,
+    decodeProgress,
+  } = createProgressCodec(context);
 
   /** SQLite's synchronous transaction keeps identity and Colyseus save rows atomic.
    * Await ready before use. Cloud-save revisions interoperate with database.saves.
@@ -133,23 +53,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       this.ready = this.database
         .boot()
         .then(() => {
-          this.db.exec(`CREATE TABLE IF NOT EXISTS characters (
-        id TEXT PRIMARY KEY, token_hash TEXT UNIQUE NOT NULL, name TEXT NOT NULL, updated_at INTEGER NOT NULL
-      ) STRICT;
-      CREATE TABLE IF NOT EXISTS worlds (id TEXT PRIMARY KEY, name TEXT NOT NULL, salt TEXT NOT NULL, hash TEXT, permanent INTEGER NOT NULL DEFAULT 0) STRICT;
-      CREATE TABLE IF NOT EXISTS world_members (character_id TEXT PRIMARY KEY REFERENCES characters(id), world_id TEXT NOT NULL REFERENCES worlds(id)) STRICT;
-      CREATE TABLE IF NOT EXISTS emberfall_migrations (version INTEGER PRIMARY KEY) STRICT;
-      INSERT OR IGNORE INTO emberfall_migrations VALUES (1);`);
-          this.db
-            .exec(`CREATE TABLE IF NOT EXISTS merchants (world_id TEXT PRIMARY KEY REFERENCES worlds(id) ON DELETE CASCADE, data TEXT NOT NULL) STRICT;
-        CREATE TABLE IF NOT EXISTS steam_accounts (
-          steam_id TEXT PRIMARY KEY, character_id TEXT UNIQUE NOT NULL REFERENCES characters(id),
-          nickname TEXT, steam_name TEXT NOT NULL
-        ) STRICT;
-        CREATE TABLE IF NOT EXISTS account_sessions (
-          token_hash TEXT PRIMARY KEY, steam_id TEXT NOT NULL REFERENCES steam_accounts(steam_id),
-          expires_at INTEGER NOT NULL
-        ) STRICT;`);
+          initializeCharacterTables(this.db);
         })
         .catch((error) => {
           this.close();

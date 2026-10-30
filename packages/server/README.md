@@ -67,6 +67,12 @@ and database design; deploying multiple copies is not automatically safe.
 
 ## Persistence
 
+`persistence/progress.ts` binds save decoding, legacy Storehouse migration and
+class normalization to the ready catalog. It has no database access.
+`persistence/schema.ts` initializes the server-owned identity/account tables
+after the Colyseus database boots. `characters.ts` retains transaction and
+revision ownership, including atomic merchant writes and save-before-publish.
+
 Version-2 documents keep one account Storehouse (gold and three storage tabs)
 beside the class records. Version-1 loads merge class balances/storage once and
 return storage overflow to the owning class backpack. Class changes preserve the
