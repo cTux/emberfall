@@ -84,6 +84,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `VillageScene` composes per-mount village players, critter motion and speech,
   prepares render frames and preserves the drawing/overlay order. Arena retains
   input selection and action dispatch, using scene targets as presentation data.
+- `interaction-presentation.ts` owns gathering indicator clock alignment,
+  prompt display and shared hover/nearby selection and diagnostics. Input
+  admission and authoritative gathering rules remain with their existing owners.
 - `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
