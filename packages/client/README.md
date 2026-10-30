@@ -75,7 +75,8 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `rendering/pixi-context.ts` translates existing drawing commands into pooled
   native Pixi sprites, geometry, text and masks. The visible canvas is WebGL.
   `rendering/paints.ts` owns normalized gradient ramp textures, camera-independent
-  cache keys, expiry and destruction.
+  cache keys, expiry and destruction. `rendering/visual-pools.ts` owns pooled
+  sprites/geometry/text, ordered placement, clip groups and release/trim rules.
   Canvas 2D is used to bake assets, light masks and small glow primitives, not
   to upload a complete world frame as a texture.
 
