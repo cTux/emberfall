@@ -1090,18 +1090,31 @@ test('item tooltips show quantity only for stackable items, including stacks of 
   await page.screenshot({ path: 'test-results/item-tooltip-unstackable.png' });
 });
 
+test('repeated stat labels open only their own explanation', async ({ page }) => {
+  await page.goto(story('components-backpack--repeated-stats'));
+  await page.getByRole('button', { name: 'Use Amulet', exact: true }).focus();
+  await expect(page.getByRole('button', { name: 'Power: 5', exact: true })).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(page.getByText('Base weapon power.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Additional rolled power.', { exact: true })).not.toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(page.getByText('Additional rolled power.', { exact: true })).toBeVisible();
+  await expect(page.getByText('Base weapon power.', { exact: true })).not.toBeVisible();
+});
+
 test('unequipped gear shows compact signed gains and losses with keyboard access', async ({
   page,
 }) => {
   await page.goto(story('components-backpack--comparison'));
   await page.getByRole('button', { name: 'Use Amulet', exact: true }).focus();
   const tooltip = page.getByRole('tooltip');
+  await expect(tooltip).not.toContainText('Bonus');
   await expect(tooltip).not.toContainText('vs equipped');
   await expect(tooltip).not.toContainText('Armor');
-  await expect(tooltip.getByText('Bonus exp increase', { exact: true })).toHaveCount(1);
+  await expect(tooltip.getByText('Exp increase', { exact: true })).toHaveCount(1);
   await expect(tooltip.getByText('+20%', { exact: true })).toHaveCount(1);
-  await expect(tooltip).toContainText('Bonus exp increase+20%');
-  await expect(tooltip).toContainText('Bonus gold increase-10%');
+  await expect(tooltip).toContainText('Exp increase+20%');
+  await expect(tooltip).toContainText('Gold increase-10%');
   await expect(tooltip.getByText('+20%', { exact: true }).last()).toHaveCSS(
     'color',
     'rgb(131, 203, 163)',
@@ -1114,6 +1127,6 @@ test('unequipped gear shows compact signed gains and losses with keyboard access
   await page.goto(story('components-backpack--same-stats'));
   await page.getByRole('button', { name: 'Use Amulet', exact: true }).focus();
   await expect(page.getByRole('tooltip')).toContainText('Same stats');
-  await expect(page.getByRole('tooltip')).not.toContainText('Bonus exp increase');
+  await expect(page.getByRole('tooltip')).not.toContainText('Exp increase');
   await expect(page.getByRole('tooltip')).not.toContainText('vs equipped');
 });

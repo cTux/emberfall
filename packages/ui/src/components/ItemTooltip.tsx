@@ -56,7 +56,7 @@ export function ItemTooltip({
   onBack?: () => void;
 }) {
   const root = useRef<HTMLDivElement>(null);
-  const [openStat, setOpenStat] = useState<string | null>(null);
+  const [openStat, setOpenStat] = useState<number | null>(null);
   return (
     <ItemTooltipContentStyled ref={root}>
       <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }} className='item-header'>
@@ -99,9 +99,9 @@ export function ItemTooltip({
         .filter((stat) => !item.comparison || !stat.value)
         .map((stat, index) => (
           <GearTooltipStyled
-            key={stat.label}
-            open={openStat === stat.label}
-            onOpen={() => setOpenStat(stat.label)}
+            key={`${stat.label}-${index}`}
+            open={openStat === index}
+            onOpen={() => setOpenStat(index)}
             onClose={() => setOpenStat(null)}
             describeChild
             placement='bottom'
@@ -115,7 +115,7 @@ export function ItemTooltip({
             <ItemStatStyled
               aria-label={`${stat.label}${stat.value ? `: ${stat.value}` : ''}`}
               data-equipment-badge={stat.icon}
-              onClick={() => setOpenStat(stat.label)}
+              onClick={() => setOpenStat(index)}
               onKeyDown={(event) => {
                 if (index === 0 && event.key === 'Tab' && event.shiftKey && onBack) {
                   event.preventDefault();
@@ -146,9 +146,9 @@ export function ItemTooltip({
       {item.comparison && (
         <Box>
           {item.comparison.rows.length ? (
-            item.comparison.rows.map((row) => (
+            item.comparison.rows.map((row, index) => (
               <Stack
-                key={row.label}
+                key={`${row.label}-${index}`}
                 direction='row'
                 spacing={1}
                 sx={{ justifyContent: 'space-between' }}

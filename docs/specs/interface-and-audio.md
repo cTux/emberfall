@@ -256,7 +256,7 @@ stats and rolled bonuses, including bonuses absent from the candidate. Equal
 items show “Same stats”; empty slots compare against zero. This also applies in
 trading and storage. Comparison replaces the standalone primary and bonus stat
 rows and has no heading; item identity, effect descriptions, price and action
-remain visible. Consumables and class-incompatible gear omit comparison.
+remain visible. Stat labels omit the “Bonus” prefix in item details and comparisons. Consumables and class-incompatible gear omit comparison.
 
 ![Verified desktop Storybook item comparison](../images/item-stat-comparison.png)
 

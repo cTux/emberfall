@@ -173,8 +173,8 @@ function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadgeView[] 
   return Object.entries(item?.stats ?? {}).map(([stat, value]) => {
     const label =
       stat === ItemStat.DotSpeed
-        ? 'Bonus DOT Speed'
-        : `Bonus ${stat.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
+        ? 'DOT Speed'
+        : capitalize(stat.replace(/([A-Z])/g, ' $1').toLowerCase());
     const flat =
       stat === ItemStat.Power ||
       stat === ItemStat.Armor ||

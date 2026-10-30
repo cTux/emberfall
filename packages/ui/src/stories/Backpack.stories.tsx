@@ -54,7 +54,7 @@ export const Comparison: StoryObj<typeof meta> = {
         primary: { label: 'Armor', value: '1' },
         stats: [
           {
-            label: 'Bonus exp increase',
+            label: 'Exp increase',
             icon: 'magic',
             value: '+20%',
             explanation: 'Adds to party drops.',
@@ -62,8 +62,8 @@ export const Comparison: StoryObj<typeof meta> = {
         ],
         comparison: {
           rows: [
-            { label: 'Bonus exp increase', value: '+20%', improved: true },
-            { label: 'Bonus gold increase', value: '-10%', improved: false },
+            { label: 'Exp increase', value: '+20%', improved: true },
+            { label: 'Gold increase', value: '-10%', improved: false },
           ],
         },
       },
@@ -73,6 +73,20 @@ export const Comparison: StoryObj<typeof meta> = {
 export const SameStats: StoryObj<typeof meta> = {
   args: {
     items: [{ ...Comparison.args!.items![0], comparison: { rows: [] } }],
+  },
+};
+export const RepeatedStats: StoryObj<typeof meta> = {
+  args: {
+    items: [
+      {
+        ...Comparison.args!.items![0],
+        comparison: undefined,
+        stats: [
+          { label: 'Power', icon: 'power', value: '5', explanation: 'Base weapon power.' },
+          { label: 'Power', icon: 'magic', value: '+2', explanation: 'Additional rolled power.' },
+        ],
+      },
+    ],
   },
 };
 export const RestrictedGear: StoryObj<typeof meta> = {

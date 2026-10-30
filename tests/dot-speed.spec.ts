@@ -19,7 +19,8 @@ test('DOT Speed gear equips, shows its bonus and survives reload', async ({ page
   const inventory = page.getByRole('dialog', { name: 'Inventory', exact: true });
   const item = inventory.locator('[data-backpack-item=dot-speed-sword]');
   await item.hover();
-  await expect(page.getByRole('tooltip').first()).toContainText('Bonus DOT Speed');
+  await expect(page.getByRole('tooltip').first()).toContainText('DOT Speed');
+  await expect(page.getByRole('tooltip').first()).not.toContainText('Bonus');
   await expect(page.getByRole('tooltip').first()).toContainText('+2%');
   await item.click({ button: 'right' });
   await expect.poll(() => player.equipmentItems?.weapon?.stats?.dotSpeed).toBe(2);
