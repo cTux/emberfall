@@ -80,8 +80,13 @@ and database design; deploying multiple copies is not automatically safe.
 
 `persistence/progress.ts` binds save decoding, legacy Storehouse migration and
 class normalization to the ready catalog. It has no database access.
-`persistence/schema.ts` initializes the server-owned identity/account tables
-after the Colyseus database boots. `characters.ts` retains transaction and
+`persistence/schema.ts` opens SQLite with the existing durability/legacy checks
+and initializes server-owned tables after the Colyseus database boots.
+`persistence/accounts.ts` owns Steam identity, nickname and session queries;
+`persistence/worlds.ts` owns world records and authorized resume membership.
+They share the store's connection and savepoint operation; account creation
+receives only the character-creation operation. Pure class selection stays in
+the progress codec. `characters.ts` retains connection lifetime, transaction and
 revision ownership, including atomic merchant writes and save-before-publish.
 
 Version-2 documents keep one account Storehouse (gold and three storage tabs)

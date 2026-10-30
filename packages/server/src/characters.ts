@@ -1,9 +1,9 @@
 import { createProgressCodec } from './persistence/progress.ts';
-import { initializeCharacterTables } from './persistence/schema.ts';
-import { DatabaseSync } from 'node:sqlite';
+import { createWorldRepository } from './persistence/worlds.ts';
+import { createAccountRepository } from './persistence/accounts.ts';
+import { initializeCharacterTables, openCharacterDatabase } from './persistence/schema.ts';
+import type { DatabaseSync } from 'node:sqlite';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-sqlite';
 import { getTableName } from 'drizzle-orm';
 import { GameDatabase, VersionConflictError } from '@colyseus/database';
@@ -18,6 +18,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     freshProgress,
     classProgress,
     decodeProgress,
+    selectClassProgress,
   } = createProgressCodec(context);
 
   /** SQLite's synchronous transaction keeps identity and Colyseus save rows atomic.
@@ -25,6 +26,8 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
    */
   class CharacterStore {
     private db: DatabaseSync;
+    private worldRepository: ReturnType<typeof createWorldRepository>;
+    private accountRepository: ReturnType<typeof createAccountRepository>;
     readonly database: GameDatabase;
     readonly ready: Promise<void>;
     private versions = new Map<string, number>();
@@ -35,20 +38,15 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       return getTableName(this.database.tables.users);
     }
     constructor(path: string) {
-      if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
-      this.db = new DatabaseSync(path);
-      if (
-        this.db
-          .prepare('PRAGMA table_info(characters)')
-          .all()
-          .some((column) => column.name === 'progress')
-      ) {
-        this.db.close();
-        throw new Error(
-          'Legacy database detected. Stop the server and back up the database, then run pnpm import-save from the repository root. It writes a separate database and prints the SAVE_PATH_NEW setting needed before restarting. To choose paths explicitly: pnpm import-save <legacy-backup.sqlite> <new-destination.sqlite>.',
-        );
-      }
-      this.db.exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON;');
+      this.db = openCharacterDatabase(path);
+      this.worldRepository = createWorldRepository(this.db, (operation) =>
+        this.transaction(operation),
+      );
+      this.accountRepository = createAccountRepository(
+        this.db,
+        (operation) => this.transaction(operation),
+        (name) => this.create(name),
+      );
       this.database = new GameDatabase({ db: drizzle({ client: this.db }), dialect: 'sqlite' });
       this.ready = this.database
         .boot()
@@ -61,50 +59,22 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         });
     }
     worlds() {
-      return this.db
-        .prepare('SELECT * FROM worlds')
-        .all()
-        .map((row) => ({
-          id: String(row.id),
-          name: String(row.name),
-          salt: String(row.salt),
-          hash: row.hash ? Buffer.from(String(row.hash), 'hex') : undefined,
-          permanent: !!row.permanent,
-        }));
+      return this.worldRepository.worlds();
     }
     saveWorld(world: { id: string; name: string; salt: string; hash?: Buffer }, permanent = false) {
-      this.db
-        .prepare(
-          'INSERT INTO worlds VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET name=excluded.name, salt=excluded.salt, hash=excluded.hash, permanent=excluded.permanent',
-        )
-        .run(
-          world.id,
-          world.name,
-          world.salt,
-          world.hash?.toString('hex') ?? null,
-          Number(permanent),
-        );
+      return this.worldRepository.saveWorld(world, permanent);
     }
     deleteWorld(id: string) {
-      this.transaction(() => {
-        this.db.prepare('DELETE FROM world_members WHERE world_id = ?').run(id);
-        this.db.prepare('DELETE FROM worlds WHERE id = ?').run(id);
-      });
+      return this.worldRepository.deleteWorld(id);
     }
     rememberWorld(characterId: string, worldId: string) {
-      this.db
-        .prepare(
-          'INSERT INTO world_members VALUES (?, ?) ON CONFLICT(character_id) DO UPDATE SET world_id=excluded.world_id',
-        )
-        .run(characterId, worldId);
+      return this.worldRepository.rememberWorld(characterId, worldId);
     }
     forgetWorld(characterId: string) {
-      this.db.prepare('DELETE FROM world_members WHERE character_id = ?').run(characterId);
+      return this.worldRepository.forgetWorld(characterId);
     }
     canResume(characterId: string, worldId: string) {
-      return !!this.db
-        .prepare('SELECT 1 FROM world_members WHERE character_id = ? AND world_id = ?')
-        .get(characterId, worldId);
+      return this.worldRepository.canResume(characterId, worldId);
     }
     load(token: string) {
       const hash = createHash('sha256').update(token).digest('hex');
@@ -220,90 +190,27 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       this.versions.set(id, version + 1);
     }
     selectClass(id: string, player: Player, classId: ClassId) {
-      const previousId = player.classId ?? 'warrior';
-      const classes = { ...player.classes, [previousId]: progressSchema.parse(player) } as Record<
-        ClassId,
-        CharacterProgress
-      >;
-      const next = classProgress(classes[classId] ?? freshProgress(classId), classId);
-      delete next.coins;
-      delete next.storages;
-      delete classes[previousId].coins;
-      delete classes[previousId].storages;
-      const updated = {
-        ...player,
-        ...next,
-        classId,
-        classes,
-        talents: next.talents ?? {},
-        talentSlots: next.talentSlots,
-        talentVersion: next.talentVersion,
-        tactics: next.tactics,
-        attackTargetId: undefined,
-        equipmentItems: next.equipmentItems,
-        attackAt: undefined,
-        attackAngle: undefined,
-        bear: undefined,
-      };
+      const updated = selectClassProgress(player, classId);
       this.save(id, player.name, updated);
       Object.assign(player, updated);
     }
     steamAccount(steamId: string) {
-      const row = this.db.prepare('SELECT * FROM steam_accounts WHERE steam_id=?').get(steamId);
-      if (!row) return undefined;
-      return {
-        steamId,
-        characterId: String(row.character_id),
-        nickname: row.nickname === null ? null : String(row.nickname),
-        steamName: String(row.steam_name),
-      };
+      return this.accountRepository.steamAccount(steamId);
     }
     loginSteam(steamId: string, steamName: string) {
-      return this.transaction(() => {
-        if (!this.steamAccount(steamId)) {
-          const character = this.create('Wanderer');
-          this.db
-            .prepare('INSERT INTO steam_accounts VALUES (?, ?, NULL, ?)')
-            .run(steamId, character.id, steamName);
-        } else if (steamName) {
-          this.db
-            .prepare('UPDATE steam_accounts SET steam_name=? WHERE steam_id=?')
-            .run(steamName, steamId);
-        }
-        return this.steamAccount(steamId)!;
-      });
+      return this.accountRepository.loginSteam(steamId, steamName);
     }
     renameSteam(steamId: string, nickname: string) {
-      return this.transaction(() => {
-        const account = this.steamAccount(steamId);
-        if (!account) throw new Error('Account not found');
-        this.db
-          .prepare('UPDATE steam_accounts SET nickname=? WHERE steam_id=?')
-          .run(nickname, steamId);
-        this.db
-          .prepare('UPDATE characters SET name=?, updated_at=? WHERE id=?')
-          .run(nickname, Date.now(), account.characterId);
-        return this.steamAccount(steamId)!;
-      });
+      return this.accountRepository.renameSteam(steamId, nickname);
     }
     createSession(steamId: string, expiresAt: number) {
-      const token = randomBytes(32).toString('hex');
-      this.db.prepare('DELETE FROM account_sessions WHERE expires_at<=?').run(Date.now());
-      this.db
-        .prepare('INSERT INTO account_sessions VALUES (?, ?, ?)')
-        .run(createHash('sha256').update(token).digest('hex'), steamId, expiresAt);
-      return token;
+      return this.accountRepository.createSession(steamId, expiresAt);
     }
     session(token: string) {
-      const row = this.db
-        .prepare('SELECT steam_id FROM account_sessions WHERE token_hash=? AND expires_at>?')
-        .get(createHash('sha256').update(token).digest('hex'), Date.now());
-      return row ? this.steamAccount(String(row.steam_id)) : undefined;
+      return this.accountRepository.session(token);
     }
     revokeSession(token: string) {
-      this.db
-        .prepare('DELETE FROM account_sessions WHERE token_hash=?')
-        .run(createHash('sha256').update(token).digest('hex'));
+      return this.accountRepository.revokeSession(token);
     }
     private transactionId = 0;
     private transaction<T>(operation: () => T): T {
