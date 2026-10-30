@@ -84,7 +84,8 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   await expect(bleed).toBeFocused();
   await expect(itemTooltip).toBeVisible();
   await expect(itemTooltip).not.toContainText('Attack speed');
-  await expect(sword).toHaveCSS('border-top-width', '0px');
+  await expect(sword).toHaveCSS('border-top-width', '1px');
+  await expect(sword).toHaveCSS('border-top-color', 'rgb(255, 255, 255)');
   await page.mouse.move(0, 0);
   await dialog.getByRole('heading', { name: 'Inventory', exact: true }).click();
   await expect(page.getByRole('tooltip')).toBeHidden();

@@ -511,7 +511,26 @@ test.describe('equipment touch badges', () => {
   });
 });
 
-test('equipment exposes borderless slots, keyboard details and narrow stats', async ({ page }) => {
+test('equipment rarity colors appear in slot borders and tooltip labels', async ({ page }) => {
+  await page.goto(story('components-equipmentpanel--rarities'));
+  const colors = [
+    ['common', 'rgb(255, 255, 255)'],
+    ['uncommon', 'rgb(30, 255, 0)'],
+    ['rare', 'rgb(0, 112, 221)'],
+    ['epic', 'rgb(163, 53, 238)'],
+    ['legendary', 'rgb(255, 128, 0)'],
+  ];
+  for (const [rarity, color] of colors) {
+    const item = page.locator(`[data-rarity=${rarity}]`);
+    await expect(item).toHaveCSS('border-top-color', color);
+    await item.hover();
+    await expect(
+      page.getByRole('tooltip').filter({ hasText: rarity[0].toUpperCase() + rarity.slice(1) }),
+    ).toBeVisible();
+  }
+});
+
+test('equipment exposes rarity borders, keyboard details and desktop stats', async ({ page }) => {
   await page.goto(story('components-equipmentpanel--starter'));
   await expect(page.locator('[data-equipment-slot]')).toHaveCount(9);
   const weapon = page.getByRole('button', { name: "Weapon: Warrior's sword" });
@@ -519,7 +538,8 @@ test('equipment exposes borderless slots, keyboard details and narrow stats', as
   await expect(
     page.getByRole('tooltip').getByRole('button', { name: 'Critical chance: 5%', exact: true }),
   ).toBeVisible();
-  await expect(weapon).toHaveCSS('border-top-width', '0px');
+  await expect(weapon).toHaveCSS('border-top-width', '1px');
+  await expect(weapon).toHaveCSS('border-top-color', 'rgb(255, 255, 255)');
   await weapon.blur();
   await expect(page.getByRole('tooltip')).toBeHidden();
   await page.getByRole('button', { name: 'Ring: Empty' }).focus();

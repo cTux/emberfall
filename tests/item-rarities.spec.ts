@@ -76,14 +76,16 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   await expect(storage).toBeHidden();
 
   const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
-  Object.assign(player, { x: marta.x, y: marta.y - 15 });
+  Object.assign(marta, { x: 1000, y: 1000 });
+  Object.assign(player, { x: 1000, y: 985 });
+  await page.mouse.move(0, 0);
+  await expect(page.locator('canvas[aria-label]')).toHaveAttribute(
+    'data-interaction-prompt',
+    INNKEEPER.name,
+  );
   const trader = page.getByRole('dialog', { name: INNKEEPER.name });
-  await expect(async () => {
-    Object.assign(marta, { x: 1000, y: 1000 });
-    Object.assign(player, { x: 1000, y: 985 });
-    await page.keyboard.press('e');
-    await expect(trader).toBeVisible({ timeout: 1000 });
-  }).toPass({ intervals: [200], timeout: 6000 });
+  await page.keyboard.press('e');
+  await expect(trader).toBeVisible();
   await expect(
     trader.getByRole('region', { name: "Innkeeper's backpack" }).locator('[data-rarity]'),
   ).toHaveCount(17);

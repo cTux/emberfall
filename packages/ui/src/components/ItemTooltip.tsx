@@ -63,14 +63,14 @@ export function ItemTooltip({
           <Typography variant='subtitle2' sx={{ fontWeight: 700, color: item.rarityColor }}>
             {item.name}
           </Typography>
-          {item.subtitle && (
+          {(item.subtitle || item.rarity) && (
             <Typography variant='body2' color='text.secondary'>
+              {item.rarity && (
+                <Box component='span' sx={{ color: item.rarityColor }}>
+                  {item.rarity}{' '}
+                </Box>
+              )}
               {item.subtitle}
-            </Typography>
-          )}
-          {item.rarity && (
-            <Typography variant='caption' sx={{ color: item.rarityColor }}>
-              {item.rarity}
             </Typography>
           )}
         </Box>

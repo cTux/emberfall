@@ -151,8 +151,8 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                 flexDirection: 'column',
                 gap: 0.5,
                 p: 0.5,
-                border: '1px solid',
-                borderColor: slot.item?.rarityColor ?? 'transparent',
+                border: slot.item ? '1px solid' : 0,
+                borderColor: slot.item?.rarityColor ?? '#ffffff',
                 borderRadius: 1,
                 '&:hover': { bgcolor: 'action.hover' },
                 '&.Mui-focusVisible': {

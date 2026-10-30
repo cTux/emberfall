@@ -4,13 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { test, expect } from './fixtures';
 import { LOOT_ITEM_IDS, rarityColor } from '../packages/core/src/index';
 
-test('Pixi preserves transparent vignette centers and SVG debuff pixels', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  page.on('console', (message) => {
-    if (message.type() === 'warning' && /blend|texture/i.test(message.text()))
-      errors.push(message.text());
-  });
+async function renderFixture(page: import('@playwright/test').Page) {
   const require = createRequire(resolve('packages/client/package.json'));
   const { build } = await import(pathToFileURL(require.resolve('vite')).href);
   const bundle = await build({
@@ -34,6 +28,20 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   );
   await page.goto('/renderer-test');
   await page.addScriptTag({ content: code });
+  return page.evaluate(async () => {
+    const fixture = (window as unknown as { RendererFixture: typeof import('./renderer-fixture') })
+      .RendererFixture;
+    return fixture.compare();
+  });
+}
+
+test('Pixi preserves transparent vignette centers and SVG debuff pixels', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'warning' && /blend|texture/i.test(message.text()))
+      errors.push(message.text());
+  });
   const {
     results,
     icons,
@@ -44,13 +52,8 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     groupedLabels,
     projectilePixels,
     lootPixels,
-    rarityPixels,
     battleTextPixels,
-  } = await page.evaluate(async () => {
-    const fixture = (window as unknown as { RendererFixture: typeof import('./renderer-fixture') })
-      .RendererFixture;
-    return fixture.compare();
-  });
+  } = await renderFixture(page);
   await page.screenshot({ path: 'test-results/new-renderer-pixels.png' });
   await page
     .locator('[data-preview="battle-text"]')
@@ -92,20 +95,6 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   }
   expect(battleTextPixels[1][1].height).toBeGreaterThan(battleTextPixels[0][1].height);
   expect(lootPixels).toHaveLength(LOOT_ITEM_IDS.length + 1);
-  for (const { rarity, color } of rarityPixels) {
-    const expected = [1, 3, 5].map((offset) =>
-      parseInt(rarityColor[rarity].slice(offset, offset + 2), 16),
-    );
-    expect(color[3], `${rarity} beam alpha`).toBeGreaterThan(30);
-    const brightness = Math.max(...color.slice(0, 3));
-    expect(brightness, `${rarity} visible beam`).toBeGreaterThan(5);
-    const opacity = brightness / Math.max(...expected);
-    for (let channel = 0; channel < 3; channel++)
-      expect(
-        Math.abs(color[channel] - expected[channel] * opacity),
-        `${rarity} beam color`,
-      ).toBeLessThanOrEqual(4);
-  }
   for (const { itemId, colored, purple, beam, above, beside } of lootPixels) {
     expect(colored, `${itemId} visible icon`).toBeGreaterThan(30);
     expect(purple, `${itemId} has no placeholder square`).toBe(0);
@@ -139,5 +128,23 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
         )
         .toBeLessThanOrEqual(3);
     }
+  }
+});
+
+test('Pixi renders all five item rarity beam colors', async ({ page }) => {
+  const { rarityPixels } = await renderFixture(page);
+  for (const { rarity, color } of rarityPixels) {
+    const expected = [1, 3, 5].map((offset) =>
+      parseInt(rarityColor[rarity].slice(offset, offset + 2), 16),
+    );
+    expect(color[3], `${rarity} beam alpha`).toBeGreaterThan(30);
+    const brightness = Math.max(...color.slice(0, 3));
+    expect(brightness, `${rarity} visible beam`).toBeGreaterThan(5);
+    const opacity = brightness / Math.max(...expected);
+    for (let channel = 0; channel < 3; channel++)
+      expect(
+        Math.abs(color[channel] - expected[channel] * opacity),
+        `${rarity} beam color`,
+      ).toBeLessThanOrEqual(4);
   }
 });
