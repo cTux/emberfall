@@ -37,7 +37,9 @@ Electorate changes invalidate the countdown and readiness is reconciled against 
 ## Geometry and attacks
 
 Tactics are optional structural class progress in common, validated with the
-`setTactics` command and saved transactionally before publication. Core's
+`setTactics` command and saved transactionally before publication. Commands contain
+validated partial edits merged against the current server settings, so rapid edits
+to different controls cannot overwrite each other. Core's
 `tactics.ts` owns ordered wrapped attack/healing selection. Cast scheduling,
 projectile launch, melee aim, talent aim and client presentation reuse those
 selectors. The replicated temporary `attackTargetId` supports target retention

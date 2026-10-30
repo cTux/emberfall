@@ -45,7 +45,7 @@ export function Tactics({
     send({
       type: 'setTactics',
       classId: player.classId ?? 'warrior',
-      tactics: { ...value, ...patch },
+      tactics: patch,
     });
   const companion = !!game.registries.classes.require(player.classId ?? 'warrior').companion;
   const priorities = (key: 'offensive' | 'defensive') => (

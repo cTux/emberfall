@@ -7,6 +7,7 @@ import {
   restoreResources,
 } from '@emberfall/core';
 import type { ResourceState } from '@emberfall/common';
+import { DEFAULT_TACTICS } from '@emberfall/common';
 import {
   learnTalent,
   equipTalent,
@@ -530,7 +531,8 @@ export async function createRuntime(
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
           const trader = traderId === 'craftsman' ? merchant.craftsman! : merchant;
-          if (message.type === 'setTactics') next.tactics = message.tactics;
+          if (message.type === 'setTactics')
+            next.tactics = { ...DEFAULT_TACTICS, ...player.tactics, ...message.tactics };
           else if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
           else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
           else if (message.type === 'resetTalents') resetTalents(next);

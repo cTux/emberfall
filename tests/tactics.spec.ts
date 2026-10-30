@@ -32,9 +32,13 @@ test('Tactics uses external left tabs, saves priorities and companion controls, 
   const tabBox = (await tabs.boundingBox())!;
   const panelBox = (await window.locator('.game-window-surface').boundingBox())!;
   expect(tabBox.x + tabBox.width).toBeLessThan(panelBox.x);
-  await window.getByRole('button', { name: 'Move Elite / boss first up', exact: true }).click();
+  await window.evaluate((element) => {
+    element.querySelector<HTMLInputElement>('input[role="switch"]')!.click();
+    element
+      .querySelector<HTMLButtonElement>('button[aria-label="Move Elite / boss first up"]')!
+      .click();
+  });
   await expect.poll(() => player.tactics?.offensive).toEqual(['nearest', 'elite', 'lowestHealth']);
-  await window.getByRole('switch', { name: 'Keep target until defeated or invalid' }).click();
   await expect.poll(() => player.tactics?.keepTarget).toBe(true);
   await expect(
     window.getByRole('switch', { name: 'Keep target until defeated or invalid' }),

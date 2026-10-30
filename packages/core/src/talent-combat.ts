@@ -115,6 +115,7 @@ export function castTalentAbility(
     context.rules.characterStats(player),
     players,
     ability.range,
+    request.automatic ? (player.tactics ?? DEFAULT_TACTICS).healBelow : 1,
   );
   return true;
 }

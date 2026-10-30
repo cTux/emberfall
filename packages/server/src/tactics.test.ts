@@ -270,6 +270,31 @@ test('companion stances, preferred distance, assist and changed preferences affe
   }
 });
 
+test('automatic heal thresholds filter recipients before self-first preferences', () => {
+  const p = hero(),
+    ally = { ...hero('warrior'), id: 'ally', partyId: 'party', hitpoints: 40 };
+  p.partyId = 'party';
+  p.hitpoints = p.maxHitpoints * 0.8;
+  p.tactics!.healBelow = 0.5;
+  p.tactics!.defensive = ['self', 'lowestHealth', 'players'];
+  const s = arena();
+  const id = talentNodeId('druid', 2, 1);
+  learnTalent(p, id);
+  equipTalent(p, 0, id);
+  assert(
+    castTalentAbility(
+      s,
+      p,
+      { slot: 0, classId: 'druid', epoch: s.id, aimX: p.x, aimY: p.y, automatic: true },
+      1000,
+      undefined,
+      [p, ally],
+    ),
+  );
+  assert.equal(p.hitpoints, p.maxHitpoints * 0.8);
+  assert.equal(ally.hitpoints, 52);
+});
+
 test('tactics save per class, round trip through persistence, and missing old-save tactics retain defaults', async () => {
   const store = new CharacterStore(':memory:');
   await store.ready;
@@ -323,6 +348,9 @@ test('failed saves, malformed commands and a mismatched class cannot publish tac
     failure.mock.restore();
     peer.receive(command);
     assert.equal(p.tactics!.keepTarget, true);
+    peer.receive({ type: 'setTactics', classId: 'warrior', tactics: { healBelow: 0.5 } });
+    assert.equal(p.tactics!.keepTarget, true);
+    assert.equal(p.tactics!.healBelow, 0.5);
     const token = messages.find((message) => message.type === 'joined')!.characterToken!;
     assert.equal(runtime.characters.load(token).progress.tactics!.keepTarget, true);
   } finally {

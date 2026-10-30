@@ -424,6 +424,7 @@ export function executeTalent(
   stats: CharacterStats = characterStats(player),
   players: Player[] = [player],
   healingRadius = 700,
+  healBelow = 1,
 ) {
   const effectArea = (scene: SceneState, point: { x: number; y: number }, radius: number) =>
     area(scene, point, radius * (1 + stats.bonuses.areaOfEffect / 100));
@@ -445,7 +446,7 @@ export function executeTalent(
   }
   const recipient =
     classId === 'druid' && column === 2 && (tier === 0 || tier === 3)
-      ? healingTarget(players, player, origin, healingRadius)
+      ? healingTarget(players, player, origin, healingRadius, healBelow)
       : undefined;
   talentVisual(scene, player, column, recipient ?? (column === 2 ? origin : aim), now);
   let targets = effectArea(
