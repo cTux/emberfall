@@ -121,6 +121,13 @@ are not part of this migration.
 
 ## Validation and stable contracts
 
+Content shape definitions are grouped under `content/shapes` by content,
+world and mechanic families, with shared scalar primitives. `validate.ts`
+orders structural, equipment, ability/class, enemy, balance and world checks
+from `content/validation`. A shared context retains mod ownership in errors;
+the structural shape-group map preserves family order and unsupported-family
+messages. Startup still rejects the complete composition on any failure.
+
 Content IDs use open string contracts where extensibility requires it. Existing
 constant objects can remain useful names for built-in IDs without defining a
 closed universe. Slot IDs, class IDs, item IDs, numeric stat keys, enemy archetype
