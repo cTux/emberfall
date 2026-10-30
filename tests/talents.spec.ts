@@ -38,7 +38,7 @@ test('learning Pack Howl enlarges Bear without casting and shows the permanent b
   expect(player.bear!.range).toBe(97.5);
   await page.waitForTimeout(300); // Allow the confirmed snapshot to reach the renderer.
   await page.screenshot({ path: 'test-results/pack-howl-learned.png' });
-  await page.getByRole('button', { name: 'Talents (N)' }).click();
+  await page.getByRole('button', { name: 'Talents', exact: true }).click();
   const card = page.locator(`[data-talent-node='${talentNodeId('druid', 1, 3)}']`);
   await card.hover();
   await expect(page.getByRole('tooltip', { name: /^Pack Howl/ })).toContainText(
