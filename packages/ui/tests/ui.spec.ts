@@ -1021,12 +1021,33 @@ test('compact consumable tooltip shows its effect, stack and contextual action',
   await expect(tooltip).toContainText('Quantity5');
   await expect(tooltip).toContainText('1 gold each');
   await expect(tooltip).toContainText('Right-click: use');
+  await expect(tooltip).not.toContainText('Your class cannot equip this item.');
   expect((await tooltip.locator('.MuiTooltip-tooltip').boundingBox())!.width).toBeLessThanOrEqual(
     250,
   );
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(tooltip).toBeVisible();
   await page.screenshot({ path: 'test-results/item-tooltip-consumable.png' });
+});
+
+test('incompatible gear explains its restriction in red on hover and keyboard focus', async ({
+  page,
+}) => {
+  await page.goto(story('components-backpack--restricted-gear'));
+  const item = page.getByRole('button', { name: "Use Warrior's sword" });
+  await item.hover();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip.getByText('Your class cannot equip this item.')).toHaveCSS(
+    'color',
+    'rgb(239, 155, 133)',
+  );
+  await expect(tooltip).not.toContainText('Right-click: equip');
+  await page.mouse.move(0, 0);
+  await expect(tooltip).toBeHidden();
+  await item.focus();
+  await expect(tooltip.getByText('Your class cannot equip this item.')).toBeVisible();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(tooltip).toBeVisible();
 });
 
 test('item tooltips show quantity only for stackable items, including stacks of one', async ({

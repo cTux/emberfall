@@ -170,6 +170,10 @@ and storage use the same weapon details and current aiming mode. The layout uses
 price/action footer. Weapon Power and Armor receive a larger amber value; effect
 explanations remain readable inline. Resources omit gameplay action hints in the
 normal backpack; trader and storage hints reflect their host callbacks.
+`backpackViews` checks registered equipment slots with core's `canEquip` and the
+current class, supplying an optional `equipRestriction` to `ItemTooltipView`.
+The controlled tooltip renders that text with the theme's `error.main` color.
+Restricted gear omits `useAction`; explicit trade and storage actions remain.
 
 `theme.tsx` applies shared `windowSurface` styles to game windows and MUI tooltips.
 Item popups and stat explanations portal into the modal container (or the page for

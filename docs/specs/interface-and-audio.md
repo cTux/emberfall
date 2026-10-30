@@ -178,6 +178,13 @@ New-runtime windows use a wardrobe-brown solid border, with no divider under the
 
 The Inventory window opens with physical KeyI or the HUD action. Compact square backpack slots use item art when available and default equipment-slot art otherwise. Stack counts sit at the bottom right. Item tooltips share a compact 250px layout with the item artwork, name, type and gold price. Consumables show their effect and stack quantity; resources show their quantity without an equip/use hint. Contextual footers show equip, unequip, use, buy, sell, deposit or withdraw only where that action is available. Prices in inventories are per item. Right-click activates an item; Enter or Space provides the same action for keyboard users. Marta opens two compact backpacks, hers on the left and the player's on the right, each with the same gold display used in the HUD.
 
+Gear that the current class cannot equip shows a red “Your class cannot equip
+this item.” line in its tooltip, including trader and storage inventories. Its
+normal backpack tooltip omits the equip hint; trade and storage action hints stay
+available. The warning updates when the current class changes.
+
+![Verified desktop class restriction tooltip](../images/item-equip-restriction.png)
+
 The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
 amulet/off-hand/ring. Slots have no border. Empty slots show generated wardrobe-style
 equipment icons at 15% effective opacity; equipped weapons keep their full-brightness

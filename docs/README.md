@@ -194,7 +194,8 @@ implemented by [equipment rules](../packages/core/src/equipment.ts),
 [slot presentation](../packages/client/src/equipment-view.tsx) and the shared
 [EquipmentPanel](../packages/ui/src/components/EquipmentPanel.tsx). Verification:
 [rule/save/protocol tests](../packages/server/src/equipment.test.ts) and
-[browser scenarios](../tests/equipment.spec.ts).
+[browser scenarios](../tests/equipment.spec.ts) and
+[class restriction tooltips](../tests/inventory.spec.ts).
 
 - Run or host the game: [operations](operations.md).
 - Understand package ownership: [architecture](design/architecture.md).

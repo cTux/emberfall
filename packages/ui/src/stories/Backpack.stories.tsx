@@ -4,6 +4,7 @@ import { Box, Button, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import healthPotion from '../assets/health-potion.png';
+import warriorWeapon from '../assets/item-icons/warrior-weapon.png';
 import { Backpack, EquipmentPanel, GameWindow } from '../index';
 
 const meta = {
@@ -35,6 +36,23 @@ export const Single: StoryObj<typeof meta> = {
   args: { items: [{ ...meta.args.items[0], quantity: 1 }] },
 };
 export const Empty: StoryObj<typeof meta> = { args: { items: [] } };
+export const RestrictedGear: StoryObj<typeof meta> = {
+  args: {
+    items: [
+      {
+        id: 'sword',
+        stackable: false,
+        name: "Warrior's sword",
+        quantity: 1,
+        price: 1,
+        details: '',
+        subtitle: 'Sword',
+        equipRestriction: 'Your class cannot equip this item.',
+        icon: <img src={warriorWeapon} alt='' />,
+      },
+    ],
+  },
+};
 export const InventoryStats: StoryObj<typeof meta> = {
   render: function InventoryStats(args) {
     const [extraStats, setExtraStats] = useState(false);
