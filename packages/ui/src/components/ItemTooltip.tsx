@@ -37,7 +37,6 @@ export interface ItemTooltipView {
   equipRestriction?: string;
   price?: number;
   comparison?: {
-    label: string;
     rows: { label: string; value: string; improved: boolean }[];
   };
 }
@@ -85,7 +84,7 @@ export function ItemTooltip({
           {item.equipRestriction}
         </Typography>
       )}
-      {item.primary && (
+      {item.primary && !item.comparison && (
         <Stack direction='row' sx={{ alignItems: 'baseline' }} spacing={0.5}>
           <Typography component='span' className='item-power'>
             {item.primary.value}
@@ -96,55 +95,56 @@ export function ItemTooltip({
         </Stack>
       )}
       {item.details && <Typography variant='body2'>{item.details}</Typography>}
-      {stats.map((stat, index) => (
-        <GearTooltipStyled
-          key={stat.label}
-          open={openStat === stat.label}
-          onOpen={() => setOpenStat(stat.label)}
-          onClose={() => setOpenStat(null)}
-          describeChild
-          placement='bottom'
-          slotProps={{
-            popper: {
-              container: () => root.current?.closest('.MuiDialog-container') ?? document.body,
-            },
-          }}
-          title={<Typography variant='body2'>{stat.explanation}</Typography>}
-        >
-          <ItemStatStyled
-            aria-label={`${stat.label}${stat.value ? `: ${stat.value}` : ''}`}
-            data-equipment-badge={stat.icon}
-            onClick={() => setOpenStat(stat.label)}
-            onKeyDown={(event) => {
-              if (index === 0 && event.key === 'Tab' && event.shiftKey && onBack) {
-                event.preventDefault();
-                onBack();
-              }
+      {stats
+        .filter((stat) => !item.comparison || !stat.value)
+        .map((stat, index) => (
+          <GearTooltipStyled
+            key={stat.label}
+            open={openStat === stat.label}
+            onOpen={() => setOpenStat(stat.label)}
+            onClose={() => setOpenStat(null)}
+            describeChild
+            placement='bottom'
+            slotProps={{
+              popper: {
+                container: () => root.current?.closest('.MuiDialog-container') ?? document.body,
+              },
             }}
+            title={<Typography variant='body2'>{stat.explanation}</Typography>}
           >
-            {stat.value ? (
-              <>
-                <Box component='span' sx={{ color: 'text.secondary' }}>
-                  {stat.label}
+            <ItemStatStyled
+              aria-label={`${stat.label}${stat.value ? `: ${stat.value}` : ''}`}
+              data-equipment-badge={stat.icon}
+              onClick={() => setOpenStat(stat.label)}
+              onKeyDown={(event) => {
+                if (index === 0 && event.key === 'Tab' && event.shiftKey && onBack) {
+                  event.preventDefault();
+                  onBack();
+                }
+              }}
+            >
+              {stat.value ? (
+                <>
+                  <Box component='span' sx={{ color: 'text.secondary' }}>
+                    {stat.label}
+                  </Box>
+                  <span>{stat.value}</span>
+                </>
+              ) : (
+                <Box
+                  sx={{ width: '100%', py: 0.5, borderTop: '1px solid', borderColor: 'divider' }}
+                >
+                  <Typography variant='body2' color='primary.main' sx={{ fontWeight: 700 }}>
+                    {stat.label}
+                  </Typography>
+                  <Typography variant='body2'>{stat.explanation}</Typography>
                 </Box>
-                <span>{stat.value}</span>
-              </>
-            ) : (
-              <Box sx={{ width: '100%', py: 0.5, borderTop: '1px solid', borderColor: 'divider' }}>
-                <Typography variant='body2' color='primary.main' sx={{ fontWeight: 700 }}>
-                  {stat.label}
-                </Typography>
-                <Typography variant='body2'>{stat.explanation}</Typography>
-              </Box>
-            )}
-          </ItemStatStyled>
-        </GearTooltipStyled>
-      ))}
+              )}
+            </ItemStatStyled>
+          </GearTooltipStyled>
+        ))}
       {item.comparison && (
-        <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 0.5 }}>
-          <Typography variant='caption' color='text.secondary'>
-            {item.comparison.label}
-          </Typography>
+        <Box>
           {item.comparison.rows.length ? (
             item.comparison.rows.map((row) => (
               <Stack

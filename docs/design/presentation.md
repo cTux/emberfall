@@ -178,7 +178,9 @@ Restricted gear omits `useAction`; explicit trade and storage actions remain.
 `item-comparison.ts` uses the shared equip-slot rules to compare candidate base
 contributions and rolled bonuses with the equipped definition and matching
 instance. It passes signed, formatted rows through `ItemTooltipView.comparison`;
-the shared tooltip renders them with semantic gain/loss colors. Unchanged rows
+the shared tooltip renders them with semantic gain/loss colors, replacing the
+standalone primary and numeric stat rows without a comparison heading. Effect
+descriptions remain visible. Unchanged rows
 are omitted, with “Same stats” for identical contributions. This compares items,
 not projected final character stats.
 
