@@ -17,6 +17,7 @@ The rarity multipliers are 1/1.2/1.4/1.7/2. Special stats never scale.
 | Stat               | Base | Units                              |
 | ------------------ | ---: | ---------------------------------- |
 | Attack speed       |    2 | percent                            |
+| DOT Speed          |    2 | percent tick frequency             |
 | Critical chance    |    2 | percentage points                  |
 | Critical damage    |   10 | percentage points of normal damage |
 | Power              |    1 | flat                               |
@@ -34,23 +35,37 @@ The rarity multipliers are 1/1.2/1.4/1.7/2. Special stats never scale.
 
 Gold Increase and Exp Increase are eligible on every gear type, alongside:
 
-| Type                       | Other regular stats                                         | Legendary-only stat |
-| -------------------------- | ----------------------------------------------------------- | ------------------- |
-| Sword                      | Power, attack speed, critical chance/damage, area, range    | Additional attack   |
-| Bow                        | Power, attack speed, critical chance/damage, range          | Projectile pierce   |
-| Fire staff, mage orb       | Power, attack speed, critical chance/damage, area, range    | More projectiles    |
-| Nature staff, nature focus | Power, attack speed, critical chance/damage, area, range    | Projectiles bounce  |
-| Shield                     | Armor, maximum health, power, attack speed, area            | Additional attack   |
-| Quiver                     | Power, attack speed, critical chance/damage, range          | Projectile pierce   |
-| Gloves                     | Armor, maximum health, power, attack speed, critical chance | —                   |
-| Helmet                     | Armor, maximum health, critical chance/damage, range        | —                   |
-| Body armor                 | Armor, maximum health                                       | —                   |
-| Leggings                   | Armor, maximum health, movement speed                       | —                   |
-| Boots                      | Armor, maximum health, movement speed, range                | —                   |
-| Amulet                     | Power, maximum health, critical damage, area                | —                   |
-| Ring                       | Power, armor, attack speed, critical chance/damage          | —                   |
+| Type                       | Other regular stats                                                    | Legendary-only stat |
+| -------------------------- | ---------------------------------------------------------------------- | ------------------- |
+| Sword                      | Power, attack speed, DOT Speed, critical chance/damage, area, range    | Additional attack   |
+| Bow                        | Power, attack speed, DOT Speed, critical chance/damage, range          | Projectile pierce   |
+| Fire staff, mage orb       | Power, attack speed, DOT Speed, critical chance/damage, area, range    | More projectiles    |
+| Nature staff, nature focus | Power, attack speed, DOT Speed, critical chance/damage, area, range    | Projectiles bounce  |
+| Shield                     | Armor, maximum health, power, attack speed, DOT Speed, area            | Additional attack   |
+| Quiver                     | Power, attack speed, DOT Speed, critical chance/damage, range          | Projectile pierce   |
+| Gloves                     | Armor, maximum health, power, attack speed, DOT Speed, critical chance | —                   |
+| Helmet                     | Armor, maximum health, critical chance/damage, range                   | —                   |
+| Body armor                 | Armor, maximum health                                                  | —                   |
+| Leggings                   | Armor, maximum health, movement speed                                  | —                   |
+| Boots                      | Armor, maximum health, movement speed, range                           | —                   |
+| Amulet                     | Power, maximum health, critical damage, area                           | —                   |
+| Ring                       | Power, armor, attack speed, DOT Speed, critical chance/damage          | —                   |
 
 ## ITEM-02 — Equipped effects and drops
+
+DOT Speed is a regular affix on gear that can roll attack speed. It sums across
+equipped slots and uses the usual rarity multipliers and weight 1. Bleed, poison
+and burn tick every `1000 / (1 + DOT Speed / 100)` milliseconds; +50% means one
+tick every 666.67 ms. Player, Bear and talent-applied ailments use the owner's
+bonus when the effect starts and retain that interval until it expires. Refreshing
+stacks extends duration without restarting the tick timer. Damage per stack,
+duration, attack/cast cooldowns, roots, silence and scheduled talent pulses are
+unchanged. Existing gear without this affix retains its original behavior.
+
+![Concept preview: DOT Speed shortens the interval between damage ticks](../images/dot-speed.svg)
+
+Concept preview, not a gameplay capture. Verification: [DOT Speed rules](../../packages/server/src/dot-speed.test.ts)
+and [desktop presentation](../../tests/dot-speed.spec.ts).
 
 Equipped bonuses sum across slots, including weapon and off-hand. Percent bonuses
 sum before multiplication. Critical chance caps at 100%. Hunter retains the saved

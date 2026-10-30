@@ -10,6 +10,7 @@ export interface Debuff extends DebuffIndicator {
   stacks: number;
   expiresAt: number;
   nextTick: number;
+  tickIntervalMs?: number;
   ownerId: string;
 }
 export interface PlayerShot {

@@ -50,6 +50,7 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: 'Power', value: number(stats.power) },
     { label: 'Damage type', value: stats.hasWeapon ? capitalize(stats.damageType) : '—' },
     { label: 'Cooldown', value: `${number(stats.attackIntervalMs / 1000)} sec` },
+    { label: 'DOT Speed', value: `${number(stats.bonuses.dotSpeed)}%` },
     {
       label: 'Range',
       value: `${number(player.autoTarget === false ? stats.manualRange : stats.range)} units`,
@@ -170,7 +171,10 @@ function weaponBadges(
 }
 function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadgeView[] {
   return Object.entries(item?.stats ?? {}).map(([stat, value]) => {
-    const label = `Bonus ${stat.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
+    const label =
+      stat === ItemStat.DotSpeed
+        ? 'Bonus DOT Speed'
+        : `Bonus ${stat.replace(/([A-Z])/g, ' $1').toLowerCase()}`;
     const flat =
       stat === ItemStat.Power ||
       stat === ItemStat.Armor ||
@@ -181,9 +185,11 @@ function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadgeView[] 
       icon: 'magic',
       value: `+${number(value)}${flat ? '' : '%'}`,
       explanation:
-        stat === ItemStat.GoldIncrease || stat === ItemStat.ExpIncrease
-          ? "Adds to the whole party's chance for additional drops. Each full 100% guarantees an extra copy."
-          : `${label}: +${number(value)}${flat ? '' : '%'}. Equipped bonuses add together.`,
+        stat === ItemStat.DotSpeed
+          ? 'Bleed, poison and burn tick faster: interval = base interval / (1 + DOT Speed / 100). Includes companion ailments; duration and damage per tick stay the same.'
+          : stat === ItemStat.GoldIncrease || stat === ItemStat.ExpIncrease
+            ? "Adds to the whole party's chance for additional drops. Each full 100% guarantees an extra copy."
+            : `${label}: +${number(value)}${flat ? '' : '%'}. Equipped bonuses add together.`,
     };
   });
 }

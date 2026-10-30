@@ -1,4 +1,14 @@
 import { game } from './game.ts';
+import type { CharacterStats, EquipmentOwner } from './content/rules.ts';
+import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
+
+export function dotTickIntervalMs(
+  player: EquipmentOwner,
+  baseMs: number,
+  stats: CharacterStats = game.rules.characterStats(player),
+) {
+  return recoveryCooldownMs(baseMs, stats.bonuses.dotSpeed / 100);
+}
 export * from './definitions/equipment.ts';
 export type { CharacterStats, EquipmentOwner } from './content/rules.ts';
 export const {

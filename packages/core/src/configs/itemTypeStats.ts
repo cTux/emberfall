@@ -3,6 +3,7 @@ import { legendaryItemStat } from './legendaryItemStat.ts';
 const offensive = [
   ItemStat.Power,
   ItemStat.AttackSpeed,
+  ItemStat.DotSpeed,
   ItemStat.CriticalChance,
   ItemStat.CriticalDamage,
 ];
@@ -17,6 +18,7 @@ const regular: Record<string, ItemStat[]> = {
     ItemStat.MaximumHealth,
     ItemStat.Power,
     ItemStat.AttackSpeed,
+    ItemStat.DotSpeed,
     ItemStat.AreaOfEffect,
   ],
   quiver: [...offensive, ItemStat.Range],
@@ -27,6 +29,7 @@ const regular: Record<string, ItemStat[]> = {
     ItemStat.MaximumHealth,
     ItemStat.Power,
     ItemStat.AttackSpeed,
+    ItemStat.DotSpeed,
     ItemStat.CriticalChance,
   ],
   helmet: [

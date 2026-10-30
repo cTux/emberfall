@@ -5,7 +5,7 @@ type Game = ReturnType<typeof createGame>;
 import { appendSceneEntities, wrappedDelta, wrap } from '@emberfall/common';
 import { LOOT_ITEM_IDS } from './definitions/equipment.ts';
 import { FOREST, forestDistance } from './scene.ts';
-import { characterStats } from './equipment.ts';
+import { characterStats, dotTickIntervalMs } from './equipment.ts';
 import { type CharacterStats } from './content/rules.ts';
 import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
 import { COLLISION } from './definitions/collision.ts';
@@ -68,6 +68,7 @@ export function hitEnemy(
   damageType: DamageType = 'physical',
   critical = false,
   ability = 'Attack',
+  stats?: CharacterStats,
 ) {
   if (enemy.hitpoints <= 0 || amount <= 0) return;
   amount = Math.max(1, amount);
@@ -116,11 +117,13 @@ export function hitEnemy(
       (d) => d.kind === ailment && d.ownerId === owner.id && d.expiresAt >= now,
     );
     if (!debuff) {
+      const tickIntervalMs = dotTickIntervalMs(owner, AILMENT_DEFINITIONS[ailment].tickMs, stats);
       debuff = {
         kind: ailment,
         stacks: 0,
         expiresAt: now + AILMENT_DEFINITIONS[ailment].durationMs,
-        nextTick: now + AILMENT_DEFINITIONS[ailment].tickMs,
+        nextTick: now + tickIntervalMs,
+        tickIntervalMs,
         ownerId: owner.id,
       };
       enemy.debuffs = enemy.debuffs.filter((d) => d.kind !== ailment || d.ownerId !== owner.id);
@@ -131,7 +134,7 @@ export function hitEnemy(
     debuff.ownerId = owner.id;
   }
   if (enemy.hitpoints > 0) return;
-  if (owner) talentEnemyDeath(scene, owner, enemy, now);
+  if (owner) talentEnemyDeath(scene, owner, enemy, now, stats);
   if (scene.training) return;
   if (owner) owner.experience++;
   const members = new Map(
@@ -189,23 +192,30 @@ export function hitEnemy(
     scene.drops = scene.drops.slice(-PICKUP_RULES.capacity);
 }
 
-export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
+export function tickDebuffs(
+  scene: SceneState,
+  players: Player[],
+  now: number,
+  context: Game = game,
+) {
   for (const enemy of scene.enemies) {
     for (const debuff of enemy.debuffs ?? []) {
       if (AILMENT_DEFINITIONS[debuff.kind].damagePerStack === 0) continue;
       while (debuff.nextTick <= Math.min(now, debuff.expiresAt) && enemy.hitpoints > 0) {
+        const owner = players.find((p) => p.id === debuff.ownerId);
         hitEnemy(
           scene,
           enemy,
           debuff.stacks * AILMENT_DEFINITIONS[debuff.kind].damagePerStack,
-          players.find((p) => p.id === debuff.ownerId),
+          owner,
           now,
           undefined,
           debuff.kind === 'burn' ? 'fire' : debuff.kind === 'poison' ? 'poison' : 'physical',
           false,
           debuff.kind[0].toUpperCase() + debuff.kind.slice(1),
+          owner ? context.rules.characterStats(owner) : undefined,
         );
-        debuff.nextTick += AILMENT_DEFINITIONS[debuff.kind].tickMs;
+        debuff.nextTick += debuff.tickIntervalMs ?? AILMENT_DEFINITIONS[debuff.kind].tickMs;
       }
     }
     enemy.debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now);
@@ -257,6 +267,7 @@ export function hitWithWeapon(
       companion
         ? 'Bear'
         : (context.registries.classes.get(owner.classId ?? 'warrior')?.details?.spell ?? 'Attack'),
+      stats,
     );
     talentWeaponHit(scene, owner, enemy, now, companion, stats);
   }

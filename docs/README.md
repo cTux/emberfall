@@ -60,6 +60,11 @@ Random gear rarity, stats and prices: [ITEM-01–04](specs/item-rolls.md),
 [rule/persistence checks](../packages/server/src/item-rolls.test.ts) and
 [desktop verification](../tests/item-rarities.spec.ts).
 
+DOT Speed: [equipped effects](specs/item-rolls.md#item-02--equipped-effects-and-drops),
+[ailment timing](../packages/core/src/class-combat.ts),
+[rule checks](../packages/server/src/dot-speed.test.ts) and
+[desktop presentation](../tests/dot-speed.spec.ts).
+
 Damage number visibility: [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music),
 [shared renderer](../packages/client/src/damage-text.ts),
 [saved preference](../packages/client/src/preferences.ts),
