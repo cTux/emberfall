@@ -1,16 +1,20 @@
+import { rank, applyTalentAilment, talentArea as area } from './talent-ailments.ts';
+export {
+  rank,
+  applyTalentAilment,
+  talentAilmentChance,
+  talentEnemyDeath,
+} from './talent-ailments.ts';
 import type { DebuffKind, Enemy, Player, SceneState } from '@emberfall/common';
 import { appendSceneEntities, wrap, wrappedDelta } from '@emberfall/common';
 import { forestDistance, FOREST } from './scene.ts';
 import { healingTarget } from './tactics.ts';
-import { TALENT_NAMES, talentNodeId, talentRank } from './talent-tree.ts';
-import { hitEnemy } from './class-combat.ts';
-import { characterStats, dotTickIntervalMs } from './equipment.ts';
+import { TALENT_NAMES, talentRank } from './talent-tree.ts';
+import { hitEnemy } from './combat/damage.ts';
+import { characterStats } from './equipment.ts';
 import type { CharacterStats } from './content/rules.ts';
 import { isChanced } from './utils/isChanced.ts';
 
-export function rank(player: Player, column: number, row: number) {
-  return talentRank(player, talentNodeId(player.classId ?? 'warrior', column, row));
-}
 interface FighterState {
   stats?: CharacterStats;
   scene: SceneState;
@@ -154,44 +158,6 @@ export function talentVisual(
     durationMs: 1000,
   });
 }
-export function applyTalentAilment(
-  enemy: Enemy,
-  player: Player,
-  kind: DebuffKind,
-  stacks: number,
-  now: number,
-  duration = 5000,
-  stats?: CharacterStats,
-) {
-  if (enemy.hitpoints <= 0 || (kind === 'roots' && enemy.kind === 'boss')) return;
-  enemy.debuffs ??= [];
-  let entry = enemy.debuffs.find(
-    (value) => value.kind === kind && value.ownerId === player.id && value.expiresAt > now,
-  );
-  if (!entry) {
-    const tickIntervalMs =
-      kind === 'bleed' || kind === 'poison' || kind === 'burn'
-        ? dotTickIntervalMs(player, 1000, stats)
-        : 1000;
-    entry = {
-      kind,
-      stacks: 0,
-      ownerId: player.id,
-      nextTick: now + tickIntervalMs,
-      tickIntervalMs,
-      expiresAt: now + duration,
-    };
-    enemy.debuffs.push(entry);
-  }
-  entry.stacks = kind === 'roots' ? 1 : Math.min(5, entry.stacks + stacks);
-  entry.expiresAt = now + duration;
-}
-function area(scene: SceneState, point: { x: number; y: number }, radius: number, player?: Player) {
-  radius *= 1 + (player ? characterStats(player).bonuses.areaOfEffect / 100 : 0);
-  return scene.enemies.filter(
-    (enemy) => enemy.hitpoints > 0 && forestDistance(point, enemy) <= radius,
-  );
-}
 function control(enemy: Enemy, now: number, duration: number) {
   if (enemy.kind === 'boss') return;
   enemy.controlledUntil = Math.max(enemy.controlledUntil ?? 0, now + duration);
@@ -285,12 +251,6 @@ export function talentIncomingDamage(
     talentVisual(scene, player, 2, player, now);
   }
   return amount;
-}
-/** Extra bleed chance is additive with the weapon's existing roll. */
-export function talentAilmentChance(player: Player, kind: DebuffKind) {
-  if (kind !== 'bleed' || (player.classId ?? 'warrior') !== 'warrior') return 0;
-  const learned = rank(player, 1, 0);
-  return learned === 2 ? 0.35 : learned === 1 ? 0.2 : 0;
 }
 export function talentWeaponHit(
   scene: SceneState,
@@ -399,33 +359,6 @@ export function talentWeaponHit(
     );
   if (player.classId === 'druid' && rank(player, 2, 0) && value.hits % 5 === 0)
     heal(player, rank(player, 2, 0) === 2 ? 0.04 : 0.02);
-}
-
-export function talentEnemyDeath(
-  scene: SceneState,
-  player: Player,
-  enemy: Enemy,
-  now: number,
-  stats?: CharacterStats,
-) {
-  if (player.classId === 'druid') return;
-  const spread = rank(player, 1, 6);
-  const wounds = enemy.debuffs?.some(
-    (entry) =>
-      entry.ownerId === player.id &&
-      entry.expiresAt > now &&
-      ['bleed', 'poison', 'burn'].includes(entry.kind),
-  );
-  if (spread && wounds) {
-    const kind =
-      player.classId === 'warrior' || player.classId === 'druid'
-        ? 'bleed'
-        : player.classId === 'ranger'
-          ? 'poison'
-          : 'burn';
-    for (const other of area(scene, enemy, 180, player).slice(0, spread === 2 ? 4 : 2))
-      applyTalentAilment(other, player, kind, spread, now, undefined, stats);
-  }
 }
 
 export function executeTalent(
