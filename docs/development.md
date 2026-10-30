@@ -5,10 +5,14 @@ Run commands from the repository root unless stated otherwise. Runtime setup and
 ## Commands
 
 The [Verify workflow](../.github/workflows/verify.yml) runs formatting, lint,
-typechecking, core and root Node suites, builds, and desktop browser suites on
+typechecking, core and root Node suites, builds, and selected desktop browser regressions on
 pull requests and main. Browser tests use a disposable self-signed certificate
 and isolated test databases. Failed browser runs retain their reports as CI
-artifacts. Git checks text out with LF on every platform through `.gitattributes`.
+artifacts. The workflow lists its game scenarios and UI cases explicitly because
+some existing full-suite tests mix desktop, phone-sized and touch checks. Keep
+CI desktop-only unless mobile testing is explicitly requested. Run additional
+affected desktop cases locally for changes beyond this baseline selection.
+Git checks text out with LF on every platform through `.gitattributes`.
 
 ```sh
 pnpm install --frozen-lockfile

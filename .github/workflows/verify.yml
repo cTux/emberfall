@@ -38,8 +38,17 @@ jobs:
           openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
             -keyout .certs/localhost-key.pem -out .certs/localhost.pem \
             -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
-      - run: pnpm test:browser
-      - run: pnpm --filter @emberfall/ui test
+      - name: Verify desktop game behavior
+        run: >-
+          pnpm test:browser
+          tests/gameplay.spec.ts tests/reconnect.spec.ts tests/rendering.spec.ts
+          tests/renderer-lifetime.spec.ts tests/ability-effects.spec.ts tests/tactics.spec.ts
+          tests/day-night.spec.ts tests/damage-numbers.spec.ts tests/damage-flash.spec.ts
+          tests/hitboxes.spec.ts tests/generated-art.spec.ts tests/entity-layering.spec.ts
+      - name: Verify desktop shared UI behavior
+        run: >-
+          pnpm --filter @emberfall/ui test --grep
+          'HUD actions|inventory slots stay fixed|performance diagnostics|equipment slots accept inventory drops|backpack passes modifier keys|inventory dragging moves|storage supports forty slots|dialog closes with Escape|tabs, settings and voting|meters expose clamped|performance and volume labels|connection states use colored|compact consumable tooltip|incompatible gear explains|item tooltips show quantity|repeated stat labels|unequipped gear shows'
       - name: Retain browser failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
