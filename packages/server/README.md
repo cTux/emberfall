@@ -49,6 +49,8 @@ production entrypoint.
 - `npc-routines.ts` owns per-world walking, workstation timers and trade
   interruptions. `npcs.ts` coordinates nonblocking dialogue and passes only
   occupied NPC IDs to routines; both use the same canonical world entities.
+  `npc-speech.ts` owns topic rotation, prompt context, bounded conversation
+  history and speech/silence publication; it never performs model requests.
 - `runtime.ts` owns identity, membership, command validation, fixed tick order,
   reconnect retention, chat and save scheduling.
 - `commands/character.ts` dispatches durable character actions through typed
