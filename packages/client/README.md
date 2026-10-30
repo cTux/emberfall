@@ -49,6 +49,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   views for world entry, character configuration and scene/leave actions.
   `game-panels.ts` declares window titles, dimensions and modal behavior; the
   host still owns actions, selection and lazy content loading.
+- `GameControls.tsx`, `PartyHud.tsx` and `SceneOverlay.tsx` render controlled
+  navigation, party vitals and scene/death feedback. Their callbacks return
+  decisions to the host; they do not own network or prediction state.
 - `snapshots.ts` interpolates confirmed remote state. `local-movement.ts`
   predicts bounded local movement and casts, reconciles acknowledgements and
   replays pending input. Hits, health, loot and progress remain authoritative.
