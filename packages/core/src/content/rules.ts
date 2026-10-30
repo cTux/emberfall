@@ -1,4 +1,5 @@
 import { recoveryCooldownMs } from '../utils/recoveryCooldownMs.ts';
+import { talentNodeId, talentRank } from '../talent-tree.ts';
 import { z } from 'zod';
 import { inventoryItemSchema } from '@emberfall/common';
 import {
@@ -161,11 +162,13 @@ export function createRules(content: Registries) {
     player.hitpoints = Math.min(player.hitpoints, player.maxHitpoints);
   }
   function companionStats(player: Player): CharacterStats {
+    const packHowl =
+      player.classId === 'druid' && talentRank(player, talentNodeId('druid', 1, 3)) > 0;
     return {
       ...characterStats(player),
       damageType: BEAR_DEFINITION.damageType as DamageType,
-      range: BEAR_DEFINITION.range,
-      manualRange: BEAR_DEFINITION.range,
+      range: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
+      manualRange: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
       maxHitpoints: player.maxHitpoints * BEAR_DEFINITION.healthMultiplier,
     };
   }

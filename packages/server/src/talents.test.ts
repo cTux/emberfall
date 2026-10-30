@@ -18,7 +18,10 @@ import {
   TRAINING_ZONES,
   game,
   FOREST,
+  tickCompanion,
+  companionStats,
 } from '@emberfall/core';
+import { modelHitbox } from '../../core/src/hitboxes.ts';
 import {
   talentAilmentChance,
   talentIncomingDamage,
@@ -72,6 +75,43 @@ function cast(player: Player, scene: SceneState, now = 1000, players = [player])
     players,
   );
 }
+
+test('learned Pack Howl doubles Bear size and expands actual claw reach at either rank until reset', () => {
+  for (const training of [false, true])
+    for (const learned of [1, 2]) {
+      const player = hero('druid'),
+        scene = arena();
+      player.scene = training ? undefined : 'forest';
+      scene.training = training;
+      tickCompanion(player, scene, 10000, 0);
+      const bear = player.bear!;
+      assert.equal(bear.size, 48);
+      assert.equal(companionStats(player).range, 75);
+      for (let i = 0; i < learned; i++) learnTalent(player, talentNodeId('druid', 1, 3));
+      // No cast or action-bar assignment is needed; test the wrapped outer edge.
+      player.x = bear.x = FOREST.width - 40;
+      scene.enemies = [{ id: 1, x: 72, y: bear.y + 6, angle: 0, hitpoints: 1000 }];
+      tickCompanion(player, scene, 11000, 0);
+      assert.equal(bear.size, 96);
+      assert.equal(bear.range, 97.5);
+      assert.equal(companionStats(player).manualRange, 97.5);
+      assert.equal(modelHitbox(bear).radius, 48);
+      assert(scene.enemies[0].hitpoints < 1000, 'claws hit beyond the base 75-unit reach');
+      bear.hitpoints = 0;
+      bear.resurrectAt = 12000;
+      tickCompanion(player, scene, 12000, 0);
+      assert.equal(bear.size, 96);
+      assert.equal(bear.range, 97.5);
+      player.coins = 50;
+      resetTalents(player);
+      scene.enemies[0].hitpoints = 1000;
+      tickCompanion(player, scene, 13000, 0);
+      assert.equal(bear.size, 48);
+      assert.equal(bear.range, 75);
+      assert.equal(modelHitbox(bear).radius, 24);
+      assert.equal(scene.enemies[0].hitpoints, 1000, 'reset removes the extended claw reach');
+    }
+});
 
 test('talent auto-target selects a living enemy in range across seams and preserves manual aim', () => {
   for (const training of [false, true])

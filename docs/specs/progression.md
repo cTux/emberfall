@@ -82,6 +82,14 @@ Warrior columns are Weapon Mastery, Bloodletting and Guardian. Open Wounds adds
 are Marksmanship, Venom and Survival; Mage columns are Fire, Arcane and Frost
 Ward; Druid columns are Nature Magic, Beastbond and Restoration. Every third
 column provides defensive effects. Beastbond commands require a living Bear.
+Learning either rank of Pack Howl permanently doubles Bear's rendered size and
+damage-body diameter and multiplies its claw range by 1.3 (75 to 97.5 units),
+without requiring a cast or action-bar assignment. The bonuses do not stack at
+rank 2, survive resurrection, and disappear when talents are reset. Its cast
+still heals Bear and roots nearby ordinary enemies.
+
+![Pack Howl size and range concept, not a gameplay capture](../images/pack-howl-bear.svg)
+
 Effects use shared authoritative forest/training combat and wrapped geometry;
 training never grants rewards. Cast feedback uses class/column animation sheets
 and particles from confirmed events. The catalog and tooltips define the current

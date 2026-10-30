@@ -12,6 +12,40 @@ import {
   talentDescription,
 } from '../packages/core/src/index.ts';
 
+test('learning Pack Howl enlarges Bear without casting and shows the permanent bonus', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Your adventurer name').fill('Pack Howl');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size === 1)!;
+  const player = [...world.players.values()][0];
+  Object.assign(player, {
+    classId: 'druid',
+    level: 20,
+    equipment: starterEquipment('druid'),
+    talents: {},
+    talentSlots: [null, null, null, null],
+    autoAttack: false,
+  });
+  await expect.poll(() => player.bear?.size).toBe(48);
+  await page.waitForTimeout(1500); // Let scene artwork finish loading before the comparison capture.
+  await page.screenshot({ path: 'test-results/pack-howl-before.png' });
+  learnTalent(player, talentNodeId('druid', 1, 3));
+  await expect.poll(() => player.bear?.size).toBe(96);
+  expect(player.bear!.range).toBe(97.5);
+  await page.waitForTimeout(300); // Allow the confirmed snapshot to reach the renderer.
+  await page.screenshot({ path: 'test-results/pack-howl-learned.png' });
+  await page.getByRole('button', { name: 'Talents (N)' }).click();
+  const card = page.locator(`[data-talent-node='${talentNodeId('druid', 1, 3)}']`);
+  await card.hover();
+  await expect(page.getByRole('tooltip', { name: /^Pack Howl/ })).toContainText(
+    "doubles Bear's size",
+  );
+});
+
 test('talents use one vertical scrollbar and fit desktop, narrow and short windows', async ({
   page,
 }) => {
