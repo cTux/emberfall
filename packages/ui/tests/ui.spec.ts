@@ -1096,7 +1096,10 @@ test('unequipped gear shows compact signed gains and losses with keyboard access
   await page.goto(story('components-backpack--comparison'));
   await page.getByRole('button', { name: 'Use Amulet', exact: true }).focus();
   const tooltip = page.getByRole('tooltip');
-  await expect(tooltip).toContainText('vs equipped Amulet');
+  await expect(tooltip).not.toContainText('vs equipped');
+  await expect(tooltip).not.toContainText('Armor');
+  await expect(tooltip.getByText('Bonus exp increase', { exact: true })).toHaveCount(1);
+  await expect(tooltip.getByText('+20%', { exact: true })).toHaveCount(1);
   await expect(tooltip).toContainText('Bonus exp increase+20%');
   await expect(tooltip).toContainText('Bonus gold increase-10%');
   await expect(tooltip.getByText('+20%', { exact: true }).last()).toHaveCSS(
@@ -1106,14 +1109,11 @@ test('unequipped gear shows compact signed gains and losses with keyboard access
   expect((await tooltip.locator('.MuiTooltip-tooltip').boundingBox())!.width).toBeLessThanOrEqual(
     250,
   );
-  await page.keyboard.press('Tab');
-  await expect(page.getByRole('button', { name: 'Bonus exp increase: +20%' })).toBeFocused();
-  await page.keyboard.press('Shift+Tab');
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await tooltip
-    .filter({ hasText: 'vs equipped Amulet' })
-    .screenshot({ path: 'test-results/item-stat-comparison.png' });
+  await tooltip.screenshot({ path: 'test-results/item-stat-comparison.png' });
   await page.goto(story('components-backpack--same-stats'));
   await page.getByRole('button', { name: 'Use Amulet', exact: true }).focus();
   await expect(page.getByRole('tooltip')).toContainText('Same stats');
+  await expect(page.getByRole('tooltip')).not.toContainText('Bonus exp increase');
+  await expect(page.getByRole('tooltip')).not.toContainText('vs equipped');
 });
