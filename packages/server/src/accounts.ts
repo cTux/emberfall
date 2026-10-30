@@ -1,3 +1,6 @@
+import { cookie, setCookie } from './account-cookies.ts';
+import { accountOrigins, type SteamOptions } from './account-options.ts';
+export { steamOptionsFromEnv, type SteamOptions } from './account-options.ts';
 import { randomBytes, createHash } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { nicknameSchema, type AccountView } from '@emberfall/common';
@@ -11,32 +14,6 @@ const loginCookie = '__Host-emberfall-login';
 const lifetime = 7 * 24 * 60 * 60 * 1000;
 const random = () => randomBytes(32).toString('hex');
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
-function cookie(header: string | undefined, name: string) {
-  const values = (header ?? '')
-    .split(';')
-    .map((value) => value.trim())
-    .filter((value) => value.startsWith(`${name}=`));
-  const value = values.length === 1 ? values[0].slice(name.length + 1) : '';
-  return /^[a-f0-9]{64}$/.test(value) ? value : '';
-}
-function setCookie(name: string, value: string, seconds: number, crossOrigin = false) {
-  return `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=${crossOrigin ? 'None' : 'Lax'}; Max-Age=${seconds}`;
-}
-export interface SteamOptions {
-  origin: string;
-  apiKey: string;
-  /** Full client landing URL, including a GitHub Pages repository path. */
-  clientUrl?: string;
-  /** Dependency injection for isolated provider tests; never exposed over HTTP. */
-  request?: typeof fetch;
-}
-export function steamOptionsFromEnv(): SteamOptions {
-  const origin = process.env.STEAM_ORIGIN;
-  const apiKey = process.env.STEAM_WEB_API_KEY;
-  if (!origin || !apiKey)
-    throw new Error('Set STEAM_ORIGIN and STEAM_WEB_API_KEY to enable Steam login.');
-  return { origin, apiKey, clientUrl: process.env.CLIENT_URL };
-}
 export class Accounts {
   readonly origin: string;
   readonly clientOrigin: string;
@@ -57,25 +34,10 @@ export class Accounts {
   ) {
     this.store = store;
     this.renamed = renamed;
-    const origin = new URL(options.origin);
-    if (origin.protocol !== 'https:' || origin.origin !== options.origin)
-      throw new Error('STEAM_ORIGIN must be an HTTPS origin without a path or trailing slash.');
-    this.origin = origin.origin;
-    if (options.clientUrl) {
-      const client = new URL(options.clientUrl);
-      if (
-        client.protocol !== 'https:' ||
-        client.username ||
-        client.password ||
-        client.search ||
-        client.hash
-      )
-        throw new Error(
-          'CLIENT_URL must be an HTTPS landing URL without credentials, query or fragment.',
-        );
-      this.clientUrl = client.toString();
-      this.clientOrigin = client.origin;
-    } else this.clientOrigin = this.origin;
+    const origins = accountOrigins(options);
+    this.origin = origins.origin;
+    this.clientOrigin = origins.clientOrigin;
+    this.clientUrl = origins.clientUrl;
     this.steam = new SteamProvider(options.apiKey, options.request);
     this.timer = setInterval(() => this.sweep(), 1000);
     this.timer.unref();
