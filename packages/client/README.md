@@ -87,7 +87,10 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `interaction-presentation.ts` owns gathering indicator clock alignment,
   prompt display and shared hover/nearby selection and diagnostics. Input
   admission and authoritative gathering rules remain with their existing owners.
-- `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
+- `Arena.tsx` renders the canvas and diagnostic HUD. `useArenaRenderer.ts` owns
+  React input synchronization and the render/input lifecycle; `arena-presentation.ts`
+  owns snapshot playback, prediction, camera/aim projection, presentation entities
+  and audio/HP feedback. Scene renderers consume detached frame data. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
 - `rendering/pixi-context.ts` translates existing drawing commands into pooled

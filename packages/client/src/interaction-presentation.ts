@@ -1,3 +1,8 @@
+import { wrappedDelta } from '@emberfall/common';
+import { FOREST, resourceState } from '@emberfall/core';
+import { sceneryInteraction } from './interaction-targets';
+import { resourceScenery } from './gathering';
+import { portalInteraction } from './portal';
 import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import {
   resourceNodes,
@@ -181,4 +186,33 @@ export class InteractionPresentation {
       },
     };
   }
+}
+
+export function forestInteractionTargets(
+  view: WorldState | null,
+  local: Player | undefined,
+  camera: { width: number; height: number },
+) {
+  let targets: InteractionTarget[] = [];
+  if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
+    targets = view.scene.portals.map((portal) =>
+      portalInteraction(
+        { id: 'return', name: 'Return to village', ...portal },
+        local.x + wrappedDelta(portal.x, local.x, FOREST.width),
+        local.y + wrappedDelta(portal.y, local.y, FOREST.height),
+      ),
+    );
+  }
+  if (local?.scene === 'forest') {
+    targets.push(
+      ...resourceNodes(local, Math.hypot(camera.width, camera.height) / 2 + 150)
+        .filter(
+          (node) => resourceState(view?.resources, node, view?.serverNow ?? 0)?.remaining !== 0,
+        )
+        .map((node) => sceneryInteraction(resourceScenery(node)))
+        .filter((target) => target !== null),
+    );
+    targets.sort((a, b) => a.y + a.height - b.y - b.height);
+  }
+  return targets;
 }
