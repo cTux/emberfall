@@ -72,6 +72,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   and passes movement into presentation-only prediction.
 - `frame-budget.ts` owns drawing cadence, adaptive resolution thresholds and
   FPS sampling; simulation time stays server-owned.
+- `effects.ts` and `combat-effects.ts` preserve their exports while delegating
+  to label, world, hit/outline, blood, loot, projectile and debuff modules under
+  `effects/`. Each cache stays with the effect that owns it.
 - Forest rendering composes cached terrain, actor preparation, ordered layers
   and actor drawing through `forest-ground.ts`, `forest-actors.ts`,
   `forest-layers.ts` and `forest-actor-rendering.ts`. Portal, fog and player effects
