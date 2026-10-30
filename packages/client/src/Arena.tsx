@@ -1,3 +1,7 @@
+import { VillageSpeech } from './village-speech';
+import { prepareVillageFrame } from './village-frame';
+import { drawVillageLighting } from './village-lighting';
+import { drawEnvironment } from './environment-rendering';
 import { VillagePlayers } from './village-players';
 import { villageLayers } from './village-layers';
 import { drawVillageLayer } from './village-layer-rendering';
@@ -15,21 +19,20 @@ import { drawTimedActivity } from './timed-activity';
 
 import { sceneryInteraction, pickInteraction, interactionInRange } from './interaction-targets';
 import type { InteractionTarget } from './interaction-targets';
-import { npcScenery } from './npc-art';
 
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { drawHitboxes } from './hitboxes';
 import { PixiContext } from './rendering/pixi-context';
 import { PresentationWorld } from './presentation/world';
-import { villageImages, villageBackground, drawVillageBackground } from './village-background';
+import { villageImages, drawVillageBackground } from './village-background';
 import { characterImages } from './characters';
 
 import { actorArt } from './art';
 
 import { companionCaster } from './companion';
 import { critterCaster } from './critters';
-import { CatSpeech } from './cat-speech';
+
 import { drawNavigation } from './navigation';
 import { DamageMeter } from './DamageMeter';
 import { PerformanceGraph } from './PerformanceGraph';
@@ -41,34 +44,18 @@ import { useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material';
 import type { RefObject } from 'react';
 import { SnapshotBuffer } from './snapshots';
-import {
-  drawInteractionPrompt,
-  drawChatBubble,
-  drawParticles,
-  drawVignette,
-  drawAtmosphere,
-} from './effects';
+import { drawInteractionPrompt } from './effects';
 import type { Interaction } from './effects';
 import { wrappedDelta } from '@emberfall/common';
-import {
-  ARENA,
-  FOREST,
-  LOBBY_PORTAL,
-  INTERACTION_RADIUS,
-  nearbyInteraction,
-  inTrainingZone,
-} from '@emberfall/core';
+import { ARENA, FOREST, nearbyInteraction, inTrainingZone } from '@emberfall/core';
 import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import { castShadow } from './lighting';
 import { dayNight } from './day-night';
-import type { Light } from './lighting';
-import { TORCH_LIGHTS, lightTexture } from './village';
-import { forestRenderer, drawFog, portalInteraction, drawPlayerAttack } from './forest';
-import { drawClassProjectiles, drawDebuffs, drawLootAndBlood } from './combat-effects';
-import type { Preferences } from './preferences';
 
-const NPC_SILENCE = { debuffs: [{ kind: 'silence' as const }] };
+import { forestRenderer, portalInteraction, drawPlayerAttack } from './forest';
+import { drawClassProjectiles, drawLootAndBlood } from './combat-effects';
+import type { Preferences } from './preferences';
 
 export function Arena({
   world,
@@ -166,7 +153,7 @@ export function Arena({
     });
     onCursorAim(input.currentAim);
     let hovered: InteractionTarget | null = null;
-    const catSpeech = new CatSpeech();
+    const villageSpeech = new VillageSpeech((text) => catSpoke.current(text));
     const villagePlayers = new VillagePlayers();
     let frame = 0;
     let gatheringClock: { activity: NonNullable<Player['gathering']>; offset: number } | undefined;
@@ -451,95 +438,27 @@ export function Arena({
         frame = requestAnimationFrame(draw);
         return;
       }
-      const prepared = villageBackground(quality.current);
-      const scenery = [
-        ...(prepared?.scenery ?? []).filter((object) => !/^(tree|plant|rock):/.test(object.id)),
-        ...resourceNodes(
-          { x: local?.x ?? 480, y: local?.y ?? 320 },
-          Math.max(el.width, el.height) / scale + 200,
-        ).map((node) => {
-          const state = resourceState(view.resources, node, view.serverNow ?? now);
-          const tree =
-            node.kind === 'tree' && state?.remaining !== 0
-              ? prepared?.scenery.find((object) => object.id === node.id)
-              : undefined;
-          return {
-            ...(tree ?? resourceScenery(node, state)),
-            kind: node.kind,
-            gathered: state?.remaining === 0,
-          };
-        }),
-        ...npcScenery(view.npcs ?? [], view.serverNow ?? now),
-      ];
-      element.dataset.npcs = String(view.npcs?.length ?? 0);
-      element.dataset.workstations = String(
-        prepared?.scenery.filter((s) => s.id.startsWith('workstation:')).length ?? 0,
-      );
-      element.dataset.workingNpcIds = (view.npcs ?? [])
-        .filter((n) => n.workstationId)
-        .map((n) => n.id)
-        .join(',');
-      element.dataset.workingNpcs = String(view.npcs?.filter((n) => n.workstationId).length ?? 0);
-      element.dataset.silencedNpcs = String(view.npcs?.filter((n) => n.silenced).length ?? 0);
-      for (const object of scenery)
-        if (object.frames)
-          Object.assign(object, object.frames[Math.floor(now / 400) % object.frames.length]);
-      const torchTextures = prepared?.torchTextures ?? [];
-      const focus = local ?? { x: 480, y: 320 };
-      const viewWidth = el.width / scale;
-      const viewHeight = el.height / scale;
-      const cameraX = focus.x - viewWidth / 2;
-      const cameraY = focus.y - viewHeight / 2;
-      const project = (x: number, y: number) => ({
-        x: focus.x + wrappedDelta(x, focus.x, ARENA.width),
-        y: focus.y + wrappedDelta(y, focus.y, ARENA.height),
+      const villageFrame = prepareVillageFrame(view, local, now, quality.current, {
+        width: el.width,
+        height: el.height,
+        scale,
       });
-      const visibleScenery = scenery
-        .map((object) => ({ ...object, ...project(object.x, object.y) }))
-        .filter(
-          (object) =>
-            object.x > cameraX - object.width / 2 - object.height * 2 &&
-            object.x < cameraX + viewWidth + object.width / 2 + object.height * 2 &&
-            object.y > cameraY - object.height * 2 &&
-            object.y < cameraY + viewHeight + object.height * 2,
-        );
-      const portal = project(LOBBY_PORTAL.x, LOBBY_PORTAL.y);
-      const portalTarget = portalInteraction(
-        { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL },
-        portal.x,
-        portal.y,
-      );
+      const {
+        background,
+        visibleScenery,
+        project,
+        portal,
+        portalTarget,
+        camera: { x: cameraX, y: cameraY, width: viewWidth, height: viewHeight },
+      } = villageFrame;
+      Object.assign(element.dataset, villageFrame.diagnostics);
       const critters = villageCritters(
         now,
         { x: cameraX, y: cameraY, width: viewWidth, height: viewHeight },
         view.players.filter((player) => !player.scene && player.hitpoints > 0),
         view.serverNow ?? now,
       );
-      const cats: InteractionTarget[] = [];
-      for (const cat of critters) {
-        if (cat.kind !== 'cat') continue;
-        const caster = critterCaster(cat);
-        if (!caster) continue;
-        cats.push({
-          source: {
-            id: cat.id,
-            name: 'Cat',
-            x: cat.x,
-            y: cat.y,
-            activate: () => {
-              const text = catSpeech.pet(cat.id, performance.now());
-              if (text) catSpoke.current(text);
-            },
-          },
-          x: cat.x - 12,
-          y: cat.y - 24,
-          width: 24,
-          height: 24,
-          mask: caster.mask,
-          reach: cat,
-          radius: INTERACTION_RADIUS,
-        });
-      }
+      const cats = villageSpeech.targets(critters);
       input.targets = [
         ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
         ...cats,
@@ -568,8 +487,8 @@ export function Arena({
         : '';
 
       ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
-      if (prepared)
-        drawVillageBackground(ctx, prepared.background, cameraX, cameraY, viewWidth, viewHeight);
+      if (background)
+        drawVillageBackground(ctx, background, cameraX, cameraY, viewWidth, viewHeight);
       else {
         ctx.fillStyle = '#25392f';
         ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
@@ -678,90 +597,18 @@ export function Arena({
             prefs.current.hideOtherPlayerDamageNumbers ? playerId : undefined,
           );
       }
-      if (quality.current.lighting) {
-        ctx.save();
-        ctx.fillStyle = '#f3ca7a09';
-        ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
-        ctx.globalCompositeOperation = 'screen';
-        for (let i = 0; i < TORCH_LIGHTS.length; i++) {
-          const source = TORCH_LIGHTS[i];
-          const light = { ...source, ...project(source.x, source.y) };
-          if (
-            light.x + light.radius < cameraX ||
-            light.x - light.radius > cameraX + viewWidth ||
-            light.y + light.radius < cameraY ||
-            light.y - light.radius > cameraY + viewHeight
-          )
-            continue;
-          const texture = torchTextures[i];
-          if (!texture) continue;
-          const movingLight = lightTexture(
-            light,
-            [
-              ...dynamic,
-              ...visibleScenery.filter(
-                (object) => object.frames || object.id.startsWith('tree:') || object.kind,
-              ),
-            ],
-            quality.current.shadows,
-            texture,
-          );
-          ctx.globalAlpha = cycle.lightAlpha * (0.9 + Math.sin(now / 190 + i) * 0.1);
-          ctx.drawImage(movingLight, light.x - light.radius, light.y - light.radius);
-        }
-        ctx.globalAlpha = cycle.lightAlpha;
-        for (const player of players) {
-          const pos = villagePlayers.pose(player);
-          const lantern: Light = {
-            x: pos.x + (pos.facing === 2 ? -15 : 12),
-            y: pos.y + 15,
-            height: 28,
-            radius: 110,
-            strength: 0.18,
-            owner: player.id,
-          };
-          ctx.drawImage(
-            lightTexture(lantern, [...visibleScenery, ...dynamic], quality.current.shadows),
-            lantern.x - lantern.radius,
-            lantern.y - lantern.radius,
-          );
-        }
-        ctx.restore();
-      }
-      if (quality.current.particles)
-        drawParticles(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
-      if (quality.current.fog) drawFog(ctx, cameraX, cameraY, viewWidth, viewHeight, now);
-      drawAtmosphere(
-        ctx,
-        cameraX,
-        cameraY,
-        viewWidth,
-        viewHeight,
-        now,
-        quality.current,
-        cycle.daylight,
-      );
-      if (quality.current.vignette) drawVignette(ctx, cameraX, cameraY, viewWidth, viewHeight);
+      drawVillageLighting(ctx, villageFrame, dynamic, players, villagePlayers, cycle);
+      drawEnvironment(ctx, villageFrame.camera, now, quality.current, cycle.daylight);
       drawNavigation(ctx, view, playerId);
       drawPrompt();
-      for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
-      const catMessages: string[] = [];
-      for (const cat of critters) {
-        if (cat.kind !== 'cat') continue;
-        const message = catSpeech.message(cat.id, now);
-        if (message) {
-          drawChatBubble(ctx, cat.x, cat.y + 20, message);
-          catMessages.push(message);
-        }
-      }
-      element.dataset.catSpeech = catMessages.join(',');
-      for (const object of visibleScenery) {
-        // NPC positions are feet anchors; this matches the 40-unit actor health/status row.
-        if (object.npc?.silenced)
-          drawDebuffs(ctx, NPC_SILENCE, object.x - 20, object.y - 61, serverTime);
-        else if (object.npc && (object.npc.chatUntil ?? 0) > serverTime)
-          drawChatBubble(ctx, object.x, object.y - 24, object.npc.chat);
-      }
+      element.dataset.catSpeech = villageSpeech.draw(
+        ctx,
+        players,
+        critters,
+        visibleScenery,
+        now,
+        serverTime,
+      );
       element.dataset.debugHitboxes = String(
         prefs.current.debugHitboxes
           ? drawHitboxes(ctx, view, false, {

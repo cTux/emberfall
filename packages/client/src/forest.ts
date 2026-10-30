@@ -1,9 +1,10 @@
+import { drawEnvironment } from './environment-rendering';
 import { createForestActors, forestActorMask } from './forest-actors';
 import { forestLayers, drawForestLayer } from './forest-layers';
 export { portalInteraction, drawPortal } from './portal';
 export { drawFog } from './fog';
 export { drawPlayerDetails, drawPlayerAttack } from './player-rendering';
-import { drawFog } from './fog';
+
 import { drawPlayerAttack } from './player-rendering';
 import type { WorldDrawingContext } from './rendering/drawing-context';
 import { abilityEffectOpacity } from './ability-effects';
@@ -32,13 +33,7 @@ import { castShadow } from './lighting';
 import type { Caster } from './lighting';
 import { dayNight } from './day-night';
 import { lightTexture } from './village';
-import {
-  drawChatBubble,
-  drawParticles,
-  drawVignette,
-  drawDamageFlash,
-  drawAtmosphere,
-} from './effects';
+import { drawChatBubble, drawDamageFlash } from './effects';
 
 export function forestRenderer(
   _nature: HTMLImageElement,
@@ -212,10 +207,7 @@ export function forestRenderer(
       }
       ctx.restore();
     }
-    if (quality.particles) drawParticles(ctx, cameraX, cameraY, width, height, now);
-    if (quality.fog) drawFog(ctx, cameraX, cameraY, width, height, now);
-    drawAtmosphere(ctx, cameraX, cameraY, width, height, now, quality, cycle.daylight);
-    if (quality.vignette) drawVignette(ctx, cameraX, cameraY, width, height);
+    drawEnvironment(ctx, { x: cameraX, y: cameraY, width, height }, now, quality, cycle.daylight);
     if (prefs.damageNumbers)
       drawDamageNumbers(
         ctx,
