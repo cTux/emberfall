@@ -47,10 +47,12 @@ export function itemComparison(
       });
       rows.push({
         label: bonus
-          ? `${stat[0].toUpperCase()}${stat
-              .slice(1)
-              .replace(/([A-Z])/g, ' $1')
-              .toLowerCase()}`
+          ? stat === ItemStat.DotSpeed
+            ? 'DOT Speed'
+            : `${stat[0].toUpperCase()}${stat
+                .slice(1)
+                .replace(/([A-Z])/g, ' $1')
+                .toLowerCase()}`
           : stat === 'manualRange'
             ? 'Range'
             : (metadata?.label ?? stat),

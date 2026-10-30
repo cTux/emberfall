@@ -684,6 +684,26 @@ test('Rupture consumes only its owner wounds and spreads only at rank two', () =
   assert.equal(target.debuffs[0].ownerId, 'teammate');
 });
 
+test('Rupture includes DOT Speed in the remaining wound damage', () => {
+  const player = hero(),
+    scene = arena();
+  ability(player, 1, 5, 2);
+  const target = scene.enemies[0];
+  target.debuffs = [
+    {
+      kind: 'bleed',
+      ownerId: player.id,
+      stacks: 3,
+      nextTick: 1500,
+      tickIntervalMs: 500,
+      expiresAt: 6000,
+    },
+  ];
+  assert(cast(player, scene));
+  assert.equal(target.hitpoints, 940);
+  assert.equal(target.debuffs.length, 0);
+});
+
 test('Second Impact repeats once, and clearing a reset invalidates queued effects even after relearning', async (t) => {
   t.mock.method(Math, 'random', () => 0);
   const { clearTalentEffects } = await import('@emberfall/core');

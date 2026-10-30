@@ -4,6 +4,11 @@ Status: implemented baseline. Goal: Responsive class combat with authoritative d
 
 ## COMBAT-01 — Attacks and ailments
 
+The one-second bleed, poison and burn cadence below is their base interval.
+[DOT Speed](item-rolls.md#item-02--equipped-effects-and-drops) increases their tick
+frequency for players and Bear, including talent-applied ailments. Wound-consuming
+talents include DOT Speed when valuing remaining whole intervals of damage.
+
 With auto-target enabled, automatic ranged base spells wait for a living enemy
 within the equipped weapon's range before starting a cast or cooldown. Entering
 range after the cooldown is ready launches immediately. Client animation uses

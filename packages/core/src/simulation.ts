@@ -607,7 +607,7 @@ export function stepCombat(
     appendSceneEntities(scene, 'enemies', enemy);
     return false;
   });
-  tickDebuffs(scene, players, now);
+  tickDebuffs(scene, players, now, context);
   tickPlayerCombat(scene, alive, now, dt, context);
   const combatants = [
     ...alive,
