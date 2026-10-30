@@ -2,6 +2,7 @@ export * from './enums/index.ts';
 export { nicknameSchema, type AccountView } from './account.ts';
 import { z } from 'zod';
 import { tacticsSchema } from './tactics.ts';
+import { OFFENSIVE_PRIORITIES } from './tactics.ts';
 export * from './tactics.ts';
 import { Difficulty } from './enums/Difficulty.ts';
 import {
@@ -47,6 +48,13 @@ export const progressSchema = z
   .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('moveTacticsPriority'),
+    classId: classSchema,
+    list: z.enum(['offensive', 'defensive']),
+    rule: z.enum([...OFFENSIVE_PRIORITIES, 'players', 'self']),
+    direction: z.union([z.literal(-1), z.literal(1)]),
+  }),
   z.object({
     type: z.literal('setTactics'),
     classId: classSchema,

@@ -478,6 +478,7 @@ export async function createRuntime(
       }
       if (
         message.type === 'setTactics' ||
+        message.type === 'moveTacticsPriority' ||
         message.type === 'learnTalent' ||
         message.type === 'equipTalent' ||
         message.type === 'resetTalents' ||
@@ -500,7 +501,9 @@ export async function createRuntime(
           error('Join a world with a living character first.');
           return;
         }
-        if (message.type === 'setTactics' && message.classId !== player.classId) {
+        const changingTactics =
+          message.type === 'setTactics' || message.type === 'moveTacticsPriority';
+        if (changingTactics && message.classId !== player.classId) {
           error('Tactics must match your current class.');
           return;
         }
@@ -533,7 +536,17 @@ export async function createRuntime(
           const trader = traderId === 'craftsman' ? merchant.craftsman! : merchant;
           if (message.type === 'setTactics')
             next.tactics = { ...DEFAULT_TACTICS, ...player.tactics, ...message.tactics };
-          else if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
+          else if (message.type === 'moveTacticsPriority') {
+            next.tactics = { ...DEFAULT_TACTICS, ...player.tactics };
+            const order = [...next.tactics[message.list]];
+            const from = order.findIndex((rule) => rule === message.rule);
+            if (from < 0) throw new Error('Priority does not belong to this list.');
+            const to = from + message.direction;
+            if (to >= 0 && to < order.length) {
+              [order[from], order[to]] = [order[to], order[from]];
+              next.tactics = { ...next.tactics, [message.list]: order };
+            }
+          } else if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
           else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
           else if (message.type === 'resetTalents') resetTalents(next);
           else if (message.type === 'trade')
@@ -567,7 +580,7 @@ export async function createRuntime(
             hitpoints: next.hitpoints,
             maxHitpoints: next.maxHitpoints,
           });
-          if (message.type === 'setTactics') player.attackTargetId = undefined;
+          if (changingTactics) player.attackTargetId = undefined;
           if (message.type === 'resetTalents') clearTalentEffects(player);
           if (trading) world.merchant = merchant;
           send(ws, { type: 'state', world: state(world, now, player) });

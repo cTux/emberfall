@@ -351,6 +351,18 @@ test('failed saves, malformed commands and a mismatched class cannot publish tac
     peer.receive({ type: 'setTactics', classId: 'warrior', tactics: { healBelow: 0.5 } });
     assert.equal(p.tactics!.keepTarget, true);
     assert.equal(p.tactics!.healBelow, 0.5);
+    const move = {
+      type: 'moveTacticsPriority',
+      classId: 'warrior',
+      list: 'offensive',
+      rule: 'nearest',
+      direction: 1,
+    };
+    peer.receive(move);
+    peer.receive(move);
+    assert.deepEqual(p.tactics!.offensive, ['lowestHealth', 'elite', 'nearest']);
+    peer.receive({ ...move, rule: 'self' });
+    assert.deepEqual(p.tactics!.offensive, ['lowestHealth', 'elite', 'nearest']);
     const token = messages.find((message) => message.type === 'joined')!.characterToken!;
     assert.equal(runtime.characters.load(token).progress.tactics!.keepTarget, true);
   } finally {

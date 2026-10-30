@@ -77,12 +77,13 @@ export function Tactics({
                       index + direction >= value[key].length
                     }
                     onClick={() => {
-                      const next = [...value[key]];
-                      [next[index], next[index + direction]] = [
-                        next[index + direction],
-                        next[index],
-                      ];
-                      update({ [key]: next });
+                      send({
+                        type: 'moveTacticsPriority',
+                        classId: player.classId ?? 'warrior',
+                        list: key,
+                        rule,
+                        direction,
+                      });
                     }}
                   >
                     <FontAwesomeIcon
