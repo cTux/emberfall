@@ -34,6 +34,7 @@ import {
   useBackpackItem,
   unequipItem,
   tradeItem,
+  traderInRange,
   sellAll,
   transferStoredItem,
   moveStorageItem,
@@ -498,12 +499,11 @@ export async function createRuntime(
           return;
         }
         villageLife(world, now);
-        if (
-          trading &&
-          (player.scene ||
-            nearbyInteraction(player, false, undefined, world.npcs)?.id !== 'innkeeper')
-        ) {
-          error('Trade near Marta the Innkeeper in the village.');
+        const traderId = trading
+          ? (message.npcId ?? nearbyInteraction(player, false, undefined, world.npcs)?.id)
+          : undefined;
+        if (trading && (!traderId || !traderInRange(player, traderId, world.npcs))) {
+          error('Trade near Marta the Innkeeper or Bram the Craftsman in the village.');
           return;
         }
         if (storing && (player.scene || nearbyInteraction(player)?.id !== 'storehouse')) {
@@ -524,18 +524,19 @@ export async function createRuntime(
         try {
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
+          const trader = traderId === 'craftsman' ? merchant.craftsman! : merchant;
           if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
           else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
           else if (message.type === 'resetTalents') resetTalents(next);
           else if (message.type === 'trade')
-            tradeItem(next, merchant, message.id, message.buying, message.amount);
+            tradeItem(next, trader, message.id, message.buying, message.amount);
           else if (message.type === 'storeItem')
             transferStoredItem(next, message.tab, message.id, message.depositing);
           else if (message.type === 'moveStorageItem')
             moveStorageItem(next, message.fromTab, message.toTab, message.id);
           else if (message.type === 'renameStorage')
             next.storages![message.tab].name = message.name;
-          else if (message.type === 'sellAll') sellAll(next, merchant);
+          else if (message.type === 'sellAll') sellAll(next, trader);
           else if (message.type === 'unequip') unequipItem(next, message.slot);
           else useBackpackItem(next, message.id);
           saving = true;

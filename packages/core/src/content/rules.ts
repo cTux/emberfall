@@ -6,6 +6,8 @@ import {
   ItemStat,
   Rarity,
   itemRarity,
+  itemStatBaseValue,
+  rarityStatMultiplier,
   itemTypeStats,
   itemStatWeight,
   rarityStatCount,
@@ -249,7 +251,7 @@ export function createRules(content: Registries) {
     storages: storagesSchema,
   });
   const BUYBACK_SLOTS = INVENTORY_SLOTS;
-  const merchantSchema = z
+  const traderSchema = z
     .object({
       refreshAt: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
       coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
@@ -271,6 +273,18 @@ export function createRules(content: Registries) {
           .reverse()
           .slice(0, BUYBACK_SLOTS),
     }));
+  const merchantSchema = traderSchema
+    .and(z.object({ craftsman: traderSchema.optional() }))
+    .transform(({ craftsman, ...merchant }) => ({
+      ...merchant,
+      backpack: merchant.backpack.filter((item) => itemDefinition(item.itemId).kind !== 'gear'),
+      craftsman: craftsman ?? {
+        coins: 5000,
+        backpack: merchant.backpack.filter((item) => itemDefinition(item.itemId).kind === 'gear'),
+        buyback: [],
+      },
+    }));
+  type Trader = z.infer<typeof traderSchema>;
   type Merchant = z.infer<typeof merchantSchema>;
   function freshMerchant(now = Date.now()): Merchant {
     return {
@@ -279,13 +293,28 @@ export function createRules(content: Registries) {
       backpack: [
         { id: crypto.randomUUID(), itemId: 'health-potion', quantity: 5 },
         { id: crypto.randomUUID(), itemId: 'empty-bottle', quantity: 200 },
-        ...content.items
+      ],
+      buyback: [],
+      craftsman: {
+        coins: 5000,
+        backpack: content.items
           .values()
           .filter((item) => item.kind === 'gear' && item.loot)
           .map((item) => rollItem(item.id)),
-      ],
-      buyback: [],
+        buyback: [],
+      },
     };
+  }
+  function itemPrice(item: { itemId: string; rarity?: string; stats?: Record<string, number> }) {
+    const definition = itemDefinition(item.itemId);
+    const base = definition.price ?? 1;
+    if (definition.kind !== 'gear') return base;
+    const statPrice = Object.entries(item.stats ?? {}).reduce(
+      (sum, [stat, value]) =>
+        sum + value / itemStatBaseValue[stat as ItemStat] / itemStatWeight[stat as ItemStat],
+      0,
+    );
+    return Math.ceil(base * rarityStatMultiplier[itemRarity(item)] + 5 * statPrice);
   }
   function addItem(backpack: BackpackItem[], item: BackpackItem, capacity = INVENTORY_SLOTS) {
     const definition = itemDefinition(item.itemId);
@@ -410,7 +439,7 @@ export function createRules(content: Registries) {
   /** Both owners commit together; older callers still transfer one item. */
   function tradeItem(
     player: Player,
-    merchant: Merchant,
+    merchant: Trader,
     id: string,
     buying: boolean,
     amount: 1 | 10 | 'stack' = 1,
@@ -427,7 +456,7 @@ export function createRules(content: Registries) {
     if (index < 0) throw new Error('Item is no longer available.');
     const item = backpack[index];
     const quantity = amount === 'stack' ? item.quantity : Math.min(amount, item.quantity);
-    const price = (itemDefinition(item.itemId).price ?? 1) * quantity;
+    const price = itemPrice(item) * quantity;
     if (!Number.isSafeInteger(price)) throw new Error('Trade price is too large.');
     if ((target.coins ?? 0) < price) throw new Error('Not enough gold.');
     if (!Number.isSafeInteger((source.coins ?? 0) + price))
@@ -445,12 +474,9 @@ export function createRules(content: Registries) {
   }
 
   /** The server commits the detached player and merchant together, as for one-item trades. */
-  function sellAll(player: Player, merchant: Merchant) {
+  function sellAll(player: Player, merchant: Trader) {
     const items = player.backpack ?? [];
-    const total = items.reduce(
-      (sum, item) => sum + (itemDefinition(item.itemId).price ?? 1) * item.quantity,
-      0,
-    );
+    const total = items.reduce((sum, item) => sum + itemPrice(item) * item.quantity, 0);
     if (!Number.isSafeInteger(total) || !Number.isSafeInteger((player.coins ?? 0) + total))
       throw new Error('Gold balance is too large.');
     if (merchant.coins < total) throw new Error('Not enough gold.');
@@ -525,6 +551,7 @@ export function createRules(content: Registries) {
     syncEquipmentVitals,
     companionStats,
     itemDefinition,
+    itemPrice,
     rollItem,
     CONSUMABLES,
     backpackSchema,

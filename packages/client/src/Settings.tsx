@@ -113,7 +113,7 @@ export function Settings({
               </Typography>
               {toggle('lootHints', 'Loot hints')}
               {toggle('bloodPuddles', 'Blood puddles')}
-              {toggle('hideGatheringHintInCombat', 'Hide gathering hint during combat')}
+              {toggle('hideGatheringHintInCombat', 'Hide interact hint during combat')}
               {toggle('hideHealthBarsInTown', 'Hide health bars in town')}
               {toggle('damageNumbers', 'Floating damage numbers')}
               {toggle('hideOtherPlayerDamageNumbers', "Hide other players' damage numbers")}

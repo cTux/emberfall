@@ -39,7 +39,7 @@ All game windows use compact, lighter title bars, wardrobe-brown borders and thi
 The trader has Buy and Buyback tabs, with 20 Buyback slots. A small Sell all icon
 button sits at the top-right of the player's backpack, opposite the gold balance.
 
-The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. F1 opens Codex and Escape opens Settings when no window or text input is active, including before joining a world. Each window's opening hotkey also closes that window; Escape closes the current window first. Holding a hotkey does not repeatedly toggle its window, and F1 suppresses browser help even while a window is open. HUD tooltips show each action's available hotkey; leaving uses the explicit exit control. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames belong to Steam accounts; see CHAR-05.
+The arena fills the viewport with an aspect-preserving camera centered on the local player. Codex, settings and exit are compact controls; the bottom-right colored circle reports connection status. F1 opens Codex and Escape opens Settings when no window or text input is active, including before joining a world. Each window's opening hotkey also closes that window; Escape closes the current window first. Holding a hotkey does not repeatedly toggle its window, and F1 suppresses browser help even while a window is open. The top-right HUD orders Inventory, Talents, Codex, optional Portal vote, Settings and Leave world. Inventory uses a bag icon and Talents uses magic sparkles. I, N, F1 and Esc appear as small badges below the matching icons and in tooltips; actions without hotkeys omit badges. Leaving remains last, after Settings. HUD tooltips show each action's available hotkey; leaving uses the explicit exit control. Codex/settings use draggable modal dialogs and suppress movement while open. Settings can toggle ambient particles. Nicknames belong to Steam accounts; see CHAR-05.
 
 Party cards show server-owned `Nickname, lvl N` inside the HP bar, adding `P` and the paragon level when positive. A thinner blue XP bar directly below health shows current/required XP using the shared progression formula. The class portrait matches the health bar height; a crown marks the party leader in its top-right corner and a dimension icon marks players in another area in its top-left corner. Icons retain accessible labels and away players stay dimmed. Thin health bars also appear beneath player names.
 
@@ -75,7 +75,7 @@ Speech bubbles draw above the prompt wherever they overlap.
 During gathering the player prompt is replaced by the thin yellow timed-activity
 bar above the resource, with a green zone and white indicator, without text above
 or below it (see [VILLAGE-07](scenes-and-village.md#village-07--gathering)).
-Settings → Gameplay includes **Hide gathering hint during combat**, enabled by
+Settings → Gameplay includes **Hide interact hint during combat**, enabled by
 default, including for existing saved preferences. It hides only gathering prompts
 in active forest scenes and while inside a village training zone with active
 training. Other prompts and E/click gathering remain available. Disabling it shows
@@ -176,7 +176,7 @@ it. Ignore repeats, modified shortcuts, text entry and other open dialogs. Use
 the existing modal focus, movement suppression and persisted drag-position rules.
 New-runtime windows use a wardrobe-brown solid border, with no divider under the title.
 
-The Inventory window opens with physical KeyI or the HUD action. Compact square backpack slots use item art when available and default equipment-slot art otherwise. Stack counts sit at the bottom right. Item tooltips share a compact 250px layout with the item artwork, name, type and gold price. Consumables show their effect and stack quantity; resources show their quantity without an equip/use hint. Contextual footers show equip, unequip, use, buy, sell, deposit or withdraw only where that action is available. Prices in inventories are per item. Right-click activates an item; Enter or Space provides the same action for keyboard users. Marta opens two compact backpacks, hers on the left and the player's on the right, each with the same gold display used in the HUD.
+The Inventory window opens with physical KeyI or the HUD action. Compact square backpack slots use item art when available and default equipment-slot art otherwise. Stack counts sit at the bottom right. Item tooltips share a compact 250px layout with the item artwork, name, type and gold price. Consumables show their effect and stack quantity; resources show their quantity without an equip/use hint. Contextual footers show equip, unequip, use, buy, sell, deposit or withdraw only where that action is available. Prices in inventories are per item. Right-click activates an item; Enter or Space provides the same action for keyboard users. Marta and Bram open two compact backpacks, the merchant's on the left and the player's on the right, each with the same gold display used in the HUD.
 
 Gear that the current class cannot equip shows a red “Your class cannot equip
 this item.” line in its tooltip, including trader and storage inventories. Its

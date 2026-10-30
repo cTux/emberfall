@@ -52,7 +52,7 @@ test('talents use one vertical scrollbar and fit desktop, narrow and short windo
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Talent scrolling');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await page.getByRole('button', { name: 'Talents (N)' }).click();
+  await page.getByRole('button', { name: 'Talents' }).click();
   const tree = page.getByRole('region', { name: 'Talents', exact: true });
   for (const viewport of [
     { width: 1440, height: 1000 },
@@ -146,7 +146,7 @@ test('Mending Seed heals a party teammate through the server and shows its targe
       .toBe(bearBefore + healer.bear!.maxHitpoints * 0.12);
     expect(patient.hitpoints).toBe(before + patient.maxHitpoints * 0.12);
     await expect(other.locator('.party')).toContainText('Healer');
-    await page.getByRole('button', { name: 'Talents (N)' }).click();
+    await page.getByRole('button', { name: 'Talents' }).click();
     await page.locator(`[data-talent-node='${nodeId}']`).hover();
     await expect(page.getByRole('tooltip').filter({ hasText: 'Mending Seed' })).toContainText(
       'lowest health percentage within 700 units',
@@ -169,7 +169,7 @@ test('three independent columns support rank learning, custom tooltips, LMB assi
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
   const player = [...world.players.values()][0];
-  await page.getByRole('button', { name: 'Talents (N)' }).click();
+  await page.getByRole('button', { name: 'Talents' }).click();
   const tree = page.getByRole('region', { name: 'Talents', exact: true });
   await expect(tree.locator('[data-talent-node]')).toHaveCount(30);
   await expect(tree.getByRole('status')).toHaveText('1 talent point available');
@@ -273,7 +273,7 @@ test('all class columns, generated icons and confirmed cast effects render in th
       (node) => node.classId === classId && node.kind === 'ability',
     ))
       learnTalent(player, node.id);
-    await page.getByRole('button', { name: 'Talents (N)' }).click();
+    await page.getByRole('button', { name: 'Talents' }).click();
     const tree = page.getByRole('region', { name: 'Talents', exact: true });
     for (const column of TALENT_COLUMNS[classId])
       await expect(tree.getByText(column, { exact: true })).toBeVisible();

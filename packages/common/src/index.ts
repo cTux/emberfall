@@ -70,11 +70,12 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({ type: z.literal('unequip'), slot: z.string().min(1).max(128) }),
   z.object({
     type: z.literal('trade'),
+    npcId: z.enum(['innkeeper', 'craftsman']).optional(),
     id: z.string().min(1).max(64),
     buying: z.boolean(),
     amount: z.union([z.literal(1), z.literal(10), z.literal('stack')]).optional(),
   }),
-  z.object({ type: z.literal('sellAll') }),
+  z.object({ type: z.literal('sellAll'), npcId: z.enum(['innkeeper', 'craftsman']).optional() }),
   z.object({ type: z.literal('npcInteraction'), npcId: z.string().min(1).max(64).nullable() }),
   z.object({
     type: z.literal('storeItem'),

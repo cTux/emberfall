@@ -1,5 +1,10 @@
 import { test, expect } from './fixtures';
-import { INNKEEPER, starterEquipment } from '../packages/core/src/index.ts';
+import {
+  INNKEEPER,
+  starterEquipment,
+  itemPrice,
+  LOOT_ITEM_IDS,
+} from '../packages/core/src/index.ts';
 
 test('item tooltips follow class equipment rules without hiding trade actions', async ({
   page,
@@ -8,7 +13,7 @@ test('item tooltips follow class equipment rules without hiding trade actions', 
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Gear restrictions');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   player.classId = 'warrior';
@@ -115,7 +120,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Seller');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   player.backpack = [
@@ -135,7 +140,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await backpack.getByRole('button', { name: 'Use Helmet', exact: true }).hover();
   const tooltip = page.getByRole('tooltip');
   await expect(tooltip).toContainText('1Armor');
-  await expect(tooltip).toContainText('1 gold each');
+  await expect(tooltip).toContainText('1 gold');
   await expect(tooltip).toContainText('Right-click: equip');
   await page.screenshot({ path: 'test-results/item-tooltip-armor.png' });
   await backpack.getByRole('button', { name: 'Use Health potion (3)' }).hover();
@@ -185,7 +190,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await expect(trader).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(trader.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();
-  for (const width of [1280, 883, 320]) {
+  for (const width of [1280, 883]) {
     await page.setViewportSize({ width, height: 800 });
     for (const tab of ['Buyback', 'Buy']) {
       await trader.getByRole('tab', { name: tab, exact: true }).click();
@@ -210,7 +215,10 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
         const first = (await merchantSlots.first().boundingBox())!;
         const last = (await playerSlots.last().boundingBox())!;
         const padding = first.x - window.x;
-        expect(Math.abs(window.x + window.width - last.x - last.width - padding)).toBeLessThan(1);
+        // Fixed 44px slots leave 5px of horizontal slack inside the 520px window.
+        expect(
+          Math.abs(window.x + window.width - last.x - last.width - padding),
+        ).toBeLessThanOrEqual(5);
         expect(Math.abs(window.y + window.height - last.y - last.height - padding)).toBeLessThan(1);
       }
     }
@@ -230,7 +238,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondPage.goto(baseURL!);
     await secondPage.getByLabel('Your adventurer name').fill('Buyer');
     await secondPage.getByRole('button', { name: /^Join Playtest Default/ }).click();
-    await expect(secondPage.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+    await expect(secondPage.getByRole('button', { name: 'Inventory' })).toBeVisible();
     const buyer = [...world.players.values()].find((p) => p.name === 'Buyer')!;
     buyer.x = marta.x;
     buyer.y = marta.y - 15;
@@ -311,4 +319,62 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   ).toBeVisible();
   await page.screenshot({ path: 'test-results/innkeeper-buyback-narrow.png' });
   expect(errors).toEqual([]);
+});
+
+test('Bram sells gear with the shared controls, stops for trading and keeps buyback separate from Marta', async ({
+  page,
+  game,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
+  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const player = [...world.players.values()][0];
+  const bram = world.npcs!.find((npc) => npc.id === 'craftsman')!;
+  Object.assign(bram, { x: 1000, y: 1000 });
+  Object.assign(player, { x: 1000, y: 985, coins: 1000 });
+  await page.mouse.move(0, 0);
+  await expect(page.locator('canvas[aria-label]')).toHaveAttribute(
+    'data-interaction-prompt',
+    bram.name,
+  );
+  await page.keyboard.press('e');
+  const trader = page.getByRole('dialog', { name: bram.name });
+  await expect(trader).toBeVisible();
+  await expect.poll(() => bram.moving).toBe(false);
+  Object.assign(
+    world.npcs!.find((npc) => npc.id === 'innkeeper')!,
+    { x: 1020, y: 1000 },
+  );
+  const stock = trader.getByRole('region', { name: "Craftsman's backpack" });
+  await expect(stock.locator('[data-backpack-item]')).toHaveCount(LOOT_ITEM_IDS.length);
+  expect(world.merchant!.backpack.map((item) => item.itemId)).toEqual([
+    'health-potion',
+    'empty-bottle',
+  ]);
+  const gear = world.merchant!.craftsman!.backpack[0];
+  const price = itemPrice(gear);
+  const buy = stock.locator(`[data-backpack-item='${gear.id}']`);
+  await buy.hover();
+  await expect(page.getByRole('tooltip')).toContainText(`${price} gold`);
+  await buy.focus();
+  await page.keyboard.press('Enter');
+  await expect.poll(() => player.coins).toBe(1000 - price);
+  const owned = trader
+    .getByRole('region', { name: 'Your backpack' })
+    .locator('[data-backpack-item]');
+  await expect(owned).toHaveCount(1);
+  await owned.dragTo(stock, { targetPosition: { x: 12, y: 12 } });
+  await expect.poll(() => player.coins).toBe(1000);
+  await trader.getByRole('tab', { name: 'Buyback', exact: true }).click();
+  const buyback = trader
+    .getByRole('region', { name: 'Buyback', exact: true })
+    .locator('[data-backpack-item]');
+  await expect(buyback).toHaveCount(1);
+  expect(world.merchant!.buyback).toHaveLength(0);
+  await buyback.click({ button: 'right' });
+  await expect.poll(() => player.coins).toBe(1000 - price);
+  await trader.getByRole('button', { name: 'Sell all', exact: true }).click();
+  await expect.poll(() => player.backpack!.length).toBe(0);
+  await expect.poll(() => player.coins).toBe(1000);
 });

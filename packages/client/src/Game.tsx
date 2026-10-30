@@ -1,6 +1,6 @@
 import { BULLSEYE, TALENT_RESET_COST, availableTalentPoints } from '@emberfall/core';
 import { clientAsset, websocketUrl } from './urls.ts';
-import { faSitemap } from '@fortawesome/free-solid-svg-icons/faSitemap';
+import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
 import { experienceRequired, enemyMaxHealth, difficultyMultiplier } from '@emberfall/core';
 import type {
   AccountView,
@@ -36,7 +36,7 @@ import { faGear } from '@fortawesome/free-solid-svg-icons/faGear';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
 import { faDoorOpen } from '@fortawesome/free-solid-svg-icons/faDoorOpen';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons/faGlobe';
-import { faShieldHalved } from '@fortawesome/free-solid-svg-icons/faShieldHalved';
+import { faBagShopping } from '@fortawesome/free-solid-svg-icons/faBagShopping';
 import type { Preferences } from './preferences';
 import type { Dispatch, SetStateAction } from 'react';
 import { useChat } from './ChatProvider';
@@ -366,7 +366,14 @@ export function Game({
     );
   };
   const unavailable = status !== 'Connected' || pending;
-  const tradingNpcId = menu === 'building' && building === INNKEEPER.name ? INNKEEPER.id : null;
+  const tradingNpcId =
+    menu === 'building'
+      ? building === INNKEEPER.name
+        ? INNKEEPER.id
+        : building === 'Bram the Craftsman'
+          ? 'craftsman'
+          : null
+      : null;
   useEffect(() => {
     if (status === 'Connected' && socket.current?.readyState === GameConnection.OPEN)
       socket.current.send({ type: 'npcInteraction', npcId: tradingNpcId });
@@ -572,6 +579,31 @@ export function Game({
         <Box className='controls'>
           <HudActions
             actions={[
+              ...(world
+                ? [
+                    {
+                      id: 'equipment',
+                      label: 'Inventory',
+                      shortcut: 'I',
+                      icon: faBagShopping,
+                      onClick: () => setMenu('equipment'),
+                    },
+                    {
+                      id: 'talents',
+                      label: 'Talents',
+                      shortcut: 'N',
+                      icon: faWandMagicSparkles,
+                      onClick: () => setMenu('talents'),
+                    },
+                  ]
+                : []),
+              {
+                id: 'codex',
+                label: 'Codex',
+                shortcut: 'F1',
+                icon: faBookOpen,
+                onClick: () => setMenu('codex'),
+              },
               ...(scene && ['voting', 'countdown'].includes(scene.phase)
                 ? [
                     {
@@ -583,13 +615,6 @@ export function Game({
                   ]
                 : []),
               {
-                id: 'codex',
-                label: 'Codex',
-                shortcut: 'F1',
-                icon: faBookOpen,
-                onClick: () => setMenu('codex'),
-              },
-              {
                 id: 'settings',
                 label: 'Settings',
                 shortcut: 'Esc',
@@ -598,18 +623,6 @@ export function Game({
               },
               ...(world
                 ? [
-                    {
-                      id: 'talents',
-                      label: 'Talents (N)',
-                      icon: faSitemap,
-                      onClick: () => setMenu('talents'),
-                    },
-                    {
-                      id: 'equipment',
-                      label: 'Inventory (I)',
-                      icon: faShieldHalved,
-                      onClick: () => setMenu('equipment'),
-                    },
                     {
                       id: 'leave',
                       label: 'Leave world',
@@ -871,8 +884,7 @@ export function Game({
                 : menu === 'wardrobe'
                   ? 600
                   : menu === 'equipment' ||
-                      (menu === 'building' &&
-                        (building === INNKEEPER.name || building === 'Storehouse'))
+                      (menu === 'building' && (tradingNpcId || building === 'Storehouse'))
                     ? 520
                     : undefined
             }
@@ -1031,8 +1043,16 @@ export function Game({
                       );
                     })}
                   </Box>
-                ) : menu === 'building' && building === INNKEEPER.name && me && world?.merchant ? (
-                  <Trading player={me} merchant={world.merchant} send={send} />
+                ) : menu === 'building' && tradingNpcId && me && world?.merchant ? (
+                  <Trading
+                    key={tradingNpcId}
+                    player={me}
+                    merchant={
+                      tradingNpcId === 'craftsman' ? world.merchant.craftsman! : world.merchant
+                    }
+                    craftsman={tradingNpcId === 'craftsman'}
+                    send={send}
+                  />
                 ) : menu === 'building' && building === 'Storehouse' && me ? (
                   <Storehouse player={me} send={send} />
                 ) : menu === 'building' ? (

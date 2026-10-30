@@ -42,7 +42,12 @@ Verification: [account integration tests](../packages/server/src/accounts.test.t
 
 ## Feature map
 
-Random gear rarity and stats: [ITEM-01–03](specs/item-rolls.md),
+Village merchants: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime),
+[shared trading rules](design/new-runtime.md#inventory-loot-and-shared-trading),
+[merchant validation](../packages/server/src/merchant.test.ts) and
+[desktop gear trading](../tests/item-rarities.spec.ts). Marta stocks supplies; Bram stocks gear.
+
+Random gear rarity, stats and prices: [ITEM-01–04](specs/item-rolls.md),
 [core configuration](../packages/core/src/item-stats.ts),
 [instance rules](../packages/core/src/content/rules.ts),
 [rule/persistence checks](../packages/server/src/item-rolls.test.ts) and

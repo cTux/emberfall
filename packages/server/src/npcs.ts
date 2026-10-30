@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { forestDistance, nearbyInteraction, wrap, wrappedDelta } from '@emberfall/core';
+import { forestDistance, traderInRange, wrap, wrappedDelta } from '@emberfall/core';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { ChatMessage, Player, VillageNpc } from '@emberfall/common';
 import { simulationFor } from './ecs/simulation.ts';
@@ -103,7 +103,7 @@ export class VillageLife {
       !npcId ||
       !villagePlayers(this.world).includes(player) ||
       !this.world.npcs?.some((npc) => npc.id === npcId) ||
-      nearbyInteraction(player, false, undefined, this.world.npcs)?.id !== npcId
+      !traderInRange(player, npcId, this.world.npcs)
     )
       return;
     this.interactions.set(player.id, npcId);
@@ -152,8 +152,7 @@ export class VillageLife {
     const npcs = this.world.npcs ?? [];
     for (const [playerId, npcId] of this.interactions) {
       const player = players.find((p) => p.id === playerId);
-      if (!player || nearbyInteraction(player, false, undefined, npcs)?.id !== npcId)
-        this.interactions.delete(playerId);
+      if (!player || !traderInRange(player, npcId, npcs)) this.interactions.delete(playerId);
     }
     const interacting = new Set(this.interactions.values());
     const liveIds = new Set(this.world.players.keys());
@@ -341,7 +340,7 @@ export class VillageLife {
       personality: definition.personality,
       background: definition.background,
       setting:
-        'Emberfall is a cooperative medieval fantasy game. Adventurers prepare in the village, fight monsters and a Brute Boss in the forest, and return with loot. Marta trades consumables and collected items. The Storehouse stores items. The Inn is scenery; Hall, Workshop and Lodge have no services yet. Do not invent active festivals, quests or services.',
+        'Emberfall is a cooperative medieval fantasy game. Adventurers prepare in the village, fight monsters and a Brute Boss in the forest, and return with loot. Marta sells consumables and resources; Bram sells gear. Both buy collected items and offer buyback. The Storehouse stores items. The Inn is scenery; Hall and Lodge have no services yet. Do not invent active festivals, quests or services.',
       residents: VILLAGE_DEFINITION.villagers.map(
         (npc) => `@${npc.name.split(' ')[0]}: ${npc.name}`,
       ),

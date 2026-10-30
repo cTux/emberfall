@@ -81,7 +81,7 @@ test('each village plant appears in inventory with its own name and artwork afte
     expect(world.resources?.[node.id]).toBeUndefined();
     await expect.poll(() => world.resources?.[node.id]?.remaining, { timeout: 7000 }).toBe(0);
     expect(player.backpack!.find((item) => item.itemId === itemId)?.quantity).toBe(1);
-    await page.getByRole('button', { name: 'Inventory (I)' }).click();
+    await page.getByRole('button', { name: 'Inventory' }).click();
     const inventory = page.getByRole('dialog', { name: 'Inventory', exact: true });
     const slot = inventory.getByRole('button', {
       name: `Use ${itemDefinition(itemId).name}`,
@@ -127,7 +127,7 @@ test('click and E gather replicated resources in village and forest, show deplet
   expect(player.backpack!.find((i) => i.itemId === 'rock')?.quantity).toBe(1);
   await expect(canvas).toHaveAttribute('data-depleted-resources', '1');
   await page.screenshot({ path: 'test-results/gathering-depleted-rock.png' });
-  await page.getByRole('button', { name: 'Inventory (I)' }).click();
+  await page.getByRole('button', { name: 'Inventory' }).click();
   const inventory = page.getByRole('dialog', { name: 'Inventory', exact: true });
   await expect(inventory.getByRole('button', { name: 'Use Rock', exact: true })).toBeVisible();
   const before = structuredClone(player.backpack);
@@ -194,7 +194,7 @@ test('click and E gather replicated resources in village and forest, show deplet
   expect(player.backpack!.some((i) => i.itemId === 'plant')).toBe(true);
   await expect(canvas).toHaveAttribute('data-depleted-resources', '1');
   await page.screenshot({ path: 'test-results/gathering-forest-plant.png' });
-  await page.getByRole('button', { name: 'Inventory (I)' }).click();
+  await page.getByRole('button', { name: 'Inventory' }).click();
   await expect(inventory.getByRole('button', { name: 'Use Plant', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -276,7 +276,7 @@ test('combat gathering hint defaults hidden, toggles immediately and persists', 
   await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
   await page.screenshot({ path: 'test-results/gathering-hint-hidden-in-combat.png' });
   const toggle = page.getByRole('switch', {
-    name: 'Hide gathering hint during combat',
+    name: 'Hide interact hint during combat',
     exact: true,
   });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();

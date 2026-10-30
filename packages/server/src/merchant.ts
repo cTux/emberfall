@@ -13,7 +13,9 @@ export function refreshMerchant(
 ) {
   if (!world.merchant || now < (world.merchant.refreshAt ?? 0) || now < (retryAt.get(world) ?? 0))
     return;
-  const merchant = { ...freshMerchant(now), buyback: world.merchant.buyback };
+  const merchant = freshMerchant(now);
+  merchant.buyback = world.merchant.buyback;
+  merchant.craftsman.buyback = world.merchant.craftsman?.buyback ?? [];
   try {
     characters.saveMerchant(world.id, merchant);
   } catch (cause) {
@@ -23,4 +25,5 @@ export function refreshMerchant(
   retryAt.delete(world);
   world.merchant = merchant;
   addChat(world, 'Marta the Innkeeper has refreshed her stock.');
+  addChat(world, 'Bram the Craftsman has refreshed his stock.');
 }

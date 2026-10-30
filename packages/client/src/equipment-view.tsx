@@ -9,7 +9,7 @@ import { Box, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import type { ClientMessage, BackpackItem } from '@emberfall/common';
-import { itemDefinition, CONSUMABLES, PLANT_KINDS } from '@emberfall/core';
+import { itemPrice, itemDefinition, CONSUMABLES, PLANT_KINDS } from '@emberfall/core';
 import { Backpack, ChapterTabs, EquipmentPanel } from '@emberfall/ui';
 import type { EquipmentSlotView, EquipmentStatView, EquipmentBadgeView } from '@emberfall/ui';
 import {
@@ -243,7 +243,7 @@ export function Equipment({
               rarity: capitalize(itemRarity(instance)),
               rarityColor: rarityColor[itemRarity(instance)],
               icon: itemIcon(gear.id),
-              price: gear.price ?? 1,
+              price: itemPrice(instance ?? { itemId: gear.id }),
               subtitle: GEAR_LABELS[gear.gearType],
               primary: gear.stats.armor
                 ? { label: 'Armor', value: number(gear.stats.armor) }
@@ -346,7 +346,7 @@ export function backpackViews(
       rarity: capitalize(itemRarity(item)),
       rarityColor: rarityColor[itemRarity(item)],
       icon: itemIcon(item.itemId),
-      price: definition.price ?? 1,
+      price: itemPrice(item),
       subtitle: gear ? GEAR_LABELS[gear.gearType] : capitalize(definition.kind),
       comparison: itemComparison(item, player),
       primary: gear?.stats.armor ? { label: 'Armor', value: number(gear.stats.armor) } : undefined,
@@ -365,16 +365,19 @@ export function backpackViews(
 export function Trading({
   player,
   merchant,
+  craftsman = false,
   send,
 }: {
   player: Player;
   merchant: import('@emberfall/common').Merchant;
+  craftsman?: boolean;
   send: (message: ClientMessage) => void;
 }) {
   const [tab, setTab] = useState('buy');
   const trade = (id: string, buying: boolean, modifiers: { shiftKey: boolean; ctrlKey: boolean }) =>
     send({
       type: 'trade',
+      npcId: craftsman ? 'craftsman' : 'innkeeper',
       id,
       buying,
       amount: modifiers.ctrlKey ? 'stack' : modifiers.shiftKey ? 10 : 1,
@@ -391,7 +394,7 @@ export function Trading({
           title: 'Buy',
           items: merchant.backpack,
           action: 'Buy',
-          label: "Innkeeper's backpack",
+          label: craftsman ? "Craftsman's backpack" : "Innkeeper's backpack",
         },
         {
           id: 'buyback',
@@ -435,7 +438,9 @@ export function Trading({
                     <IconButton
                       aria-label='Sell all'
                       disabled={!player.backpack?.length}
-                      onClick={() => send({ type: 'sellAll' })}
+                      onClick={() =>
+                        send({ type: 'sellAll', npcId: craftsman ? 'craftsman' : 'innkeeper' })
+                      }
                       sx={{ color: 'primary.main', fontSize: '0.75rem', p: 0.5 }}
                     >
                       <FontAwesomeIcon icon={faSackDollar} aria-hidden='true' />

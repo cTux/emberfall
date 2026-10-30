@@ -38,23 +38,28 @@ Forest enemies roll equipment chance and counts by enemy type as specified in
 [COMBAT-05](combat.md#combat-05--rewards-and-damage-accounting). Successful item
 rolls choose weapons, armor, jewelry and class-specific off-hands. New gear rolls
 rarity and stats according to [ITEM-01-03](item-rolls.md); existing intrinsic stats
-and prices are retained.
+are retained; prices now reflect rarity and rolled stats.
 Training grants no loot. Item pickup is automatic by default and can be disabled in Settings → Gameplay; XP and gold remain automatic.
 Consumables stack by type; right-click consumes one. Health potions restore 25 HP,
 clamped to maximum HP, and are not consumed at full health or while dead.
 
-Marta has one shared backpack and gold balance per world, initially 5000 gold and
-five health potions, 200 empty bottles at 1 gold each, and one independently
-rolled item of every droppable gear definition. Empty bottles are crafting
-resources that stack to 200; they cannot be consumed or equipped. Every 30 minutes,
-Marta's regular stock and gold reset to these initial amounts, preserving buybacks.
-The refresh deadline persists across restarts; overdue stock refreshes once when
-loaded. Each successful refresh posts a yellow world system message.
-Buy shows regular stock; Buyback shows the latest 20 sold
+Marta and Bram each have a shared backpack and independent gold balance per world,
+initially 5000 gold each. Marta stocks five health potions and 200 empty bottles
+at 1 gold each. Bram stocks one independently rolled item of every droppable gear
+definition. Empty bottles are crafting resources that stack to 200; they cannot
+be consumed or equipped. Every 30 minutes, both merchants' regular stock and gold
+reset to these initial amounts, preserving each merchant's buybacks. The shared
+refresh deadline persists across restarts; overdue stock refreshes once when
+loaded. Each merchant's successful refresh posts a yellow world system message.
+Existing regular gear stock moves from Marta to Bram with IDs and rolls preserved;
+Marta's existing gold and buybacks remain accessible. Both merchants buy any
+backpack item and offer the same trading controls.
+Gear prices rise with rarity and rolled stats; see [ITEM-04](item-rolls.md#item-04--gear-prices).
+Buy shows regular stock; Buyback shows that merchant's latest 20 sold
 entries, newest first, shared by everyone in the world. Older entries expire.
 Sold items never enter regular stock. Sell all, beside the player's gold balance,
 sells every backpack item (including consumable stacks) in one atomic action;
-equipped items remain equipped. If Marta cannot afford the entire sale, nothing changes.
+equipped items remain equipped. If the selected merchant cannot afford the entire sale, nothing changes.
 Right-click sells one player item or buys one merchant item. Hold Shift to trade
 up to 10 items from the selected stack; hold Ctrl to trade the whole selected stack,
 including Buyback. Ctrl takes priority when both are held. Enter/Space and vendor
@@ -62,7 +67,7 @@ drops use the same modifiers. The listed per-item price scales with the quantity
 the entire trade is rejected if the buyer lacks gold or inventory space.
 Each transfer updates both inventories and gold balances
 atomically. Insufficient gold, stale items, incompatible gear and trading outside
-Marta's village interaction range are rejected without changing saved state.
+the selected merchant's village interaction range are rejected without changing saved state.
 Merchant stock and gold survive restarts for worlds that still exist.
 
 All equipped items contribute to one shared stat calculation. Weapons supply

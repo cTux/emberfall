@@ -2,6 +2,9 @@ import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button, Stack, Typography } from '@mui/material';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons/faBookOpen';
+import { faBagShopping } from '@fortawesome/free-solid-svg-icons/faBagShopping';
+import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
+import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
 import { faGear } from '@fortawesome/free-solid-svg-icons/faGear';
 import {
   GameWindow,
@@ -145,8 +148,17 @@ export const Actions: Story = {
   render: () => (
     <HudActions
       actions={[
+        { id: 'inventory', label: 'Inventory', shortcut: 'I', icon: faBagShopping, onClick() {} },
+        { id: 'talents', label: 'Talents', shortcut: 'N', icon: faWandMagicSparkles, onClick() {} },
         { id: 'codex', label: 'Codex', shortcut: 'F1', icon: faBookOpen, onClick() {} },
         { id: 'settings', label: 'Settings', shortcut: 'Esc', icon: faGear, onClick() {} },
+        {
+          id: 'leave',
+          label: 'Leave world',
+          icon: faRightFromBracket,
+          disabled: true,
+          onClick() {},
+        },
       ]}
     />
   ),

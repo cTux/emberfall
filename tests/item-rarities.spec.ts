@@ -4,7 +4,8 @@ import {
   rollItemStats,
   rarityColor,
   BUILDINGS,
-  INNKEEPER,
+  itemPrice,
+  LOOT_ITEM_IDS,
 } from '../packages/core/src/index.ts';
 
 test('rarity borders and exact stat tooltips survive equipment, storage, trading, buyback and reload', async ({
@@ -16,7 +17,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Rarity tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   player.backpack = Object.values(Rarity).map((rarity) => ({
@@ -75,20 +76,20 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   await storage.getByRole('button', { name: 'Close Storehouse' }).click();
   await expect(storage).toBeHidden();
 
-  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
-  Object.assign(marta, { x: 1000, y: 1000 });
+  const bram = world.npcs!.find((npc) => npc.id === 'craftsman')!;
+  Object.assign(bram, { x: 1000, y: 1000 });
   Object.assign(player, { x: 1000, y: 985 });
   await page.mouse.move(0, 0);
   await expect(page.locator('canvas[aria-label]')).toHaveAttribute(
     'data-interaction-prompt',
-    INNKEEPER.name,
+    'Bram the Craftsman',
   );
-  const trader = page.getByRole('dialog', { name: INNKEEPER.name });
+  const trader = page.getByRole('dialog', { name: 'Bram the Craftsman' });
   await page.keyboard.press('e');
   await expect(trader).toBeVisible();
   await expect(
-    trader.getByRole('region', { name: "Innkeeper's backpack" }).locator('[data-rarity]'),
-  ).toHaveCount(17);
+    trader.getByRole('region', { name: "Craftsman's backpack" }).locator('[data-rarity]'),
+  ).toHaveCount(LOOT_ITEM_IDS.length);
   await trader
     .getByRole('region', { name: 'Your backpack' })
     .locator('[data-backpack-item=rarity-legendary]')
@@ -100,14 +101,15 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   await expect(buyback).toHaveCSS('border-top-color', 'rgb(255, 128, 0)');
   await buyback.hover();
   await expect(page.getByRole('tooltip')).toContainText('Legendary');
-  await page.screenshot({ path: 'test-results/item-rarities-buyback.png' });
+  await expect(page.getByRole('tooltip')).toContainText(`${itemPrice(original)} gold`);
+  await page.screenshot({ path: 'test-results/bram-gear-buyback.png' });
   await buyback.click({ button: 'right' });
   expect(player.backpack!.find((item) => item.rarity === Rarity.Legendary)!.stats).toEqual(
     original.stats,
   );
-  await trader.getByRole('button', { name: `Close ${INNKEEPER.name}` }).click();
+  await trader.getByRole('button', { name: 'Close Bram the Craftsman' }).click();
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   await page.keyboard.press('i');
   await expect(page.locator('[data-backpack-item][data-rarity=legendary]')).toHaveCSS(
     'border-top-color',
@@ -124,7 +126,7 @@ test('native forest rendering shows all five rarity beams from server-confirmed 
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   const run = game.runtime.parties(world).run(player);

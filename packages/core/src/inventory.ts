@@ -1,6 +1,7 @@
 import { game } from './game.ts';
 export const {
   itemDefinition,
+  itemPrice,
   rollItem,
   CONSUMABLES,
   backpackSchema,

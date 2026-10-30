@@ -7,7 +7,7 @@ test('native inventory drags equip compatible slots and swap gear without consum
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  const opener = page.getByRole('button', { name: 'Inventory (I)' });
+  const opener = page.getByRole('button', { name: 'Inventory' });
   await expect(opener).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
