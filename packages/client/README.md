@@ -80,7 +80,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   `rendering/drawing-state.ts` owns saved styles and transforms, shared by the
   command adapter. `rendering/drawing-context.ts` declares supported commands
   and world-rendering extensions; shared draw helpers also accept native Canvas
-  contexts for asset baking and pixel comparison. Arena passes the adapter
+  contexts for asset baking and pixel comparison. `rendering/drawing-path.ts`
+  owns path replay and dash/ellipse geometry; `rendering/image-textures.ts` owns
+  source uploads, atlas frame reuse and dynamic texture revisions. Arena passes the adapter
   directly, without a cast that claims full Canvas API support.
   Canvas 2D is used to bake assets, light masks and small glow primitives, not
   to upload a complete world frame as a texture.

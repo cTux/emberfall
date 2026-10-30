@@ -1,3 +1,5 @@
+import { DrawingPath } from './drawing-path';
+import { ImageTextures } from './image-textures';
 import type { WorldDrawingContext } from './drawing-context';
 import { DrawingState } from './drawing-state';
 import { VisualPools, type Visual } from './visual-pools';
@@ -16,18 +18,6 @@ import type { BindGroup, Renderer } from 'pixi.js';
 import './soft-light';
 import { playerCutoutRuns, PLAYER_CUTOUT_MARGIN } from './player-cutout';
 import type { DirectionalShadow } from '../lighting';
-
-type PathCommand = {
-  method:
-    | 'moveTo'
-    | 'lineTo'
-    | 'quadraticCurveTo'
-    | 'bezierCurveTo'
-    | 'arc'
-    | 'ellipse'
-    | 'closePath';
-  args: number[];
-};
 
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
@@ -51,13 +41,13 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   private height = 1;
   readonly ready: Promise<void>;
   private colors = new Map<string, Color>();
-  private sources = new Map<CanvasImageSource, { texture: Texture; used: number }>();
+  private sources = new ImageTextures();
   private gradients = new GradientPaints();
   private frame = 0;
   private shadowPass = false;
   private shadowStrength = 0;
   private shadowRects = new Map<string, HTMLCanvasElement>();
-  private path: PathCommand[] = [];
+  private path = new DrawingPath();
   private metrics = document.createElement('canvas').getContext('2d')!;
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -99,7 +89,7 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
     this.hasCutout = false;
     this.visuals.begin();
     this.resetState();
-    this.path.length = 0;
+    this.path.reset();
   }
   present() {
     if (!this.renderer) return;
@@ -127,11 +117,7 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
       this.canvas.dataset.renderStats = JSON.stringify(this.stats());
     if (this.frame % 120 === 0) {
       this.gradients.trim(this.frame);
-      for (const [key, entry] of this.sources)
-        if (this.frame - entry.used > 600) {
-          entry.texture.destroy(true);
-          this.sources.delete(key);
-        }
+      this.sources.trim(this.frame);
       this.visuals.trim();
     }
   }
@@ -148,14 +134,11 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   destroy() {
     this.disposed = true;
     this.visuals.destroy();
-    for (const entry of this.sources.values()) {
-      entry.texture.destroy(true);
-    }
+    this.sources.destroy();
     this.gradients.destroy();
     this.cutout.destroy();
     this.shadowRects.clear();
     this.renderer?.destroy();
-    this.sources.clear();
     this.colors.clear();
   }
   /** Configure once before the depth-sorted bodies, using their world transform. */
@@ -278,151 +261,16 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
     return typeof paint === 'string' ? { color: paint } : paint;
   }
   private geometry(): Graphics {
-    const graphics = this.visual('graphics').object as Graphics;
-    graphics.clear();
-    let penX = 0,
-      penY = 0,
-      dashAt = 0;
-    const dash = this.state.dash.filter((n) => n > 0);
-    for (const { method, args } of this.path) {
-      if (method === 'ellipse') {
-        const [x, y, rx, ry, rotation, start, end, ccw] = args;
-        // Flatten rotated/partial ellipses into a short polygon in local coordinates.
-        const sweep = ccw
-          ? -((start - end + Math.PI * 2) % (Math.PI * 2) || Math.PI * 2)
-          : (end - start) % (Math.PI * 2) || Math.PI * 2;
-        const count = Math.max(12, Math.ceil((Math.abs(sweep) * Math.max(rx, ry)) / 4));
-        for (let i = 0; i <= count; i++) {
-          const angle = start + (sweep * i) / count;
-          const px = Math.cos(angle) * rx,
-            py = Math.sin(angle) * ry;
-          const tx = x + px * Math.cos(rotation) - py * Math.sin(rotation),
-            ty = y + px * Math.sin(rotation) + py * Math.cos(rotation);
-          if (i === 0) graphics.moveTo(tx, ty);
-          else graphics.lineTo(tx, ty);
-        }
-      } else if (method === 'arc')
-        graphics.arc(args[0], args[1], args[2], args[3], args[4], !!args[5]);
-      else if (method === 'moveTo') {
-        graphics.moveTo(args[0], args[1]);
-        penX = args[0];
-        penY = args[1];
-        dashAt = 0;
-      } else if (method === 'lineTo') {
-        if (dash.length) {
-          const dx = args[0] - penX,
-            dy = args[1] - penY,
-            length = Math.hypot(dx, dy);
-          const cycle = dash.reduce((sum, n) => sum + n, 0);
-          for (let at = 0; at < length;) {
-            let offset = dashAt % cycle,
-              index = 0;
-            while (offset >= dash[index]) {
-              offset -= dash[index];
-              index++;
-            }
-            const step = Math.min(length - at, dash[index] - offset);
-            at += step;
-            dashAt += step;
-            const x = penX + (dx * at) / length,
-              y = penY + (dy * at) / length;
-            if (index % 2 === 0) graphics.lineTo(x, y);
-            else graphics.moveTo(x, y);
-          }
-        } else graphics.lineTo(args[0], args[1]);
-        penX = args[0];
-        penY = args[1];
-      } else if (method === 'quadraticCurveTo')
-        graphics.quadraticCurveTo(args[0], args[1], args[2], args[3]);
-      else if (method === 'bezierCurveTo')
-        graphics.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
-      else graphics.closePath();
-    }
-    return graphics;
+    return this.path.draw(this.visual('graphics').object as Graphics, this.state.dash);
   }
   drawImage(source: CanvasImageSource, ...args: number[]) {
     this.shadow(() => this.drawImage(source, ...args));
-    const image = source as HTMLImageElement | HTMLCanvasElement;
-    const iw = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
-    const ih = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
-    if (!iw || !ih) return;
-    let sx = 0,
-      sy = 0,
-      sw = iw,
-      sh = ih,
-      dx = 0,
-      dy = 0,
-      dw = iw,
-      dh = ih;
-    if (args.length === 2) [dx, dy] = args;
-    else if (args.length === 4) [dx, dy, dw, dh] = args;
-    else [sx, sy, sw, sh, dx, dy, dw, dh] = args;
-    // Atlas callers use game-pixel cells; the backing art retains twice the detail.
-    if (args.length === 8 && image instanceof HTMLImageElement) {
-      const resolution = Number(image.dataset.artResolution ?? 1);
-      sx *= resolution;
-      sy *= resolution;
-      sw *= resolution;
-      sh *= resolution;
-    }
-    if (!sw || !sh || !dw || !dh) return;
-    let entry = this.sources.get(source);
-    if (!entry) {
-      // WebGL uploads of SVG images without explicit dimensions can produce an
-      // empty texture. Rasterize once at the decoded size, keeping the SVG asset
-      // and the normal source-texture cache shared by all status sprites.
-      let resource: HTMLImageElement | HTMLCanvasElement = image;
-      if (
-        image instanceof HTMLImageElement &&
-        /\.svg(?:[?#]|$)|^data:image\/svg\+xml/i.test(image.currentSrc || image.src)
-      ) {
-        const raster = document.createElement('canvas');
-        raster.width = iw;
-        raster.height = ih;
-        raster.getContext('2d')!.drawImage(image, 0, 0, iw, ih);
-        resource = raster;
-      }
-      const texture = Texture.from(resource, true);
-      texture.source.scaleMode = 'nearest';
-      entry = { texture, used: this.frame };
-      this.sources.set(source, entry);
-    }
-    // Dynamic light canvases explicitly mark their revision when repainted.
-    const revision = (image as HTMLCanvasElement & { textureRevision?: number }).textureRevision;
-    const textureRevision = (entry as typeof entry & { revision?: number }).revision;
-    if (revision !== undefined && revision !== textureRevision) {
-      entry.texture.source.update();
-      (entry as typeof entry & { revision?: number }).revision = revision;
-    }
-    entry.used = this.frame;
+    const draw = this.sources.prepare(source, args, this.frame);
+    if (!draw) return;
+    const { sw, sh, dx, dy, dw, dh } = draw;
     const entity = this.visual('sprite');
     const sprite = entity.object as Sprite;
-    let texture = entity.frameTexture;
-    const scaleMode = this.imageSmoothingEnabled ? 'linear' : 'nearest';
-    if (entry.texture.source.scaleMode !== scaleMode) {
-      entry.texture.source.scaleMode = scaleMode;
-      entry.texture.source.style.update();
-    }
-    if (!texture)
-      texture = entity.frameTexture = new Texture({
-        source: entry.texture.source,
-        frame: new Rectangle(sx, sy, sw, sh),
-        dynamic: true,
-      });
-    else if (
-      texture.source !== entry.texture.source ||
-      texture.frame.x !== sx ||
-      texture.frame.y !== sy ||
-      texture.frame.width !== sw ||
-      texture.frame.height !== sh
-    ) {
-      texture.source = entry.texture.source;
-      texture.frame.copyFrom(new Rectangle(sx, sy, sw, sh));
-      texture.orig.width = sw;
-      texture.orig.height = sh;
-      texture.update();
-    }
-    sprite.texture = texture;
+    this.sources.applyFrame(entity, draw, this.imageSmoothingEnabled);
     const tint = this.color(this.shadowPass ? this.state.shadowColor : this.state.spriteTint);
     const base = tint.toNumber();
     const ambient =
@@ -470,25 +318,25 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
     this.begin();
   }
   beginPath() {
-    this.path = [];
+    this.path.reset();
   }
   closePath() {
-    this.path.push({ method: 'closePath', args: [] });
+    this.path.add('closePath', []);
   }
   moveTo(...args: number[]) {
-    this.path.push({ method: 'moveTo', args });
+    this.path.add('moveTo', args);
   }
   lineTo(...args: number[]) {
-    this.path.push({ method: 'lineTo', args });
+    this.path.add('lineTo', args);
   }
   quadraticCurveTo(...args: number[]) {
-    this.path.push({ method: 'quadraticCurveTo', args });
+    this.path.add('quadraticCurveTo', args);
   }
   bezierCurveTo(...args: number[]) {
-    this.path.push({ method: 'bezierCurveTo', args });
+    this.path.add('bezierCurveTo', args);
   }
   arc(x: number, y: number, r: number, start: number, end: number, ccw = false) {
-    this.path.push({ method: 'arc', args: [x, y, r, start, end, Number(ccw)] });
+    this.path.add('arc', [x, y, r, start, end, Number(ccw)]);
   }
   ellipse(
     x: number,
@@ -500,7 +348,7 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
     end: number,
     ccw = false,
   ) {
-    this.path.push({ method: 'ellipse', args: [x, y, rx, ry, rotation, start, end, Number(ccw)] });
+    this.path.add('ellipse', [x, y, rx, ry, rotation, start, end, Number(ccw)]);
   }
   fill() {
     this.shadow(() => this.fill());
