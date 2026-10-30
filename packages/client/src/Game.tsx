@@ -1,35 +1,20 @@
+import { GameControls } from './GameControls';
+import { PartyHud } from './PartyHud';
+import { SceneOverlay } from './SceneOverlay';
 import { gamePanel, type GameMenu } from './game-panels';
 import { WorldBrowser } from './WorldBrowser';
 import { ResetTalentsPanel, WardrobePanel } from './CharacterPanels';
 import { LeavePanel, PortalPanel } from './WorldPanels';
 import { useGameSession } from './useGameSession';
-import { classSprite } from './class-art';
 import { BULLSEYE } from '@emberfall/core';
-import { clientAsset } from './urls.ts';
-import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
-import { faChessKnight } from '@fortawesome/free-solid-svg-icons/faChessKnight';
-import { experienceRequired, enemyMaxHealth } from '@emberfall/core';
 import type { AccountView, ChatMessage, WorldSummary } from '@emberfall/common';
 import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
 import { INNKEEPER } from '@emberfall/core';
 import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
 import type { Interaction } from './effects';
-import {
-  GameWindow,
-  PartyCard,
-  HudActions,
-  ConnectionStatus,
-  BossHealth,
-  SceneStatus,
-} from '@emberfall/ui';
-import { Box, Button, Stack, Typography } from '@mui/material';
-import { faBookOpen } from '@fortawesome/free-solid-svg-icons/faBookOpen';
-import { faGear } from '@fortawesome/free-solid-svg-icons/faGear';
-import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
-import { faDoorOpen } from '@fortawesome/free-solid-svg-icons/faDoorOpen';
-import { faGlobe } from '@fortawesome/free-solid-svg-icons/faGlobe';
-import { faBagShopping } from '@fortawesome/free-solid-svg-icons/faBagShopping';
+import { GameWindow } from '@emberfall/ui';
+import { Box, Stack, Typography } from '@mui/material';
 import type { Preferences } from './preferences';
 import type { Dispatch, SetStateAction } from 'react';
 import { useChat } from './ChatProvider';
@@ -400,145 +385,23 @@ export function Game({
             )}
           </DeferredContent>
         )}
-        <Box className='controls'>
-          <HudActions
-            actions={[
-              ...(world
-                ? [
-                    {
-                      id: 'equipment',
-                      label: 'Inventory',
-                      shortcut: 'I',
-                      icon: faBagShopping,
-                      onClick: () => setMenu('equipment'),
-                    },
-                    {
-                      id: 'talents',
-                      label: 'Talents',
-                      shortcut: 'N',
-                      icon: faWandMagicSparkles,
-                      onClick: () => setMenu('talents'),
-                    },
-                    {
-                      id: 'tactics',
-                      label: 'Tactics',
-                      shortcut: 'T',
-                      icon: faChessKnight,
-                      onClick: () => setMenu('tactics'),
-                    },
-                  ]
-                : []),
-              {
-                id: 'codex',
-                label: 'Codex',
-                shortcut: 'F1',
-                icon: faBookOpen,
-                onClick: () => setMenu('codex'),
-              },
-              ...(scene && ['voting', 'countdown'].includes(scene.phase)
-                ? [
-                    {
-                      id: 'portal',
-                      label: 'Portal vote',
-                      icon: faDoorOpen,
-                      onClick: () => setMenu('portal'),
-                    },
-                  ]
-                : []),
-              {
-                id: 'settings',
-                label: 'Settings',
-                shortcut: 'Esc',
-                icon: faGear,
-                onClick: () => setMenu('settings'),
-              },
-              ...(world
-                ? [
-                    {
-                      id: 'leave',
-                      label: 'Leave world',
-                      icon: faRightFromBracket,
-                      disabled: unavailable,
-                      onClick: () => setMenu('exit'),
-                    },
-                  ]
-                : []),
-              ...(!world && !browserOpen
-                ? [
-                    {
-                      id: 'browser',
-                      label: 'World browser',
-                      icon: faGlobe,
-                      onClick: () => setBrowserOpen(true),
-                    },
-                  ]
-                : []),
-            ]}
-          />
-        </Box>
-        <Box className='connection'>
-          <ConnectionStatus
-            status={
-              status === 'Connected'
-                ? 'connected'
-                : status === 'Connecting'
-                  ? 'connecting'
-                  : 'disconnected'
-            }
-          />
-        </Box>
+        <GameControls
+          hasWorld={!!world}
+          canVote={!!scene && ['voting', 'countdown'].includes(scene.phase)}
+          unavailable={unavailable}
+          browserOpen={browserOpen}
+          status={status}
+          onMenu={setMenu}
+          onOpenBrowser={() => setBrowserOpen(true)}
+        />
         {world ? (
-          <Stack
-            component='aside'
-            className='party'
-            spacing={1}
-            aria-label={`${world.name}: ${world.players.length}/${worlds.find((entry) => entry.id === world.id)?.capacity ?? 8} adventurers`}
-          >
-            {world.players
-              .filter((p) => p.id === playerId || (!!me?.partyId && p.partyId === me.partyId))
-              .map((p) => (
-                <PartyCard
-                  key={p.id}
-                  name={p.name}
-                  level={p.level}
-                  paragon={p.paragon}
-                  experience={{
-                    current: p.experience,
-                    required: experienceRequired(p.level, p.paragon),
-                  }}
-                  health={displayedHp[p.id] ?? p.hitpoints}
-                  maxHealth={p.maxHitpoints}
-                  coins={p.coins ?? 0}
-                  companion={
-                    p.bear
-                      ? {
-                          name: p.bear.name,
-                          health: p.bear.hitpoints,
-                          maxHealth: p.bear.maxHitpoints,
-                          portrait: (
-                            <Box
-                              component='span'
-                              role='img'
-                              aria-label={`${p.bear.name} portrait`}
-                              sx={{
-                                backgroundImage: `url("${clientAsset('/assets/wardrobe-style/bear-cub.png')}")`,
-                                backgroundSize: '400% 200%',
-                                backgroundPosition: 'left top',
-                                backgroundRepeat: 'no-repeat',
-                                imageRendering: 'pixelated',
-                              }}
-                            />
-                          ),
-                        }
-                      : undefined
-                  }
-                  portrait={<img src={classSprite(p.classId)} alt='' />}
-                  local={p.id === playerId}
-                  host={p.id === me?.partyLeaderId}
-                  away={p.scene !== me?.scene || p.runId !== me?.runId}
-                />
-              ))}
-          </Stack>
+          <PartyHud
+            world={world}
+            worlds={worlds}
+            playerId={playerId}
+            me={me}
+            displayedHp={displayedHp}
+          />
         ) : browserOpen ? (
           <WorldBrowser
             steam={steam}
@@ -558,66 +421,19 @@ export function Game({
             onClose={() => setBrowserOpen(false)}
           />
         ) : null}
-        {scene?.phase === 'countdown' && (
-          <div
-            className='departure-countdown'
-            role='status'
-            aria-label={`Departing in ${departure}`}
-          >
-            <span key={`${scene.id}:${scene.countdownAt}:${departure}`}>{departure}</span>
-          </div>
-        )}
-        {boss && (
-          <Box className='boss-hud'>
-            <BossHealth
-              name={boss.name ?? 'The Hollow Warden'}
-              health={boss.hitpoints}
-              maxHealth={enemyMaxHealth(boss, scene?.difficulty)}
-            />
-          </Box>
-        )}
-        {me?.scene === 'forest' && !boss && (
-          <Box className='scene-clock'>
-            <SceneStatus
-              label={
-                scene?.phase === 'ended'
-                  ? 'Scene complete · Return portal open'
-                  : scene?.bossId !== undefined
-                    ? 'Defeat the boss'
-                    : 'Forest'
-              }
-              seconds={
-                scene?.phase === 'ended' || scene?.bossId !== undefined ? undefined : remaining
-              }
-            />
-          </Box>
-        )}
-        {me?.scene === 'forest' &&
-          (displayedHp[playerId] ?? me.hitpoints) <= 0 &&
-          (deathWindow ? (
-            <Box className='death-panel'>
-              <GameWindow
-                title='You have fallen'
-                modal={false}
-                onClose={() => setDeathWindow(false)}
-              >
-                <Stack spacing={2}>
-                  <Typography>Your party can continue fighting.</Typography>
-                  <Button
-                    variant='contained'
-                    disabled={unavailable}
-                    onClick={() => send({ type: 'returnLobby' })}
-                  >
-                    Return to lobby
-                  </Button>
-                </Stack>
-              </GameWindow>
-            </Box>
-          ) : (
-            <Button className='interact' onClick={() => setDeathWindow(true)}>
-              You have fallen · Return options
-            </Button>
-          ))}
+        <SceneOverlay
+          scene={scene}
+          boss={boss}
+          me={me}
+          remaining={remaining}
+          departure={departure}
+          playerId={playerId}
+          displayedHp={displayedHp}
+          deathWindow={deathWindow}
+          setDeathWindow={setDeathWindow}
+          unavailable={unavailable}
+          onReturnLobby={() => send({ type: 'returnLobby' })}
+        />
       </section>
       {menu && (
         <Box
