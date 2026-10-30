@@ -51,7 +51,16 @@ body[data-custom-cursor='false'] {
   --cursor-text: text;
 }
 
-body :is(button, a[href], [role='button'], [role='tab'], [role='combobox'], [role='option'], [role='menuitem']) {
+body
+  :is(
+    button,
+    a[href],
+    [role='button'],
+    [role='tab'],
+    [role='combobox'],
+    [role='option'],
+    [role='menuitem']
+  ) {
   cursor: var(--cursor-pointer);
 }
 
