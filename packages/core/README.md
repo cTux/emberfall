@@ -11,6 +11,12 @@ base mod. Base attack, enemy, companion and ailment data use `satisfies` to chec
 their fields without widening their inferred literals. Runtime startup still
 validates complete registered definitions and cross-content references.
 
+`content/rules.ts` composes catalog-bound equipment, item, storage, inventory,
+merchant and validation modules. Their internal factories share the same sealed
+registries and derived helpers; callers continue to use the frozen `rules`
+surface returned by `createGame`. Item mutations remain separate from host
+transactions, transport and presentation.
+
 Core is the composition root for portable game rules and content. Common supplies
 contracts, structural schemas and pure geometry; common never imports core.
 `createGame(mods)` creates registries, invokes synchronous registration, validates
