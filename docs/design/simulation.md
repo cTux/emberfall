@@ -18,6 +18,13 @@ hits, projectile motion and projectile lifecycle each have one module.
 not import damage resolution. Talent execution imports the damage module
 directly, so damage and talent execution no longer form a dependency cycle.
 
+`talent-effects.ts` preserves the public talent exports. The `talents` directory
+separates transient state/scheduling, effect primitives, passive triggers, cast
+targeting and four active mechanic handlers. `configs/talentCast.ts` declares
+slot-to-mechanic routing and targeting defaults; the cast dispatcher resolves
+inputs once and invokes the selected handler. Scheduled callbacks retain the
+same owner, generation and class checks, including reset cancellation.
+
 [worlds.ts](../../packages/server/src/worlds.ts) consumes validated player input on the 50 ms tick. [scenes.ts](../../packages/server/src/scenes.ts) ticks shared village training, reconciles readiness and advances forest state. [simulation.ts](../../packages/core/src/simulation.ts) owns combat, pause/resume, scaling and companions. [class-combat.ts](../../packages/core/src/class-combat.ts) owns ranged shots, ailments, the shared hit/reward path and DPS history. [enemies.ts](../../packages/core/src/enemies.ts) owns archetype stats and deterministic steering.
 
 These functions are in `core`, which depends on `common` for enums, state and pure geometry. Common never imports core. Config utilities select enemy types, roll equipment drops and counts, and calculate HP/damage using type and difficulty multipliers. Server and client use the same attribute and prediction helpers. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
