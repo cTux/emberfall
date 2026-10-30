@@ -104,7 +104,7 @@ export function createRules(content: Registries) {
   function equippedItems(player: EquipmentOwner) {
     return player.equipment ?? starterEquipment(player.classId ?? 'warrior');
   }
-  /** Definitions are immutable content; only equipped IDs belong to character saves. */
+  /** Definitions stay immutable; equipped instances preserve each item's rolled stats. */
   function characterStats(player: EquipmentOwner): CharacterStats {
     const stats = { ...INNATE_STATS };
     const bonuses = Object.fromEntries(Object.values(ItemStat).map((stat) => [stat, 0])) as Record<

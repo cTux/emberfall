@@ -212,7 +212,7 @@ export function tickDebuffs(scene: SceneState, players: Player[], now: number) {
 }
 
 export function defaultSpellRange(
-  player: Pick<Player, 'classId' | 'autoTarget' | 'equipment'>,
+  player: Pick<Player, 'classId' | 'autoTarget' | 'equipment' | 'equipmentItems'>,
   context: Game = game,
 ) {
   const stats = context.rules.characterStats(player);

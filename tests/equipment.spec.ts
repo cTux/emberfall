@@ -128,10 +128,13 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     player.x = WARDROBE.x;
     player.y = WARDROBE.y - 15;
     const wardrobe = page.getByRole('dialog', { name: 'Wardrobe' });
-    await expect(async () => {
-      await page.keyboard.press('e');
-      await expect(wardrobe).toBeVisible();
-    }).toPass({ intervals: [200], timeout: 6000 });
+    await page.mouse.move(0, 0);
+    await expect(page.locator('canvas[aria-label]')).toHaveAttribute(
+      'data-interaction-prompt',
+      'Wardrobe',
+    );
+    await page.keyboard.press('e');
+    await expect(wardrobe).toBeVisible();
     const choice = wardrobe.getByRole('button', { name: new RegExp(`^${CLASS_LABELS[classId]}`) });
     if (player.classId !== classId) await choice.click();
     await expect.poll(() => player.classId).toBe(classId);
