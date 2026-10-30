@@ -42,6 +42,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `connection.ts` adapts the Colyseus SDK to typed application events. Application
   recovery retains existing world/character behavior; automatic SDK reconnect
   is disabled so the two mechanisms cannot create competing sessions.
+- `useGameSession.ts` owns connection/version checks, recovery, latency probes,
+  session storage and command admission. `Game.tsx` consumes its state and small
+  lifecycle events to reset presentation without owning sockets or credentials.
 - `snapshots.ts` interpolates confirmed remote state. `local-movement.ts`
   predicts bounded local movement and casts, reconciles acknowledgements and
   replays pending input. Hits, health, loot and progress remain authoritative.
