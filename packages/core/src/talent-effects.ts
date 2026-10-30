@@ -4,7 +4,7 @@ import { forestDistance, FOREST } from './scene.ts';
 import { healingTarget } from './tactics.ts';
 import { TALENT_NAMES, talentNodeId, talentRank } from './talent-tree.ts';
 import { hitEnemy } from './class-combat.ts';
-import { characterStats } from './equipment.ts';
+import { characterStats, dotTickIntervalMs } from './equipment.ts';
 import type { CharacterStats } from './content/rules.ts';
 import { isChanced } from './utils/isChanced.ts';
 
@@ -161,6 +161,7 @@ export function applyTalentAilment(
   stacks: number,
   now: number,
   duration = 5000,
+  stats?: CharacterStats,
 ) {
   if (enemy.hitpoints <= 0 || (kind === 'roots' && enemy.kind === 'boss')) return;
   enemy.debuffs ??= [];
@@ -168,11 +169,16 @@ export function applyTalentAilment(
     (value) => value.kind === kind && value.ownerId === player.id && value.expiresAt > now,
   );
   if (!entry) {
+    const tickIntervalMs =
+      kind === 'bleed' || kind === 'poison' || kind === 'burn'
+        ? dotTickIntervalMs(player, 1000, stats)
+        : 1000;
     entry = {
       kind,
       stacks: 0,
       ownerId: player.id,
-      nextTick: now + 1000,
+      nextTick: now + tickIntervalMs,
+      tickIntervalMs,
       expiresAt: now + duration,
     };
     enemy.debuffs.push(entry);
@@ -211,6 +217,7 @@ function strike(
     stats.damageType,
     critical,
     source,
+    stats,
   );
 }
 type HealingTarget = Pick<Player, 'x' | 'y' | 'hitpoints' | 'maxHitpoints'>;
@@ -343,7 +350,7 @@ export function talentWeaponHit(
       );
     const rake = rank(player, 1, 2);
     if (rake && Math.random() < (rake === 2 ? 0.45 : 0.25))
-      applyTalentAilment(enemy, player, 'bleed', 1, now);
+      applyTalentAilment(enemy, player, 'bleed', 1, now, undefined, value.stats);
     const life = rank(player, 1, 8);
     if (life && value.hits % 5 === 0) heal(player, life === 2 ? 0.04 : 0.02);
     const shared = rank(player, 1, 6);
@@ -387,12 +394,20 @@ export function talentWeaponHit(
       player.classId === 'mage' ? 'burn' : player.classId === 'druid' ? 'roots' : 'poison',
       1,
       now,
+      undefined,
+      value.stats,
     );
   if (player.classId === 'druid' && rank(player, 2, 0) && value.hits % 5 === 0)
     heal(player, rank(player, 2, 0) === 2 ? 0.04 : 0.02);
 }
 
-export function talentEnemyDeath(scene: SceneState, player: Player, enemy: Enemy, now: number) {
+export function talentEnemyDeath(
+  scene: SceneState,
+  player: Player,
+  enemy: Enemy,
+  now: number,
+  stats?: CharacterStats,
+) {
   if (player.classId === 'druid') return;
   const spread = rank(player, 1, 6);
   const wounds = enemy.debuffs?.some(
@@ -409,7 +424,7 @@ export function talentEnemyDeath(scene: SceneState, player: Player, enemy: Enemy
           ? 'poison'
           : 'burn';
     for (const other of area(scene, enemy, 180, player).slice(0, spread === 2 ? 4 : 2))
-      applyTalentAilment(other, player, kind, spread, now);
+      applyTalentAilment(other, player, kind, spread, now, undefined, stats);
   }
 }
 
@@ -589,7 +604,7 @@ export function executeTalent(
     } else if (tier === 2)
       for (const enemy of effectArea(scene, bear, 250)) {
         strike(scene, player, enemy, learned === 2 ? 2.5 : 1.8, now, ability);
-        applyTalentAilment(enemy, player, 'bleed', learned, now);
+        applyTalentAilment(enemy, player, 'bleed', learned, now, undefined, stats);
       }
     else
       schedule(scene, player, nodeId, now, 4000, 1000, (at) => {
@@ -600,7 +615,7 @@ export function executeTalent(
     const hunting = rank(player, 1, 4);
     if (hunting && tier === 1)
       for (const enemy of effectArea(scene, bear, 200))
-        applyTalentAilment(enemy, player, 'bleed', hunting, now);
+        applyTalentAilment(enemy, player, 'bleed', hunting, now, undefined, stats);
     return;
   }
   const ailment: DebuffKind =
@@ -620,16 +635,29 @@ export function executeTalent(
     const burst =
       wounds.reduce(
         (sum, entry) =>
-          sum + entry.stacks * Math.max(0, Math.floor((entry.expiresAt - now) / 1000)),
+          sum +
+          entry.stacks *
+            Math.max(0, Math.floor((entry.expiresAt - now) / (entry.tickIntervalMs ?? 1000))),
         0,
       ) * (learned === 2 ? 2 : 1.5);
     const consumedStacks = wounds.reduce((sum, entry) => sum + entry.stacks, 0);
     primary.debuffs = primary.debuffs?.filter((entry) => !wounds.includes(entry));
-    hitEnemy(scene, primary, burst, player, now, undefined, 'physical', false, ability);
+    hitEnemy(scene, primary, burst, player, now, undefined, 'physical', false, ability, stats);
     if (learned === 2)
       for (const enemy of effectArea(scene, primary, 150))
         if (enemy !== primary)
-          hitEnemy(scene, enemy, burst * 0.5, player, now, undefined, 'physical', false, ability);
+          hitEnemy(
+            scene,
+            enemy,
+            burst * 0.5,
+            player,
+            now,
+            undefined,
+            'physical',
+            false,
+            ability,
+            stats,
+          );
     const offering = rank(player, 1, 8);
     let orbConsumed = false;
     if (offering && consumedStacks >= 3)
@@ -664,8 +692,9 @@ export function executeTalent(
         talentWeaponHit(scene, player, enemy, at, false, stats);
       const serrated = rank(player, 1, 2);
       if (column === 0 && serrated && Math.random() < (serrated === 2 ? 0.45 : 0.25))
-        applyTalentAilment(enemy, player, ailment, 1, at);
-      if (column === 1) applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at);
+        applyTalentAilment(enemy, player, ailment, 1, at, undefined, stats);
+      if (column === 1)
+        applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at, undefined, stats);
       const deep = rank(player, 1, 9);
       if (
         deep &&
@@ -704,7 +733,7 @@ export function executeTalent(
     const trail = rank(player, 1, 4);
     if (trail)
       for (const enemy of effectArea(scene, primary, 150))
-        applyTalentAilment(enemy, player, ailment, trail, now);
+        applyTalentAilment(enemy, player, ailment, trail, now, undefined, stats);
   } else if ((tier === 1 && column === 0) || (tier === 3 && column === 1)) {
     const count = column === 0 ? 3 : 4;
     schedule(scene, player, nodeId, now, (count - 1) * 500, 500, (at) => {

@@ -1,6 +1,7 @@
 import { ItemStat } from '../enums/items.ts';
 export const itemStatBaseValue: Readonly<Record<ItemStat, number>> = {
   attackSpeed: 2,
+  dotSpeed: 2,
   criticalChance: 2,
   criticalDamage: 10,
   power: 1,

@@ -1,5 +1,6 @@
 export const ItemStat = {
   AttackSpeed: 'attackSpeed',
+  DotSpeed: 'dotSpeed',
   CriticalChance: 'criticalChance',
   CriticalDamage: 'criticalDamage',
   Power: 'power',

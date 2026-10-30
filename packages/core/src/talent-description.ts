@@ -47,7 +47,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
       `Direct first-column ability hits have a 25% / 45% chance to apply one ${wound} stack.`,
       `Hit an aimed enemy for 100% / 150% weapon damage, apply 2 / 3 ${wound} stacks and pull ordinary enemies toward you. Bosses cannot be pulled. 10s base cooldown.`,
       `${ability(1, 1)} spreads 1 / 2 ${wound} stacks to enemies near the pulled target.`,
-      `Consume your ${wound} stacks on the aimed enemy to immediately deal 150% / 200% of their remaining whole-second damage. Rank 2 splashes half the burst to nearby enemies. 14s base cooldown.`,
+      `Consume your ${wound} stacks on the aimed enemy to immediately deal 150% / 200% of their remaining whole-interval damage, including DOT Speed. Rank 2 splashes half the burst to nearby enemies. 14s base cooldown.`,
       `When an enemy dies with your damaging ailments, spread 1 / 2 fresh stacks to up to 2 / 4 nearby enemies.`,
       `Strike an aimed area four times over 1.5s, dealing 30% / 45% weapon damage and applying 2 / 3 ${wound} stacks each time. Rank 2 expands its radius. 18s base cooldown.`,
       `${ability(1, 2)} consuming at least three stacks leaves a six-second healing opportunity. The injured party member or Bear selected by Defensive Tactics (lowest health percentage by default) within 60 units heals for 3% / 5% maximum health, including you.`,
