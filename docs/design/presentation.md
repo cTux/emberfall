@@ -171,6 +171,13 @@ price/action footer. Weapon Power and Armor receive a larger amber value; effect
 explanations remain readable inline. Resources omit gameplay action hints in the
 normal backpack; trader and storage hints reflect their host callbacks.
 
+`item-comparison.ts` uses the shared equip-slot rules to compare candidate base
+contributions and rolled bonuses with the equipped definition and matching
+instance. It passes signed, formatted rows through `ItemTooltipView.comparison`;
+the shared tooltip renders them with semantic gain/loss colors. Unchanged rows
+are omitted, with “Same stats” for identical contributions. This compares items,
+not projected final character stats.
+
 `theme.tsx` applies shared `windowSurface` styles to game windows and MUI tooltips.
 Item popups and stat explanations portal into the modal container (or the page for
 nonmodal stories) to avoid scrolling-content clipping while preserving modal

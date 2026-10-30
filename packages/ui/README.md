@@ -158,6 +158,14 @@ Unstackable gear omits Quantity in backpack, trade and storage tooltips.
 
 ![Verified desktop weapon item tooltip](../../docs/images/compact-item-tooltips.png)
 
+Unequipped gear can supply `comparison: { label, rows }`, with each row carrying
+`label`, signed `value` and `improved`. The host compares base stats and rolled
+bonuses against the replacement slot, including lost bonuses. The tooltip shows
+compact green gains, red losses, or “Same stats” for no differences. Equipped
+items and non-gear omit this optional input.
+
+![Verified desktop Storybook item comparison](../../docs/images/item-stat-comparison.png)
+
 Compose it inside `GameWindow` for dragging and focus management. Its Storybook
 stories cover starter and empty loadouts; gameplay rules remain in the host.
 
