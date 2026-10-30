@@ -285,7 +285,7 @@ export function talentIncomingDamage(
   const retaliation = rank(player, 2, 6);
   if (prevented > 0 && retaliation && now >= value.reprisalAt) {
     value.reprisalAt = now + 2000;
-    for (const enemy of area(scene, player, 130))
+    for (const enemy of area(scene, player, 130, player))
       strike(
         scene,
         player,
@@ -351,7 +351,7 @@ export function talentWeaponHit(
   value.hits++;
   const follow = rank(player, 0, 0);
   if (!companion && follow && value.hits % 3 === 0)
-    for (const other of area(scene, enemy, 100))
+    for (const other of area(scene, enemy, 100, player))
       if (other !== enemy)
         strike(
           scene,
@@ -394,7 +394,7 @@ export function talentWeaponHit(
       );
     const instinct = rank(player, 1, 9);
     if (instinct && value.hits % 5 === 0)
-      for (const other of area(scene, enemy, 160))
+      for (const other of area(scene, enemy, 160, player))
         if (other !== enemy)
           strike(
             scene,
@@ -439,7 +439,7 @@ export function talentEnemyDeath(scene: SceneState, player: Player, enemy: Enemy
         : player.classId === 'ranger'
           ? 'poison'
           : 'burn';
-    for (const other of area(scene, enemy, 180).slice(0, spread === 2 ? 4 : 2))
+    for (const other of area(scene, enemy, 180, player).slice(0, spread === 2 ? 4 : 2))
       applyTalentAilment(other, player, kind, spread, now);
   }
 }
@@ -665,7 +665,12 @@ export function executeTalent(
     if (offering && consumedStacks >= 3)
       schedule(scene, player, nodeId, now, 6000, 500, (_at, players) => {
         if (orbConsumed) return;
-        const ally = healingTarget(players, player, primary, 60);
+        const ally = healingTarget(
+          players,
+          player,
+          primary,
+          60 * (1 + stats.bonuses.areaOfEffect / 100),
+        );
         if (ally) {
           heal(ally, offering === 2 ? 0.05 : 0.03);
           orbConsumed = true;
@@ -687,31 +692,31 @@ export function executeTalent(
       strike(scene, player, enemy, scale, at, ability);
       if (classId === 'warrior' && stats.bonuses.additionalAttack > 0)
         talentWeaponHit(scene, player, enemy, at, false, stats);
-    }
-    const serrated = rank(player, 1, 2);
-    if (column === 0 && serrated && Math.random() < (serrated === 2 ? 0.45 : 0.25))
-      applyTalentAilment(enemy, player, ailment, 1, at);
-    if (column === 1) applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at);
-    const deep = rank(player, 1, 9);
-    if (
-      deep &&
-      enemy.debuffs?.some(
-        (entry) => entry.ownerId === player.id && entry.stacks >= 5 && entry.expiresAt > at,
-      ) &&
-      Math.random() < (deep === 2 ? 0.35 : 0.2) &&
-      at >= (deepCuts.get(enemy)?.get(player) ?? 0)
-    ) {
-      const timers = deepCuts.get(enemy) ?? new WeakMap<Player, number>();
-      timers.set(player, at + 2000);
-      deepCuts.set(enemy, timers);
-      strike(
-        scene,
-        player,
-        enemy,
-        deep === 2 ? 1.3 : 0.8,
-        at,
-        TALENT_NAMES[player.classId ?? 'warrior'][1][9],
-      );
+      const serrated = rank(player, 1, 2);
+      if (column === 0 && serrated && Math.random() < (serrated === 2 ? 0.45 : 0.25))
+        applyTalentAilment(enemy, player, ailment, 1, at);
+      if (column === 1) applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at);
+      const deep = rank(player, 1, 9);
+      if (
+        deep &&
+        enemy.debuffs?.some(
+          (entry) => entry.ownerId === player.id && entry.stacks >= 5 && entry.expiresAt > at,
+        ) &&
+        Math.random() < (deep === 2 ? 0.35 : 0.2) &&
+        at >= (deepCuts.get(enemy)?.get(player) ?? 0)
+      ) {
+        const timers = deepCuts.get(enemy) ?? new WeakMap<Player, number>();
+        timers.set(player, at + 2000);
+        deepCuts.set(enemy, timers);
+        strike(
+          scene,
+          player,
+          enemy,
+          deep === 2 ? 1.3 : 0.8,
+          at,
+          TALENT_NAMES[player.classId ?? 'warrior'][1][9],
+        );
+      }
     }
   };
   if (tier === 1 && column === 1 && primary) {

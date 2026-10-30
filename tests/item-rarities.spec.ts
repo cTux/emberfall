@@ -52,7 +52,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   expect(player.equipmentItems!.helmet.stats).toEqual(original.stats);
   await equipped.click({ button: 'right' });
   await expect(legendary).toBeVisible();
-  await page.keyboard.press('Escape');
+  await inventory.getByRole('button', { name: 'Close Inventory' }).click();
 
   const storehouse = BUILDINGS.find((building) => building.id === 'storehouse')!;
   Object.assign(player, { x: storehouse.doorX, y: storehouse.y + 9 });
@@ -72,7 +72,8 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   expect(player.storages![0].items[0]).toEqual(original);
   await page.screenshot({ path: 'test-results/item-rarities-storage.png' });
   await stored.click({ button: 'right' });
-  await page.keyboard.press('Escape');
+  await storage.getByRole('button', { name: 'Close Storehouse' }).click();
+  await expect(storage).toBeHidden();
 
   const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
   Object.assign(player, { x: marta.x, y: marta.y - 15 });
@@ -102,7 +103,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   expect(player.backpack!.find((item) => item.rarity === Rarity.Legendary)!.stats).toEqual(
     original.stats,
   );
-  await page.keyboard.press('Escape');
+  await trader.getByRole('button', { name: `Close ${INNKEEPER.name}` }).click();
   await page.reload();
   await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
   await page.keyboard.press('i');
@@ -157,6 +158,21 @@ test('native forest rendering shows all five rarity beams from server-confirmed 
   const canvas = page.locator('canvas[aria-label="Forest combat scene."]');
   await expect(canvas).toBeVisible();
   await expect.poll(() => run.scene!.drops!.length).toBe(5);
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        performance
+          .getEntriesByType('resource')
+          .some((entry) => entry.name.includes('warrior-weapon.png')),
+      ),
+    )
+    .toBe(true);
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
   await page.screenshot({ path: 'test-results/item-rarity-beams-forest.png' });
   expect(errors).toEqual([]);
 });

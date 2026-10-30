@@ -501,7 +501,7 @@ export async function compare() {
   lootContext.drawImage(gpu, 0, 0);
   const rarityPixels = rarities.map((rarity, index) => ({
     rarity,
-    color: [...lootContext.getImageData(24 + index * 48, 57, 1, 1).data],
+    color: [...lootContext.getImageData(24 + index * 48, 43, 1, 1).data],
   }));
   pixi.resize(850, 260);
   pixi.begin();

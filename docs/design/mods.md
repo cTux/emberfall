@@ -14,7 +14,8 @@ fields on inventory/drop instances. Existing equipped definition IDs remain;
 optional `equipmentItems[slot]` retains the equipped instance and its rolls.
 Core validates that each instance matches its slot's definition ID, allowed
 stats, rarity count and configured exact values. Saves without instances retain
-their old stats and Common presentation. Equip, storage and trade move the
+their old stats and Common presentation. Mod gear types without a configured
+roll pool also remain unrolled Common until a pool is added. Equip, storage and trade move the
 instance; they never regenerate it. Server commands still save before publishing.
 Combat reads summed equipped bonuses, and the server binds the complete party
 roster to reward generation independently of hit credit. Client/UI receive

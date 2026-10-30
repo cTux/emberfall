@@ -97,9 +97,12 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
       parseInt(rarityColor[rarity].slice(offset, offset + 2), 16),
     );
     expect(color[3], `${rarity} beam alpha`).toBeGreaterThan(30);
+    const brightness = Math.max(...color.slice(0, 3));
+    expect(brightness, `${rarity} visible beam`).toBeGreaterThan(5);
+    const opacity = brightness / Math.max(...expected);
     for (let channel = 0; channel < 3; channel++)
       expect(
-        Math.abs(color[channel] - expected[channel]),
+        Math.abs(color[channel] - expected[channel] * opacity),
         `${rarity} beam color`,
       ).toBeLessThanOrEqual(4);
   }

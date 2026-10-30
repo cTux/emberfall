@@ -5,6 +5,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { BackpackItem, Player, SceneState, Enemy } from '@emberfall/common';
 import {
+  createGame,
+  baseMod,
   Rarity,
   ItemStat,
   rarityStatCount,
@@ -85,6 +87,31 @@ const arena = (training = true): SceneState => ({
   nextSpawn: 1e9,
   endsAt: 1e9,
   enemies: [],
+});
+
+test('mod gear types without a roll pool retain unrolled Common compatibility', () => {
+  const context = createGame([
+    baseMod,
+    {
+      id: 'custom-gear',
+      register(r) {
+        r.gearTypes.register({ id: 'custom:charm', label: 'Charm' });
+        r.items.register({
+          id: 'custom:charm',
+          name: 'Charm',
+          kind: 'gear',
+          gearType: 'custom:charm',
+          stats: { armor: 1 },
+          loot: true,
+        });
+      },
+    },
+  ]);
+  const item = context.rules.rollItem('custom:charm');
+  assert(context.rules.backpackSchema.safeParse([item]).success);
+  assert.equal(itemRarity(item), Rarity.Common);
+  assert.equal(item.stats, undefined);
+  assert(context.rules.merchantSchema.safeParse(context.rules.freshMerchant()).success);
 });
 
 test('one rarity roll has exact disjoint percentage ranges including Common remainder', () => {
@@ -389,6 +416,28 @@ test('compatible offensive talents repeat attacks and extend pierces/bounces, an
     ),
   );
   assert(scene.enemies[0].hitpoints < 1000);
+});
+
+test('passive talent areas scale and extra talent attacks independently apply on-hit procs', (t) => {
+  t.mock.method(Math, 'random', () => 0.5);
+  const player = hero();
+  equip(player, 'amulet', 'loot-amulet', ItemStat.AreaOfEffect);
+  learnTalent(player, talentNodeId('warrior', 0, 0));
+  const scene = arena();
+  const target: Enemy = { id: 1, x: player.x + 30, y: player.y, hitpoints: 1000, angle: 0 };
+  scene.enemies = [target, { ...target, id: 2, x: target.x + 110 }];
+  for (let hit = 0; hit < 3; hit++) hitWithWeapon(scene, target, player, 1000 + hit);
+  assert.equal(scene.damage.filter((hit) => hit.target === 'enemy:2').length, 1);
+  t.mock.restoreAll();
+  t.mock.method(Math, 'random', () => 0.1);
+  const warrior = hero();
+  equip(warrior, 'weapon', 'warrior-sword', ItemStat.AdditionalAttack);
+  learnTalent(warrior, talentNodeId('warrior', 1, 2));
+  const other = arena();
+  other.enemies = [{ ...target }];
+  executeTalent(other, warrior, 0, talentNodeId('warrior', 0, 1), 1, other.enemies[0], 1000);
+  assert.equal(other.damage.length, 2);
+  assert.equal(other.enemies[0].debuffs?.find((entry) => entry.kind === 'bleed')?.stacks, 2);
 });
 
 test('whole party bonuses add once at drop generation, with guaranteed extras and fractional chance; training stays reward-free', (t) => {

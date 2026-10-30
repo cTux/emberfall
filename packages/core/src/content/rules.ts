@@ -208,7 +208,8 @@ export function createRules(content: Registries) {
   type BackpackItem = z.infer<typeof backpackSchema>[number];
   function rollItem(itemId: string, random = Math.random): BackpackItem {
     const definition = itemDefinition(itemId);
-    if (definition.kind !== 'gear') return { id: crypto.randomUUID(), itemId, quantity: 1 };
+    if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType])
+      return { id: crypto.randomUUID(), itemId, quantity: 1 };
     const rarity = rollRarity(random);
     return {
       id: crypto.randomUUID(),
