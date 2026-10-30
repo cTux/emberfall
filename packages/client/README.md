@@ -73,6 +73,10 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   and actor drawing through `forest-ground.ts`, `forest-actors.ts`,
   `forest-layers.ts` and `forest-actor-rendering.ts`. Portal, fog and player effects
   are shared modules; the existing `forest.ts` exports remain compatible.
+- `village-players.ts` owns village player poses, cutouts, caster preparation
+  and drawing. `village-layers.ts` declares stable scene ordering, and
+  `village-layer-rendering.ts` renders scenery, dummies, companions and portals
+  from controlled frame inputs.
 - `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
