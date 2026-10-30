@@ -60,6 +60,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   keyboard subscriptions, browser preference persistence and world chat binding.
   `GamePanels.tsx` composes controlled lazy panel content; `Game.tsx` retains
   session-driven window state and interaction commands.
+- `art-loader.ts` owns shared image caching, atlas packaging and readiness;
+  `art.ts` declares shipped artwork and terrain drawing. Atlas correction,
+  native building loading and softened actor palettes keep their original order.
 - `equipment/` owns item artwork, stat and badge presentation, backpack view
   models and the controlled trading panel. Storehouse consumes the backpack
   model directly; `equipment-view.tsx` retains its lazy panel exports.
