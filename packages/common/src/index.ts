@@ -202,6 +202,8 @@ export interface Player extends CharacterProgress {
   inputAt?: number;
 }
 export interface Bear {
+  size?: number;
+  range?: number;
   id: string;
   name: string;
   x: number;

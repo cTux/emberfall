@@ -77,7 +77,7 @@ export function worldHitboxes(
     if (bear && bear.hitpoints > 0) {
       const body = modelHitbox(bear);
       circle(body.x, body.y, body.radius, HITBOX_COLORS.body, 'body');
-      swing(bear, BEAR_DEFINITION.range);
+      swing(bear, bear.range ?? BEAR_DEFINITION.range);
     }
   }
   for (const enemy of scene?.enemies ?? []) {

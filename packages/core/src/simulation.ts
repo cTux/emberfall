@@ -1,5 +1,6 @@
 type Game = ReturnType<typeof createGame>;
 import { game, type createGame } from './game.ts';
+import { talentNodeId, talentRank } from './talent-tree.ts';
 import { tickTalentEffects, talentIncomingDamage, shiftTalentEffects } from './talent-effects.ts';
 import { PLAYER_BODY_RADIUS } from './definitions/entities/players.ts';
 import { modelHitbox, enemyHitbox, overlapsBody } from './hitboxes.ts';
@@ -114,16 +115,13 @@ function slash(
     swing = { sceneId: scene.id, at: actor.attackAt!, enemies: new Set() };
     swordHits.set(actor, swing);
   }
+  const range =
+    actor === owner ? defaultSpellRange(owner, context) : context.rules.companionStats(owner).range;
   for (const enemy of scene.enemies) {
     if (
       enemy.hitpoints <= 0 ||
       swing.enemies.has(enemy.id) ||
-      !swordOverlapsEnemy(
-        actor,
-        enemy,
-        actor === owner ? defaultSpellRange(owner, context) : BEAR_DEFINITION.range,
-        context,
-      )
+      !swordOverlapsEnemy(actor, enemy, range, context)
     )
       continue;
     swing.enemies.add(enemy.id);
@@ -175,6 +173,9 @@ export function tickCompanion(
     returning: false,
   });
   bear.moving = false;
+  const stats = context.rules.companionStats(player);
+  bear.range = stats.range;
+  bear.size = talentRank(player, talentNodeId('druid', 1, 3)) > 0 ? 96 : 48;
   const max = player.maxHitpoints * BEAR_DEFINITION.healthMultiplier;
   if (bear.hitpoints > 0)
     bear.hitpoints = Math.min(max, bear.hitpoints + Math.max(0, max - bear.maxHitpoints));
@@ -362,7 +363,6 @@ export function tickCompanion(
     bear.attackAt = undefined;
     return;
   }
-  const stats = context.rules.companionStats(player);
   if (!stats.hasWeapon || !Number.isFinite(stats.attackIntervalMs)) {
     bear.attackAt = undefined;
     return;

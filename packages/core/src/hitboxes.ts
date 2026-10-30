@@ -4,7 +4,10 @@ import { forestDistance } from './scene.ts';
 import type { Enemy } from '@emberfall/common';
 
 /** Center and radius of the rendered actor model, excluding weapons and effects. */
-export function modelHitbox(actor: { x: number; y: number }, size = 48) {
+export function modelHitbox(
+  actor: { x: number; y: number; size?: number },
+  size = actor.size ?? 48,
+) {
   return { x: actor.x, y: actor.y + COLLISION.feetOffset - (size * 7) / 16, radius: size / 2 };
 }
 

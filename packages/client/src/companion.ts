@@ -24,8 +24,11 @@ function companionFrame(bear: Bear, now: number) {
 export function companionCaster(bear: Bear, x: number, y: number, now: number, id: string) {
   if (bear.hitpoints <= 0) return null;
   const { column, left } = companionFrame(bear, now);
+  const scale = (bear.size ?? 48) / 48;
   const mask = spriteMask(image, column % 4, Math.floor(column / 4), left, 64, false, 64);
-  return mask ? { id, x, y: y + 18, width: 42.5, height: 40, mask } : null;
+  return mask
+    ? { id, x, y: y + 15 + 3 * scale, width: 42.5 * scale, height: 40 * scale, mask }
+    : null;
 }
 
 export function drawCompanion(
@@ -39,6 +42,10 @@ export function drawCompanion(
   showHealth = true,
 ) {
   ctx.save();
+  const scale = (bear.size ?? 48) / 48;
+  ctx.translate(x, y + 15);
+  ctx.scale(scale, scale);
+  ctx.translate(-x, -y - 15);
   if (!shadows) {
     ctx.fillStyle = '#06181080';
     ctx.beginPath();
@@ -75,11 +82,13 @@ export function drawCompanion(
       now - (bear.hurtAt ?? -Infinity),
     );
   }
+  ctx.restore();
+  ctx.save();
   ctx.globalAlpha = 1;
   drawPlayerHealth(
     ctx,
     x,
-    y - 38,
+    y + 15 - 53 * scale,
     bear.hitpoints,
     bear.maxHitpoints,
     dead ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s` : 'Bear',
@@ -95,7 +104,7 @@ export function drawCompanion(
     ctx.lineWidth = 3;
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
-      ctx.arc(0, 0, BEAR_DEFINITION.range - 5 - i * 7, -0.65, 0);
+      ctx.arc(0, 0, (bear.range ?? BEAR_DEFINITION.range) - 5 - i * 7, -0.65, 0);
       ctx.stroke();
     }
   }
