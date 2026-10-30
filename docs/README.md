@@ -4,6 +4,9 @@ This is the maintained map of existing features and their implementation. The ba
 
 ## How to use these documents
 
+The [architecture refactoring sequence](plans/architecture.md) tracks the
+reviewed PR batches for module ownership, declarative rules and large-file splits.
+
 The sole runtime uses PixiJS, Miniplex and Colyseus; see its [runtime design](design/new-runtime.md)
 and [historical verification record](plans/new-runtime.md). Package guides explain development,
 testing and reuse: [common](../packages/common/README.md),
