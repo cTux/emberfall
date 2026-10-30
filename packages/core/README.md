@@ -25,6 +25,10 @@ references/values, seals content and returns a ready context with `registries`,
 The default `game` uses the explicit `GAME_MODS` list in `src/mods/index.ts`, with
 `baseMod` first. Both server and browser initialize that list before gameplay.
 
+`src/mods/base/worlds/village-residents.ts` holds resident identities, workstations
+and conversation topics. `village.ts` composes those with geometry and scenery;
+its compatibility exports and definition values stay stable.
+
 `src/mods/base.mod.ts` registers shipped content from its private `base/` data
 modules. `src/definitions` and balance configs expose derived views for consumers;
 edit source content through the mod, not these views. `src/content` owns registry
