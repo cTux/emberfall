@@ -369,6 +369,21 @@ test('external modal tabs scroll, navigate and stay with the window at viewport 
   ).toBe(true);
 });
 
+test('inventory artwork stays centered inside every filled slot', async ({ page }, testInfo) => {
+  for (const state of ['stacked', 'full', 'storage', 'selling']) {
+    await page.goto(story(`components-backpack--${state}`));
+    const slots = page.locator('[data-backpack-item]');
+    await expect(slots.first()).toBeVisible();
+    for (const slot of await slots.all()) {
+      const bounds = (await slot.boundingBox())!;
+      const icon = (await slot.locator('img').boundingBox())!;
+      expect(Math.abs(icon.x + icon.width / 2 - bounds.x - bounds.width / 2)).toBeLessThan(1);
+      expect(Math.abs(icon.y + icon.height / 2 - bounds.y - bounds.height / 2)).toBeLessThan(1);
+    }
+  }
+  await page.screenshot({ path: testInfo.outputPath('centered-inventory-icons.png') });
+});
+
 test('backpacks show twenty wood-colored slots and tabs sit outside the left window border', async ({
   page,
 }) => {
