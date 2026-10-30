@@ -85,6 +85,8 @@ name, cooldown and casting/automation controls. All tooltips inherit the shared
 game-window surface and theme typography. Slots use the shared translucent window surface and brown
 border. Ready, cooling-down and unequipped states are available in Storybook.
 
+`Backpack` uses fixed 44px square slots, wrapping to fit the available width.
+Adding character stats or a window scrollbar never stretches or shrinks slots.
 `Backpack.slots` defaults to 20; Storehouse panels use 40. `Chapter.onRename`
 adds a host-owned rename action on right-click or F2 without changing tab selection.
 The host owns the rename dialog, validation and persistence.
@@ -155,6 +157,10 @@ counts and right-click/keyboard callbacks. The host supplies `stackable`; only
 stackable items show Quantity and per-item pricing, including stacks of one.
 Unstackable gear omits Quantity in backpack, trade and storage tooltips.
 `GoldBalance` is shared with HUD/trader.
+The host supplies optional `equipRestriction` text for incompatible gear; the
+shared tooltip shows it in red. Omit `useAction` when equipping is unavailable,
+while explicit trade/storage action hints remain. `Backpack/RestrictedGear`
+demonstrates the warning without importing gameplay rules.
 
 ![Verified desktop weapon item tooltip](../../docs/images/compact-item-tooltips.png)
 

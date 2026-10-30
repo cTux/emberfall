@@ -34,6 +34,7 @@ export interface ItemTooltipView {
   subtitle?: string;
   primary?: { label: string; value: string };
   details?: string;
+  equipRestriction?: string;
   price?: number;
   comparison?: {
     label: string;
@@ -79,6 +80,11 @@ export function ItemTooltip({
           )}
         </Box>
       </Stack>
+      {item.equipRestriction && (
+        <Typography variant='body2' sx={{ color: 'error.main' }}>
+          {item.equipRestriction}
+        </Typography>
+      )}
       {item.primary && (
         <Stack direction='row' sx={{ alignItems: 'baseline' }} spacing={0.5}>
           <Typography component='span' className='item-power'>

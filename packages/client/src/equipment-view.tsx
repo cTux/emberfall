@@ -335,6 +335,10 @@ export function backpackViews(
     const definition = itemDefinition(item.itemId);
     const gear = GEAR_DEFINITIONS[item.itemId];
     const potion = CONSUMABLES[item.itemId as keyof typeof CONSUMABLES];
+    const equipRestriction =
+      gear && !EQUIPMENT_SLOTS.some((slot) => canEquip(slot, gear, player.classId ?? 'warrior'))
+        ? 'Your class cannot equip this item.'
+        : undefined;
     return {
       ...item,
       stackable: definition.kind !== 'gear',
@@ -352,7 +356,8 @@ export function backpackViews(
           : []),
         ...rolledBadges(item),
       ],
-      useAction: gear ? 'Equip' : potion ? 'Use' : undefined,
+      equipRestriction,
+      useAction: gear ? (equipRestriction ? undefined : 'Equip') : potion ? 'Use' : undefined,
       details: potion ? `Restores ${potion.healing} health` : '',
     };
   });

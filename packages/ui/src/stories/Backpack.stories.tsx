@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { Box, IconButton, Tooltip } from '@mui/material';
+import { Box, Button, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import healthPotion from '../assets/health-potion.png';
 import amulet from '../assets/item-icons/slot-amulet.png';
-import { Backpack } from '../index';
+import warriorWeapon from '../assets/item-icons/warrior-weapon.png';
+import { Backpack, EquipmentPanel, GameWindow } from '../index';
 
 const meta = {
   title: 'Components/Backpack',
@@ -75,6 +76,56 @@ export const SameStats: StoryObj<typeof meta> = {
     items: [
       { ...Comparison.args!.items![0], comparison: { label: 'vs equipped Amulet', rows: [] } },
     ],
+  },
+};
+export const RestrictedGear: StoryObj<typeof meta> = {
+  args: {
+    items: [
+      {
+        id: 'sword',
+        stackable: false,
+        name: "Warrior's sword",
+        quantity: 1,
+        price: 1,
+        details: '',
+        subtitle: 'Sword',
+        equipRestriction: 'Your class cannot equip this item.',
+        icon: <img src={warriorWeapon} alt='' />,
+      },
+    ],
+  },
+};
+export const InventoryStats: StoryObj<typeof meta> = {
+  render: function InventoryStats(args) {
+    const [extraStats, setExtraStats] = useState(false);
+    return (
+      <>
+        <Button onClick={() => setExtraStats(!extraStats)}>Toggle extra stats</Button>
+        <GameWindow title='Inventory' modal={false} onClose={() => {}}>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+              gap: 1.5,
+            }}
+          >
+            <EquipmentPanel
+              slots={[]}
+              stats={[
+                { label: 'Armor', value: '9.4' },
+                ...(extraStats
+                  ? Array.from({ length: 15 }, (_, index) => ({
+                      label: `Bonus stat ${index + 1}`,
+                      value: '14%',
+                    }))
+                  : []),
+              ]}
+            />
+            <Backpack {...args} />
+          </Box>
+        </GameWindow>
+      </>
+    );
   },
 };
 export const Modifiers: StoryObj<typeof meta> = {

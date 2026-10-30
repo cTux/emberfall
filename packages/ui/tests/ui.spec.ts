@@ -2,6 +2,36 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('inventory slots stay fixed when extra stats add a scrollbar', async ({ page }, testInfo) => {
+  await page.goto(story('components-backpack--inventory-stats'));
+  const content = page.locator('.MuiDialogContent-root');
+  const slots = page.getByRole('region', { name: 'Your backpack' }).locator('button');
+  await expect(slots).toHaveCount(20);
+  const expectFixedSlots = async () => {
+    for (const slot of await slots.all()) {
+      await expect(slot).toHaveCSS('width', '44px');
+      await expect(slot).toHaveCSS('height', '44px');
+    }
+    expect(await content.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+      true,
+    );
+  };
+  await expectFixedSlots();
+  expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
+    false,
+  );
+  await page.getByRole('button', { name: 'Toggle extra stats' }).click();
+  await expect(page.getByText('Bonus stat 15')).toBeAttached();
+  expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
+    true,
+  );
+  await expectFixedSlots();
+  await page.screenshot({ path: testInfo.outputPath('inventory-fixed-slots.png') });
+  await page.getByRole('button', { name: 'Toggle extra stats' }).click();
+  await expect(page.getByText('Bonus stat 15')).toHaveCount(0);
+  await expectFixedSlots();
+});
+
 test('performance diagnostics stay compact with readable labels and all traces', async ({
   page,
 }, testInfo) => {
@@ -991,12 +1021,33 @@ test('compact consumable tooltip shows its effect, stack and contextual action',
   await expect(tooltip).toContainText('Quantity5');
   await expect(tooltip).toContainText('1 gold each');
   await expect(tooltip).toContainText('Right-click: use');
+  await expect(tooltip).not.toContainText('Your class cannot equip this item.');
   expect((await tooltip.locator('.MuiTooltip-tooltip').boundingBox())!.width).toBeLessThanOrEqual(
     250,
   );
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(tooltip).toBeVisible();
   await page.screenshot({ path: 'test-results/item-tooltip-consumable.png' });
+});
+
+test('incompatible gear explains its restriction in red on hover and keyboard focus', async ({
+  page,
+}) => {
+  await page.goto(story('components-backpack--restricted-gear'));
+  const item = page.getByRole('button', { name: "Use Warrior's sword" });
+  await item.hover();
+  const tooltip = page.getByRole('tooltip');
+  await expect(tooltip.getByText('Your class cannot equip this item.')).toHaveCSS(
+    'color',
+    'rgb(239, 155, 133)',
+  );
+  await expect(tooltip).not.toContainText('Right-click: equip');
+  await page.mouse.move(0, 0);
+  await expect(tooltip).toBeHidden();
+  await item.focus();
+  await expect(tooltip.getByText('Your class cannot equip this item.')).toBeVisible();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(tooltip).toBeVisible();
 });
 
 test('item tooltips show quantity only for stackable items, including stacks of one', async ({
