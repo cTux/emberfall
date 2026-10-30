@@ -1,5 +1,6 @@
+import { DrawingState } from './drawing-state';
 import { VisualPools, type Visual } from './visual-pools';
-import { Gradient, GradientPaints, type Paint } from './paints';
+import { Gradient, GradientPaints } from './paints';
 import {
   autoDetectRenderer,
   Container,
@@ -7,7 +8,6 @@ import {
   Graphics,
   Texture,
   Rectangle,
-  Matrix,
   Text,
   Color,
 } from 'pixi.js';
@@ -27,31 +27,11 @@ type PathCommand = {
     | 'closePath';
   args: number[];
 };
-type State = {
-  imageSmoothingEnabled: boolean;
-  matrix: Matrix;
-  fillStyle: Paint;
-  strokeStyle: Paint;
-  globalAlpha: number;
-  occlusion: boolean;
-  globalCompositeOperation: string;
-  lineWidth: number;
-  lineJoin: CanvasLineJoin;
-  font: string;
-  textAlign: CanvasTextAlign;
-  textBaseline: CanvasTextBaseline;
-  shadowBlur: number;
-  shadowColor: string;
-  spriteTint: string;
-  shadowOffsetY: number;
-  mask: Graphics | null;
-  dash: number[];
-};
 
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
  */
-export class PixiContext {
+export class PixiContext extends DrawingState {
   private visuals = new VisualPools();
   get ecs() {
     return this.visuals.ecs;
@@ -70,48 +50,16 @@ export class PixiContext {
   private height = 1;
   readonly ready: Promise<void>;
   private colors = new Map<string, Color>();
-  private drawMatrix = new Matrix();
   private sources = new Map<CanvasImageSource, { texture: Texture; used: number }>();
   private gradients = new GradientPaints();
   private frame = 0;
   private shadowPass = false;
   private shadowStrength = 0;
   private shadowRects = new Map<string, HTMLCanvasElement>();
-  private stack: State[] = [];
-  private stackDepth = 0;
   private path: PathCommand[] = [];
   private metrics = document.createElement('canvas').getContext('2d')!;
-  private state: State = this.defaults();
-  fontFamily = '"Alegreya Sans", sans-serif';
-  get imageSmoothingEnabled() {
-    return this.state.imageSmoothingEnabled;
-  }
-  set imageSmoothingEnabled(value: boolean) {
-    this.state.imageSmoothingEnabled = value;
-  }
-  private defaults(): State {
-    return {
-      imageSmoothingEnabled: false,
-      matrix: new Matrix(),
-      fillStyle: '#000',
-      strokeStyle: '#000',
-      globalAlpha: 1,
-      occlusion: false,
-      globalCompositeOperation: 'source-over',
-      lineWidth: 1,
-      lineJoin: 'miter',
-      font: '10px sans-serif',
-      textAlign: 'start',
-      textBaseline: 'alphabetic',
-      shadowBlur: 0,
-      spriteTint: '#ffffff',
-      shadowColor: 'transparent',
-      shadowOffsetY: 0,
-      mask: null,
-      dash: [],
-    };
-  }
   constructor(canvas: HTMLCanvasElement) {
+    super();
     this.canvas = canvas;
     this.ready = autoDetectRenderer({
       canvas,
@@ -149,8 +97,7 @@ export class PixiContext {
     this.frame++;
     this.hasCutout = false;
     this.visuals.begin();
-    this.state = this.defaults();
-    this.stackDepth = 0;
+    this.resetState();
     this.path.length = 0;
   }
   present() {
@@ -248,12 +195,6 @@ export class PixiContext {
     bounds.width = Math.abs(ax) + Math.abs(bx);
     bounds.height = Math.abs(ay) + Math.abs(by);
     return bounds;
-  }
-  get occlusion() {
-    return this.state.occlusion;
-  }
-  set occlusion(enabled: boolean) {
-    this.state.occlusion = enabled;
   }
   private visual(kind: Visual['kind']) {
     return this.visuals.visual(kind, this.state, this.shadowPass, this.shadowStrength);
@@ -576,43 +517,6 @@ export class PixiContext {
     const mask = this.geometry().fill(0xffffff);
     this.state.mask = mask;
   }
-  save() {
-    const saved = (this.stack[this.stackDepth++] ??= this.defaults());
-    this.copyState(saved, this.state);
-  }
-  restore() {
-    if (this.stackDepth) this.copyState(this.state, this.stack[--this.stackDepth]);
-  }
-  private copyState(target: State, source: State) {
-    const matrix = target.matrix;
-    Object.assign(target, source);
-    target.matrix = matrix.copyFrom(source.matrix);
-  }
-  setTransform(a: number, b: number, c: number, d: number, e: number, f: number) {
-    this.state.matrix.set(a, b, c, d, e, f);
-  }
-  resetTransform() {
-    this.state.matrix.identity();
-  }
-  getTransform() {
-    const m = this.state.matrix;
-    return new DOMMatrix([m.a, m.b, m.c, m.d, m.tx, m.ty]);
-  }
-  transform(a: number, b: number, c: number, d: number, e: number, f: number) {
-    this.state.matrix.append(this.drawMatrix.set(a, b, c, d, e, f));
-  }
-  translate(x: number, y: number) {
-    this.transform(1, 0, 0, 1, x, y);
-  }
-  scale(x: number, y: number) {
-    this.transform(x, 0, 0, y, 0, 0);
-  }
-  rotate(angle: number) {
-    this.transform(Math.cos(angle), Math.sin(angle), -Math.sin(angle), Math.cos(angle), 0, 0);
-  }
-  setLineDash(values: number[]) {
-    this.state.dash = [...values];
-  }
   createLinearGradient(x0: number, y0: number, x1: number, y1: number) {
     return new Gradient({
       type: 'linear',
@@ -676,83 +580,5 @@ export class PixiContext {
   }
   strokeText(value: string, x: number, y: number) {
     this.text(value, x, y, true);
-  }
-  get fillStyle() {
-    return this.state.fillStyle;
-  }
-  set fillStyle(v: Paint) {
-    this.state.fillStyle = v;
-  }
-  get strokeStyle() {
-    return this.state.strokeStyle;
-  }
-  set strokeStyle(v: Paint) {
-    this.state.strokeStyle = v;
-  }
-  get spriteTint() {
-    return this.state.spriteTint;
-  }
-  set spriteTint(value: string) {
-    this.state.spriteTint = value;
-  }
-  get globalAlpha() {
-    return this.state.globalAlpha;
-  }
-  set globalAlpha(v: number) {
-    this.state.globalAlpha = v;
-  }
-  get globalCompositeOperation() {
-    return this.state.globalCompositeOperation;
-  }
-  set globalCompositeOperation(v: string) {
-    this.state.globalCompositeOperation = v;
-  }
-  get lineWidth() {
-    return this.state.lineWidth;
-  }
-  set lineWidth(v: number) {
-    this.state.lineWidth = v;
-  }
-  get lineJoin() {
-    return this.state.lineJoin;
-  }
-  set lineJoin(v: CanvasLineJoin) {
-    this.state.lineJoin = v;
-  }
-  get font() {
-    return this.state.font;
-  }
-  set font(v: string) {
-    this.state.font = v.replace('"Alegreya Sans", sans-serif', this.fontFamily);
-  }
-  get textAlign() {
-    return this.state.textAlign;
-  }
-  set textAlign(v: CanvasTextAlign) {
-    this.state.textAlign = v;
-  }
-  get textBaseline() {
-    return this.state.textBaseline;
-  }
-  set textBaseline(v: CanvasTextBaseline) {
-    this.state.textBaseline = v;
-  }
-  get shadowBlur() {
-    return this.state.shadowBlur;
-  }
-  set shadowBlur(v: number) {
-    this.state.shadowBlur = v;
-  }
-  get shadowColor() {
-    return this.state.shadowColor;
-  }
-  set shadowColor(v: string) {
-    this.state.shadowColor = v;
-  }
-  get shadowOffsetY() {
-    return this.state.shadowOffsetY;
-  }
-  set shadowOffsetY(v: number) {
-    this.state.shadowOffsetY = v;
   }
 }
