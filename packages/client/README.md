@@ -45,6 +45,10 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `useGameSession.ts` owns connection/version checks, recovery, latency probes,
   session storage and command admission. `Game.tsx` consumes its state and small
   lifecycle events to reset presentation without owning sockets or credentials.
+- `WorldBrowser.tsx`, `CharacterPanels.tsx` and `WorldPanels.tsx` are controlled
+  views for world entry, character configuration and scene/leave actions.
+  `game-panels.ts` declares window titles, dimensions and modal behavior; the
+  host still owns actions, selection and lazy content loading.
 - `snapshots.ts` interpolates confirmed remote state. `local-movement.ts`
   predicts bounded local movement and casts, reconciles acknowledgements and
   replays pending input. Hits, health, loot and progress remain authoritative.

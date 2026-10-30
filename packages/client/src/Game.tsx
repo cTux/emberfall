@@ -1,31 +1,29 @@
+import { gamePanel, type GameMenu } from './game-panels';
+import { WorldBrowser } from './WorldBrowser';
+import { ResetTalentsPanel, WardrobePanel } from './CharacterPanels';
+import { LeavePanel, PortalPanel } from './WorldPanels';
 import { useGameSession } from './useGameSession';
-import { BULLSEYE, TALENT_RESET_COST, availableTalentPoints } from '@emberfall/core';
+import { classSprite } from './class-art';
+import { BULLSEYE } from '@emberfall/core';
 import { clientAsset } from './urls.ts';
 import { faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons/faWandMagicSparkles';
 import { faChessKnight } from '@fortawesome/free-solid-svg-icons/faChessKnight';
-import { experienceRequired, enemyMaxHealth, difficultyMultiplier } from '@emberfall/core';
+import { experienceRequired, enemyMaxHealth } from '@emberfall/core';
 import type { AccountView, ChatMessage, WorldSummary } from '@emberfall/common';
-import { classSprite, weaponSrc, spellSrc } from './class-art';
-import { classDetails } from './class-details';
 import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
-import { characterStats, INNKEEPER, CLASS_IDS, CLASS_LABELS } from '@emberfall/core';
+import { INNKEEPER } from '@emberfall/core';
 import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
 import type { Interaction } from './effects';
 import {
   GameWindow,
-  WorldList,
-  ChapterTabs,
   PartyCard,
   HudActions,
   ConnectionStatus,
   BossHealth,
   SceneStatus,
-  ClassCard,
-  PortalVote,
-  GoldBalance,
 } from '@emberfall/ui';
-import { Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { faBookOpen } from '@fortawesome/free-solid-svg-icons/faBookOpen';
 import { faGear } from '@fortawesome/free-solid-svg-icons/faGear';
 import { faRightFromBracket } from '@fortawesome/free-solid-svg-icons/faRightFromBracket';
@@ -143,19 +141,7 @@ export function Game({
     }
   });
   const name = steam ? account.nickname! : legacyName;
-  const [menu, setMenu] = useState<
-    | 'resetTalents'
-    | 'talents'
-    | 'tactics'
-    | 'codex'
-    | 'settings'
-    | 'portal'
-    | 'building'
-    | 'wardrobe'
-    | 'equipment'
-    | 'exit'
-    | null
-  >(null);
+  const [menu, setMenu] = useState<GameMenu | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [building, setBuilding] = useState('');
   const [settingsTab, setSettingsTab] = useState('gameplay');
@@ -554,95 +540,23 @@ export function Game({
               ))}
           </Stack>
         ) : browserOpen ? (
-          <Box className='lobby'>
-            <GameWindow title='Emberfall' modal={false} onClose={() => setBrowserOpen(false)}>
-              <Stack spacing={3}>
-                {!steam && (
-                  <TextField
-                    label='Your adventurer name'
-                    value={name}
-                    required
-                    autoComplete='nickname'
-                    onChange={(e) => setName(e.target.value)}
-                    slotProps={{ htmlInput: { maxLength: 24 } }}
-                  />
-                )}
-                <ChapterTabs
-                  label='World actions'
-                  value={tab}
-                  showHeading={false}
-                  onChange={() => {
-                    setTab('browse');
-                  }}
-                  chapters={[
-                    {
-                      id: 'browse',
-                      title: 'Join a world',
-                      content: (
-                        <Stack spacing={2}>
-                          <WorldList
-                            worlds={worlds}
-                            selectedId={selected?.id}
-                            disabled={unavailable || !name.trim()}
-                            latency={unavailable ? null : latency}
-                            onJoin={(w) => {
-                              if (w.locked) {
-                                setSelected(worlds.find((world) => world.id === w.id)!);
-                                setJoinPassword('');
-                              } else
-                                act({
-                                  type: 'join',
-                                  worldId: w.id,
-                                  playerName: name,
-                                  password: '',
-                                });
-                            }}
-                          />
-                          {selected && (
-                            <Stack
-                              component='form'
-                              spacing={2}
-                              onSubmit={(e) => {
-                                e.preventDefault();
-                                act({
-                                  type: 'join',
-                                  worldId: selected.id,
-                                  playerName: name,
-                                  password: joinPassword,
-                                });
-                              }}
-                            >
-                              <TextField
-                                label={`Password for ${selected.name}`}
-                                type='password'
-                                autoComplete='current-password'
-                                value={joinPassword}
-                                onChange={(e) => setJoinPassword(e.target.value)}
-                                slotProps={{ htmlInput: { maxLength: 64 } }}
-                              />
-                              <Button
-                                type='submit'
-                                variant='contained'
-                                disabled={unavailable || !name.trim()}
-                              >
-                                {pending ? 'Joining…' : 'Join world'}
-                              </Button>
-                            </Stack>
-                          )}
-                        </Stack>
-                      ),
-                    },
-                    {
-                      id: 'create',
-                      title: 'Create a world',
-                      disabled: true,
-                      content: null,
-                    },
-                  ]}
-                />
-              </Stack>
-            </GameWindow>
-          </Box>
+          <WorldBrowser
+            steam={steam}
+            name={name}
+            setName={setName}
+            tab={tab}
+            setTab={setTab}
+            worlds={worlds}
+            selected={selected}
+            setSelected={setSelected}
+            joinPassword={joinPassword}
+            setJoinPassword={setJoinPassword}
+            unavailable={unavailable}
+            latency={latency}
+            pending={pending}
+            act={act}
+            onClose={() => setBrowserOpen(false)}
+          />
         ) : null}
         {scene?.phase === 'countdown' && (
           <div
@@ -721,88 +635,18 @@ export function Game({
         >
           <GameWindow
             key={menu}
-            modal={menu !== 'talents'}
-            height={
-              menu === 'codex' || menu === 'tactics' ? 480 : menu === 'settings' ? 420 : undefined
-            }
-            width={
-              menu === 'talents'
-                ? 700
-                : menu === 'tactics'
-                  ? 460
-                  : menu === 'wardrobe'
-                    ? 600
-                    : menu === 'equipment' ||
-                        (menu === 'building' && (tradingNpcId || building === 'Storehouse'))
-                      ? 520
-                      : undefined
-            }
-            title={
-              menu === 'resetTalents'
-                ? 'Reset talent points?'
-                : menu === 'talents'
-                  ? 'Talents'
-                  : menu === 'tactics'
-                    ? 'Tactics'
-                    : menu === 'codex'
-                      ? 'Codex'
-                      : menu === 'equipment'
-                        ? 'Inventory'
-                        : menu === 'settings'
-                          ? 'Settings'
-                          : menu === 'portal'
-                            ? 'Forest portal'
-                            : menu === 'wardrobe'
-                              ? 'Wardrobe'
-                              : menu === 'exit'
-                                ? 'Leave?'
-                                : building
-            }
+            {...gamePanel(menu, building, !!tradingNpcId)}
             onClose={() => setMenu(null)}
           >
             <DeferredContent key={menu}>
               <Stack spacing={2}>
                 {menu === 'resetTalents' && me ? (
-                  <>
-                    <Typography component='div'>
-                      Do you really want to reset your talent points for{' '}
-                      <Box
-                        component='span'
-                        sx={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: 0.5,
-                          verticalAlign: 'middle',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
-                        <GoldBalance name='Reset cost' coins={TALENT_RESET_COST} />?
-                      </Box>
-                    </Typography>
-                    <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
-                      <Typography variant='body2'>Currently you have:</Typography>
-                      <GoldBalance name='Your balance' coins={me.coins ?? 0} />
-                    </Stack>
-                    <Stack direction='row' spacing={1}>
-                      <Button variant='outlined' onClick={() => setMenu(null)}>
-                        Cancel
-                      </Button>
-                      <Button
-                        variant='contained'
-                        disabled={
-                          unavailable ||
-                          (me.coins ?? 0) < TALENT_RESET_COST ||
-                          availableTalentPoints(me) >= Math.min(20, me.level) - 1
-                        }
-                        onClick={() => {
-                          send({ type: 'resetTalents', classId: me.classId ?? 'warrior' });
-                          setMenu(null);
-                        }}
-                      >
-                        Reset talents
-                      </Button>
-                    </Stack>
-                  </>
+                  <ResetTalentsPanel
+                    me={me}
+                    unavailable={unavailable}
+                    send={send}
+                    onClose={() => setMenu(null)}
+                  />
                 ) : menu === 'talents' && me ? (
                   <Talents player={me} send={send} />
                 ) : menu === 'codex' ? (
@@ -829,73 +673,15 @@ export function Game({
                     setGraphics={setGraphics}
                   />
                 ) : menu === 'exit' ? (
-                  <>
-                    <Typography>
-                      {me?.scene === 'forest'
-                        ? 'Are you sure you want to leave the current game? Your party will continue.'
-                        : 'Are you sure you want to leave the lobby?'}
-                    </Typography>
-                    <Stack direction='row' spacing={1}>
-                      <Button variant='outlined' onClick={() => setMenu(null)}>
-                        Cancel
-                      </Button>
-                      <Button
-                        variant='contained'
-                        color='error'
-                        disabled={unavailable}
-                        onClick={() => {
-                          if (me?.scene === 'forest') send({ type: 'leaveScene' });
-                          else act({ type: 'leave' });
-                          setMenu(null);
-                        }}
-                      >
-                        Leave
-                      </Button>
-                    </Stack>
-                  </>
+                  <LeavePanel
+                    me={me}
+                    unavailable={unavailable}
+                    send={send}
+                    act={act}
+                    onClose={() => setMenu(null)}
+                  />
                 ) : menu === 'wardrobe' ? (
-                  <Box
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-                      gap: { xs: 0.5, sm: 1 },
-                    }}
-                  >
-                    {CLASS_IDS.map((id) => {
-                      const selected = (me?.classId ?? 'warrior') === id;
-                      const stats = selected ? me : me?.classes?.[id];
-                      const details = classDetails[id];
-                      return (
-                        <ClassCard
-                          key={id}
-                          title={CLASS_LABELS[id]}
-                          selected={selected}
-                          disabled={unavailable || selected || scene?.phase === 'countdown'}
-                          onSelect={() => send({ type: 'selectClass', classId: id })}
-                          portrait={
-                            <img src={classSprite(id)} alt={`${CLASS_LABELS[id]} portrait`} />
-                          }
-                          weapon={{
-                            name: details.weapon,
-                            description: details.weaponDescription,
-                            icon: <img src={weaponSrc(id)} alt='' />,
-                          }}
-                          spell={{
-                            name: details.spell,
-                            description: details.spellDescription,
-                            icon: <img src={spellSrc(id)} alt='' />,
-                          }}
-                          stats={{
-                            level: stats?.level ?? 1,
-                            experience: stats?.experience ?? 0,
-                            maxHitpoints: stats?.maxHitpoints ?? 100,
-                            power: characterStats({ classId: id, equipment: stats?.equipment })
-                              .power,
-                          }}
-                        />
-                      );
-                    })}
-                  </Box>
+                  <WardrobePanel me={me} unavailable={unavailable} send={send} scene={scene} />
                 ) : menu === 'building' && tradingNpcId && me && world?.merchant ? (
                   <Trading
                     key={tradingNpcId}
@@ -911,106 +697,19 @@ export function Game({
                 ) : menu === 'building' ? (
                   <Typography>{building} services are coming in a future update.</Typography>
                 ) : (
-                  <>
-                    {world && scene && ['voting', 'countdown'].includes(scene.phase) ? (
-                      <>
-                        <Typography>Scene created. Vote here when you are ready.</Typography>
-                        <PortalVote
-                          scene={scene.type}
-                          difficulty={scene.difficulty}
-                          ready={scene.ready.length}
-                          total={
-                            world.players.filter(
-                              (p) =>
-                                p.id === playerId || (!!me?.partyId && p.partyId === me.partyId),
-                            ).length
-                          }
-                          voted={scene.ready.includes(playerId)}
-                          countdown={scene.phase === 'countdown' ? departure : undefined}
-                          disabled={unavailable}
-                          onVote={() => {
-                            const ready = !scene.ready.includes(playerId);
-                            send({ type: 'ready', ready });
-                            if (ready) setMenu(null);
-                          }}
-                        />
-                      </>
-                    ) : scene?.phase === 'active' && !me?.scene && !scene.portals.length ? (
-                      <>
-                        <Typography>
-                          Your party has a scene in progress. Join before the boss is defeated.
-                        </Typography>
-                        <Button
-                          variant='contained'
-                          disabled={unavailable}
-                          onClick={() => send({ type: 'joinScene' })}
-                        >
-                          Join scene
-                        </Button>
-                        {canRegenerate && (!me?.partyId || me.partyLeaderId === playerId) && (
-                          <>
-                            <Typography>
-                              No living players remain inside. The scene is paused.
-                            </Typography>
-                            <Button
-                              disabled={unavailable}
-                              onClick={() =>
-                                send({
-                                  type: 'createScene',
-                                  scene: 'Forest',
-                                  difficulty: scene.difficulty,
-                                })
-                              }
-                            >
-                              Regenerate scene
-                            </Button>
-                          </>
-                        )}
-                      </>
-                    ) : scene && !canRegenerate ? (
-                      <Typography>
-                        {['active', 'ended'].includes(scene.phase)
-                          ? scene.phase === 'ended'
-                            ? 'Scene complete. Everyone must return before creating a new one.'
-                            : 'You are already in this scene.'
-                          : 'Scene created. Vote here when you are ready.'}
-                      </Typography>
-                    ) : me?.partyId && me.partyLeaderId !== playerId ? (
-                      <Typography>The party leader creates the dimension.</Typography>
-                    ) : (
-                      <Stack
-                        component='form'
-                        spacing={2}
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          send({ type: 'createScene', scene: 'Forest', difficulty });
-                        }}
-                      >
-                        <TextField select label='Scene type' defaultValue='Forest'>
-                          <MenuItem value='Forest'>Forest</MenuItem>
-                        </TextField>
-                        <TextField
-                          select
-                          label='Difficulty'
-                          value={difficulty}
-                          onChange={(event) => setDifficulty(event.target.value as Difficulty)}
-                          helperText={`${difficultyMultiplier(difficulty)}× enemy health and damage`}
-                        >
-                          {Object.values(Difficulty).map((value) => (
-                            <MenuItem key={value} value={value}>
-                              {value}
-                            </MenuItem>
-                          ))}
-                        </TextField>
-                        <Stack direction='row' spacing={1}>
-                          <Button type='submit' variant='contained' disabled={unavailable}>
-                            {canRegenerate ? 'Regenerate scene' : 'Create'}
-                          </Button>
-                          <Button onClick={() => setMenu(null)}>Cancel</Button>
-                        </Stack>
-                      </Stack>
-                    )}
-                  </>
+                  <PortalPanel
+                    world={world}
+                    scene={scene}
+                    playerId={playerId}
+                    me={me}
+                    departure={departure}
+                    unavailable={unavailable}
+                    send={send}
+                    canRegenerate={canRegenerate}
+                    difficulty={difficulty}
+                    setDifficulty={setDifficulty}
+                    onClose={() => setMenu(null)}
+                  />
                 )}
               </Stack>
             </DeferredContent>
