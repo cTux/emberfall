@@ -7,6 +7,7 @@ import {
   restoreResources,
 } from '@emberfall/core';
 import type { ResourceState } from '@emberfall/common';
+import { DEFAULT_TACTICS } from '@emberfall/common';
 import {
   learnTalent,
   equipTalent,
@@ -476,6 +477,8 @@ export async function createRuntime(
         return;
       }
       if (
+        message.type === 'setTactics' ||
+        message.type === 'moveTacticsPriority' ||
         message.type === 'learnTalent' ||
         message.type === 'equipTalent' ||
         message.type === 'resetTalents' ||
@@ -496,6 +499,12 @@ export async function createRuntime(
         const player = world?.players.get(session.id);
         if (!world || !player || !session.characterId || player.hitpoints <= 0) {
           error('Join a world with a living character first.');
+          return;
+        }
+        const changingTactics =
+          message.type === 'setTactics' || message.type === 'moveTacticsPriority';
+        if (changingTactics && message.classId !== player.classId) {
+          error('Tactics must match your current class.');
           return;
         }
         villageLife(world, now);
@@ -525,7 +534,19 @@ export async function createRuntime(
           const next = structuredClone(player);
           const merchant = structuredClone((world.merchant ??= characters.merchant(world.id)));
           const trader = traderId === 'craftsman' ? merchant.craftsman! : merchant;
-          if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
+          if (message.type === 'setTactics')
+            next.tactics = { ...DEFAULT_TACTICS, ...player.tactics, ...message.tactics };
+          else if (message.type === 'moveTacticsPriority') {
+            next.tactics = { ...DEFAULT_TACTICS, ...player.tactics };
+            const order = [...next.tactics[message.list]];
+            const from = order.findIndex((rule) => rule === message.rule);
+            if (from < 0) throw new Error('Priority does not belong to this list.');
+            const to = from + message.direction;
+            if (to >= 0 && to < order.length) {
+              [order[from], order[to]] = [order[to], order[from]];
+              next.tactics = { ...next.tactics, [message.list]: order };
+            }
+          } else if (message.type === 'learnTalent') learnTalent(next, message.nodeId);
           else if (message.type === 'equipTalent') equipTalent(next, message.slot, message.nodeId);
           else if (message.type === 'resetTalents') resetTalents(next);
           else if (message.type === 'trade')
@@ -547,6 +568,7 @@ export async function createRuntime(
             trading ? { worldId: world.id, state: merchant } : undefined,
           );
           Object.assign(player, {
+            tactics: next.tactics,
             talents: next.talents,
             talentSlots: next.talentSlots,
             talentVersion: next.talentVersion,
@@ -558,6 +580,7 @@ export async function createRuntime(
             hitpoints: next.hitpoints,
             maxHitpoints: next.maxHitpoints,
           });
+          if (changingTactics) player.attackTargetId = undefined;
           if (message.type === 'resetTalents') clearTalentEffects(player);
           if (trading) world.merchant = merchant;
           send(ws, { type: 'state', world: state(world, now, player) });

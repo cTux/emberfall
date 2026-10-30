@@ -1,4 +1,5 @@
 import { game, type createGame } from './game.ts';
+import { attackTarget } from './tactics.ts';
 import { talentAilmentChance, talentWeaponHit, talentEnemyDeath } from './talent-effects.ts';
 type Game = ReturnType<typeof createGame>;
 import { appendSceneEntities, wrappedDelta, wrap } from '@emberfall/common';
@@ -284,21 +285,11 @@ export function projectileAngle(
 
 /** Shared wrapped target selection for cast scheduling, launch and prediction. */
 export function nearestSpellTarget(
-  player: { x: number; y: number },
+  player: { x: number; y: number } & Partial<Pick<Player, 'tactics' | 'attackTargetId'>>,
   enemies: Enemy[],
   range: number,
 ) {
-  let target: Enemy | undefined;
-  let nearest = range;
-  for (const enemy of enemies) {
-    if (enemy.hitpoints <= 0) continue;
-    const distance = forestDistance(enemy, player);
-    if (distance <= range && (!target || distance < nearest)) {
-      target = enemy;
-      nearest = distance;
-    }
-  }
-  return target;
+  return attackTarget(player, enemies, range, player.tactics, player.attackTargetId);
 }
 
 export function fireClassAttack(

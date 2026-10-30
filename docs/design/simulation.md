@@ -36,6 +36,21 @@ Electorate changes invalidate the countdown and readiness is reconciled against 
 
 ## Geometry and attacks
 
+Tactics are optional structural class progress in common, validated with the
+`setTactics` command and saved transactionally before publication. Commands contain
+validated partial edits merged against the current server settings, so rapid edits
+to different controls cannot overwrite each other. Priority arrows send directional
+`moveTacticsPriority` operations against the current server order, preserving
+multiple moves sent before replication. Core's
+`tactics.ts` owns ordered wrapped attack/healing selection. Cast scheduling,
+projectile launch, melee aim, talent aim and client presentation reuse those
+selectors. The replicated temporary `attackTargetId` supports target retention
+and companion assist; it is excluded from saves and reset on class changes.
+Companion decisions include their tactics reference so confirmed edits invalidate
+cached movement immediately. Automatic talent requests carry an `automatic` flag;
+the authoritative cast path checks healing eligibility before spending cooldown.
+Forest and village training use the same selectors and companion tick.
+
 Village and forest share 4800×2560 wrapped geometry. Player movement passes through scenery. Enemies and Bear retain tree avoidance; enemy bodies use a wrapped spatial grid for separation. Enemy movement reads registered base speed and the scene difficulty’s `speedMultiplier` (Easy 1, Medium 1.05, Hard 1.15) before applying roots. The public `enemyKindAttribute` and `difficultySpeedMultiplier` configs derive from the same catalog. Bear movement keeps player speed independently of enemy difficulty scaling. Distances, target choice, hit overlap and camera projections must use the same wrapped geometry.
 
 Warrior/Bear melee uses a smoothed forward half-disc and per-swing hit tracking. Projectile movement and class effects share `fireClassAttack`, `advancePlayerShot`, `tickPlayerShots` and `hitEnemy`. Root projectiles retain their identity and hit IDs through three bounces, select the nearest living unhit enemy within 250 wrapped units of each impact, and track that target until impact or its death. All four possible impacts use the shared full-power hit path. Local presentation keeps the same projectile through confirmed turns and uses shared motion with hit detection disabled; it never predicts damage or hit history. Roots refresh one five-second stack and multiply ordinary enemy movement speed by 0.9; bosses receive no roots. Manual casts validate cooldown, life, area epoch, class and training range; increasing request IDs identify processed/rejected casts and the accepted attack. Presentation prediction is described in [movement](movement.md).

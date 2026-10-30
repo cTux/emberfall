@@ -28,7 +28,7 @@ export function WeaponActionBar({
   canAutoCast,
 }: {
   player: Player;
-  onCast: (slot: number) => void;
+  onCast: (slot: number, automatic?: boolean) => void;
   send: (message: ClientMessage) => void;
   now: number;
   preferences: Preferences;
@@ -61,7 +61,7 @@ export function WeaponActionBar({
         preferences.autoCastAbilities?.includes(node.id) &&
         now >= (player.talentCooldowns?.[ability.id] ?? 0)
       )
-        onCast(slot);
+        onCast(slot, true);
     }
   }, [canAutoCast, picker, preferences, player, stats.hasWeapon, now, onCast]);
   const tileStyle = {

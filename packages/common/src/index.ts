@@ -1,6 +1,9 @@
 export * from './enums/index.ts';
 export { nicknameSchema, type AccountView } from './account.ts';
 import { z } from 'zod';
+import { tacticsSchema } from './tactics.ts';
+import { OFFENSIVE_PRIORITIES } from './tactics.ts';
+export * from './tactics.ts';
 import { Difficulty } from './enums/Difficulty.ts';
 import {
   backpackSchema,
@@ -32,6 +35,7 @@ export const progressSchema = z
     storages: storagesSchema.optional(),
     talents: z.record(z.string(), z.number().int().nonnegative()).optional(),
     talentVersion: z.number().int().nonnegative().optional(),
+    tactics: tacticsSchema.optional(),
     talentSlots: z.array(z.string().min(1).max(64).nullable()).length(4).optional(),
     level: z.number().int().min(1).max(10000),
     paragon: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
@@ -44,6 +48,18 @@ export const progressSchema = z
   .refine((p) => p.hitpoints <= p.maxHitpoints);
 export type CharacterProgress = z.infer<typeof progressSchema>;
 export const clientMessage = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('moveTacticsPriority'),
+    classId: classSchema,
+    list: z.enum(['offensive', 'defensive']),
+    rule: z.enum([...OFFENSIVE_PRIORITIES, 'players', 'self']),
+    direction: z.union([z.literal(-1), z.literal(1)]),
+  }),
+  z.object({
+    type: z.literal('setTactics'),
+    classId: classSchema,
+    tactics: tacticsSchema.partial(),
+  }),
   z.object({
     type: z.literal('gather'),
     nodeId: z.string().min(1).max(64),
@@ -60,6 +76,7 @@ export const clientMessage = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('talentCast'),
+    automatic: z.boolean().optional(),
     aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
     aimY: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
     slot: z.number().int().min(0).max(3),
@@ -187,6 +204,7 @@ export interface Player extends CharacterProgress {
   talentCooldowns?: Record<string, number>;
   attackId?: number;
   attackAngle?: number;
+  attackTargetId?: number;
   autoAttack?: boolean;
   autoLoot?: boolean;
   autoTarget?: boolean;

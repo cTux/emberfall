@@ -1,6 +1,7 @@
 import type { DebuffKind, Enemy, Player, SceneState } from '@emberfall/common';
 import { appendSceneEntities, wrap, wrappedDelta } from '@emberfall/common';
 import { forestDistance, FOREST } from './scene.ts';
+import { healingTarget } from './tactics.ts';
 import { TALENT_NAMES, talentNodeId, talentRank } from './talent-tree.ts';
 import { hitEnemy } from './class-combat.ts';
 import { characterStats } from './equipment.ts';
@@ -219,38 +220,6 @@ function heal(player: HealingTarget, fraction: number) {
     player.hitpoints + player.maxHitpoints * fraction,
   );
 }
-function healingTarget(
-  players: Player[],
-  owner: Player,
-  point: { x: number; y: number },
-  radius: number,
-) {
-  let target: HealingTarget | undefined;
-  for (const ally of players) {
-    if (
-      (ally !== owner && (!owner.partyId || ally.partyId !== owner.partyId)) ||
-      ally.scene !== owner.scene ||
-      ally.runId !== owner.runId ||
-      ally.reconnecting
-    )
-      continue;
-    for (const candidate of [ally, ally.bear]) {
-      if (
-        !candidate ||
-        candidate.hitpoints <= 0 ||
-        candidate.hitpoints >= candidate.maxHitpoints ||
-        forestDistance(candidate, point) > radius
-      )
-        continue;
-      if (
-        !target ||
-        candidate.hitpoints / candidate.maxHitpoints < target.hitpoints / target.maxHitpoints
-      )
-        target = candidate;
-    }
-  }
-  return target;
-}
 function shield(player: Player, scene: SceneState, amount: number, until: number) {
   const value = state(player, scene);
   value.barrier = Math.max(value.barrier, amount);
@@ -455,6 +424,7 @@ export function executeTalent(
   stats: CharacterStats = characterStats(player),
   players: Player[] = [player],
   healingRadius = 700,
+  healBelow = 1,
 ) {
   const effectArea = (scene: SceneState, point: { x: number; y: number }, radius: number) =>
     area(scene, point, radius * (1 + stats.bonuses.areaOfEffect / 100));
@@ -476,7 +446,7 @@ export function executeTalent(
   }
   const recipient =
     classId === 'druid' && column === 2 && (tier === 0 || tier === 3)
-      ? healingTarget(players, player, origin, healingRadius)
+      ? healingTarget(players, player, origin, healingRadius, healBelow)
       : undefined;
   talentVisual(scene, player, column, recipient ?? (column === 2 ? origin : aim), now);
   let targets = effectArea(
