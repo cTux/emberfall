@@ -69,6 +69,10 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   and passes movement into presentation-only prediction.
 - `frame-budget.ts` owns drawing cadence, adaptive resolution thresholds and
   FPS sampling; simulation time stays server-owned.
+- Forest rendering composes cached terrain, actor preparation, ordered layers
+  and actor drawing through `forest-ground.ts`, `forest-actors.ts`,
+  `forest-layers.ts` and `forest-actor-rendering.ts`. Portal, fog and player effects
+  are shared modules; the existing `forest.ts` exports remain compatible.
 - `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.

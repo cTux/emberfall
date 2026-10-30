@@ -1,247 +1,53 @@
-import type { DrawingContext, WorldDrawingContext } from './rendering/drawing-context';
+import { createForestActors, forestActorMask } from './forest-actors';
+import { forestLayers, drawForestLayer } from './forest-layers';
+export { portalInteraction, drawPortal } from './portal';
+export { drawFog } from './fog';
+export { drawPlayerDetails, drawPlayerAttack } from './player-rendering';
+import { drawFog } from './fog';
+import { drawPlayerAttack } from './player-rendering';
+import type { WorldDrawingContext } from './rendering/drawing-context';
 import { abilityEffectOpacity } from './ability-effects';
-import { drawPartyOutline } from './effects';
+
 import { resourceNodes, resourceState } from '@emberfall/core';
-import { resourceScenery, drawResourceHealth } from './gathering';
-import { drawWorldBar } from './world-bar';
-import { game } from '@emberfall/core';
-import { characterImages } from './characters';
-import { ACTOR_CELL, playerFrame, enemyFrame, idleBreath } from './animation';
-import { actorArt, environmentArt, terrainArt, terrainTile } from './art';
-import { portalArt, drawStonePortal } from './ambient-art';
-import { companionCaster, drawCompanion } from './companion';
-import { critterCaster, crittersAt, drawCritter } from './critters';
+import { resourceScenery } from './gathering';
+
+import { idleBreath } from './animation';
+import { createForestGround } from './forest-ground';
+
+import { companionCaster } from './companion';
+import { critterCaster, crittersAt } from './critters';
 import { drawNavigation } from './navigation';
 import { drawHitboxes } from './hitboxes';
-import type { Interaction } from './effects';
-import { drawInteractionOutline, partyAction } from './interaction-targets';
+
 import type { InteractionTarget } from './interaction-targets';
-import {
-  bloodPuddleRenderer,
-  drawLootAndBlood,
-  drawClassProjectiles,
-  drawDebuffs,
-} from './combat-effects';
+import { bloodPuddleRenderer, drawLootAndBlood, drawClassProjectiles } from './combat-effects';
 import { wrappedDelta } from '@emberfall/common';
-import { characterStats, ENEMY_STATS, FOREST, INTERACTION_RADIUS } from '@emberfall/core';
-import { defaultSpellRange, PLAYER_ATTACK_DURATION, enemyMaxHealth } from '@emberfall/core';
-import { movementFacing } from './facing';
+import { FOREST } from '@emberfall/core';
+
 import { drawDanger } from './danger';
-import type { WorldState, Player } from '@emberfall/common';
+import type { WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import type { Preferences } from './preferences';
-import { castShadow, spriteMask, makeMask } from './lighting';
+import { castShadow } from './lighting';
 import type { Caster } from './lighting';
 import { dayNight } from './day-night';
 import { lightTexture } from './village';
 import {
-  drawPlayerHealth,
   drawChatBubble,
-  drawNameBadge,
   drawParticles,
   drawVignette,
-  drawTargetHit,
   drawDamageFlash,
   drawAtmosphere,
-  drawVegetation,
 } from './effects';
-
-const portalSilhouette = document.createElement('canvas');
-portalSilhouette.width = 50;
-portalSilhouette.height = 76;
-const portalContext = portalSilhouette.getContext('2d')!;
-portalContext.fillStyle = '#347fe0';
-portalContext.beginPath();
-portalContext.ellipse(25, 38, 25, 38, 0, 0, Math.PI * 2);
-portalContext.fill();
-const portalMask = makeMask(portalSilhouette);
-
-export function portalInteraction(source: Interaction, x: number, y: number): InteractionTarget {
-  const stone = !!portalArt.naturalWidth;
-  return {
-    source,
-    x: x - (stone ? 32 : 25),
-    y: y - (stone ? 72 : 68),
-    width: stone ? 64 : 50,
-    height: stone ? 80 : 76,
-    mask: stone ? spriteMask(portalArt, 0, 0, false, 128, false, 128)! : portalMask,
-    reach: source,
-    radius: INTERACTION_RADIUS,
-  };
-}
-
-export function drawPortal(
-  ctx: DrawingContext,
-  x: number,
-  y: number,
-  now: number,
-  bloom: boolean,
-  name: string | null,
-  outline: InteractionTarget | null,
-  shadows: boolean,
-  _waving: boolean,
-  opacity = 1,
-) {
-  if (portalArt.naturalWidth) {
-    if (shadows)
-      castShadow(ctx, {
-        id: 'portal',
-        x,
-        y: y + 8,
-        width: 64,
-        height: 80,
-        mask: spriteMask(portalArt, 0, 0, false, 128, false, 128)!,
-      });
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    if (bloom) {
-      ctx.shadowBlur = 12;
-      ctx.shadowColor = '#53c9ff';
-    }
-    drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
-    ctx.restore();
-    if (outline) drawInteractionOutline(ctx, outline);
-    if (name) drawNameBadge(ctx, x, y - 72, name);
-    return;
-  }
-  if (shadows)
-    castShadow(ctx, { id: 'portal', x, y: y + 8, width: 50, height: 76, mask: portalMask });
-  ctx.save();
-  ctx.globalAlpha = opacity;
-  ctx.translate(x, y);
-  ctx.lineWidth = 4;
-  if (!shadows) {
-    ctx.fillStyle = '#162e4d';
-    ctx.beginPath();
-    ctx.ellipse(0, 1, 31, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.save();
-  if (bloom) {
-    ctx.shadowBlur = 20;
-    ctx.shadowColor = '#53c9ff';
-  }
-  ctx.fillStyle = '#101e68';
-  ctx.beginPath();
-  ctx.ellipse(0, -30, 25, 38, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.save();
-  ctx.clip();
-  ctx.shadowBlur = 0;
-  const colors = ['#101e68', '#182c86', '#2042a6', '#285ac5', '#347fe0', '#52b4f5', '#8cddff'];
-  const time = now / 1600;
-  for (let py = -68; py < 8; py += 3) {
-    for (let px = -25; px < 25; px += 3) {
-      const u = px / 12,
-        v = (py + 30) / 12;
-      const ripple = Math.sin(u * 2 + Math.sin(v * 1.7 - time) * 2 + Math.sin(u + v + time * 0.6));
-      const brightness = (ripple + Math.sin(v * 2 - time + Math.sin(u + time))) / 2;
-      ctx.fillStyle = colors[Math.floor(((brightness + 1) / 2) * (colors.length - 1))];
-      ctx.fillRect(px, py, 3, 3);
-    }
-  }
-  ctx.restore();
-  ctx.strokeStyle = '#8cddff';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  for (let i = 0; i < 24; i++) {
-    const age = ((now + i * 137) % 1800) / 1800,
-      angle = i * 2.399963;
-    ctx.globalAlpha = Math.sin(age * Math.PI) * 0.8;
-    ctx.fillStyle = i % 3 === 0 ? '#b3efff' : '#52b4f5';
-    ctx.fillRect(
-      Math.round(Math.cos(angle) * (18 + age * 28)),
-      Math.round(-30 + Math.sin(angle) * 28 - age * 35),
-      2,
-      2,
-    );
-  }
-  ctx.restore();
-  ctx.restore();
-  if (outline) drawInteractionOutline(ctx, outline);
-  if (name) drawNameBadge(ctx, x, y - 60, name);
-}
-const fogTexture = document.createElement('canvas');
-fogTexture.width = fogTexture.height = 512;
-const fogContext = fogTexture.getContext('2d')!;
-for (let i = 0; i < 36; i++) {
-  for (const offsetX of [-512, 0, 512])
-    for (const offsetY of [-512, 0, 512]) {
-      const x = ((i * 137) % 512) + offsetX,
-        y = ((i * 211) % 512) + offsetY;
-      const gradient = fogContext.createRadialGradient(x, y, 0, x, y, 100);
-      gradient.addColorStop(0, '#b4cfdc12');
-      gradient.addColorStop(1, '#b4cfdc00');
-      fogContext.fillStyle = gradient;
-      fogContext.fillRect(x - 100, y - 100, 200, 200);
-    }
-}
-export function drawFog(
-  ctx: DrawingContext,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  now: number,
-) {
-  ctx.save();
-  ctx.globalCompositeOperation = 'screen';
-  // World-space tiles: the camera only selects which volumes to draw.
-  for (let layer = 0; layer < 2; layer++) {
-    const tileWidth = layer ? 1600 : 960,
-      tileHeight = layer ? 1280 : 640,
-      offsetX = (now / (100 + layer * 70)) % tileWidth,
-      offsetY = Math.sin(now / 18000 + layer) * 70;
-    for (
-      let row = Math.floor((y - offsetY) / tileHeight);
-      row <= Math.ceil((y + height - offsetY) / tileHeight);
-      row++
-    )
-      for (
-        let col = Math.floor((x - offsetX) / tileWidth);
-        col <= Math.ceil((x + width - offsetX) / tileWidth);
-        col++
-      )
-        ctx.drawImage(
-          fogTexture,
-          col * tileWidth + offsetX,
-          row * tileHeight + offsetY,
-          tileWidth,
-          tileHeight,
-        );
-  }
-  ctx.restore();
-}
 
 export function forestRenderer(
   _nature: HTMLImageElement,
   _knight: HTMLImageElement,
   skeleton: HTMLImageElement,
 ) {
-  const enemyImages = Object.fromEntries(
-    ['runner', 'brute', 'caster', 'warden'].map((name) => [name, actorArt(name)]),
-  );
-  let groundReady = false;
-  const ground = document.createElement('canvas');
-  ground.width = ground.height = 320;
-  const g = ground.getContext('2d')!;
-  g.fillStyle = '#22392d';
-  g.fillRect(0, 0, 320, 320);
-  let seed = 512;
-  const random = () => {
-    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-    return seed / 4294967296;
-  };
-  for (let i = 0; i < 700; i++) {
-    g.fillStyle = i % 3 ? '#49654332' : '#132c2544';
-    g.fillRect(random() * 320, random() * 320, 2 + random() * 6, 1 + random() * 3);
-  }
-  const positions = new Map<string, { x: number; y: number; facing: number }>();
+  const prepareActors = createForestActors(skeleton);
+  const forestGround = createForestGround();
   const drawBloodPuddles = bloodPuddleRenderer();
-  let lastScene: string | undefined;
-  function mask(image: HTMLImageElement, column: number, row: number) {
-    return spriteMask(image, column, row, false, ACTOR_CELL, false, ACTOR_CELL)!;
-  }
   return (
     ctx: WorldDrawingContext,
     world: WorldState | null,
@@ -253,24 +59,11 @@ export function forestRenderer(
     outlines: readonly InteractionTarget[],
     highlightInteractions: boolean,
   ) => {
-    if (world?.scene?.id !== lastScene) {
-      positions.clear();
-      lastScene = world?.scene?.id;
-    }
     const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
     const cycle = dayNight(world?.serverNow ?? 0);
     ctx.ambientTint = cycle.tint;
     ctx.directionalShadow = cycle.shadow;
-    if (
-      environmentArt.naturalWidth &&
-      terrainArt.complete &&
-      terrainArt.naturalWidth &&
-      !groundReady
-    ) {
-      groundReady = true;
-      g.fillStyle = g.createPattern(terrainTile(2), 'repeat')!;
-      g.fillRect(0, 0, 320, 320);
-    }
+    const terrain = forestGround();
     const scale = Math.max(ctx.canvas.width / 960, ctx.canvas.height / 640),
       width = ctx.canvas.width / scale,
       height = ctx.canvas.height / scale;
@@ -288,7 +81,7 @@ export function forestRenderer(
     ctx.imageSmoothingEnabled = false;
     for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++)
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
-        ctx.drawImage(ground, col * 320, row * 320);
+        ctx.drawImage(terrain, col * 320, row * 320);
     if (world?.scene) {
       drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles, prefs, playerId);
       drawDanger(ctx, world.scene, serverTime, near, true);
@@ -327,96 +120,12 @@ export function forestRenderer(
     const casters: Caster[] = trees.map((node) =>
       resourceScenery(node, resourceState(world?.resources, node, serverTime)),
     );
-    const actors = [
-      ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
-      ...(world?.scene?.enemies ?? []).map((e) => ({
-        id: `enemy:${e.id}`,
-        x: e.x,
-        y: e.y,
-        player: null,
-        enemy: e,
-      })),
-      ...(
-        world?.scene?.damage.filter(
-          (d) => d.killed && d.target.startsWith('enemy:') && serverTime - d.at < 700,
-        ) ?? []
-      ).map((d) => ({
-        id: d.target,
-        x: d.x,
-        y: d.y,
-        player: null,
-        enemy: {
-          name: undefined,
-          debuffs: undefined,
-          attack: undefined,
-          cooldownUntil: undefined,
-          archetype: 'skeleton' as const,
-          id: 0,
-          x: d.x,
-          y: d.y,
-          hitpoints: 0,
-          angle: 0,
-          kind: 'normal' as const,
-          ...d.enemy,
-        },
-      })),
-    ];
-    const live = new Set(actors.map((a) => a.id));
-    for (const id of positions.keys()) if (!live.has(id)) positions.delete(id);
-    const damageByTarget = new Map(world?.scene?.damage.map((d) => [d.target, d]));
-    const rendered = actors
-      .filter(
-        (a) =>
-          Math.abs(wrappedDelta(a.x, cx, FOREST.width)) < width / 2 + 100 &&
-          Math.abs(wrappedDelta(a.y, cy, FOREST.height)) < height / 2 + 100,
-      )
-      .map((actor) => {
-        const pos = positions.get(actor.id) ?? { x: actor.x, y: actor.y, facing: 0 };
-        const dx = wrappedDelta(actor.x, pos.x, FOREST.width),
-          dy = wrappedDelta(actor.y, pos.y, FOREST.height);
-        const ix = actor.player ? (actor.player.inputX ?? 0) : Math.cos(actor.enemy!.angle),
-          iy = actor.player ? (actor.player.inputY ?? 0) : Math.sin(actor.enemy!.angle);
-        const moving = actor.player ? Math.hypot(ix, iy) > 0 : Math.hypot(dx, dy) > 0.05;
-        if (moving && Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
-        pos.x = actor.x;
-        pos.y = actor.y;
-        positions.set(actor.id, pos);
-        const actorTime = actor.id === playerId ? now : serverTime;
-        const point = near(pos.x, pos.y),
-          row = actor.player
-            ? playerFrame(actorTime, moving, actor.player.hitpoints > 0, actor.player.attackAt)
-            : enemyFrame(
-                serverTime,
-                moving,
-                actor.enemy!.hitpoints > 0,
-                actor.enemy!.attack,
-                (actor.enemy!.cooldownUntil ?? -Infinity) -
-                  ENEMY_STATS[actor.enemy!.archetype ?? 'skeleton'].cooldown,
-              ),
-          image = actor.player
-            ? characterImages[actor.player.classId ?? 'warrior'].walk
-            : actor.enemy?.kind === 'boss'
-              ? enemyImages.warden
-              : (enemyImages[
-                  game.registries.enemies.require(actor.enemy?.archetype ?? 'skeleton').art
-                ] ?? skeleton);
-        const size = actor.enemy ? ENEMY_STATS[actor.enemy.archetype ?? 'skeleton'].size : 48;
-        if (row === 5 || row === 6) {
-          const angle = actor.player?.attackAngle ?? actor.enemy?.angle ?? 0;
-          pos.facing = movementFacing(Math.cos(angle), Math.sin(angle), pos.facing);
-        }
-        if (image.naturalWidth)
-          casters.push({
-            id: actor.id,
-            x: point.x,
-            y: point.y + 15,
-            width: size,
-            height: size,
-            mask: mask(image, pos.facing, row),
-          });
-        return { ...actor, ...point, facing: pos.facing, row, image, size, moving, dx, dy };
-      })
-      .filter((a) => Math.abs(a.x - cx) < width / 2 + 80 && Math.abs(a.y - cy) < height / 2 + 80);
+    const {
+      rendered,
+      casters: actorCasters,
+      damageByTarget,
+    } = prepareActors(world, players, playerId, { cx, cy, width, height, near }, now, serverTime);
+    casters.push(...actorCasters);
     const critters = crittersAt('forest', world ? serverTime : now, {
       x: cameraX,
       y: cameraY,
@@ -456,253 +165,34 @@ export function forestRenderer(
         width,
         height,
       });
-    const layers = [
-      ...(world?.scene?.phase === 'ended' ? world.scene.portals : []).map((portal) => ({
-        y: near(portal.x, portal.y).y + 8,
-        tree: null,
-        actor: null,
-        bear: null,
-        critter: null,
-        portal,
-      })),
-      ...trees.map((t) => ({
-        y: t.y,
-        tree: t,
-        actor: null,
-        bear: null,
-        critter: null,
-        portal: null,
-      })),
-      ...rendered.map((a) => ({
-        y: a.y + 15,
-        tree: null,
-        actor: a,
-        bear: null,
-        critter: null,
-        portal: null,
-      })),
-      ...players.flatMap((p) =>
-        p.bear
-          ? [
-              {
-                y: near(p.bear.x, p.bear.y).y + 18,
-                tree: null,
-                actor: null,
-                bear: p.bear,
-                critter: null,
-                portal: null,
-              },
-            ]
-          : [],
-      ),
-      ...critters.map((critter) => ({
-        y: critter.y,
-        tree: null,
-        actor: null,
-        bear: null,
-        critter,
-        portal: null,
-      })),
-    ].sort((a, b) => a.y - b.y);
+    const layers = forestLayers(world, trees, rendered, players, critters, near);
     const renderer = ctx;
     const localActor = rendered.find((actor) => actor.id === playerId);
     if (localActor && localActor.image.naturalWidth) {
       const breath = idleBreath(now, localActor.row);
       renderer.setPlayerCutout(
-        mask(localActor.image, localActor.facing, localActor.row),
+        forestActorMask(localActor.image, localActor.facing, localActor.row),
         localActor.x - localActor.size / 2,
         localActor.y + 15 - (localActor.size * 45) / 48 + localActor.size * (1 - breath),
         localActor.size,
         localActor.size * breath,
       );
     }
+    const actorFrame = {
+      world,
+      players,
+      playerId,
+      now,
+      serverTime,
+      quality,
+      highlightInteractions,
+      near,
+      outlines,
+      damageByTarget,
+    };
     for (const layer of layers) {
       renderer.occlusion = !!localActor && layer.y > localActor.y + 15;
-      if (layer.portal) {
-        const portal = layer.portal;
-        const point = near(portal.x, portal.y);
-        drawPortal(
-          ctx,
-          point.x,
-          point.y,
-          now,
-          quality.bloom,
-          'Return to village',
-          outlines.find(
-            (target) =>
-              target.source.id === 'return' &&
-              target.source.x === portal.x &&
-              target.source.y === portal.y,
-          ) ?? null,
-          quality.shadows,
-          quality.wavingVegetation,
-        );
-        continue;
-      }
-      if (layer.critter) {
-        drawCritter(ctx, layer.critter, quality.shadows);
-        ctx.globalAlpha = 1;
-        continue;
-      }
-      if (layer.bear) {
-        const point = near(layer.bear.x, layer.bear.y);
-        drawCompanion(ctx, layer.bear, point.x, point.y, serverTime, quality.shadows);
-        continue;
-      }
-      if (layer.tree) {
-        const t = layer.tree;
-
-        const state = resourceState(world?.resources, t, serverTime);
-        const object = resourceScenery(t, state);
-        if ((t.kind === 'tree' || t.kind === 'plant') && state?.remaining !== 0)
-          drawVegetation(
-            ctx,
-            object.sprite,
-            t.x,
-            t.y,
-            object.width,
-            object.height,
-            now,
-            quality.wavingVegetation,
-          );
-        else
-          ctx.drawImage(
-            object.sprite,
-            t.x - object.width / 2,
-            t.y - object.height,
-            object.width,
-            object.height,
-          );
-        ctx.globalAlpha = 1;
-        renderer.occlusion = false;
-        drawResourceHealth(ctx, t, state);
-        const outline = outlines.find((target) => target.source.id === `gather:${t.id}`);
-        if (outline) drawInteractionOutline(ctx, outline);
-        continue;
-      }
-      const a = layer.actor!;
-      if (!a.image.naturalWidth) continue;
-      const hit = damageByTarget.get(a.id);
-      if (a.enemy?.hitpoints === 0 && hit?.killed) {
-        const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / 700));
-        ctx.save();
-        ctx.translate(a.x, a.y + 15);
-        ctx.globalAlpha = 1 - progress;
-        ctx.drawImage(
-          a.image,
-          a.facing * ACTOR_CELL,
-          7 * ACTOR_CELL,
-          ACTOR_CELL,
-          ACTOR_CELL,
-          -a.size / 2,
-          -a.size * 0.94,
-          a.size,
-          a.size,
-        );
-        drawTargetHit(
-          ctx,
-          mask(a.image, a.facing, 7),
-          -a.size / 2,
-          -a.size * 0.94,
-          a.size,
-          a.size,
-          serverTime - hit.at,
-        );
-        ctx.restore();
-        continue;
-      }
-      const left = a.x - a.size / 2,
-        top = a.y + 15 - (a.size * 45) / 48;
-      const bodyOpacity = a.player?.hitpoints === 0 ? 0.35 : 1;
-      ctx.globalAlpha = bodyOpacity;
-      if (quality.motionBlur && a.moving) {
-        ctx.globalAlpha = 0.13 * bodyOpacity;
-        ctx.drawImage(
-          a.image,
-          a.facing * ACTOR_CELL,
-          a.row * ACTOR_CELL,
-          ACTOR_CELL,
-          ACTOR_CELL,
-          left - a.dx * 0.7,
-          top - a.dy * 0.7,
-          a.size,
-          a.size,
-        );
-        ctx.globalAlpha = bodyOpacity;
-      }
-      ctx.spriteTint = a.player?.reconnecting ? '#ff5555' : '#ffffff';
-      const breath = idleBreath(now, a.row);
-      ctx.drawImage(
-        a.image,
-        a.facing * ACTOR_CELL,
-        a.row * ACTOR_CELL,
-        ACTOR_CELL,
-        ACTOR_CELL,
-        left,
-        top + a.size * (1 - breath),
-        a.size,
-        a.size * breath,
-      );
-      ctx.spriteTint = '#ffffff';
-      const highlightPlayer =
-        highlightInteractions &&
-        !!a.player &&
-        !!partyAction(
-          world,
-          players.find((player) => player.id === playerId),
-          a.player,
-        );
-      if (
-        highlightPlayer ||
-        (a.player && world?.partyRequests?.some((r) => r.fromId === a.player!.id))
-      )
-        drawPartyOutline(
-          ctx,
-          mask(a.image, a.facing, a.row),
-          left,
-          top + a.size * (1 - breath),
-          a.size,
-          a.size * breath,
-          highlightPlayer,
-        );
-      if (hit && (a.enemy || a.player?.id === playerId))
-        drawTargetHit(
-          ctx,
-          mask(a.image, a.facing, a.row),
-          left,
-          top,
-          a.size,
-          a.size,
-          serverTime - hit.at,
-        );
-      ctx.globalAlpha = 1;
-      renderer.occlusion = false;
-      if (a.enemy) {
-        if (a.enemy.kind === 'boss') {
-          const width = drawPlayerHealth(
-            ctx,
-            a.x,
-            top - 10,
-            a.enemy.hitpoints,
-            enemyMaxHealth(a.enemy, world?.scene?.difficulty),
-            a.enemy.name ?? 'The Hollow Warden',
-            '#ffffff',
-            true,
-          );
-          drawDebuffs(ctx, a.enemy, a.x - width / 2, top - 12, serverTime);
-        } else {
-          drawWorldBar(
-            ctx,
-            a.x - 17,
-            top - 3,
-            34,
-            a.enemy.hitpoints / enemyMaxHealth(a.enemy, world?.scene?.difficulty),
-            a.enemy.kind === 'elite' ? '#f4d447' : '#df7765',
-          );
-          drawDebuffs(ctx, a.enemy, a.x - 17, top - 14, serverTime);
-        }
-      }
-      if (a.player) drawPlayerDetails(ctx, a.player, a.x, a.y);
+      drawForestLayer(ctx, layer, actorFrame);
     }
     renderer.occlusion = false;
     if (quality.lighting) {
@@ -746,74 +236,5 @@ export function forestRenderer(
         : 0,
     );
   };
-}
-export function drawPlayerDetails(
-  ctx: DrawingContext,
-  p: Player,
-  x: number,
-  y: number,
-  showVitals = true,
-) {
-  if (showVitals) {
-    drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
-  }
-  if (p.reconnecting) {
-    ctx.save();
-    ctx.font = 'bold 10px "Alegreya Sans", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#ff5555';
-    ctx.strokeStyle = '#101817';
-    ctx.lineWidth = 3;
-    ctx.strokeText('Reconnecting', x, y - 62);
-    ctx.fillText('Reconnecting', x, y - 62);
-    ctx.restore();
-    return;
-  }
-}
-
-export function drawPlayerAttack(
-  ctx: DrawingContext,
-  p: Player,
-  x: number,
-  y: number,
-  now: number,
-  bloom: boolean,
-  inCombat: boolean,
-  opacity = 1,
-) {
-  if (opacity === 0) return;
-  if (p.reconnecting) return;
-  const age = now - (p.attackAt ?? -Infinity);
-  if (!characterStats(p).hasWeapon) return;
-  const attackRange = defaultSpellRange(p);
-  const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
-  // Class weapons are painted into the directional action frames.
-  if (attacking && p.hitpoints > 0) {
-    if (p.classId === 'ranger' || p.classId === 'mage' || p.classId === 'druid') {
-      return;
-    }
-    const progress = age / PLAYER_ATTACK_DURATION,
-      angle = (p.attackAngle ?? 0) - Math.PI / 2 + progress * Math.PI;
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    ctx.translate(x, y);
-    ctx.rotate(angle);
-    if (bloom) {
-      ctx.shadowColor = '#c3edff';
-      ctx.shadowBlur = 10;
-    }
-    ctx.strokeStyle = `rgba(195,237,255,${1 - progress * 0.7})`;
-    ctx.lineWidth = 9;
-    ctx.beginPath();
-    ctx.arc(0, 0, Math.max(0, attackRange - 5), -0.65, 0);
-    ctx.stroke();
-    ctx.fillStyle = '#a8ffce';
-    for (let i = 0; i < 10; i++) {
-      ctx.globalAlpha = opacity * (1 - progress) * (1 - i / 14);
-      ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);
-    }
-    ctx.globalAlpha = 1;
-    ctx.restore();
-  }
 }
 import { drawDamageNumbers } from './damage-text';
