@@ -32,7 +32,7 @@ import type { Preferences } from './preferences';
 import { castShadow } from './lighting';
 import type { Caster } from './lighting';
 import { dayNight } from './day-night';
-import { lightTexture } from './village';
+import { lightTexture } from './light-texture';
 import { drawChatBubble, drawDamageFlash } from './effects';
 
 export function forestRenderer(

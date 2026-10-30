@@ -60,6 +60,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   keyboard subscriptions, browser preference persistence and world chat binding.
   `GamePanels.tsx` composes controlled lazy panel content; `Game.tsx` retains
   session-driven window state and interaction commands.
+- `village.ts` assembles scenery and torch descriptors; `light-texture.ts`
+  owns the bounded silhouette/light cache shared with forest rendering, and
+  `torch-rendering.ts` owns the packaged hanging-lamp animation.
 - `art-loader.ts` owns shared image caching, atlas packaging and readiness;
   `art.ts` declares shipped artwork and terrain drawing. Atlas correction,
   native building loading and softened actor palettes keep their original order.
