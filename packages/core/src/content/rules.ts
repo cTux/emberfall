@@ -171,7 +171,7 @@ export function createRules(content: Registries) {
       damageType: BEAR_DEFINITION.damageType as DamageType,
       range: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
       manualRange: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
-      maxHitpoints: player.maxHitpoints * BEAR_DEFINITION.healthMultiplier,
+      maxHitpoints: player.maxHitpoints * BEAR_DEFINITION.healthMultiplier * (packHowl ? 1.3 : 1),
     };
   }
   function itemDefinition(id: string) {
