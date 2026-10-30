@@ -61,7 +61,7 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
     expect(
       world.chat?.some((message) => message.text === 'The destination inventory is full.'),
     ).toBe(false);
-    await page.getByRole('button', { name: 'Inventory (I)' }).click();
+    await page.getByRole('button', { name: 'Inventory' }).click();
     await expect(page.getByRole('dialog', { name: 'Inventory', exact: true })).toBeVisible();
     await expect(log).toBeVisible();
     await expect(page.getByRole('alert')).toHaveCount(0);

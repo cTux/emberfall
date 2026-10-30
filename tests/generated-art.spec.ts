@@ -15,7 +15,7 @@ test('all bundled items render dedicated artwork in inventory', async ({ page, g
   player.backpack = catalog.registries.items
     .values()
     .map((item) => ({ id: item.id, itemId: item.id, quantity: 1 }));
-  await page.getByRole('button', { name: 'Inventory (I)' }).click();
+  await page.getByRole('button', { name: 'Inventory' }).click();
   const backpack = page.getByRole('region', { name: 'Your backpack' });
   const plants = new Set<string>(['plant', ...PLANT_KINDS]);
   for (const item of catalog.registries.items.values()) {

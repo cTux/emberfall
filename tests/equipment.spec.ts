@@ -10,7 +10,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Gear tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  const opener = page.getByRole('button', { name: 'Inventory (I)' });
+  const opener = page.getByRole('button', { name: 'Inventory' });
   await expect(opener).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];

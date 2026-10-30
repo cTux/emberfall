@@ -8,7 +8,7 @@ test('item tooltips follow class equipment rules without hiding trade actions', 
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Gear restrictions');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   player.classId = 'warrior';
@@ -115,7 +115,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Seller');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   player.backpack = [
@@ -230,7 +230,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondPage.goto(baseURL!);
     await secondPage.getByLabel('Your adventurer name').fill('Buyer');
     await secondPage.getByRole('button', { name: /^Join Playtest Default/ }).click();
-    await expect(secondPage.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+    await expect(secondPage.getByRole('button', { name: 'Inventory' })).toBeVisible();
     const buyer = [...world.players.values()].find((p) => p.name === 'Buyer')!;
     buyer.x = marta.x;
     buyer.y = marta.y - 15;

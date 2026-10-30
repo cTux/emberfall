@@ -116,12 +116,19 @@ Windows have a 400px content surface and a maximum height of 480px, clamped to t
 | VolumeControl      | Controlled label, value in 0–1, disabled and numeric `onChange`. MUI supplies keyboard operation.                                                                                                                                                                                    |
 | ChapterTabs        | Typed chapter IDs/titles/content, controlled value/callback. Linked tab/panel IDs support multiple instances. Reuse for Codex, lobby and settings.                                                                                                                                   |
 | ConnectionStatus   | Colored connection circle with an accessible status label.                                                                                                                                                                                                                           |
-| HudActions         | Typed labeled icon actions with callbacks, disabled state and optional `shortcut` text appended in tooltips.                                                                                                                                                                         |
+| HudActions         | Typed labeled icon actions with callbacks, disabled state and optional `shortcut` badges below icons, matching tooltips and `aria-keyshortcuts`.                                                                                                                                     |
 | BossHealth         | Name and health/maxHealth; composes StatusMeter.                                                                                                                                                                                                                                     |
 | InteractionPrompt  | Action and optional key text.                                                                                                                                                                                                                                                        |
 | SceneStatus        | Label and optional seconds; formats a nonnegative mm:ss timer. Host owns the clock.                                                                                                                                                                                                  |
 | PortalVote         | Scene/difficulty, ready/total, voted, optional countdown, disabled and vote callback. Host owns voting rules.                                                                                                                                                                        |
 | PerformanceMonitor | Caller-supplied FPS/latency samples, optional series visibility; renders last 60 samples and gaps for unavailable readings. Host owns sampling frequency and time window.                                                                                                            |
+
+In-world HUD actions run left to right: Inventory (bag, I), Talents (magic
+sparkles, N), Codex (book, F1), optional Portal vote, Settings (gear, Esc),
+then Leave world (exit). Actions without a shortcut omit the badge. The lobby
+retains Codex and Settings, followed by World browser when available.
+
+![Verified desktop gameplay toolbar](../../docs/images/hud-toolbar.png)
 
 `ClassCard` presents a portrait, two independently focusable weapon/spell tooltip buttons, rounded stats and a selection button. Its host supplies all content and selection restrictions. `GameWindow.width` defaults to 400; the wardrobe uses 600.
 

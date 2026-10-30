@@ -1,5 +1,6 @@
 import {
   Box,
+  IconButton,
   LinearProgress,
   Paper,
   Stack,
@@ -7,6 +8,29 @@ import {
   linearProgressClasses,
   styled,
 } from '@mui/material';
+
+export const HudActionButtonStyled = styled(IconButton)(({ theme }) => ({
+  width: theme.spacing(5),
+  height: theme.spacing(6.5),
+  padding: theme.spacing(0.5),
+  flexDirection: 'column',
+  justifyContent: 'flex-start',
+  gap: theme.spacing(0.5),
+}));
+
+export const HudShortcutStyled = styled('kbd')(({ theme }) => ({
+  minWidth: theme.spacing(2.25),
+  padding: theme.spacing(0, 0.5),
+  border: `1px solid ${theme.palette.divider}`,
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: theme.palette.background.paper,
+  color: theme.palette.text.secondary,
+  fontFamily: 'inherit',
+  fontSize: theme.typography.pxToRem(11),
+  fontWeight: 700,
+  lineHeight: theme.spacing(2),
+  pointerEvents: 'none',
+}));
 
 export const PartyCardStyled = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1),

@@ -2,6 +2,28 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('HUD actions show hotkey badges and retain keyboard focus and disabled states', async ({
+  page,
+}) => {
+  await page.goto(story('components-game-patterns--actions'));
+  const controls = page.getByRole('navigation', { name: 'Game controls' });
+  await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'F1', 'Esc']);
+  for (const [name, key] of [
+    ['Inventory', 'I'],
+    ['Talents', 'N'],
+    ['Codex', 'F1'],
+    ['Settings', 'Escape'],
+  ]) {
+    const button = controls.getByRole('button', { name, exact: true });
+    await expect(button).toHaveAttribute('aria-keyshortcuts', key);
+    await page.keyboard.press('Tab');
+    await expect(button).toBeFocused();
+    await expect(button.locator('kbd')).toBeVisible();
+  }
+  await expect(controls.getByRole('button', { name: 'Leave world' })).toBeDisabled();
+  await expect(controls.getByRole('button', { name: 'Leave world' }).locator('kbd')).toHaveCount(0);
+});
+
 test('inventory slots stay fixed when extra stats add a scrollbar', async ({ page }, testInfo) => {
   await page.goto(story('components-backpack--inventory-stats'));
   const content = page.locator('.MuiDialogContent-root');

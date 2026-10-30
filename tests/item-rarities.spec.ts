@@ -16,7 +16,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Rarity tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   player.backpack = Object.values(Rarity).map((rarity) => ({
@@ -107,7 +107,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   );
   await trader.getByRole('button', { name: `Close ${INNKEEPER.name}` }).click();
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   await page.keyboard.press('i');
   await expect(page.locator('[data-backpack-item][data-rarity=legendary]')).toHaveCSS(
     'border-top-color',
@@ -124,7 +124,7 @@ test('native forest rendering shows all five rarity beams from server-confirmed 
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  await expect(page.getByRole('button', { name: 'Inventory (I)' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
   const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
   const player = [...world.players.values()][0];
   const run = game.runtime.parties(world).run(player);
