@@ -1,6 +1,11 @@
 import { useRef, type ReactNode } from 'react';
 import { Box } from '@mui/material';
-import { GearTooltipStyled, BackpackSlotStyled, GearBadgeValueStyled } from './equipment.styles';
+import {
+  GearTooltipStyled,
+  BackpackSlotStyled,
+  GearBadgeValueStyled,
+  BACKPACK_SLOT_SIZE,
+} from './equipment.styles';
 import { ItemTooltip, type ItemTooltipView, type EquipmentBadgeView } from './ItemTooltip';
 import { GoldBalance } from './GoldBalance';
 import { INVENTORY_DRAG_PREFIX, inventoryDropProps, type InventoryDrop } from '../inventory-drag';
@@ -62,7 +67,7 @@ export function Backpack({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, 44px)',
+          gridTemplateColumns: `repeat(auto-fill, ${BACKPACK_SLOT_SIZE}px)`,
           gap: 0.5,
           mt: 0.5,
         }}

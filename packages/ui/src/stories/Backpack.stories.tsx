@@ -101,7 +101,7 @@ export const InventoryStats: StoryObj<typeof meta> = {
     return (
       <>
         <Button onClick={() => setExtraStats(!extraStats)}>Toggle extra stats</Button>
-        <GameWindow title='Inventory' modal={false} onClose={() => {}}>
+        <GameWindow title='Inventory' width={520} height={300} modal={false} onClose={() => {}}>
           <Box
             sx={{
               display: 'grid',

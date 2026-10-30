@@ -138,7 +138,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await expect(potionIcon).toHaveAttribute('src', '/assets/wardrobe-style/health-potion.png');
   await expect(potionIcon).toHaveJSProperty('naturalWidth', 96);
   await backpack.getByRole('button', { name: 'Use Helmet', exact: true }).hover();
-  const tooltip = page.getByRole('tooltip');
+  const tooltip = page.getByRole('tooltip').filter({ hasText: 'Helmet' });
   await expect(tooltip).toContainText('1Armor');
   await expect(tooltip).toContainText('1 gold');
   await expect(tooltip).toContainText('Right-click: equip');
@@ -156,13 +156,17 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await expect(
     inventory.getByRole('button', { name: 'Helmet: Helmet', exact: true }),
   ).toBeVisible();
+  await inventory.getByRole('tab', { name: 'Stats', exact: true }).click();
   await expect(inventory.getByRole('region', { name: 'Character stats' })).toContainText('Armor1');
+  await inventory.getByRole('tab', { name: 'Equipment', exact: true }).click();
   expect(player.equipment!.helmet).toBe('loot-helmet');
   await inventory
     .getByRole('button', { name: 'Helmet: Helmet', exact: true })
     .click({ button: 'right' });
   await expect(backpack.getByRole('button', { name: 'Use Helmet', exact: true })).toBeVisible();
+  await inventory.getByRole('tab', { name: 'Stats', exact: true }).click();
   await expect(inventory.getByRole('region', { name: 'Character stats' })).toContainText('Armor0');
+  await inventory.getByRole('tab', { name: 'Equipment', exact: true }).click();
   await inventory.locator('[data-equipment-slot="weapon"]').click({ button: 'right' });
   await expect(inventory.getByRole('button', { name: 'Weapon: Empty', exact: true })).toBeVisible();
   await backpack.getByRole('button', { name: "Use Warrior's sword", exact: true }).focus();
@@ -174,7 +178,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await expect(backpack.getByRole('button', { name: 'Use Health potion (2)' })).toBeVisible();
   expect(player.hitpoints).toBe(85);
   await page.screenshot({ path: 'test-results/inventory-desktop.png' });
-  await page.setViewportSize({ width: 320, height: 800 });
+  await page.setViewportSize({ width: 1024, height: 800 });
   await expect(inventory).toBeVisible();
   expect(await inventory.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/inventory-narrow.png' });

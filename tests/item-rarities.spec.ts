@@ -41,7 +41,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   }
   const uncommon = backpack.locator('[data-backpack-item=rarity-uncommon]');
   await uncommon.hover();
-  await expect(page.getByRole('tooltip')).toContainText('Uncommon');
+  await expect(page.getByRole('tooltip').filter({ hasText: 'Uncommon' })).toBeVisible();
   await page.screenshot({ path: 'test-results/item-rarities-inventory.png' });
   const legendary = backpack.locator('[data-backpack-item=rarity-legendary]');
   const original = structuredClone(player.backpack.find((item) => item.id === 'rarity-legendary')!);

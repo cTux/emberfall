@@ -38,7 +38,9 @@ test('native inventory drags equip compatible slots and swap gear without consum
   await expect(dialog.getByRole('button', { name: 'Helmet: Helmet', exact: true })).toBeVisible();
   expect(player.equipment!.helmet).toBe('loot-helmet');
   await expect(helmet).toHaveCount(0);
+  await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
   await expect(dialog.getByRole('region', { name: 'Character stats' })).toContainText('Armor1');
+  await dialog.getByRole('tab', { name: 'Equipment', exact: true }).click();
 
   // A full backpack can swap gear through the same authoritative action.
   player.backpack = Array.from({ length: 20 }, (_, index) => ({
