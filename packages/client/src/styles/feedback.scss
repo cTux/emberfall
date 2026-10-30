@@ -1,0 +1,57 @@
+.departure-countdown {
+  position: fixed;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  color: #ffdf95;
+  font-size: clamp(72px, 12vw, 128px);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow:
+    0 3px 8px #000,
+    0 0 24px #ffbd4266;
+}
+
+.departure-countdown span {
+  display: block;
+  animation: departure-pulse 1s ease-out both;
+}
+
+@keyframes departure-pulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  65% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .departure-countdown span {
+    animation: none;
+  }
+}
+
+.chat-danger {
+  color: #ff8794;
+}
+
+.chat-success {
+  color: #a1d5a8;
+}
+
+.chat-system {
+  color: #f4d35e;
+}
