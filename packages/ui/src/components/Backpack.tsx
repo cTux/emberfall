@@ -62,7 +62,7 @@ export function Backpack({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(44px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, 44px)',
           gap: 0.5,
           mt: 0.5,
         }}

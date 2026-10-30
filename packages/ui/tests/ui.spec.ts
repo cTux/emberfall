@@ -2,6 +2,36 @@ import { test, expect } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
 
+test('inventory slots stay fixed when extra stats add a scrollbar', async ({ page }, testInfo) => {
+  await page.goto(story('components-backpack--inventory-stats'));
+  const content = page.locator('.MuiDialogContent-root');
+  const slots = page.getByRole('region', { name: 'Your backpack' }).locator('button');
+  await expect(slots).toHaveCount(20);
+  const expectFixedSlots = async () => {
+    for (const slot of await slots.all()) {
+      await expect(slot).toHaveCSS('width', '44px');
+      await expect(slot).toHaveCSS('height', '44px');
+    }
+    expect(await content.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+      true,
+    );
+  };
+  await expectFixedSlots();
+  expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
+    false,
+  );
+  await page.getByRole('button', { name: 'Toggle extra stats' }).click();
+  await expect(page.getByText('Bonus stat 15')).toBeAttached();
+  expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
+    true,
+  );
+  await expectFixedSlots();
+  await page.screenshot({ path: testInfo.outputPath('inventory-fixed-slots.png') });
+  await page.getByRole('button', { name: 'Toggle extra stats' }).click();
+  await expect(page.getByText('Bonus stat 15')).toHaveCount(0);
+  await expectFixedSlots();
+});
+
 test('performance diagnostics stay compact with readable labels and all traces', async ({
   page,
 }, testInfo) => {
