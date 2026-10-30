@@ -1,13 +1,8 @@
-import { VillageSpeech } from './village-speech';
-import { prepareVillageFrame } from './village-frame';
-import { drawVillageLighting } from './village-lighting';
-import { drawEnvironment } from './environment-rendering';
-import { VillagePlayers } from './village-players';
-import { villageLayers } from './village-layers';
-import { drawVillageLayer } from './village-layer-rendering';
+import { VillageScene } from './village-scene';
+
 import { FrameBudget } from './frame-budget';
 import { createArenaInput } from './arena-input';
-import { abilityEffectOpacity } from './ability-effects';
+
 import { LootHints } from './loot-hints';
 import { drawLootHints } from './loot-hint-rendering';
 import { partyInteraction } from './interaction-targets';
@@ -22,24 +17,20 @@ import type { InteractionTarget } from './interaction-targets';
 
 import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
-import { drawHitboxes } from './hitboxes';
+
 import { PixiContext } from './rendering/pixi-context';
 import { PresentationWorld } from './presentation/world';
-import { villageImages, drawVillageBackground } from './village-background';
+import { villageImages } from './village-background';
 import { characterImages } from './characters';
 
 import { actorArt } from './art';
 
-import { companionCaster } from './companion';
-import { critterCaster } from './critters';
-
-import { drawNavigation } from './navigation';
 import { DamageMeter } from './DamageMeter';
 import { PerformanceGraph } from './PerformanceGraph';
 
 import { LocalMovement } from './local-movement';
 import { gameAudio } from './audio';
-import { createCritterMotion } from './critter-motion';
+
 import { useEffect, useRef } from 'react';
 import { useTheme } from '@mui/material';
 import type { RefObject } from 'react';
@@ -50,11 +41,11 @@ import { wrappedDelta } from '@emberfall/common';
 import { ARENA, FOREST, nearbyInteraction, inTrainingZone } from '@emberfall/core';
 import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
-import { castShadow } from './lighting';
+
 import { dayNight } from './day-night';
 
-import { forestRenderer, portalInteraction, drawPlayerAttack } from './forest';
-import { drawClassProjectiles, drawLootAndBlood } from './combat-effects';
+import { forestRenderer, portalInteraction } from './forest';
+
 import type { Preferences } from './preferences';
 
 export function Arena({
@@ -138,7 +129,6 @@ export function Arena({
     let lastSlashAt = -Infinity,
       lastHit = 0,
       lastWarning = 0;
-    const villageCritters = createCritterMotion();
     const snapshots = new SnapshotBuffer(playerId);
     const localMovement = new LocalMovement(playerId, (message) => sender.current(message));
     let previousHp = '';
@@ -153,8 +143,7 @@ export function Arena({
     });
     onCursorAim(input.currentAim);
     let hovered: InteractionTarget | null = null;
-    const villageSpeech = new VillageSpeech((text) => catSpoke.current(text));
-    const villagePlayers = new VillagePlayers();
+    const village = new VillageScene(playerId, (text) => catSpoke.current(text));
     let frame = 0;
     let gatheringClock: { activity: NonNullable<Player['gathering']>; offset: number } | undefined;
     let wardrobeOpenedAt = 0;
@@ -404,7 +393,7 @@ export function Arena({
         ? String(interactionInRange(hovered, authoritativePlayer))
         : '';
       if (local?.scene !== previousScene) {
-        villagePlayers.clear();
+        village.clear();
         previousScene = local?.scene;
       }
       const fps = budget.sample(now);
@@ -438,27 +427,13 @@ export function Arena({
         frame = requestAnimationFrame(draw);
         return;
       }
-      const villageFrame = prepareVillageFrame(view, local, now, quality.current, {
+      const villageFrame = village.prepare(view, local, now, quality.current, {
         width: el.width,
         height: el.height,
         scale,
       });
-      const {
-        background,
-        visibleScenery,
-        project,
-        portal,
-        portalTarget,
-        camera: { x: cameraX, y: cameraY, width: viewWidth, height: viewHeight },
-      } = villageFrame;
+      const { visibleScenery, portalTarget, cats } = villageFrame;
       Object.assign(element.dataset, villageFrame.diagnostics);
-      const critters = villageCritters(
-        now,
-        { x: cameraX, y: cameraY, width: viewWidth, height: viewHeight },
-        view.players.filter((player) => !player.scene && player.hitpoints > 0),
-        view.serverNow ?? now,
-      );
-      const cats = villageSpeech.targets(critters);
       input.targets = [
         ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
         ...cats,
@@ -486,139 +461,16 @@ export function Arena({
         ? String(interactionInRange(hovered, authoritativePlayer))
         : '';
 
-      ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
-      if (background)
-        drawVillageBackground(ctx, background, cameraX, cameraY, viewWidth, viewHeight);
-      else {
-        ctx.fillStyle = '#25392f';
-        ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
-      }
-      const training = view.training
-        ? {
-            ...view.training,
-            enemies: view.training.enemies.map((dummy) => ({
-              ...dummy,
-              ...project(dummy.x, dummy.y),
-            })),
-          }
-        : undefined;
-      const serverTime = view.serverNow ?? now;
-      if (training) {
-        drawClassProjectiles(
-          ctx,
-          training,
-          serverTime,
-          project,
-          quality.current.particles,
-          prefs.current,
-          playerId,
-        );
-      }
-      const players = view.players
-        .filter((p) => !p.scene)
-        .map((p) => ({
-          ...p,
-          ...project(p.x, p.y),
-          bear: p.bear ? { ...p.bear, ...project(p.bear.x, p.bear.y) } : undefined,
-        }));
-      for (const player of players)
-        drawPlayerAttack(
-          ctx,
-          player,
-          player.x,
-          player.y,
-          player.id === playerId ? now : serverTime,
-          quality.current.bloom,
-          !!training && inTrainingZone(player),
-          abilityEffectOpacity(prefs.current, playerId, player.id),
-        );
-      if (training)
-        drawLootAndBlood(ctx, training, serverTime, project, {
-          x: cameraX,
-          y: cameraY,
-          width: viewWidth,
-          height: viewHeight,
-        });
-      // Use the reconciled positions consistently for bodies, lanterns and shadows.
-      if (quality.current.shadows) for (const object of visibleScenery) castShadow(ctx, object);
-      const dynamic = villagePlayers.prepare(ctx, players, playerId, now, serverTime);
-      for (const critter of critters) {
-        const caster = critterCaster(critter);
-        if (caster) dynamic.push(caster);
-      }
-      for (const player of players) {
-        if (!player.bear) continue;
-        const point = player.bear;
-        const caster = companionCaster(
-          player.bear,
-          point.x,
-          point.y,
-          view.serverNow ?? now,
-          `bear:${player.id}`,
-        );
-        if (caster) dynamic.push(caster);
-      }
-      if (quality.current.shadows) for (const caster of dynamic) castShadow(ctx, caster);
-      const layers = villageLayers(visibleScenery, players, critters, training, portal);
-      const outlines = outlinedTargets();
-      const damageByTarget = new Map(training?.damage.map((hit) => [hit.target, hit]));
-      const layerFrame = {
-        view,
-        local,
-        playerId,
-        now,
-        serverTime,
-        quality: quality.current,
+      const drawn = village.draw(ctx, villageFrame, {
         preferences: prefs.current,
+        cycle,
         highlightInteractions,
-        portal,
-        portalTarget,
-        outlines,
-        damageByTarget,
+        outlines: outlinedTargets,
         wardrobeOpen: interaction.current?.id === 'wardrobe',
         wardrobeOpenedAt,
-      };
-      for (const layer of layers) {
-        renderer.occlusion = !!local && layer.y > local.y + 15;
-        if (!layer.player) {
-          drawVillageLayer(ctx, layer, layerFrame);
-          continue;
-        }
-        villagePlayers.draw(ctx, layer.player!, layerFrame);
-      }
-      renderer.occlusion = false;
-      if (training) {
-        if (prefs.current.damageNumbers)
-          drawDamageNumbers(
-            ctx,
-            training.damage,
-            project,
-            serverTime,
-            prefs.current.hideOtherPlayerDamageNumbers ? playerId : undefined,
-          );
-      }
-      drawVillageLighting(ctx, villageFrame, dynamic, players, villagePlayers, cycle);
-      drawEnvironment(ctx, villageFrame.camera, now, quality.current, cycle.daylight);
-      drawNavigation(ctx, view, playerId);
+      });
       drawPrompt();
-      element.dataset.catSpeech = villageSpeech.draw(
-        ctx,
-        players,
-        critters,
-        visibleScenery,
-        now,
-        serverTime,
-      );
-      element.dataset.debugHitboxes = String(
-        prefs.current.debugHitboxes
-          ? drawHitboxes(ctx, view, false, {
-              x: cameraX,
-              y: cameraY,
-              width: viewWidth,
-              height: viewHeight,
-            })
-          : 0,
-      );
+      Object.assign(element.dataset, village.overlays(ctx, villageFrame, drawn, prefs.current));
       if (local && prefs.current.lootHints) drawLootHints(ctx, lootHints.current.hints, local, now);
       renderer.present();
       frame = requestAnimationFrame(draw);
@@ -661,4 +513,3 @@ export function Arena({
     </>
   );
 }
-import { drawDamageNumbers } from './damage-text';

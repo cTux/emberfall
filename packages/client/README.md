@@ -81,6 +81,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   `village-lighting.ts` draws world lights from those frame inputs. `VillageSpeech`
   owns local cat speech and dialogue overlays. `environment-rendering.ts` shares
   the same particle/fog/atmosphere/vignette order between forest and village.
+- `VillageScene` composes per-mount village players, critter motion and speech,
+  prepares render frames and preserves the drawing/overlay order. Arena retains
+  input selection and action dispatch, using scene targets as presentation data.
 - `Arena.tsx` coordinates camera, audio and world rendering. Shared UI
   components come from the shared `@emberfall/ui` package; the host owns
   actions and subscriptions.
