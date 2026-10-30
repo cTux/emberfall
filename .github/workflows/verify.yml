@@ -32,8 +32,6 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - name: Select affected desktop browser scenarios
-        # shortcut: PR browsers paused for the refactor queue; remove this condition to restore affected checks.
-        if: github.event_name == 'workflow_dispatch'
         id: browsers
         run: node scripts/ci-browser-tests.ts select > "$RUNNER_TEMP/browser-selection.json"
       - run: pnpm exec playwright install --with-deps chromium
