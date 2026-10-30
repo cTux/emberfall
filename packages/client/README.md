@@ -56,6 +56,9 @@ Configure the server as described in [operations](../../docs/operations.md#steam
   keyboard subscriptions, browser preference persistence and world chat binding.
   `GamePanels.tsx` composes controlled lazy panel content; `Game.tsx` retains
   session-driven window state and interaction commands.
+- `settings-controls.ts` and `tactics-controls.ts` declare typed control labels,
+  choices and relationships. Settings graphics and tactics priority lists are
+  controlled views; their hosts retain preference updates and server commands.
 - `snapshots.ts` interpolates confirmed remote state. `local-movement.ts`
   predicts bounded local movement and casts, reconciles acknowledgements and
   replays pending input. `local-attacks.ts` owns cast identity and swing timing;
