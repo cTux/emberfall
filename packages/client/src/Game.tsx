@@ -1,42 +1,27 @@
+import { useGameInteractions } from './useGameInteractions';
+import { GamePanels } from './GamePanels';
+import { useGameHotkeys } from './useGameHotkeys';
+import { useGamePreferences } from './useGamePreferences';
+import { useWorldChat } from './useWorldChat';
 import { GameControls } from './GameControls';
 import { PartyHud } from './PartyHud';
 import { SceneOverlay } from './SceneOverlay';
-import { gamePanel, type GameMenu } from './game-panels';
+import { type GameMenu } from './game-panels';
 import { WorldBrowser } from './WorldBrowser';
-import { ResetTalentsPanel, WardrobePanel } from './CharacterPanels';
-import { LeavePanel, PortalPanel } from './WorldPanels';
 import { useGameSession } from './useGameSession';
-import { BULLSEYE } from '@emberfall/core';
-import type { AccountView, ChatMessage, WorldSummary } from '@emberfall/common';
+import type { AccountView, WorldSummary } from '@emberfall/common';
 import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
 import { INNKEEPER } from '@emberfall/core';
-import { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, useEffect, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
-import type { Interaction } from './effects';
-import { GameWindow } from '@emberfall/ui';
-import { Box, Stack, Typography } from '@mui/material';
 import type { Preferences } from './preferences';
 import type { Dispatch, SetStateAction } from 'react';
 import { useChat } from './ChatProvider';
-import { loadGraphics } from './graphics';
 
 const Arena = lazy(() => import('./Arena').then((module) => ({ default: module.Arena })));
 const WeaponActionBar = lazy(() =>
   import('./WeaponActionBar').then((module) => ({ default: module.WeaponActionBar })),
 );
-const Talents = lazy(() => import('./Talents').then((module) => ({ default: module.Talents })));
-const Tactics = lazy(() => import('./Tactics').then((module) => ({ default: module.Tactics })));
-const Equipment = lazy(() =>
-  import('./equipment-view').then((module) => ({ default: module.Equipment })),
-);
-const Trading = lazy(() =>
-  import('./equipment-view').then((module) => ({ default: module.Trading })),
-);
-const Storehouse = lazy(() =>
-  import('./Storehouse').then((module) => ({ default: module.Storehouse })),
-);
-const Codex = lazy(() => import('./Codex').then((module) => ({ default: module.Codex })));
-const Settings = lazy(() => import('./Settings').then((module) => ({ default: module.Settings })));
 
 export function Game({
   account,
@@ -54,7 +39,7 @@ export function Game({
   setPreferences: Dispatch<SetStateAction<Preferences>>;
 }) {
   const steam = account.mode === 'steam';
-  const { reportError, configureChat } = useChat();
+  const { reportError } = useChat();
   const { status, latency, worlds, world, playerId, pending, retry, send, act } = useGameSession({
     steam,
     refresh,
@@ -66,7 +51,7 @@ export function Game({
       }
       setMenu(null);
       if (event === 'joined') {
-        setCatMessages([]);
+        clearCatMessages();
         setJoinPassword('');
         setSelected(null);
       }
@@ -80,82 +65,18 @@ export function Game({
       }
     },
   });
-  const interaction = useRef<Interaction | null>(null);
-  const cursorAim = useRef<(() => { aimX: number; aimY: number }) | null>(null);
-  const setCursorAim = useCallback((reader: (() => { aimX: number; aimY: number }) | null) => {
-    cursorAim.current = reader;
-  }, []);
   const [displayedHp, setDisplayedHp] = useState<Record<string, number>>({});
-  const [catMessages, setCatMessages] = useState<
-    { worldId: string; afterId?: string; message: ChatMessage }[]
-  >([]);
-  const catSpoke = (text: string) => {
-    if (!world) return;
-    setCatMessages((messages) =>
-      [
-        ...messages.filter((entry) => entry.worldId === world.id),
-        {
-          worldId: world.id,
-          afterId: world.chat?.at(-1)?.id,
-          message: {
-            id: crypto.randomUUID(),
-            playerId: '',
-            name: 'Cat',
-            text,
-            dimension: 'village',
-          },
-        },
-      ].slice(-10),
-    );
-  };
-  const chatMessages = useMemo(() => {
-    const localChatAfter = (id?: string) =>
-      catMessages
-        .filter((entry) => entry.worldId === world?.id && entry.afterId === id)
-        .map((entry) => entry.message);
-    return [
-      ...localChatAfter(),
-      ...(world?.chat ?? []).flatMap((message) => [message, ...localChatAfter(message.id)]),
-    ];
-  }, [world, catMessages]);
-  const [legacyName, setName] = useState(() => {
-    try {
-      return localStorage.getItem('emberfall-new.nickname')?.slice(0, 24) || 'Wanderer';
-    } catch {
-      return 'Wanderer';
-    }
-  });
-  const name = steam ? account.nickname! : legacyName;
+  const { name, setName, graphics, setGraphics } = useGamePreferences(
+    preferences,
+    steam,
+    account.nickname,
+  );
   const [menu, setMenu] = useState<GameMenu | null>(null);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [building, setBuilding] = useState('');
   const [settingsTab, setSettingsTab] = useState('gameplay');
   const [browserOpen, setBrowserOpen] = useState(true);
   const [deathWindow, setDeathWindow] = useState(true);
-  useEffect(() => {
-    document.body.dataset.customCursor = String(preferences.customCursor);
-    document.body.dataset.cursorSize = String(preferences.cursorSize);
-    try {
-      localStorage.setItem('emberfall-new.preferences', JSON.stringify(preferences));
-    } catch {
-      /* Session preferences still apply. */
-    }
-  }, [preferences]);
-  const [graphics, setGraphics] = useState(loadGraphics);
-  useEffect(() => {
-    try {
-      localStorage.setItem('emberfall-new.graphics', JSON.stringify(graphics));
-    } catch {
-      /* Settings still apply to this session. */
-    }
-  }, [graphics]);
-  useEffect(() => {
-    try {
-      if (!steam) localStorage.setItem('emberfall-new.nickname', name);
-    } catch {
-      /* Storage may be disabled. */
-    }
-  }, [name, steam]);
   const [joinPassword, setJoinPassword] = useState('');
   const [selected, setSelected] = useState<WorldSummary | null>(null);
   const [tab, setTab] = useState<'browse' | 'create'>('browse');
@@ -173,168 +94,16 @@ export function Game({
   }, [tradingNpcId, send]);
   const me = world?.players.find((p) => p.id === playerId);
   const scene = world?.scene;
-  useEffect(() => {
-    configureChat({
-      worldId: world?.id,
-      scene: me?.scene ?? 'village',
-      messages: chatMessages,
-      isVisible: (message) =>
-        message.excludedPlayerId !== playerId &&
-        (!message.dimension || message.dimension === (me?.scene ?? 'village')),
-      send,
-      disabled: !world || status !== 'Connected',
-    });
-  }, [world, chatMessages, me?.scene, playerId, status, send, configureChat]);
-  useEffect(() => () => configureChat(null), [configureChat]);
-  const castTalent = (slot: number, automatic = false) => {
-    const aim = cursorAim.current?.();
-    if (!me || unavailable || !aim) return;
-    send({
-      type: 'talentCast',
-      automatic,
-      ...aim,
-      slot,
-      classId: me.classId ?? 'warrior',
-      epoch: me.scene === 'forest' ? (scene?.id ?? '') : 'lobby',
-    });
-  };
-  const interact = (source = interaction.current) => {
-    if (me?.gathering && interaction.current?.activate && source?.id.startsWith('gather:')) {
-      interaction.current.activate();
-      return;
-    }
-    if (!source) return;
-    if (source.activate) {
-      source.activate();
-      return;
-    }
-    if (source.id.startsWith('party:')) {
-      send({ type: 'partyInteract', targetId: source.id.slice(6) });
-      return;
-    }
-    if (source.id.startsWith('gather:')) {
-      if (me)
-        send({
-          type: 'gather',
-          nodeId: source.id.slice(7),
-          epoch: me.scene === 'forest' ? (world?.scene?.id ?? '') : 'lobby',
-        });
-    } else if (source.id === 'return') send({ type: 'returnLobby' });
-    else if (source.id === BULLSEYE?.id) setMenu('resetTalents');
-    else if (source.id === 'wardrobe') setMenu('wardrobe');
-    else if (source.id === 'portal') setMenu('portal');
-    else {
-      setBuilding(source.name);
-      setMenu('building');
-    }
-  };
-  useEffect(() => {
-    const key = (event: KeyboardEvent) => {
-      if (event.code === 'F1') event.preventDefault();
-      if (event.repeat) return;
-      const typing =
-        event.target instanceof Element &&
-        !!event.target.closest('input, textarea, select, [contenteditable=true]');
-      if (
-        event.code === 'KeyT' &&
-        world &&
-        !typing &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        !event.shiftKey &&
-        (menu === 'tactics' ||
-          (!menu && !document.querySelector('[role="dialog"][aria-modal="true"]')))
-      ) {
-        event.preventDefault();
-        setMenu(menu === 'tactics' ? null : 'tactics');
-        return;
-      }
-      if (
-        event.code === 'KeyN' &&
-        world &&
-        !typing &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        !event.shiftKey &&
-        (!menu || menu === 'talents')
-      ) {
-        event.preventDefault();
-        setMenu(menu === 'talents' ? null : 'talents');
-        return;
-      }
-      if (
-        /^Digit[1-4]$/.test(event.code) &&
-        world &&
-        !typing &&
-        (!menu || menu === 'talents') &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey
-      ) {
-        event.preventDefault();
-        castTalent(Number(event.code.slice(-1)) - 1);
-        return;
-      }
-      if (event.key === 'Escape' && menu === 'talents') {
-        event.preventDefault();
-        setMenu(null);
-        return;
-      }
-      if (
-        event.code === 'KeyI' &&
-        world &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        !event.shiftKey &&
-        !typing &&
-        (menu === 'equipment' ||
-          (!menu && !document.querySelector('[role="dialog"][aria-modal="true"]')))
-      ) {
-        event.preventDefault();
-        setMenu(menu === 'equipment' ? null : 'equipment');
-        return;
-      }
-      if (
-        world &&
-        !menu &&
-        !typing &&
-        !document.querySelector('[role="dialog"][aria-modal="true"]')
-      ) {
-        const option =
-          event.code === 'KeyF' ? 'autoAttack' : event.code === 'KeyG' ? 'autoTarget' : null;
-        if (option) {
-          event.preventDefault();
-          setPreferences((p) => ({ ...p, [option]: !p[option] }));
-        }
-      }
-      if (
-        (event.code === 'F1' || event.key === 'Escape') &&
-        !typing &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
-        !event.shiftKey &&
-        ((event.code === 'F1' && menu === 'codex') ||
-          (!menu && !document.querySelector('[role="dialog"][aria-modal="true"]')))
-      ) {
-        event.preventDefault();
-        setMenu(event.code === 'F1' ? (menu === 'codex' ? null : 'codex') : 'settings');
-        return;
-      }
-      if (
-        event.code === 'KeyE' &&
-        !menu &&
-        !document.querySelector('[role="dialog"][aria-modal="true"]') &&
-        !typing
-      )
-        interact();
-    };
-    window.addEventListener('keydown', key);
-    return () => window.removeEventListener('keydown', key);
+  const { catSpoke, clearCatMessages } = useWorldChat({ world, me, playerId, status, send });
+  const { interaction, setCursorAim, castTalent, interact } = useGameInteractions({
+    me,
+    world,
+    unavailable,
+    send,
+    setMenu,
+    setBuilding,
   });
+  useGameHotkeys({ world: !!world, menu, setMenu, setPreferences, castTalent, interact });
   const boss =
     me?.scene === 'forest' && scene?.phase === 'active'
       ? scene.enemies.find((enemy) => enemy.id === scene.bossId && enemy.hitpoints > 0)
@@ -435,103 +204,31 @@ export function Game({
           onReturnLobby={() => send({ type: 'returnLobby' })}
         />
       </section>
-      {menu && (
-        <Box
-          sx={
-            menu === 'talents'
-              ? {
-                  position: 'absolute',
-                  zIndex: 5,
-                  inset: '32px 16px auto',
-                  pointerEvents: 'none',
-                  '& > section': { pointerEvents: 'auto' },
-                }
-              : undefined
-          }
-        >
-          <GameWindow
-            key={menu}
-            {...gamePanel(menu, building, !!tradingNpcId)}
-            onClose={() => setMenu(null)}
-          >
-            <DeferredContent key={menu}>
-              <Stack spacing={2}>
-                {menu === 'resetTalents' && me ? (
-                  <ResetTalentsPanel
-                    me={me}
-                    unavailable={unavailable}
-                    send={send}
-                    onClose={() => setMenu(null)}
-                  />
-                ) : menu === 'talents' && me ? (
-                  <Talents player={me} send={send} />
-                ) : menu === 'codex' ? (
-                  <Codex />
-                ) : menu === 'tactics' && me ? (
-                  <Tactics player={me} send={send} disabled={unavailable} />
-                ) : menu === 'equipment' && me ? (
-                  <Equipment player={me} send={send} />
-                ) : menu === 'settings' ? (
-                  <Settings
-                    account={account}
-                    onRename={() => {
-                      setMenu(null);
-                      rename();
-                    }}
-                    onLogout={() => {
-                      void logout();
-                    }}
-                    tab={settingsTab}
-                    onTab={setSettingsTab}
-                    preferences={preferences}
-                    setPreferences={setPreferences}
-                    graphics={graphics}
-                    setGraphics={setGraphics}
-                  />
-                ) : menu === 'exit' ? (
-                  <LeavePanel
-                    me={me}
-                    unavailable={unavailable}
-                    send={send}
-                    act={act}
-                    onClose={() => setMenu(null)}
-                  />
-                ) : menu === 'wardrobe' ? (
-                  <WardrobePanel me={me} unavailable={unavailable} send={send} scene={scene} />
-                ) : menu === 'building' && tradingNpcId && me && world?.merchant ? (
-                  <Trading
-                    key={tradingNpcId}
-                    player={me}
-                    merchant={
-                      tradingNpcId === 'craftsman' ? world.merchant.craftsman! : world.merchant
-                    }
-                    craftsman={tradingNpcId === 'craftsman'}
-                    send={send}
-                  />
-                ) : menu === 'building' && building === 'Storehouse' && me ? (
-                  <Storehouse player={me} send={send} />
-                ) : menu === 'building' ? (
-                  <Typography>{building} services are coming in a future update.</Typography>
-                ) : (
-                  <PortalPanel
-                    world={world}
-                    scene={scene}
-                    playerId={playerId}
-                    me={me}
-                    departure={departure}
-                    unavailable={unavailable}
-                    send={send}
-                    canRegenerate={canRegenerate}
-                    difficulty={difficulty}
-                    setDifficulty={setDifficulty}
-                    onClose={() => setMenu(null)}
-                  />
-                )}
-              </Stack>
-            </DeferredContent>
-          </GameWindow>
-        </Box>
-      )}
+      <GamePanels
+        menu={menu}
+        building={building}
+        tradingNpcId={tradingNpcId}
+        me={me}
+        world={world}
+        playerId={playerId}
+        unavailable={unavailable}
+        send={send}
+        act={act}
+        account={account}
+        rename={rename}
+        logout={logout}
+        settingsTab={settingsTab}
+        setSettingsTab={setSettingsTab}
+        preferences={preferences}
+        setPreferences={setPreferences}
+        graphics={graphics}
+        setGraphics={setGraphics}
+        departure={departure}
+        canRegenerate={canRegenerate}
+        difficulty={difficulty}
+        setDifficulty={setDifficulty}
+        onClose={() => setMenu(null)}
+      />
     </main>
   );
 }

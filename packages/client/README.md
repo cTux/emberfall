@@ -52,6 +52,10 @@ Configure the server as described in [operations](../../docs/operations.md#steam
 - `GameControls.tsx`, `PartyHud.tsx` and `SceneOverlay.tsx` render controlled
   navigation, party vitals and scene/death feedback. Their callbacks return
   decisions to the host; they do not own network or prediction state.
+- `useGameHotkeys.ts`, `useGamePreferences.ts` and `useWorldChat.ts` own
+  keyboard subscriptions, browser preference persistence and world chat binding.
+  `GamePanels.tsx` composes controlled lazy panel content; `Game.tsx` retains
+  session-driven window state and interaction commands.
 - `snapshots.ts` interpolates confirmed remote state. `local-movement.ts`
   predicts bounded local movement and casts, reconciles acknowledgements and
   replays pending input. Hits, health, loot and progress remain authoritative.
