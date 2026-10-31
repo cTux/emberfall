@@ -32,7 +32,7 @@ test('benchmark worker refuses an existing database before startup', async (t) =
   });
   const closed = new Promise<void>((resolve) => child.once('close', () => resolve()));
   try {
-    const [code] = await once(child, 'exit', {
+    const [code] = await once(child, 'close', {
       signal: AbortSignal.any([t.signal, AbortSignal.timeout(10000)]),
     });
     assert.equal(code, 1);
