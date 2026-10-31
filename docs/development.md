@@ -93,6 +93,14 @@ see [serving and deployment](operations.md#deployment-and-cache-consistency).
 
 ## Artwork delivery
 
+`scripts/package-player-art.mjs` declares each class's source rows and approved
+walk directions. `scripts/art/pack-player-frames.mjs` isolates and packs frames;
+`match-player-palette.mjs` matches walking colors to the standing palette on the
+same browser canvas. The coordinator owns file writes, browser lifetime and
+handle disposal. When refactoring this pipeline, run old and new scripts against
+disposable source copies and compare all four atlas PNGs and JSON files before
+touching shipped assets. Keep the authored handedness and calibration exceptions.
+
 Apply the item/entity artwork rule in [AGENTS.md](../AGENTS.md) when adding or
 changing game content. Use the existing art as a style reference and the
 [client skill](../.agents/skills/emberfall-new-client/SKILL.md) for generation
