@@ -95,6 +95,93 @@ export function GamePanels({
   onClose: () => void;
 }) {
   const scene = world?.scene;
+  const portal = () => {
+    return (
+      <PortalPanel
+        world={world}
+        scene={scene}
+        playerId={playerId}
+        me={me}
+        departure={departure}
+        unavailable={unavailable}
+        send={send}
+        canRegenerate={canRegenerate}
+        difficulty={difficulty}
+        setDifficulty={setDifficulty}
+        onClose={onClose}
+      />
+    );
+  };
+
+  const panels: Record<GameMenu, () => import('react').ReactNode> = {
+    resetTalents: () => {
+      return me ? (
+        <ResetTalentsPanel me={me} unavailable={unavailable} send={send} onClose={onClose} />
+      ) : (
+        portal()
+      );
+    },
+    talents: () => {
+      return me ? <Talents player={me} send={send} /> : portal();
+    },
+    codex: () => {
+      return <Codex />;
+    },
+    tactics: () => {
+      return me ? <Tactics player={me} send={send} disabled={unavailable} /> : portal();
+    },
+    equipment: () => {
+      return me ? <Equipment player={me} send={send} /> : portal();
+    },
+    settings: () => {
+      return (
+        <Settings
+          account={account}
+          onRename={() => {
+            onClose();
+            rename();
+          }}
+          onLogout={() => {
+            void logout();
+          }}
+          tab={settingsTab}
+          onTab={setSettingsTab}
+          preferences={preferences}
+          setPreferences={setPreferences}
+          graphics={graphics}
+          setGraphics={setGraphics}
+        />
+      );
+    },
+    exit: () => {
+      return (
+        <LeavePanel me={me} unavailable={unavailable} send={send} act={act} onClose={onClose} />
+      );
+    },
+    wardrobe: () => {
+      return <WardrobePanel me={me} unavailable={unavailable} send={send} scene={scene} />;
+    },
+    building: () => {
+      if (tradingNpcId && me && world?.merchant) {
+        return (
+          <Trading
+            key={tradingNpcId}
+            player={me}
+            merchant={tradingNpcId === 'craftsman' ? world.merchant.craftsman! : world.merchant}
+            craftsman={tradingNpcId === 'craftsman'}
+            send={send}
+          />
+        );
+      }
+
+      if (building === 'Storehouse' && me) {
+        return <Storehouse player={me} send={send} />;
+      }
+
+      return <Typography>{building} services are coming in a future update.</Typography>;
+    },
+    portal,
+  };
 
   return (
     menu && (
@@ -113,79 +200,7 @@ export function GamePanels({
       >
         <GameWindow key={menu} {...gamePanel(menu, building, !!tradingNpcId)} onClose={onClose}>
           <DeferredContent key={menu}>
-            <Stack spacing={2}>
-              {menu === 'resetTalents' && me ? (
-                <ResetTalentsPanel
-                  me={me}
-                  unavailable={unavailable}
-                  send={send}
-                  onClose={onClose}
-                />
-              ) : menu === 'talents' && me ? (
-                <Talents player={me} send={send} />
-              ) : menu === 'codex' ? (
-                <Codex />
-              ) : menu === 'tactics' && me ? (
-                <Tactics player={me} send={send} disabled={unavailable} />
-              ) : menu === 'equipment' && me ? (
-                <Equipment player={me} send={send} />
-              ) : menu === 'settings' ? (
-                <Settings
-                  account={account}
-                  onRename={() => {
-                    onClose();
-                    rename();
-                  }}
-                  onLogout={() => {
-                    void logout();
-                  }}
-                  tab={settingsTab}
-                  onTab={setSettingsTab}
-                  preferences={preferences}
-                  setPreferences={setPreferences}
-                  graphics={graphics}
-                  setGraphics={setGraphics}
-                />
-              ) : menu === 'exit' ? (
-                <LeavePanel
-                  me={me}
-                  unavailable={unavailable}
-                  send={send}
-                  act={act}
-                  onClose={onClose}
-                />
-              ) : menu === 'wardrobe' ? (
-                <WardrobePanel me={me} unavailable={unavailable} send={send} scene={scene} />
-              ) : menu === 'building' && tradingNpcId && me && world?.merchant ? (
-                <Trading
-                  key={tradingNpcId}
-                  player={me}
-                  merchant={
-                    tradingNpcId === 'craftsman' ? world.merchant.craftsman! : world.merchant
-                  }
-                  craftsman={tradingNpcId === 'craftsman'}
-                  send={send}
-                />
-              ) : menu === 'building' && building === 'Storehouse' && me ? (
-                <Storehouse player={me} send={send} />
-              ) : menu === 'building' ? (
-                <Typography>{building} services are coming in a future update.</Typography>
-              ) : (
-                <PortalPanel
-                  world={world}
-                  scene={scene}
-                  playerId={playerId}
-                  me={me}
-                  departure={departure}
-                  unavailable={unavailable}
-                  send={send}
-                  canRegenerate={canRegenerate}
-                  difficulty={difficulty}
-                  setDifficulty={setDifficulty}
-                  onClose={onClose}
-                />
-              )}
-            </Stack>
+            <Stack spacing={2}>{panels[menu]()}</Stack>
           </DeferredContent>
         </GameWindow>
       </Box>

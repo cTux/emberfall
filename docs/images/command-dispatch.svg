@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="230" viewBox="0 0 840 230" role="img" aria-labelledby="title description">
+  <title id="title">Typed command dispatch concept preview</title>
+  <desc id="description">A command key selects a handler. Each handler declares meaningful parameter names and retains its own side effects.</desc>
+  <rect width="840" height="230" rx="12" fill="#172923"/>
+  <g fill="#efdfbc" font-family="monospace" font-size="18">
+    <text x="28" y="40">Concept preview: dispatch by one key</text>
+    <text x="28" y="85">methods[method](x, y)</text>
+    <text x="350" y="85">moveTo(x, y)</text>
+    <text x="350" y="120">lineTo(x, y)</text>
+    <text x="350" y="155">arc(x, y, radius, startAngle, endAngle)</text>
+    <text x="28" y="205" fill="#aad7b5">Named parameters · typed keys · preserved state and defaults</text>
+  </g>
+  <path d="M270 80h55m-10-7 10 7-10 7" fill="none" stroke="#aad7b5" stroke-width="2"/>
+</svg>

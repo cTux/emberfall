@@ -26,6 +26,31 @@ const names = [
   'warden',
 ];
 const actors = names.map(actorArt);
+const animalFrames = new Map([
+  ['fallen', 5],
+  ['attack', 4],
+  ['idle', 0],
+]);
+const bearFrames = new Map<string, (clock: number) => number>([
+  [
+    'fallen',
+    () => {
+      return 7;
+    },
+  ],
+  [
+    'attack',
+    (clock) => {
+      return 5 + (Math.floor(clock / 150) % 2);
+    },
+  ],
+  [
+    'idle',
+    () => {
+      return 0;
+    },
+  ],
+]);
 
 export function drawAssetGalleryFrame(
   ctx: CanvasRenderingContext2D,
@@ -69,13 +94,7 @@ export function drawAssetGalleryFrame(
       ctx,
       animalArt,
       i,
-      action === 'fallen'
-        ? 5
-        : action === 'attack'
-          ? 4
-          : action === 'idle'
-            ? 0
-            : 1 + (Math.floor(clock / 150) % 3),
+      animalFrames.get(action) ?? 1 + (Math.floor(clock / 150) % 3),
       55 + i * 230,
       425,
       120,
@@ -84,14 +103,7 @@ export function drawAssetGalleryFrame(
     ctx.fillText(['Boar', 'Cat', 'Chicken', 'Raccoon'][i], 115 + i * 230, 565);
   }
 
-  const bearFrame =
-    action === 'fallen'
-      ? 7
-      : action === 'attack'
-        ? 5 + (Math.floor(clock / 150) % 2)
-        : action === 'idle'
-          ? 0
-          : 1 + (Math.floor(clock / 150) % 4);
+  const bearFrame = bearFrames.get(action)?.(clock) ?? 1 + (Math.floor(clock / 150) % 4);
   drawArt(ctx, bearArt, bearFrame % 4, Math.floor(bearFrame / 4), 980, 440, 110, 110);
   ctx.fillText('Bear cub', 1035, 565);
   const door = [0, 0, 1, 2, 3, 3, 2, 1][Math.floor(clock / 220) % 8];

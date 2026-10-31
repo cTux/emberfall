@@ -73,6 +73,25 @@ The examples illustrate source layout; they are not gameplay captures.
 
 ### Other strict checks
 
+#### Dispatch lint
+
+`emberfall/prefer-dispatch` uses the local
+[`dispatch-lint.mjs`](../../scripts/dispatch-lint.mjs) plugin in the shared Oxlint
+configuration. It rejects runs of three or more `===` branches comparing the
+same identifier or noncomputed property path to string or number literals in
+an `if`/`else if` or ternary chain, including reversed comparisons. It reports
+once per run and has no automatic fix: preserving narrowing, defaults and
+side effects requires review. The rule runs in editors, `pnpm lint` and CI.
+
+The broader [dispatch-table convention](code-structure.md#dispatch-tables)
+also covers suitable switches and separate early-return branches. Those,
+compound guards, computed keys, optional chains and range checks remain manual
+review decisions. Tests exercise both rejected cascades and accepted tables,
+guards, ranges and calls in
+[`dispatch-lint.test.ts`](../../tests/dispatch-lint.test.ts).
+
+#### Type and runtime checks
+
 Selected rules additionally require immutable bindings when possible, block-scoped
 declarations, consolidated imports, explicit type imports, exhaustive union
 switches and throwable errors. Strict equality permits the conventional

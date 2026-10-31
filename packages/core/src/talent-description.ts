@@ -1,5 +1,10 @@
 import type { TalentNode } from './talent-tree.ts';
 import { TALENT_NAMES } from './talent-catalog.ts';
+const wounds = new Map([
+  ['warrior', 'Bleed'],
+  ['ranger', 'Poison'],
+  ['mage', 'Burn'],
+]);
 /** Tooltips describe total effects at each rank, never an extra permanent stat. */
 export function talentDescription(node: Readonly<TalentNode>) {
   const names = TALENT_NAMES[node.classId];
@@ -7,14 +12,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
     return names[column][tier * 2 + 1];
   };
 
-  const wound =
-    node.classId === 'warrior'
-      ? 'Bleed'
-      : node.classId === 'ranger'
-        ? 'Poison'
-        : node.classId === 'mage'
-          ? 'Burn'
-          : 'Roots';
+  const wound = wounds.get(node.classId) ?? 'Roots';
 
   if (node.classId === 'druid' && node.column === 1) {
     return [

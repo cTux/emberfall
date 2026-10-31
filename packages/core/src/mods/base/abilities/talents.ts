@@ -1,5 +1,10 @@
 import type { AbilityDefinition } from '../../../content/contracts.ts';
 import { TALENT_NAMES } from '../../../talent-catalog.ts';
+const attackKinds = new Map<string, AbilityDefinition['kind']>([
+  ['warrior', 'slash'],
+  ['ranger', 'arrow'],
+  ['mage', 'fireball'],
+]);
 export const TALENT_ABILITIES: readonly AbilityDefinition[] = Object.entries(TALENT_NAMES).flatMap(
   ([classId, columns]) => {
     return columns.flatMap((names, column) => {
@@ -9,14 +14,7 @@ export const TALENT_ABILITIES: readonly AbilityDefinition[] = Object.entries(TAL
           name: names[row],
           classId,
           talentSlot: column * 4 + tier,
-          kind:
-            classId === 'warrior'
-              ? 'slash'
-              : classId === 'ranger'
-                ? 'arrow'
-                : classId === 'mage'
-                  ? 'fireball'
-                  : 'roots',
+          kind: attackKinds.get(classId) ?? 'roots',
           range: classId === 'warrior' ? [125, 110, 185, 85][tier] : 700,
           manualRange: classId === 'warrior' ? [125, 110, 185, 85][tier] : 1000,
           damage: [1.5, 1.35, 1.8, 1.8][tier],

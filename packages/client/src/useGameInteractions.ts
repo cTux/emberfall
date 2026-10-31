@@ -73,14 +73,30 @@ export function useGameInteractions({
           epoch: me.scene === 'forest' ? (world?.scene?.id ?? '') : 'lobby',
         });
       }
-    } else if (source.id === 'return') {
-      send({ type: 'returnLobby' });
-    } else if (source.id === BULLSEYE?.id) {
+
+      return;
+    }
+
+    if (source.id === BULLSEYE?.id) {
       setMenu('resetTalents');
-    } else if (source.id === 'wardrobe') {
-      setMenu('wardrobe');
-    } else if (source.id === 'portal') {
-      setMenu('portal');
+
+      return;
+    }
+
+    const methods: Readonly<Record<string, () => void>> = {
+      return: () => {
+        send({ type: 'returnLobby' });
+      },
+      wardrobe: () => {
+        setMenu('wardrobe');
+      },
+      portal: () => {
+        setMenu('portal');
+      },
+    };
+
+    if (Object.hasOwn(methods, source.id)) {
+      methods[source.id]();
     } else {
       setBuilding(source.name);
       setMenu('building');

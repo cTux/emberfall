@@ -9,39 +9,63 @@ export class PathCommands extends DrawingState {
   }
 
   closePath() {
-    this.path.add('closePath', []);
+    this.path.add('closePath');
   }
 
-  moveTo(...args: number[]) {
-    this.path.add('moveTo', args);
+  moveTo(x: number, y: number) {
+    this.path.add('moveTo', x, y);
   }
 
-  lineTo(...args: number[]) {
-    this.path.add('lineTo', args);
+  lineTo(x: number, y: number) {
+    this.path.add('lineTo', x, y);
   }
 
-  quadraticCurveTo(...args: number[]) {
-    this.path.add('quadraticCurveTo', args);
+  quadraticCurveTo(controlX: number, controlY: number, x: number, y: number) {
+    this.path.add('quadraticCurveTo', controlX, controlY, x, y);
   }
 
-  bezierCurveTo(...args: number[]) {
-    this.path.add('bezierCurveTo', args);
+  bezierCurveTo(
+    controlX1: number,
+    controlY1: number,
+    controlX2: number,
+    controlY2: number,
+    x: number,
+    y: number,
+  ) {
+    this.path.add('bezierCurveTo', controlX1, controlY1, controlX2, controlY2, x, y);
   }
 
-  arc(x: number, y: number, r: number, start: number, end: number, ccw = false) {
-    this.path.add('arc', [x, y, r, start, end, Number(ccw)]);
+  arc(
+    x: number,
+    y: number,
+    radius: number,
+    startAngle: number,
+    endAngle: number,
+    counterclockwise = false,
+  ) {
+    this.path.add('arc', x, y, radius, startAngle, endAngle, counterclockwise);
   }
 
   ellipse(
     x: number,
     y: number,
-    rx: number,
-    ry: number,
+    radiusX: number,
+    radiusY: number,
     rotation: number,
-    start: number,
-    end: number,
-    ccw = false,
+    startAngle: number,
+    endAngle: number,
+    counterclockwise = false,
   ) {
-    this.path.add('ellipse', [x, y, rx, ry, rotation, start, end, Number(ccw)]);
+    this.path.add(
+      'ellipse',
+      x,
+      y,
+      radiusX,
+      radiusY,
+      rotation,
+      startAngle,
+      endAngle,
+      counterclockwise,
+    );
   }
 }

@@ -40,14 +40,9 @@ export function weaponBadges(
     {
       label: 'Damage type',
       value: capitalize(stats.damageType),
-      icon:
-        stats.damageType === 'physical'
-          ? 'physical'
-          : stats.damageType === 'nature'
-            ? 'nature'
-            : stats.damageType === 'fire'
-              ? 'burn'
-              : 'poison',
+      icon: ({ physical: 'physical', nature: 'nature', fire: 'burn', poison: 'poison' } as const)[
+        stats.damageType
+      ],
       explanation: `This weapon deals ${stats.damageType} damage.`,
     },
     {
