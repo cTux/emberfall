@@ -6,6 +6,8 @@
 - Maintain the feature map when adding/removing a feature. Link exact source/test files and use repo-relative links so documentation works in every checkout.
 - Keep detailed component guidance in `packages/ui/README.md`, which is rendered in Storybook. Keep third-party attribution with shipped assets.
 - Validate formatting, relative paths/anchors and requirement-to-design coverage. Linked tests identify coverage; do not claim they ran without execution evidence.
-- Keep root AGENTS short; place package-specific rules in the relevant package. Follow [skill maintenance](development.md#maintaining-documentation-and-skills) for repo skills.
+- Keep root AGENTS short; place package-specific rules in the relevant package. Follow [skill maintenance](development/documentation.md#maintaining-documentation-and-skills) for repo skills.
 
 - New features require documentation and an embedded animated or static image. Commit the visual with the docs, identify concept previews versus gameplay captures, and preserve artwork credits.
+
+- Keep the root README player-facing. Route technical readers through the documentation map and topic indexes. Split mixed-topic guides at task boundaries; preserve requirement IDs, existing entry-point anchors and relative source/image links. Keep small coherent guides and asset licenses together.

@@ -7,7 +7,7 @@ ticks through expiry; absent interval metadata retains the base cadence. Refresh
 retain cadence. Consuming wounds scales remaining damage by the stored interval.
 Roots, silence and scheduled talent effects do not use DOT Speed.
 
-Status: implemented. Implements [village/scenes](../specs/scenes-and-village.md), [combat](../specs/combat.md), and the combat side of [controls](../specs/interface-and-audio.md#ui-02--combat-controls).
+Status: implemented. Implements [village/scenes](../specs/scenes-and-village.md), [combat](../specs/combat.md), and the combat side of [controls](../specs/interface/controls.md#ui-02--combat-controls).
 
 ## Ownership and tick order
 

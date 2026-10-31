@@ -15,7 +15,7 @@ class/slot compatibility and inventory semantics. Server uses both layers before
 mutation. The bundled catalog initializes before save decode/session admission.
 `createCharacterPersistence(context)` enumerates registered classes and rejects
 unknown saved class IDs without discarding records. Save versions and transaction
-ordering are unchanged. See [validation contracts](mods.md#validation-and-stable-contracts).
+ordering are unchanged. See [validation contracts](mods/lifecycle.md#validation-and-stable-contracts).
 
 ## Recovery lifecycle
 
@@ -23,7 +23,7 @@ Interrupted players remain for 10 seconds with a Reconnecting debuff and red tin
 
 The browser clears displayed state and gameplay dialogs on interruption, shows the world browser and retries recovery. Remembered world state uses sessionStorage; presentation and legacy-protocol fixture identity retain their existing `emberfall-new.*` storage keys. Production identity belongs to Steam accounts and HttpOnly sessions. Process restart restores authorized village membership, not combat scenes, positions or chat.
 
-Client build checks load `version.json` before recovery. Mismatches reload; invalid or failed checks retry. See [deployment](../operations.md#deployment-and-cache-consistency).
+Client build checks load `version.json` before recovery. Mismatches reload; invalid or failed checks retry. See [deployment](../operations/deployment.md#deployment-and-cache-consistency).
 
 ## Persistence and failure behavior
 

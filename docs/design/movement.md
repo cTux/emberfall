@@ -1,6 +1,6 @@
 # Movement and prediction
 
-Status: implemented. Covers movement in [SCENE-02](../specs/scenes-and-village.md#scene-02--world-geometry), combat input in [UI-02](../specs/interface-and-audio.md#ui-02--combat-controls), and network feedback in UI-03.
+Status: implemented. Covers movement in [SCENE-02](../specs/scenes/forest.md#scene-02--world-geometry), combat input in [UI-02](../specs/interface/controls.md#ui-02--combat-controls), and network feedback in UI-03.
 
 ## Authority and timing
 
