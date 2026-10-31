@@ -79,3 +79,16 @@ drop, reaching the full offset at collection distance. Only detached coordinates
 change: the server still selects the recipient, removes drops and awards XP.
 Unclaimed and remote-targeted drops are unchanged. Tests cover protocol projection,
 delays, world seams, source immutability and duplicate adoption.
+
+## Loot hint receipts
+
+Loot hints observe detached, authoritative local backpack totals in `Arena.tsx`.
+The initial snapshot seeds a silent baseline; later positive item quantity deltas
+create local presentation entries. This also covers gathering, trading and storage
+receipts. Decreases and inventory rearrangement produce no hints. Entries use
+monotonic client time, follow the reconciled local player in both scenes, and
+expire after 2100 ms. The local preference clears entries while disabled and
+continues updating the baseline to prevent replay. No save or wire schema changes
+are required. Rendering reuses bundled item/plant art through native Pixi commands.
+
+See [loot hint behavior and visual evidence](../../specs/graphics/loot-hints.md).

@@ -18,7 +18,7 @@ The village is a place to prepare between runs: practise against training dummie
 
 Sign in with Steam to return to your saved character from another browser. Experience grants levels automatically, followed by paragon levels after level 20. Level-ups keep the action moving; spending talent points is optional. Gather equipment with random rarities and stats, and share your stored gold and supplies across classes.
 
-Emberfall requires an internet connection. Worlds support up to eight players, with up to four in a party. The current adventure centres on the village and forest; some village buildings are still service placeholders.
+Emberfall requires an internet connection. Regular worlds support up to eight players; the permanent Playtest Default world allows 32. Parties have up to four members. The current adventure centres on the village and forest; some village buildings are still service placeholders.
 
 ## Learn more
 

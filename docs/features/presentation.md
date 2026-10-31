@@ -110,7 +110,7 @@ and [native building masks](../../tests/buildings.spec.ts).
 
 ## Loot hints
 
-Loot hints: [behavior and animated concept](../specs/graphics/loot-hints.md),
+Loot hints: [receipt design](../design/runtime/presentation.md#loot-hint-receipts), [behavior and animated concept](../specs/graphics/loot-hints.md),
 [renderer](../../packages/client/src/loot-hint-rendering.ts),
 [receipt tracking tests](../../tests/loot-hints.test.ts), and
 [browser coverage](../../tests/loot-hints.spec.ts).
