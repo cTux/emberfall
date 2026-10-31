@@ -15,7 +15,9 @@ test('manual confirmations with latency preserve flight and swing, correct aim a
       source.players[0].autoAttack = false;
       const requests: Extract<ClientMessage, { type: 'cast' }>[] = [];
       const movement = new LocalMovement('p', (m) => {
-        if (m.type === 'cast') requests.push(m);
+        if (m.type === 'cast') {
+          requests.push(m);
+        }
       });
       const controls = {
         autoAttack: false,
@@ -43,7 +45,11 @@ test('manual confirmations with latency preserve flight and swing, correct aim a
       assert.equal(confirmed.scene.playerShots![0].targetId, undefined);
       assert.equal(requests.length, 1);
       assert.equal(confirmed.player.hitpoints, source.players[0].hitpoints);
-      assert(confirmed.scene.enemies.every((e) => e.hitpoints === 100));
+      assert(
+        confirmed.scene.enemies.every((e) => {
+          return e.hitpoints === 100;
+        }),
+      );
       const complete = structuredClone(reply);
       complete.serverNow! += 50;
       complete.scene!.playerShots = [];
@@ -84,7 +90,9 @@ test('manual rejection removes predicted effects, restores cooldown and keeps re
   source.players[0].attackAt = undefined;
   const requests: Extract<ClientMessage, { type: 'cast' }>[] = [];
   const movement = new LocalMovement('p', (m) => {
-    if (m.type === 'cast') requests.push(m);
+    if (m.type === 'cast') {
+      requests.push(m);
+    }
   });
   const controls = {
     autoAttack: false,
@@ -128,11 +136,27 @@ test('moving casts launch at the displayed player before a reply, with no predic
     const cast = frame(movement, source, 100);
     assert(cast.player.x > source.players[0].x);
     assert.equal(cast.scene.playerShots!.length, 2);
-    assert(cast.scene.playerShots!.every((s) => s.x === cast.player.x && s.y === cast.player.y));
-    assert(cast.scene.playerShots!.every((s) => s.castAt === 10100));
+    assert(
+      cast.scene.playerShots!.every((s) => {
+        return s.x === cast.player.x && s.y === cast.player.y;
+      }),
+    );
+    assert(
+      cast.scene.playerShots!.every((s) => {
+        return s.castAt === 10100;
+      }),
+    );
     const flight = frame(movement, source, 150);
-    assert(flight.scene.playerShots!.every((s) => s.x > cast.player.x));
-    assert(flight.scene.enemies.every((e) => e.hitpoints === 100));
+    assert(
+      flight.scene.playerShots!.every((s) => {
+        return s.x > cast.player.x;
+      }),
+    );
+    assert(
+      flight.scene.enemies.every((e) => {
+        return e.hitpoints === 100;
+      }),
+    );
     assert.equal(flight.scene.damage.length, 0);
     assert.deepEqual(source, before);
   }

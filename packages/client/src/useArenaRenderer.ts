@@ -1,12 +1,13 @@
+import { updateFrameDiagnostics } from './arena-frame-diagnostics';
 import type { ArenaProps } from './arena-contract';
 import { ArenaPresentation } from './arena-presentation';
 import { InteractionPresentation, forestInteractionTargets } from './interaction-presentation';
 import { VillageScene } from './village-scene';
 
 import { FrameBudget } from './frame-budget';
-import { createArenaInput } from './arena-input';
+import { createPresentationInput } from './arena-presentation-input';
 
-import { LootHints } from './loot-hints';
+import { useArenaState } from './useArenaState';
 import { drawLootHints } from './loot-hint-rendering';
 
 import { useChat } from './ChatProvider';
@@ -25,68 +26,43 @@ import { useTheme } from '@mui/material';
 
 import { forestRenderer } from './forest';
 
-export function useArenaRenderer({
-  world,
-  playerId,
-  send,
-  graphics,
-  preferences,
-  interaction,
-  onCursorAim,
-  onInteract,
-  onHitpoints,
-  onCatSpeech,
-}: ArenaProps) {
+export function useArenaRenderer(props: ArenaProps) {
+  const { playerId, interaction, onCursorAim, onHitpoints } = props;
   const canvas = useRef<HTMLCanvasElement>(null);
   const { reportError } = useChat();
-  const lootHints = useRef(new LootHints());
-  const latest = useRef(world);
-  const receivedAt = useRef(0);
-  const sender = useRef(send);
-  const activate = useRef(onInteract);
-  const catSpoke = useRef(onCatSpeech);
-  const quality = useRef(graphics);
-  const prefs = useRef(preferences);
   const selectedFont = useTheme().typography.fontFamily ?? 'sans-serif';
-  const fontFamily = useRef(selectedFont);
-  const frameRate = useRef<number | null>(null);
-  const networkTiming = useRef<{ inputDelay: number | null; snapshotAge: number | null }>({
-    inputDelay: null,
-    snapshotAge: null,
-  });
-  useEffect(() => {
-    lootHints.current = new LootHints();
-  }, [playerId]);
-  useEffect(() => {
-    if (latest.current !== world) receivedAt.current = performance.now();
-    const confirmedPlayer = world?.players.find((player) => player.id === playerId);
-    lootHints.current.observe(
-      confirmedPlayer ? (confirmedPlayer.backpack ?? []) : undefined,
-      preferences.lootHints,
-      performance.now(),
-    );
-    latest.current = world;
-    sender.current = send;
-    activate.current = onInteract;
-    catSpoke.current = onCatSpeech;
-    quality.current = graphics;
-    prefs.current = preferences;
-    fontFamily.current = selectedFont;
-  }, [world, playerId, send, graphics, preferences, onInteract, onCatSpeech, selectedFont]);
+  const {
+    lootHints,
+    latest,
+    receivedAt,
+    sender,
+    activate,
+    catSpoke,
+    quality,
+    prefs,
+    fontFamily,
+    frameRate,
+    networkTiming,
+  } = useArenaState(props, selectedFont);
   useEffect(() => {
     const element = canvas.current!;
     const renderer = new PixiContext(element);
     let disposed = false;
     void renderer.ready.catch(() => {
-      if (!disposed)
+      if (!disposed) {
         reportError(
           'The game renderer could not start. Enable browser hardware acceleration and reload.',
         );
+      }
     });
     const presentation = new ArenaPresentation(
       playerId,
-      (message) => sender.current(message),
-      () => prefs.current,
+      (message) => {
+        return sender.current(message);
+      },
+      () => {
+        return prefs.current;
+      },
       onHitpoints,
     );
     const ctx = renderer;
@@ -94,23 +70,24 @@ export function useArenaRenderer({
     const { nature } = villageImages;
     const skeleton = actorArt('skeleton');
     const drawForest = forestRenderer(nature, knight, skeleton);
-    const input = createArenaInput({
-      element,
-      world: () => latest.current,
-      player: () => latest.current?.players.find((p) => p.id === playerId),
-      preferences: () => prefs.current,
-      send: (message) => sender.current(message),
-      activate: (source) => activate.current(source),
-      move: (x, y, now) => presentation.input(x, y, now),
+    const input = createPresentationInput(element, playerId, presentation, {
+      latest,
+      prefs,
+      sender,
+      activate,
     });
     onCursorAim(input.currentAim);
-    const village = new VillageScene(playerId, (text) => catSpoke.current(text));
+    const village = new VillageScene(playerId, (text) => {
+      return catSpoke.current(text);
+    });
     let frame = 0;
     const prompts = new InteractionPresentation({
       element,
       signal: interaction,
       playerId,
-      send: (message) => sender.current(message),
+      send: (message) => {
+        return sender.current(message);
+      },
       blocked: input.blocked,
     });
     let wardrobeOpenedAt = 0;
@@ -127,7 +104,10 @@ export function useArenaRenderer({
 
     function draw(now: number) {
       const openWardrobe = interaction.current?.id === 'wardrobe';
-      if (openWardrobe && !wardrobeActive) wardrobeOpenedAt = now;
+      if (openWardrobe && !wardrobeActive) {
+        wardrobeOpenedAt = now;
+      }
+
       wardrobeActive = openWardrobe;
       if (!renderer.initialized) {
         frame = requestAnimationFrame(draw);
@@ -148,12 +128,17 @@ export function useArenaRenderer({
       ctx.imageSmoothingEnabled = quality.current.smoothTextures;
       // Sprite filtering is independent; CSS resampling must preserve smooth text.
       const imageRendering = 'auto';
-      if (element.style.imageRendering !== imageRendering)
+      if (element.style.imageRendering !== imageRendering) {
         element.style.imageRendering = imageRendering;
+      }
+
       const el = element;
       // Keep the original view scale independent of the walkable map size.
       const scale = Math.max(el.width / 960, el.height / 640);
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) input.clearKeys();
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+        input.clearKeys();
+      }
+
       const presented = presentation.render(
         latest.current,
         now,
@@ -161,14 +146,10 @@ export function useArenaRenderer({
         { width: el.width / scale, height: el.height / scale },
         prefs.current,
       );
-      const { view, local, cursor, cycle } = presented;
+      const { view, local, cycle } = presented;
       renderer.ambientTint = cycle.tint;
       renderer.directionalShadow = cycle.shadow;
-      element.dataset.daylight = cycle.daylight.toFixed(3);
-      element.dataset.celestial = cycle.celestial;
-      element.dataset.shadowDirection = `${cycle.shadow.x.toFixed(3)},${cycle.shadow.y.toFixed(3)}`;
-      element.dataset.partyRequests = view?.partyRequests?.map((r) => r.fromId).join(',') ?? '';
-      if (element.dataset.cursor !== cursor) element.dataset.cursor = cursor;
+      updateFrameDiagnostics(element, presented);
       networkTiming.current = presented.timing;
       const highlightInteractions = now - input.altHeldAt > 500 && !input.blocked();
       const interactionFrame = prompts.frame({
@@ -189,7 +170,10 @@ export function useArenaRenderer({
       }
 
       const fps = budget.sample(now);
-      if (fps !== undefined) frameRate.current = fps;
+      if (fps !== undefined) {
+        frameRate.current = fps;
+      }
+
       presentation.effects(presented, now);
       if (!view || local?.scene === 'forest') {
         element.dataset.catSpeech = '';
@@ -205,8 +189,10 @@ export function useArenaRenderer({
           highlightInteractions,
         );
         interactionFrame.draw();
-        if (local && prefs.current.lootHints)
+        if (local && prefs.current.lootHints) {
           drawLootHints(ctx, lootHints.current.hints, local, now);
+        }
+
         renderer.present();
         frame = requestAnimationFrame(draw);
 
@@ -221,10 +207,14 @@ export function useArenaRenderer({
       const { visibleScenery, portalTarget, cats } = villageFrame;
       Object.assign(element.dataset, villageFrame.diagnostics);
       input.targets = [
-        ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
+        ...visibleScenery.map(sceneryInteraction).filter((target) => {
+          return target !== null;
+        }),
         ...cats,
         portalTarget,
-      ].sort((a, b) => a.y + a.height - b.y - b.height);
+      ].sort((a, b) => {
+        return a.y + a.height - b.y - b.height;
+      });
       interactionFrame.select(input.targets, input.pointerPoint(), cats);
       const drawn = village.draw(ctx, villageFrame, {
         preferences: prefs.current,
@@ -236,7 +226,10 @@ export function useArenaRenderer({
       });
       interactionFrame.draw();
       Object.assign(element.dataset, village.overlays(ctx, villageFrame, drawn, prefs.current));
-      if (local && prefs.current.lootHints) drawLootHints(ctx, lootHints.current.hints, local, now);
+      if (local && prefs.current.lootHints) {
+        drawLootHints(ctx, lootHints.current.hints, local, now);
+      }
+
       renderer.present();
       frame = requestAnimationFrame(draw);
     }
@@ -253,7 +246,24 @@ export function useArenaRenderer({
       renderer.destroy();
       presentation.dispose();
     };
-  }, [playerId, interaction, onCursorAim, onHitpoints, reportError]);
+  }, [
+    playerId,
+    interaction,
+    onCursorAim,
+    onHitpoints,
+    reportError,
+    lootHints,
+    latest,
+    receivedAt,
+    sender,
+    activate,
+    catSpoke,
+    quality,
+    prefs,
+    fontFamily,
+    frameRate,
+    networkTiming,
+  ]);
 
   return { canvas, frameRate, networkTiming };
 }

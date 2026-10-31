@@ -6,7 +6,7 @@ import {
   LOBBY_PORTAL,
   wrappedDelta,
 } from '../packages/core/src/index.ts';
-import { sharp } from './interaction-outlines.fixture.ts';
+import { outlineProbes } from './interaction-outlines.fixture.ts';
 
 import './interaction-party-outlines.cases.ts';
 for (const graphicsPreset of ['Low', 'High'] as const) {
@@ -15,14 +15,21 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
     test('hover outlines stay thin and clicks share E interactions', async ({ page, game }) => {
       test.setTimeout(180000);
       const errors: string[] = [];
-      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('pageerror', (error) => {
+        return errors.push(error.message);
+      });
       await page.goto('/');
       await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
       await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-      const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+      const world = [...game.runtime.worlds.values()].find((w) => {
+        return w.players.size;
+      })!;
       const player = [...world.players.values()][0];
       // Ambient walkers must not enter unrelated E-key checks or move pointer targets.
-      for (const npc of world.npcs!) npc.chatUntil = Date.now() + 180_000;
+      for (const npc of world.npcs!) {
+        npc.chatUntil = Date.now() + 180_000;
+      }
+
       const canvas = page.locator('canvas');
       const scale = Math.max(1440 / 960, 1000 / 640);
       const closeDialog = async () => {
@@ -42,44 +49,12 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         }).toPass();
       };
 
-      const yellowPixels = async (name: string) => {
-        const image = await canvas.screenshot({
-          path: `test-results/${graphicsPreset}-${name}.png`,
-        });
-        const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
-        let count = 0;
-        for (let i = 0; i < data.length; i += info.channels)
-          if (data[i] > 220 && data[i + 1] > 180 && data[i + 2] < 45) count++;
+      const { yellowPixels, greenPixels, altDefaultsPrevented } = outlineProbes(
+        page,
+        canvas,
+        graphicsPreset,
+      );
 
-        return count;
-      };
-
-      const greenPixels = async (name: string) => {
-        const image = await canvas.screenshot({
-          path: `test-results/${graphicsPreset}-${name}.png`,
-        });
-        const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
-        let count = 0;
-        for (let i = 0; i < data.length; i += info.channels)
-          if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.18 && data[i + 2] < data[i + 1] * 0.18)
-            count++;
-
-        return count;
-      };
-
-      const altDefaultsPrevented = async (code: string, type: 'keydown' | 'keyup') =>
-        page.evaluate(
-          ({ code, type }) =>
-            !window.dispatchEvent(
-              new KeyboardEvent(type, {
-                key: 'Alt',
-                code,
-                bubbles: true,
-                cancelable: true,
-              }),
-            ),
-          { code, type },
-        );
       player.x = WARDROBE.x - 120;
       player.y = WARDROBE.y + 9;
       await hover(WARDROBE.x, WARDROBE.y - 30, 'wardrobe', false);
@@ -88,7 +63,11 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       expect(thin).toBeGreaterThan(20);
       const normalGreen = await greenPixels('alt-released');
       await page.clock.install();
-      await page.clock.pauseAt(await page.evaluate(() => Date.now() + 60_000));
+      await page.clock.pauseAt(
+        await page.evaluate(() => {
+          return Date.now() + 60_000;
+        }),
+      );
       expect(await altDefaultsPrevented('AltLeft', 'keydown')).toBe(true);
       await page.clock.runFor(450);
       expect(await greenPixels('alt-before-delay')).toBeLessThan(normalGreen + 20);
@@ -108,16 +87,38 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       expect(await greenPixels('alt-short-hold')).toBeLessThan(normalGreen + 20);
       await page.clock.resume();
       expect(await altDefaultsPrevented('AltLeft', 'keydown')).toBe(true);
-      await expect.poll(() => greenPixels('alt-village')).toBeGreaterThan(normalGreen + 100);
+      await expect
+        .poll(() => {
+          return greenPixels('alt-village');
+        })
+        .toBeGreaterThan(normalGreen + 100);
       expect(await altDefaultsPrevented('AltRight', 'keydown')).toBe(true);
       expect(await altDefaultsPrevented('AltLeft', 'keyup')).toBe(true);
-      await expect.poll(() => greenPixels('alt-right-village')).toBeGreaterThan(normalGreen + 100);
+      await expect
+        .poll(() => {
+          return greenPixels('alt-right-village');
+        })
+        .toBeGreaterThan(normalGreen + 100);
       expect(await altDefaultsPrevented('AltRight', 'keyup')).toBe(true);
-      await expect.poll(() => greenPixels('alt-released-again')).toBeLessThan(normalGreen + 20);
+      await expect
+        .poll(() => {
+          return greenPixels('alt-released-again');
+        })
+        .toBeLessThan(normalGreen + 20);
       await page.keyboard.down('Alt');
-      await expect.poll(() => greenPixels('alt-before-blur')).toBeGreaterThan(normalGreen + 100);
-      await page.evaluate(() => window.dispatchEvent(new Event('blur')));
-      await expect.poll(() => greenPixels('alt-after-blur')).toBeLessThan(normalGreen + 20);
+      await expect
+        .poll(() => {
+          return greenPixels('alt-before-blur');
+        })
+        .toBeGreaterThan(normalGreen + 100);
+      await page.evaluate(() => {
+        return window.dispatchEvent(new Event('blur'));
+      });
+      await expect
+        .poll(() => {
+          return greenPixels('alt-after-blur');
+        })
+        .toBeLessThan(normalGreen + 20);
       await page.keyboard.up('Alt');
 
       await page.mouse.click(720 + 120 * scale, 500 - 39 * scale);
@@ -133,8 +134,8 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await page.keyboard.press('Enter');
       await expect(chat).toBeFocused();
       expect(
-        await chat.evaluate((input) =>
-          input.dispatchEvent(
+        await chat.evaluate((input) => {
+          return input.dispatchEvent(
             new KeyboardEvent('keydown', {
               key: '@',
               code: 'KeyQ',
@@ -143,8 +144,8 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
               bubbles: true,
               cancelable: true,
             }),
-          ),
-        ),
+          );
+        }),
       ).toBe(true);
       await page.keyboard.down('Alt');
       const chatGreen = await greenPixels('alt-chat');
@@ -170,7 +171,9 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(wardrobe).toBeVisible();
       await closeDialog();
 
-      const hall = BUILDINGS.find((b) => b.id === 'hall')!;
+      const hall = BUILDINGS.find((b) => {
+        return b.id === 'hall';
+      })!;
       player.x = hall.doorX;
       player.y = hall.y + 9;
       await hover(hall.x, hall.y - 40, 'hall', true);
@@ -180,7 +183,9 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible();
       await closeDialog();
 
-      const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
+      const marta = world.npcs!.find((npc) => {
+        return npc.id === 'innkeeper';
+      })!;
       await expect(async () => {
         player.x = marta.x - 35;
         player.y = marta.y + 9;
@@ -221,9 +226,17 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       expect(portalThin).toBeGreaterThan(20);
       const forestGreen = await greenPixels('forest-alt-released');
       await page.keyboard.down('Alt');
-      await expect.poll(() => greenPixels('alt-forest-seam')).toBeGreaterThan(forestGreen + 100);
+      await expect
+        .poll(() => {
+          return greenPixels('alt-forest-seam');
+        })
+        .toBeGreaterThan(forestGreen + 100);
       await page.keyboard.up('Alt');
-      await expect.poll(() => greenPixels('forest-alt-release')).toBeLessThan(forestGreen + 20);
+      await expect
+        .poll(() => {
+          return greenPixels('forest-alt-release');
+        })
+        .toBeLessThan(forestGreen + 20);
 
       await page.mouse.down();
       await page.mouse.up();
@@ -235,7 +248,11 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       expect(portalNearby).toBeGreaterThan(10);
       await page.mouse.down();
       await page.mouse.up();
-      await expect.poll(() => player.scene).toBeUndefined();
+      await expect
+        .poll(() => {
+          return player.scene;
+        })
+        .toBeUndefined();
       player.hitpoints = 0;
       await expect(canvas).toHaveAttribute('data-interaction-prompt', '');
       expect(errors).toEqual([]);

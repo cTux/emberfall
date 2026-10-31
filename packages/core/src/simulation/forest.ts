@@ -20,22 +20,38 @@ export function stepCombat(
   setRewardPlayers(scene, partyPlayers);
   const ENEMY_STATS = Object.fromEntries(context.registries.enemies.entries());
   const healthScale = prepareForestTick(scene, players, now, context);
-  if (healthScale === undefined) return;
+  if (healthScale === undefined) {
+    return;
+  }
+
   tickPickups(scene, players, now, dt);
-  for (const player of players.filter((p) => p.scene === 'forest' && !p.reconnecting))
+  for (const player of players.filter((p) => {
+    return p.scene === 'forest' && !p.reconnecting;
+  })) {
     tickCompanion(player, scene, now, dt, context);
-  if (scene.phase !== 'active') return;
+  }
+
+  if (scene.phase !== 'active') {
+    return;
+  }
+
   scene.spawns ??= [];
   scene.projectiles ??= [];
-  const alive = players.filter((p) => p.scene === 'forest' && p.hitpoints > 0 && !p.reconnecting);
+  const alive = players.filter((p) => {
+    return p.scene === 'forest' && p.hitpoints > 0 && !p.reconnecting;
+  });
   tickSpawns(scene, alive, now, healthScale, ENEMY_STATS, context);
   tickDebuffs(scene, players, now, context);
   tickPlayerCombat(scene, alive, now, dt, context);
   tickEnemyCombat(scene, alive, now, dt, ENEMY_STATS, context);
   if (
     scene.bossId !== undefined &&
-    !scene.enemies.some((e) => e.id === scene.bossId) &&
-    !scene.spawns.some((e) => e.id === scene.bossId)
+    !scene.enemies.some((e) => {
+      return e.id === scene.bossId;
+    }) &&
+    !scene.spawns.some((e) => {
+      return e.id === scene.bossId;
+    })
   ) {
     scene.phase = 'ended';
     scene.enemies = [];
@@ -43,7 +59,11 @@ export function stepCombat(
     scene.projectiles = [];
     scene.playerShots = [];
     scene.portals = players
-      .filter((p) => p.scene === 'forest')
-      .map((p) => ({ x: p.x, y: p.y + 15 }));
+      .filter((p) => {
+        return p.scene === 'forest';
+      })
+      .map((p) => {
+        return { x: p.x, y: p.y + 15 };
+      });
   }
 }

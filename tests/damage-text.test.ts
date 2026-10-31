@@ -22,7 +22,10 @@ test('damage numbers can show only local outgoing and incoming damage without ch
       drawn.push(value);
     },
   } as unknown as CanvasRenderingContext2D;
-  const project = () => ({ x: 0, y: 0 });
+  const project = () => {
+    return { x: 0, y: 0 };
+  };
+
   drawDamageNumbers(ctx, hits, project, 1100, 'me');
   assert.deepEqual(drawn, ['11', '33']);
   drawn.length = 0;

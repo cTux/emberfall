@@ -6,7 +6,10 @@ export class CatSpeech {
 
   pet(id: string, now: number) {
     const previous = this.responses.get(id);
-    if (previous && now - previous.at < 2000) return;
+    if (previous && now - previous.at < 2000) {
+      return;
+    }
+
     const index = previous ? (previous.index + 1) % responses.length : 0;
     const text = responses[index];
     this.responses.set(id, {

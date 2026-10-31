@@ -26,18 +26,21 @@ export function defensive(cast: TalentCast) {
 
   if (tier === 0) {
     if (classId === 'druid') {
-      if (recipient) heal(recipient, learned === 2 ? 0.2 : 0.12);
-    } else
+      if (recipient) {
+        heal(recipient, learned === 2 ? 0.2 : 0.12);
+      }
+    } else {
       for (const enemy of effectArea(scene, origin, 150)) {
         strike(scene, player, enemy, learned === 2 ? 1.4 : 0.9, now, ability, context);
         applyTalentAilment(enemy, player, 'roots', 1, now, learned === 2 ? 1000 : 600);
         enemy.attack = undefined;
         control(enemy, now, learned === 2 ? 1000 : 600);
       }
+    }
 
     const fragments = rank(player, 2, 2);
-    if (fragments)
-      for (const enemy of effectArea(scene, aim, 250).slice(0, fragments === 2 ? 4 : 2))
+    if (fragments) {
+      for (const enemy of effectArea(scene, aim, 250).slice(0, fragments === 2 ? 4 : 2)) {
         strike(
           scene,
           player,
@@ -47,6 +50,8 @@ export function defensive(cast: TalentCast) {
           TALENT_NAMES[player.classId ?? 'warrior'][2][2],
           context,
         );
+      }
+    }
   } else if (tier === 1) {
     schedule(scene, player, nodeId, now, 5000, 1000, (at, players) => {
       if (classId === 'druid') {
@@ -56,22 +61,27 @@ export function defensive(cast: TalentCast) {
           origin,
           200 * (1 + stats.bonuses.areaOfEffect / 100),
         );
-        if (ally) heal(ally, learned === 2 ? 0.04 : 0.025);
-      } else
-        for (const ally of players.filter(
-          (ally) =>
+        if (ally) {
+          heal(ally, learned === 2 ? 0.04 : 0.025);
+        }
+      } else {
+        for (const ally of players.filter((ally) => {
+          return (
             ally.hitpoints > 0 &&
-            forestDistance(ally, origin) <= 200 * (1 + stats.bonuses.areaOfEffect / 100),
-        )) {
+            forestDistance(ally, origin) <= 200 * (1 + stats.bonuses.areaOfEffect / 100)
+          );
+        })) {
           shield(ally, scene, player.maxHitpoints * (learned === 2 ? 0.1 : 0.06), at + 1200);
         }
+      }
 
       const hold = rank(player, 2, 4);
-      if (hold)
+      if (hold) {
         for (const enemy of effectArea(scene, origin, 200)) {
           applyTalentAilment(enemy, player, 'roots', 1, at, hold === 2 ? 1400 : 800);
           control(enemy, at, hold === 2 ? 1400 : 800);
         }
+      }
     });
   } else if (tier === 2) {
     state(player, scene).challengeHits = new Set();
@@ -90,25 +100,31 @@ export function defensive(cast: TalentCast) {
     value.wallUntil = now + (learned === 2 ? 3000 : 2000);
     value.wallRank = learned;
     value.wallPrevented = false;
-    if (recipient) heal(recipient, learned === 2 ? 0.35 : 0.2);
+    if (recipient) {
+      heal(recipient, learned === 2 ? 0.35 : 0.2);
+    }
+
     const shared = rank(player, 2, 8);
-    if (shared)
+    if (shared) {
       schedule(scene, player, nodeId, now, value.wallUntil - now, 500, (at, players) => {
-        for (const ally of players.filter(
-          (ally) =>
+        for (const ally of players.filter((ally) => {
+          return (
             ally !== player &&
             ally.hitpoints > 0 &&
-            forestDistance(ally, player) <= 160 * (1 + stats.bonuses.areaOfEffect / 100),
-        ))
+            forestDistance(ally, player) <= 160 * (1 + stats.bonuses.areaOfEffect / 100)
+          );
+        })) {
           shield(ally, scene, ally.maxHitpoints * (shared === 2 ? 0.05 : 0.03), at + 1000);
+        }
       });
+    }
   }
 
   const unbroken = rank(player, 2, 9);
   const value = state(player, scene);
   if (unbroken && tier === 0 && value.wallPrevented) {
     value.wallPrevented = false;
-    for (const enemy of effectArea(scene, origin, 150))
+    for (const enemy of effectArea(scene, origin, 150)) {
       strike(
         scene,
         player,
@@ -118,5 +134,6 @@ export function defensive(cast: TalentCast) {
         TALENT_NAMES[player.classId ?? 'warrior'][2][9],
         context,
       );
+    }
   }
 }

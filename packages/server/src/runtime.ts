@@ -30,7 +30,10 @@ export async function createRuntime(
   const sessions = new Map<WebSocket, Session>();
   const wss = new EventEmitter();
   const send = (ws: WebSocket, message: ServerMessage) => {
-    if (ws.readyState !== WebSocket.OPEN) return;
+    if (ws.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
     if (ws.bufferedAmount > 128_000) {
       ws.terminate();
 
@@ -42,13 +45,21 @@ export async function createRuntime(
 
   const projection = createWorldProjection(parties, resourceOwner);
   const state = projection.state;
-  const list = () => projection.list(worlds, permanentWorld);
-  const broadcastList = () => {
-    const message = list();
-    for (const ws of sessions.keys()) send(ws, message);
+  const list = () => {
+    return projection.list(worlds, permanentWorld);
   };
 
-  const leave = (session: Session) => membership.leave(session, shuttingDown);
+  const broadcastList = () => {
+    const message = list();
+    for (const ws of sessions.keys()) {
+      send(ws, message);
+    }
+  };
+
+  const leave = (session: Session) => {
+    return membership.leave(session, shuttingDown);
+  };
+
   const admit = createAdmission({
     worlds,
     permanentWorld,
@@ -75,15 +86,28 @@ export async function createRuntime(
       characters,
       leave,
       broadcastList,
-      sendWorldList: (peer) => send(peer, list()),
-      isClosing: () => shuttingDown,
+      sendWorldList: (peer) => {
+        return send(peer, list());
+      },
+      isClosing: () => {
+        return shuttingDown;
+      },
     });
-    if (!session) return;
-    const reply = (message: ServerMessage) => send(ws, message);
+    if (!session) {
+      return;
+    }
+
+    const reply = (message: ServerMessage) => {
+      return send(ws, message);
+    };
+
     // Password hashing and persistence failures are caught and sent to the peer below.
     // oxlint-disable-next-line typescript/no-misused-promises
     ws.on('command', async (command: unknown) => {
-      const error = (message: string) => send(ws, { type: 'error', message });
+      const error = (message: string) => {
+        return send(ws, { type: 'error', message });
+      };
+
       const authenticated = account?.();
       if (account && !authenticated?.nickname) {
         ws.close(1008, 'Please sign in again');
@@ -159,14 +183,18 @@ export async function createRuntime(
         return;
       }
 
-      if (message.type === 'join' || message.type === 'create' || message.type === 'resume')
+      if (message.type === 'join' || message.type === 'create' || message.type === 'resume') {
         await admit(ws, session, message, now, authenticated, account);
+      }
     });
   });
 
   function broadcastState(world: World, now: number) {
     for (const [ws, session] of sessions) {
-      if (session.worldId !== world.id) continue;
+      if (session.worldId !== world.id) {
+        continue;
+      }
+
       send(ws, { type: 'state', world: state(world, now, world.players.get(session.id)) });
     }
   }
@@ -206,23 +234,35 @@ export async function createRuntime(
       }
     }
 
-    for (const ws of sessions.keys()) ws.terminate();
+    for (const ws of sessions.keys()) {
+      ws.terminate();
+    }
+
     characters.close();
-    if (failures.length)
+    if (failures.length) {
       throw new AggregateError(failures, 'Some characters could not be saved during shutdown');
+    }
+
     serverLog.info('Runtime stopped');
   }
 
   function renameCharacter(characterId: string, nickname: string) {
     for (const session of sessions.values()) {
-      if (session.characterId !== characterId) continue;
+      if (session.characterId !== characterId) {
+        continue;
+      }
+
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
-      if (player) player.name = nickname;
+      if (player) {
+        player.name = nickname;
+      }
     }
   }
 
   return {
-    connect: (peer: WebSocket, account?: AccountIdentity) => wss.emit('connection', peer, account),
+    connect: (peer: WebSocket, account?: AccountIdentity) => {
+      return wss.emit('connection', peer, account);
+    },
     renameCharacter,
     close,
     characters,

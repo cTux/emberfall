@@ -16,21 +16,30 @@ export function tickTraining(
 ) {
   scene ??= createTrainingScene(now);
   if (now >= scene.nextSpawn) {
-    for (const enemy of scene.enemies) enemy.hitpoints = enemy.maxHitpoints!;
+    for (const enemy of scene.enemies) {
+      enemy.hitpoints = enemy.maxHitpoints!;
+    }
+
     scene.nextSpawn +=
       (Math.floor((now - scene.nextSpawn) / TRAINING_DEFINITION.refreshMs) + 1) *
       TRAINING_DEFINITION.refreshMs;
   }
 
-  scene.damage = scene.damage.filter((hit) => now - hit.at < TRANSIENT_EFFECTS.damage.lifetimeMs);
-  const lobby = players.filter(
-    (player) => !player.scene && player.hitpoints > 0 && !player.reconnecting,
-  );
+  scene.damage = scene.damage.filter((hit) => {
+    return now - hit.at < TRANSIENT_EFFECTS.damage.lifetimeMs;
+  });
+  const lobby = players.filter((player) => {
+    return !player.scene && player.hitpoints > 0 && !player.reconnecting;
+  });
   tickDebuffs(scene, lobby, now, context);
-  for (const player of lobby)
+  for (const player of lobby) {
     tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt, context);
+  }
+
   tickPlayerCombat(scene, lobby, now, dt, context);
-  for (const player of players) player.dps = damagePerSecond(player, now);
+  for (const player of players) {
+    player.dps = damagePerSecond(player, now);
+  }
 
   return scene;
 }
@@ -51,20 +60,27 @@ export function createTrainingScene(now: number): SceneState {
     damage: [],
     enemies: [
       { x: TRAINING_ZONES[0].x, y: TRAINING_ZONES[0].y },
-      ...Array.from({ length: TRAINING_DEFINITION.triangleRows }, (_, row) => row).flatMap((row) =>
-        Array.from({ length: row + 1 }, (_, col) => ({
-          x: TRAINING_ZONES[1].x + (col - row / 2) * TRAINING_DEFINITION.spacing,
-          y: TRAINING_ZONES[1].y - TRAINING_DEFINITION.spacing + row * TRAINING_DEFINITION.spacing,
-        })),
-      ),
-    ].map((position, index) => ({
-      ...position,
-      id: index + 1,
-      name: TRAINING_DEFINITION.dummyName,
-      archetype: 'skeleton' as const,
-      angle: 0,
-      hitpoints: TRAINING_DEFINITION.hitpoints,
-      maxHitpoints: TRAINING_DEFINITION.hitpoints,
-    })),
+      ...Array.from({ length: TRAINING_DEFINITION.triangleRows }, (_, row) => {
+        return row;
+      }).flatMap((row) => {
+        return Array.from({ length: row + 1 }, (_, col) => {
+          return {
+            x: TRAINING_ZONES[1].x + (col - row / 2) * TRAINING_DEFINITION.spacing,
+            y:
+              TRAINING_ZONES[1].y - TRAINING_DEFINITION.spacing + row * TRAINING_DEFINITION.spacing,
+          };
+        });
+      }),
+    ].map((position, index) => {
+      return {
+        ...position,
+        id: index + 1,
+        name: TRAINING_DEFINITION.dummyName,
+        archetype: 'skeleton' as const,
+        angle: 0,
+        hitpoints: TRAINING_DEFINITION.hitpoints,
+        maxHitpoints: TRAINING_DEFINITION.hitpoints,
+      };
+    }),
   } satisfies SceneState;
 }

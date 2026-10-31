@@ -6,43 +6,49 @@ import { alpha, styled } from '@mui/material/styles';
 export const BACKPACK_SLOT_SIZE = 44;
 export const EQUIPMENT_SLOT_SIZE = BACKPACK_SLOT_SIZE * 1.2;
 
-export const GearTooltipStyled = styled(({ className, ...props }: TooltipProps) =>
-  createElement(Tooltip, { ...props, classes: { popper: className } }),
-)(({ theme }) => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: alpha(theme.palette.common.black, 0.94),
-    width: 250,
-    maxHeight: 'calc(100vh - 32px)',
-    overflowY: 'auto',
-    maxWidth: 'calc(100vw - 32px)',
-    boxSizing: 'border-box',
-    padding: theme.spacing(1.25),
-  },
-}));
+export const GearTooltipStyled = styled(({ className, ...props }: TooltipProps) => {
+  return createElement(Tooltip, { ...props, classes: { popper: className } });
+})(({ theme }) => {
+  return {
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: alpha(theme.palette.common.black, 0.94),
+      width: 250,
+      maxHeight: 'calc(100vh - 32px)',
+      overflowY: 'auto',
+      maxWidth: 'calc(100vw - 32px)',
+      boxSizing: 'border-box',
+      padding: theme.spacing(1.25),
+    },
+  };
+});
 
-export const GearBadgeValueStyled = styled(Box)(({ theme }) => ({
-  position: 'absolute',
-  bottom: 0,
-  right: 2,
-  padding: '0 2px',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.black, 0.85),
-  color: theme.palette.text.primary,
-  fontSize: theme.typography.pxToRem(14),
-  lineHeight: 1.2,
-  fontWeight: 700,
-  fontVariantNumeric: 'tabular-nums',
-}));
+export const GearBadgeValueStyled = styled(Box)(({ theme }) => {
+  return {
+    position: 'absolute',
+    bottom: 0,
+    right: 2,
+    padding: '0 2px',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.black, 0.85),
+    color: theme.palette.text.primary,
+    fontSize: theme.typography.pxToRem(14),
+    lineHeight: 1.2,
+    fontWeight: 700,
+    fontVariantNumeric: 'tabular-nums',
+  };
+});
 
-export const BackpackSlotStyled = styled(ButtonBase)(({ theme }) => ({
-  position: 'relative',
-  width: '100%',
-  aspectRatio: '1',
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: theme.palette.wood.dark,
-  boxShadow: `inset 0 0 0 2px ${alpha(theme.palette.common.black, 0.4)}`,
-  '& img, & svg': { width: 36, height: 36, objectFit: 'contain', imageRendering: 'pixelated' },
-  '&:hover': { borderColor: theme.palette.text.secondary },
-  '&.Mui-focusVisible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 1 },
-}));
+export const BackpackSlotStyled = styled(ButtonBase)(({ theme }) => {
+  return {
+    position: 'relative',
+    width: '100%',
+    aspectRatio: '1',
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: theme.palette.wood.dark,
+    boxShadow: `inset 0 0 0 2px ${alpha(theme.palette.common.black, 0.4)}`,
+    '& img, & svg': { width: 36, height: 36, objectFit: 'contain', imageRendering: 'pixelated' },
+    '&:hover': { borderColor: theme.palette.text.secondary },
+    '&.Mui-focusVisible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 1 },
+  };
+});

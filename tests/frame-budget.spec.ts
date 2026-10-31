@@ -29,7 +29,9 @@ test('profile village, training and forest frame budgets', async ({
   const build = await (await page.request.get('/version.json')).json();
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const session = await page.context().newCDPSession(page);
   await session.send('Profiler.enable');
@@ -62,46 +64,61 @@ test('profile village, training and forest frame budgets', async ({
       player.hitpoints = player.maxHitpoints = 100000;
       player.hurtAt = Date.now() + 60000;
       forest.endsAt = Date.now() + 600000;
-      forest.enemies = Array.from({ length: 80 }, (_, i) => ({
-        id: ++forest.sequence,
-        x: player.x + Math.cos(i * 2.4) * (80 + i * 3),
-        y: player.y + Math.sin(i * 2.4) * (80 + i * 3),
-        angle: 0,
-        hitpoints: 100000,
-        maxHitpoints: 100000,
-        kind: 'normal' as const,
-        archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[i % 4],
-      }));
+      forest.enemies = Array.from({ length: 80 }, (_, i) => {
+        return {
+          id: ++forest.sequence,
+          x: player.x + Math.cos(i * 2.4) * (80 + i * 3),
+          y: player.y + Math.sin(i * 2.4) * (80 + i * 3),
+          angle: 0,
+          hitpoints: 100000,
+          maxHitpoints: 100000,
+          kind: 'normal' as const,
+          archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[i % 4],
+        };
+      });
     }
 
     await page.waitForTimeout(3000);
-    if (profileCpu) await session.send('Profiler.start');
-    const timing = await page.evaluate(
-      () =>
-        new Promise((resolve) => {
-          const samples: number[] = [];
-          let previous = 0;
-          const frame = (now: number) => {
-            if (previous) samples.push(now - previous);
-            previous = now;
-            if (samples.length < 1200) requestAnimationFrame(frame);
-            else {
-              samples.sort((a, b) => a - b);
-              resolve({
-                mean: samples.reduce((a, b) => a + b) / samples.length,
-                p50: samples[600],
-                p95: samples[1140],
-                p99: samples[1188],
-                max: samples[1199],
-                over240Budget: samples.filter((ms) => ms > 1000 / 240).length,
-                frames: samples.length,
-              });
-            }
-          };
+    if (profileCpu) {
+      await session.send('Profiler.start');
+    }
 
-          requestAnimationFrame(frame);
-        }),
-    );
+    const timing = await page.evaluate(() => {
+      return new Promise((resolve) => {
+        const samples: number[] = [];
+        let previous = 0;
+        const frame = (now: number) => {
+          if (previous) {
+            samples.push(now - previous);
+          }
+
+          previous = now;
+          if (samples.length < 1200) {
+            requestAnimationFrame(frame);
+          } else {
+            samples.sort((a, b) => {
+              return a - b;
+            });
+            resolve({
+              mean:
+                samples.reduce((a, b) => {
+                  return a + b;
+                }) / samples.length,
+              p50: samples[600],
+              p95: samples[1140],
+              p99: samples[1188],
+              max: samples[1199],
+              over240Budget: samples.filter((ms) => {
+                return ms > 1000 / 240;
+              }).length,
+              frames: samples.length,
+            });
+          }
+        };
+
+        requestAnimationFrame(frame);
+      });
+    });
     if (profileCpu) {
       const { profile } = await session.send('Profiler.stop');
       writeFileSync(testInfo.outputPath(`${scene}.cpuprofile`), JSON.stringify(profile));

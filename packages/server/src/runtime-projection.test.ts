@@ -19,20 +19,27 @@ function fixture() {
   };
   const parties = new Parties(world);
   const projection = createWorldProjection(
-    () => parties,
-    (world, viewer) => (viewer?.scene ? parties.run(viewer) : world),
+    () => {
+      return parties;
+    },
+    (world, viewer) => {
+      return viewer?.scene ? parties.run(viewer) : world;
+    },
   );
-  const player = (id: string): Player => ({
-    ...freshProgress(),
-    id,
-    name: id,
-    x: 0,
-    y: 0,
-    color: 0,
-    homeRunId: id,
-    runId: id,
-    scene: 'forest',
-  });
+  const player = (id: string): Player => {
+    return {
+      ...freshProgress(),
+      id,
+      name: id,
+      x: 0,
+      y: 0,
+      color: 0,
+      homeRunId: id,
+      runId: id,
+      scene: 'forest',
+    };
+  };
+
   const alice = player('alice');
   const bob = player('bob');
   world.players.set(alice.id, alice);
@@ -56,7 +63,9 @@ test('world snapshots and lobby summaries omit credentials and preserve public c
     world,
   );
   assert.deepEqual(
-    list.worlds.map(({ locked, capacity }) => ({ locked, capacity })),
+    list.worlds.map(({ locked, capacity }) => {
+      return { locked, capacity };
+    }),
     [
       { locked: true, capacity: 32 },
       { locked: false, capacity: MAX_PLAYERS },
@@ -67,13 +76,16 @@ test('world snapshots and lobby summaries omit credentials and preserve public c
 
 test('projection filters private chat, dimensions and run players/resources for each viewer', () => {
   const { world, parties, projection, alice, bob } = fixture();
-  const message = (id: string, extra: Partial<ChatMessage> = {}): ChatMessage => ({
-    id,
-    playerId: '',
-    name: '',
-    text: id,
-    ...extra,
-  });
+  const message = (id: string, extra: Partial<ChatMessage> = {}): ChatMessage => {
+    return {
+      id,
+      playerId: '',
+      name: '',
+      text: id,
+      ...extra,
+    };
+  };
+
   world.chat = [
     message('public'),
     message('alice-only', { recipientIds: ['alice'] }),
@@ -86,19 +98,27 @@ test('projection filters private chat, dimensions and run players/resources for 
   const a = projection.state(world, 1000, alice);
   const b = projection.state(world, 1000, bob);
   assert.deepEqual(
-    a.players.map(({ id }) => id),
+    a.players.map(({ id }) => {
+      return id;
+    }),
     ['alice'],
   );
   assert.deepEqual(
-    b.players.map(({ id }) => id),
+    b.players.map(({ id }) => {
+      return id;
+    }),
     ['bob'],
   );
   assert.deepEqual(
-    a.chat!.map(({ id }) => id),
+    a.chat!.map(({ id }) => {
+      return id;
+    }),
     ['public', 'alice-only', 'forest'],
   );
   assert.deepEqual(
-    b.chat!.map(({ id }) => id),
+    b.chat!.map(({ id }) => {
+      return id;
+    }),
     ['public', 'bob-only', 'forest'],
   );
   assert.equal(a.resources, aliceResources);
@@ -106,7 +126,9 @@ test('projection filters private chat, dimensions and run players/resources for 
   assert.notEqual(a.resources, b.resources);
   const anonymous = projection.state(world, 1000);
   assert.deepEqual(
-    anonymous.chat!.map(({ id }) => id),
+    anonymous.chat!.map(({ id }) => {
+      return id;
+    }),
     ['public', 'village'],
   );
   assert.equal(anonymous.resources, world.resources);

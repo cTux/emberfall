@@ -17,11 +17,14 @@ export function applyTalentAilment(
   duration = 5000,
   stats?: CharacterStats,
 ) {
-  if (enemy.hitpoints <= 0 || (kind === 'roots' && enemy.kind === 'boss')) return;
+  if (enemy.hitpoints <= 0 || (kind === 'roots' && enemy.kind === 'boss')) {
+    return;
+  }
+
   enemy.debuffs ??= [];
-  let entry = enemy.debuffs.find(
-    (value) => value.kind === kind && value.ownerId === player.id && value.expiresAt > now,
-  );
+  let entry = enemy.debuffs.find((value) => {
+    return value.kind === kind && value.ownerId === player.id && value.expiresAt > now;
+  });
   if (!entry) {
     const tickIntervalMs =
       kind === 'bleed' || kind === 'poison' || kind === 'burn'
@@ -50,14 +53,17 @@ export function talentArea(
 ) {
   radius *= 1 + (player ? characterStats(player).bonuses.areaOfEffect / 100 : 0);
 
-  return scene.enemies.filter(
-    (enemy) => enemy.hitpoints > 0 && forestDistance(point, enemy) <= radius,
-  );
+  return scene.enemies.filter((enemy) => {
+    return enemy.hitpoints > 0 && forestDistance(point, enemy) <= radius;
+  });
 }
 
 /** Extra bleed chance is additive with the weapon's existing roll. */
 export function talentAilmentChance(player: Player, kind: DebuffKind) {
-  if (kind !== 'bleed' || (player.classId ?? 'warrior') !== 'warrior') return 0;
+  if (kind !== 'bleed' || (player.classId ?? 'warrior') !== 'warrior') {
+    return 0;
+  }
+
   const learned = rank(player, 1, 0);
 
   return learned === 2 ? 0.35 : learned === 1 ? 0.2 : 0;
@@ -70,14 +76,18 @@ export function talentEnemyDeath(
   now: number,
   stats?: CharacterStats,
 ) {
-  if (player.classId === 'druid') return;
+  if (player.classId === 'druid') {
+    return;
+  }
+
   const spread = rank(player, 1, 6);
-  const wounds = enemy.debuffs?.some(
-    (entry) =>
+  const wounds = enemy.debuffs?.some((entry) => {
+    return (
       entry.ownerId === player.id &&
       entry.expiresAt > now &&
-      ['bleed', 'poison', 'burn'].includes(entry.kind),
-  );
+      ['bleed', 'poison', 'burn'].includes(entry.kind)
+    );
+  });
   if (spread && wounds) {
     const kind =
       player.classId === 'warrior' || player.classId === 'druid'
@@ -85,7 +95,8 @@ export function talentEnemyDeath(
         : player.classId === 'ranger'
           ? 'poison'
           : 'burn';
-    for (const other of talentArea(scene, enemy, 180, player).slice(0, spread === 2 ? 4 : 2))
+    for (const other of talentArea(scene, enemy, 180, player).slice(0, spread === 2 ? 4 : 2)) {
       applyTalentAilment(other, player, kind, spread, now, undefined, stats);
+    }
   }
 }

@@ -30,7 +30,9 @@ export const Renameable: StoryObj<typeof meta> = {
             id: 'storage',
             title,
             content: 'Right-click or press F2 on the tab.',
-            onRename: () => setTitle('Renamed storage'),
+            onRename: () => {
+              return setTitle('Renamed storage');
+            },
           },
         ]}
       />

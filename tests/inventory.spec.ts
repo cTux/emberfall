@@ -11,7 +11,9 @@ test('item tooltips follow class equipment rules without hiding trade actions', 
   await page.getByLabel('Your adventurer name').fill('Gear restrictions');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.classId = 'warrior';
   player.equipment = starterEquipment('warrior');
@@ -35,7 +37,11 @@ test('item tooltips follow class equipment rules without hiding trade actions', 
   await expect(page.getByRole('log', { name: 'Latest chat messages' })).toContainText(
     'Your class cannot equip this item.',
   );
-  expect(player.backpack.some((item) => item.id === 'bow')).toBe(true);
+  expect(
+    player.backpack.some((item) => {
+      return item.id === 'bow';
+    }),
+  ).toBe(true);
   for (const id of ['helmet', 'potion', 'bottle']) {
     await backpack.locator(`[data-backpack-item="${id}"]`).hover();
     await expect(warning).toBeHidden();
@@ -49,7 +55,9 @@ test('item tooltips follow class equipment rules without hiding trade actions', 
   player.classId = 'warrior';
   player.equipment = starterEquipment('warrior');
   await page.keyboard.press('Escape');
-  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  const marta = world.npcs!.find((npc) => {
+    return npc.id === INNKEEPER.id;
+  })!;
   const trader = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
     Object.assign(player, { x: marta.x, y: marta.y - 15 });

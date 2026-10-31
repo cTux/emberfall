@@ -26,13 +26,17 @@ test('account creation rolls nested character and cloud-save writes back on the 
   const { store, db } = await fixture(t);
   db.exec(`CREATE TRIGGER reject_account BEFORE INSERT ON steam_accounts
     BEGIN SELECT RAISE(ABORT, 'account blocked'); END;`);
-  assert.throws(() => store.loginSteam('hero', 'Hero'), /account blocked/);
+  assert.throws(() => {
+    return store.loginSteam('hero', 'Hero');
+  }, /account blocked/);
   for (const table of [
     'characters',
     getTableName(store.database.tables.users),
     getTableName(store.database.tables.cloudSaves),
-  ])
+  ]) {
     assert.equal(db.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get()!.count, 0, table);
+  }
+
   assert.equal(store.steamAccount('hero'), undefined);
   db.exec('DROP TRIGGER reject_account');
   const account = store.loginSteam('hero', 'Hero');
@@ -44,7 +48,9 @@ test('failed character rename rolls the account nickname back before a successfu
   const account = store.loginSteam('hero', 'Hero');
   db.exec(`CREATE TRIGGER reject_rename BEFORE UPDATE ON characters
     BEGIN SELECT RAISE(ABORT, 'rename blocked'); END;`);
-  assert.throws(() => store.renameSteam('hero', 'Renamed'), /rename blocked/);
+  assert.throws(() => {
+    return store.renameSteam('hero', 'Renamed');
+  }, /rename blocked/);
   assert.equal(store.steamAccount('hero')!.nickname, null);
   assert.equal(store.loadById(account.characterId).name, 'Wanderer');
   db.exec('DROP TRIGGER reject_rename');
@@ -61,7 +67,9 @@ test('failed world removal retains membership and merchant stock; retry removes 
   const merchant = store.merchant('world');
   db.exec(`CREATE TRIGGER reject_world BEFORE DELETE ON worlds
     BEGIN SELECT RAISE(ABORT, 'world blocked'); END;`);
-  assert.throws(() => store.deleteWorld('world'), /world blocked/);
+  assert.throws(() => {
+    return store.deleteWorld('world');
+  }, /world blocked/);
   assert.equal(store.canResume(hero.id, 'world'), true);
   assert.equal(store.worlds().length, 1);
   assert.deepEqual(store.merchant('world'), merchant);

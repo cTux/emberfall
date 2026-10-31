@@ -3,11 +3,13 @@ import { GameUiProvider } from '../src';
 
 const preview: Preview = {
   decorators: [
-    (Story) => (
-      <GameUiProvider>
-        <Story />
-      </GameUiProvider>
-    ),
+    (Story) => {
+      return (
+        <GameUiProvider>
+          <Story />
+        </GameUiProvider>
+      );
+    },
   ],
   parameters: {
     layout: 'padded',

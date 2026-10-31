@@ -34,7 +34,9 @@ export function useGamePreferences(
   }, [graphics]);
   useEffect(() => {
     try {
-      if (!steam) localStorage.setItem('emberfall-new.nickname', name);
+      if (!steam) {
+        localStorage.setItem('emberfall-new.nickname', name);
+      }
     } catch {
       /* Storage may be disabled. */
     }

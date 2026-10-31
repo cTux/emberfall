@@ -21,7 +21,14 @@ export const RowInteraction: StoryObj<typeof meta> = {
 
     return (
       <>
-        <WorldList {...args} onJoin={() => setJoins((count) => count + 1)} />
+        <WorldList
+          {...args}
+          onJoin={() => {
+            return setJoins((count) => {
+              return count + 1;
+            });
+          }}
+        />
         <p role='status'>Joins: {joins}</p>
       </>
     );

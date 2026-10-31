@@ -9,15 +9,22 @@ export function createValidationContext(
   };
 
   const check = (ok: unknown, name: RegistryName, id: string, message: string) => {
-    if (!ok) fail(name, id, message);
+    if (!ok) {
+      fail(name, id, message);
+    }
   };
 
-  const positive = (value: unknown) =>
-    typeof value === 'number' && Number.isFinite(value) && value > 0;
-  const nonnegative = (value: unknown) =>
-    typeof value === 'number' && Number.isFinite(value) && value >= 0;
-  const reference = (name: RegistryName, id: string, target: RegistryName, value: string) =>
-    check(r[target].has(value), name, id, `unknown ${target} reference '${value}'`);
+  const positive = (value: unknown) => {
+    return typeof value === 'number' && Number.isFinite(value) && value > 0;
+  };
+
+  const nonnegative = (value: unknown) => {
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0;
+  };
+
+  const reference = (name: RegistryName, id: string, target: RegistryName, value: string) => {
+    return check(r[target].has(value), name, id, `unknown ${target} reference '${value}'`);
+  };
 
   return { r, fail, check, positive, nonnegative, reference };
 }

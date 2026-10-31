@@ -29,8 +29,10 @@ export function validateAbilities(context: ValidationContext) {
       'intervalMs',
       'durationMs',
       'aimSmoothingSeconds',
-    ] as const)
+    ] as const) {
       check(positive(ability[key]), 'abilities', ability.id, `invalid ${key}`);
+    }
+
     check(
       ability.piercing === (ability.kind === 'arrow'),
       'abilities',
@@ -48,14 +50,16 @@ export function validateAbilities(context: ValidationContext) {
         ability.id,
         'invalid projectile speed, count or spread',
       );
-      if (ability.kind === 'fireball')
+      if (ability.kind === 'fireball') {
         check(
           positive(ability.splashRadius) && nonnegative(ability.splashDamage),
           'abilities',
           ability.id,
           'invalid splash',
         );
-      if (ability.kind === 'roots')
+      }
+
+      if (ability.kind === 'roots') {
         check(
           nonnegative(ability.bounces) &&
             Number.isInteger(ability.bounces) &&
@@ -64,6 +68,7 @@ export function validateAbilities(context: ValidationContext) {
           ability.id,
           'invalid bounce',
         );
+      }
     }
   }
 
@@ -77,7 +82,10 @@ export function validateAbilities(context: ValidationContext) {
       player.id,
       'roots ailment requires the roots mechanic',
     );
-    if (player.companion) reference('classes', player.id, 'companions', player.companion);
+    if (player.companion) {
+      reference('classes', player.id, 'companions', player.companion);
+    }
+
     check(
       ['warrior', 'ranger', 'mage', 'druid'].includes(player.art),
       'classes',
@@ -90,7 +98,10 @@ export function validateAbilities(context: ValidationContext) {
       player.id,
       'invalid label or sprite',
     );
-    for (const type of player.gearTypes) reference('classes', player.id, 'gearTypes', type);
+    for (const type of player.gearTypes) {
+      reference('classes', player.id, 'gearTypes', type);
+    }
+
     const starter = r.items.require(player.starterWeapon),
       slot = r.slots.require('weapon');
     check(

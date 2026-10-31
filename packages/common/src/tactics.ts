@@ -2,11 +2,14 @@ import { z } from 'zod';
 
 export const OFFENSIVE_PRIORITIES = ['nearest', 'lowestHealth', 'elite'] as const;
 export const DEFENSIVE_PRIORITIES = ['lowestHealth', 'players', 'self'] as const;
-const priorities = <T extends string>(values: readonly [T, ...T[]]) =>
-  z
+const priorities = <T extends string>(values: readonly [T, ...T[]]) => {
+  return z
     .array(z.enum(values))
     .length(values.length)
-    .refine((list) => new Set(list).size === values.length);
+    .refine((list) => {
+      return new Set(list).size === values.length;
+    });
+};
 
 export const tacticsSchema = z.object({
   offensive: priorities(OFFENSIVE_PRIORITIES),

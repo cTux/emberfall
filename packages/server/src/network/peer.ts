@@ -18,7 +18,9 @@ export class Peer extends EventEmitter {
   constructor(
     deliver: (message: ServerMessage) => void,
     disconnect: (code: number) => void,
-    pendingBytes = () => 0,
+    pendingBytes = () => {
+      return 0;
+    },
   ) {
     super();
     this.deliver = deliver;
@@ -27,7 +29,9 @@ export class Peer extends EventEmitter {
   }
 
   send(message: ServerMessage) {
-    if (this.readyState === Peer.OPEN) this.deliver(message);
+    if (this.readyState === Peer.OPEN) {
+      this.deliver(message);
+    }
   }
 
   receive(data: unknown) {
@@ -39,7 +43,10 @@ export class Peer extends EventEmitter {
   }
 
   close(code = 1000, _reason?: string) {
-    if (this.readyState === Peer.CLOSED) return;
+    if (this.readyState === Peer.CLOSED) {
+      return;
+    }
+
     this.readyState = Peer.CLOSED;
     this.disconnect(code);
     this.emit('close', code);
@@ -50,7 +57,10 @@ export class Peer extends EventEmitter {
   }
 
   detached(code = 1006) {
-    if (this.readyState === Peer.CLOSED) return;
+    if (this.readyState === Peer.CLOSED) {
+      return;
+    }
+
     this.readyState = Peer.CLOSED;
     this.emit('close', code);
   }

@@ -13,10 +13,12 @@ export const hero: Player = {
   playtimeSeconds: 0,
 };
 
-export const snapshot = (time: number, x: number): WorldState => ({
-  id: 'room',
-  name: 'Room',
-  hostId: 'p',
-  serverNow: time,
-  players: [{ ...hero, x, inputX: 1 }],
-});
+export const snapshot = (time: number, x: number): WorldState => {
+  return {
+    id: 'room',
+    name: 'Room',
+    hostId: 'p',
+    serverNow: time,
+    players: [{ ...hero, x, inputX: 1 }],
+  };
+};

@@ -61,7 +61,9 @@ function AbilityCooldown({ ability }: { ability: ActionBarAbility }) {
   const y = 50 + 72 * Math.sin(angle);
   const seconds =
     remaining >= 1000 ? Math.ceil(remaining / 1000) : (Math.ceil(remaining / 100) / 10).toFixed(1);
-  if (fraction <= 0) return null;
+  if (fraction <= 0) {
+    return null;
+  }
 
   return (
     <Box
@@ -172,14 +174,16 @@ export function ActionBar({
       )}
       {[1, 2, 3, 4].map((slot) => {
         const ability = abilities[slot - 1];
-        if (!ability)
+        if (!ability) {
           return (
             <ActionSlotStyled
               key={slot}
               role={onChoose ? 'button' : 'group'}
               tabIndex={onChoose ? 0 : undefined}
               aria-label={`Empty ability slot ${slot}`}
-              onClick={(event) => onChoose?.(slot - 1, event.currentTarget)}
+              onClick={(event) => {
+                return onChoose?.(slot - 1, event.currentTarget);
+              }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ' || event.key === 'F2') {
                   event.preventDefault();
@@ -190,6 +194,7 @@ export function ActionBar({
               <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
             </ActionSlotStyled>
           );
+        }
 
         return (
           <Tooltip
@@ -211,7 +216,9 @@ export function ActionBar({
               type='button'
               aria-label={`Choose ability for slot ${slot}: ${ability.name}`}
               data-auto-cast={!!ability.autoCast}
-              onClick={(event) => onChoose?.(slot - 1, event.currentTarget)}
+              onClick={(event) => {
+                return onChoose?.(slot - 1, event.currentTarget);
+              }}
               onContextMenu={(event) => {
                 event.preventDefault();
                 ability.onToggleAutoCast?.();
@@ -222,7 +229,9 @@ export function ActionBar({
                   ability.onToggleAutoCast?.();
                 }
 
-                if (event.key === 'F2') onChoose?.(slot - 1, event.currentTarget);
+                if (event.key === 'F2') {
+                  onChoose?.(slot - 1, event.currentTarget);
+                }
               }}
               sx={{
                 cursor: 'var(--cursor-pointer, pointer)',

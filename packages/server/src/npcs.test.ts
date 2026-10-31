@@ -13,7 +13,9 @@ import { player, setup } from './npcs.fixture.ts';
 test('four residents walk near players, pause during interaction, and release authoritative ECS entities', () => {
   const { world, life } = setup();
   assert.deepEqual(
-    world.npcs!.map((n) => n.buildingId),
+    world.npcs!.map((n) => {
+      return n.buildingId;
+    }),
     ['inn', 'hall', 'workshop', 'lodge'],
   );
   assert.equal(simulationFor(world.players)!.villagers.size, 4);
@@ -49,11 +51,26 @@ test('interactions validate live wrapped range and release invalid traders witho
     life.interact(trader, marta.id);
     life.tick(9000, 0.05);
     assert.equal(marta.moving, false, 'trading works across a wrapped seam');
-    if (action === 'distance') trader.x = 1000;
-    if (action === 'scene') trader.scene = 'forest';
-    if (action === 'death') trader.hitpoints = 0;
-    if (action === 'disconnect') trader.reconnecting = true;
-    if (action === 'leave') world.players.delete(trader.id);
+    if (action === 'distance') {
+      trader.x = 1000;
+    }
+
+    if (action === 'scene') {
+      trader.scene = 'forest';
+    }
+
+    if (action === 'death') {
+      trader.hitpoints = 0;
+    }
+
+    if (action === 'disconnect') {
+      trader.reconnecting = true;
+    }
+
+    if (action === 'leave') {
+      world.players.delete(trader.id);
+    }
+
     life.tick(9050, 0.05);
     assert(marta.moving, action);
     Object.assign(trader, { x: 5, scene: undefined, hitpoints: 100, reconnecting: false });
@@ -95,21 +112,46 @@ test('residents choose separate destinations and leave the circuit with randomiz
   world.players.set('p', player('p', 2000, 2000));
   const life = new VillageLife(
     world,
-    { generate: async () => ({ status: 'busy' }) },
+    {
+      generate: async () => {
+        return { status: 'busy' };
+      },
+    },
     0,
-    () => roll,
+    () => {
+      return roll;
+    },
   );
   const npcs = world.npcs!;
   // Even identical random rolls give co-located residents different destinations.
-  for (const npc of npcs) Object.assign(npc, { x: 400, y: 400 });
+  for (const npc of npcs) {
+    Object.assign(npc, { x: 400, y: 400 });
+  }
+
   life.tick(4999, 0.05);
-  assert(npcs.every((npc) => !npc.moving));
+  assert(
+    npcs.every((npc) => {
+      return !npc.moving;
+    }),
+  );
   life.tick(5000, 0.05);
-  assert(npcs.every((npc) => npc.moving));
-  assert.equal(new Set(npcs.map((npc) => npc.angle)).size, 4);
+  assert(
+    npcs.every((npc) => {
+      return npc.moving;
+    }),
+  );
+  assert.equal(
+    new Set(
+      npcs.map((npc) => {
+        return npc.angle;
+      }),
+    ).size,
+    4,
+  );
   // Keep conversations from interrupting the pause measurement.
-  for (const [index, npc] of npcs.slice(1).entries())
+  for (const [index, npc] of npcs.slice(1).entries()) {
     Object.assign(npc, { x: 1000 + index * 300, y: 1000 });
+  }
 
   const marta = npcs[0];
   Object.assign(marta, VILLAGE_DEFINITION.npcStops[0]);
@@ -167,7 +209,9 @@ test('Bram remains paused for his own interaction when Marta is also in range', 
   const { world, life } = setup();
   try {
     const hero = world.players.get('p')!;
-    const bram = world.npcs!.find((npc) => npc.id === 'craftsman')!;
+    const bram = world.npcs!.find((npc) => {
+      return npc.id === 'craftsman';
+    })!;
     Object.assign(hero, { x: 1000, y: 985 });
     Object.assign(bram, { x: 1000, y: 1000 });
     Object.assign(world.npcs![0], { x: 1020, y: 1000 });

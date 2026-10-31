@@ -26,7 +26,9 @@ export interface InteractionTarget {
 
 export function sceneryInteraction(object: Scenery): InteractionTarget | null {
   if (/^(tree|forest|plant|rock):/.test(object.id)) {
-    if (object.gathered) return null;
+    if (object.gathered) {
+      return null;
+    }
 
     return {
       source: {
@@ -46,7 +48,9 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
   }
 
   const id = object.id.replace(/^(building|npc|workstation):/, '');
-  const building = BUILDINGS.find((b) => b.id === id && b.id !== 'inn');
+  const building = BUILDINGS.find((b) => {
+    return b.id === id && b.id !== 'inn';
+  });
   const bullseye = !!BULLSEYE && object.id === `workstation:${BULLSEYE.id}`;
   if (
     !building &&
@@ -54,8 +58,9 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
     object.id !== 'building:wardrobe' &&
     object.id !== 'npc:innkeeper' &&
     object.id !== 'npc:craftsman'
-  )
+  ) {
     return null;
+  }
 
   return {
     source: {
@@ -101,12 +106,18 @@ export function pickInteraction(
   targets: readonly InteractionTarget[],
   point: { x: number; y: number } | undefined,
 ) {
-  if (!point) return null;
+  if (!point) {
+    return null;
+  }
+
   for (let i = targets.length - 1; i >= 0; i--) {
     const target = targets[i];
     const x = Math.floor(((point.x - target.x) * target.mask.width) / target.width);
     const y = Math.floor(((point.y - target.y) * target.mask.height) / target.height);
-    if (x < 0 || y < 0 || x >= target.mask.width || y >= target.mask.height) continue;
+    if (x < 0 || y < 0 || x >= target.mask.width || y >= target.mask.height) {
+      continue;
+    }
+
     let data = pixels.get(target.mask);
     if (!data) {
       data = target.mask
@@ -115,7 +126,9 @@ export function pickInteraction(
       pixels.set(target.mask, data);
     }
 
-    if (data[(y * target.mask.width + x) * 4 + 3] > 0) return target;
+    if (data[(y * target.mask.width + x) * 4 + 3] > 0) {
+      return target;
+    }
   }
 
   return null;
@@ -130,7 +143,10 @@ export function drawInteractionOutline(ctx: DrawingContext, target: InteractionT
   const color = target.highlighted ? '#00ff00' : '#ffdf00';
   const key = `${width}:${height}:${color}`;
   let cache = outlines.get(target.mask);
-  if (!cache) outlines.set(target.mask, (cache = new Map()));
+  if (!cache) {
+    outlines.set(target.mask, (cache = new Map()));
+  }
+
   let outline = cache.get(key);
   if (!outline) {
     const mask = document.createElement('canvas');
@@ -151,20 +167,28 @@ export function partyInteraction(
   world: import('@emberfall/common').WorldState | null | undefined,
   player: Player | undefined,
 ): Interaction | null {
-  if (!world || !player || player.hitpoints <= 0 || player.reconnecting) return null;
-  const candidates = world.players.filter(
-    (p) =>
+  if (!world || !player || player.hitpoints <= 0 || player.reconnecting) {
+    return null;
+  }
+
+  const candidates = world.players.filter((p) => {
+    return (
       p.id !== player.id &&
       p.scene === player.scene &&
       (!p.scene || p.runId === player.runId) &&
       p.hitpoints > 0 &&
       !p.reconnecting &&
-      forestDistance(player, p) < INTERACTION_RADIUS,
-  );
-  candidates.sort((a, b) => forestDistance(player, a) - forestDistance(player, b));
+      forestDistance(player, p) < INTERACTION_RADIUS
+    );
+  });
+  candidates.sort((a, b) => {
+    return forestDistance(player, a) - forestDistance(player, b);
+  });
   for (const target of candidates) {
     const name = partyAction(world, player, target);
-    if (name) return { id: `party:${target.id}`, name, x: target.x, y: target.y };
+    if (name) {
+      return { id: `party:${target.id}`, name, x: target.x, y: target.y };
+    }
   }
 
   return null;
@@ -185,10 +209,13 @@ export function partyAction(
     (target.scene && target.runId !== player.runId) ||
     target.hitpoints <= 0 ||
     target.reconnecting
-  )
+  ) {
     return null;
+  }
 
-  return world.partyRequests?.some((r) => r.fromId === target.id)
+  return world.partyRequests?.some((r) => {
+    return r.fromId === target.id;
+  })
     ? 'Accept'
     : !player.partyId && target.partyId
       ? 'Join party'

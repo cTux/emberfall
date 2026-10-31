@@ -50,7 +50,10 @@ export class ArenaPresentation {
     viewport: { width: number; height: number },
     preferences: Preferences,
   ) {
-    if (world) this.snapshots.push(world, now);
+    if (world) {
+      this.snapshots.push(world, now);
+    }
+
     const view = world ? this.snapshots.render(now) : null;
     const cycle = dayNight(view?.serverNow ?? 0);
     const local = world ? this.movement.render(world, now) : undefined;
@@ -110,7 +113,11 @@ export class ArenaPresentation {
       this.audio.play('warning');
     }
 
-    const hp = Object.fromEntries((view?.players ?? []).map((p) => [p.id, p.hitpoints]));
+    const hp = Object.fromEntries(
+      (view?.players ?? []).map((p) => {
+        return [p.id, p.hitpoints];
+      }),
+    );
     const hpKey = JSON.stringify(hp);
     if (hpKey !== this.previousHp) {
       this.previousHp = hpKey;

@@ -5,7 +5,8 @@
 ## Artwork delivery
 
 `scripts/package-player-art.mjs` declares each class's source rows and approved
-walk directions. `scripts/art/pack-player-frames.mjs` isolates and packs frames;
+walk directions. `scripts/art/isolate-player-frames.mjs` decodes sources and
+finds connected sprites; `pack-player-frames.mjs` selects and packs their frames.
 `match-player-palette.mjs` matches walking colors to the standing palette on the
 same browser canvas. The coordinator owns file writes, browser lifetime and
 handle disposal. When refactoring this pipeline, run old and new scripts against

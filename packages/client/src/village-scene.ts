@@ -15,7 +15,7 @@ import { drawVillageBackground } from './village-background';
 import { abilityEffectOpacity } from './ability-effects';
 import { drawClassProjectiles, drawLootAndBlood } from './combat-effects';
 import { drawPlayerAttack } from './player-rendering';
-import { companionCaster } from './companion';
+import { companionShadows } from './companion-shadows';
 import { critterCaster } from './critters';
 import { castShadow } from './lighting';
 import { drawVillageLighting } from './village-lighting';
@@ -59,7 +59,9 @@ export class VillageScene {
     const critters = this.critters(
       now,
       frame.camera,
-      view.players.filter((player) => !player.scene && player.hitpoints > 0),
+      view.players.filter((player) => {
+        return !player.scene && player.hitpoints > 0;
+      }),
       view.serverNow ?? now,
     );
 
@@ -88,8 +90,9 @@ export class VillageScene {
     const { preferences, cycle, highlightInteractions } = options;
     const playerId = this.playerId;
     ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
-    if (background) drawVillageBackground(ctx, background, cameraX, cameraY, viewWidth, viewHeight);
-    else {
+    if (background) {
+      drawVillageBackground(ctx, background, cameraX, cameraY, viewWidth, viewHeight);
+    } else {
       ctx.fillStyle = '#25392f';
       ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
     }
@@ -97,10 +100,12 @@ export class VillageScene {
     const training = view.training
       ? {
           ...view.training,
-          enemies: view.training.enemies.map((dummy) => ({
-            ...dummy,
-            ...project(dummy.x, dummy.y),
-          })),
+          enemies: view.training.enemies.map((dummy) => {
+            return {
+              ...dummy,
+              ...project(dummy.x, dummy.y),
+            };
+          }),
         }
       : undefined;
     const serverTime = view.serverNow ?? now;
@@ -117,13 +122,17 @@ export class VillageScene {
     }
 
     const players = view.players
-      .filter((p) => !p.scene)
-      .map((p) => ({
-        ...p,
-        ...project(p.x, p.y),
-        bear: p.bear ? { ...p.bear, ...project(p.bear.x, p.bear.y) } : undefined,
-      }));
-    for (const player of players)
+      .filter((p) => {
+        return !p.scene;
+      })
+      .map((p) => {
+        return {
+          ...p,
+          ...project(p.x, p.y),
+          bear: p.bear ? { ...p.bear, ...project(p.bear.x, p.bear.y) } : undefined,
+        };
+      });
+    for (const player of players) {
       drawPlayerAttack(
         ctx,
         player,
@@ -134,38 +143,51 @@ export class VillageScene {
         !!training && inTrainingZone(player),
         abilityEffectOpacity(preferences, playerId, player.id),
       );
-    if (training)
+    }
+
+    if (training) {
       drawLootAndBlood(ctx, training, serverTime, project, {
         x: cameraX,
         y: cameraY,
         width: viewWidth,
         height: viewHeight,
       });
+    }
+
     // Use the reconciled positions consistently for bodies, lanterns and shadows.
-    if (quality.shadows) for (const object of visibleScenery) castShadow(ctx, object);
+    if (quality.shadows) {
+      for (const object of visibleScenery) {
+        castShadow(ctx, object);
+      }
+    }
+
     const dynamic = this.players.prepare(ctx, players, playerId, now, serverTime);
     for (const critter of critters) {
       const caster = critterCaster(critter);
-      if (caster) dynamic.push(caster);
+      if (caster) {
+        dynamic.push(caster);
+      }
     }
 
-    for (const player of players) {
-      if (!player.bear) continue;
-      const point = player.bear;
-      const caster = companionCaster(
-        player.bear,
-        point.x,
-        point.y,
-        view.serverNow ?? now,
-        `bear:${player.id}`,
-      );
-      if (caster) dynamic.push(caster);
+    dynamic.push(
+      ...companionShadows(players, view.serverNow ?? now, (x, y) => {
+        return { x, y };
+      }),
+    );
+
+    if (quality.shadows) {
+      for (const caster of dynamic) {
+        castShadow(ctx, caster);
+      }
     }
 
-    if (quality.shadows) for (const caster of dynamic) castShadow(ctx, caster);
     const layers = villageLayers(visibleScenery, players, critters, training, portal);
     const outlines = options.outlines();
-    const damageByTarget = new Map(training?.damage.map((hit) => [hit.target, hit]));
+    const damageByTarget = new Map(
+      training?.damage.map((hit) => {
+        return [hit.target, hit];
+      }),
+    );
     const layerFrame = {
       view,
       local,
@@ -194,7 +216,7 @@ export class VillageScene {
 
     ctx.occlusion = false;
     if (training) {
-      if (preferences.damageNumbers)
+      if (preferences.damageNumbers) {
         drawDamageNumbers(
           ctx,
           training.damage,
@@ -202,6 +224,7 @@ export class VillageScene {
           serverTime,
           preferences.hideOtherPlayerDamageNumbers ? playerId : undefined,
         );
+      }
     }
 
     drawVillageLighting(ctx, villageFrame, dynamic, players, this.players, cycle);

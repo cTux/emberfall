@@ -9,7 +9,9 @@ import { PLANT_KINDS } from '@emberfall/core';
 
 const stoneArt = loadNativeArt('stone-node');
 const stoneGatheredArt = loadNativeArt('stone-gathered');
-const gatheredPlants = PLANT_KINDS.map((id) => loadNativeArt(`gathered-${id}`));
+const gatheredPlants = PLANT_KINDS.map((id) => {
+  return loadNativeArt(`gathered-${id}`);
+});
 export const resourceStateArt = [stoneArt, stoneGatheredArt, ...gatheredPlants];
 const frames = new Map<string, { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }>();
 export function resourceScenery(node: ResourceNode, state?: ResourceState): Scenery {
@@ -63,7 +65,9 @@ export function resourceScenery(node: ResourceNode, state?: ResourceState): Scen
         );
       frame = { sprite, mask: makeMask(sprite) };
       frames.set(key, frame);
-    } else frame = { sprite, mask: makeMask(sprite) };
+    } else {
+      frame = { sprite, mask: makeMask(sprite) };
+    }
   }
 
   const size = depleted && node.kind === 'tree' ? node.size * 0.48 : node.size;
@@ -72,6 +76,9 @@ export function resourceScenery(node: ResourceNode, state?: ResourceState): Scen
 }
 
 export function drawResourceHealth(ctx: DrawingContext, node: ResourceNode, state?: ResourceState) {
-  if (node.kind !== 'tree' || !state || state.remaining <= 0 || state.remaining >= 5) return;
+  if (node.kind !== 'tree' || !state || state.remaining <= 0 || state.remaining >= 5) {
+    return;
+  }
+
   drawWorldBar(ctx, node.x - 20, node.y - node.size - 4, 40, state.remaining / 5, '#a4cf7b');
 }

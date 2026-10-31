@@ -7,7 +7,11 @@ import { hero, snapshot } from './snapshots.fixture.ts';
 
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('remote lobby players interpolate across seams instead of crossing the whole map', async () => {

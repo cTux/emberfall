@@ -11,9 +11,15 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
     radius = PLAYER_CUTOUT_MARGIN;
   const key = `${w}:${h}`;
   let poses = silhouettes.get(mask);
-  if (!poses) silhouettes.set(mask, (poses = new Map()));
+  if (!poses) {
+    silhouettes.set(mask, (poses = new Map()));
+  }
+
   const cached = poses.get(key);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
+
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -24,18 +30,22 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
   const stride = w + radius * 2;
   const expanded = new Uint8Array(stride * (h + radius * 2));
   // Circular dilation, preserving the shape rather than its bounding rectangle.
-  for (let y = 0; y < h; y++)
+  for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (pixels[(y * w + x) * 4 + 3] < 32) continue;
+      if (pixels[(y * w + x) * 4 + 3] < 32) {
+        continue;
+      }
+
       for (let dy = -radius; dy <= radius; dy++) {
         const dx = Math.floor(Math.sqrt(radius * radius - dy * dy));
         const start = (y + radius + dy) * stride + x + radius;
         expanded.fill(1, start - dx, start + dx + 1);
       }
     }
+  }
 
   const runs: Run[] = [];
-  for (let y = 0; y < h + radius * 2; y++)
+  for (let y = 0; y < h + radius * 2; y++) {
     for (let x = 0; x < stride;) {
       if (!expanded[y * stride + x]) {
         x++;
@@ -43,9 +53,13 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
       }
 
       const start = x++;
-      while (x < stride && expanded[y * stride + x]) x++;
+      while (x < stride && expanded[y * stride + x]) {
+        x++;
+      }
+
       runs.push([start, y, x - start]);
     }
+  }
 
   poses.set(key, runs);
 

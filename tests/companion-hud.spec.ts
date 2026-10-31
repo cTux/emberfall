@@ -9,7 +9,9 @@ test('companion HUD follows confirmed health in village and forest and disappear
   await page.getByLabel('Your adventurer name').fill('Companion hero');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const card = page.getByRole('article', { name: 'Companion hero', exact: true });
   const companion = card.getByRole('progressbar', { name: 'Bear', exact: true });
@@ -18,7 +20,11 @@ test('companion HUD follows confirmed health in village and forest and disappear
   player.equipment = starterEquipment('druid');
   await expect(companion).toBeVisible();
   await expect(card.getByRole('img', { name: 'Bear portrait' })).toBeVisible();
-  await expect.poll(() => player.bear?.maxHitpoints).toBeGreaterThan(0);
+  await expect
+    .poll(() => {
+      return player.bear?.maxHitpoints;
+    })
+    .toBeGreaterThan(0);
   player.bear!.hitpoints = 37;
   await expect(companion).toHaveAttribute('aria-valuenow', '37');
   await expect(companion).toHaveAttribute('aria-valuemax', String(player.bear!.maxHitpoints));

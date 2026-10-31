@@ -18,8 +18,10 @@ export function validateEnemies(context: ValidationContext) {
       'windup',
       'cooldown',
       'hitPoints',
-    ] as const)
+    ] as const) {
       check(positive(enemy[key]), 'enemies', enemy.id, `invalid ${key}`);
+    }
+
     check(nonnegative(enemy.damage), 'enemies', enemy.id, 'invalid damage');
   }
 
@@ -36,7 +38,10 @@ export function validateEnemies(context: ValidationContext) {
     'combined spawn chances exceed 1',
   );
   const fallbacks = r.settings.require('spawnFallbacks').value as string[];
-  for (const enemy of fallbacks) reference('settings', 'spawnFallbacks', 'enemies', enemy);
+  for (const enemy of fallbacks) {
+    reference('settings', 'spawnFallbacks', 'enemies', enemy);
+  }
+
   for (const boss of r.bosses.values()) {
     reference('bosses', boss.id, 'enemies', boss.archetype);
     check(boss.kind === 'boss', 'bosses', boss.id, 'unsupported kind');
@@ -58,8 +63,9 @@ export function validateEnemies(context: ValidationContext) {
       'teleportRadius',
       'decisionMs',
       'resurrectionMs',
-    ] as const)
+    ] as const) {
       check(positive(companion[key]), 'companions', companion.id, `invalid ${key}`);
+    }
   }
 
   for (const ailment of r.ailments.values()) {

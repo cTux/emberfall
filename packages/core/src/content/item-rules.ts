@@ -15,13 +15,22 @@ import {
 } from '../item-stats.ts';
 import type { Registries } from './contracts.ts';
 
-export function createItemRules(content: Registries, roll = () => Math.random()) {
+export function createItemRules(
+  content: Registries,
+  roll = () => {
+    return Math.random();
+  },
+) {
   const CONSUMABLES = Object.freeze(
     Object.fromEntries(
       content.items
         .values()
-        .filter((item) => item.kind === 'consumable')
-        .map((item) => [item.id, Object.freeze({ ...item, healing: item.healing })]),
+        .filter((item) => {
+          return item.kind === 'consumable';
+        })
+        .map((item) => {
+          return [item.id, Object.freeze({ ...item, healing: item.healing })];
+        }),
     ),
   );
 
@@ -34,41 +43,56 @@ export function createItemRules(content: Registries, roll = () => Math.random())
     if (
       !definition ||
       (item.rarity !== undefined && !Object.values(Rarity).includes(item.rarity as Rarity))
-    )
+    ) {
       return false;
+    }
+
     const rarity = itemRarity(item);
     const entries = Object.entries(item.stats ?? {});
-    if (definition.kind !== 'gear')
+    if (definition.kind !== 'gear') {
       return (
         rarity === Rarity.Common &&
         entries.length === 0 &&
         (definition.kind === 'consumable' || item.quantity <= 200)
       );
-    if (item.quantity !== 1) return false;
-    if (item.stats === undefined) return rarity === Rarity.Common;
+    }
+
+    if (item.quantity !== 1) {
+      return false;
+    }
+
+    if (item.stats === undefined) {
+      return rarity === Rarity.Common;
+    }
 
     return (
       entries.length === rarityStatCount[rarity] &&
-      entries.every(
-        ([stat, value]) =>
+      entries.every(([stat, value]) => {
+        return (
           itemTypeStats[definition.gearType]?.includes(stat as ItemStat) &&
           (rarity === Rarity.Legendary || itemStatWeight[stat as ItemStat] === 1) &&
-          value === statValue(stat as ItemStat, rarity),
-      )
+          value === statValue(stat as ItemStat, rarity)
+        );
+      })
     );
   }, 'Invalid item definition, rarity or rolled stats');
-  const backpackSchema = z
-    .array(itemSchema)
-    .refine(
-      (items) => new Set(items.map((item) => item.id)).size === items.length,
-      'Duplicate item identity',
+  const backpackSchema = z.array(itemSchema).refine((items) => {
+    return (
+      new Set(
+        items.map((item) => {
+          return item.id;
+        }),
+      ).size === items.length
     );
+  }, 'Duplicate item identity');
   type BackpackItem = z.infer<typeof backpackSchema>[number];
 
   function rollItem(itemId: string, random = roll): BackpackItem {
     const definition = itemDefinition(itemId);
-    if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType])
+    if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType]) {
       return { id: crypto.randomUUID(), itemId, quantity: 1 };
+    }
+
     const rarity = rollRarity(random);
 
     return {
@@ -83,12 +107,13 @@ export function createItemRules(content: Registries, roll = () => Math.random())
   function itemPrice(item: { itemId: string; rarity?: string; stats?: Record<string, number> }) {
     const definition = itemDefinition(item.itemId);
     const base = definition.price ?? 1;
-    if (definition.kind !== 'gear') return base;
-    const statPrice = Object.entries(item.stats ?? {}).reduce(
-      (sum, [stat, value]) =>
-        sum + value / itemStatBaseValue[stat as ItemStat] / itemStatWeight[stat as ItemStat],
-      0,
-    );
+    if (definition.kind !== 'gear') {
+      return base;
+    }
+
+    const statPrice = Object.entries(item.stats ?? {}).reduce((sum, [stat, value]) => {
+      return sum + value / itemStatBaseValue[stat as ItemStat] / itemStatWeight[stat as ItemStat];
+    }, 0);
 
     return Math.ceil(base * rarityStatMultiplier[itemRarity(item)] + 5 * statPrice);
   }

@@ -7,15 +7,21 @@ import { Peer } from './network/peer.ts';
 
 test('logs major lifecycle events while combat, ticks, chat and successful autosaves stay quiet', async (t) => {
   const lines: string[] = [];
-  t.mock.method(console, 'info', (line: string) => lines.push(line));
+  t.mock.method(console, 'info', (line: string) => {
+    return lines.push(line);
+  });
   t.mock.timers.enable({ apis: ['Date', 'setInterval', 'setTimeout'], now: Date.now() });
   const runtime = await createRuntime(':memory:', {
-    generate: async () => ({ status: 'unavailable' }),
+    generate: async () => {
+      return { status: 'unavailable' };
+    },
   });
   const messages: ServerMessage[] = [];
   const connect = () => {
     const peer = new Peer(
-      (message) => messages.push(message),
+      (message) => {
+        return messages.push(message);
+      },
       () => {},
     );
     runtime.connect(peer);
@@ -31,7 +37,9 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
       playerName: 'Private name',
       password: '',
     });
-    const joined = messages.find((message) => message.type === 'joined');
+    const joined = messages.find((message) => {
+      return message.type === 'joined';
+    });
     assert(joined?.type === 'joined');
     const player = runtime.worlds.get(joined.world.id)!.players.get(joined.playerId)!;
     player.x = 125;
@@ -50,18 +58,22 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
     messages.length = 0;
     t.mock.timers.tick(RUNTIME.autosaveMs);
     assert(
-      messages.some((message) => message.type === 'saved'),
+      messages.some((message) => {
+        return message.type === 'saved';
+      }),
       'autosave ran',
     );
     assert(
-      messages.some(
-        (message) => message.type === 'state' && message.world.training?.damage?.length,
-      ),
+      messages.some((message) => {
+        return message.type === 'state' && message.world.training?.damage?.length;
+      }),
       'combat produced damage',
     );
     assert.equal(lines.length, count, 'routine activity must not emit logs');
     const errors: string[] = [];
-    t.mock.method(console, 'error', (line: string) => errors.push(line));
+    t.mock.method(console, 'error', (line: string) => {
+      return errors.push(line);
+    });
     const save = t.mock.method(runtime.characters, 'save', () => {
       throw new Error('Injected write failure');
     });
@@ -76,7 +88,11 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
       worldId: joined.world.id,
       characterToken: joined.characterToken,
     });
-    assert(lines.some((line) => line.includes('Player reconnected')));
+    assert(
+      lines.some((line) => {
+        return line.includes('Player reconnected');
+      }),
+    );
     next.receive({ type: 'leave' });
     next.close();
   } finally {
@@ -96,16 +112,23 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
     'Runtime stopped',
   ]) {
     assert(
-      lines.some((line) => line.includes(event)),
+      lines.some((line) => {
+        return line.includes(event);
+      }),
       event,
     );
   }
 
-  assert(lines.every((line) => /^\d{4}-\d{2}-\d{2}T[\d:.]+Z INFO /.test(line)));
+  assert(
+    lines.every((line) => {
+      return /^\d{4}-\d{2}-\d{2}T[\d:.]+Z INFO /.test(line);
+    }),
+  );
   const output = lines.join('\n');
   assert(!output.includes('Private'));
   for (const message of messages) {
-    if (message.type === 'joined' && message.characterToken)
+    if (message.type === 'joined' && message.characterToken) {
       assert(!output.includes(message.characterToken));
+    }
   }
 });

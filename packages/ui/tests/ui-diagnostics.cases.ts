@@ -17,9 +17,11 @@ test('performance diagnostics stay compact with readable labels and all traces',
   const bounds = await monitor.boundingBox();
   expect(bounds!.width).toBeLessThanOrEqual(224);
   expect(bounds!.height).toBeLessThanOrEqual(100);
-  expect(await monitor.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
-    true,
-  );
+  expect(
+    await monitor.evaluate((element) => {
+      return element.scrollWidth <= element.clientWidth;
+    }),
+  ).toBe(true);
   await monitor.screenshot({ path: testInfo.outputPath('compact-performance-monitor.png') });
 
   for (const [id, visible, hidden] of [

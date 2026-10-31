@@ -9,21 +9,26 @@ import { freshProgress } from '../src/characters.ts';
 
 Encoder.BUFFER_SIZE = 128 * 1024;
 const ecs = new SimulationWorld();
-const players: Player[] = Array.from({ length: 8 }, (_, i) => ({
-  ...freshProgress(),
-  id: `p${i}`,
-  name: `Player ${i}`,
-  color: i,
-  x: 2400 + i * 25,
-  y: 1280,
-  scene: 'forest',
-  autoAttack: true,
-  autoTarget: true,
-  hitpoints: 1e8,
-  maxHitpoints: 1e8,
-  classId: 'warrior',
-}));
-for (const player of players) ecs.players.set(player.id, player);
+const players: Player[] = Array.from({ length: 8 }, (_, i) => {
+  return {
+    ...freshProgress(),
+    id: `p${i}`,
+    name: `Player ${i}`,
+    color: i,
+    x: 2400 + i * 25,
+    y: 1280,
+    scene: 'forest',
+    autoAttack: true,
+    autoTarget: true,
+    hitpoints: 1e8,
+    maxHitpoints: 1e8,
+    classId: 'warrior',
+  };
+});
+for (const player of players) {
+  ecs.players.set(player.id, player);
+}
+
 const scene: SceneState = {
   id: 'benchmark',
   type: 'Forest',
@@ -37,27 +42,32 @@ const scene: SceneState = {
   playerCount: 8,
   portals: [],
   damage: [],
-  enemies: Array.from({ length: 160 }, (_, i) => ({
-    id: i + 1,
-    x: 2150 + (i % 16) * 35,
-    y: 1050 + Math.floor(i / 16) * 35,
-    hitpoints: 1e8,
-    maxHitpoints: 1e8,
-    angle: 0,
-    archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[i % 4],
-  })),
+  enemies: Array.from({ length: 160 }, (_, i) => {
+    return {
+      id: i + 1,
+      x: 2150 + (i % 16) * 35,
+      y: 1050 + Math.floor(i / 16) * 35,
+      hitpoints: 1e8,
+      maxHitpoints: 1e8,
+      angle: 0,
+      archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[i % 4],
+    };
+  }),
 };
 ecs.bind(scene);
-const states = players.map(() => new SessionState()),
-  encoders = states.map((state) => new Encoder(state));
+const states = players.map(() => {
+    return new SessionState();
+  }),
+  encoders = states.map((state) => {
+    return new Encoder(state);
+  });
 const simulation: number[] = [],
   replication: number[] = [];
 let bytes = 0;
 let seed = 12345;
-const context = createGame(
-  GAME_MODS,
-  () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32,
-);
+const context = createGame(GAME_MODS, () => {
+  return (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+});
 for (let tick = 0; tick < 500; tick++) {
   const now = 10000 + tick * 50;
   const start = performance.now();
@@ -74,7 +84,10 @@ for (let tick = 0; tick < 500; tick++) {
   for (let client = 0; client < 8; client++) {
     applyState(states[client], projection);
     const patch = encoders[client].encode();
-    if (tick >= 100) bytes += patch.byteLength;
+    if (tick >= 100) {
+      bytes += patch.byteLength;
+    }
+
     encoders[client].discardChanges();
   }
 
@@ -85,10 +98,15 @@ for (let tick = 0; tick < 500; tick++) {
 }
 
 const summary = (values: number[]) => {
-  const sorted = [...values].sort((a, b) => a - b);
+  const sorted = [...values].sort((a, b) => {
+    return a - b;
+  });
 
   return {
-    meanMs: values.reduce((sum, value) => sum + value, 0) / values.length,
+    meanMs:
+      values.reduce((sum, value) => {
+        return sum + value;
+      }, 0) / values.length,
     p95Ms: sorted[Math.floor(sorted.length * 0.95)],
     maxMs: sorted.at(-1),
   };

@@ -25,9 +25,14 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
       : characterImages[
           npc.id === 'hallkeeper' ? 'druid' : npc.id === 'craftsman' ? 'warrior' : 'ranger'
         ].walk;
-    if (!image.complete || !image.naturalWidth) return [];
+    if (!image.complete || !image.naturalWidth) {
+      return [];
+    }
+
     const column = marta && !npc.moving ? Math.floor(now / 400) % 4 : facing;
-    const station = VILLAGE_DEFINITION.workstations.find((s) => s.id === npc.workstationId);
+    const station = VILLAGE_DEFINITION.workstations.find((s) => {
+      return s.id === npc.workstationId;
+    });
     const working = !!station;
     const actionPose = station?.activity === 'forging' || station?.activity === 'archery';
     const phase = Math.max(0, now - (npc.workStartedAt ?? now));
@@ -41,7 +46,10 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
           : 6
         : playerFrame(now, npc.moving, true);
     let atlas = frames.get(image);
-    if (!atlas) frames.set(image, (atlas = new Map()));
+    if (!atlas) {
+      frames.set(image, (atlas = new Map()));
+    }
+
     const key = `${column}:${row}`;
     let frame = atlas.get(key);
     if (!frame) {

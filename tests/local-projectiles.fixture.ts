@@ -17,13 +17,15 @@ export function fixture(classId: Player['classId'] = 'mage', training = false): 
     sequence: 0,
     nextSpawn: 20000,
     damage: [],
-    enemies: [1, 2].map((id) => ({
-      id,
-      x: (training ? 140 : 2400) + 140 + id * 20,
-      y: training ? 340 : 1280,
-      hitpoints: 100,
-      angle: 0,
-    })),
+    enemies: [1, 2].map((id) => {
+      return {
+        id,
+        x: (training ? 140 : 2400) + 140 + id * 20,
+        y: training ? 340 : 1280,
+        hitpoints: 100,
+        angle: 0,
+      };
+    }),
   };
 
   return {

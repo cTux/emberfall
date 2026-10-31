@@ -13,19 +13,25 @@ test('ECS collections preserve identity and explicit order across removal and sc
   const first = scene.enemies[0],
     last = scene.enemies.at(-1)!;
   assert.equal(world.ecs.with('enemies').size, 7);
-  scene.enemies = scene.enemies.filter((enemy) => enemy !== first);
+  scene.enemies = scene.enemies.filter((enemy) => {
+    return enemy !== first;
+  });
   assert.equal(scene.enemies.at(-1), last);
   last.hitpoints = 12;
   assert.equal(
     // Miniplex queries are iterable but do not implement Array.find.
     // oxlint-disable-next-line unicorn/no-useless-spread
-    [...world.ecs.with('enemies')].find((e) => e.enemies === last)!.enemies.hitpoints,
+    [...world.ecs.with('enemies')].find((e) => {
+      return e.enemies === last;
+    })!.enemies.hitpoints,
     12,
   );
   appendSceneEntities(scene, 'enemies', first);
   assert.equal(scene.enemies.at(-1), first);
   assert.throws(
-    () => scene.enemies.push(first),
+    () => {
+      return scene.enemies.push(first);
+    },
     TypeError,
     'membership is changed through the collection boundary',
   );
@@ -67,7 +73,9 @@ test('ECS-backed and plain-object combat produce the same state through spawns, 
       const seeded = () => {
         let state = seed;
 
-        return () => (state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+        return () => {
+          return (state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+        };
       };
 
       Math.random = seeded();
@@ -75,7 +83,9 @@ test('ECS-backed and plain-object combat produce the same state through spawns, 
       Math.random = seeded();
       stepCombat(
         ecsScene,
-        [...entityWorld.actors].map((e) => e.player),
+        [...entityWorld.actors].map((e) => {
+          return e.player;
+        }),
         tick * 50,
         0.05,
       );

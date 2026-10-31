@@ -1,3 +1,4 @@
+import { gameSceneStatus } from './game-scene-status';
 import { useGameInteractions } from './useGameInteractions';
 import { GamePanels } from './GamePanels';
 import { useGameHotkeys } from './useGameHotkeys';
@@ -10,7 +11,7 @@ import type { GameMenu } from './game-panels';
 import { WorldBrowser } from './WorldBrowser';
 import { useGameSession } from './useGameSession';
 import type { AccountView, WorldSummary } from '@emberfall/common';
-import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
+import { Difficulty } from '@emberfall/common';
 import { INNKEEPER } from '@emberfall/core';
 import { lazy, useEffect, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
@@ -18,10 +19,16 @@ import type { Preferences } from './preferences';
 import type { Dispatch, SetStateAction } from 'react';
 import { useChat } from './ChatProvider';
 
-const Arena = lazy(() => import('./Arena').then((module) => ({ default: module.Arena })));
-const WeaponActionBar = lazy(() =>
-  import('./WeaponActionBar').then((module) => ({ default: module.WeaponActionBar })),
-);
+const Arena = lazy(() => {
+  return import('./Arena').then((module) => {
+    return { default: module.Arena };
+  });
+});
+const WeaponActionBar = lazy(() => {
+  return import('./WeaponActionBar').then((module) => {
+    return { default: module.WeaponActionBar };
+  });
+});
 
 export function Game({
   account,
@@ -46,7 +53,9 @@ export function Game({
     reportError,
     onEvent: (event) => {
       if (event === 'voting') {
-        setMenu((current) => current ?? 'portal');
+        setMenu((current) => {
+          return current ?? 'portal';
+        });
 
         return;
       }
@@ -58,10 +67,18 @@ export function Game({
         setSelected(null);
       }
 
-      if (event === 'sceneChanged') setDeathWindow(true);
-      if (event === 'left' || event === 'resumeFailed' || event === 'disconnected')
+      if (event === 'sceneChanged') {
+        setDeathWindow(true);
+      }
+
+      if (event === 'left' || event === 'resumeFailed' || event === 'disconnected') {
         setBrowserOpen(true);
-      if (event === 'left' || event === 'disconnected') setTab('browse');
+      }
+
+      if (event === 'left' || event === 'disconnected') {
+        setTab('browse');
+      }
+
       if (event === 'disconnected') {
         setSelected(null);
         setJoinPassword('');
@@ -95,7 +112,9 @@ export function Game({
   useEffect(() => {
     send({ type: 'npcInteraction', npcId: tradingNpcId });
   }, [tradingNpcId, send]);
-  const me = world?.players.find((p) => p.id === playerId);
+  const me = world?.players.find((p) => {
+    return p.id === playerId;
+  });
   const scene = world?.scene;
   const { catSpoke, clearCatMessages } = useWorldChat({ world, me, playerId, status, send });
   const { interaction, setCursorAim, castTalent, interact } = useGameInteractions({
@@ -107,24 +126,7 @@ export function Game({
     setBuilding,
   });
   useGameHotkeys({ world: !!world, menu, setMenu, setPreferences, castTalent, interact });
-  const boss =
-    me?.scene === 'forest' && scene?.phase === 'active'
-      ? scene.enemies.find((enemy) => enemy.id === scene.bossId && enemy.hitpoints > 0)
-      : undefined;
-  const departure = Math.max(
-    1,
-    Math.ceil(((scene?.countdownAt ?? 0) - (world?.serverNow ?? 0)) / 1000),
-  );
-  const remaining = Math.max(
-    0,
-    Math.ceil(((scene?.endsAt ?? 0) - (scene?.pausedAt ?? world?.serverNow ?? 0)) / 1000),
-  );
-  const canRegenerate =
-    !!scene &&
-    ['active', 'ended'].includes(scene.phase) &&
-    !hasLivingScenePlayers(
-      world?.players.filter((p) => p.runId === (me?.scene ? me.runId : me?.homeRunId)) ?? [],
-    );
+  const { boss, departure, remaining, canRegenerate } = gameSceneStatus(world, me);
 
   return (
     <main>
@@ -165,7 +167,9 @@ export function Game({
           browserOpen={browserOpen}
           status={status}
           onMenu={setMenu}
-          onOpenBrowser={() => setBrowserOpen(true)}
+          onOpenBrowser={() => {
+            return setBrowserOpen(true);
+          }}
         />
         {world ? (
           <PartyHud
@@ -191,7 +195,9 @@ export function Game({
             latency={latency}
             pending={pending}
             act={act}
-            onClose={() => setBrowserOpen(false)}
+            onClose={() => {
+              return setBrowserOpen(false);
+            }}
           />
         ) : null}
         <SceneOverlay
@@ -205,7 +211,9 @@ export function Game({
           deathWindow={deathWindow}
           setDeathWindow={setDeathWindow}
           unavailable={unavailable}
-          onReturnLobby={() => send({ type: 'returnLobby' })}
+          onReturnLobby={() => {
+            return send({ type: 'returnLobby' });
+          }}
         />
       </section>
       <GamePanels
@@ -231,7 +239,9 @@ export function Game({
         canRegenerate={canRegenerate}
         difficulty={difficulty}
         setDifficulty={setDifficulty}
-        onClose={() => setMenu(null)}
+        onClose={() => {
+          return setMenu(null);
+        }}
       />
     </main>
   );

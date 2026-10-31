@@ -23,56 +23,72 @@ export function Tactics({
   const [tab, setTab] = useState('offensive');
   const value = player.tactics ?? DEFAULT_TACTICS;
   const unavailable = disabled || player.hitpoints <= 0;
-  const update = (patch: Partial<TacticsValue>) =>
-    send({
+  const update = (patch: Partial<TacticsValue>) => {
+    return send({
       type: 'setTactics',
       classId: player.classId ?? 'warrior',
       tactics: patch,
     });
+  };
+
   const companion = !!game.registries.classes.require(player.classId ?? 'warrior').companion;
-  const priorities = (key: 'offensive' | 'defensive') => (
-    <TacticsPriorities
-      rules={value[key]}
-      disabled={unavailable}
-      onMove={(rule, direction) =>
-        send({
-          type: 'moveTacticsPriority',
-          classId: player.classId ?? 'warrior',
-          list: key,
-          rule,
-          direction,
-        })
-      }
-    />
-  );
-  const toggle = (key: 'keepTarget' | 'includeCompanions' | 'avoidHazards', label: string) => (
-    <SettingToggle
-      label={label}
-      checked={value[key]}
-      disabled={unavailable || (key === 'avoidHazards' && !companion)}
-      onChange={(checked) => update({ [key]: checked })}
-    />
-  );
+  const priorities = (key: 'offensive' | 'defensive') => {
+    return (
+      <TacticsPriorities
+        rules={value[key]}
+        disabled={unavailable}
+        onMove={(rule, direction) => {
+          return send({
+            type: 'moveTacticsPriority',
+            classId: player.classId ?? 'warrior',
+            list: key,
+            rule,
+            direction,
+          });
+        }}
+      />
+    );
+  };
+
+  const toggle = (key: 'keepTarget' | 'includeCompanions' | 'avoidHazards', label: string) => {
+    return (
+      <SettingToggle
+        label={label}
+        checked={value[key]}
+        disabled={unavailable || (key === 'avoidHazards' && !companion)}
+        onChange={(checked) => {
+          return update({ [key]: checked });
+        }}
+      />
+    );
+  };
+
   const select = (
     key: 'stance' | 'distance' | 'companionTarget',
     label: string,
     choices: readonly (readonly [string, string])[],
-  ) => (
-    <TextField
-      select
-      fullWidth
-      disabled={unavailable || !companion}
-      label={label}
-      value={value[key]}
-      onChange={(event) => update({ [key]: event.target.value })}
-    >
-      {choices.map(([id, name]) => (
-        <MenuItem key={id} value={id}>
-          {name}
-        </MenuItem>
-      ))}
-    </TextField>
-  );
+  ) => {
+    return (
+      <TextField
+        select
+        fullWidth
+        disabled={unavailable || !companion}
+        label={label}
+        value={value[key]}
+        onChange={(event) => {
+          return update({ [key]: event.target.value });
+        }}
+      >
+        {choices.map(([id, name]) => {
+          return (
+            <MenuItem key={id} value={id}>
+              {name}
+            </MenuItem>
+          );
+        })}
+      </TextField>
+    );
+  };
 
   return (
     <ChapterTabs
@@ -136,20 +152,24 @@ export function Tactics({
                   disabled={unavailable}
                   label='Auto-heal below'
                   value={value.healBelow}
-                  onChange={(event) =>
-                    update({ healBelow: Number(event.target.value) as TacticsValue['healBelow'] })
-                  }
+                  onChange={(event) => {
+                    return update({
+                      healBelow: Number(event.target.value) as TacticsValue['healBelow'],
+                    });
+                  }}
                 >
                   {[
                     [1, 'Any missing health'],
                     [0.9, '90% HP'],
                     [0.75, '75% HP'],
                     [0.5, '50% HP'],
-                  ].map(([id, name]) => (
-                    <MenuItem key={id} value={id}>
-                      {name}
-                    </MenuItem>
-                  ))}
+                  ].map(([id, name]) => {
+                    return (
+                      <MenuItem key={id} value={id}>
+                        {name}
+                      </MenuItem>
+                    );
+                  })}
                 </TextField>
                 {toggle('includeCompanions', 'Include companions')}
               </Stack>
@@ -177,9 +197,9 @@ export function Tactics({
                 spacing={2}
                 sx={{ border: 0, m: 0, p: 0, minWidth: 0 }}
               >
-                {POSITIONING_CONTROLS.map(({ key, label, choices }) => (
-                  <Fragment key={key}>{select(key, label, choices)}</Fragment>
-                ))}
+                {POSITIONING_CONTROLS.map(({ key, label, choices }) => {
+                  return <Fragment key={key}>{select(key, label, choices)}</Fragment>;
+                })}
                 {toggle('avoidHazards', 'Avoid telegraphs and projectiles')}
               </Stack>
               <Divider />

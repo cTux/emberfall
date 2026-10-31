@@ -19,7 +19,10 @@ export function companion(cast: TalentCast) {
   } = cast;
 
   const bear = player.bear;
-  if (!bear || bear.hitpoints <= 0) return;
+  if (!bear || bear.hitpoints <= 0) {
+    return;
+  }
+
   if (tier === 0 && primary) {
     bear.x = primary.x;
     bear.y = primary.y;
@@ -29,21 +32,30 @@ export function companion(cast: TalentCast) {
       bear.maxHitpoints,
       bear.hitpoints + bear.maxHitpoints * (learned === 2 ? 0.3 : 0.2),
     );
-    for (const enemy of effectArea(scene, bear, 200))
+    for (const enemy of effectArea(scene, bear, 200)) {
       applyTalentAilment(enemy, player, 'roots', 1, now, 1500);
-  } else if (tier === 2)
+    }
+  } else if (tier === 2) {
     for (const enemy of effectArea(scene, bear, 250)) {
       strike(scene, player, enemy, learned === 2 ? 2.5 : 1.8, now, ability, context);
       applyTalentAilment(enemy, player, 'bleed', learned, now, undefined, stats);
     }
-  else
+  } else {
     schedule(scene, player, nodeId, now, 4000, 1000, (at) => {
-      if (bear.hitpoints <= 0) return;
-      for (const enemy of effectArea(scene, bear, 180))
+      if (bear.hitpoints <= 0) {
+        return;
+      }
+
+      for (const enemy of effectArea(scene, bear, 180)) {
         strike(scene, player, enemy, learned === 2 ? 1 : 0.6, at, ability, context);
+      }
     });
+  }
+
   const hunting = rank(player, 1, 4);
-  if (hunting && tier === 1)
-    for (const enemy of effectArea(scene, bear, 200))
+  if (hunting && tier === 1) {
+    for (const enemy of effectArea(scene, bear, 200)) {
       applyTalentAilment(enemy, player, 'bleed', hunting, now, undefined, stats);
+    }
+  }
 }

@@ -45,7 +45,9 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
                 selected={world.id === selectedId}
                 hover={!joinDisabled}
                 onClick={() => {
-                  if (!joinDisabled) onJoin(world);
+                  if (!joinDisabled) {
+                    onJoin(world);
+                  }
                 }}
                 sx={{
                   cursor: joinDisabled

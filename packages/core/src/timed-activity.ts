@@ -39,11 +39,15 @@ export function checkTimedActivity(
     at < now - ACTIVITY_INPUT_WINDOW_MS ||
     at > now ||
     now >= activity.endsAt
-  )
+  ) {
     return false;
+  }
+
   const indicator = activityIndicator(activity, at);
-  if (indicator < activity.zoneStart || indicator > activity.zoneStart + ACTIVITY_ZONE_WIDTH)
+  if (indicator < activity.zoneStart || indicator > activity.zoneStart + ACTIVITY_ZONE_WIDTH) {
     return false;
+  }
+
   activity.endsAt -= ACTIVITY_BONUS_MS;
   activity.zoneStart = indicator < 0.5 ? 0.65 + roll() * 0.17 : 0.04 + roll() * 0.17;
   activity.zoneAt = now;

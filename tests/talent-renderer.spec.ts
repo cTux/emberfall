@@ -22,19 +22,24 @@ test('all twelve talent cast themes paint generated sprite pixels through Pixi',
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
-  await page.route('**/talent-renderer-test', (route) =>
-    route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-  );
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
+  await page.route('**/talent-renderer-test', (route) => {
+    return route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' });
+  });
   await page.goto('/talent-renderer-test');
   await page.addScriptTag({ content: code });
-  const counts = await page.evaluate(async () =>
-    (
+  const counts = await page.evaluate(async () => {
+    return (
       window as unknown as { TalentRendererFixture: typeof import('./talent-renderer-fixture') }
-    ).TalentRendererFixture.render(),
-  );
+    ).TalentRendererFixture.render();
+  });
   expect(counts).toHaveLength(12);
-  for (const count of counts) expect(count).toBeGreaterThan(200);
+  for (const count of counts) {
+    expect(count).toBeGreaterThan(200);
+  }
+
   await page
     .locator('[data-preview="talent-casts"]')
     .screenshot({ path: 'test-results/talent-cast-frames.png' });

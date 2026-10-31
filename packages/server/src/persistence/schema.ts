@@ -3,13 +3,18 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
 export function openCharacterDatabase(path: string) {
-  if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
+  if (path !== ':memory:') {
+    mkdirSync(dirname(path), { recursive: true });
+  }
+
   const db = new DatabaseSync(path);
   if (
     db
       .prepare('PRAGMA table_info(characters)')
       .all()
-      .some((column) => column.name === 'progress')
+      .some((column) => {
+        return column.name === 'progress';
+      })
   ) {
     db.close();
 

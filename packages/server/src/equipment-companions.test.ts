@@ -50,12 +50,17 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
     },
   ]);
   const { characterStats, companionStats, syncEquipmentVitals } = context.rules;
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   for (const training of [true, false]) {
     const player = hero('druid');
     player.equipment!.ring = gear.id;
     player.autoAttack = false;
-    if (!training) player.scene = 'forest';
+    if (!training) {
+      player.scene = 'forest';
+    }
+
     syncEquipmentVitals(player);
     const stats = companionStats(player);
     assert.deepEqual(stats, {
@@ -103,9 +108,14 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
 test('Bear critical and 10% bleed boundaries work in forest and training across a seam', (t) => {
   for (const training of [true, false]) {
     for (const roll of [0, 0.049999, 0.05, 0.099999, 0.1]) {
-      const random = t.mock.method(Math, 'random', () => roll);
+      const random = t.mock.method(Math, 'random', () => {
+        return roll;
+      });
       const player = hero('druid');
-      if (!training) player.scene = 'forest';
+      if (!training) {
+        player.scene = 'forest';
+      }
+
       player.x = 5;
       const arena = scene(training);
       arena.enemies[0].x = 4800 - 65;

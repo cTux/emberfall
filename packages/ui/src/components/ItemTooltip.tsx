@@ -97,74 +97,91 @@ export function ItemTooltip({
       )}
       {item.details && <Typography variant='body2'>{item.details}</Typography>}
       {stats
-        .filter((stat) => !item.comparison || !stat.value)
-        .map((stat, index) => (
-          <GearTooltipStyled
-            key={`${stat.label}-${index}`}
-            open={openStat === index}
-            onOpen={() => setOpenStat(index)}
-            onClose={() => setOpenStat(null)}
-            describeChild
-            placement='bottom'
-            slotProps={{
-              popper: {
-                container: () => root.current?.closest('.MuiDialog-container') ?? document.body,
-              },
-            }}
-            title={<Typography variant='body2'>{stat.explanation}</Typography>}
-          >
-            <ItemStatStyled
-              aria-label={`${stat.label}${stat.value ? `: ${stat.value}` : ''}`}
-              data-equipment-badge={stat.icon}
-              onClick={() => setOpenStat(index)}
-              onKeyDown={(event) => {
-                if (index === 0 && event.key === 'Tab' && event.shiftKey && onBack) {
-                  event.preventDefault();
-                  onBack();
-                }
+        .filter((stat) => {
+          return !item.comparison || !stat.value;
+        })
+        .map((stat, index) => {
+          return (
+            <GearTooltipStyled
+              key={`${stat.label}-${index}`}
+              open={openStat === index}
+              onOpen={() => {
+                return setOpenStat(index);
               }}
+              onClose={() => {
+                return setOpenStat(null);
+              }}
+              describeChild
+              placement='bottom'
+              slotProps={{
+                popper: {
+                  container: () => {
+                    return root.current?.closest('.MuiDialog-container') ?? document.body;
+                  },
+                },
+              }}
+              title={<Typography variant='body2'>{stat.explanation}</Typography>}
             >
-              {stat.value ? (
-                <>
-                  <Box component='span' sx={{ color: 'text.secondary' }}>
-                    {stat.label}
+              <ItemStatStyled
+                aria-label={`${stat.label}${stat.value ? `: ${stat.value}` : ''}`}
+                data-equipment-badge={stat.icon}
+                onClick={() => {
+                  return setOpenStat(index);
+                }}
+                onKeyDown={(event) => {
+                  if (index === 0 && event.key === 'Tab' && event.shiftKey && onBack) {
+                    event.preventDefault();
+                    onBack();
+                  }
+                }}
+              >
+                {stat.value ? (
+                  <>
+                    <Box component='span' sx={{ color: 'text.secondary' }}>
+                      {stat.label}
+                    </Box>
+                    <span>{stat.value}</span>
+                  </>
+                ) : (
+                  <Box
+                    sx={{ width: '100%', py: 0.5, borderTop: '1px solid', borderColor: 'divider' }}
+                  >
+                    <Typography variant='body2' color='primary.main' sx={{ fontWeight: 700 }}>
+                      {stat.label}
+                    </Typography>
+                    <Typography variant='body2'>{stat.explanation}</Typography>
                   </Box>
-                  <span>{stat.value}</span>
-                </>
-              ) : (
-                <Box
-                  sx={{ width: '100%', py: 0.5, borderTop: '1px solid', borderColor: 'divider' }}
-                >
-                  <Typography variant='body2' color='primary.main' sx={{ fontWeight: 700 }}>
-                    {stat.label}
-                  </Typography>
-                  <Typography variant='body2'>{stat.explanation}</Typography>
-                </Box>
-              )}
-            </ItemStatStyled>
-          </GearTooltipStyled>
-        ))}
+                )}
+              </ItemStatStyled>
+            </GearTooltipStyled>
+          );
+        })}
       {item.comparison && (
         <Box>
           {item.comparison.rows.length ? (
-            item.comparison.rows.map((row, index) => (
-              <Stack
-                key={`${row.label}-${index}`}
-                direction='row'
-                spacing={1}
-                sx={{ justifyContent: 'space-between' }}
-              >
-                <Typography variant='body2' color='text.secondary'>
-                  {row.label}
-                </Typography>
-                <Typography
-                  variant='body2'
-                  sx={{ color: row.improved ? 'success.main' : 'error.main', whiteSpace: 'nowrap' }}
+            item.comparison.rows.map((row, index) => {
+              return (
+                <Stack
+                  key={`${row.label}-${index}`}
+                  direction='row'
+                  spacing={1}
+                  sx={{ justifyContent: 'space-between' }}
                 >
-                  {row.value}
-                </Typography>
-              </Stack>
-            ))
+                  <Typography variant='body2' color='text.secondary'>
+                    {row.label}
+                  </Typography>
+                  <Typography
+                    variant='body2'
+                    sx={{
+                      color: row.improved ? 'success.main' : 'error.main',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {row.value}
+                  </Typography>
+                </Stack>
+              );
+            })
           ) : (
             <Typography variant='body2' color='text.secondary'>
               Same stats

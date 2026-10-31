@@ -8,11 +8,15 @@ test('trade modifiers apply to buying, selling, buyback, keyboard and vendor dro
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.coins = 1000;
   player.backpack = [];
-  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  const marta = world.npcs!.find((npc) => {
+    return npc.id === INNKEEPER.id;
+  })!;
   const trader = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
     Object.assign(player, { x: marta.x, y: marta.y - 15 });
@@ -21,10 +25,14 @@ test('trade modifiers apply to buying, selling, buyback, keyboard and vendor dro
   }).toPass({ intervals: [200], timeout: 6000 });
   const stock = trader.getByRole('region', { name: "Innkeeper's backpack", exact: true });
   const backpack = trader.getByRole('region', { name: 'Your backpack', exact: true });
-  const buy = (quantity: number) =>
-    stock.getByRole('button', { name: `Buy Empty bottle (${quantity})`, exact: true });
-  const sell = (quantity: number) =>
-    backpack.getByRole('button', { name: `Sell Empty bottle (${quantity})`, exact: true });
+  const buy = (quantity: number) => {
+    return stock.getByRole('button', { name: `Buy Empty bottle (${quantity})`, exact: true });
+  };
+
+  const sell = (quantity: number) => {
+    return backpack.getByRole('button', { name: `Sell Empty bottle (${quantity})`, exact: true });
+  };
+
   await buy(200).click({ button: 'right', modifiers: ['Shift'] });
   await expect(sell(10)).toBeVisible();
   expect(player.coins).toBe(990);

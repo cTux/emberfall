@@ -25,7 +25,10 @@ function companionFrame(bear: Bear, now: number) {
 }
 
 export function companionCaster(bear: Bear, x: number, y: number, now: number, id: string) {
-  if (bear.hitpoints <= 0) return null;
+  if (bear.hitpoints <= 0) {
+    return null;
+  }
+
   const { column, left } = companionFrame(bear, now);
   const scale = (bear.size ?? 48) / 48;
   const mask = spriteMask(image, column % 4, Math.floor(column / 4), left, 64, false, 64);
@@ -64,7 +67,10 @@ export function drawCompanion(
   if (image.naturalWidth) {
     ctx.save();
     ctx.translate(x, y);
-    if (left) ctx.scale(-1, 1);
+    if (left) {
+      ctx.scale(-1, 1);
+    }
+
     ctx.drawImage(
       image,
       (column % 4) * 64,

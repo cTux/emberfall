@@ -26,11 +26,17 @@ test('session gathering validates the area epoch and owns rewards independently 
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Gatherer', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    for (let i = 0; i < 200 && !world.players.size; i++) {
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 10);
+      });
+    }
+
     const player = [...world.players.values()][0];
     assert(player);
-    const rock = VILLAGE_RESOURCES.find((n) => n.kind === 'rock')!;
+    const rock = VILLAGE_RESOURCES.find((n) => {
+      return n.kind === 'rock';
+    })!;
     Object.assign(player, { x: rock.x, y: rock.y - 15 });
     peer.receive({ type: 'gather', nodeId: rock.id, epoch: 'old-forest' });
     assert.equal(world.resources?.[rock.id], undefined);
@@ -46,7 +52,9 @@ test('session gathering validates the area epoch and owns rewards independently 
     tickGathering(player, world.resources, 'lobby', start + 5000);
     assert.equal(world.resources?.[rock.id].remaining, 0);
     assert.deepEqual(
-      player.backpack!.map(({ itemId, quantity }) => ({ itemId, quantity })),
+      player.backpack!.map(({ itemId, quantity }) => {
+        return { itemId, quantity };
+      }),
       [{ itemId: 'rock', quantity: 1 }],
     );
     peer.receive({ type: 'gather', nodeId: rock.id, epoch: 'lobby' });
@@ -57,7 +65,9 @@ test('session gathering validates the area epoch and owns rewards independently 
 });
 
 test('timed checks save two seconds, replace one zone and reject misses, stale IDs and invalid times', () => {
-  const activity = startTimedActivity(1000, 5000, () => 0.5);
+  const activity = startTimedActivity(1000, 5000, () => {
+    return 0.5;
+  });
   assert.equal(activity.endsAt, 6000);
   assert.equal(activityIndicator(activity, 1000 + ACTIVITY_SWEEP_MS), 1);
   assert.equal(activityIndicator(activity, 1000 + 2 * ACTIVITY_SWEEP_MS), 0);
@@ -67,7 +77,11 @@ test('timed checks save two seconds, replace one zone and reject misses, stale I
   assert(!checkTimedActivity(activity, id, at, at - 1));
   assert(!checkTimedActivity(activity, id, at, at + 501));
   assert(!checkTimedActivity(activity, 'forged', at, at));
-  assert(checkTimedActivity(activity, id, at, at, () => 0.5));
+  assert(
+    checkTimedActivity(activity, id, at, at, () => {
+      return 0.5;
+    }),
+  );
   assert.equal(activity.endsAt, 4000);
   assert.notEqual(activity.checkId, id);
   assert(!checkTimedActivity(activity, id, at, at));
@@ -78,7 +92,9 @@ test('timed checks save two seconds, replace one zone and reject misses, stale I
 });
 
 test('a successful check can finish gathering immediately and cannot award twice', () => {
-  const node = VILLAGE_RESOURCES.find((n) => n.kind === 'plant')!;
+  const node = VILLAGE_RESOURCES.find((n) => {
+    return n.kind === 'plant';
+  })!;
   const player = hero(node);
   const states: Record<string, ResourceState> = {};
   startGathering(player, states, node.id, 'lobby', 1000);
@@ -95,7 +111,9 @@ test('a successful check can finish gathering immediately and cannot award twice
 });
 
 test('gathering cancels on range, death, disconnect, area change and competing depletion; inventory failure is atomic', () => {
-  const node = VILLAGE_RESOURCES.find((n) => n.kind === 'rock')!;
+  const node = VILLAGE_RESOURCES.find((n) => {
+    return n.kind === 'rock';
+  })!;
   for (const cancel of [
     (p: Player) => {
       p.x += 100;
@@ -131,9 +149,13 @@ test('gathering cancels on range, death, disconnect, area change and competing d
   assert.deepEqual(b.backpack, []);
   assert.equal(b.gathering, undefined);
   const full = hero(node);
-  full.backpack = Array.from({ length: 20 }, () => item('warrior-sword'));
+  full.backpack = Array.from({ length: 20 }, () => {
+    return item('warrior-sword');
+  });
   startGathering(full, {}, node.id, 'lobby', 1000);
-  assert.throws(() => tickGathering(full, {}, 'lobby', 6000), /full/);
+  assert.throws(() => {
+    return tickGathering(full, {}, 'lobby', 6000);
+  }, /full/);
   assert.equal(full.gathering, undefined);
   assert.equal(full.backpack.length, 20);
   startGathering(a, {}, node.id, 'lobby', 7000);

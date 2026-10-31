@@ -24,15 +24,21 @@ test('workspace packages preserve their documented dependency direction', () => 
       'devDependencies',
       'peerDependencies',
       'optionalDependencies',
-    ])
-      for (const dependency of forbidden)
+    ]) {
+      for (const dependency of forbidden) {
         assert.equal(
           manifest[section]?.[`@emberfall/${dependency}`],
           undefined,
           `${pkg}: ${dependency}`,
         );
+      }
+    }
+
     for (const file of readdirSync(path.join(root, 'src'), { recursive: true, encoding: 'utf8' })) {
-      if (!/\.tsx?$/.test(file) || /\.(?:test|spec)\.tsx?$/.test(file)) continue;
+      if (!/\.tsx?$/.test(file) || /\.(?:test|spec)\.tsx?$/.test(file)) {
+        continue;
+      }
+
       const filename = path.join(root, 'src', file);
       const source = readFileSync(filename, 'utf8');
       for (const [, specifier] of source.matchAll(
@@ -72,11 +78,20 @@ test('common cannot depend on core, and TypeScript enums belong in common', () =
   for (const pkg of readdirSync(packages)) {
     const sourceRoot = path.join(packages, pkg, 'src');
     for (const file of readdirSync(sourceRoot, { recursive: true, encoding: 'utf8' })) {
-      if (!/\.tsx?$/.test(file)) continue;
+      if (!/\.tsx?$/.test(file)) {
+        continue;
+      }
+
       const filename = path.join(sourceRoot, file);
       const source = readFileSync(filename, 'utf8');
-      if (/\benum\s+\w+\s*\{/.test(source)) assert.equal(pkg, 'common', filename);
-      if (pkg !== 'common') continue;
+      if (/\benum\s+\w+\s*\{/.test(source)) {
+        assert.equal(pkg, 'common', filename);
+      }
+
+      if (pkg !== 'common') {
+        continue;
+      }
+
       for (const [, specifier] of source.matchAll(
         /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]([^'"]+)['"]/g,
       )) {

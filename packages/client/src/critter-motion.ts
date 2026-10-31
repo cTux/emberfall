@@ -20,9 +20,12 @@ export function crittersAt(area: 'village' | 'forest', now: number, bounds: Boun
 export function createCritterMotion() {
   const chickens = new Map<number, Point & { now: number; left: boolean; panicking: boolean }>();
 
-  return (now: number, bounds: Bounds, players: readonly Point[], wanderNow = now) =>
-    sampleCritters('village', wanderNow, bounds, (critter, index) => {
-      if (critter.kind !== 'chicken') return critter;
+  return (now: number, bounds: Bounds, players: readonly Point[], wanderNow = now) => {
+    return sampleCritters('village', wanderNow, bounds, (critter, index) => {
+      if (critter.kind !== 'chicken') {
+        return critter;
+      }
+
       let state = chickens.get(index);
       if (!state) {
         state = { ...critter, now, panicking: false };
@@ -51,7 +54,9 @@ export function createCritterMotion() {
       if (length > 0) {
         state.x = wrap(state.x + (dx / length) * step, ARENA.width);
         state.y = wrap(state.y + (dy / length) * step, ARENA.height);
-        if (Math.abs(dx) > 1e-6) state.left = dx < 0;
+        if (Math.abs(dx) > 1e-6) {
+          state.left = dx < 0;
+        }
       }
 
       const cx = bounds.x + bounds.width / 2;
@@ -69,6 +74,7 @@ export function createCritterMotion() {
             : critter.frame,
       };
     });
+  };
 }
 
 function sampleCritters(
@@ -82,18 +88,20 @@ function sampleCritters(
     cy = bounds.y + bounds.height / 2;
   const homes: { x: number; y: number; kind: CritterKind }[] =
     area === 'village'
-      ? VILLAGE_CRITTERS.map((home) => ({
-          ...home,
-          x: cx + wrappedDelta(home.x, cx, ARENA.width),
-          y: cy + wrappedDelta(home.y, cy, ARENA.height),
-        }))
+      ? VILLAGE_CRITTERS.map((home) => {
+          return {
+            ...home,
+            x: cx + wrappedDelta(home.x, cx, ARENA.width),
+            y: cy + wrappedDelta(home.y, cy, ARENA.height),
+          };
+        })
       : [];
   if (area === 'forest') {
     for (
       let row = Math.floor((bounds.y - 40) / 320);
       row <= (bounds.y + bounds.height + 40) / 320;
       row++
-    )
+    ) {
       for (
         let col = Math.floor((bounds.x - 40) / 320);
         col <= (bounds.x + bounds.width + 40) / 320;
@@ -101,12 +109,23 @@ function sampleCritters(
       ) {
         const c = wrap(col, FOREST.width / 320),
           r = wrap(row, FOREST.height / 320);
-        if ((c + r * 3) % 2) continue;
+        if ((c + r * 3) % 2) {
+          continue;
+        }
+
         const x = col * 320 + 120,
           y = row * 320 + 180;
-        if (forestTrees(x, y, 60).some((t) => Math.hypot(t.x - x, t.y - y) < 55)) continue;
+        if (
+          forestTrees(x, y, 60).some((t) => {
+            return Math.hypot(t.x - x, t.y - y) < 55;
+          })
+        ) {
+          continue;
+        }
+
         homes.push({ x, y, kind: 'raccoon' });
       }
+    }
   }
 
   return homes
@@ -125,11 +144,12 @@ function sampleCritters(
 
       return react ? react(critter, index) : critter;
     })
-    .filter(
-      (p) =>
+    .filter((p) => {
+      return (
         p.x >= bounds.x - 24 &&
         p.x <= bounds.x + bounds.width + 24 &&
         p.y >= bounds.y - 24 &&
-        p.y <= bounds.y + bounds.height + 24,
-    );
+        p.y <= bounds.y + bounds.height + 24
+      );
+    });
 }

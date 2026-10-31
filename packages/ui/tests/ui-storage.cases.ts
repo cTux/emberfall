@@ -12,20 +12,26 @@ test('inventory slots stay fixed when extra stats add a scrollbar', async ({ pag
       await expect(slot).toHaveCSS('height', '44px');
     }
 
-    expect(await content.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
-      true,
-    );
+    expect(
+      await content.evaluate((element) => {
+        return element.scrollWidth <= element.clientWidth;
+      }),
+    ).toBe(true);
   };
 
   await expectFixedSlots();
-  expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
-    false,
-  );
+  expect(
+    await content.evaluate((element) => {
+      return element.scrollHeight > element.clientHeight;
+    }),
+  ).toBe(false);
   await page.getByRole('button', { name: 'Toggle extra stats' }).click();
   await expect(page.getByText('Bonus stat 15')).toBeAttached();
-  expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
-    true,
-  );
+  expect(
+    await content.evaluate((element) => {
+      return element.scrollHeight > element.clientHeight;
+    }),
+  ).toBe(true);
   await expectFixedSlots();
   await page.screenshot({ path: testInfo.outputPath('inventory-fixed-slots.png') });
   await page.getByRole('button', { name: 'Toggle extra stats' }).click();

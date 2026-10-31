@@ -26,13 +26,15 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
     method: string = 'GET',
     body?: unknown,
     requestOrigin = origin,
-  ) =>
-    fetch(base + path, {
+  ) => {
+    return fetch(base + path, {
       method,
       redirect: 'manual',
       headers: { cookie: cookies, Origin: requestOrigin, 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
+  };
+
   const login = async (id = heroId) => {
     const start = await call('/auth/steam');
     const cookie = start.headers.getSetCookie()[0].split(';')[0];
@@ -93,10 +95,13 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
       sdk.create('session', { protocolVersion: RUNTIME.protocolVersion, ticket }, SessionState),
     );
     const joined = new Promise<{ characterToken: string; world: { players: { name: string }[] } }>(
-      (resolve) =>
-        room.onMessage('event', (message) => {
-          if (message.type === 'joined') resolve(message);
-        }),
+      (resolve) => {
+        return room.onMessage('event', (message) => {
+          if (message.type === 'joined') {
+            resolve(message);
+          }
+        });
+      },
     );
     room.send('command', {
       type: 'create',
@@ -116,11 +121,13 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
       { protocolVersion: RUNTIME.protocolVersion, ticket: otherTicket },
       SessionState,
     );
-    const rejected = new Promise<string>((resolve) =>
-      otherRoom.onMessage('event', (message) => {
-        if (message.type === 'error') resolve(message.message);
-      }),
-    );
+    const rejected = new Promise<string>((resolve) => {
+      return otherRoom.onMessage('event', (message) => {
+        if (message.type === 'error') {
+          resolve(message.message);
+        }
+      });
+    });
     otherRoom.send('command', {
       type: 'create',
       name: 'Takeover',
@@ -143,9 +150,11 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
       );
       assert.equal(app.runtime.characters.steamAccount(heroId)?.nickname, 'Hero');
       assert(
-        [...app.runtime.worlds.values()].some((world) =>
-          [...world.players.values()].some((player) => player.name === 'Hero'),
-        ),
+        [...app.runtime.worlds.values()].some((world) => {
+          return [...world.players.values()].some((player) => {
+            return player.name === 'Hero';
+          });
+        }),
       );
     } finally {
       app.runtime.characters.renameSteam = rename;
@@ -153,11 +162,17 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
 
     await call('/api/account/nickname', cookies, 'PATCH', { nickname: 'Renamed' });
     assert(
-      [...app.runtime.worlds.values()].some((world) =>
-        [...world.players.values()].some((player) => player.name === 'Renamed'),
-      ),
+      [...app.runtime.worlds.values()].some((world) => {
+        return [...world.players.values()].some((player) => {
+          return player.name === 'Renamed';
+        });
+      }),
     );
-    const left = new Promise<void>((resolve) => room.onLeave(() => resolve()));
+    const left = new Promise<void>((resolve) => {
+      return room.onLeave(() => {
+        return resolve();
+      });
+    });
     assert.equal((await call('/auth/logout', cookies, 'POST')).status, 200);
     await left;
     assert.equal((await call('/api/account/ticket', cookies, 'POST')).status, 401);

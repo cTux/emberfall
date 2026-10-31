@@ -35,7 +35,10 @@ export function GameWindow({
     style: dragStyle,
     handleProps: dragHandle,
   } = useDraggable(positionKey, open);
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
+
   const content = (
     <WindowTabsContext.Provider value={tabsElement}>
       <WindowTabsStyled ref={setTabsElement} />

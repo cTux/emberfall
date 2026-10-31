@@ -23,7 +23,10 @@ export function backpackViews(
     const gear = GEAR_DEFINITIONS[item.itemId];
     const potion = CONSUMABLES[item.itemId as keyof typeof CONSUMABLES];
     const equipRestriction =
-      gear && !EQUIPMENT_SLOTS.some((slot) => canEquip(slot, gear, player.classId ?? 'warrior'))
+      gear &&
+      !EQUIPMENT_SLOTS.some((slot) => {
+        return canEquip(slot, gear, player.classId ?? 'warrior');
+      })
         ? 'Your class cannot equip this item.'
         : undefined;
 

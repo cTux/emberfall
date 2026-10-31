@@ -11,7 +11,9 @@ import { build } from 'vite';
 for (const client of ['client']) {
   test(`${client}: Vite optimizes public and bundled PNGs without changing pixels or sources`, async (t) => {
     const root = await mkdtemp(join(tmpdir(), 'emberfall-vite-images-'));
-    t.after(() => rm(root, { recursive: true, force: true }));
+    t.after(() => {
+      return rm(root, { recursive: true, force: true });
+    });
     await mkdir(join(root, 'public', 'nested'), { recursive: true });
     const original = await sharp({
       create: {
@@ -45,9 +47,9 @@ for (const client of ['client']) {
       build: { assetsInlineLimit: 0 },
     });
 
-    const bundled = (await readdir(join(root, 'dist', 'assets'))).find((name) =>
-      name.endsWith('.png'),
-    );
+    const bundled = (await readdir(join(root, 'dist', 'assets'))).find((name) => {
+      return name.endsWith('.png');
+    });
     assert.ok(bundled, 'fixture PNG must be emitted instead of inlined');
     for (const path of [join('nested', 'sprite.PNG'), join('assets', bundled)]) {
       const output = await readFile(join(root, 'dist', path));

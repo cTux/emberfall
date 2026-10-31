@@ -17,18 +17,24 @@ export interface ResourceNode {
   variant?: number;
 }
 // The original tree positions and identities remain stable.
-const villageNodes: ResourceNode[] = TREES.map((tree, i) => ({
-  ...tree,
-  y: tree.y - 8,
-  id: `tree:${i}`,
-  kind: 'tree',
-}));
-ROCKS.forEach((rock, i) =>
-  villageNodes.push({ ...rock, id: `rock:${i}`, kind: i % 2 ? 'stone' : 'rock' }),
-);
-PLANTS.forEach((plant, i) => villageNodes.push({ ...plant, id: `plant:${i}`, kind: 'plant' }));
+const villageNodes: ResourceNode[] = TREES.map((tree, i) => {
+  return {
+    ...tree,
+    y: tree.y - 8,
+    id: `tree:${i}`,
+    kind: 'tree',
+  };
+});
+ROCKS.forEach((rock, i) => {
+  return villageNodes.push({ ...rock, id: `rock:${i}`, kind: i % 2 ? 'stone' : 'rock' });
+});
+PLANTS.forEach((plant, i) => {
+  return villageNodes.push({ ...plant, id: `plant:${i}`, kind: 'plant' });
+});
 export const VILLAGE_RESOURCES: readonly ResourceNode[] = Object.freeze(
-  villageNodes.map((node) => Object.freeze(node)),
+  villageNodes.map((node) => {
+    return Object.freeze(node);
+  }),
 );
 
 /** Queries return the nearest wrapped image; identities do not depend on camera position. */
@@ -39,33 +45,45 @@ export function resourceNodes(
   const forest = player.scene === 'forest';
   const geometry = forest ? FOREST : ARENA;
   const nodes: readonly ResourceNode[] = forest
-    ? forestTrees(player.x, player.y, radius + 180).flatMap((tree) => [
-        { ...tree, kind: 'tree' as const },
-        {
-          id: `${tree.id}:plant`,
-          kind: 'plant' as const,
-          x: tree.x + 65,
-          y: tree.y + 45,
-          size: 32,
-        },
-        { id: `${tree.id}:rock`, kind: 'rock' as const, x: tree.x - 55, y: tree.y + 65, size: 40 },
-        {
-          id: `${tree.id}:stone`,
-          kind: 'stone' as const,
-          x: tree.x + 45,
-          y: tree.y - 65,
-          size: 26,
-        },
-      ])
+    ? forestTrees(player.x, player.y, radius + 180).flatMap((tree) => {
+        return [
+          { ...tree, kind: 'tree' as const },
+          {
+            id: `${tree.id}:plant`,
+            kind: 'plant' as const,
+            x: tree.x + 65,
+            y: tree.y + 45,
+            size: 32,
+          },
+          {
+            id: `${tree.id}:rock`,
+            kind: 'rock' as const,
+            x: tree.x - 55,
+            y: tree.y + 65,
+            size: 40,
+          },
+          {
+            id: `${tree.id}:stone`,
+            kind: 'stone' as const,
+            x: tree.x + 45,
+            y: tree.y - 65,
+            size: 26,
+          },
+        ];
+      })
     : VILLAGE_RESOURCES;
 
   return nodes
-    .map((node) => ({
-      ...node,
-      x: player.x + wrappedDelta(node.x, player.x, geometry.width),
-      y: player.y + wrappedDelta(node.y, player.y, geometry.height),
-    }))
-    .filter((node) => Math.hypot(node.x - player.x, node.y - player.y) <= radius);
+    .map((node) => {
+      return {
+        ...node,
+        x: player.x + wrappedDelta(node.x, player.x, geometry.width),
+        y: player.y + wrappedDelta(node.y, player.y, geometry.height),
+      };
+    })
+    .filter((node) => {
+      return Math.hypot(node.x - player.x, node.y - player.y) <= radius;
+    });
 }
 
 export function resourceState(
@@ -83,15 +101,20 @@ export function nearbyResource(
   states: Record<string, ResourceState> | undefined,
   now: number,
 ) {
-  if (player.hitpoints <= 0) return undefined;
+  if (player.hitpoints <= 0) {
+    return undefined;
+  }
 
   return resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE)
-    .filter((node) => resourceState(states, node, now)?.remaining !== 0)
-    .sort(
-      (a, b) =>
+    .filter((node) => {
+      return resourceState(states, node, now)?.remaining !== 0;
+    })
+    .sort((a, b) => {
+      return (
         Math.hypot(a.x - player.x, a.y - player.y - 15) -
-        Math.hypot(b.x - player.x, b.y - player.y - 15),
-    )[0];
+        Math.hypot(b.x - player.x, b.y - player.y - 15)
+      );
+    })[0];
 }
 
 export function gatheringNode(
@@ -100,14 +123,20 @@ export function gatheringNode(
   nodeId: string,
   now: number,
 ) {
-  if (player.hitpoints <= 0 || player.reconnecting)
+  if (player.hitpoints <= 0 || player.reconnecting) {
     throw new Error('You cannot gather while dead or disconnected.');
-  const node = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE).find(
-    (n) => n.id === nodeId,
-  );
-  if (!node) throw new Error('Move closer to this resource.');
-  if (resourceState(states, node, now)?.remaining === 0)
+  }
+
+  const node = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE).find((n) => {
+    return n.id === nodeId;
+  });
+  if (!node) {
+    throw new Error('Move closer to this resource.');
+  }
+
+  if (resourceState(states, node, now)?.remaining === 0) {
     throw new Error('This resource is restoring.');
+  }
 
   return node;
 }
@@ -130,9 +159,15 @@ export function tickGathering(
   now: number,
 ) {
   const activity = player.gathering;
-  if (!activity) return;
+  if (!activity) {
+    return;
+  }
+
   try {
-    if (activity.epoch !== epoch) throw new Error('Area changed.');
+    if (activity.epoch !== epoch) {
+      throw new Error('Area changed.');
+    }
+
     gatheringNode(player, states, activity.nodeId, now);
   } catch {
     delete player.gathering;
@@ -140,7 +175,10 @@ export function tickGathering(
     return;
   }
 
-  if (now < activity.endsAt) return;
+  if (now < activity.endsAt) {
+    return;
+  }
+
   delete player.gathering;
 
   return gatherResource(player, states, activity.nodeId, now);
@@ -156,7 +194,10 @@ export function gatherResource(
   const node = gatheringNode(player, states, nodeId, now);
   const previous = resourceState(states, node, now);
   const remaining = previous?.remaining ?? (node.kind === 'tree' ? 5 : 1);
-  if (!remaining) throw new Error('This resource is restoring.');
+  if (!remaining) {
+    throw new Error('This resource is restoring.');
+  }
+
   const items =
     node.kind === 'tree'
       ? (
@@ -166,12 +207,21 @@ export function gatherResource(
             ['leaf', 0.2],
           ] as const
         )
-          .filter(([, chance]) => roll() < chance)
-          .map(([id]) => id)
+          .filter(([, chance]) => {
+            return roll() < chance;
+          })
+          .map(([id]) => {
+            return id;
+          })
       : [node.kind === 'plant' ? (PLANT_KINDS[node.variant!] ?? 'plant') : node.kind];
   // Commit only after every drop has fitted, including multi-drop tree gathers.
-  const backpack = (player.backpack ?? []).map((item) => ({ ...item }));
-  for (const itemId of items) addItem(backpack, { id: crypto.randomUUID(), itemId, quantity: 1 });
+  const backpack = (player.backpack ?? []).map((item) => {
+    return { ...item };
+  });
+  for (const itemId of items) {
+    addItem(backpack, { id: crypto.randomUUID(), itemId, quantity: 1 });
+  }
+
   player.backpack = backpack;
   states[node.id] = {
     remaining: remaining - 1,
@@ -185,6 +235,9 @@ export function gatherResource(
 }
 
 export function restoreResources(states: Record<string, ResourceState> | undefined, now: number) {
-  for (const [id, state] of Object.entries(states ?? {}))
-    if (state.restoresAt <= now) delete states![id];
+  for (const [id, state] of Object.entries(states ?? {})) {
+    if (state.restoresAt <= now) {
+      delete states![id];
+    }
+  }
 }

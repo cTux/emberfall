@@ -14,14 +14,18 @@ test('lobby shows server columns, locked worlds and disabled creation', async ({
   await expect(page.getByRole('alert')).toContainText('password submitted');
   await expect(page.getByRole('tab', { name: 'Create a world' })).toBeDisabled();
   await expect(page.getByRole('textbox', { name: 'World name', exact: true })).toHaveCount(0);
-  for (const name of ['Name', 'Latency', 'Players'])
+  for (const name of ['Name', 'Latency', 'Players']) {
     await expect(page.getByRole('columnheader', { name, exact: true })).toBeVisible();
+  }
+
   await expect(page.getByRole('table')).toContainText('42 ms');
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 800 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-      true,
-    );
+    expect(
+      await page.evaluate(() => {
+        return document.documentElement.scrollWidth <= innerWidth;
+      }),
+    ).toBe(true);
   }
 
   await page.screenshot({ path: 'test-results/server-table.png' });
@@ -30,10 +34,15 @@ test('lobby shows server columns, locked worlds and disabled creation', async ({
 test('all stories render; desktop and narrow screens fit', async ({ page, request }, testInfo) => {
   test.setTimeout(60_000);
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   const index = await (await request.get('/index.json')).json();
   for (const entry of Object.values(index.entries) as { id: string; type: string }[]) {
-    if (entry.type !== 'story') continue;
+    if (entry.type !== 'story') {
+      continue;
+    }
+
     await page.goto(story(entry.id));
     await expect(page.locator('#storybook-root > *').first()).toBeAttached();
     await expect(page.locator('.sb-errordisplay')).toBeHidden();
@@ -44,7 +53,11 @@ test('all stories render; desktop and narrow screens fit', async ({ page, reques
       const icons = page.locator('#storybook-root img');
       for (const icon of await icons.all()) {
         await expect
-          .poll(() => icon.evaluate((image: HTMLImageElement) => image.naturalWidth))
+          .poll(() => {
+            return icon.evaluate((image: HTMLImageElement) => {
+              return image.naturalWidth;
+            });
+          })
           .toBeGreaterThan(0);
       }
 
@@ -72,7 +85,9 @@ test('all stories render; desktop and narrow screens fit', async ({ page, reques
       await expect(page.locator('#storybook-root > *').first()).toBeAttached();
       await page.screenshot({ path: testInfo.outputPath(`${name}-${width}.png`), fullPage: true });
       expect(
-        await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+        await page.evaluate(() => {
+          return document.documentElement.scrollWidth <= window.innerWidth;
+        }),
       ).toBe(true);
     }
   }
@@ -105,11 +120,19 @@ test('world names stay on one line inside compact lobby columns', async ({ page 
         const range = document.createRange();
         range.selectNodeContents(element);
 
-        return new Set(Array.from(range.getClientRects(), (rect) => Math.round(rect.top))).size;
+        return new Set(
+          Array.from(range.getClientRects(), (rect) => {
+            return Math.round(rect.top);
+          }),
+        ).size;
       }),
     ).toBe(1);
     const cell = name.locator('xpath=ancestor::td');
-    expect(await cell.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    expect(
+      await cell.evaluate((element) => {
+        return element.scrollWidth <= element.clientWidth;
+      }),
+    ).toBe(true);
     await name.hover();
     await page.screenshot({ path: `test-results/world-name-${width}.png` });
   }
@@ -125,9 +148,9 @@ test('server rows join once from every cell and keyboard, respecting disabled st
     const row = page.getByRole('row').filter({ hasText: 'Northern grove' });
     const join = row.getByRole('button');
     await page.mouse.move(0, 0);
-    const restingBackground = await row.evaluate(
-      (element) => getComputedStyle(element).backgroundColor,
-    );
+    const restingBackground = await row.evaluate((element) => {
+      return getComputedStyle(element).backgroundColor;
+    });
     await join.hover();
     await expect(join).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect(row).not.toHaveCSS('background-color', restingBackground);

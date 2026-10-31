@@ -10,17 +10,21 @@ test('High graphics uses viewport-sized WebGL with bounded cached resources', as
   const system = await session.send('SystemInfo.getInfo');
   await session.detach();
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const canvas = page.locator('canvas');
   await expect(canvas).toHaveAttribute('data-renderer', 'pixijs-webgl');
   expect(
-    await canvas.evaluate((canvas: HTMLCanvasElement) => ({
-      width: canvas.width,
-      height: canvas.height,
-      canvas2d: !!canvas.getContext('2d'),
-    })),
+    await canvas.evaluate((canvas: HTMLCanvasElement) => {
+      return {
+        width: canvas.width,
+        height: canvas.height,
+        canvas2d: !!canvas.getContext('2d'),
+      };
+    }),
   ).toEqual({ width: 2160, height: 1500, canvas2d: false });
   await page.waitForTimeout(3000);
   const timing = await page.evaluate(sampleFrameTiming, undefined);

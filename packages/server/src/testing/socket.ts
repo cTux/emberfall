@@ -25,12 +25,14 @@ export class WebSocket extends EventEmitter {
         SessionState,
       );
       this.room.reconnection.enabled = false;
-      this.room.onMessage('event', (data) =>
-        this.emit('message', Buffer.from(JSON.stringify(data))),
-      );
+      this.room.onMessage('event', (data) => {
+        return this.emit('message', Buffer.from(JSON.stringify(data)));
+      });
       this.room.onStateChange((state) => {
         const world = materializeState(state);
-        if (world) this.emit('message', Buffer.from(JSON.stringify({ type: 'state', world })));
+        if (world) {
+          this.emit('message', Buffer.from(JSON.stringify({ type: 'state', world })));
+        }
       });
       this.room.onLeave((code) => {
         this.readyState = 3;
@@ -55,8 +57,11 @@ export class WebSocket extends EventEmitter {
   }
 
   close(code = 1000) {
-    if (code === 1000) void this.room?.leave();
-    else this.room?.connection.close(code);
+    if (code === 1000) {
+      void this.room?.leave();
+    } else {
+      this.room?.connection.close(code);
+    }
   }
 
   terminate() {

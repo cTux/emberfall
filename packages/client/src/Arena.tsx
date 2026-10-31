@@ -16,7 +16,9 @@ export function Arena(props: ArenaProps) {
         height={ARENA.height}
         aria-label={
           world
-            ? world.players.find((p) => p.id === playerId)?.scene === 'forest'
+            ? world.players.find((p) => {
+                return p.id === playerId;
+              })?.scene === 'forest'
               ? 'Forest combat scene.'
               : 'Shared village. Move with WASD or arrow keys.'
             : 'Forest preview'

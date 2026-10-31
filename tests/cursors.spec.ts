@@ -13,7 +13,9 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
   await expect(join).toHaveCSS('cursor', /pointer\.png/);
   await join.click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((entry) => {
+    return entry.players.size;
+  })!;
   const player = [...world.players.values()][0];
   await page.keyboard.press('f');
   const dummy = world.training!.enemies[0];
@@ -87,7 +89,9 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
   await page.mouse.move(1100, 600);
   await expect(canvas).toHaveAttribute('data-cursor', 'disabled');
   await expect(canvas).toHaveCSS('cursor', /disabled\.png/);
-  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await page.evaluate(() => {
+    return window.dispatchEvent(new Event('blur'));
+  });
   await expect(canvas).toHaveAttribute('data-cursor', 'default');
 
   // Every shipped cursor decodes at a browser-safe size.

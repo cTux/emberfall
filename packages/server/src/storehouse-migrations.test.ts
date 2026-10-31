@@ -56,11 +56,17 @@ test('account storage and collected gold survive class changes and restart witho
     tradeItem(player, merchant, merchant.backpack[0].id, true);
     assert.equal(player.coins, 13, 'purchases spend the same shared balance');
     transferStoredItem(player, 1, player.storages[1].items[0].id, false);
-    assert(player.backpack.some((entry) => entry.itemId === 'loot-helmet'));
+    assert(
+      player.backpack.some((entry) => {
+        return entry.itemId === 'loot-helmet';
+      }),
+    );
     transferStoredItem(
       player,
       1,
-      player.backpack.find((entry) => entry.itemId === 'loot-helmet')!.id,
+      player.backpack.find((entry) => {
+        return entry.itemId === 'loot-helmet';
+      })!.id,
       true,
     );
     store.selectClass(saved.id, player, 'warrior');
@@ -101,10 +107,14 @@ test('legacy class gold and full storages migrate once without losing overflow i
         const progress = freshProgress(id);
         progress.coins = index + 1;
         progress.backpack = [item('loot-boots')];
-        progress.storages = freshStorages().map((_storage, tab) => ({
-          name: `${id} ${tab + 1}`,
-          items: Array.from({ length: 40 }, () => item()),
-        }));
+        progress.storages = freshStorages().map((_storage, tab) => {
+          return {
+            name: `${id} ${tab + 1}`,
+            items: Array.from({ length: 40 }, () => {
+              return item();
+            }),
+          };
+        });
 
         return [id, progress];
       }),
@@ -119,14 +129,25 @@ test('legacy class gold and full storages migrate once without losing overflow i
     const migrated = store.load(saved.token);
     assert.equal(migrated.progress.coins, 10);
     assert.equal(migrated.progress.storages[0].name, 'mage 1');
-    for (const storage of migrated.progress.storages) assert.equal(storage.items.length, 40);
-    for (const id of CLASS_IDS)
+    for (const storage of migrated.progress.storages) {
+      assert.equal(storage.items.length, 40);
+    }
+
+    for (const id of CLASS_IDS) {
       assert.equal(migrated.classes[id].backpack!.length, id === 'mage' ? 1 : 121);
+    }
+
     const ids = [
-      ...migrated.progress.storages.flatMap((storage) => storage.items.map((entry) => entry.id)),
-      ...Object.values(migrated.classes).flatMap((progress) =>
-        progress.backpack!.map((entry) => entry.id),
-      ),
+      ...migrated.progress.storages.flatMap((storage) => {
+        return storage.items.map((entry) => {
+          return entry.id;
+        });
+      }),
+      ...Object.values(migrated.classes).flatMap((progress) => {
+        return progress.backpack!.map((entry) => {
+          return entry.id;
+        });
+      }),
     ];
     assert.equal(ids.length, 484);
     assert.equal(new Set(ids).size, 484);
@@ -149,7 +170,11 @@ test('legacy class gold and full storages migrate once without losing overflow i
 });
 
 test('migration combines consumables, preserves names and rejects unsafe gold totals or missing account data', () => {
-  const classes = Object.fromEntries(CLASS_IDS.map((id) => [id, freshProgress(id)]));
+  const classes = Object.fromEntries(
+    CLASS_IDS.map((id) => {
+      return [id, freshProgress(id)];
+    }),
+  );
   classes.warrior.storages![0] = { name: 'Gear', items: [item('health-potion', 2)] };
   classes.ranger.storages![0].items = [item('health-potion', 3)];
   const raw = { formatVersion: 1, classId: 'mage', classes };
@@ -159,6 +184,10 @@ test('migration combines consumables, preserves names and rejects unsafe gold to
   assert.equal(migrated.progress.storages[0].items[0].quantity, 5);
   classes.warrior.coins = Number.MAX_SAFE_INTEGER;
   classes.ranger.coins = 1;
-  assert.throws(() => decodeProgress(JSON.stringify(raw)));
-  assert.throws(() => decodeProgress(JSON.stringify({ ...raw, formatVersion: 2 })));
+  assert.throws(() => {
+    return decodeProgress(JSON.stringify(raw));
+  });
+  assert.throws(() => {
+    return decodeProgress(JSON.stringify({ ...raw, formatVersion: 2 }));
+  });
 });

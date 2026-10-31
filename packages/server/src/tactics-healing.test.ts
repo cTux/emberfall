@@ -48,7 +48,10 @@ test('automatic healing waits below threshold without spending cooldown; manual 
   for (const training of [false, true]) {
     const p = hero();
     p.scene = training ? undefined : 'forest';
-    if (training) Object.assign(p, TRAINING_ZONES[0]);
+    if (training) {
+      Object.assign(p, TRAINING_ZONES[0]);
+    }
+
     p.hitpoints = p.maxHitpoints * 0.8;
     p.tactics!.includeCompanions = false;
     p.tactics!.healBelow = 0.5;

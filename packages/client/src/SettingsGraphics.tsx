@@ -21,21 +21,29 @@ export function SettingsGraphics({
         select
         label='Font'
         value={preferences.font}
-        onChange={(e) => setPreferences((p) => ({ ...p, font: e.target.value as GameFont }))}
+        onChange={(e) => {
+          return setPreferences((p) => {
+            return { ...p, font: e.target.value as GameFont };
+          });
+        }}
         helperText='Applies to menus, world labels and damage numbers.'
       >
-        {Object.keys(GAME_FONTS).map((font) => (
-          <MenuItem key={font} value={font} sx={{ fontFamily: `"${font}", sans-serif` }}>
-            {font}
-          </MenuItem>
-        ))}
+        {Object.keys(GAME_FONTS).map((font) => {
+          return (
+            <MenuItem key={font} value={font} sx={{ fontFamily: `"${font}", sans-serif` }}>
+              {font}
+            </MenuItem>
+          );
+        })}
       </TextField>
       <VolumeControl
         label='Ability effect transparency'
         value={preferences.abilityEffectTransparency}
-        onChange={(abilityEffectTransparency) =>
-          setPreferences((p) => ({ ...p, abilityEffectTransparency }))
-        }
+        onChange={(abilityEffectTransparency) => {
+          return setPreferences((p) => {
+            return { ...p, abilityEffectTransparency };
+          });
+        }}
       />
       <Typography variant='caption' color='text.secondary'>
         0%: fully visible. 100%: invisible. Applies to player ability images and particles.
@@ -43,50 +51,74 @@ export function SettingsGraphics({
       <SettingToggle
         label="Hide other players' ability effects"
         checked={preferences.hideOtherPlayerEffects}
-        onChange={(hideOtherPlayerEffects) =>
-          setPreferences((p) => ({ ...p, hideOtherPlayerEffects }))
-        }
+        onChange={(hideOtherPlayerEffects) => {
+          return setPreferences((p) => {
+            return { ...p, hideOtherPlayerEffects };
+          });
+        }}
       />
       <Stack direction='row' spacing={1}>
-        {Object.entries(GRAPHICS_PRESETS).map(([preset, values]) => (
-          <Button
-            key={preset}
-            variant={JSON.stringify(graphics) === JSON.stringify(values) ? 'contained' : 'outlined'}
-            aria-pressed={JSON.stringify(graphics) === JSON.stringify(values)}
-            onClick={() => setGraphics({ ...values })}
-          >
-            {preset}
-          </Button>
-        ))}
+        {Object.entries(GRAPHICS_PRESETS).map(([preset, values]) => {
+          return (
+            <Button
+              key={preset}
+              variant={
+                JSON.stringify(graphics) === JSON.stringify(values) ? 'contained' : 'outlined'
+              }
+              aria-pressed={JSON.stringify(graphics) === JSON.stringify(values)}
+              onClick={() => {
+                return setGraphics({ ...values });
+              }}
+            >
+              {preset}
+            </Button>
+          );
+        })}
       </Stack>
       <Stack>
-        {Object.entries(GRAPHICS_LABELS).map(([key, label]) => (
-          <SettingToggle
-            key={key}
-            label={label}
-            checked={graphics[key as keyof typeof GRAPHICS_LABELS]}
-            onChange={(checked) => setGraphics((p) => ({ ...p, [key]: checked }))}
-          />
-        ))}
+        {Object.entries(GRAPHICS_LABELS).map(([key, label]) => {
+          return (
+            <SettingToggle
+              key={key}
+              label={label}
+              checked={graphics[key as keyof typeof GRAPHICS_LABELS]}
+              onChange={(checked) => {
+                return setGraphics((p) => {
+                  return { ...p, [key]: checked };
+                });
+              }}
+            />
+          );
+        })}
       </Stack>
       <TextField
         select
         label='Frame rate limit'
         value={graphics.frameLimit}
-        onChange={(e) => setGraphics((p) => ({ ...p, frameLimit: Number(e.target.value) }))}
+        onChange={(e) => {
+          return setGraphics((p) => {
+            return { ...p, frameLimit: Number(e.target.value) };
+          });
+        }}
       >
         <MenuItem value={0}>Display refresh rate</MenuItem>
-        {[30, 60, 120, 144].map((fps) => (
-          <MenuItem key={fps} value={fps}>
-            {fps} FPS
-          </MenuItem>
-        ))}
+        {[30, 60, 120, 144].map((fps) => {
+          return (
+            <MenuItem key={fps} value={fps}>
+              {fps} FPS
+            </MenuItem>
+          );
+        })}
       </TextField>
       <TextField
         select
         label='Render resolution'
         value={graphics.resolution}
-        onChange={(e) => setGraphics((p) => ({ ...p, resolution: Number(e.target.value) }))}
+        onChange={(e) => {
+          return setGraphics((p) => {
+            return { ...p, resolution: Number(e.target.value) };
+          });
+        }}
       >
         <MenuItem value={0.75}>75% · Performance</MenuItem>
         <MenuItem value={1}>100% · Native</MenuItem>

@@ -12,19 +12,23 @@ import { ThemeProvider, type Theme } from '@mui/material';
 import { Chat } from './Chat';
 
 // Isolate modal siblings so the persistent chat log remains available to assistive technology.
-const chatTheme = (theme: Theme) => ({
-  ...theme,
-  components: {
-    ...theme.components,
-    MuiDialog: {
-      ...theme.components?.MuiDialog,
-      defaultProps: {
-        ...theme.components?.MuiDialog?.defaultProps,
-        container: () => document.getElementById('dialogs')!,
+const chatTheme = (theme: Theme) => {
+  return {
+    ...theme,
+    components: {
+      ...theme.components,
+      MuiDialog: {
+        ...theme.components?.MuiDialog,
+        defaultProps: {
+          ...theme.components?.MuiDialog?.defaultProps,
+          container: () => {
+            return document.getElementById('dialogs')!;
+          },
+        },
       },
     },
-  },
-});
+  };
+};
 
 type Session = {
   worldId?: string;
@@ -36,7 +40,9 @@ type Session = {
 };
 const emptySession: Session = {
   messages: [],
-  isVisible: () => true,
+  isVisible: () => {
+    return true;
+  },
   send: () => {},
   disabled: true,
 };
@@ -45,7 +51,9 @@ const ChatContext = createContext<{
   configureChat: (session: Session | null) => void;
 }>(null!);
 
-export const useChat = () => useContext(ChatContext);
+export const useChat = () => {
+  return useContext(ChatContext);
+};
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState(emptySession);
@@ -61,35 +69,56 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setEntries((log) => {
       const sameWorld = previous.worldId === current.worldId;
       if (sameWorld && previous.scene !== current.scene) {
-        const errors = log.filter((entry) => entry.local);
+        const errors = log.filter((entry) => {
+          return entry.local;
+        });
 
         return [
-          ...current.messages.flatMap((message) => [
-            { message, local: false },
-            ...errors.filter((entry) => entry.afterId === message.id),
-          ]),
-          ...errors.filter(
-            (entry) => !current.messages.some((message) => message.id === entry.afterId),
-          ),
+          ...current.messages.flatMap((message) => {
+            return [
+              { message, local: false },
+              ...errors.filter((entry) => {
+                return entry.afterId === message.id;
+              }),
+            ];
+          }),
+          ...errors.filter((entry) => {
+            return !current.messages.some((message) => {
+              return message.id === entry.afterId;
+            });
+          }),
         ].slice(-20);
       }
 
-      const retained = log.filter(
-        (entry) =>
+      const retained = log.filter((entry) => {
+        return (
           entry.local ||
-          (sameWorld && current.messages.some((message) => message.id === entry.message.id)),
-      );
+          (sameWorld &&
+            current.messages.some((message) => {
+              return message.id === entry.message.id;
+            }))
+        );
+      });
       const received = current.messages
-        .filter((message) => !sameWorld || !previous.messages.some((old) => old.id === message.id))
-        .map((message) => ({ message, local: false }));
+        .filter((message) => {
+          return (
+            !sameWorld ||
+            !previous.messages.some((old) => {
+              return old.id === message.id;
+            })
+          );
+        })
+        .map((message) => {
+          return { message, local: false };
+        });
 
       // Retain room for the visible world buffer and private errors before applying the display limit.
       return (sameWorld ? [...retained, ...received] : [...received, ...retained]).slice(-20);
     });
   }, []);
   const reportError = useCallback((text: string) => {
-    setEntries((log) =>
-      [
+    setEntries((log) => {
+      return [
         ...log,
         {
           local: true,
@@ -102,10 +131,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             tone: 'danger' as const,
           },
         },
-      ].slice(-20),
-    );
+      ].slice(-20);
+    });
   }, []);
-  const context = useMemo(() => ({ reportError, configureChat }), [reportError, configureChat]);
+  const context = useMemo(() => {
+    return { reportError, configureChat };
+  }, [reportError, configureChat]);
 
   return (
     <ChatContext value={context}>
@@ -114,8 +145,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         <Chat
           key={session.worldId}
           messages={entries
-            .filter((entry) => entry.local || session.isVisible(entry.message))
-            .map((entry) => entry.message)
+            .filter((entry) => {
+              return entry.local || session.isVisible(entry.message);
+            })
+            .map((entry) => {
+              return entry.message;
+            })
             .slice(-10)}
           send={session.send}
           disabled={session.disabled}

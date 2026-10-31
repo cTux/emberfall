@@ -39,10 +39,19 @@ export function drawPlayerAttack(
   inCombat: boolean,
   opacity = 1,
 ) {
-  if (opacity === 0) return;
-  if (p.reconnecting) return;
+  if (opacity === 0) {
+    return;
+  }
+
+  if (p.reconnecting) {
+    return;
+  }
+
   const age = now - (p.attackAt ?? -Infinity);
-  if (!characterStats(p).hasWeapon) return;
+  if (!characterStats(p).hasWeapon) {
+    return;
+  }
+
   const attackRange = defaultSpellRange(p);
   const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
   // Class weapons are painted into the directional action frames.

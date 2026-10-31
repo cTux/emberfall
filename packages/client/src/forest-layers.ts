@@ -19,32 +19,38 @@ export function forestLayers(
   near: ForestProjection['near'],
 ) {
   return [
-    ...(world?.scene?.phase === 'ended' ? world.scene.portals : []).map((portal) => ({
-      y: near(portal.x, portal.y).y + 8,
-      tree: null,
-      actor: null,
-      bear: null,
-      critter: null,
-      portal,
-    })),
-    ...trees.map((t) => ({
-      y: t.y,
-      tree: t,
-      actor: null,
-      bear: null,
-      critter: null,
-      portal: null,
-    })),
-    ...rendered.map((a) => ({
-      y: a.y + 15,
-      tree: null,
-      actor: a,
-      bear: null,
-      critter: null,
-      portal: null,
-    })),
-    ...players.flatMap((p) =>
-      p.bear
+    ...(world?.scene?.phase === 'ended' ? world.scene.portals : []).map((portal) => {
+      return {
+        y: near(portal.x, portal.y).y + 8,
+        tree: null,
+        actor: null,
+        bear: null,
+        critter: null,
+        portal,
+      };
+    }),
+    ...trees.map((t) => {
+      return {
+        y: t.y,
+        tree: t,
+        actor: null,
+        bear: null,
+        critter: null,
+        portal: null,
+      };
+    }),
+    ...rendered.map((a) => {
+      return {
+        y: a.y + 15,
+        tree: null,
+        actor: a,
+        bear: null,
+        critter: null,
+        portal: null,
+      };
+    }),
+    ...players.flatMap((p) => {
+      return p.bear
         ? [
             {
               y: near(p.bear.x, p.bear.y).y + 18,
@@ -55,17 +61,21 @@ export function forestLayers(
               portal: null,
             },
           ]
-        : [],
-    ),
-    ...critters.map((critter) => ({
-      y: critter.y,
-      tree: null,
-      actor: null,
-      bear: null,
-      critter,
-      portal: null,
-    })),
-  ].sort((a, b) => a.y - b.y);
+        : [];
+    }),
+    ...critters.map((critter) => {
+      return {
+        y: critter.y,
+        tree: null,
+        actor: null,
+        bear: null,
+        critter,
+        portal: null,
+      };
+    }),
+  ].sort((a, b) => {
+    return a.y - b.y;
+  });
 }
 
 type LayerFrame = ActorFrame & {
@@ -89,12 +99,13 @@ export function drawForestLayer(
       now,
       quality.bloom,
       'Return to village',
-      outlines.find(
-        (target) =>
+      outlines.find((target) => {
+        return (
           target.source.id === 'return' &&
           target.source.x === portal.x &&
-          target.source.y === portal.y,
-      ) ?? null,
+          target.source.y === portal.y
+        );
+      }) ?? null,
       quality.shadows,
       quality.wavingVegetation,
     );
@@ -121,7 +132,7 @@ export function drawForestLayer(
 
     const state = resourceState(world?.resources, t, serverTime);
     const object = resourceScenery(t, state);
-    if ((t.kind === 'tree' || t.kind === 'plant') && state?.remaining !== 0)
+    if ((t.kind === 'tree' || t.kind === 'plant') && state?.remaining !== 0) {
       drawVegetation(
         ctx,
         object.sprite,
@@ -132,7 +143,7 @@ export function drawForestLayer(
         now,
         quality.wavingVegetation,
       );
-    else
+    } else {
       ctx.drawImage(
         object.sprite,
         t.x - object.width / 2,
@@ -140,11 +151,17 @@ export function drawForestLayer(
         object.width,
         object.height,
       );
+    }
+
     ctx.globalAlpha = 1;
     ctx.occlusion = false;
     drawResourceHealth(ctx, t, state);
-    const outline = outlines.find((target) => target.source.id === `gather:${t.id}`);
-    if (outline) drawInteractionOutline(ctx, outline);
+    const outline = outlines.find((target) => {
+      return target.source.id === `gather:${t.id}`;
+    });
+    if (outline) {
+      drawInteractionOutline(ctx, outline);
+    }
 
     return;
   }

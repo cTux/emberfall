@@ -45,7 +45,9 @@ export function WorldBrowser({
               value={name}
               required
               autoComplete='nickname'
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                return setName(e.target.value);
+              }}
               slotProps={{ htmlInput: { maxLength: 24 } }}
             />
           )}
@@ -69,15 +71,20 @@ export function WorldBrowser({
                       latency={unavailable ? null : latency}
                       onJoin={(w) => {
                         if (w.locked) {
-                          setSelected(worlds.find((world) => world.id === w.id)!);
+                          setSelected(
+                            worlds.find((world) => {
+                              return world.id === w.id;
+                            })!,
+                          );
                           setJoinPassword('');
-                        } else
+                        } else {
                           act({
                             type: 'join',
                             worldId: w.id,
                             playerName: name,
                             password: '',
                           });
+                        }
                       }}
                     />
                     {selected && (
@@ -99,7 +106,9 @@ export function WorldBrowser({
                           type='password'
                           autoComplete='current-password'
                           value={joinPassword}
-                          onChange={(e) => setJoinPassword(e.target.value)}
+                          onChange={(e) => {
+                            return setJoinPassword(e.target.value);
+                          }}
                           slotProps={{ htmlInput: { maxLength: 64 } }}
                         />
                         <Button

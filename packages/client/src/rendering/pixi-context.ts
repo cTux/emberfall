@@ -3,10 +3,9 @@ import { updateText } from './drawing-text';
 import { PlayerOcclusion } from './player-occlusion';
 import { applyTransform } from './drawing-transform';
 import { RendererDriver } from './renderer-driver';
-import { DrawingPath } from './drawing-path';
+import { PathCommands } from './path-commands';
 import { ImageTextures } from './image-textures';
 import type { WorldDrawingContext } from './drawing-context';
-import { DrawingState } from './drawing-state';
 import { VisualPools, type Visual } from './visual-pools';
 import { Paints } from './paints';
 import { type Container, type Sprite, type Graphics, Texture } from 'pixi.js';
@@ -15,7 +14,7 @@ import type { DirectionalShadow } from '../lighting';
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
  */
-export class PixiContext extends DrawingState implements WorldDrawingContext {
+export class PixiContext extends PathCommands implements WorldDrawingContext {
   private visuals = new VisualPools();
 
   get ecs() {
@@ -25,9 +24,9 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   ambientTint = 0xffffff;
   directionalShadow?: DirectionalShadow;
   readonly canvas: HTMLCanvasElement;
-  private cutout = new PlayerOcclusion((graphics) =>
-    this.visuals.place(this.visuals.stage, graphics),
-  );
+  private cutout = new PlayerOcclusion((graphics) => {
+    return this.visuals.place(this.visuals.stage, graphics);
+  });
   private driver: RendererDriver;
   readonly ready: Promise<void>;
   private sources = new ImageTextures();
@@ -36,7 +35,6 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   private shadowPass = false;
   private shadowStrength = 0;
   private shadowRects = new ShadowPrimitives();
-  private path = new DrawingPath();
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -62,14 +60,19 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   }
 
   present() {
-    if (!this.driver.initialized) return;
+    if (!this.driver.initialized) {
+      return;
+    }
+
     // Clearing a pooled object's last mask reference can restore includeInBuild.
     // The cutout is only stencil geometry, never a visible stage child.
     this.cutout.finish();
     this.visuals.finish();
     this.driver.render(this.visuals.stage);
-    if (this.frame === 1 || this.frame % 60 === 0)
+    if (this.frame === 1 || this.frame % 60 === 0) {
       this.canvas.dataset.renderStats = JSON.stringify(this.stats());
+    }
+
     if (this.frame % 120 === 0) {
       this.paints.trim(this.frame);
       this.sources.trim(this.frame);
@@ -111,7 +114,10 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   }
 
   private shadow(draw: () => void) {
-    if (this.shadowPass || this.paints.color(this.state.shadowColor).alpha === 0) return;
+    if (this.shadowPass || this.paints.color(this.state.shadowColor).alpha === 0) {
+      return;
+    }
+
     this.save();
     this.shadowPass = true;
     this.shadowStrength = this.state.shadowBlur / 2;
@@ -127,7 +133,10 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   }
 
   private rectangleShadow(x: number, y: number, width: number, height: number) {
-    if (this.shadowPass || this.paints.color(this.state.shadowColor).alpha === 0) return;
+    if (this.shadowPass || this.paints.color(this.state.shadowColor).alpha === 0) {
+      return;
+    }
+
     const blur = this.state.shadowBlur,
       padding = Math.ceil(blur * 3 + 2);
     const opacity =
@@ -157,9 +166,14 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   }
 
   drawImage(source: CanvasImageSource, ...args: number[]) {
-    this.shadow(() => this.drawImage(source, ...args));
+    this.shadow(() => {
+      return this.drawImage(source, ...args);
+    });
     const draw = this.sources.prepare(source, args, this.frame);
-    if (!draw) return;
+    if (!draw) {
+      return;
+    }
+
     const { sw, sh, dx, dy, dw, dh } = draw;
     const entity = this.visual('sprite');
     const sprite = entity.object as Sprite;
@@ -178,8 +192,9 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
       Math.round(((base & 255) * (ambient & 255)) / 255);
     sprite.alpha *= tint.alpha;
     this.applyTransform(sprite, dx, dy, dw / sw, dh / sh);
-    if (this.state.occlusion && !this.shadowPass)
+    if (this.state.occlusion && !this.shadowPass) {
       this.cutout.apply(sprite, this.state.matrix, dx, dy, dw, dh);
+    }
   }
 
   fillRect(x: number, y: number, width: number, height: number) {
@@ -200,7 +215,9 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   }
 
   strokeRect(x: number, y: number, width: number, height: number) {
-    this.shadow(() => this.strokeRect(x, y, width, height));
+    this.shadow(() => {
+      return this.strokeRect(x, y, width, height);
+    });
     const g = this.visual('graphics').object as Graphics;
     g.clear()
       .rect(x, y, width, height)
@@ -211,54 +228,17 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
     this.begin();
   }
 
-  beginPath() {
-    this.path.reset();
-  }
-
-  closePath() {
-    this.path.add('closePath', []);
-  }
-
-  moveTo(...args: number[]) {
-    this.path.add('moveTo', args);
-  }
-
-  lineTo(...args: number[]) {
-    this.path.add('lineTo', args);
-  }
-
-  quadraticCurveTo(...args: number[]) {
-    this.path.add('quadraticCurveTo', args);
-  }
-
-  bezierCurveTo(...args: number[]) {
-    this.path.add('bezierCurveTo', args);
-  }
-
-  arc(x: number, y: number, r: number, start: number, end: number, ccw = false) {
-    this.path.add('arc', [x, y, r, start, end, Number(ccw)]);
-  }
-
-  ellipse(
-    x: number,
-    y: number,
-    rx: number,
-    ry: number,
-    rotation: number,
-    start: number,
-    end: number,
-    ccw = false,
-  ) {
-    this.path.add('ellipse', [x, y, rx, ry, rotation, start, end, Number(ccw)]);
-  }
-
   fill() {
-    this.shadow(() => this.fill());
+    this.shadow(() => {
+      return this.fill();
+    });
     this.geometry().fill(this.paints.paint(this.state.fillStyle, this.frame));
   }
 
   stroke() {
-    this.shadow(() => this.stroke());
+    this.shadow(() => {
+      return this.stroke();
+    });
     this.geometry().stroke({
       ...this.strokePaint(),
       width: this.state.lineWidth,
@@ -272,7 +252,9 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   }
 
   private text(value: string, x: number, y: number, stroke: boolean) {
-    this.shadow(() => this.text(value, x, y, stroke));
+    this.shadow(() => {
+      return this.text(value, x, y, stroke);
+    });
     const entity = this.visual('text');
     const text = entity.object;
     updateText(

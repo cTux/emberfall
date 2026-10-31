@@ -28,10 +28,12 @@ export function slash(
       enemy.hitpoints <= 0 ||
       swing.enemies.has(enemy.id) ||
       !swordOverlapsEnemy(actor, enemy, range, context)
-    )
+    ) {
       continue;
+    }
+
     swing.enemies.add(enemy.id);
-    if (actor === owner)
+    if (actor === owner) {
       hitWithWeapon(
         scene,
         enemy,
@@ -43,7 +45,7 @@ export function slash(
         false,
         context,
       );
-    else
+    } else {
       hitWithWeapon(
         scene,
         enemy,
@@ -55,5 +57,6 @@ export function slash(
         true,
         context,
       );
+    }
   }
 }

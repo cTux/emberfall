@@ -4,6 +4,7 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 
 ## Project constraints
 
+- Always use curly braces for `if`/`else` and loop bodies, including single statements; use block bodies with explicit returns for arrow functions and braces around nonempty `switch` cases. Keep `else if` chains and grouped empty case labels. See [lint policy](docs/development.md#lint-policy).
 - Use single quotes for code string literals and JSX attribute values. Follow Oxfmt's escape-minimizing exceptions; JSON retains double quotes.
 - When adding or refactoring code, follow [code structure and strict checks](docs/development/code-structure.md#code-structure): keep modules below 250 nonblank lines, split by responsibility, and use typed declarative definitions for repeated domain rules. Separate functions and logical steps with [blank lines](docs/development/quality.md#blank-lines).
 - Emberfall is an online-only cooperative browser game. The server owns movement validation, damage, health, deaths, rewards and saves; client prediction is presentation only.

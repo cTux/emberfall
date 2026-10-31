@@ -3,17 +3,25 @@ import { BUILDINGS, INNKEEPER } from '../packages/core/src/index.ts';
 
 test('Marta opens shared trading while the Inn has no interaction', async ({ page, game }) => {
   const errors: string[] = [];
-  const inn = BUILDINGS.find((building) => building.id === 'inn')!;
+  const inn = BUILDINGS.find((building) => {
+    return building.id === 'inn';
+  })!;
   expect(INNKEEPER.x - (inn.x + inn.sourceWidth)).toBeGreaterThan(0);
   expect(INNKEEPER.x - (inn.x + inn.sourceWidth)).toBeLessThanOrEqual(24);
   expect(Math.abs(INNKEEPER.y - inn.y)).toBeLessThanOrEqual(16);
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
-  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  const marta = world.npcs!.find((npc) => {
+    return npc.id === INNKEEPER.id;
+  })!;
   player.x = marta.x - 70;
   player.y = marta.y - 18;
   await page.waitForTimeout(500);
@@ -24,7 +32,10 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   Object.assign(marta, { x: 1000, y: 1000 });
   const dialog = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
-    if (await page.getByRole('dialog').count()) await page.keyboard.press('Escape');
+    if (await page.getByRole('dialog').count()) {
+      await page.keyboard.press('Escape');
+    }
+
     player.x = marta.x;
     player.y = marta.y - 15;
     await page.keyboard.press('e');
@@ -52,11 +63,16 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   await page.waitForTimeout(500);
   await page.keyboard.press('e');
   await expect(page.getByRole('dialog')).toBeHidden();
-  const hall = BUILDINGS.find((building) => building.id === 'hall')!;
+  const hall = BUILDINGS.find((building) => {
+    return building.id === 'hall';
+  })!;
   player.x = hall.doorX;
   player.y = hall.y + 9;
   await expect(async () => {
-    if (await page.getByRole('dialog').count()) await page.keyboard.press('Escape');
+    if (await page.getByRole('dialog').count()) {
+      await page.keyboard.press('Escape');
+    }
+
     await page.keyboard.press('e');
     await expect(page.getByRole('dialog', { name: hall.name })).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });

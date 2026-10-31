@@ -20,9 +20,15 @@ test('Alt outlines party candidates without changing E interaction', async ({
       await expect(client.getByRole('button', { name: 'Leave world' })).toBeVisible();
     }
 
-    const world = [...game.runtime.worlds.values()].find((w) => w.players.size === 2)!;
-    const a = [...world.players.values()].find((p) => p.name === 'Alpha')!;
-    const b = [...world.players.values()].find((p) => p.name === 'Bravo')!;
+    const world = [...game.runtime.worlds.values()].find((w) => {
+      return w.players.size === 2;
+    })!;
+    const a = [...world.players.values()].find((p) => {
+      return p.name === 'Alpha';
+    })!;
+    const b = [...world.players.values()].find((p) => {
+      return p.name === 'Bravo';
+    })!;
     a.x = 1800;
     a.y = 1800;
     b.x = 1830;
@@ -36,9 +42,11 @@ test('Alt outlines party candidates without changing E interaction', async ({
       });
       const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
       let count = 0;
-      for (let i = 0; i < data.length; i += info.channels)
-        if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.65 && data[i + 2] < data[i + 1] * 0.65)
+      for (let i = 0; i < data.length; i += info.channels) {
+        if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.65 && data[i + 2] < data[i + 1] * 0.65) {
           count++;
+        }
+      }
 
       return count;
     };

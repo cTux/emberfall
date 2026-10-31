@@ -31,9 +31,9 @@ test('the server allows a connected player to walk into a tree', async () => {
         password: '',
       }),
     );
-    const tree = [...TREES].sort(
-      (a, b) => Math.hypot(a.x - 420, a.y - 363) - Math.hypot(b.x - 420, b.y - 363),
-    )[0];
+    const tree = [...TREES].sort((a, b) => {
+      return Math.hypot(a.x - 420, a.y - 363) - Math.hypot(b.x - 420, b.y - 363);
+    })[0];
     for (let i = 0; i < 70; i++) {
       if (player) {
         const dx = tree.x - player.x;
@@ -42,16 +42,18 @@ test('the server allows a connected player to walk into a tree', async () => {
         ws.send(JSON.stringify({ type: 'move', x: dx / length, y: dy / length }));
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 50);
+      });
     }
 
     assert(player);
     assert(samples.length > 30);
     assert(Math.hypot(player.x - tree.x, player.y + 15 - (tree.y - 8)) < 38);
     assert(
-      samples.some(
-        (sample) => Math.hypot(sample.x - tree.x, sample.y + 15 - (tree.y - 8)) < tree.radius,
-      ),
+      samples.some((sample) => {
+        return Math.hypot(sample.x - tree.x, sample.y + 15 - (tree.y - 8)) < tree.radius;
+      }),
       'the server must allow the player inside the trunk',
     );
   } finally {
@@ -61,13 +63,16 @@ test('the server allows a connected player to walk into a tree', async () => {
 });
 
 test('tree trunks block player and enemy bodies, including fast movement, with sliding', async () => {
-  const tree = TREES.find(
-    (t) =>
+  const tree = TREES.find((t) => {
+    return (
       t.x > 100 &&
       t.x < 800 &&
       t.y > 100 &&
-      TREES.every((other) => other === t || Math.hypot(other.x - t.x, other.y - t.y) > 80),
-  );
+      TREES.every((other) => {
+        return other === t || Math.hypot(other.x - t.x, other.y - t.y) > 80;
+      })
+    );
+  });
   assert(tree);
   for (const radius of [12, 18]) {
     const start: { x: number; y: number } = {

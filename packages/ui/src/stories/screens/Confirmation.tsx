@@ -10,15 +10,38 @@ export function Confirmation() {
 
   return (
     <Box sx={stage}>
-      <Button onClick={() => setOpen(true)}>Leave scene</Button>
-      <GameWindow title='Leave the forest?' open={open} onClose={() => setOpen(false)}>
+      <Button
+        onClick={() => {
+          return setOpen(true);
+        }}
+      >
+        Leave scene
+      </Button>
+      <GameWindow
+        title='Leave the forest?'
+        open={open}
+        onClose={() => {
+          return setOpen(false);
+        }}
+      >
         <Stack spacing={3}>
           <Typography>Your party can continue fighting.</Typography>
           <Stack direction='row' spacing={1}>
-            <Button variant='outlined' onClick={() => setOpen(false)}>
+            <Button
+              variant='outlined'
+              onClick={() => {
+                return setOpen(false);
+              }}
+            >
               Cancel
             </Button>
-            <Button color='error' variant='contained' onClick={() => setOpen(false)}>
+            <Button
+              color='error'
+              variant='contained'
+              onClick={() => {
+                return setOpen(false);
+              }}
+            >
               Leave scene
             </Button>
           </Stack>

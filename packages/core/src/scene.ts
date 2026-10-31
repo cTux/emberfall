@@ -14,8 +14,9 @@ export { WARDROBE } from './world.ts';
 
 import { wrap, wrappedDelta } from '@emberfall/common';
 export { wrap, wrappedDelta };
-export const forestDistance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
-  Math.hypot(wrappedDelta(a.x, b.x, FOREST.width), wrappedDelta(a.y, b.y, FOREST.height));
+export const forestDistance = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+  return Math.hypot(wrappedDelta(a.x, b.x, FOREST.width), wrappedDelta(a.y, b.y, FOREST.height));
+};
 
 // One deterministic trunk per grid cell; collision and rendering query only nearby cells.
 export function forestTrees(x: number, y: number, radius: number) {
@@ -41,7 +42,10 @@ export function forestTrees(x: number, y: number, radius: number) {
 
       const tx = col * FOREST_DEFINITION.treeCellSize + 25 + random() * 110,
         ty = row * FOREST_DEFINITION.treeCellSize + 25 + random() * 110;
-      if (forestDistance({ x: tx, y: ty }, FOREST_PORTAL) < 180) continue;
+      if (forestDistance({ x: tx, y: ty }, FOREST_PORTAL) < 180) {
+        continue;
+      }
+
       trees.push({
         id: `forest:${c}:${r}`,
         x: tx,
@@ -62,21 +66,31 @@ export function moveForestActor(
   radius: number,
   collide = true,
 ) {
-  if (!collide)
+  if (!collide) {
     return { x: wrap(position.x + dx, FOREST.width), y: wrap(position.y + dy, FOREST.height) };
+  }
+
   let { x, y } = position;
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
   for (let i = 0; i < steps; i++) {
     const trees = forestTrees(x, y, 40);
-    const clear = (px: number, py: number) =>
+    const clear = (px: number, py: number) => {
       // Owner-position spawns must be able to escape a trunk they already overlap.
-      trees.every(
-        (t) =>
+      return trees.every((t) => {
+        return (
           Math.hypot(px - t.x, py - t.y) >=
-          Math.min(radius + t.radius, Math.hypot(x - t.x, y - t.y)),
-      );
-    if (clear(x + dx / steps, y)) x += dx / steps;
-    if (clear(x, y + dy / steps)) y += dy / steps;
+          Math.min(radius + t.radius, Math.hypot(x - t.x, y - t.y))
+        );
+      });
+    };
+
+    if (clear(x + dx / steps, y)) {
+      x += dx / steps;
+    }
+
+    if (clear(x, y + dy / steps)) {
+      y += dy / steps;
+    }
   }
 
   return { x: wrap(x, FOREST.width), y: wrap(y, FOREST.height) };
@@ -91,11 +105,12 @@ export function traderInRange(
     !player.scene &&
     player.hitpoints > 0 &&
     (npcId === 'innkeeper' || npcId === 'craftsman') &&
-    !!npcs?.some(
-      (npc) =>
+    !!npcs?.some((npc) => {
+      return (
         npc.id === npcId &&
-        forestDistance({ x: player.x, y: player.y + 15 }, npc) < INTERACTION_RADIUS,
-    )
+        forestDistance({ x: player.x, y: player.y + 15 }, npc) < INTERACTION_RADIUS
+      );
+    })
   );
 }
 
@@ -105,26 +120,40 @@ export function nearbyInteraction(
   portals: { x: number; y: number }[] = [FOREST_PORTAL],
   npcs?: readonly { id: string; name: string; x: number; y: number }[],
 ) {
-  if (player.hitpoints <= 0) return null;
+  if (player.hitpoints <= 0) {
+    return null;
+  }
+
   if (player.scene === 'forest') {
-    const portal = portals.find((p) => forestDistance(player, p) < INTERACTION_RADIUS);
+    const portal = portals.find((p) => {
+      return forestDistance(player, p) < INTERACTION_RADIUS;
+    });
 
     return ended && portal ? { id: 'return', name: 'Return to village', ...portal } : null;
   }
 
-  const distance = (point: { x: number; y: number }) =>
-    forestDistance({ x: player.x, y: player.y + 15 }, point);
-  if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
+  const distance = (point: { x: number; y: number }) => {
+    return forestDistance({ x: player.x, y: player.y + 15 }, point);
+  };
+
+  if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS) {
     return { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL };
-  if (distance(WARDROBE) < 55) return { id: 'wardrobe', name: 'Wardrobe', ...WARDROBE };
-  const trader = (npcs ?? VILLAGE_DEFINITION.villagers).find(
-    (npc) =>
-      (npc.id === 'innkeeper' || npc.id === 'craftsman') && distance(npc) < INTERACTION_RADIUS,
-  );
-  if (trader) return { id: trader.id, name: trader.name, x: trader.x, y: trader.y };
-  const building = BUILDINGS.find(
-    (b) => b.id !== 'inn' && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
-  );
+  }
+
+  if (distance(WARDROBE) < 55) {
+    return { id: 'wardrobe', name: 'Wardrobe', ...WARDROBE };
+  }
+
+  const trader = (npcs ?? VILLAGE_DEFINITION.villagers).find((npc) => {
+    return (npc.id === 'innkeeper' || npc.id === 'craftsman') && distance(npc) < INTERACTION_RADIUS;
+  });
+  if (trader) {
+    return { id: trader.id, name: trader.name, x: trader.x, y: trader.y };
+  }
+
+  const building = BUILDINGS.find((b) => {
+    return b.id !== 'inn' && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS;
+  });
 
   return building
     ? { id: building.id, name: building.name, x: building.doorX, y: building.y }
@@ -132,5 +161,7 @@ export function nearbyInteraction(
 }
 
 export function hasLivingScenePlayers(players: Iterable<{ scene?: string; hitpoints: number }>) {
-  return [...players].some((p) => p.scene === 'forest' && p.hitpoints > 0);
+  return [...players].some((p) => {
+    return p.scene === 'forest' && p.hitpoints > 0;
+  });
 }

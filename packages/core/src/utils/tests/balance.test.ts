@@ -18,7 +18,9 @@ test('spawn type rolls elite before normal and never selects a timer-only boss',
     [0.05, EnemyType.Normal],
     [0.99999, EnemyType.Normal],
   ] as const) {
-    t.mock.method(Math, 'random', () => roll);
+    t.mock.method(Math, 'random', () => {
+      return roll;
+    });
     assert.equal(spawnEnemyType(), type);
     t.mock.restoreAll();
   }
@@ -30,9 +32,13 @@ test('item drop chance checks each enemy type at its exact percentage boundary',
     [EnemyType.Elite, 0.15],
     [EnemyType.Boss, 0.5],
   ] as const) {
-    t.mock.method(Math, 'random', () => boundary - 0.000001);
+    t.mock.method(Math, 'random', () => {
+      return boundary - 0.000001;
+    });
     assert.equal(shouldDropItem(type), true);
-    t.mock.method(Math, 'random', () => boundary);
+    t.mock.method(Math, 'random', () => {
+      return boundary;
+    });
     assert.equal(shouldDropItem(type), false);
     t.mock.restoreAll();
   }

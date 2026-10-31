@@ -7,7 +7,11 @@ import { hero } from './snapshots.fixture.ts';
 
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('sword reaches 75 units in its forward semicircle, with unchanged damage', async () => {
@@ -33,7 +37,9 @@ test('sword reaches 75 units in its forward semicircle, with unchanged damage', 
   };
   stepCombat(scene, [player], 10000, 0);
   assert.deepEqual(
-    scene.enemies.map((e) => e.hitpoints),
+    scene.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [5, 5, 10, 10],
   );
 });
@@ -77,29 +83,40 @@ test('every enemy overlapping during a swing is hit once, including late entrant
   };
   stepCombat(scene, [player], 10000, 0);
   assert.deepEqual(
-    scene.enemies.map((e) => e.hitpoints),
+    scene.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [45, 45, 50],
   );
   scene.enemies[2].x = 2380;
   stepCombat(scene, [player], 10100, 0.1);
   assert(player.attackAngle! > Math.PI / 2 && player.attackAngle! < Math.PI);
   assert.deepEqual(
-    scene.enemies.map((e) => e.hitpoints),
+    scene.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [45, 45, 45],
   );
   scene.enemies[2].x = 2540;
   stepCombat(scene, [player], 10200, 0.1);
   assert.deepEqual(
-    scene.enemies.map((e) => e.hitpoints),
+    scene.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [45, 45, 45],
   );
   scene.enemies.push({ id: 4, x: 2460, y: 1280, hitpoints: 50, angle: 0 });
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.enemies[3].hitpoints, 50, 'no hits after the active window');
-  for (const enemy of scene.enemies) enemy.debuffs = undefined;
+  for (const enemy of scene.enemies) {
+    enemy.debuffs = undefined;
+  }
+
   stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
-    scene.enemies.map((e) => e.hitpoints),
+    scene.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [40, 40, 45, 45],
   );
 });
@@ -110,7 +127,9 @@ test('attack rotation takes the short path and is consistent at server and displ
   assert(angle > 179 * degrees && angle < Math.PI);
   const rotate = (steps: number) => {
     let value = 0;
-    for (let i = 0; i < steps; i++) value = smoothAttackAngle(value, Math.PI / 2, 0.3 / steps);
+    for (let i = 0; i < steps; i++) {
+      value = smoothAttackAngle(value, Math.PI / 2, 0.3 / steps);
+    }
 
     return value;
   };

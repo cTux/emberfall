@@ -23,8 +23,11 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
     },
   });
   t.after(() => {
-    if (originalPoint) Object.defineProperty(globalThis, 'DOMPoint', originalPoint);
-    else Reflect.deleteProperty(globalThis, 'DOMPoint');
+    if (originalPoint) {
+      Object.defineProperty(globalThis, 'DOMPoint', originalPoint);
+    } else {
+      Reflect.deleteProperty(globalThis, 'DOMPoint');
+    }
   });
   const player = { id: 'me', x: 1800, y: LOBBY_PORTAL.y, hitpoints: 100 };
   const world = { players: [player] } as WorldState;
@@ -36,7 +39,9 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
   let labelBox = { x: 0, y: 0, width: 0, height: 0 };
   const context = {
     canvas: { width: 800, height: 600, clientWidth: 800, clientHeight: 600 },
-    getTransform: () => ({ e: 400 - player.x, f: 300 - player.y }),
+    getTransform: () => {
+      return { e: 400 - player.x, f: 300 - player.y };
+    },
     save() {},
     restore() {},
     setTransform() {},
@@ -44,7 +49,9 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
       arrowX = x;
       arrowY = y;
     },
-    rotate: (angle: number) => angles.push(angle),
+    rotate: (angle: number) => {
+      return angles.push(angle);
+    },
     beginPath() {},
     moveTo() {},
     lineTo() {},
@@ -57,8 +64,12 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
     fillRect(x: number, y: number, width: number, height: number) {
       labelBox = { x, y, width, height };
     },
-    measureText: () => ({ width: 70 }),
-    fillText: (label: string) => labels.push(label),
+    measureText: () => {
+      return { width: 70 };
+    },
+    fillText: (label: string) => {
+      return labels.push(label);
+    },
   };
   const draw = () => {
     labels.length = angles.length = colors.length = 0;

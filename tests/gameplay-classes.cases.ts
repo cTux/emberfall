@@ -13,7 +13,9 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
 }) => {
   test.setTimeout(Math.max(test.info().timeout, 120000));
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.addInitScript(() => {
     const Native = window.WebSocket;
     window.WebSocket = class extends Native {
@@ -29,7 +31,9 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   await page.getByLabel('Your adventurer name').fill('Class tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const wardrobe = page.getByRole('dialog', { name: 'Wardrobe' });
   for (const classId of CLASS_IDS) {
@@ -41,22 +45,36 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
     await page.keyboard.press('e');
     await expect(wardrobe).toBeVisible();
     const choice = wardrobe.getByRole('button', { name: new RegExp(`^${CLASS_LABELS[classId]}`) });
-    if ((player.classId ?? 'warrior') !== classId) await choice.click();
+    if ((player.classId ?? 'warrior') !== classId) {
+      await choice.click();
+    }
+
     await expect(choice).toHaveAttribute('aria-pressed', 'true');
-    await expect.poll(() => player.classId ?? 'warrior').toBe(classId);
+    await expect
+      .poll(() => {
+        return player.classId ?? 'warrior';
+      })
+      .toBe(classId);
     await wardrobe.getByRole('button', { name: 'Close Wardrobe', exact: true }).click();
     await expect(wardrobe).toBeHidden();
     if (classId === 'druid') {
       player.x = 480;
       player.y = 360;
-      await expect.poll(() => forestDistance(player.bear!, player)).toBeLessThan(21);
+      await expect
+        .poll(() => {
+          return forestDistance(player.bear!, player);
+        })
+        .toBeLessThan(21);
       // Isolate companion hits from the Druid's root projectiles.
       player.attackAt = Date.now() + 60000;
     }
 
     world.training!.damage = [];
     world.training!.playerShots = [];
-    for (const enemy of world.training!.enemies) enemy.debuffs = [];
+    for (const enemy of world.training!.enemies) {
+      enemy.debuffs = [];
+    }
+
     const previousHit = world.training!.sequence;
     player.x = TRAINING_ZONES[0].x + 65;
     player.y = TRAINING_ZONES[0].y;
@@ -68,27 +86,45 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
 
     // Damage records live for 800ms; 1s polling can miss every 1s companion hit.
     await expect
-      .poll(() => world.training!.damage.some((hit) => hit.id > previousHit), {
-        intervals: [50],
-        timeout: 10000,
-      })
+      .poll(
+        () => {
+          return world.training!.damage.some((hit) => {
+            return hit.id > previousHit;
+          });
+        },
+        {
+          intervals: [50],
+          timeout: 10000,
+        },
+      )
       .toBe(true);
-    await expect.poll(() => player.dps ?? 0).toBeGreaterThan(0);
+    await expect
+      .poll(() => {
+        return player.dps ?? 0;
+      })
+      .toBeGreaterThan(0);
     expect(player.hitpoints).toBe(player.maxHitpoints);
     expect(player.experience).toBe(0);
     if (classId === 'druid') {
-      await expect.poll(() => player.bear?.name).toBe('Bear');
+      await expect
+        .poll(() => {
+          return player.bear?.name;
+        })
+        .toBe('Bear');
       await expect
         .poll(
-          () =>
-            world.training!.damage.some(
-              (hit) => hit.damageType === 'physical' && (hit.amount === 3 || hit.amount === 4.5),
-            ),
+          () => {
+            return world.training!.damage.some((hit) => {
+              return hit.damageType === 'physical' && (hit.amount === 3 || hit.amount === 4.5);
+            });
+          },
           { intervals: [50] },
         )
         .toBe(true);
       await expect
-        .poll(() => forestDistance(player.bear!, world.training!.enemies[0]))
+        .poll(() => {
+          return forestDistance(player.bear!, world.training!.enemies[0]);
+        })
         .toBeLessThan(95);
     }
 
@@ -101,21 +137,27 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   await expect(page.getByRole('log')).toContainText('Same party, new runtime');
   const id = player.id,
     worldId = world.id;
-  const generation = await page.evaluate(
-    () => (window as unknown as { testGeneration: number }).testGeneration,
-  );
-  await page.evaluate(() =>
-    (window as unknown as { testSocket: WebSocket }).testSocket.close(4001),
-  );
+  const generation = await page.evaluate(() => {
+    return (window as unknown as { testGeneration: number }).testGeneration;
+  });
+  await page.evaluate(() => {
+    return (window as unknown as { testSocket: WebSocket }).testSocket.close(4001);
+  });
   await expect
-    .poll(() =>
-      page.evaluate(() => (window as unknown as { testGeneration: number }).testGeneration),
-    )
+    .poll(() => {
+      return page.evaluate(() => {
+        return (window as unknown as { testGeneration: number }).testGeneration;
+      });
+    })
     .toBeGreaterThan(generation);
   await expect(
     page.getByRole('status', { name: 'World server online', includeHidden: true }),
   ).toBeVisible({ timeout: 15000 });
-  await expect.poll(() => game.runtime.worlds.get(worldId)?.players.size).toBe(1);
+  await expect
+    .poll(() => {
+      return game.runtime.worlds.get(worldId)?.players.size;
+    })
+    .toBe(1);
   expect(game.runtime.worlds.get(worldId)!.players.get(id)?.classId).toBe('druid');
   await expect(
     page

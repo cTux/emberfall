@@ -24,24 +24,38 @@ export interface CharacterStats extends GearStats {
 }
 export type EquipmentOwner = Pick<Player, 'classId' | 'equipment' | 'equipmentItems' | 'talents'>;
 export function createEquipmentRules(content: Registries) {
-  const EQUIPMENT_SLOTS = content.slots.values().map((slot) => slot.id);
+  const EQUIPMENT_SLOTS = content.slots.values().map((slot) => {
+    return slot.id;
+  });
   const SLOT_GEAR_TYPES = Object.fromEntries(
-    content.slots.values().map((slot) => [slot.id, slot.gearTypes]),
+    content.slots.values().map((slot) => {
+      return [slot.id, slot.gearTypes];
+    }),
   );
   const CLASS_GEAR_TYPES = Object.fromEntries(
-    content.classes.values().map((player) => [player.id, player.gearTypes]),
+    content.classes.values().map((player) => {
+      return [player.id, player.gearTypes];
+    }),
   );
   const STARTER_WEAPONS = Object.fromEntries(
-    content.classes.values().map((player) => [player.id, player.starterWeapon]),
+    content.classes.values().map((player) => {
+      return [player.id, player.starterWeapon];
+    }),
   );
   const GEAR_DEFINITIONS = Object.fromEntries(
     content.items
       .values()
-      .filter((item) => item.kind === 'gear')
-      .map((item) => [item.id, item]),
+      .filter((item) => {
+        return item.kind === 'gear';
+      })
+      .map((item) => {
+        return [item.id, item];
+      }),
   );
   const INNATE_STATS = Object.fromEntries(
-    content.stats.values().map((stat) => [stat.id, stat.default]),
+    content.stats.values().map((stat) => {
+      return [stat.id, stat.default];
+    }),
   ) as GearStats & Record<string, number>;
   const BEAR_DEFINITION = content.companions.require('bear');
 
@@ -55,19 +69,15 @@ export function createEquipmentRules(content: Registries) {
     );
   }
 
-  const equipmentSchema = z
-    .record(z.string(), z.string().nullable())
-    .refine(
-      (equipment) =>
-        Object.entries(equipment).every(
-          ([slot, id]) =>
-            content.slots.has(slot) &&
-            (id === null ||
-              (!!GEAR_DEFINITIONS[id] &&
-                SLOT_GEAR_TYPES[slot].includes(GEAR_DEFINITIONS[id].gearType))),
-        ),
-      'Unknown or incompatible equipment',
-    );
+  const equipmentSchema = z.record(z.string(), z.string().nullable()).refine((equipment) => {
+    return Object.entries(equipment).every(([slot, id]) => {
+      return (
+        content.slots.has(slot) &&
+        (id === null ||
+          (!!GEAR_DEFINITIONS[id] && SLOT_GEAR_TYPES[slot].includes(GEAR_DEFINITIONS[id].gearType)))
+      );
+    });
+  }, 'Unknown or incompatible equipment');
 
   function starterEquipment(classId: ClassId): Equipment {
     content.classes.require(classId);
@@ -78,11 +88,12 @@ export function createEquipmentRules(content: Registries) {
   function validateClassEquipment(equipment: Equipment, classId: ClassId) {
     const parsed = equipmentSchema.parse(equipment);
     if (
-      !Object.entries(parsed).every(
-        ([slot, id]) => id === null || canEquip(slot, GEAR_DEFINITIONS[id], classId),
-      )
-    )
+      !Object.entries(parsed).every(([slot, id]) => {
+        return id === null || canEquip(slot, GEAR_DEFINITIONS[id], classId);
+      })
+    ) {
       throw new Error('Equipment is incompatible with this class');
+    }
 
     return parsed;
   }
@@ -94,23 +105,35 @@ export function createEquipmentRules(content: Registries) {
   /** Definitions stay immutable; equipped instances preserve each item's rolled stats. */
   function characterStats(player: EquipmentOwner): CharacterStats {
     const stats = { ...INNATE_STATS };
-    const bonuses = Object.fromEntries(Object.values(ItemStat).map((stat) => [stat, 0])) as Record<
-      ItemStat,
-      number
-    >;
+    const bonuses = Object.fromEntries(
+      Object.values(ItemStat).map((stat) => {
+        return [stat, 0];
+      }),
+    ) as Record<ItemStat, number>;
     const equipment = equippedItems(player);
     const classId = player.classId ?? 'warrior';
     let weapon: GearDefinition | undefined;
     for (const slot of EQUIPMENT_SLOTS) {
       const id = equipment[slot];
       const gear = id ? GEAR_DEFINITIONS[id] : undefined;
-      if (!gear || !canEquip(slot, gear, classId)) continue;
-      if (slot === 'weapon') weapon = gear;
-      for (const key of Object.keys(gear.stats)) stats[key] += gear.stats[key] ?? 0;
+      if (!gear || !canEquip(slot, gear, classId)) {
+        continue;
+      }
+
+      if (slot === 'weapon') {
+        weapon = gear;
+      }
+
+      for (const key of Object.keys(gear.stats)) {
+        stats[key] += gear.stats[key] ?? 0;
+      }
+
       const instance = player.equipmentItems?.[slot];
-      if (instance?.itemId === id)
-        for (const [stat, value] of Object.entries(instance.stats ?? {}))
+      if (instance?.itemId === id) {
+        for (const [stat, value] of Object.entries(instance.stats ?? {})) {
           bonuses[stat as ItemStat] += value;
+        }
+      }
     }
 
     stats.power += bonuses.power;

@@ -8,17 +8,19 @@ import {
   drawDamageNumbers,
 } from '../../client/src/damage-text.ts';
 
-const hit = (overrides: Partial<DamageEvent> = {}): DamageEvent => ({
-  id: 1,
-  ownerId: 'p',
-  target: 'enemy:1',
-  damageType: 'fire',
-  amount: 3,
-  at: 1000,
-  x: 20,
-  y: 30,
-  ...overrides,
-});
+const hit = (overrides: Partial<DamageEvent> = {}): DamageEvent => {
+  return {
+    id: 1,
+    ownerId: 'p',
+    target: 'enemy:1',
+    damageType: 'fire',
+    amount: 3,
+    at: 1000,
+    x: 20,
+    y: 30,
+    ...overrides,
+  };
+};
 
 test('positive finishing hits display at least one and zero damage displays no number', () => {
   const labels: string[] = [];
@@ -33,8 +35,10 @@ test('positive finishing hits display at least one and zero damage displays no n
       labels.push(value);
     },
   } as unknown as CanvasRenderingContext2D;
-  for (const amount of [0, 0.01, 0.49, 1, 1.5])
+  for (const amount of [0, 0.01, 0.49, 1, 1.5]) {
     drawDamageNumber(ctx, hit({ amount }), { x: 0, y: 0 }, 1000);
+  }
+
   assert.deepEqual(labels, ['1', '1', '1', '2']);
 });
 
@@ -54,7 +58,9 @@ test('combines projectiles and fractional critical damage without mutating event
 test('10 ms is inclusive and windows do not slide, regardless of input order', () => {
   const totals = combineDamageNumbers([hit({ at: 1020 }), hit({ at: 1010 }), hit()]);
   assert.deepEqual(
-    totals.map(({ at, amount }) => [at, amount]),
+    totals.map(({ at, amount }) => {
+      return [at, amount];
+    }),
     [
       [1000, 6],
       [1020, 3],
@@ -96,12 +102,26 @@ test('draws one rounded total at the wrapped projection and expires on the first
     },
   } as unknown as CanvasRenderingContext2D;
   const hits = [hit(), hit({ amount: 4.5, at: 1010, critical: true })];
-  drawDamageNumbers(ctx, hits, () => ({ x: -10, y: 100 }), 1010);
+  drawDamageNumbers(
+    ctx,
+    hits,
+    () => {
+      return { x: -10, y: 100 };
+    },
+    1010,
+  );
   assert.deepEqual(labels, [['8', 0, 0]]);
   const frame = damageTextFrame(hits[0], 1010)!;
   assert.deepEqual(positions, [[-10 + frame.x, 100 + frame.y]]);
   labels.length = 0;
-  drawDamageNumbers(ctx, hits, () => ({ x: 0, y: 0 }), 1751);
+  drawDamageNumbers(
+    ctx,
+    hits,
+    () => {
+      return { x: 0, y: 0 };
+    },
+    1751,
+  );
   assert.deepEqual(labels, []);
 });
 
@@ -123,9 +143,21 @@ test('battle text pops, settles, rises and fades before the event expires', () =
 });
 
 test('successive hits use stable lanes independent of snapshot order or other hits', () => {
-  const hits = Array.from({ length: 5 }, (_, id) => hit({ id }));
-  const frames = hits.map((event) => damageTextFrame(event, 1200)!);
-  assert.equal(new Set(frames.map((frame) => frame.x)).size, 5);
-  for (const [index, event] of hits.entries())
+  const hits = Array.from({ length: 5 }, (_, id) => {
+    return hit({ id });
+  });
+  const frames = hits.map((event) => {
+    return damageTextFrame(event, 1200)!;
+  });
+  assert.equal(
+    new Set(
+      frames.map((frame) => {
+        return frame.x;
+      }),
+    ).size,
+    5,
+  );
+  for (const [index, event] of hits.entries()) {
     assert.deepEqual(damageTextFrame(structuredClone(event), 1200), frames[index]);
+  }
 });

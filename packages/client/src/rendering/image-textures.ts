@@ -36,7 +36,10 @@ export class ImageTextures {
     const image = source as HTMLImageElement | HTMLCanvasElement;
     const iw = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
     const ih = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
-    if (!iw || !ih) return;
+    if (!iw || !ih) {
+      return;
+    }
+
     let sx = 0,
       sy = 0,
       sw = iw,
@@ -45,9 +48,14 @@ export class ImageTextures {
       dy = 0,
       dw = iw,
       dh = ih;
-    if (args.length === 2) [dx, dy] = args;
-    else if (args.length === 4) [dx, dy, dw, dh] = args;
-    else [sx, sy, sw, sh, dx, dy, dw, dh] = args;
+    if (args.length === 2) {
+      [dx, dy] = args;
+    } else if (args.length === 4) {
+      [dx, dy, dw, dh] = args;
+    } else {
+      [sx, sy, sw, sh, dx, dy, dw, dh] = args;
+    }
+
     // Atlas callers use game-pixel cells; the backing art retains twice the detail.
     if (args.length === 8 && image instanceof HTMLImageElement) {
       const resolution = Number(image.dataset.artResolution ?? 1);
@@ -57,7 +65,10 @@ export class ImageTextures {
       sh *= resolution;
     }
 
-    if (!sw || !sh || !dw || !dh) return;
+    if (!sw || !sh || !dw || !dh) {
+      return;
+    }
+
     let entry = this.entries.get(source);
     if (!entry) {
       // WebGL uploads of SVG images without explicit dimensions can produce an
@@ -113,13 +124,13 @@ export class ImageTextures {
       draw.texture.source.style.update();
     }
 
-    if (!texture)
+    if (!texture) {
       texture = entity.frameTexture = new Texture({
         source: draw.texture.source,
         frame: new Rectangle(sx, sy, sw, sh),
         dynamic: true,
       });
-    else if (
+    } else if (
       texture.source !== draw.texture.source ||
       texture.frame.x !== sx ||
       texture.frame.y !== sy ||
@@ -137,15 +148,19 @@ export class ImageTextures {
   }
 
   trim(frame: number) {
-    for (const [key, entry] of this.entries)
+    for (const [key, entry] of this.entries) {
       if (frame - entry.used > 600) {
         entry.texture.destroy(true);
         this.entries.delete(key);
       }
+    }
   }
 
   destroy() {
-    for (const entry of this.entries.values()) entry.texture.destroy(true);
+    for (const entry of this.entries.values()) {
+      entry.texture.destroy(true);
+    }
+
     this.entries.clear();
   }
 }

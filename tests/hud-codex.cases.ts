@@ -31,17 +31,19 @@ test('Codex chapters have formatted content and loaded artwork without resizing'
       for (const image of await images.all()) {
         await expect(image).toHaveAttribute('alt', /\S/);
         await expect
-          .poll(() =>
-            image.evaluate(
-              (element: HTMLImageElement) => element.complete && element.naturalWidth > 0,
-            ),
-          )
+          .poll(() => {
+            return image.evaluate((element: HTMLImageElement) => {
+              return element.complete && element.naturalWidth > 0;
+            });
+          })
           .toBe(true);
       }
 
-      expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
-        true,
-      );
+      expect(
+        await panel.evaluate((element) => {
+          return element.scrollWidth <= element.clientWidth;
+        }),
+      ).toBe(true);
       await page.screenshot({
         path: `test-results/codex-${viewport.width}-${await tab.textContent()}.png`,
       });
@@ -59,9 +61,11 @@ test('Codex chapters have formatted content and loaded artwork without resizing'
     await page.keyboard.press('Enter');
     await expect(tabs.last()).toHaveAttribute('aria-selected', 'true');
     const content = codex.locator('.MuiDialogContent-root');
-    expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
-      true,
-    );
+    expect(
+      await content.evaluate((element) => {
+        return element.scrollHeight > element.clientHeight;
+      }),
+    ).toBe(true);
     await content.evaluate((element) => {
       element.scrollTop = element.scrollHeight;
     });

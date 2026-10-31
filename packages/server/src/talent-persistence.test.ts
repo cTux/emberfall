@@ -12,15 +12,21 @@ test('save failure cannot publish learned points or equipped slots; bullseye res
   const runtime = await createRuntime();
   const messages: { type: string; message?: string; characterToken?: string }[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   try {
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Talent hero', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    for (let i = 0; i < 200 && !world.players.size; i++) {
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 10);
+      });
+    }
+
     const player = [...world.players.values()][0];
     player.level = 20;
     const id = talentNodeId('warrior', 0, 1);
@@ -43,7 +49,9 @@ test('save failure cannot publish learned points or equipped slots; bullseye res
     peer.receive({ type: 'resetTalents', classId: 'warrior' });
     assert.equal(player.coins, 50);
     assert.equal(availableTalentPoints(player), 20);
-    const token = messages.find((message) => message.type === 'joined')!.characterToken!;
+    const token = messages.find((message) => {
+      return message.type === 'joined';
+    })!.characterToken!;
     const saved = runtime.characters.load(token);
     assert.equal(saved.progress.coins, 50);
     assert.equal(availableTalentPoints(saved.progress), 20);

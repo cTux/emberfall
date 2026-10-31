@@ -46,7 +46,7 @@ export function drawDanger(
     }
   };
 
-  for (const spawn of projectilesOnly ? [] : (scene.spawns ?? []))
+  for (const spawn of projectilesOnly ? [] : (scene.spawns ?? [])) {
     zone(
       spawn.x,
       spawn.y,
@@ -54,9 +54,14 @@ export function drawDanger(
       (now - spawn.warnedAt) / (spawn.spawnsAt - spawn.warnedAt),
       true,
     );
+  }
+
   for (const enemy of projectilesOnly ? [] : scene.enemies) {
     const attack = enemy.attack;
-    if (!attack) continue;
+    if (!attack) {
+      continue;
+    }
+
     zone(
       attack.x,
       attack.y,

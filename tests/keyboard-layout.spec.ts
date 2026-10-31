@@ -79,7 +79,9 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
   await expect(chat).toBeHidden();
   await expect(page.getByRole('dialog')).toBeHidden();
 
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   for (const scene of ['village', 'forest']) {
     for (const [name, shortcut] of [
@@ -104,7 +106,10 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
 
     await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'T', 'F1', 'Esc']);
     await page.screenshot({ path: `test-results/hud-toolbar-${scene}.png` });
-    if (scene === 'village') await controls.screenshot({ path: 'test-results/hud-toolbar.png' });
+    if (scene === 'village') {
+      await controls.screenshot({ path: 'test-results/hud-toolbar.png' });
+    }
+
     await page.keyboard.press('Escape');
     await expect(settings).toBeVisible();
     await page.screenshot({ path: `test-results/hotkeys-settings-${scene}.png` });
@@ -131,9 +136,9 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
 
 test('movement follows physical keys across layouts and layout changes', async ({ page, game }) => {
   const movement = () => {
-    const player = [...game.runtime.worlds.values()].flatMap((world) => [
-      ...world.players.values(),
-    ])[0];
+    const player = [...game.runtime.worlds.values()].flatMap((world) => {
+      return [...world.players.values()];
+    })[0];
 
     return { x: player?.inputX ?? 0, y: player?.inputY ?? 0 };
   };
@@ -143,11 +148,15 @@ test('movement follows physical keys across layouts and layout changes', async (
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   await expect(page.locator('canvas')).toHaveAttribute('data-renderer', 'pixijs-webgl');
 
-  const sendKey = (type: string, code: string, key: string) =>
-    page.evaluate(
-      (event) => window.dispatchEvent(new KeyboardEvent(event.type, { ...event, bubbles: true })),
+  const sendKey = (type: string, code: string, key: string) => {
+    return page.evaluate(
+      (event) => {
+        return window.dispatchEvent(new KeyboardEvent(event.type, { ...event, bubbles: true }));
+      },
       { type, code, key },
     );
+  };
+
   const codes = ['KeyW', 'KeyA', 'KeyS', 'KeyD'];
   const directions = [
     { x: 0, y: -1 },

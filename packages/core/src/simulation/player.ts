@@ -14,7 +14,10 @@ type Game = ReturnType<typeof createGame>;
 type CastRequest = Extract<ClientMessage, { type: 'cast' }>;
 const castInputs = new WeakMap<Player, CastRequest>();
 export function movePlayer(player: Player, x: number, y: number, dt: number) {
-  if (player.hitpoints <= 0) return;
+  if (player.hitpoints <= 0) {
+    return;
+  }
+
   const length = Math.max(1, Math.hypot(x, y));
   const speed = ARENA.speed * (1 + game.rules.characterStats(player).bonuses.movementSpeed / 100);
   const next = (player.scene === 'forest' ? moveForestActor : moveActor)(
@@ -49,7 +52,10 @@ export function requestPlayerCast(
   now: number,
   context: Game = game,
 ) {
-  if (request.id <= (player.castSeq ?? 0)) return false;
+  if (request.id <= (player.castSeq ?? 0)) {
+    return false;
+  }
+
   player.castSeq = request.id;
   const stats = context.rules.characterStats(player);
   if (
@@ -63,8 +69,10 @@ export function requestPlayerCast(
     request.epoch !== (player.scene === 'forest' ? scene.id : 'lobby') ||
     (!player.scene && !inTrainingZone(player)) ||
     (player.attackAt !== undefined && now - player.attackAt < stats.attackIntervalMs - 2 * TICK_MS)
-  )
+  ) {
     return false;
+  }
+
   player.autoAttack = false;
   player.autoTarget = request.autoTarget;
   player.aimX = request.aimX;
@@ -123,9 +131,15 @@ export function tickPlayerCombat(
       player.attackId = undefined;
     }
 
-    if (player.attackAt === undefined) continue;
+    if (player.attackAt === undefined) {
+      continue;
+    }
+
     const age = now - player.attackAt;
-    if (age < 0 || age >= ability.durationMs) continue;
+    if (age < 0 || age >= ability.durationMs) {
+      continue;
+    }
+
     let swing = swordHits.get(player);
     const freshSwing = !swing || swing.at !== player.attackAt || swing.sceneId !== scene.id;
     if (freshSwing) {
@@ -156,9 +170,17 @@ export function tickPlayerCombat(
     }
 
     slash(scene, player, player, now, context);
-    if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
+    if (!scene.training) {
+      scene.enemies = scene.enemies.filter((e) => {
+        return e.hitpoints > 0;
+      });
+    }
   }
 
   tickPlayerShots(scene, alive, now, dt, context);
-  if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
+  if (!scene.training) {
+    scene.enemies = scene.enemies.filter((e) => {
+      return e.hitpoints > 0;
+    });
+  }
 }

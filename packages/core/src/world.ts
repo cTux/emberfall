@@ -9,23 +9,25 @@ import {
 } from './definitions/worlds/village.ts';
 import { PLANT_KINDS } from './plants.ts';
 export { ARENA, WARDROBE, TRAINING_ZONES, BUILDINGS, TORCHES };
-export const BULLSEYE = VILLAGE_DEFINITION.workstations.find(
-  (station) => station.id === 'lodge-target',
-);
+export const BULLSEYE = VILLAGE_DEFINITION.workstations.find((station) => {
+  return station.id === 'lodge-target';
+});
 import { wrap, wrappedDelta } from '@emberfall/common';
 
-export const inTrainingZone = (player: { x: number; y: number }) =>
-  TRAINING_ZONES.some(
-    (zone) =>
+export const inTrainingZone = (player: { x: number; y: number }) => {
+  return TRAINING_ZONES.some((zone) => {
+    return (
       Math.hypot(
         wrappedDelta(player.x, zone.x, ARENA.width) / zone.radius,
         wrappedDelta(player.y + 15, zone.y, ARENA.height) / (zone.radius * 0.85),
-      ) <= 1,
-  );
+      ) <= 1
+    );
+  });
+};
 
 // Sample gentle Bezier bends once so drawing and vegetation clearance share the same route.
-export const PATHS = PATH_CURVES.map(([start, bend1, bend2, end]) =>
-  Array.from({ length: 33 }, (_, step) => {
+export const PATHS = PATH_CURVES.map(([start, bend1, bend2, end]) => {
+  return Array.from({ length: 33 }, (_, step) => {
     const t = step / 32,
       u = 1 - t;
 
@@ -33,15 +35,20 @@ export const PATHS = PATH_CURVES.map(([start, bend1, bend2, end]) =>
       x: u ** 3 * start.x + 3 * u ** 2 * t * bend1.x + 3 * u * t ** 2 * bend2.x + t ** 3 * end.x,
       y: u ** 3 * start.y + 3 * u ** 2 * t * bend1.y + 3 * u * t ** 2 * bend2.y + t ** 3 * end.y,
     };
-  }),
-);
+  });
+});
 export function onPath(x: number, y: number, margin = 28) {
-  if (Math.hypot((x - 480) / 110, (y - 355) / 75) < 1) return true;
+  if (Math.hypot((x - 480) / 110, (y - 355) / 75) < 1) {
+    return true;
+  }
 
-  return PATHS.some((path) =>
-    path.some((point, index) => {
+  return PATHS.some((path) => {
+    return path.some((point, index) => {
       const next = path[index + 1];
-      if (!next) return false;
+      if (!next) {
+        return false;
+      }
+
       const dx = next.x - point.x,
         dy = next.y - point.y;
       const t = Math.max(
@@ -50,8 +57,8 @@ export function onPath(x: number, y: number, margin = 28) {
       );
 
       return Math.hypot(x - point.x - t * dx, y - point.y - t * dy) < margin;
-    }),
-  );
+    });
+  });
 }
 
 export interface Tree {
@@ -70,24 +77,42 @@ const random = () => {
 
 function sceneryClearing(x: number, y: number) {
   return (
-    TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + 35) ||
+    TRAINING_ZONES.some((zone) => {
+      return Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + 35;
+    }) ||
     Math.hypot((x - 480) / 190, (y - 355) / 110) < 1 ||
     onPath(x, y, 55) ||
-    BUILDINGS.some((b) => Math.abs(x - b.x) < 100 && y > b.y - 130 && y < b.y + 65) ||
-    TORCHES.some((t) => Math.hypot(t.x - x, t.y - y) < 45)
+    BUILDINGS.some((b) => {
+      return Math.abs(x - b.x) < 100 && y > b.y - 130 && y < b.y + 65;
+    }) ||
+    TORCHES.some((t) => {
+      return Math.hypot(t.x - x, t.y - y) < 45;
+    })
   );
 }
 
 for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
   const x = 35 + random() * (ARENA.width - 70);
   const y = 55 + random() * (ARENA.height - 85);
-  if (sceneryClearing(x, y)) continue;
-  if (trees.some((tree) => Math.hypot(tree.x - x, tree.y - y) < 48)) continue;
+  if (sceneryClearing(x, y)) {
+    continue;
+  }
+
+  if (
+    trees.some((tree) => {
+      return Math.hypot(tree.x - x, tree.y - y) < 48;
+    })
+  ) {
+    continue;
+  }
+
   trees.push({ x, y, size: 72 + Math.floor(random() * 25), radius: 15 });
 }
 
 export const TREES: readonly Readonly<Tree>[] = Object.freeze(
-  trees.map((tree) => Object.freeze(tree)),
+  trees.map((tree) => {
+    return Object.freeze(tree);
+  }),
 );
 
 export { PLANT_KINDS } from './plants.ts';
@@ -117,9 +142,26 @@ function scatterScenery(
   for (let i = 0; i < attempts; i++) {
     const x = 35 + roll() * (ARENA.width - 70);
     const y = 55 + roll() * (ARENA.height - 85);
-    if (sceneryClearing(x, y)) continue;
-    if (occupied.some((object) => Math.hypot(object.x - x, object.y - y) < 48)) continue;
-    if (decorations.some((object) => Math.hypot(object.x - x, object.y - y) < 48)) continue;
+    if (sceneryClearing(x, y)) {
+      continue;
+    }
+
+    if (
+      occupied.some((object) => {
+        return Math.hypot(object.x - x, object.y - y) < 48;
+      })
+    ) {
+      continue;
+    }
+
+    if (
+      decorations.some((object) => {
+        return Math.hypot(object.x - x, object.y - y) < 48;
+      })
+    ) {
+      continue;
+    }
+
     decorations.push({
       x,
       y,
@@ -128,7 +170,11 @@ function scatterScenery(
     });
   }
 
-  return Object.freeze(decorations.map((object) => Object.freeze(object)));
+  return Object.freeze(
+    decorations.map((object) => {
+      return Object.freeze(object);
+    }),
+  );
 }
 
 export const ROCKS = scatterScenery(
@@ -157,40 +203,55 @@ export function moveActor(
   collide = true,
   collideScenery = true,
 ) {
-  if (!collide)
+  if (!collide) {
     return {
       x: wrap(position.x + dx, ARENA.width),
       y: wrap(position.y + dy, ARENA.height),
     };
+  }
+
   let { x, y } = position;
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
   // ponytail: scan this small fixed grove; index obstacles spatially when maps grow.
-  const clear = (px: number, py: number) =>
+  const clear = (px: number, py: number) => {
     // Owner-position spawns must be able to escape a trunk they already overlap.
-    TREES.every((tree) => {
-      const distance = (tx: number, ty: number) =>
-        Math.hypot(
-          wrappedDelta(tx, tree.x, ARENA.width),
-          wrappedDelta(ty, tree.y - 8, ARENA.height),
-        );
+    return (
+      TREES.every((tree) => {
+        const distance = (tx: number, ty: number) => {
+          return Math.hypot(
+            wrappedDelta(tx, tree.x, ARENA.width),
+            wrappedDelta(ty, tree.y - 8, ARENA.height),
+          );
+        };
 
-      return distance(px, py) >= Math.min(radius + tree.radius, distance(x, y));
-    }) &&
-    (!collideScenery ||
-      (Math.hypot(px - WARDROBE.x, py - WARDROBE.y) >= radius + 18 &&
-        TORCHES.every((t) => Math.hypot(px - t.x, py - t.y) >= radius + 5) &&
-        BUILDINGS.every(
-          (b) =>
-            Math.hypot(
-              px - Math.max(b.x - b.sourceWidth + 8, Math.min(b.x + b.sourceWidth - 8, px)),
-              py - Math.max(b.y - 40, Math.min(b.y, py)),
-            ) >= radius,
-        )));
+        return distance(px, py) >= Math.min(radius + tree.radius, distance(x, y));
+      }) &&
+      (!collideScenery ||
+        (Math.hypot(px - WARDROBE.x, py - WARDROBE.y) >= radius + 18 &&
+          TORCHES.every((t) => {
+            return Math.hypot(px - t.x, py - t.y) >= radius + 5;
+          }) &&
+          BUILDINGS.every((b) => {
+            return (
+              Math.hypot(
+                px - Math.max(b.x - b.sourceWidth + 8, Math.min(b.x + b.sourceWidth - 8, px)),
+                py - Math.max(b.y - 40, Math.min(b.y, py)),
+              ) >= radius
+            );
+          })))
+    );
+  };
+
   for (let i = 0; i < steps; i++) {
     const nextX = wrap(x + dx / steps, ARENA.width);
-    if (clear(nextX, y)) x = nextX;
+    if (clear(nextX, y)) {
+      x = nextX;
+    }
+
     const nextY = wrap(y + dy / steps, ARENA.height);
-    if (clear(x, nextY)) y = nextY;
+    if (clear(x, nextY)) {
+      y = nextY;
+    }
   }
 
   return { x, y };

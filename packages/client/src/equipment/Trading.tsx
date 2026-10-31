@@ -18,14 +18,19 @@ export function Trading({
   send: (message: ClientMessage) => void;
 }) {
   const [tab, setTab] = useState('buy');
-  const trade = (id: string, buying: boolean, modifiers: { shiftKey: boolean; ctrlKey: boolean }) =>
-    send({
+  const trade = (
+    id: string,
+    buying: boolean,
+    modifiers: { shiftKey: boolean; ctrlKey: boolean },
+  ) => {
+    return send({
       type: 'trade',
       npcId: craftsman ? 'craftsman' : 'innkeeper',
       id,
       buying,
       amount: modifiers.ctrlKey ? 'stack' : modifiers.shiftKey ? 10 : 1,
     });
+  };
 
   return (
     <ChapterTabs
@@ -48,56 +53,73 @@ export function Trading({
           action: 'Buy back',
           label: 'Buyback',
         },
-      ].map(({ id, title, items, action, label }) => ({
-        id,
-        title,
-        content: (
-          <Box
-            sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 1.5 }}
-          >
-            <Backpack
-              label={label}
-              items={backpackViews(items, player)}
-              coins={merchant.coins}
-              action={action}
-              inventory={`vendor-${id}`}
-              drop={{
-                accepts: ['backpack'],
-                onDrop: (_, id, modifiers) => trade(id, false, modifiers),
+      ].map(({ id, title, items, action, label }) => {
+        return {
+          id,
+          title,
+          content: (
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+                gap: 1.5,
               }}
-              onUse={(id, modifiers) => trade(id, true, modifiers)}
-            />
-            <Backpack
-              label='Your backpack'
-              items={backpackViews(player.backpack ?? [], player)}
-              coins={player.coins ?? 0}
-              action='Sell'
-              inventory='backpack'
-              drop={{
-                accepts: ['vendor-buy', 'vendor-buyback'],
-                onDrop: (_, id, modifiers) => trade(id, true, modifiers),
-              }}
-              headerActions={
-                <Tooltip title='Sell all'>
-                  <span>
-                    <IconButton
-                      aria-label='Sell all'
-                      disabled={!player.backpack?.length}
-                      onClick={() =>
-                        send({ type: 'sellAll', npcId: craftsman ? 'craftsman' : 'innkeeper' })
-                      }
-                      sx={{ color: 'primary.main', fontSize: '0.75rem', p: 0.5 }}
-                    >
-                      <FontAwesomeIcon icon={faSackDollar} aria-hidden='true' />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-              }
-              onUse={(id, modifiers) => trade(id, false, modifiers)}
-            />
-          </Box>
-        ),
-      }))}
+            >
+              <Backpack
+                label={label}
+                items={backpackViews(items, player)}
+                coins={merchant.coins}
+                action={action}
+                inventory={`vendor-${id}`}
+                drop={{
+                  accepts: ['backpack'],
+                  onDrop: (_, id, modifiers) => {
+                    return trade(id, false, modifiers);
+                  },
+                }}
+                onUse={(id, modifiers) => {
+                  return trade(id, true, modifiers);
+                }}
+              />
+              <Backpack
+                label='Your backpack'
+                items={backpackViews(player.backpack ?? [], player)}
+                coins={player.coins ?? 0}
+                action='Sell'
+                inventory='backpack'
+                drop={{
+                  accepts: ['vendor-buy', 'vendor-buyback'],
+                  onDrop: (_, id, modifiers) => {
+                    return trade(id, true, modifiers);
+                  },
+                }}
+                headerActions={
+                  <Tooltip title='Sell all'>
+                    <span>
+                      <IconButton
+                        aria-label='Sell all'
+                        disabled={!player.backpack?.length}
+                        onClick={() => {
+                          return send({
+                            type: 'sellAll',
+                            npcId: craftsman ? 'craftsman' : 'innkeeper',
+                          });
+                        }}
+                        sx={{ color: 'primary.main', fontSize: '0.75rem', p: 0.5 }}
+                      >
+                        <FontAwesomeIcon icon={faSackDollar} aria-hidden='true' />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                }
+                onUse={(id, modifiers) => {
+                  return trade(id, false, modifiers);
+                }}
+              />
+            </Box>
+          ),
+        };
+      })}
     />
   );
 }

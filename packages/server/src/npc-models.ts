@@ -30,30 +30,47 @@ class InvalidDialogueResponse extends Error {
 
 export function spokenLine(content: string) {
   let text = content.replace(/[\t\r\n\u2028\u2029]+/gu, ' ');
-  if (/[\p{Cc}\p{Cf}]/u.test(text)) throw new InvalidDialogueResponse('control_characters');
+  if (/[\p{Cc}\p{Cf}]/u.test(text)) {
+    throw new InvalidDialogueResponse('control_characters');
+  }
+
   // Keep apostrophes inside words (don't, Nell’s), but remove speech quotes.
   text = text
     .replace(/["“”„«»‹›`]/gu, '')
     .replace(/(?<![\p{L}\p{N}])['‘’]|['‘’](?![\p{L}\p{N}])/gu, '')
     .replace(/ +/gu, ' ')
     .trim();
-  if (!text) throw new InvalidDialogueResponse('empty_text');
-  if (text.length > 32_768) throw new InvalidDialogueResponse('text_too_long');
+  if (!text) {
+    throw new InvalidDialogueResponse('empty_text');
+  }
+
+  if (text.length > 32_768) {
+    throw new InvalidDialogueResponse('text_too_long');
+  }
 
   return text;
 }
 
 async function boundedJson(response: Response) {
-  if (!response.body) throw new InvalidDialogueResponse('missing_body');
+  if (!response.body) {
+    throw new InvalidDialogueResponse('missing_body');
+  }
+
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;
   try {
     for (;;) {
       const { value, done } = await reader.read();
-      if (done) break;
+      if (done) {
+        break;
+      }
+
       size += value.length;
-      if (size > 32_768) throw new InvalidDialogueResponse('response_too_large');
+      if (size > 32_768) {
+        throw new InvalidDialogueResponse('response_too_large');
+      }
+
       chunks.push(value);
     }
   } finally {
@@ -97,22 +114,33 @@ export class OllamaNpcDialogue implements NpcDialogue {
       baseUrl.password ||
       baseUrl.search ||
       baseUrl.hash
-    )
+    ) {
       throw new Error(
         'OLLAMA_BASE_URL must be an HTTP(S) URL without credentials, query or fragment',
       );
+    }
+
     this.endpoint = `${baseUrl.href.replace(/\/+$/u, '')}/api/chat`;
     this.model = (options.model ?? process.env.OLLAMA_MODEL ?? DEFAULT_NPC_MODEL).trim();
-    if (!this.model || /cloud/i.test(this.model))
+    if (!this.model || /cloud/i.test(this.model)) {
       throw new Error('OLLAMA_MODEL must name a downloaded local model, not a cloud model');
+    }
+
     this.timeoutMs = options.timeoutMs ?? 60_000;
-    if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs <= 0 || this.timeoutMs > 300_000)
+    if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs <= 0 || this.timeoutMs > 300_000) {
       throw new Error('Invalid NPC dialogue timeout');
+    }
   }
 
   async generate(context: string, signal: AbortSignal): Promise<DialogueResult> {
-    if (signal.aborted || this.clock() < this.retryAt) return { status: 'unavailable' };
-    if (this.active >= 2) return { status: 'busy' };
+    if (signal.aborted || this.clock() < this.retryAt) {
+      return { status: 'unavailable' };
+    }
+
+    if (this.active >= 2) {
+      return { status: 'busy' };
+    }
+
     this.active++;
     try {
       const model = this.model;
@@ -160,8 +188,14 @@ export class OllamaNpcDialogue implements NpcDialogue {
 
         const data = await boundedJson(response);
         const content = data?.message?.content;
-        if (data?.done !== true) throw new InvalidDialogueResponse('incomplete');
-        if (typeof content !== 'string') throw new InvalidDialogueResponse('missing_text');
+        if (data?.done !== true) {
+          throw new InvalidDialogueResponse('incomplete');
+        }
+
+        if (typeof content !== 'string') {
+          throw new InvalidDialogueResponse('missing_text');
+        }
+
         const text = spokenLine(content);
         if (this.failed) {
           serverLog.info('NPC dialogue provider recovered', { provider: 'ollama', model });
@@ -171,7 +205,10 @@ export class OllamaNpcDialogue implements NpcDialogue {
         return { status: 'ok', text };
       } catch (error) {
         // A departing world must not mark a shared provider unhealthy.
-        if (signal.aborted) return { status: 'unavailable' };
+        if (signal.aborted) {
+          return { status: 'unavailable' };
+        }
+
         this.retryAt = this.clock() + 60_000;
         const cause = error instanceof Error ? error.cause : undefined;
         const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : undefined;

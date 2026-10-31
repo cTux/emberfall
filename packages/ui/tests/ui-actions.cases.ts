@@ -61,7 +61,11 @@ test('action bar hotkeys stay in slot corners and automation respects reduced mo
       expect(box.y).toBeGreaterThan(bounds.y + bounds.height / 2);
       expect(box.x > bounds.x + bounds.width / 2).toBe(right);
       // The corner overlays are above the radial cooldown mask.
-      expect(await indicator.evaluate((element) => getComputedStyle(element).zIndex)).toBe('1');
+      expect(
+        await indicator.evaluate((element) => {
+          return getComputedStyle(element).zIndex;
+        }),
+      ).toBe('1');
     }
 
     for (const key of [1, 2, 3, 4]) {

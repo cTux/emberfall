@@ -8,12 +8,16 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   baseURL,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Seller');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.backpack = [
     { id: 'helmet', itemId: 'loot-helmet', quantity: 1 },
@@ -72,11 +76,17 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await page.screenshot({ path: 'test-results/inventory-desktop.png' });
   await page.setViewportSize({ width: 1024, height: 800 });
   await expect(inventory).toBeVisible();
-  expect(await inventory.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+  expect(
+    await inventory.evaluate((node) => {
+      return node.scrollWidth <= node.clientWidth;
+    }),
+  ).toBe(true);
   await page.screenshot({ path: 'test-results/inventory-narrow.png' });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.keyboard.press('Escape');
-  const marta = world.npcs!.find((npc) => npc.id === INNKEEPER.id)!;
+  const marta = world.npcs!.find((npc) => {
+    return npc.id === INNKEEPER.id;
+  })!;
   Object.assign(marta, { x: 1000, y: 1000 });
   const trader = page.getByRole('dialog', { name: INNKEEPER.name });
   await expect(async () => {
@@ -138,7 +148,9 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await secondPage.getByLabel('Your adventurer name').fill('Buyer');
     await secondPage.getByRole('button', { name: /^Join Playtest Default/ }).click();
     await expect(secondPage.getByRole('button', { name: 'Inventory' })).toBeVisible();
-    const buyer = [...world.players.values()].find((p) => p.name === 'Buyer')!;
+    const buyer = [...world.players.values()].find((p) => {
+      return p.name === 'Buyer';
+    })!;
     buyer.x = marta.x;
     buyer.y = marta.y - 15;
     buyer.coins = 1;
@@ -189,11 +201,13 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   }
 
   await page.bringToFront();
-  player.backpack = Array.from({ length: 24 }, (_, index) => ({
-    id: `bulk-${index}`,
-    itemId: 'loot-boots',
-    quantity: 1,
-  }));
+  player.backpack = Array.from({ length: 24 }, (_, index) => {
+    return {
+      id: `bulk-${index}`,
+      itemId: 'loot-boots',
+      quantity: 1,
+    };
+  });
   player.backpack.push({ id: 'bulk-potions', itemId: 'health-potion', quantity: 3 });
   await expect(trader.getByRole('button', { name: 'Sell Boots', exact: true })).toHaveCount(24);
   await expect(trader.getByRole('button', { name: 'Sell all', exact: true })).toBeEnabled();
@@ -211,7 +225,11 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await page.screenshot({ path: 'test-results/innkeeper-buyback-desktop.png' });
   await page.setViewportSize({ width: 320, height: 800 });
   await expect(trader).toBeVisible();
-  expect(await trader.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+  expect(
+    await trader.evaluate((node) => {
+      return node.scrollWidth <= node.clientWidth;
+    }),
+  ).toBe(true);
   await trader.getByRole('button', { name: 'Buy back Health potion (3)' }).focus();
   await page.keyboard.press('Enter');
   await expect(

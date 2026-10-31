@@ -47,13 +47,15 @@ const regular: Record<string, ItemStat[]> = {
 };
 export const itemTypeStats: Readonly<Record<string, readonly ItemStat[]>> = Object.freeze(
   Object.fromEntries(
-    Object.entries(regular).map(([type, stats]) => [
-      type,
-      Object.freeze([
-        ...stats,
-        ...reward,
-        ...(legendaryItemStat[type] ? [legendaryItemStat[type]] : []),
-      ]),
-    ]),
+    Object.entries(regular).map(([type, stats]) => {
+      return [
+        type,
+        Object.freeze([
+          ...stats,
+          ...reward,
+          ...(legendaryItemStat[type] ? [legendaryItemStat[type]] : []),
+        ]),
+      ];
+    }),
   ),
 );

@@ -10,14 +10,26 @@ test('town health bars default hidden, toggle live, persist and stay visible in 
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.classId = 'druid';
   player.equipment = starterEquipment('druid');
-  await expect.poll(() => player.bear?.maxHitpoints).toBeGreaterThan(0);
+  await expect
+    .poll(() => {
+      return player.bear?.maxHitpoints;
+    })
+    .toBeGreaterThan(0);
   const canvas = page.locator('canvas');
-  const openSettings = () => page.getByRole('button', { name: 'Settings', exact: true }).click();
-  const closeSettings = () => page.getByRole('button', { name: 'Close Settings' }).click();
+  const openSettings = () => {
+    return page.getByRole('button', { name: 'Settings', exact: true }).click();
+  };
+
+  const closeSettings = () => {
+    return page.getByRole('button', { name: 'Close Settings' }).click();
+  };
+
   const toggle = page.getByRole('switch', { name: 'Hide health bars in town', exact: true });
   // Count actual rendered health-fill pixels, rather than a diagnostic setting flag.
   const healthPixels = async () => {
@@ -34,8 +46,11 @@ test('town health bars default hidden, toggle live, persist and stay visible in 
       ctx.drawImage(image, 0, 0);
       const pixels = ctx.getImageData(0, 0, capture.width, capture.height).data;
       let count = 0;
-      for (let i = 0; i < pixels.length; i += 4)
-        if (pixels[i] === 134 && pixels[i + 1] === 217 && pixels[i + 2] === 162) count++;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i] === 134 && pixels[i + 1] === 217 && pixels[i + 2] === 162) {
+          count++;
+        }
+      }
 
       return count;
     }, png);

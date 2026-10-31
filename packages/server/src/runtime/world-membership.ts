@@ -20,19 +20,23 @@ export function createWorldMembership(
     hostId: '',
     salt: '',
     players: createPlayers(),
-    ...restoredWorlds.find((world) => world.permanent),
+    ...restoredWorlds.find((world) => {
+      return world.permanent;
+    }),
     name: 'Playtest Default',
   };
   characters.saveWorld(permanentWorld, true);
   const worlds = new Map<string, World>(
-    restoredWorlds.map((world) => [
-      world.id,
-      {
-        ...world,
-        hostId: '',
-        players: createPlayers(),
-      },
-    ]),
+    restoredWorlds.map((world) => {
+      return [
+        world.id,
+        {
+          ...world,
+          hostId: '',
+          players: createPlayers(),
+        },
+      ];
+    }),
   );
   worlds.set(permanentWorld.id, permanentWorld);
   serverLog.info('Runtime ready', { worlds: worlds.size, restoredWorlds: restoredWorlds.length });
@@ -58,28 +62,39 @@ export function createWorldMembership(
     return value;
   };
 
-  const resourceOwner = (world: World, player?: Player) =>
-    player?.scene ? parties(world).run(player) : world;
+  const resourceOwner = (world: World, player?: Player) => {
+    return player?.scene ? parties(world).run(player) : world;
+  };
 
   function leave(session: Session, shuttingDown = false) {
     const world = worlds.get(session.worldId ?? '');
     if (world) {
       const player = world.players.get(session.id);
-      if (player && session.characterId) characters.save(session.characterId, player.name, player);
+      if (player && session.characterId) {
+        characters.save(session.characterId, player.name, player);
+      }
+
       if (player) {
         addChat(world, `${player.name} disconnected.`, undefined, player.id);
-        if (player.scene)
+        if (player.scene) {
           addChat(
             world,
             `${player.name} left the scene. Everyone became weaker.`,
             undefined,
             player.id,
           );
+        }
       }
 
-      if (player) parties(world).leave(player, true);
+      if (player) {
+        parties(world).leave(player, true);
+      }
+
       world.players.delete(session.id);
-      if (player) serverLog.info('Player left world', { sessionId: session.id, worldId: world.id });
+      if (player) {
+        serverLog.info('Player left world', { sessionId: session.id, worldId: world.id });
+      }
+
       if (!world.players.size) {
         if (world !== permanentWorld && !shuttingDown) {
           characters.deleteWorld(world.id);
@@ -92,7 +107,9 @@ export function createWorldMembership(
         villageLives.get(world)?.close();
         villageLives.delete(world);
         world.npcs = undefined;
-      } else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
+      } else if (world.hostId === session.id) {
+        world.hostId = world.players.keys().next().value!;
+      }
     }
 
     clearTimeout(session.reconnectTimer);
@@ -105,7 +122,10 @@ export function createWorldMembership(
   }
 
   function closeVillageLives() {
-    for (const life of villageLives.values()) life.close();
+    for (const life of villageLives.values()) {
+      life.close();
+    }
+
     villageLives.clear();
   }
 

@@ -27,7 +27,10 @@ export function useGameInteractions({
   }, []);
   const castTalent = (slot: number, automatic = false) => {
     const aim = cursorAim.current?.();
-    if (!me || unavailable || !aim) return;
+    if (!me || unavailable || !aim) {
+      return;
+    }
+
     send({
       type: 'talentCast',
       automatic,
@@ -45,7 +48,10 @@ export function useGameInteractions({
       return;
     }
 
-    if (!source) return;
+    if (!source) {
+      return;
+    }
+
     if (source.activate) {
       source.activate();
 
@@ -59,17 +65,22 @@ export function useGameInteractions({
     }
 
     if (source.id.startsWith('gather:')) {
-      if (me)
+      if (me) {
         send({
           type: 'gather',
           nodeId: source.id.slice(7),
           epoch: me.scene === 'forest' ? (world?.scene?.id ?? '') : 'lobby',
         });
-    } else if (source.id === 'return') send({ type: 'returnLobby' });
-    else if (source.id === BULLSEYE?.id) setMenu('resetTalents');
-    else if (source.id === 'wardrobe') setMenu('wardrobe');
-    else if (source.id === 'portal') setMenu('portal');
-    else {
+      }
+    } else if (source.id === 'return') {
+      send({ type: 'returnLobby' });
+    } else if (source.id === BULLSEYE?.id) {
+      setMenu('resetTalents');
+    } else if (source.id === 'wardrobe') {
+      setMenu('wardrobe');
+    } else if (source.id === 'portal') {
+      setMenu('portal');
+    } else {
       setBuilding(source.name);
       setMenu('building');
     }

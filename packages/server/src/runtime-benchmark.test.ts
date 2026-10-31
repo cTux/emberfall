@@ -30,7 +30,11 @@ test('benchmark worker refuses an existing database before startup', async (t) =
   child.stderr!.on('data', (chunk: Buffer) => {
     stderr += chunk.toString();
   });
-  const closed = new Promise<void>((resolve) => child.once('close', () => resolve()));
+  const closed = new Promise<void>((resolve) => {
+    return child.once('close', () => {
+      return resolve();
+    });
+  });
   try {
     const [code] = await once(child, 'close', {
       signal: AbortSignal.any([t.signal, AbortSignal.timeout(10000)]),
@@ -39,7 +43,10 @@ test('benchmark worker refuses an existing database before startup', async (t) =
     assert.match(stderr, /Never open an existing save database/);
     assert.deepEqual(readFileSync(path), original);
   } finally {
-    if (child.exitCode === null && child.signalCode === null) child.kill();
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill();
+    }
+
     await closed;
     const target = realpathSync(directory);
     assert.equal(dirname(target), realpathSync(tmpdir()));
@@ -50,7 +57,9 @@ test('benchmark worker refuses an existing database before startup', async (t) =
 
 test('benchmark clients close after their server disconnects', { timeout: 10000 }, async () => {
   const app = await createGameServer(undefined, ':memory:', undefined, undefined, {
-    generate: async () => ({ status: 'busy' }),
+    generate: async () => {
+      return { status: 'busy' };
+    },
   });
   let clients: Awaited<ReturnType<typeof connectWorkload>> | undefined;
   let serverClosed = false;
@@ -63,7 +72,10 @@ test('benchmark clients close after their server disconnects', { timeout: 10000 
     serverClosed = true;
     await clients.close();
   } finally {
-    if (!serverClosed) await app.close();
+    if (!serverClosed) {
+      await app.close();
+    }
+
     await clients?.close();
   }
 });

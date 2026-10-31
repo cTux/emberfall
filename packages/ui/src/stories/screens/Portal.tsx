@@ -18,7 +18,9 @@ export function Portal() {
             ready={voted ? 2 : 1}
             total={2}
             voted={voted}
-            onVote={() => vote(!voted)}
+            onVote={() => {
+              return vote(!voted);
+            }}
           />
         </GameWindow>
       </Box>

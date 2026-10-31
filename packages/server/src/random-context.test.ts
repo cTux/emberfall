@@ -20,30 +20,35 @@ import { tickTalentEffects } from '../../core/src/talent-effects.ts';
 import { tickSpawns } from '../../core/src/simulation/spawns.ts';
 import { freshProgress } from './characters.ts';
 
-const hero = (): Player => ({
-  ...freshProgress(),
-  id: 'hero',
-  name: 'Hero',
-  color: 0,
-  level: 20,
-  x: 1000,
-  y: 1000,
-  scene: 'forest',
-});
-const arena = (): SceneState => ({
-  id: 'test',
-  type: 'Forest',
-  difficulty: 'Easy',
-  phase: 'active',
-  ready: [],
-  countdownAt: null,
-  endsAt: 1e9,
-  nextSpawn: 1e9,
-  sequence: 0,
-  enemies: [],
-  damage: [],
-  portals: [],
-});
+const hero = (): Player => {
+  return {
+    ...freshProgress(),
+    id: 'hero',
+    name: 'Hero',
+    color: 0,
+    level: 20,
+    x: 1000,
+    y: 1000,
+    scene: 'forest',
+  };
+};
+
+const arena = (): SceneState => {
+  return {
+    id: 'test',
+    type: 'Forest',
+    difficulty: 'Easy',
+    phase: 'active',
+    ready: [],
+    countdownAt: null,
+    endsAt: 1e9,
+    nextSpawn: 1e9,
+    sequence: 0,
+    enemies: [],
+    damage: [],
+    portals: [],
+  };
+};
 
 function source(seed = 123) {
   let draws = 0;
@@ -55,7 +60,9 @@ function source(seed = 123) {
 
       return seed / 2 ** 32;
     },
-    draws: () => draws,
+    draws: () => {
+      return draws;
+    },
   };
 }
 
@@ -97,8 +104,12 @@ test('independent contexts bind item outcomes and keep explicit item overrides',
   t.mock.method(Math, 'random', () => {
     throw new Error('global random');
   });
-  const low = createGame(GAME_MODS, () => 0),
-    high = createGame(GAME_MODS, () => 0.99);
+  const low = createGame(GAME_MODS, () => {
+      return 0;
+    }),
+    high = createGame(GAME_MODS, () => {
+      return 0.99;
+    });
   const rolled = (context: typeof game, random?: () => number) => {
     const { id: _id, ...item } = context.rules.rollItem('warrior-sword', random);
 
@@ -107,7 +118,9 @@ test('independent contexts bind item outcomes and keep explicit item overrides',
 
   assert.notDeepEqual(rolled(low), rolled(high));
   assert.deepEqual(
-    rolled(low, () => 0.99),
+    rolled(low, () => {
+      return 0.99;
+    }),
     rolled(high),
   );
   assert.deepEqual(rolled(low), rolled(low));

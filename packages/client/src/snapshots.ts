@@ -17,8 +17,13 @@ export class SnapshotBuffer {
   }
 
   push(world: WorldState, now: number) {
-    if (world === this.latest) return;
-    const me = world.players.find((p) => p.id === this.playerId);
+    if (world === this.latest) {
+      return;
+    }
+
+    const me = world.players.find((p) => {
+      return p.id === this.playerId;
+    });
     const epoch = `${world.id}:${me?.scene === 'forest' ? world.scene?.id : 'lobby'}`;
     const time = world.serverNow ?? 0;
     if (epoch !== this.epoch) {
@@ -26,17 +31,28 @@ export class SnapshotBuffer {
       this.clock = time - 100;
       this.renderedAt = now;
       this.epoch = epoch;
-    } else if (time < (this.latest?.serverNow ?? 0)) return;
+    } else if (time < (this.latest?.serverNow ?? 0)) {
+      return;
+    }
+
     this.latest = world;
     this.receivedAt = now;
     // Replace duplicate timestamps rather than creating a zero-length interpolation segment.
-    if (this.history.at(-1)?.serverNow === world.serverNow) this.history.pop();
+    if (this.history.at(-1)?.serverNow === world.serverNow) {
+      this.history.pop();
+    }
+
     this.history.push(world);
-    if (this.history.length > 20) this.history.shift();
+    if (this.history.length > 20) {
+      this.history.shift();
+    }
   }
 
   render(now: number): WorldState | null {
-    if (!this.latest) return null;
+    if (!this.latest) {
+      return null;
+    }
+
     const newest = this.latest.serverNow ?? 0;
     const elapsed = Math.max(0, now - this.renderedAt);
     this.renderedAt = now;
@@ -44,10 +60,18 @@ export class SnapshotBuffer {
     // Gently recover buffer depth instead of resetting the camera clock on each packet.
     const rate = lag > 150 ? 1.1 : lag < 50 ? 0.9 : 1;
     this.clock = Math.min(newest, this.clock + elapsed * rate);
-    if (this.history.length === 20)
+    if (this.history.length === 20) {
       this.clock = Math.max(this.history[0].serverNow ?? 0, this.clock);
-    const older = this.history.findLast((s) => (s.serverNow ?? 0) <= this.clock) ?? this.history[0];
-    const newer = this.history.find((s) => (s.serverNow ?? 0) >= this.clock) ?? this.latest;
+    }
+
+    const older =
+      this.history.findLast((s) => {
+        return (s.serverNow ?? 0) <= this.clock;
+      }) ?? this.history[0];
+    const newer =
+      this.history.find((s) => {
+        return (s.serverNow ?? 0) >= this.clock;
+      }) ?? this.latest;
     const span = (newer.serverNow ?? 0) - (older.serverNow ?? 0);
     const alpha = span > 0 ? (this.clock - (older.serverNow ?? 0)) / span : 1;
     const interpolate = (
@@ -59,7 +83,10 @@ export class SnapshotBuffer {
     ) => {
       const dx = wrappedDelta(b.x, a.x, FOREST.width);
       const dy = wrappedDelta(b.y, a.y, FOREST.height);
-      if (Math.hypot(dx, dy) > 96) return { ...b, dx: 0, dy: 0 };
+      if (Math.hypot(dx, dy) > 96) {
+        return { ...b, dx: 0, dy: 0 };
+      }
+
       const point = (forest ? moveForestActor : moveActor)(
         { x: a.x, y: a.y + 15 },
         dx * alpha,
@@ -72,8 +99,13 @@ export class SnapshotBuffer {
     };
 
     const players = older.players.map((a) => {
-      const b = newer.players.find((p) => p.id === a.id);
-      if (!b || a.scene !== b.scene) return { ...a, inputX: 0, inputY: 0 };
+      const b = newer.players.find((p) => {
+        return p.id === a.id;
+      });
+      if (!b || a.scene !== b.scene) {
+        return { ...a, inputX: 0, inputY: 0 };
+      }
+
       const point = interpolate(a, b, a.scene === 'forest', 12, false);
 
       // Corrections with no movement intent must not trigger a walking animation.
@@ -87,8 +119,13 @@ export class SnapshotBuffer {
       };
     });
     const npcs = newer.npcs?.map((b) => {
-      const a = older.npcs?.find((n) => n.id === b.id);
-      if (!a) return { ...b };
+      const a = older.npcs?.find((n) => {
+        return n.id === b.id;
+      });
+      if (!a) {
+        return { ...b };
+      }
+
       const point = interpolate(a, b, false, 12, false);
 
       return { ...b, x: point.x, y: point.y };
@@ -96,17 +133,32 @@ export class SnapshotBuffer {
     const scene = older.scene
       ? {
           ...older.scene,
-          enemies: older.scene.enemies.map((e) => ({ ...e })),
-          playerShots: older.scene.playerShots?.map((p) => ({ ...p })),
-          drops: older.scene.drops?.map((d) => ({ ...d })),
-          projectiles: older.scene.projectiles?.map((p) => ({ ...p })),
+          enemies: older.scene.enemies.map((e) => {
+            return { ...e };
+          }),
+          playerShots: older.scene.playerShots?.map((p) => {
+            return { ...p };
+          }),
+          drops: older.scene.drops?.map((d) => {
+            return { ...d };
+          }),
+          projectiles: older.scene.projectiles?.map((p) => {
+            return { ...p };
+          }),
         }
       : undefined;
     if (scene && scene.id === newer.scene?.id) {
-      const enemies = new Map(newer.scene.enemies.map((e) => [e.id, e]));
+      const enemies = new Map(
+        newer.scene.enemies.map((e) => {
+          return [e.id, e];
+        }),
+      );
       for (const enemy of scene.enemies) {
         const b = enemies.get(enemy.id);
-        if (!b) continue;
+        if (!b) {
+          continue;
+        }
+
         const point = interpolate(
           enemy,
           b,
@@ -115,37 +167,65 @@ export class SnapshotBuffer {
         );
         enemy.x = point.x;
         enemy.y = point.y;
-        if (Math.hypot(point.dx, point.dy) > 0.001) enemy.angle = Math.atan2(point.dy, point.dx);
+        if (Math.hypot(point.dx, point.dy) > 0.001) {
+          enemy.angle = Math.atan2(point.dy, point.dx);
+        }
       }
 
-      const drops = new Map(newer.scene.drops?.map((d) => [d.id, d]));
+      const drops = new Map(
+        newer.scene.drops?.map((d) => {
+          return [d.id, d];
+        }),
+      );
       for (const drop of scene.drops ?? []) {
         const next = drops.get(drop.id);
-        if (!next) continue;
+        if (!next) {
+          continue;
+        }
+
         drop.x = wrap(drop.x + wrappedDelta(next.x, drop.x, FOREST.width) * alpha, FOREST.width);
         drop.y = wrap(drop.y + wrappedDelta(next.y, drop.y, FOREST.height) * alpha, FOREST.height);
       }
 
-      const friendlyShots = new Map(newer.scene.playerShots?.map((p) => [p.id, p]));
+      const friendlyShots = new Map(
+        newer.scene.playerShots?.map((p) => {
+          return [p.id, p];
+        }),
+      );
       for (const shot of scene.playerShots ?? []) {
         const next = friendlyShots.get(shot.id);
-        if (!next) continue;
+        if (!next) {
+          continue;
+        }
+
         shot.x = wrap(shot.x + wrappedDelta(next.x, shot.x, FOREST.width) * alpha, FOREST.width);
         shot.y = wrap(shot.y + wrappedDelta(next.y, shot.y, FOREST.height) * alpha, FOREST.height);
       }
 
-      const shots = new Map(newer.scene.projectiles?.map((p) => [p.id, p]));
+      const shots = new Map(
+        newer.scene.projectiles?.map((p) => {
+          return [p.id, p];
+        }),
+      );
       for (const shot of scene.projectiles ?? []) {
         const b = shots.get(shot.id);
-        if (!b) continue;
+        if (!b) {
+          continue;
+        }
+
         shot.x = wrap(shot.x + wrappedDelta(b.x, shot.x, FOREST.width) * alpha, FOREST.width);
         shot.y = wrap(shot.y + wrappedDelta(b.y, shot.y, FOREST.height) * alpha, FOREST.height);
       }
     }
 
     for (const player of players) {
-      const next = newer.players.find((p) => p.id === player.id)?.bear;
-      if (!player.bear || !next || player.bear.hitpoints <= 0 || next.hitpoints <= 0) continue;
+      const next = newer.players.find((p) => {
+        return p.id === player.id;
+      })?.bear;
+      if (!player.bear || !next || player.bear.hitpoints <= 0 || next.hitpoints <= 0) {
+        continue;
+      }
+
       const point = interpolate(player.bear, next, player.scene === 'forest', 8);
       player.bear.x = point.x;
       player.bear.y = point.y;
@@ -153,7 +233,12 @@ export class SnapshotBuffer {
     }
 
     const training = older.training
-      ? { ...older.training, playerShots: older.training.playerShots?.map((p) => ({ ...p })) }
+      ? {
+          ...older.training,
+          playerShots: older.training.playerShots?.map((p) => {
+            return { ...p };
+          }),
+        }
       : undefined;
 
     return { ...older, players, npcs, scene, training, serverNow: this.clock };

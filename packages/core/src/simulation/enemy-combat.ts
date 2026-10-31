@@ -24,23 +24,41 @@ export function tickEnemyCombat(
   scene.projectiles ??= [];
   const combatants = [
     ...alive,
-    ...alive.flatMap((p) => (p.bear && p.bear.hitpoints > 0 ? [p.bear] : [])),
+    ...alive.flatMap((p) => {
+      return p.bear && p.bear.hitpoints > 0 ? [p.bear] : [];
+    }),
   ];
   moveEnemies(scene.enemies, combatants, dt, now, context, scene.difficulty);
   const hurt = (target: Player | Bear, damage: number) => {
-    if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) return;
-    const owner = 'returning' in target ? alive.find((p) => p.bear === target) : target;
+    if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) {
+      return;
+    }
+
+    const owner =
+      'returning' in target
+        ? alive.find((p) => {
+            return p.bear === target;
+          })
+        : target;
     const reduction = owner ? context.rules.characterStats(owner).damageReduction : 0;
     damage *= 1 - reduction;
-    if (!('returning' in target))
+    if (!('returning' in target)) {
       damage = talentIncomingDamage(scene, target, damage, now, context);
-    else if (damage > 0) damage = Math.max(1, damage);
+    } else if (damage > 0) {
+      damage = Math.max(1, damage);
+    }
+
     damage = Math.min(target.hitpoints, damage);
     target.hitpoints = Math.max(0, target.hitpoints - damage);
     target.hurtAt = now;
-    if ('returning' in target && target.hitpoints === 0)
+    if ('returning' in target && target.hitpoints === 0) {
       target.resurrectAt = now + BEAR_DEFINITION.resurrectionMs;
-    if (damage <= 0) return;
+    }
+
+    if (damage <= 0) {
+      return;
+    }
+
     appendSceneEntities(scene, 'damage', {
       id: ++scene.sequence,
       x: target.x,
@@ -54,7 +72,10 @@ export function tickEnemyCombat(
   };
 
   for (const enemy of scene.enemies) {
-    if ((enemy.controlledUntil ?? 0) > now) continue;
+    if ((enemy.controlledUntil ?? 0) > now) {
+      continue;
+    }
+
     const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
     const damage = enemyAttributes(
       enemy.archetype ?? EnemyKind.Skeleton,
@@ -64,29 +85,38 @@ export function tickEnemyCombat(
     ).damage;
     const challenged =
       (enemy.challengedUntil ?? 0) > now
-        ? combatants.find((player) => player.id === enemy.challengedBy && player.hitpoints > 0)
+        ? combatants.find((player) => {
+            return player.id === enemy.challengedBy && player.hitpoints > 0;
+          })
         : undefined;
     const target =
       challenged ??
       combatants
-        .filter((p) => p.hitpoints > 0)
-        .reduce<Player | Bear | undefined>(
-          (best, p) => (!best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best),
-          undefined,
-        );
+        .filter((p) => {
+          return p.hitpoints > 0;
+        })
+        .reduce<Player | Bear | undefined>((best, p) => {
+          return !best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best;
+        }, undefined);
     if (enemy.attack) {
       const attack = enemy.attack;
-      if (now < attack.endsAt) continue;
+      if (now < attack.endsAt) {
+        continue;
+      }
+
       enemy.attack = undefined;
       const inRange = target && forestDistance(enemy, target) <= stats.reach;
       enemy.cooldownUntil = now + (inRange ? stats.cooldown : 150);
-      if (!inRange) continue;
+      if (!inRange) {
+        continue;
+      }
+
       if (attack.ranged) {
         const angle = Math.atan2(
           wrappedDelta(attack.y, enemy.y, FOREST.height),
           wrappedDelta(attack.x, enemy.x, FOREST.width),
         );
-        if (scene.projectiles.length < ENEMY_RULES.maxAlive)
+        if (scene.projectiles.length < ENEMY_RULES.maxAlive) {
           appendSceneEntities(scene, 'projectiles', {
             id: ++scene.sequence,
             x: enemy.x,
@@ -96,9 +126,13 @@ export function tickEnemyCombat(
             expiresAt: now + ENEMY_RULES.projectileLifetimeMs,
             damage,
           });
+        }
       } else {
-        for (const player of combatants)
-          if (overlapsBody(attack, attack.radius, modelHitbox(player))) hurt(player, damage);
+        for (const player of combatants) {
+          if (overlapsBody(attack, attack.radius, modelHitbox(player))) {
+            hurt(player, damage);
+          }
+        }
       }
     } else if (
       target &&
@@ -118,21 +152,27 @@ export function tickEnemyCombat(
   }
 
   scene.projectiles = scene.projectiles.filter((shot) => {
-    if (now >= shot.expiresAt) return false;
+    if (now >= shot.expiresAt) {
+      return false;
+    }
+
     const steps = Math.max(1, Math.ceil((Math.hypot(shot.vx, shot.vy) * dt) / 6));
     for (let i = 0; i < steps; i++) {
       shot.x = wrap(shot.x + (shot.vx * dt) / steps, FOREST.width);
       shot.y = wrap(shot.y + (shot.vy * dt) / steps, FOREST.height);
       if (
-        forestTrees(shot.x, shot.y + 15, 24).some(
-          (t) => Math.hypot(shot.x - t.x, shot.y + 15 - t.y) < 20,
-        )
-      )
+        forestTrees(shot.x, shot.y + 15, 24).some((t) => {
+          return Math.hypot(shot.x - t.x, shot.y + 15 - t.y) < 20;
+        })
+      ) {
         return false;
-      const hit = combatants.find(
-        (p) =>
-          p.hitpoints > 0 && overlapsBody(shot, COLLISION.enemyProjectileRadius, modelHitbox(p)),
-      );
+      }
+
+      const hit = combatants.find((p) => {
+        return (
+          p.hitpoints > 0 && overlapsBody(shot, COLLISION.enemyProjectileRadius, modelHitbox(p))
+        );
+      });
       if (hit) {
         hurt(
           hit,

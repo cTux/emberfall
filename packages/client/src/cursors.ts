@@ -14,8 +14,14 @@ export function combatCursor(
   blocked: boolean,
   autoTarget: boolean,
 ): CombatCursor {
-  if (!world || !player || blocked || !pointer) return 'default';
-  if (player.hitpoints <= 0) return 'disabled';
+  if (!world || !player || blocked || !pointer) {
+    return 'default';
+  }
+
+  if (player.hitpoints <= 0) {
+    return 'disabled';
+  }
+
   const forest = player.scene === 'forest';
   const scene = forest ? world.scene : world.training;
   if (
@@ -23,14 +29,25 @@ export function combatCursor(
     scene.pausedAt !== undefined ||
     (!forest && !inTrainingZone(player)) ||
     !characterStats(player).hasWeapon
-  )
+  ) {
     return 'default';
-  if (held) return 'pressed';
-  if (!autoTarget) return 'aim';
+  }
+
+  if (held) {
+    return 'pressed';
+  }
+
+  if (!autoTarget) {
+    return 'aim';
+  }
+
   const bounds = forest ? FOREST : ARENA;
 
   return scene.enemies.some((enemy) => {
-    if (enemy.hitpoints <= 0) return false;
+    if (enemy.hitpoints <= 0) {
+      return false;
+    }
+
     const body = enemyHitbox(enemy);
 
     return (

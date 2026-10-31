@@ -13,9 +13,15 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
   const toggle = page.getByRole('switch', { name: 'Auto-loot items', exact: true });
   await expect(toggle).toBeChecked();
   await toggle.uncheck();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
-  await expect.poll(() => player.autoLoot).toBe(false);
+  await expect
+    .poll(() => {
+      return player.autoLoot;
+    })
+    .toBe(false);
   await page.setViewportSize({ width: 390, height: 800 });
   await expect(toggle).toBeVisible();
   await page.screenshot({ path: 'test-results/auto-loot-settings-narrow.png' });
@@ -25,7 +31,11 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.screenshot({ path: 'test-results/auto-loot-settings-desktop.png' });
   const current = [...world.players.values()][0];
-  await expect.poll(() => current.autoLoot).toBe(false);
+  await expect
+    .poll(() => {
+      return current.autoLoot;
+    })
+    .toBe(false);
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
   current.scene = 'forest';
   game.runtime.parties(world).run([...world.players.values()][0]).scene = {
@@ -48,7 +58,11 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
       { id: 2, kind: 'gold', x: current.x, y: current.y, at: Date.now() - 1000 },
     ],
   };
-  await expect.poll(() => current.coins).toBe(1);
+  await expect
+    .poll(() => {
+      return current.coins;
+    })
+    .toBe(1);
   expect(current.backpack?.length ?? 0).toBe(0);
   expect(game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops).toHaveLength(
     1,
@@ -56,8 +70,16 @@ test('auto-loot setting applies live, persists after reload and resumes item pic
   await page.screenshot({ path: 'test-results/dropped-item-beam-forest.png' });
   await settings.click();
   await toggle.check();
-  await expect.poll(() => current.autoLoot).toBe(true);
-  await expect.poll(() => current.backpack?.[0]?.itemId).toBe('loot-helmet');
+  await expect
+    .poll(() => {
+      return current.autoLoot;
+    })
+    .toBe(true);
+  await expect
+    .poll(() => {
+      return current.backpack?.[0]?.itemId;
+    })
+    .toBe('loot-helmet');
   expect(game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops).toHaveLength(
     0,
   );

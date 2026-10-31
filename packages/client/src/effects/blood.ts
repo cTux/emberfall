@@ -19,17 +19,27 @@ export function bloodPuddleRenderer() {
       sceneId = scene?.id;
     }
 
-    for (const hit of scene?.damage ?? [])
+    for (const hit of scene?.damage ?? []) {
       if (
         hit.killed &&
         hit.target.startsWith('enemy:') &&
         now - hit.at < TRANSIENT_EFFECTS.blood.lifetimeMs &&
         !puddles.has(hit.id)
-      )
+      ) {
         puddles.set(hit.id, { id: hit.id, x: hit.x, y: hit.y, at: hit.at });
-    for (const puddle of puddles.values())
-      if (now - puddle.at >= TRANSIENT_EFFECTS.blood.lifetimeMs) puddles.delete(puddle.id);
-    if (!enabled) return;
+      }
+    }
+
+    for (const puddle of puddles.values()) {
+      if (now - puddle.at >= TRANSIENT_EFFECTS.blood.lifetimeMs) {
+        puddles.delete(puddle.id);
+      }
+    }
+
+    if (!enabled) {
+      return;
+    }
+
     ctx.save();
     ctx.fillStyle = '#8c1728';
     for (const puddle of puddles.values()) {
@@ -41,8 +51,10 @@ export function bloodPuddleRenderer() {
         p.x > view.x + view.width + 40 ||
         p.y < view.y - 20 ||
         p.y > view.y + view.height + 20
-      )
+      ) {
         continue;
+      }
+
       // Seed each stain so its uneven outline and droplets stay fixed between frames.
       let seed = puddle.id;
       const random = () => {
@@ -58,8 +70,11 @@ export function bloodPuddleRenderer() {
         const radius = 9 + random() * 19;
         const x = p.x + Math.cos(angle) * radius;
         const y = p.y + Math.sin(angle) * radius * 0.55;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
       }
 
       ctx.closePath();

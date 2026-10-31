@@ -15,13 +15,21 @@ export const test = base.extend<{
   graphicsPreset: keyof typeof GRAPHICS_PRESETS | null;
 }>({
   graphicsPreset: ['Balanced', { option: true }],
-  npcDialogue: [{ generate: async () => ({ status: 'busy' }) }, { option: true }],
+  npcDialogue: [
+    {
+      generate: async () => {
+        return { status: 'busy' };
+      },
+    },
+    { option: true },
+  ],
   page: async ({ page, graphicsPreset }, provide) => {
-    if (graphicsPreset)
-      await page.addInitScript(
-        (settings) => localStorage.setItem('emberfall-new.graphics', JSON.stringify(settings)),
-        GRAPHICS_PRESETS[graphicsPreset],
-      );
+    if (graphicsPreset) {
+      await page.addInitScript((settings) => {
+        return localStorage.setItem('emberfall-new.graphics', JSON.stringify(settings));
+      }, GRAPHICS_PRESETS[graphicsPreset]);
+    }
+
     await provide(page);
   },
   game: [

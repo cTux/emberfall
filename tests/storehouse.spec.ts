@@ -6,13 +6,19 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
-  const building = BUILDINGS.find((building) => building.id === 'storehouse')!;
+  const building = BUILDINGS.find((building) => {
+    return building.id === 'storehouse';
+  })!;
   player.x = building.doorX;
   player.y = building.y + 9;
   player.backpack = [{ id: 'test-potions', itemId: 'health-potion', quantity: 5 }];
@@ -28,11 +34,11 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   const firstSlot = (await dialog.getByRole('tabpanel').locator('button').first().boundingBox())!;
   expect(firstSlot.y - (gold.y + gold.height)).toBeLessThanOrEqual(8);
   await expect
-    .poll(() =>
-      dialog
-        .locator('.MuiDialogContent-root')
-        .evaluate((element) => element.scrollHeight - element.clientHeight),
-    )
+    .poll(() => {
+      return dialog.locator('.MuiDialogContent-root').evaluate((element) => {
+        return element.scrollHeight - element.clientHeight;
+      });
+    })
     .toBeLessThanOrEqual(1);
   for (let tab = 1; tab <= 3; tab++) {
     await dialog.getByRole('tab', { name: `Storage ${tab}`, exact: true }).click();
@@ -69,7 +75,11 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
     await page.setViewportSize({ width, height: 1000 });
     const label = longTab.locator('.MuiTypography-root');
     await expect(label).toHaveCSS('text-overflow', 'ellipsis');
-    expect(await label.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+    expect(
+      await label.evaluate((element) => {
+        return element.scrollWidth > element.clientWidth;
+      }),
+    ).toBe(true);
     await longTab.click({ button: 'right' });
     await rename.getByRole('textbox').fill('');
     await page.screenshot({
@@ -101,7 +111,9 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   const scroll = await dialog
     .locator('.MuiDialogContent-root')
     .first()
-    .evaluate((element) => ({ width: element.clientWidth, scroll: element.scrollWidth }));
+    .evaluate((element) => {
+      return { width: element.clientWidth, scroll: element.scrollWidth };
+    });
   expect(scroll.scroll).toBeLessThanOrEqual(scroll.width);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await dialog.getByRole('button', { name: 'Withdraw Health potion (5)' }).focus();
@@ -117,21 +129,29 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   player.y = WARDROBE.y - 15;
   const wardrobe = page.getByRole('dialog', { name: 'Wardrobe', exact: true });
   await expect(async () => {
-    if (await dialog.isVisible())
+    if (await dialog.isVisible()) {
       await dialog.getByRole('button', { name: 'Close Storehouse' }).click();
+    }
+
     await page.keyboard.press('e');
     await expect(wardrobe).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await wardrobe.getByRole('button', { name: /^Mage/ }).click();
-  await expect.poll(() => player.classId).toBe('mage');
+  await expect
+    .poll(() => {
+      return player.classId;
+    })
+    .toBe('mage');
   expect(player.coins).toBe(13);
   expect(player.backpack).toHaveLength(0);
   await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
   player.x = building.doorX;
   player.y = building.y + 9;
   await expect(async () => {
-    if (await wardrobe.isVisible())
+    if (await wardrobe.isVisible()) {
       await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
+    }
+
     await page.keyboard.press('e');
     await expect(dialog).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 6000 });

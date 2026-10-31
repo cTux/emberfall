@@ -70,10 +70,19 @@ test('every workstation has distinct, bounded, animated particles and preserves 
     }
 
     assert.ok(
-      frames.some((frame) => JSON.stringify(frame) !== '[]'),
+      frames.some((frame) => {
+        return JSON.stringify(frame) !== '[]';
+      }),
       station.id,
     );
-    assert.ok(new Set(frames.map((frame) => JSON.stringify(frame))).size > 1, station.id);
+    assert.ok(
+      new Set(
+        frames.map((frame) => {
+          return JSON.stringify(frame);
+        }),
+      ).size > 1,
+      station.id,
+    );
     signatures.add(JSON.stringify(frames));
   }
 

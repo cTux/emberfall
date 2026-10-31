@@ -64,7 +64,10 @@ export default defineConfig(({ command, mode }) => {
         }),
     ],
   };
-  if (command === 'build') return { ...shared, build: { manifest: true } };
+  if (command === 'build') {
+    return { ...shared, build: { manifest: true } };
+  }
+
   const cert = readFileSync(new URL('../../.certs/localhost.pem', import.meta.url));
   const serverPort = env.BASE_PORT ?? env.PORT_NEW ?? '3003';
 
@@ -84,7 +87,9 @@ export default defineConfig(({ command, mode }) => {
         '/colyseus': {
           target: `wss://127.0.0.1:${serverPort}`,
           ws: true,
-          rewrite: (path) => path.replace(/^\/colyseus/, ''),
+          rewrite: (path) => {
+            return path.replace(/^\/colyseus/, '');
+          },
           agent: new Agent({ ca: cert }),
         },
       },

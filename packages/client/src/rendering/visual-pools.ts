@@ -44,7 +44,10 @@ export class VisualPools {
     this.childCursors.clear();
     this.childCursors.set(this.stage, 0);
     // Release previous clip ownership before pooled graphics take new roles.
-    for (const group of this.maskGroups) group.mask = null;
+    for (const group of this.maskGroups) {
+      group.mask = null;
+    }
+
     this.maskCursor = 0;
     this.currentMask = null;
     this.currentGroup = undefined;
@@ -52,8 +55,11 @@ export class VisualPools {
   }
 
   finish() {
-    for (const [parent, count] of this.childCursors)
-      if (parent.children.length > count) parent.removeChildren(count);
+    for (const [parent, count] of this.childCursors) {
+      if (parent.children.length > count) {
+        parent.removeChildren(count);
+      }
+    }
   }
 
   trim() {
@@ -81,7 +87,10 @@ export class VisualPools {
       entry.object.destroy();
     }
 
-    for (const group of this.maskGroups) group.destroy();
+    for (const group of this.maskGroups) {
+      group.destroy();
+    }
+
     this.stage.destroy();
     this.childCursors.clear();
   }
@@ -111,14 +120,22 @@ export class VisualPools {
     object.visible = true;
     object.alpha = state.globalAlpha;
     // Sprites and text receive their final transform at the draw call below.
-    if (kind === 'graphics') object.setFromMatrix(state.matrix);
+    if (kind === 'graphics') {
+      object.setFromMatrix(state.matrix);
+    }
+
     object.blendMode = blendModes[state.globalCompositeOperation] ?? 'normal';
     object.mask = null;
     if (shadowPass && shadowStrength > 0) {
       entity.blur ??= new BlurFilter({ quality: 2, resolution: 0.5 });
       entity.blur.strength = shadowStrength;
-      if (object.filters?.[0] !== entity.blur) object.filters = [entity.blur];
-    } else if (object.filters?.length) object.filters = null;
+      if (object.filters?.[0] !== entity.blur) {
+        object.filters = [entity.blur];
+      }
+    } else if (object.filters?.length) {
+      object.filters = null;
+    }
+
     if (state.mask) {
       // One clip for a contiguous group, not one stencil pass for every portal
       // pixel or particle. Children remain eligible for normal sprite batching.
@@ -144,7 +161,10 @@ export class VisualPools {
 
   place(parent: Container, object: Container) {
     const index = this.childCursors.get(parent) ?? 0;
-    if (parent.children[index] !== object) parent.addChildAt(object, index);
+    if (parent.children[index] !== object) {
+      parent.addChildAt(object, index);
+    }
+
     this.childCursors.set(parent, index + 1);
   }
 }

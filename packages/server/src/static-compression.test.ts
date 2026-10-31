@@ -9,7 +9,9 @@ import { createGameServer } from './worlds.ts';
 
 test('static files negotiate compressed representations and preserve HTTP semantics', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'emberfall-compression-'));
-  t.after(() => rm(root, { recursive: true, force: true }));
+  t.after(() => {
+    return rm(root, { recursive: true, force: true });
+  });
   await mkdir(join(root, 'assets'));
   const original = Buffer.from("console.log('Emberfall');\n".repeat(100));
   const br = brotliCompressSync(original);
@@ -29,7 +31,9 @@ test('static files negotiate compressed representations and preserve HTTP semant
   );
   const app = await createGameServer(root, ':memory:');
   await app.listen(0, '127.0.0.1');
-  t.after(() => app.close());
+  t.after(() => {
+    return app.close();
+  });
   const address = app.server.address();
   assert.ok(address && typeof address !== 'string');
 
@@ -51,14 +55,16 @@ test('static files negotiate compressed representations and preserve HTTP semant
         },
         (response) => {
           const chunks: Buffer[] = [];
-          response.on('data', (chunk) => chunks.push(chunk));
-          response.on('end', () =>
-            resolve({
+          response.on('data', (chunk) => {
+            return chunks.push(chunk);
+          });
+          response.on('end', () => {
+            return resolve({
               status: response.statusCode!,
               headers: response.headers,
               body: Buffer.concat(chunks),
-            }),
-          );
+            });
+          });
           response.on('error', reject);
         },
       )

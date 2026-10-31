@@ -1,1 +1,3 @@
-export const story = (id: string) => `/iframe.html?id=${id}&viewMode=story`;
+export const story = (id: string) => {
+  return `/iframe.html?id=${id}&viewMode=story`;
+};

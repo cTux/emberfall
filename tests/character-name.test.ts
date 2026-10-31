@@ -175,9 +175,14 @@ test('character names and building badges keep their normal text and backgrounds
 test('speech bubbles wrap whole words and keep oversized words intact', () => {
   const sentence = 'Welcome! Have you met our neighbours?';
   const bubble = recordingContext();
-  bubble.ctx.measureText = (value: string) => ({ width: value.length * 7 }) as TextMetrics;
+  bubble.ctx.measureText = (value: string) => {
+    return { width: value.length * 7 } as TextMetrics;
+  };
+
   drawChatBubble(bubble.ctx, 100, 200, sentence);
-  const lines = bubble.text.map((entry) => (entry as unknown[])[1]);
+  const lines = bubble.text.map((entry) => {
+    return (entry as unknown[])[1];
+  });
   assert.deepEqual(lines, ['Welcome! Have you met our', 'neighbours?']);
   assert.equal(lines.join(' '), sentence);
 
@@ -185,7 +190,9 @@ test('speech bubbles wrap whole words and keep oversized words intact', () => {
   const word = 'a'.repeat(60);
   drawChatBubble(oversized.ctx, 100, 200, `${word} hello`);
   assert.deepEqual(
-    oversized.text.map((entry) => (entry as unknown[])[1]),
+    oversized.text.map((entry) => {
+      return (entry as unknown[])[1];
+    }),
     [word, 'hello'],
   );
 });

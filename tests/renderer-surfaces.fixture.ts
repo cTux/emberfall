@@ -1,3 +1,4 @@
+import { comparePooling } from './renderer-pooling.fixture';
 import {
   drawVignette,
   drawAtmosphere,
@@ -21,8 +22,8 @@ export function compareSurfaces(
   const mask = document.createElement('canvas');
   mask.width = mask.height = 16;
   mask.getContext('2d')!.fillRect(0, 0, 16, 16);
-  const outline = (ctx: CanvasRenderingContext2D) =>
-    drawInteractionOutline(ctx, {
+  const outline = (ctx: CanvasRenderingContext2D) => {
+    return drawInteractionOutline(ctx, {
       source: { id: 'fixture', name: 'Fixture', x: 20, y: 20 },
       x: 20,
       y: 20,
@@ -32,10 +33,22 @@ export function compareSurfaces(
       reach: { x: 20, y: 20 },
       radius: 55,
     });
+  };
+
   compare('interaction outline border', outline, 19, 28);
   compare('interaction outline outside', outline, 18, 28);
-  compare('vignette center', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 128, 128);
-  const health = (ctx: CanvasRenderingContext2D) => drawPlayerHealth(ctx, 100, 93, 50, 100, 'Hero');
+  compare(
+    'vignette center',
+    (ctx) => {
+      return drawVignette(ctx, 0, 0, 256, 256);
+    },
+    128,
+    128,
+  );
+  const health = (ctx: CanvasRenderingContext2D) => {
+    return drawPlayerHealth(ctx, 100, 93, 50, 100, 'Hero');
+  };
+
   compare('health border top', health, 90, 93);
   compare('health fill top', health, 90, 94);
   compare('health fill bottom', health, 90, 98);
@@ -44,19 +57,20 @@ export function compareSurfaces(
   compare('health outside frame', health, 90, 92);
   compare(
     'tree health border',
-    (ctx) =>
-      drawResourceHealth(
+    (ctx) => {
+      return drawResourceHealth(
         ctx,
         { id: 'tree', kind: 'tree', x: 100, y: 140, size: 36 },
         { remaining: 3, restoresAt: 5000 },
-      ),
+      );
+    },
     90,
     93,
   );
   compare(
     'gathering border',
-    (ctx) =>
-      drawTimedActivity(
+    (ctx) => {
+      return drawTimedActivity(
         ctx,
         {
           startedAt: 0,
@@ -69,7 +83,8 @@ export function compareSurfaces(
         100,
         91,
         2500,
-      ),
+      );
+    },
     90,
     93,
   );
@@ -85,8 +100,22 @@ export function compareSurfaces(
   compare('prompt rim right', prompt, 134, 100);
   compare('prompt rim top', prompt, 112, 77);
   compare('prompt rim bottom', prompt, 112, 122);
-  compare('fog blending', (ctx) => drawFog(ctx, 0, 0, 256, 256, 1000), 128, 128);
-  compare('vignette edge', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 5, 128);
+  compare(
+    'fog blending',
+    (ctx) => {
+      return drawFog(ctx, 0, 0, 256, 256, 1000);
+    },
+    128,
+    128,
+  );
+  compare(
+    'vignette edge',
+    (ctx) => {
+      return drawVignette(ctx, 0, 0, 256, 256);
+    },
+    5,
+    128,
+  );
   compare(
     'translated vignette',
     (ctx) => {
@@ -98,13 +127,17 @@ export function compareSurfaces(
   );
   compare(
     'color grading',
-    (ctx) => drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: true, lightShafts: false }),
+    (ctx) => {
+      return drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: true, lightShafts: false });
+    },
     128,
     128,
   );
   compare(
     'light shafts',
-    (ctx) => drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: false, lightShafts: true }),
+    (ctx) => {
+      return drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: false, lightShafts: true });
+    },
     10,
     5,
   );
@@ -112,13 +145,17 @@ export function compareSurfaces(
     ['shaft left feather', 62],
     ['shaft center', 140],
     ['shaft right feather', 218],
-  ] as const)
+  ] as const) {
     compare(
       name,
-      (ctx) => drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: false, lightShafts: true }),
+      (ctx) => {
+        return drawAtmosphere(ctx, 0, 0, 256, 256, 0, { colorGrading: false, lightShafts: true });
+      },
       x,
       100,
     );
+  }
+
   compare(
     'shaft after camera move',
     (ctx) => {
@@ -151,8 +188,8 @@ export function compareSurfaces(
 
     compare(
       kind,
-      (ctx) =>
-        drawDebuffs(
+      (ctx) => {
+        return drawDebuffs(
           ctx,
           {
             debuffs: [{ kind, stacks: 1, ...(kind === 'silence' ? {} : { expiresAt: 1000 }) }],
@@ -160,68 +197,13 @@ export function compareSurfaces(
           80,
           100,
           kind === 'silence' ? 50_000 : 0,
-        ),
+        );
+      },
       81,
       89,
     );
     canvas.fillText = fillText;
   }
 
-  // Shrinking/reordering a retained display list must not leave ghost sprites
-  // or a previous frame's clip attached to a reused graphic.
-  compare(
-    'clipped red',
-    (ctx) => {
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(10, 10);
-      ctx.lineTo(30, 10);
-      ctx.lineTo(30, 30);
-      ctx.lineTo(10, 30);
-      ctx.closePath();
-      ctx.clip();
-      ctx.fillStyle = '#ff0000';
-      ctx.fillRect(0, 0, 80, 80);
-      ctx.restore();
-    },
-    15,
-    15,
-  );
-  compare(
-    'released clip',
-    (ctx) => {
-      ctx.fillStyle = '#00ff00';
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(80, 0);
-      ctx.lineTo(80, 80);
-      ctx.lineTo(0, 80);
-      ctx.closePath();
-      ctx.fill();
-    },
-    50,
-    50,
-  );
-  compare('removed visuals', () => {}, 15, 15);
-  compare(
-    'transformed sprite',
-    (ctx) => {
-      ctx.translate(110, 100);
-      ctx.rotate(0.3);
-      ctx.scale(-2, 1.5);
-      ctx.fillStyle = '#ff0000';
-      ctx.fillRect(-10, -10, 20, 20);
-    },
-    110,
-    100,
-  );
-  compare(
-    'reset pooled transform',
-    (ctx) => {
-      ctx.fillStyle = '#0000ff';
-      ctx.fillRect(10, 10, 30, 30);
-    },
-    20,
-    20,
-  );
+  comparePooling(compare);
 }

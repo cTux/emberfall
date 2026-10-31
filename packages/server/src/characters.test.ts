@@ -25,17 +25,28 @@ test('server saves survive restart, authenticate independently of nickname, and 
     const ws = new WebSocket(`ws://127.0.0.1:${address.port}/ws`);
     clients.push(ws);
     const messages: ServerMessage[] = [];
-    ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
+    ws.on('message', (raw) => {
+      return messages.push(JSON.parse(raw.toString()));
+    });
     await once(ws, 'open');
 
     return {
       ws,
-      send: (message: unknown) => ws.send(JSON.stringify(message)),
+      send: (message: unknown) => {
+        return ws.send(JSON.stringify(message));
+      },
       wait: async (type: ServerMessage['type']) => {
         for (let i = 0; i < 700; i++) {
-          const index = messages.findIndex((m) => m.type === type);
-          if (index >= 0) return messages.splice(index, 1)[0];
-          await new Promise((r) => setTimeout(r, 10));
+          const index = messages.findIndex((m) => {
+            return m.type === type;
+          });
+          if (index >= 0) {
+            return messages.splice(index, 1)[0];
+          }
+
+          await new Promise((r) => {
+            return setTimeout(r, 10);
+          });
         }
 
         throw new Error(`Missing ${type}`);
@@ -85,10 +96,18 @@ test('server saves survive restart, authenticate independently of nickname, and 
       hitpoints: 77,
       equipment: {},
     });
-    assert.throws(() => store.save(saved.id, 'Hero', { ...saved.progress, level: -1 }));
-    for (const coins of [-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1])
-      assert.throws(() => store.save(saved.id, 'Hero', { ...saved.progress, coins }));
-    assert.throws(() => store.load('0'.repeat(64)));
+    assert.throws(() => {
+      return store.save(saved.id, 'Hero', { ...saved.progress, level: -1 });
+    });
+    for (const coins of [-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+      assert.throws(() => {
+        return store.save(saved.id, 'Hero', { ...saved.progress, coins });
+      });
+    }
+
+    assert.throws(() => {
+      return store.load('0'.repeat(64));
+    });
     store.close();
     assert(!(await readFile(path)).includes(Buffer.from(token)));
     app = await createGameServer(undefined, path);
@@ -136,10 +155,18 @@ test('server saves survive restart, authenticate independently of nickname, and 
     const independent = await stranger.wait('joined');
     assert(independent.type === 'joined');
     assert.notEqual(independent.characterToken, token);
-    assert.equal(independent.world.players.find((p) => p.id === independent.playerId)?.level, 1);
+    assert.equal(
+      independent.world.players.find((p) => {
+        return p.id === independent.playerId;
+      })?.level,
+      1,
+    );
     assert(!JSON.stringify(await returning.wait('state')).includes(token));
   } finally {
-    for (const ws of clients) ws.terminate();
+    for (const ws of clients) {
+      ws.terminate();
+    }
+
     await app.close();
     assert(directory.startsWith(join(tmpdir(), 'emberfall-save-test-')));
     await rm(directory, { recursive: true, force: true });
@@ -163,7 +190,11 @@ test('old single-class and per-class saves discard mana without losing progress'
       {
         formatVersion: 1,
         classId: 'mage',
-        classes: Object.fromEntries(CLASS_IDS.map((id) => [id, legacy])),
+        classes: Object.fromEntries(
+          CLASS_IDS.map((id) => {
+            return [id, legacy];
+          }),
+        ),
       },
     ]) {
       const created = store.create('Hero');

@@ -37,8 +37,12 @@ export function LeavePanel({
           color='error'
           disabled={unavailable}
           onClick={() => {
-            if (me?.scene === 'forest') send({ type: 'leaveScene' });
-            else act({ type: 'leave' });
+            if (me?.scene === 'forest') {
+              send({ type: 'leaveScene' });
+            } else {
+              act({ type: 'leave' });
+            }
+
             onClose();
           }}
         >
@@ -81,9 +85,9 @@ export function PortalPanel({
             difficulty={scene.difficulty}
             ready={scene.ready.length}
             total={
-              world.players.filter(
-                (p) => p.id === playerId || (!!me?.partyId && p.partyId === me.partyId),
-              ).length
+              world.players.filter((p) => {
+                return p.id === playerId || (!!me?.partyId && p.partyId === me.partyId);
+              }).length
             }
             voted={scene.ready.includes(playerId)}
             countdown={scene.phase === 'countdown' ? departure : undefined}
@@ -91,7 +95,9 @@ export function PortalPanel({
             onVote={() => {
               const ready = !scene.ready.includes(playerId);
               send({ type: 'ready', ready });
-              if (ready) onClose();
+              if (ready) {
+                onClose();
+              }
             }}
           />
         </>
@@ -103,7 +109,9 @@ export function PortalPanel({
           <Button
             variant='contained'
             disabled={unavailable}
-            onClick={() => send({ type: 'joinScene' })}
+            onClick={() => {
+              return send({ type: 'joinScene' });
+            }}
           >
             Join scene
           </Button>
@@ -112,13 +120,13 @@ export function PortalPanel({
               <Typography>No living players remain inside. The scene is paused.</Typography>
               <Button
                 disabled={unavailable}
-                onClick={() =>
-                  send({
+                onClick={() => {
+                  return send({
                     type: 'createScene',
                     scene: 'Forest',
                     difficulty: scene.difficulty,
-                  })
-                }
+                  });
+                }}
               >
                 Regenerate scene
               </Button>
@@ -151,14 +159,18 @@ export function PortalPanel({
             select
             label='Difficulty'
             value={difficulty}
-            onChange={(event) => setDifficulty(event.target.value as Difficulty)}
+            onChange={(event) => {
+              return setDifficulty(event.target.value as Difficulty);
+            }}
             helperText={`${difficultyMultiplier(difficulty)}× enemy health and damage`}
           >
-            {Object.values(Difficulty).map((value) => (
-              <MenuItem key={value} value={value}>
-                {value}
-              </MenuItem>
-            ))}
+            {Object.values(Difficulty).map((value) => {
+              return (
+                <MenuItem key={value} value={value}>
+                  {value}
+                </MenuItem>
+              );
+            })}
           </TextField>
           <Stack direction='row' spacing={1}>
             <Button type='submit' variant='contained' disabled={unavailable}>

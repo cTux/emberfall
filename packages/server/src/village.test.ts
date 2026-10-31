@@ -34,7 +34,10 @@ test('village paths and door approaches are walkable while buildings and torch p
     const result = moveActor({ x: building.doorX, y: building.y + 30 }, 0, -80, 12);
     assert(result.y >= building.y + 12);
     assert(result.y < building.y + 30);
-    if (building.id === 'inn') continue;
+    if (building.id === 'inn') {
+      continue;
+    }
+
     assert.deepEqual(
       nearbyInteraction(
         { x: building.doorX, y: building.y + 30, hitpoints: 100 },
@@ -56,7 +59,7 @@ test('village paths and door approaches are walkable while buildings and torch p
     assert(result.x <= torch.x - 17);
   }
 
-  for (const path of PATHS)
+  for (const path of PATHS) {
     for (let i = 0; i < path.length - 1; i++) {
       const a = path[i],
         b = path[i + 1];
@@ -64,19 +67,23 @@ test('village paths and door approaches are walkable while buildings and torch p
         const point = { x: a.x + ((b.x - a.x) * step) / 20, y: a.y + ((b.y - a.y) * step) / 20 };
         // Dirt extends under each threshold, where the building itself remains solid.
         if (
-          BUILDINGS.some(
-            (building) =>
+          BUILDINGS.some((building) => {
+            return (
               Math.abs(point.x - building.doorX) < 24 &&
               point.y <= building.y + 12 &&
-              point.y >= building.y - 24,
-          ) ||
+              point.y >= building.y - 24
+            );
+          }) ||
           Math.hypot(point.x - WARDROBE.x, point.y - WARDROBE.y) < 30
-        )
+        ) {
           continue;
+        }
+
         const result = moveActor(point, 0, 1, 12);
         assert.equal(result.y, point.y + 1, `Blocked path at ${point.x},${point.y}`);
       }
     }
+  }
 });
 
 test('Marta replaces the Inn interaction with living village-only wrapped proximity', () => {
@@ -86,7 +93,9 @@ test('Marta replaces the Inn interaction with living village-only wrapped proxim
   assert.equal(nearbyInteraction({ ...player, hitpoints: 0 }), null);
   assert.equal(nearbyInteraction({ ...player, scene: 'forest' }), null);
   assert.equal(nearbyInteraction({ ...player, x: player.x + INTERACTION_RADIUS }), null);
-  const inn = BUILDINGS.find((b) => b.id === 'inn')!;
+  const inn = BUILDINGS.find((b) => {
+    return b.id === 'inn';
+  })!;
   assert.equal(nearbyInteraction({ ...player, x: inn.doorX, y: inn.y + 9 }), null);
 });
 

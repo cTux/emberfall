@@ -13,12 +13,17 @@ const KEYS = [
 
 export function dayNight(serverTime: number) {
   const phase = (((serverTime % DAY_MS) + DAY_MS) % DAY_MS) / DAY_MS;
-  const index = KEYS.findIndex((key) => key[0] > phase);
+  const index = KEYS.findIndex((key) => {
+    return key[0] > phase;
+  });
   const from = KEYS[index - 1],
     to = KEYS[index];
   const progress = (phase - from[0]) / (to[0] - from[0]);
   const blend = progress * progress * (3 - 2 * progress);
-  const channel = (i: 1 | 2 | 3) => Math.round(255 * (from[i] + (to[i] - from[i]) * blend));
+  const channel = (i: 1 | 2 | 3) => {
+    return Math.round(255 * (from[i] + (to[i] - from[i]) * blend));
+  };
+
   const daylight = from[4] + (to[4] - from[4]) * blend;
   const sun = phase < 0.7;
   const orbit = (sun ? phase / 0.7 : (phase - 0.7) / 0.3) * Math.PI;

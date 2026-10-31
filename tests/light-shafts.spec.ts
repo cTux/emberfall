@@ -8,7 +8,9 @@ test('sunlight shafts render in village and forest with live presets and narrow 
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
@@ -27,7 +29,9 @@ test('sunlight shafts render in village and forest with live presets and narrow 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await shafts.check();
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;

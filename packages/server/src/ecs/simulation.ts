@@ -25,14 +25,19 @@ class PlayerIndex extends Map<string, Player> {
 
   override delete(id: string) {
     const entity = this.index.get(id);
-    if (entity) this.ecs.remove(entity);
+    if (entity) {
+      this.ecs.remove(entity);
+    }
+
     this.index.delete(id);
 
     return super.delete(id);
   }
 
   override clear() {
-    for (const id of this.keys()) this.delete(id);
+    for (const id of this.keys()) {
+      this.delete(id);
+    }
   }
 }
 
@@ -47,10 +52,21 @@ export class SimulationWorld {
   setVillagers(npcs: VillageNpc[]) {
     // Removal swaps query entries; snapshot membership before removing.
     // oxlint-disable-next-line unicorn/no-useless-spread
-    for (const entity of [...this.villagers]) this.ecs.remove(entity);
-    npcs.forEach((npc, order) => this.ecs.add({ npc, order }));
+    for (const entity of [...this.villagers]) {
+      this.ecs.remove(entity);
+    }
 
-    return [...this.villagers].sort((a, b) => a.order - b.order).map((e) => e.npc);
+    npcs.forEach((npc, order) => {
+      return this.ecs.add({ npc, order });
+    });
+
+    return [...this.villagers]
+      .sort((a, b) => {
+        return a.order - b.order;
+      })
+      .map((e) => {
+        return e.npc;
+      });
   }
 
   private scenes = new Map<SceneState, (() => void)[]>();
@@ -61,28 +77,41 @@ export class SimulationWorld {
    * Miniplex's swap removal cannot alter target tie-breaking or reward order.
    */
   bind(scene: SceneState) {
-    if (this.scenes.has(scene)) return;
+    if (this.scenes.has(scene)) {
+      return;
+    }
+
     const cleanup: (() => void)[] = [];
     this.scenes.set(scene, cleanup);
     for (const key of SCENE_COLLECTIONS) {
-      const query = this.ecs.with(key).where((entity) => entity.scene === scene);
+      const query = this.ecs.with(key).where((entity) => {
+        return entity.scene === scene;
+      });
       const index = new Map<object, Entity>();
       let view: object[] | undefined;
       const replace = (values: object[] | undefined) => {
-        if (values === view) return;
+        if (values === view) {
+          return;
+        }
+
         if (
           values &&
           view &&
           values.length === view.length &&
-          values.every((value, i) => value === view![i])
-        )
+          values.every((value, i) => {
+            return value === view![i];
+          })
+        ) {
           return;
+        }
+
         const next = new Set(values ?? []);
-        for (const [value, entity] of index)
+        for (const [value, entity] of index) {
           if (!next.has(value)) {
             this.ecs.remove(entity);
             index.delete(value);
           }
+        }
 
         (values ?? []).forEach((value, order) => {
           let entity = index.get(value);
@@ -97,7 +126,13 @@ export class SimulationWorld {
           values === undefined
             ? undefined
             : (Object.freeze(
-                [...query].sort((a, b) => a.order - b.order).map((entity) => entity[key]),
+                [...query]
+                  .sort((a, b) => {
+                    return a.order - b.order;
+                  })
+                  .map((entity) => {
+                    return entity[key];
+                  }),
               ) as unknown as object[]);
       };
 
@@ -105,7 +140,9 @@ export class SimulationWorld {
       Object.defineProperty(scene, key, {
         enumerable: true,
         configurable: true,
-        get: () => view,
+        get: () => {
+          return view;
+        },
         set: replace,
       });
       cleanup.push(() => {
@@ -115,18 +152,25 @@ export class SimulationWorld {
           writable: true,
           value: view ? [...view] : undefined,
         });
-        for (const entity of index.values()) this.ecs.remove(entity);
+        for (const entity of index.values()) {
+          this.ecs.remove(entity);
+        }
+
         query.disconnect();
       });
     }
   }
 
   retain(scenes: (SceneState | undefined)[]) {
-    for (const [scene, cleanup] of this.scenes)
+    for (const [scene, cleanup] of this.scenes) {
       if (!scenes.includes(scene)) {
-        for (const release of cleanup) release();
+        for (const release of cleanup) {
+          release();
+        }
+
         this.scenes.delete(scene);
       }
+    }
   }
 }
 

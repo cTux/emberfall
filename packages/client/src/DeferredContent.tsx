@@ -23,7 +23,17 @@ class ContentBoundary extends Component<
   }
 
   override render() {
-    if (this.state.failed) return <Button onClick={() => location.reload()}>Reload</Button>;
+    if (this.state.failed) {
+      return (
+        <Button
+          onClick={() => {
+            return location.reload();
+          }}
+        >
+          Reload
+        </Button>
+      );
+    }
 
     return (
       <Suspense

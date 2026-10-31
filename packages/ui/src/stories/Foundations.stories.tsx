@@ -31,20 +31,26 @@ export const Fonts: Story = {
             select
             label='Font'
             value={font}
-            onChange={(event) => setFont(event.target.value as GameFont)}
+            onChange={(event) => {
+              return setFont(event.target.value as GameFont);
+            }}
           >
-            {Object.keys(GAME_FONTS).map((family) => (
-              <MenuItem key={family} value={family}>
-                {family}
-              </MenuItem>
-            ))}
+            {Object.keys(GAME_FONTS).map((family) => {
+              return (
+                <MenuItem key={family} value={family}>
+                  {family}
+                </MenuItem>
+              );
+            })}
           </TextField>
           <Typography variant='h2'>Emberfall · Forest portal</Typography>
-          {[10, 12, 14, 18].map((fontSize) => (
-            <Typography key={fontSize} sx={{ fontSize }}>
-              {fontSize}px · Wanderer · Health 180/240 · Damage 1,280 · Il1 O0 rn m
-            </Typography>
-          ))}
+          {[10, 12, 14, 18].map((fontSize) => {
+            return (
+              <Typography key={fontSize} sx={{ fontSize }}>
+                {fontSize}px · Wanderer · Health 180/240 · Damage 1,280 · Il1 O0 rn m
+              </Typography>
+            );
+          })}
           <Button variant='contained'>Enter forest</Button>
         </Stack>
       </GameUiProvider>
@@ -63,13 +69,15 @@ export const Tokens: Story = {
         </Typography>
         <Stack direction='row' spacing={2} sx={{ flexWrap: 'wrap' }}>
           {(['primary', 'secondary', 'success', 'info', 'warning', 'error'] as const).map(
-            (name) => (
-              <Paper key={name} sx={{ p: 2 }}>
-                <Box sx={{ bgcolor: `${name}.main`, height: 48, mb: 1, borderRadius: 1 }} />
-                <Typography>{name}</Typography>
-                <Typography variant='caption'>{theme.palette[name].main}</Typography>
-              </Paper>
-            ),
+            (name) => {
+              return (
+                <Paper key={name} sx={{ p: 2 }}>
+                  <Box sx={{ bgcolor: `${name}.main`, height: 48, mb: 1, borderRadius: 1 }} />
+                  <Typography>{name}</Typography>
+                  <Typography variant='caption'>{theme.palette[name].main}</Typography>
+                </Paper>
+              );
+            },
           )}
         </Stack>
         <Typography variant='h2'>Section heading</Typography>
@@ -83,35 +91,41 @@ export const Tokens: Story = {
   },
 };
 export const Controls: Story = {
-  render: () => (
-    <Stack spacing={3}>
-      <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
-        <Button variant='contained'>Light the ember</Button>
-        <Button variant='outlined'>Cancel</Button>
-        <Button>Learn more</Button>
-        <Button disabled>Unavailable</Button>
-        <Button loading variant='contained'>
-          Joining
-        </Button>
+  render: () => {
+    return (
+      <Stack spacing={3}>
+        <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
+          <Button variant='contained'>Light the ember</Button>
+          <Button variant='outlined'>Cancel</Button>
+          <Button>Learn more</Button>
+          <Button disabled>Unavailable</Button>
+          <Button loading variant='contained'>
+            Joining
+          </Button>
+        </Stack>
+        <TextField
+          label='Adventurer name'
+          placeholder='Your name'
+          helperText='Up to 24 characters'
+        />
+        <TextField label='World password' type='password' />
+        <TextField label='Invalid world name' error helperText='Enter a world name' />
+        <TextField select label='Render resolution' defaultValue='1'>
+          <MenuItem value='0.75'>75% · Performance</MenuItem>
+          <MenuItem value='1'>100% · Native</MenuItem>
+          <MenuItem value='1.5'>150% · Supersampling</MenuItem>
+        </TextField>
+        <FormControlLabel label='Floating damage numbers' control={<Checkbox defaultChecked />} />
+        <Divider />
+        <Stack direction='row' spacing={1}>
+          <Chip label='Easy' />
+          <Chip label='Host' variant='outlined' />
+        </Stack>
+        <Alert severity='error'>Unable to join this world. Check its password.</Alert>
+        <Alert severity='info'>Worlds fade when the last adventurer leaves.</Alert>
+        <Alert severity='success'>Your party is ready.</Alert>
+        <Alert severity='warning'>Connection interrupted. Reconnecting…</Alert>
       </Stack>
-      <TextField label='Adventurer name' placeholder='Your name' helperText='Up to 24 characters' />
-      <TextField label='World password' type='password' />
-      <TextField label='Invalid world name' error helperText='Enter a world name' />
-      <TextField select label='Render resolution' defaultValue='1'>
-        <MenuItem value='0.75'>75% · Performance</MenuItem>
-        <MenuItem value='1'>100% · Native</MenuItem>
-        <MenuItem value='1.5'>150% · Supersampling</MenuItem>
-      </TextField>
-      <FormControlLabel label='Floating damage numbers' control={<Checkbox defaultChecked />} />
-      <Divider />
-      <Stack direction='row' spacing={1}>
-        <Chip label='Easy' />
-        <Chip label='Host' variant='outlined' />
-      </Stack>
-      <Alert severity='error'>Unable to join this world. Check its password.</Alert>
-      <Alert severity='info'>Worlds fade when the last adventurer leaves.</Alert>
-      <Alert severity='success'>Your party is ready.</Alert>
-      <Alert severity='warning'>Connection interrupted. Reconnecting…</Alert>
-    </Stack>
-  ),
+    );
+  },
 };

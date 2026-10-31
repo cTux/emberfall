@@ -41,10 +41,18 @@ test('every class starts with exactly its compatible weapon and preserves base s
     assert.deepEqual(validateClassEquipment(player.equipment!, classId), player.equipment);
   }
 
-  assert.throws(() => validateClassEquipment({ weapon: 'mage-staff' }, 'warrior'));
-  assert.throws(() => validateClassEquipment({ ring: 'warrior-sword' }, 'warrior'));
-  assert.throws(() => validateClassEquipment({ weapon: 'forged-item' }, 'warrior'));
-  assert.throws(() => validateClassEquipment({ unknown: 'warrior-sword' }, 'warrior'));
+  assert.throws(() => {
+    return validateClassEquipment({ weapon: 'mage-staff' }, 'warrior');
+  });
+  assert.throws(() => {
+    return validateClassEquipment({ ring: 'warrior-sword' }, 'warrior');
+  });
+  assert.throws(() => {
+    return validateClassEquipment({ weapon: 'forged-item' }, 'warrior');
+  });
+  assert.throws(() => {
+    return validateClassEquipment({ unknown: 'warrior-sword' }, 'warrior');
+  });
   for (const [gearType, allowed] of [
     ['shield', 'warrior'],
     ['quiver', 'ranger'],
@@ -52,16 +60,21 @@ test('every class starts with exactly its compatible weapon and preserves base s
     ['natureFocus', 'druid'],
   ] as const) {
     const item: GearDefinition = { id: 'test', name: 'Off-hand', gearType, stats: {} };
-    for (const classId of CLASS_IDS)
+    for (const classId of CLASS_IDS) {
       assert.equal(canEquip('offHand', item, classId), classId === allowed);
+    }
   }
 });
 
 test('all nine slots aggregate and gear controls real power, range, cadence and defense', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const items: GearDefinition[] = [];
   const player = hero();
-  for (const slot of EQUIPMENT_SLOTS.filter((slot) => slot !== 'weapon')) {
+  for (const slot of EQUIPMENT_SLOTS.filter((slot) => {
+    return slot !== 'weapon';
+  })) {
     const id = `test-${slot}`;
     items.push({
       id,
@@ -84,7 +97,9 @@ test('all nine slots aggregate and gear controls real power, range, cadence and 
     {
       id: 'slots-fixture',
       register(r) {
-        for (const item of items) r.items.register({ ...item, kind: 'gear' });
+        for (const item of items) {
+          r.items.register({ ...item, kind: 'gear' });
+        }
       },
     },
   ]);

@@ -5,9 +5,13 @@ import { test, expect } from './fixtures';
 
 test('filter textures are released before resize and disposal', async ({ page }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   page.on('console', (message) => {
-    if (/\[BindGroup\]/.test(message.text())) errors.push(message.text());
+    if (/\[BindGroup\]/.test(message.text())) {
+      errors.push(message.text());
+    }
   });
   const require = createRequire(resolve('packages/client/package.json'));
   const { build } = await import(pathToFileURL(require.resolve('vite')).href);
@@ -27,10 +31,12 @@ test('filter textures are released before resize and disposal', async ({ page })
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
-  await page.route('**/renderer-lifetime', (route) =>
-    route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-  );
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
+  await page.route('**/renderer-lifetime', (route) => {
+    return route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' });
+  });
   await page.goto('/renderer-lifetime');
   await page.addScriptTag({ content: code });
   const pixels = await page.evaluate(async () => {

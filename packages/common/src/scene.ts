@@ -125,5 +125,7 @@ export interface SceneState {
   damage: DamageEvent[];
 }
 export function hasLivingScenePlayers(players: Iterable<{ scene?: string; hitpoints: number }>) {
-  return [...players].some((p) => p.scene === 'forest' && p.hitpoints > 0);
+  return [...players].some((p) => {
+    return p.scene === 'forest' && p.hitpoints > 0;
+  });
 }

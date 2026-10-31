@@ -1,5 +1,6 @@
 import { chromium } from '@playwright/test';
 import { readFile, writeFile } from 'node:fs/promises';
+import { isolatePlayerFrames } from './art/isolate-player-frames.mjs';
 import { packPlayerFrames } from './art/pack-player-frames.mjs';
 import { matchPlayerPalette } from './art/match-player-palette.mjs';
 
@@ -20,7 +21,7 @@ try {
     const stride = await readFile(`${root}/${name}-stride.png`);
     const repair = await readFile(`${root}/${name}-stride-revised.png`);
     const extra = config.extraRows ? await readFile(`${root}/${name}-extra.png`) : null;
-    const frames = await page.evaluateHandle(packPlayerFrames, {
+    const isolated = await page.evaluateHandle(isolatePlayerFrames, {
       source: source.toString('base64'),
       name,
       extra: extra?.toString('base64'),
@@ -28,7 +29,9 @@ try {
       repair: repair.toString('base64'),
       config,
     });
+    let frames;
     try {
+      frames = await page.evaluateHandle(packPlayerFrames, { isolated, name, config });
       const packed = await page.evaluate(matchPlayerPalette, frames);
       await writeFile(`${root}/${name}-atlas.png`, Buffer.from(packed.png, 'base64'));
       await writeFile(
@@ -47,7 +50,8 @@ try {
       );
       console.log(`${name}: ${packed.frames.length} isolated frames, scale ${packed.scale}`);
     } finally {
-      await frames.dispose();
+      await frames?.dispose();
+      await isolated.dispose();
     }
   }
 } finally {

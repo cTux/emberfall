@@ -90,11 +90,23 @@ export function loadGraphics(): GraphicsSettings {
   const settings = { ...GRAPHICS_PRESETS.High };
   try {
     const value = JSON.parse(localStorage.getItem('emberfall-new.graphics') ?? '{}');
-    if (!value || typeof value !== 'object') return settings;
-    for (const key of Object.keys(GRAPHICS_LABELS) as (keyof typeof GRAPHICS_LABELS)[])
-      if (typeof value[key] === 'boolean') settings[key] = value[key];
-    if ([0, 30, 60, 120, 144].includes(value.frameLimit)) settings.frameLimit = value.frameLimit;
-    if ([0.75, 1, 1.5].includes(value.resolution)) settings.resolution = value.resolution;
+    if (!value || typeof value !== 'object') {
+      return settings;
+    }
+
+    for (const key of Object.keys(GRAPHICS_LABELS) as (keyof typeof GRAPHICS_LABELS)[]) {
+      if (typeof value[key] === 'boolean') {
+        settings[key] = value[key];
+      }
+    }
+
+    if ([0, 30, 60, 120, 144].includes(value.frameLimit)) {
+      settings.frameLimit = value.frameLimit;
+    }
+
+    if ([0.75, 1, 1.5].includes(value.resolution)) {
+      settings.resolution = value.resolution;
+    }
   } catch {
     /* Use High defaults when storage is unavailable or invalid. */
   }

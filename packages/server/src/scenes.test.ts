@@ -16,10 +16,15 @@ test('system chat announces scene transitions and deaths exactly once', async ()
     ]),
   };
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 0);
-  for (const player of [a, b]) sceneAction(world, player, { type: 'ready', ready: true }, 0);
+  for (const player of [a, b]) {
+    sceneAction(world, player, { type: 'ready', ready: true }, 0);
+  }
+
   tickScene(world, 5000, 0);
   assert.deepEqual(
-    world.chat?.map((m) => m.text),
+    world.chat?.map((m) => {
+      return m.text;
+    }),
     [
       'a joined the scene. Everyone became stronger.',
       'b joined the scene. Everyone became stronger.',
@@ -35,7 +40,12 @@ test('system chat announces scene transitions and deaths exactly once', async ()
   assert.equal(a.hitpoints, 0);
   assert.equal(world.chat?.at(-1)?.text, 'a died.');
   tickScene(world, 6050, 0.05);
-  assert.equal(world.chat?.filter((m) => m.text === 'a died.').length, 1);
+  assert.equal(
+    world.chat?.filter((m) => {
+      return m.text === 'a died.';
+    }).length,
+    1,
+  );
   sceneAction(world, a, { type: 'returnLobby' }, 6100);
   assert.equal(world.chat?.at(-1)?.text, 'a left the scene. Everyone became weaker.');
   a.x = LOBBY_PORTAL.x;
@@ -44,31 +54,49 @@ test('system chat announces scene transitions and deaths exactly once', async ()
   assert.equal(world.chat?.at(-1)?.text, 'a joined the scene. Everyone became stronger.');
   sceneAction(world, a, { type: 'leaveScene' }, 6300);
   assert.equal(world.chat?.at(-1)?.text, 'a left the scene. Everyone became weaker.');
-  assert.throws(() => sceneAction(world, a, { type: 'leaveScene' }, 6400));
+  assert.throws(() => {
+    return sceneAction(world, a, { type: 'leaveScene' }, 6400);
+  });
   assert.equal(world.chat?.length, 6);
   b.hitpoints = 0;
   a.x = LOBBY_PORTAL.x;
   a.y = LOBBY_PORTAL.y - 15;
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 6500);
   assert.equal(world.chat?.at(-1)?.text, 'b left the scene. Everyone became weaker.');
-  assert(world.chat?.every((m) => m.name === 'System' && m.playerId === ''));
-  assert(world.chat?.every((m) => m.excludedPlayerId === m.text[0]));
+  assert(
+    world.chat?.every((m) => {
+      return m.name === 'System' && m.playerId === '';
+    }),
+  );
+  assert(
+    world.chat?.every((m) => {
+      return m.excludedPlayerId === m.text[0];
+    }),
+  );
 });
 
 test('players can join and rejoin an unfinished scene, but not after return portals open', async () => {
   const a = hero('a');
   const world: SceneWorld = { players: new Map([[a.id, a]]) };
-  assert.throws(() => sceneAction(world, a, { type: 'joinScene' }, 0));
+  assert.throws(() => {
+    return sceneAction(world, a, { type: 'joinScene' }, 0);
+  });
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 0);
-  assert.throws(() => sceneAction(world, a, { type: 'joinScene' }, 0));
+  assert.throws(() => {
+    return sceneAction(world, a, { type: 'joinScene' }, 0);
+  });
   sceneAction(world, a, { type: 'ready', ready: true }, 0);
-  assert.throws(() => sceneAction(world, a, { type: 'joinScene' }, 1000));
+  assert.throws(() => {
+    return sceneAction(world, a, { type: 'joinScene' }, 1000);
+  });
   tickScene(world, 5000, 0);
   const scene = world.scene!;
   const b = hero('late');
   world.players.set(b.id, b);
   b.x = 10;
-  assert.throws(() => sceneAction(world, b, { type: 'joinScene' }, 6000));
+  assert.throws(() => {
+    return sceneAction(world, b, { type: 'joinScene' }, 6000);
+  });
   b.x = LOBBY_PORTAL.x;
   sceneAction(world, b, { type: 'joinScene' }, 6000);
   assert.equal(b.scene, 'forest');
@@ -76,7 +104,9 @@ test('players can join and rejoin an unfinished scene, but not after return port
   assert.equal(b.y, FOREST_PORTAL.y);
   assert.equal(world.scene, scene);
   assert.equal(scene.endsAt, 125000);
-  assert.throws(() => sceneAction(world, b, { type: 'joinScene' }, 6001));
+  assert.throws(() => {
+    return sceneAction(world, b, { type: 'joinScene' }, 6001);
+  });
   sceneAction(world, a, { type: 'leaveScene' }, 7000);
   sceneAction(world, b, { type: 'leaveScene' }, 7000);
   assert.equal(world.scene, scene, 'unfinished scenes stay joinable when the village is occupied');
@@ -87,7 +117,9 @@ test('players can join and rejoin an unfinished scene, but not after return port
   scene.portals = [{ x: a.x, y: a.y }];
   b.x = LOBBY_PORTAL.x;
   b.y = LOBBY_PORTAL.y;
-  assert.throws(() => sceneAction(world, b, { type: 'joinScene' }, 9000));
+  assert.throws(() => {
+    return sceneAction(world, b, { type: 'joinScene' }, 9000);
+  });
   sceneAction(world, a, { type: 'returnLobby' }, 9000);
   assert.equal(world.scene, undefined);
   sceneAction(world, b, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 10000);
@@ -99,21 +131,33 @@ test('players can join and rejoin an unfinished scene, but not after return port
 test('every scene exit restores all classes and injured or dead companions to their maximum stats', async () => {
   for (const exit of ['portal', 'death', 'leave'] as const) {
     for (const bearHealth of [0, 7]) {
-      const players = CLASS_IDS.map((classId) => ({ ...hero(classId), classId }));
-      const world: SceneWorld = { players: new Map(players.map((p) => [p.id, p])) };
+      const players = CLASS_IDS.map((classId) => {
+        return { ...hero(classId), classId };
+      });
+      const world: SceneWorld = {
+        players: new Map(
+          players.map((p) => {
+            return [p.id, p];
+          }),
+        ),
+      };
       sceneAction(
         world,
         players[0],
         { type: 'createScene', scene: 'Forest', difficulty: 'Easy' },
         10000,
       );
-      for (const player of players)
+      for (const player of players) {
         sceneAction(world, player, { type: 'ready', ready: true }, 10000);
+      }
+
       tickScene(world, 15000, 0);
       const scene = world.scene!;
       if (exit === 'portal') {
         scene.phase = 'ended';
-        scene.portals = players.map((p) => ({ x: p.x, y: p.y }));
+        scene.portals = players.map((p) => {
+          return { x: p.x, y: p.y };
+        });
       }
 
       for (const player of players) {

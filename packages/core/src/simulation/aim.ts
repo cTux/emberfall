@@ -14,7 +14,10 @@ export function smoothAttackAngle(
   dt: number,
   smoothingSeconds = ATTACK_DEFINITIONS.slash.aimSmoothingSeconds,
 ) {
-  if (current === undefined) return target;
+  if (current === undefined) {
+    return target;
+  }
+
   const difference = Math.atan2(Math.sin(target - current), Math.cos(target - current));
   const angle = current + difference * (1 - Math.exp(-Math.max(0, dt) / smoothingSeconds));
 
@@ -27,12 +30,12 @@ export function nearestEnemyAngle(
   fallback = 0,
 ) {
   const closest = enemies
-    .filter((e) => e.hitpoints > 0)
-    .reduce<Enemy | undefined>(
-      (best, enemy) =>
-        !best || forestDistance(enemy, player) < forestDistance(best, player) ? enemy : best,
-      undefined,
-    );
+    .filter((e) => {
+      return e.hitpoints > 0;
+    })
+    .reduce<Enemy | undefined>((best, enemy) => {
+      return !best || forestDistance(enemy, player) < forestDistance(best, player) ? enemy : best;
+    }, undefined);
 
   return closest
     ? Math.atan2(

@@ -4,7 +4,9 @@ test('DOT Speed gear equips, shows its bonus and survives reload', async ({ page
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.backpack = [
     {
@@ -23,7 +25,11 @@ test('DOT Speed gear equips, shows its bonus and survives reload', async ({ page
   await expect(page.getByRole('tooltip').first()).not.toContainText('Bonus');
   await expect(page.getByRole('tooltip').first()).toContainText('+2%');
   await item.click({ button: 'right' });
-  await expect.poll(() => player.equipmentItems?.weapon?.stats?.dotSpeed).toBe(2);
+  await expect
+    .poll(() => {
+      return player.equipmentItems?.weapon?.stats?.dotSpeed;
+    })
+    .toBe(2);
   await inventory.getByRole('tab', { name: 'Stats', exact: true }).click();
   await expect(inventory).toContainText('DOT Speed');
   await expect(inventory).toContainText('2%');

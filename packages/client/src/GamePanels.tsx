@@ -9,19 +9,41 @@ import { LeavePanel, PortalPanel } from './WorldPanels';
 import type { Preferences } from './preferences';
 import type { GraphicsSettings } from './graphics';
 
-const Talents = lazy(() => import('./Talents').then((module) => ({ default: module.Talents })));
-const Tactics = lazy(() => import('./Tactics').then((module) => ({ default: module.Tactics })));
-const Equipment = lazy(() =>
-  import('./equipment-view').then((module) => ({ default: module.Equipment })),
-);
-const Trading = lazy(() =>
-  import('./equipment-view').then((module) => ({ default: module.Trading })),
-);
-const Storehouse = lazy(() =>
-  import('./Storehouse').then((module) => ({ default: module.Storehouse })),
-);
-const Codex = lazy(() => import('./Codex').then((module) => ({ default: module.Codex })));
-const Settings = lazy(() => import('./Settings').then((module) => ({ default: module.Settings })));
+const Talents = lazy(() => {
+  return import('./Talents').then((module) => {
+    return { default: module.Talents };
+  });
+});
+const Tactics = lazy(() => {
+  return import('./Tactics').then((module) => {
+    return { default: module.Tactics };
+  });
+});
+const Equipment = lazy(() => {
+  return import('./equipment-view').then((module) => {
+    return { default: module.Equipment };
+  });
+});
+const Trading = lazy(() => {
+  return import('./equipment-view').then((module) => {
+    return { default: module.Trading };
+  });
+});
+const Storehouse = lazy(() => {
+  return import('./Storehouse').then((module) => {
+    return { default: module.Storehouse };
+  });
+});
+const Codex = lazy(() => {
+  return import('./Codex').then((module) => {
+    return { default: module.Codex };
+  });
+});
+const Settings = lazy(() => {
+  return import('./Settings').then((module) => {
+    return { default: module.Settings };
+  });
+});
 
 export function GamePanels({
   menu,

@@ -39,17 +39,22 @@ export function drawVillageLighting(
         light.x - light.radius > cameraX + viewWidth ||
         light.y + light.radius < cameraY ||
         light.y - light.radius > cameraY + viewHeight
-      )
+      ) {
         continue;
+      }
+
       const texture = torchTextures[i];
-      if (!texture) continue;
+      if (!texture) {
+        continue;
+      }
+
       const movingLight = lightTexture(
         light,
         [
           ...dynamic,
-          ...visibleScenery.filter(
-            (object) => object.frames || object.id.startsWith('tree:') || object.kind,
-          ),
+          ...visibleScenery.filter((object) => {
+            return object.frames || object.id.startsWith('tree:') || object.kind;
+          }),
         ],
         quality.shadows,
         texture,

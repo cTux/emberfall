@@ -70,48 +70,50 @@ export function ClassCard({
               ['Weapon', weapon],
               ['Spell', spell],
             ] as const
-          ).map(([label, item]) => (
-            <Box key={label} sx={{ minWidth: 0, textAlign: 'center' }}>
-              <Tooltip
-                arrow
-                describeChild
-                enterTouchDelay={0}
-                title={
-                  <Stack spacing={0.5}>
-                    <Typography sx={{ fontWeight: 700 }}>{item.name}</Typography>
-                    <Typography variant='caption'>{item.description}</Typography>
-                  </Stack>
-                }
-              >
-                <ButtonBase
-                  aria-label={`${label === 'Weapon' ? 'Starting weapon' : 'Base spell'} for ${title}: ${item.name}`}
-                  sx={{
-                    width: '100%',
-                    aspectRatio: '1',
-                    border: 1,
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                    bgcolor: 'background.paper',
-                    '&:hover': { borderColor: 'primary.main' },
-                    '& img': {
-                      width: { xs: 22, sm: 28 },
-                      height: { xs: 22, sm: 28 },
-                      objectFit: 'contain',
-                      imageRendering: 'pixelated',
-                    },
-                  }}
+          ).map(([label, item]) => {
+            return (
+              <Box key={label} sx={{ minWidth: 0, textAlign: 'center' }}>
+                <Tooltip
+                  arrow
+                  describeChild
+                  enterTouchDelay={0}
+                  title={
+                    <Stack spacing={0.5}>
+                      <Typography sx={{ fontWeight: 700 }}>{item.name}</Typography>
+                      <Typography variant='caption'>{item.description}</Typography>
+                    </Stack>
+                  }
                 >
-                  {item.icon}
-                </ButtonBase>
-              </Tooltip>
-              <Typography
-                component='span'
-                sx={{ display: 'block', fontSize: 11, color: 'text.secondary', mt: 0.25 }}
-              >
-                {label}
-              </Typography>
-            </Box>
-          ))}
+                  <ButtonBase
+                    aria-label={`${label === 'Weapon' ? 'Starting weapon' : 'Base spell'} for ${title}: ${item.name}`}
+                    sx={{
+                      width: '100%',
+                      aspectRatio: '1',
+                      border: 1,
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      bgcolor: 'background.paper',
+                      '&:hover': { borderColor: 'primary.main' },
+                      '& img': {
+                        width: { xs: 22, sm: 28 },
+                        height: { xs: 22, sm: 28 },
+                        objectFit: 'contain',
+                        imageRendering: 'pixelated',
+                      },
+                    }}
+                  >
+                    {item.icon}
+                  </ButtonBase>
+                </Tooltip>
+                <Typography
+                  component='span'
+                  sx={{ display: 'block', fontSize: 11, color: 'text.secondary', mt: 0.25 }}
+                >
+                  {label}
+                </Typography>
+              </Box>
+            );
+          })}
         </Box>
         <Box
           component='dl'
@@ -132,16 +134,18 @@ export function ClassCard({
               ['HP', stats.maxHitpoints],
               ['Power', stats.power],
             ] as const
-          ).map(([label, value]) => (
-            <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 0.5 }}>
-              <Box component='dt' sx={{ color: 'text.secondary' }}>
-                {label}
+          ).map(([label, value]) => {
+            return (
+              <Box key={label} sx={{ display: 'flex', justifyContent: 'space-between', gap: 0.5 }}>
+                <Box component='dt' sx={{ color: 'text.secondary' }}>
+                  {label}
+                </Box>
+                <Box component='dd' sx={{ m: 0 }}>
+                  {Math.round(value)}
+                </Box>
               </Box>
-              <Box component='dd' sx={{ m: 0 }}>
-                {Math.round(value)}
-              </Box>
-            </Box>
-          ))}
+            );
+          })}
         </Box>
         <Button
           fullWidth

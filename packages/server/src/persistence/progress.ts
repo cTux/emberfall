@@ -14,14 +14,18 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
     validateClassEquipment,
     syncEquipmentVitals,
   } = context.rules;
-  const CLASS_IDS = context.registries.classes.values().map((player) => player.id);
+  const CLASS_IDS = context.registries.classes.values().map((player) => {
+    return player.id;
+  });
   const INITIAL_PROGRESS = context.registries.settings.require('initialProgress')
     .value as CharacterProgress;
-  const freshProgress = (classId?: ClassId): CharacterProgress => ({
-    ...structuredClone(INITIAL_PROGRESS),
-    storages: freshStorages(),
-    ...(classId ? { equipment: starterEquipment(classId) } : {}),
-  });
+  const freshProgress = (classId?: ClassId): CharacterProgress => {
+    return {
+      ...structuredClone(INITIAL_PROGRESS),
+      storages: freshStorages(),
+      ...(classId ? { equipment: starterEquipment(classId) } : {}),
+    };
+  };
 
   function classProgress(value: unknown, classId: ClassId): CharacterProgress {
     const progress = progressSchema.parse(value);
@@ -43,46 +47,64 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
 
   function decodeProgress(raw: string) {
     const data = JSON.parse(raw);
-    if (data.classes)
+    if (data.classes) {
       for (const id of Object.keys(data.classes)) {
-        if (!context.registries.classes.has(id))
+        if (!context.registries.classes.has(id)) {
           throw new Error(
             `Save contains unknown class '${id}'; load its mod before opening this save`,
           );
+        }
       }
+    }
 
-    if (data.formatVersion !== undefined && data.formatVersion !== 1 && data.formatVersion !== 2)
+    if (data.formatVersion !== undefined && data.formatVersion !== 1 && data.formatVersion !== 2) {
       throw new Error('Unsupported save format');
+    }
+
     const classId: ClassId = data.classes ? classSchema.parse(data.classId) : 'warrior';
     const classes = Object.fromEntries(
-      CLASS_IDS.map((id) => [
-        id,
-        classProgress(
-          data.classes?.[id] ?? (id === 'warrior' && !data.classes ? data : freshProgress(id)),
+      CLASS_IDS.map((id) => {
+        return [
           id,
-        ),
-      ]),
+          classProgress(
+            data.classes?.[id] ?? (id === 'warrior' && !data.classes ? data : freshProgress(id)),
+            id,
+          ),
+        ];
+      }),
     ) as Record<ClassId, CharacterProgress>;
     let storehouse;
-    if (data.formatVersion === 2) storehouse = storehouseSchema.parse(data.storehouse);
-    else {
+    if (data.formatVersion === 2) {
+      storehouse = storehouseSchema.parse(data.storehouse);
+    } else {
       storehouse = { coins: 0, storages: freshStorages() };
-      const order = [classId, ...CLASS_IDS.filter((id) => id !== classId)];
+      const order = [
+        classId,
+        ...CLASS_IDS.filter((id) => {
+          return id !== classId;
+        }),
+      ];
       for (const id of order) {
         const progress = classes[id];
         storehouse.coins += progress.coins ?? 0;
         for (const [tab, storage] of progress.storages!.entries()) {
           const destination = storehouse.storages[tab];
           const defaultName = `Storage ${tab + 1}`;
-          if (destination.name === defaultName && storage.name !== defaultName)
+          if (destination.name === defaultName && storage.name !== defaultName) {
             destination.name = storage.name;
+          }
+
           for (const item of storage.items) {
             const stacks =
               Object.hasOwn(CONSUMABLES, item.itemId) &&
-              destination.items.some((entry) => entry.itemId === item.itemId);
-            if (destination.items.length < STORAGE_SLOTS || stacks)
+              destination.items.some((entry) => {
+                return entry.itemId === item.itemId;
+              });
+            if (destination.items.length < STORAGE_SLOTS || stacks) {
               addItem(destination.items, item, STORAGE_SLOTS);
-            else addItem(progress.backpack!, item, Number.MAX_SAFE_INTEGER);
+            } else {
+              addItem(progress.backpack!, item, Number.MAX_SAFE_INTEGER);
+            }
           }
         }
       }

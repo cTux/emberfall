@@ -20,7 +20,9 @@ test('learning Pack Howl enlarges Bear without casting and shows the permanent b
   await page.getByLabel('Your adventurer name').fill('Pack Howl');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size === 1)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size === 1;
+  })!;
   const player = [...world.players.values()][0];
   Object.assign(player, {
     classId: 'druid',
@@ -30,13 +32,25 @@ test('learning Pack Howl enlarges Bear without casting and shows the permanent b
     talentSlots: [null, null, null, null],
     autoAttack: false,
   });
-  await expect.poll(() => player.bear?.size).toBe(48);
+  await expect
+    .poll(() => {
+      return player.bear?.size;
+    })
+    .toBe(48);
   const baseHealth = player.bear!.maxHitpoints;
   await page.waitForTimeout(1500); // Let scene artwork finish loading before the comparison capture.
   await page.screenshot({ path: 'test-results/pack-howl-before.png' });
   learnTalent(player, talentNodeId('druid', 1, 3));
-  await expect.poll(() => player.bear?.size).toBe(96);
-  await expect.poll(() => player.bear?.maxHitpoints).toBe(baseHealth * 1.3);
+  await expect
+    .poll(() => {
+      return player.bear?.size;
+    })
+    .toBe(96);
+  await expect
+    .poll(() => {
+      return player.bear?.maxHitpoints;
+    })
+    .toBe(baseHealth * 1.3);
   expect(player.bear!.range).toBe(97.5);
   await page.waitForTimeout(300); // Allow the confirmed snapshot to reach the renderer.
   await page.screenshot({ path: 'test-results/pack-howl-learned.png' });
@@ -55,7 +69,9 @@ test('all class columns, generated icons and confirmed cast effects render in th
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Talent artwork');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((entry) => {
+    return entry.players.size;
+  })!;
   const player = [...world.players.values()][0];
   for (const classId of CLASS_IDS) {
     Object.assign(player, {
@@ -68,31 +84,39 @@ test('all class columns, generated icons and confirmed cast effects render in th
       x: TRAINING_ZONES[0].x,
       y: TRAINING_ZONES[0].y - 15,
     });
-    for (const node of TALENT_TREE.filter(
-      (node) => node.classId === classId && node.kind === 'ability',
-    ))
+    for (const node of TALENT_TREE.filter((node) => {
+      return node.classId === classId && node.kind === 'ability';
+    })) {
       learnTalent(player, node.id);
+    }
+
     await page.getByRole('button', { name: 'Talents' }).click();
     const tree = page.getByRole('region', { name: 'Talents', exact: true });
-    for (const column of TALENT_COLUMNS[classId])
+    for (const column of TALENT_COLUMNS[classId]) {
       await expect(tree.getByText(column, { exact: true })).toBeVisible();
+    }
+
     await expect(tree.locator('[data-talent-node]')).toHaveCount(30);
-    for (const node of TALENT_TREE.filter((node) => node.classId === classId)) {
+    for (const node of TALENT_TREE.filter((node) => {
+      return node.classId === classId;
+    })) {
       const icon = tree.locator(`[data-talent-node="${node.id}"] > div`).first();
       await expect(icon).toHaveCSS('outline-style', node.kind === 'ability' ? 'solid' : 'none');
     }
 
     // The last authored row is taller than the preceding rows, not a 229px cell.
     const lastIcon = tree.locator(`[data-talent-node="v2:${classId}:2:9"] span[aria-hidden]`);
-    const size = await lastIcon.evaluate((element) => getComputedStyle(element).backgroundSize);
+    const size = await lastIcon.evaluate((element) => {
+      return getComputedStyle(element).backgroundSize;
+    });
     expect(Number.parseFloat(size.split(' ')[1])).toBeLessThan(550);
     await page.mouse.move(0, 0);
     await page.screenshot({ path: `test-results/talents-${classId}.png` });
     await page.keyboard.press('n');
     for (let column = 0; column < 3; column++) {
-      const node = TALENT_TREE.find(
-        (node) => node.classId === classId && node.column === column && node.row === 1,
-      )!;
+      const node = TALENT_TREE.find((node) => {
+        return node.classId === classId && node.column === column && node.row === 1;
+      })!;
       equipTalent(player, 0, node.id);
       player.talentCooldowns = {};
       await expect(
@@ -102,14 +126,13 @@ test('all class columns, generated icons and confirmed cast effects render in th
       const before = world.training?.sequence ?? 0;
       await page.keyboard.press('1');
       await expect
-        .poll(() =>
-          world.training?.explosions?.some(
-            (effect) =>
-              effect.id > before &&
-              effect.talentClass === classId &&
-              effect.talentColumn === column,
-          ),
-        )
+        .poll(() => {
+          return world.training?.explosions?.some((effect) => {
+            return (
+              effect.id > before && effect.talentClass === classId && effect.talentColumn === column
+            );
+          });
+        })
         .toBe(true);
       await page.screenshot({ path: `test-results/talent-cast-${classId}-${column}.png` });
     }

@@ -15,7 +15,10 @@ const lootSprites = new Map<LootDrop['kind'], HTMLCanvasElement>();
 
 function lootSprite(kind: LootDrop['kind']) {
   let sprite = lootSprites.get(kind);
-  if (sprite) return sprite;
+  if (sprite) {
+    return sprite;
+  }
+
   sprite = document.createElement('canvas');
   sprite.width = sprite.height = 40;
   const ctx = sprite.getContext('2d')!;
@@ -47,15 +50,22 @@ export function drawLootAndBlood(
   near: (x: number, y: number) => { x: number; y: number },
   view: { x: number; y: number; width: number; height: number },
 ) {
-  const visible = (p: { x: number; y: number }) =>
-    p.x >= view.x - 40 &&
-    p.x <= view.x + view.width + 40 &&
-    p.y >= view.y - 40 &&
-    p.y <= view.y + view.height + 40;
+  const visible = (p: { x: number; y: number }) => {
+    return (
+      p.x >= view.x - 40 &&
+      p.x <= view.x + view.width + 40 &&
+      p.y >= view.y - 40 &&
+      p.y <= view.y + view.height + 40
+    );
+  };
+
   ctx.save();
   for (const drop of scene.drops ?? []) {
     const p = near(drop.x, drop.y + 15);
-    if (!visible(p)) continue;
+    if (!visible(p)) {
+      continue;
+    }
+
     const age = Math.max(0, now - drop.at);
     const jump = Math.abs(Math.sin(age / 190 + drop.id * 0.7)) * (4 + 7 * Math.exp(-age / 650));
     ctx.fillStyle = '#06181080';
@@ -70,10 +80,12 @@ export function drawLootAndBlood(
       ctx.fillStyle = beam;
       ctx.fillRect(p.x - 3, p.y - 36, 6, 36);
       const gear = GEAR_DEFINITIONS[drop.itemId ?? ''];
-      const slot = EQUIPMENT_SLOTS.find((slot) => SLOT_GEAR_TYPES[slot].includes(gear?.gearType));
+      const slot = EQUIPMENT_SLOTS.find((slot) => {
+        return SLOT_GEAR_TYPES[slot].includes(gear?.gearType);
+      });
       const icon = loadArt(itemArtName(drop.itemId ?? '') ?? equipmentSlotArt(slot ?? 'amulet'));
       drawArt(ctx, icon, 0, 0, p.x - 10, p.y - 18 - jump, 20, 20);
-    } else if (pickupArt.naturalWidth)
+    } else if (pickupArt.naturalWidth) {
       drawArt(
         ctx,
         pickupArt,
@@ -84,15 +96,23 @@ export function drawLootAndBlood(
         20,
         20,
       );
-    else ctx.drawImage(lootSprite(drop.kind), p.x - 20, p.y - 24 - jump);
+    } else {
+      ctx.drawImage(lootSprite(drop.kind), p.x - 20, p.y - 24 - jump);
+    }
   }
 
   // Bound bursts independently of ambient-particle settings, so hits remain readable on Low.
   for (const hit of scene.damage.slice(-80)) {
     const age = (now - hit.at) / 1000;
-    if (age < 0 || age > 0.6) continue;
+    if (age < 0 || age > 0.6) {
+      continue;
+    }
+
     const p = near(hit.x, hit.y);
-    if (!visible(p)) continue;
+    if (!visible(p)) {
+      continue;
+    }
+
     ctx.globalAlpha = 1 - age / 0.6;
     for (let i = 0; i < 12; i++) {
       const angle = i * 2.399963 + hit.id;

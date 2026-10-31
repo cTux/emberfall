@@ -51,29 +51,43 @@ export function Equipment({
 
     return {
       id,
-      onUnequip: gear ? () => send({ type: 'unequip', slot: id }) : undefined,
+      onUnequip: gear
+        ? () => {
+            return send({ type: 'unequip', slot: id });
+          }
+        : undefined,
       drop: {
         accepts: ['backpack'],
         onDrop: (_, itemId) => {
-          const item = player.backpack?.find((item) => item.id === itemId);
+          const item = player.backpack?.find((item) => {
+            return item.id === itemId;
+          });
           const definition = item && GEAR_DEFINITIONS[item.itemId];
-          if (definition && canEquip(id, definition, classId))
+          if (definition && canEquip(id, definition, classId)) {
             send({ type: 'useItem', id: itemId });
+          }
         },
       },
       label: SLOT_LABELS[id],
       position: SLOT_POSITIONS[id],
       accepts: SLOT_GEAR_TYPES[id]
-        .filter(
-          (type) =>
+        .filter((type) => {
+          return (
             !game.registries.slots.require(id).classRestricted ||
-            CLASS_GEAR_TYPES[classId].includes(type),
-        )
-        .map((type) => GEAR_LABELS[type])
+            CLASS_GEAR_TYPES[classId].includes(type)
+          );
+        })
+        .map((type) => {
+          return GEAR_LABELS[type];
+        })
         .join(', '),
       fallback: (
         <img
-          src={slotViews.find((slot) => slot.id === id)!.icon}
+          src={
+            slotViews.find((slot) => {
+              return slot.id === id;
+            })!.icon
+          }
           alt=''
           className='equipment-slot-placeholder'
           style={{ opacity: 0.6 }}
@@ -126,7 +140,9 @@ export function Equipment({
         coins={player.coins ?? 0}
         action='Use'
         inventory='backpack'
-        onUse={(id) => send({ type: 'useItem', id })}
+        onUse={(id) => {
+          return send({ type: 'useItem', id });
+        }}
       />
     </Box>
   );

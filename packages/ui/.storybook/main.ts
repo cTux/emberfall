@@ -6,8 +6,8 @@ const config: StorybookConfig = {
   addons: ['@storybook/addon-docs', '@storybook/addon-a11y'],
   framework: '@storybook/react-vite',
   staticDirs: ['../public'],
-  viteFinal: (config) =>
-    mergeConfig(config, {
+  viteFinal: (config) => {
+    return mergeConfig(config, {
       build: {
         // Storybook's docs and accessibility tooling exceed Vite's app default.
         chunkSizeWarningLimit: 1500,
@@ -16,6 +16,7 @@ const config: StorybookConfig = {
           checks: { moduleLevelDirective: false },
         },
       },
-    }),
+    });
+  },
 };
 export default config;

@@ -50,26 +50,36 @@ export class PresentationWorld {
       const local = confirmed.id === playerId;
       const player = local && predicted ? { ...predicted, bear: confirmed.bear } : confirmed;
       put(`player:${player.id}`, 'player', player, order, local);
-      if (player.bear) put(`companion:${player.bear.id}`, 'companion', player.bear, order);
-    });
-    for (const scene of [world?.scene, world?.training])
-      if (scene) {
-        for (const key of SCENE_COLLECTIONS)
-          scene[key]?.forEach((value, order) =>
-            put(`${scene.id}:${key}:${value.id}`, key, value, order),
-          );
+      if (player.bear) {
+        put(`companion:${player.bear.id}`, 'companion', player.bear, order);
       }
+    });
+    for (const scene of [world?.scene, world?.training]) {
+      if (scene) {
+        for (const key of SCENE_COLLECTIONS) {
+          scene[key]?.forEach((value, order) => {
+            return put(`${scene.id}:${key}:${value.id}`, key, value, order);
+          });
+        }
+      }
+    }
 
-    for (const [id, entity] of this.index)
+    for (const [id, entity] of this.index) {
       if (!present.has(id)) {
         this.ecs.remove(entity);
         this.index.delete(id);
       }
+    }
 
-    if (world)
+    if (world) {
       world.players = [...this.players]
-        .sort((a, b) => a.order - b.order)
-        .map((entity) => entity.player);
+        .sort((a, b) => {
+          return a.order - b.order;
+        })
+        .map((entity) => {
+          return entity.player;
+        });
+    }
 
     return this.localPlayers.first?.player;
   }

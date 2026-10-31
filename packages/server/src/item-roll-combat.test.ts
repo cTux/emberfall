@@ -18,7 +18,9 @@ import {
 import { hero, equip, arena } from './item-rolls.fixture.ts';
 
 test('movement, range and melee area bonuses affect actual shared movement and targeting', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const player = hero();
   equip(player, 'boots', 'loot-boots', ItemStat.MovementSpeed);
   const plain = hero();
@@ -44,16 +46,28 @@ test('legendary weapon and off-hand effects stack; extra warrior attacks indepen
   const scene = arena();
   const enemy: Enemy = { id: 1, x: 2420, y: 1280, hitpoints: 1000, angle: 0 };
   const rolls = [0, 0.5, 0.5, 0, 0.5, 0.5];
-  t.mock.method(Math, 'random', () => rolls.shift() ?? 0.5);
+  t.mock.method(Math, 'random', () => {
+    return rolls.shift() ?? 0.5;
+  });
   hitWithWeapon(scene, enemy, player, 1000, 'bleed');
   assert.equal(scene.damage.length, 3);
-  assert(scene.damage.some((hit) => hit.critical));
-  assert(scene.damage.some((hit) => !hit.critical));
+  assert(
+    scene.damage.some((hit) => {
+      return hit.critical;
+    }),
+  );
+  assert(
+    scene.damage.some((hit) => {
+      return !hit.critical;
+    }),
+  );
   assert.equal(enemy.debuffs?.length, 1);
 });
 
 test('hunter base arrows stop after four hits; two legendary pierce bonuses allow six across the seam', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   for (const bonus of [false, true]) {
     const player = hero('ranger');
     player.x = FOREST.width - 100;
@@ -63,13 +77,15 @@ test('hunter base arrows stop after four hits; two legendary pierce bonuses allo
     }
 
     const scene = arena(false);
-    scene.enemies = Array.from({ length: 7 }, (_, index) => ({
-      id: index + 1,
-      x: (player.x + 40 + index * 45) % FOREST.width,
-      y: player.y + 12,
-      hitpoints: 100,
-      angle: 0,
-    }));
+    scene.enemies = Array.from({ length: 7 }, (_, index) => {
+      return {
+        id: index + 1,
+        x: (player.x + 40 + index * 45) % FOREST.width,
+        y: player.y + 12,
+        hitpoints: 100,
+        angle: 0,
+      };
+    });
     scene.playerShots = [
       {
         id: 1,

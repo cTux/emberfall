@@ -50,16 +50,28 @@ export function villageBackground(graphics: GraphicsSettings) {
       wardrobeArt,
       innkeeperArt,
       workstationArt,
-    ].some(
-      (image) => !image.complete || !image.naturalWidth || image.dataset.artReady !== 'true',
-    ) ||
+    ].some((image) => {
+      return !image.complete || !image.naturalWidth || image.dataset.artReady !== 'true';
+    }) ||
     !terrainArt.complete ||
     !terrainArt.naturalWidth
-  )
+  ) {
     return undefined;
-  if (Object.values(villageImages).some((image) => !image.complete)) return undefined;
+  }
+
+  if (
+    Object.values(villageImages).some((image) => {
+      return !image.complete;
+    })
+  ) {
+    return undefined;
+  }
+
   const key = `${graphics.shadows}:${graphics.ambientOcclusion}`;
-  if (cached?.key === key) return cached;
+  if (cached?.key === key) {
+    return cached;
+  }
+
   const background = cached?.background ?? document.createElement('canvas');
   if (background.width !== ARENA.width) {
     background.width = ARENA.width;
@@ -83,7 +95,7 @@ export function villageBackground(graphics: GraphicsSettings) {
       let row = Math.floor((y - radius) / ARENA.height);
       row <= Math.floor((y + radius) / ARENA.height);
       row++
-    )
+    ) {
       for (
         let col = Math.floor((x - radius) / ARENA.width);
         col <= Math.floor((x + radius) / ARENA.width);
@@ -94,6 +106,7 @@ export function villageBackground(graphics: GraphicsSettings) {
         paint();
         ctx.restore();
       }
+    }
   }
 
   // A fixed seed keeps the decorative clearing identical for every client.
@@ -122,12 +135,16 @@ export function villageBackground(graphics: GraphicsSettings) {
     const x = random() * ARENA.width;
     const y = random() * ARENA.height;
     const width = 1 + random() * 3;
-    wrapped(x, y, width, () => ctx.fillRect(x, y, width, 1));
+    wrapped(x, y, width, () => {
+      return ctx.fillRect(x, y, width, 1);
+    });
   }
 
   drawVillagePaths(ctx, floor);
   const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
-  for (const object of scenery.filter((object) => !/^(tree|plant|rock):/.test(object.id))) {
+  for (const object of scenery.filter((object) => {
+    return !/^(tree|plant|rock):/.test(object.id);
+  })) {
     // Only contact shading is static; celestial shadows follow the live orbit.
     wrapped(object.x, object.y, object.width + object.height, () => {
       if (graphics.ambientOcclusion) {
@@ -145,13 +162,15 @@ export function villageBackground(graphics: GraphicsSettings) {
     });
   }
 
-  const torchTextures = TORCH_LIGHTS.map((light) =>
-    lightTexture(
+  const torchTextures = TORCH_LIGHTS.map((light) => {
+    return lightTexture(
       light,
-      scenery.filter((object) => !object.frames && !/^(tree|plant|rock):/.test(object.id)),
+      scenery.filter((object) => {
+        return !object.frames && !/^(tree|plant|rock):/.test(object.id);
+      }),
       graphics.shadows,
-    ),
-  );
+    );
+  });
   const texture = background as HTMLCanvasElement & { textureRevision?: number };
   texture.textureRevision = (texture.textureRevision ?? 0) + 1;
   cached = { key, background, scenery, torchTextures };
@@ -168,7 +187,7 @@ export function drawVillageBackground(
   width: number,
   height: number,
 ) {
-  for (let row = Math.floor(y / ARENA.height); row < (y + height) / ARENA.height; row++)
+  for (let row = Math.floor(y / ARENA.height); row < (y + height) / ARENA.height; row++) {
     for (let col = Math.floor(x / ARENA.width); col < (x + width) / ARENA.width; col++) {
       const left = Math.max(x, col * ARENA.width);
       const top = Math.max(y, row * ARENA.height);
@@ -186,4 +205,5 @@ export function drawVillageBackground(
         h,
       );
     }
+  }
 }

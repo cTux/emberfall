@@ -34,7 +34,10 @@ export class PlayerOcclusion {
     const runs = playerCutoutRuns(mask, width, height);
     if (runs !== this.runs) {
       this.cutout.clear();
-      for (const [x, y, width] of runs) this.cutout.rect(x, y, width, 1);
+      for (const [x, y, width] of runs) {
+        this.cutout.rect(x, y, width, 1);
+      }
+
       this.cutout.fill(0xffffff);
       this.runs = runs;
     }
@@ -63,8 +66,9 @@ export class PlayerOcclusion {
     if (
       this.enabled &&
       this.bounds.intersects(transformedBounds(matrix, this.spriteBounds, x, y, width, height))
-    )
+    ) {
       sprite.setMask({ mask: this.cutout, inverse: true });
+    }
   }
 
   destroy() {

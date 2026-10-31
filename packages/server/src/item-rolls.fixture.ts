@@ -12,20 +12,22 @@ import {
 
 import { freshProgress } from './characters.ts';
 
-export const hero = (classId = 'warrior', id = 'hero'): Player => ({
-  ...freshProgress(classId),
-  classId,
-  id,
-  name: id,
-  x: 2400,
-  y: 1280,
-  color: 0,
-  level: 20,
-  scene: 'forest',
-  autoTarget: false,
-  aimX: 3000,
-  aimY: 1280,
-});
+export const hero = (classId = 'warrior', id = 'hero'): Player => {
+  return {
+    ...freshProgress(classId),
+    classId,
+    id,
+    name: id,
+    x: 2400,
+    y: 1280,
+    color: 0,
+    level: 20,
+    scene: 'forest',
+    autoTarget: false,
+    aimX: 3000,
+    aimY: 1280,
+  };
+};
 
 export function instance(
   itemId: string,
@@ -35,8 +37,14 @@ export function instance(
   const stats: Record<string, number> = {};
   const pool = [stat, ...itemTypeStats[GEAR_DEFINITIONS[itemId].gearType]];
   for (const key of pool) {
-    if (Object.keys(stats).length === rarityStatCount[rarity]) break;
-    if (rarity !== Rarity.Legendary && itemStatWeight[key] < 1) continue;
+    if (Object.keys(stats).length === rarityStatCount[rarity]) {
+      break;
+    }
+
+    if (rarity !== Rarity.Legendary && itemStatWeight[key] < 1) {
+      continue;
+    }
+
     stats[key] = statValue(key, rarity);
   }
 
@@ -51,11 +59,13 @@ export function equip(player: Player, slot: string, itemId: string, stat: ItemSt
   return item;
 }
 
-export const arena = (training = true): SceneState => ({
-  ...createTrainingScene(0),
-  id: 'arena',
-  training,
-  nextSpawn: 1e9,
-  endsAt: 1e9,
-  enemies: [],
-});
+export const arena = (training = true): SceneState => {
+  return {
+    ...createTrainingScene(0),
+    id: 'arena',
+    training,
+    nextSpawn: 1e9,
+    endsAt: 1e9,
+    enemies: [],
+  };
+};

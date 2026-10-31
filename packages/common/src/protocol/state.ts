@@ -60,7 +60,9 @@ export function prepareState(source: WorldState) {
       if (typeof scalar === 'number') {
         fields |= 1 << bit;
         record[field] = scalar;
-      } else record[field] = 0;
+      } else {
+        record[field] = 0;
+      }
     });
     record.fields = fields;
     record.order = order;
@@ -69,20 +71,27 @@ export function prepareState(source: WorldState) {
   };
 
   const sceneHeader = (scene: SceneState | undefined, prefix: string) => {
-    if (!scene) return undefined;
+    if (!scene) {
+      return undefined;
+    }
+
     const header = { ...scene };
     for (const collection of collections) {
-      scene[collection]?.forEach((value, order) =>
-        put(`${prefix}:${collection}:${value.id}`, value, order),
-      );
+      scene[collection]?.forEach((value, order) => {
+        return put(`${prefix}:${collection}:${value.id}`, value, order);
+      });
       delete header[collection];
     }
 
     return header;
   };
 
-  source.players.forEach((player, order) => put(`player:${player.id}`, player, order));
-  source.npcs?.forEach((npc, order) => put(`npc:${npc.id}`, npc, order));
+  source.players.forEach((player, order) => {
+    return put(`player:${player.id}`, player, order);
+  });
+  source.npcs?.forEach((npc, order) => {
+    return put(`npc:${npc.id}`, npc, order);
+  });
   const { players: _, npcs: _npcs, scene, training, serverNow, ...header } = source;
 
   return {
@@ -108,7 +117,10 @@ export function applyState(target: SessionState, source: PreparedState) {
       target.entities.set(value.key, record);
     }
 
-    for (const field of HOT_SCALARS) record[field] = value[field];
+    for (const field of HOT_SCALARS) {
+      record[field] = value[field];
+    }
+
     record.fields = value.fields;
     record.order = value.order;
     record.payload = value.payload;
@@ -116,7 +128,11 @@ export function applyState(target: SessionState, source: PreparedState) {
 
   target.header = source.header;
   target.serverNow = source.serverNow;
-  for (const key of target.entities.keys()) if (!present.has(key)) target.entities.delete(key);
+  for (const key of target.entities.keys()) {
+    if (!present.has(key)) {
+      target.entities.delete(key);
+    }
+  }
 }
 
 export function projectState(target: SessionState, source: WorldState) {
@@ -124,27 +140,40 @@ export function projectState(target: SessionState, source: WorldState) {
 }
 
 export function materializeState(state: SessionState): WorldState | undefined {
-  if (!state.header) return undefined;
+  if (!state.header) {
+    return undefined;
+  }
+
   const world = JSON.parse(state.header) as WorldState;
   world.serverNow = state.serverNow;
   world.players = [];
-  for (const scene of [world.scene, world.training])
+  for (const scene of [world.scene, world.training]) {
     if (scene) {
-      for (const key of collections) Object.assign(scene, { [key]: [] });
+      for (const key of collections) {
+        Object.assign(scene, { [key]: [] });
+      }
     }
+  }
 
-  for (const [key, record] of [...state.entities].sort((a, b) => a[1].order - b[1].order)) {
+  for (const [key, record] of [...state.entities].sort((a, b) => {
+    return a[1].order - b[1].order;
+  })) {
     const value = JSON.parse(record.payload);
     HOT_SCALARS.forEach((field, bit) => {
-      if (record.fields & (1 << bit)) value[field] = record[field];
+      if (record.fields & (1 << bit)) {
+        value[field] = record[field];
+      }
     });
-    if (key.startsWith('player:')) world.players.push(value);
-    else if (key.startsWith('npc:')) (world.npcs ??= []).push(value);
-    else {
+    if (key.startsWith('player:')) {
+      world.players.push(value);
+    } else if (key.startsWith('npc:')) {
+      (world.npcs ??= []).push(value);
+    } else {
       const [prefix, collection] = key.split(':');
       const scene = prefix === 'scene' ? world.scene : world.training;
-      if (scene && collections.includes(collection as (typeof collections)[number]))
+      if (scene && collections.includes(collection as (typeof collections)[number])) {
         (scene[collection as (typeof collections)[number]] as unknown[]).push(value);
+      }
     }
   }
 

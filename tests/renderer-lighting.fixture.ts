@@ -8,8 +8,10 @@ export function compareLighting(pixi: PixiContext, gpu: HTMLCanvasElement) {
   mask.width = mask.height = 16;
   mask.getContext('2d')!.fillRect(0, 0, 16, 16);
   const caster = { id: 'blocker', x: 120, y: 100, width: 16, height: 16, mask };
-  const revision = (canvas: HTMLCanvasElement) =>
-    (canvas as HTMLCanvasElement & { textureRevision: number }).textureRevision;
+  const revision = (canvas: HTMLCanvasElement) => {
+    return (canvas as HTMLCanvasElement & { textureRevision: number }).textureRevision;
+  };
+
   const first = revision(lightTexture(light, [caster], true));
   const reused = revision(lightTexture(light, [caster], true));
   const translated = revision(lightTexture({ ...light, x: 150 }, [{ ...caster, x: 170 }], true));
@@ -34,9 +36,14 @@ export function compareLighting(pixi: PixiContext, gpu: HTMLCanvasElement) {
   // Linear sampling of a 4x text texture at 8x world scale introduces
   // intermediate columns on both halves of the raster grid.
   const edges = [0, 0];
-  for (let y = 0; y < 100; y++)
-    for (let x = 1; x < 220; x++)
-      if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) edges[x % 2]++;
+  for (let y = 0; y < 100; y++) {
+    for (let x = 1; x < 220; x++) {
+      if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) {
+        edges[x % 2]++;
+      }
+    }
+  }
+
   glyph.style.imageRendering = 'pixelated';
   document.body.append(glyph);
 

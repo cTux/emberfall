@@ -27,12 +27,14 @@ export const Tabbed: StoryObj<typeof meta> = {
             label='Window chapters'
             value={value}
             onChange={setValue}
-            chapters={Array.from({ length: 12 }, (_, index) => ({
-              id: `chapter-${index}`,
-              title: index === 1 ? 'Unavailable' : `Chapter ${index + 1}`,
-              disabled: index === 1,
-              content: <div style={{ height: 700 }}>Long chapter content</div>,
-            }))}
+            chapters={Array.from({ length: 12 }, (_, index) => {
+              return {
+                id: `chapter-${index}`,
+                title: index === 1 ? 'Unavailable' : `Chapter ${index + 1}`,
+                disabled: index === 1,
+                content: <div style={{ height: 700 }}>Long chapter content</div>,
+              };
+            })}
           />
         </GameWindow>
       </div>

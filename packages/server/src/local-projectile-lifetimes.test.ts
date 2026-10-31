@@ -22,10 +22,22 @@ test('prediction wraps, expires and clears on death, class/area changes and stal
     assert.equal(frame(m, current, 100).scene.playerShots!.length, 2);
     const next = structuredClone(current);
     next.serverNow = 10050;
-    if (change === 'death') next.players[0].hitpoints = 0;
-    if (change === 'class') next.players[0].classId = 'warrior';
-    if (change === 'area') next.scene!.id = 'another';
-    if (change === 'paused') next.scene!.pausedAt = 10050;
+    if (change === 'death') {
+      next.players[0].hitpoints = 0;
+    }
+
+    if (change === 'class') {
+      next.players[0].classId = 'warrior';
+    }
+
+    if (change === 'area') {
+      next.scene!.id = 'another';
+    }
+
+    if (change === 'paused') {
+      next.scene!.pausedAt = 10050;
+    }
+
     assert.equal(frame(m, next, 150).scene.playerShots!.length, 0);
   }
 });
@@ -72,7 +84,9 @@ test('a local root projectile remains visible through all confirmed bounces desp
       const confirmed = (training ? reply.training : reply.scene)!;
       const shot = confirmed.playerShots![0];
       shot.x += bounce * 20;
-      shot.hitIds = Array.from({ length: bounce }, (_, i) => i + 10);
+      shot.hitIds = Array.from({ length: bounce }, (_, i) => {
+        return i + 10;
+      });
       shot.targetId = confirmed.enemies[1].id;
       movement.render(reply, bounce * 100);
       for (let elapsed = 0; elapsed <= 60; elapsed += 20) {
@@ -87,7 +101,9 @@ test('a local root projectile remains visible through all confirmed bounces desp
         assert.deepEqual(view.playerShots[0].hitIds, shot.hitIds);
         assert(view.playerShots[0].x >= shot.x);
         assert(
-          confirmed.enemies.every((e) => e.hitpoints === 100),
+          confirmed.enemies.every((e) => {
+            return e.hitpoints === 100;
+          }),
           'presentation never damages enemies',
         );
       }
@@ -113,12 +129,16 @@ test('confirmed talent projectiles coexist with predicted basic attacks without 
   const movement = new LocalMovement('p', () => {});
   const first = frame(movement, source, 0);
   assert.equal(
-    first.scene.playerShots!.filter((shot) => shot.abilityId === 'talent:mage:1').length,
+    first.scene.playerShots!.filter((shot) => {
+      return shot.abilityId === 'talent:mage:1';
+    }).length,
     count,
   );
   const next = frame(movement, source, 50);
   assert.equal(
-    next.scene.playerShots!.filter((shot) => shot.abilityId === 'talent:mage:1').length,
+    next.scene.playerShots!.filter((shot) => {
+      return shot.abilityId === 'talent:mage:1';
+    }).length,
     count,
   );
 });

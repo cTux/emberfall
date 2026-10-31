@@ -48,8 +48,10 @@ export function WeaponActionBar({
       document.hidden ||
       (!player.scene && !inTrainingZone(player)) ||
       now - lastRequest.current < 250
-    )
+    ) {
       return;
+    }
+
     lastRequest.current = now;
     for (let slot = 0; slot < 4; slot++) {
       const node = equippedTalent(player, slot);
@@ -60,8 +62,9 @@ export function WeaponActionBar({
         isTalentLearned(player, node.id) &&
         preferences.autoCastAbilities?.includes(node.id) &&
         now >= (player.talentCooldowns?.[ability.id] ?? 0)
-      )
+      ) {
         onCast(slot, true);
+      }
     }
   }, [canAutoCast, picker, preferences, player, stats.hasWeapon, now, onCast]);
   const tileStyle = {
@@ -76,7 +79,9 @@ export function WeaponActionBar({
   return (
     <div className='action-bar'>
       <ActionBar
-        onChoose={(slot, anchor) => setPicker({ slot, anchor })}
+        onChoose={(slot, anchor) => {
+          return setPicker({ slot, anchor });
+        }}
         abilities={[0, 1, 2, 3].map((slot) => {
           const node = equippedTalent(player, slot);
           const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot);
@@ -90,13 +95,18 @@ export function WeaponActionBar({
                 remainingMs: (player.talentCooldowns?.[ability.id] ?? 0) - now,
                 autoCast:
                   preferences.autoAttack && !!preferences.autoCastAbilities?.includes(node.id),
-                onToggleAutoCast: () =>
-                  setPreferences((value) => ({
-                    ...value,
-                    autoCastAbilities: value.autoCastAbilities?.includes(node.id)
-                      ? value.autoCastAbilities.filter((id) => id !== node.id)
-                      : [...(value.autoCastAbilities ?? []), node.id],
-                  })),
+                onToggleAutoCast: () => {
+                  return setPreferences((value) => {
+                    return {
+                      ...value,
+                      autoCastAbilities: value.autoCastAbilities?.includes(node.id)
+                        ? value.autoCastAbilities.filter((id) => {
+                            return id !== node.id;
+                          })
+                        : [...(value.autoCastAbilities ?? []), node.id],
+                    };
+                  });
+                },
               }
             : undefined;
         })}
@@ -105,8 +115,11 @@ export function WeaponActionBar({
         baseAbility={
           stats.hasWeapon
             ? {
-                onToggleAutoCast: () =>
-                  setPreferences((value) => ({ ...value, autoAttack: !value.autoAttack })),
+                onToggleAutoCast: () => {
+                  return setPreferences((value) => {
+                    return { ...value, autoAttack: !value.autoAttack };
+                  });
+                },
                 name: classDetails[classId].spell,
                 description: classDetails[classId].spellDescription,
                 icon: <img src={spellSrc(classId)} alt='' draggable={false} />,
@@ -122,7 +135,9 @@ export function WeaponActionBar({
       <Menu
         anchorEl={picker?.anchor}
         open={!!picker}
-        onClose={() => setPicker(null)}
+        onClose={() => {
+          return setPicker(null);
+        }}
         slotProps={{
           list: { sx: { display: 'flex', flexWrap: 'wrap', gap: 1, p: 1, maxWidth: 300 } },
         }}
@@ -132,30 +147,39 @@ export function WeaponActionBar({
             aria-label='Clear slot'
             sx={tileStyle}
             onClick={() => {
-              if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: null });
+              if (picker) {
+                send({ type: 'equipTalent', slot: picker.slot, nodeId: null });
+              }
+
               setPicker(null);
             }}
           >
             <img src={clientAsset('/assets/action-bar/clear.png')} alt='' draggable={false} />
           </MenuItem>
         </Tooltip>
-        {TALENT_TREE.filter(
-          (node) =>
-            node.classId === classId && node.kind === 'ability' && isTalentLearned(player, node.id),
-        ).map((node) => (
-          <Tooltip key={node.id} title={node.name}>
-            <MenuItem
-              aria-label={node.name}
-              sx={tileStyle}
-              onClick={() => {
-                if (picker) send({ type: 'equipTalent', slot: picker.slot, nodeId: node.id });
-                setPicker(null);
-              }}
-            >
-              <TalentIcon classId={classId} index={node.column * 10 + node.row} />
-            </MenuItem>
-          </Tooltip>
-        ))}
+        {TALENT_TREE.filter((node) => {
+          return (
+            node.classId === classId && node.kind === 'ability' && isTalentLearned(player, node.id)
+          );
+        }).map((node) => {
+          return (
+            <Tooltip key={node.id} title={node.name}>
+              <MenuItem
+                aria-label={node.name}
+                sx={tileStyle}
+                onClick={() => {
+                  if (picker) {
+                    send({ type: 'equipTalent', slot: picker.slot, nodeId: node.id });
+                  }
+
+                  setPicker(null);
+                }}
+              >
+                <TalentIcon classId={classId} index={node.column * 10 + node.row} />
+              </MenuItem>
+            </Tooltip>
+          );
+        })}
       </Menu>
     </div>
   );

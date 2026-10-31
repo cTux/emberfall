@@ -10,7 +10,9 @@ export function drawDebuffs(
   now: number,
 ) {
   const debuffs =
-    target.debuffs?.filter((d) => d.expiresAt === undefined || d.expiresAt > now) ?? [];
+    target.debuffs?.filter((d) => {
+      return d.expiresAt === undefined || d.expiresAt > now;
+    }) ?? [];
   ctx.save();
   ctx.font = 'bold 8px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'right';
@@ -20,8 +22,14 @@ export function drawDebuffs(
   debuffs.forEach((debuff, index) => {
     const px = x + index * 14;
     const image = statusImages[debuff.kind];
-    if (image.naturalWidth) ctx.drawImage(image, px, y - 12, 12, 12);
-    if (debuff.kind === 'silence' || debuff.stacks === undefined) return;
+    if (image.naturalWidth) {
+      ctx.drawImage(image, px, y - 12, 12, 12);
+    }
+
+    if (debuff.kind === 'silence' || debuff.stacks === undefined) {
+      return;
+    }
+
     ctx.strokeStyle = '#101817';
     ctx.strokeText(String(debuff.stacks), px + 11, y - 1);
     ctx.fillStyle = '#ffffff';

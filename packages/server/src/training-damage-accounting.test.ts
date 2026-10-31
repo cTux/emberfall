@@ -30,24 +30,34 @@ test('DPS counts actual damage once, attributes ailments and Bear, and expires a
 test('roots include exactly 250 units, exclude farther targets, and work across forest edges', async () => {
   const p = { ...hero(), classId: 'druid' as const };
   const s = tickTraining(undefined, [], 10000, 0);
-  s.enemies = [250, 250.01, 249].map((distance, id) => ({
-    id,
-    x: p.x + distance,
-    y: p.y,
-    angle: 0,
-    hitpoints: 100,
-  }));
+  s.enemies = [250, 250.01, 249].map((distance, id) => {
+    return {
+      id,
+      x: p.x + distance,
+      y: p.y,
+      angle: 0,
+      hitpoints: 100,
+    };
+  });
   fireClassAttack(s, p, 10000);
   assert.deepEqual(
-    s.playerShots!.map((shot) => shot.targetId),
+    s.playerShots!.map((shot) => {
+      return shot.targetId;
+    }),
     [2],
   );
-  assert(s.enemies.every((e) => e.debuffs === undefined));
+  assert(
+    s.enemies.every((e) => {
+      return e.debuffs === undefined;
+    }),
+  );
   p.x = 5;
   s.enemies = [{ id: 4, x: FOREST.width - 245, y: p.y, angle: 0, hitpoints: 100 }];
   fireClassAttack(s, p, 10000);
   assert.deepEqual(
-    s.playerShots!.slice(-1).map((shot) => shot.targetId),
+    s.playerShots!.slice(-1).map((shot) => {
+      return shot.targetId;
+    }),
     [4],
   );
 });
@@ -90,11 +100,17 @@ test('damage totals attribute weapons, Bear, ailments and talents, expire DPS an
   assert.equal(p.damageMeter!.abilities.Overkill.damage, 3);
   assert.equal(damagePerSecond(p, 11000), p.damageMeter!.total / 5);
   assert.equal(
-    Object.values(p.damageMeter!.abilities).reduce((sum, entry) => sum + entry.damage, 0),
+    Object.values(p.damageMeter!.abilities).reduce((sum, entry) => {
+      return sum + entry.damage;
+    }, 0),
     p.damageMeter!.total,
   );
   assert.equal(damagePerSecond(p, 16000), 0);
-  assert(Object.values(p.damageMeter!.abilities).every((entry) => entry.dps === 0));
+  assert(
+    Object.values(p.damageMeter!.abilities).every((entry) => {
+      return entry.dps === 0;
+    }),
+  );
   assert.equal(p.damageMeter!.total, total + 3);
   p.classId = 'mage';
   assert.equal(damagePerSecond(p, 16001), 0);

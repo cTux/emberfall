@@ -7,17 +7,21 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Gear tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const opener = page.getByRole('button', { name: 'Inventory' });
   await expect(opener).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const dialog = page.getByRole('dialog', { name: 'Inventory', exact: true });
-  const physicalI = (key = 'ш', repeat = false) =>
-    page.evaluate(
+  const physicalI = (key = 'ш', repeat = false) => {
+    return page.evaluate(
       ({ key, repeat }) => {
         window.dispatchEvent(
           new KeyboardEvent('keydown', { code: 'KeyI', key, repeat, bubbles: true }),
@@ -25,6 +29,8 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
       },
       { key, repeat },
     );
+  };
+
   await physicalI();
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('[data-equipment-slot]')).toHaveCount(9);
@@ -53,7 +59,11 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   await page.mouse.down();
   await page.mouse.move(title.x + 135, title.y + 55, { steps: 8 });
   await page.mouse.up();
-  await expect.poll(async () => (await dialog.boundingBox())!.x).toBeGreaterThan(before.x + 50);
+  await expect
+    .poll(async () => {
+      return (await dialog.boundingBox())!.x;
+    })
+    .toBeGreaterThan(before.x + 50);
   const dragged = (await dialog.boundingBox())!;
   await physicalI();
   await expect(dialog).toBeHidden();
@@ -86,8 +96,15 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await page.keyboard.press('e');
     await expect(wardrobe).toBeVisible();
     const choice = wardrobe.getByRole('button', { name: new RegExp(`^${CLASS_LABELS[classId]}`) });
-    if (player.classId !== classId) await choice.click();
-    await expect.poll(() => player.classId).toBe(classId);
+    if (player.classId !== classId) {
+      await choice.click();
+    }
+
+    await expect
+      .poll(() => {
+        return player.classId;
+      })
+      .toBe(classId);
     expect(player.equipment).toEqual(starterEquipment(classId));
     await wardrobe.getByRole('button', { name: 'Close Wardrobe', exact: true }).click();
     await expect(wardrobe).toHaveCount(0);
@@ -129,7 +146,11 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect(stats).not.toContainText('Manual range');
     await physicalI();
     await page.keyboard.press('g');
-    await expect.poll(() => player.autoTarget).toBe(false);
+    await expect
+      .poll(() => {
+        return player.autoTarget;
+      })
+      .toBe(false);
     await physicalI();
     await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
     await expect(stats).toContainText(`Range${manualRange.toLocaleString('en')} units`);
@@ -141,14 +162,22 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     );
     await physicalI();
     await page.keyboard.press('g');
-    await expect.poll(() => player.autoTarget).toBe(true);
+    await expect
+      .poll(() => {
+        return player.autoTarget;
+      })
+      .toBe(true);
     await physicalI();
     await dialog.getByRole('tab', { name: 'Stats', exact: true }).click();
     await expect(stats).toContainText(`Range${automaticRange.toLocaleString('en')} units`);
     await dialog.getByRole('tab', { name: 'Equipment', exact: true }).click();
     await weapon.hover();
     await expect(page.locator(`[data-equipment-badge="${effect}"]`).last()).toBeVisible();
-    expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
+    expect(
+      await content.evaluate((node) => {
+        return node.scrollHeight <= node.clientHeight;
+      }),
+    ).toBe(true);
     await page.screenshot({ path: `test-results/equipment-${classId}.png` });
     await dialog.getByRole('button', { name: 'Close Inventory', exact: true }).click();
     await expect(dialog).toHaveCount(0);
@@ -158,7 +187,11 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 800 });
     await expect(dialog).toBeVisible();
-    await expect.poll(async () => (await dialog.boundingBox())!.x).toBeGreaterThanOrEqual(0);
+    await expect
+      .poll(async () => {
+        return (await dialog.boundingBox())!.x;
+      })
+      .toBeGreaterThanOrEqual(0);
     await expect
       .poll(async () => {
         const box = (await dialog.boundingBox())!;

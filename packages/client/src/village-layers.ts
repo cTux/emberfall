@@ -19,26 +19,30 @@ export function villageLayers(
       portal,
       dummy: null,
     },
-    ...visibleScenery.map((object) => ({
-      y: object.y,
-      object,
-      player: null,
-      bear: null,
-      critter: null,
-      portal: null,
-      dummy: null,
-    })),
-    ...players.map((player) => ({
-      y: player.y + 15,
-      object: null,
-      player,
-      bear: null,
-      critter: null,
-      portal: null,
-      dummy: null,
-    })),
-    ...players.flatMap((p) =>
-      p.bear
+    ...visibleScenery.map((object) => {
+      return {
+        y: object.y,
+        object,
+        player: null,
+        bear: null,
+        critter: null,
+        portal: null,
+        dummy: null,
+      };
+    }),
+    ...players.map((player) => {
+      return {
+        y: player.y + 15,
+        object: null,
+        player,
+        bear: null,
+        critter: null,
+        portal: null,
+        dummy: null,
+      };
+    }),
+    ...players.flatMap((p) => {
+      return p.bear
         ? [
             {
               y: p.bear.y + 18,
@@ -50,27 +54,33 @@ export function villageLayers(
               dummy: null,
             },
           ]
-        : [],
-    ),
-    ...critters.map((critter) => ({
-      y: critter.y,
-      object: null,
-      player: null,
-      bear: null,
-      critter,
-      portal: null,
-      dummy: null,
-    })),
-    ...(training?.enemies ?? []).map((dummy) => ({
-      y: dummy.y + 15,
-      object: null,
-      player: null,
-      bear: null,
-      critter: null,
-      portal: null,
-      dummy,
-    })),
-  ].sort((a, b) => a.y - b.y);
+        : [];
+    }),
+    ...critters.map((critter) => {
+      return {
+        y: critter.y,
+        object: null,
+        player: null,
+        bear: null,
+        critter,
+        portal: null,
+        dummy: null,
+      };
+    }),
+    ...(training?.enemies ?? []).map((dummy) => {
+      return {
+        y: dummy.y + 15,
+        object: null,
+        player: null,
+        bear: null,
+        critter: null,
+        portal: null,
+        dummy,
+      };
+    }),
+  ].sort((a, b) => {
+    return a.y - b.y;
+  });
 }
 
 export type VillageLayer = ReturnType<typeof villageLayers>[number];

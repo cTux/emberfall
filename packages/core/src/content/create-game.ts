@@ -3,7 +3,12 @@ import type { ContentTypes, GameMod, Registries, Registration } from './contract
 import { createRegistry, validId } from './registry.ts';
 import { createRules } from './rules.ts';
 
-export function createGame(mods: readonly GameMod[], random = () => Math.random()) {
+export function createGame(
+  mods: readonly GameMod[],
+  random = () => {
+    return Math.random();
+  },
+) {
   const stores = {
     items: createRegistry<ContentTypes['items']>('items'),
     gearTypes: createRegistry<ContentTypes['gearTypes']>('gearTypes'),
@@ -26,31 +31,48 @@ export function createGame(mods: readonly GameMod[], random = () => Math.random(
     difficulties: createRegistry<ContentTypes['difficulties']>('difficulties'),
   };
   const registries = Object.freeze(
-    Object.fromEntries(Object.entries(stores).map(([name, store]) => [name, store.view])),
+    Object.fromEntries(
+      Object.entries(stores).map(([name, store]) => {
+        return [name, store.view];
+      }),
+    ),
   ) as Registries;
   const loaded = new Set<string>();
   try {
     for (const mod of mods) {
-      if (!validId(mod.id) || loaded.has(mod.id))
+      if (!validId(mod.id) || loaded.has(mod.id)) {
         throw new Error(`Duplicate or invalid mod ID '${mod.id}'`);
+      }
+
       loaded.add(mod.id);
       const registration = Object.freeze(
         Object.fromEntries(
-          Object.entries(stores).map(([name, store]) => [
-            name,
-            Object.freeze({ register: (definition: never) => store.register(definition, mod.id) }),
-          ]),
+          Object.entries(stores).map(([name, store]) => {
+            return [
+              name,
+              Object.freeze({
+                register: (definition: never) => {
+                  return store.register(definition, mod.id);
+                },
+              }),
+            ];
+          }),
         ),
       ) as Registration;
       const result: unknown = mod.register(registration);
-      if (result !== undefined)
+      if (result !== undefined) {
         throw new Error(`Mod '${mod.id}': registration must be synchronous and return no value`);
+      }
     }
 
-    validateContent(registries, (name, id) => stores[name].owner(id));
+    validateContent(registries, (name, id) => {
+      return stores[name].owner(id);
+    });
   } finally {
     // Failed compositions also close retained registration handles.
-    for (const store of Object.values(stores)) store.seal();
+    for (const store of Object.values(stores)) {
+      store.seal();
+    }
   }
 
   const rules = createRules(registries, random);

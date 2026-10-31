@@ -8,7 +8,9 @@ test('backpack item tooltips share weapon details and compact resource cards', a
   await page.getByLabel('Your adventurer name').fill('Tooltip tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Inventory' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.backpack = [
     { id: 'sword', itemId: 'warrior-sword', quantity: 1 },

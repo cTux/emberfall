@@ -52,12 +52,18 @@ export function loadPreferences(): Preferences {
   };
   try {
     const saved = JSON.parse(localStorage.getItem('emberfall-new.preferences') ?? '{}');
-    if (Array.isArray(saved?.autoCastAbilities))
+    if (Array.isArray(saved?.autoCastAbilities)) {
       result.autoCastAbilities = saved.autoCastAbilities
-        .filter((id: unknown) => typeof id === 'string' && id.length <= 128)
+        .filter((id: unknown) => {
+          return typeof id === 'string' && id.length <= 128;
+        })
         .slice(0, 128);
-    if (typeof saved?.font === 'string' && Object.hasOwn(GAME_FONTS, saved.font))
+    }
+
+    if (typeof saved?.font === 'string' && Object.hasOwn(GAME_FONTS, saved.font)) {
       result.font = saved.font;
+    }
+
     for (const key of [
       'customCursor',
       'autoAttack',
@@ -76,18 +82,30 @@ export function loadPreferences(): Preferences {
       'debugHitboxes',
       'sound',
       'music',
-    ] as const)
-      if (typeof saved?.[key] === 'boolean') result[key] = saved[key];
-    if ([32, 48, 64].includes(saved?.cursorSize)) result.cursorSize = saved.cursorSize;
-    if (typeof saved?.musicVolume === 'number' && Number.isFinite(saved.musicVolume))
+    ] as const) {
+      if (typeof saved?.[key] === 'boolean') {
+        result[key] = saved[key];
+      }
+    }
+
+    if ([32, 48, 64].includes(saved?.cursorSize)) {
+      result.cursorSize = saved.cursorSize;
+    }
+
+    if (typeof saved?.musicVolume === 'number' && Number.isFinite(saved.musicVolume)) {
       result.musicVolume = Math.max(0, Math.min(1, saved.musicVolume));
+    }
+
     if (
       typeof saved?.abilityEffectTransparency === 'number' &&
       Number.isFinite(saved.abilityEffectTransparency)
-    )
+    ) {
       result.abilityEffectTransparency = Math.max(0, Math.min(1, saved.abilityEffectTransparency));
-    if (typeof saved?.volume === 'number' && Number.isFinite(saved.volume))
+    }
+
+    if (typeof saved?.volume === 'number' && Number.isFinite(saved.volume)) {
       result.volume = Math.max(0, Math.min(1, saved.volume));
+    }
   } catch {
     /* Defaults work without browser storage. */
   }

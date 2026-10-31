@@ -24,45 +24,49 @@ export function Wardrobe() {
               Ranger: 'Piercing arrows · Poison',
               Mage: 'Twin fireballs · Burning',
               Druid: 'Roots · Bear companion',
-            }).map(([name, description]) => (
-              <ClassCard
-                key={name}
-                title={name}
-                portrait={
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'grid',
-                      placeItems: 'center',
-                      bgcolor: 'background.paper',
-                    }}
-                  >
-                    <Typography variant='h2'>{name[0]}</Typography>
-                  </Box>
-                }
-                weapon={{
-                  name: name === 'Warrior' ? 'Sword' : name === 'Ranger' ? 'Bow' : 'Staff',
-                  icon: <Typography>W</Typography>,
-                  description,
-                }}
-                spell={{
-                  name:
-                    name === 'Warrior'
-                      ? 'Slash'
-                      : name === 'Ranger'
-                        ? 'Piercing arrows'
-                        : name === 'Mage'
-                          ? 'Fireball'
-                          : 'Roots',
-                  icon: <Typography>S</Typography>,
-                  description: `${description}. Cooldown: 0.7 seconds.`,
-                }}
-                stats={{ level: 1, experience: 0, maxHitpoints: 100, power: 5 }}
-                selected={selected === name}
-                onSelect={() => select(name)}
-              />
-            ))}
+            }).map(([name, description]) => {
+              return (
+                <ClassCard
+                  key={name}
+                  title={name}
+                  portrait={
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        display: 'grid',
+                        placeItems: 'center',
+                        bgcolor: 'background.paper',
+                      }}
+                    >
+                      <Typography variant='h2'>{name[0]}</Typography>
+                    </Box>
+                  }
+                  weapon={{
+                    name: name === 'Warrior' ? 'Sword' : name === 'Ranger' ? 'Bow' : 'Staff',
+                    icon: <Typography>W</Typography>,
+                    description,
+                  }}
+                  spell={{
+                    name:
+                      name === 'Warrior'
+                        ? 'Slash'
+                        : name === 'Ranger'
+                          ? 'Piercing arrows'
+                          : name === 'Mage'
+                            ? 'Fireball'
+                            : 'Roots',
+                    icon: <Typography>S</Typography>,
+                    description: `${description}. Cooldown: 0.7 seconds.`,
+                  }}
+                  stats={{ level: 1, experience: 0, maxHitpoints: 100, power: 5 }}
+                  selected={selected === name}
+                  onSelect={() => {
+                    return select(name);
+                  }}
+                />
+              );
+            })}
           </Box>
         </GameWindow>
       </Box>

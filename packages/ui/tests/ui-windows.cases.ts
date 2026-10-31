@@ -107,9 +107,9 @@ test('external modal tabs scroll, navigate and stay with the window at viewport 
   await expect(surface).toBeVisible();
   expect((await surface.boundingBox())!.height).toBeLessThanOrEqual(208);
   expect(
-    await dialog
-      .locator('.MuiDialogContent-root')
-      .evaluate((element) => element.scrollHeight > element.clientHeight),
+    await dialog.locator('.MuiDialogContent-root').evaluate((element) => {
+      return element.scrollHeight > element.clientHeight;
+    }),
   ).toBe(true);
 });
 

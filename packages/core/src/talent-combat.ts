@@ -10,20 +10,19 @@ import { DEFAULT_TACTICS } from '@emberfall/common';
 import { nearestSpellTarget, setRewardPlayers, effectiveAbility } from './class-combat.ts';
 type Game = ReturnType<typeof createGame>;
 export function talentAbility(player: Pick<Player, 'classId'>, slot: number, context: Game = game) {
-  return context.registries.abilities
-    .values()
-    .find(
-      (ability) => ability.classId === (player.classId ?? 'warrior') && ability.talentSlot === slot,
-    );
+  return context.registries.abilities.values().find((ability) => {
+    return ability.classId === (player.classId ?? 'warrior') && ability.talentSlot === slot;
+  });
 }
 
 export function equippedTalent(player: Player, slot: number) {
-  return TALENT_TREE.find(
-    (node) =>
+  return TALENT_TREE.find((node) => {
+    return (
       node.id === player.talentSlots?.[slot] &&
       node.classId === (player.classId ?? 'warrior') &&
-      node.kind === 'ability',
-  );
+      node.kind === 'ability'
+    );
+  });
 }
 
 export function talentCooldownMs(player: Player, slot: number, context: Game = game) {
@@ -75,14 +74,18 @@ export function castTalentAbility(
     request.epoch !== (player.scene === 'forest' ? scene.id : 'lobby') ||
     (!player.scene && !inTrainingZone(player)) ||
     now < (player.talentCooldowns?.[ability.id] ?? -Infinity)
-  )
+  ) {
     return false;
+  }
+
   if (
     player.classId === 'druid' &&
     node.column === 1 &&
     (!player.bear || player.bear.hitpoints <= 0)
-  )
+  ) {
     return false;
+  }
+
   if (
     request.automatic &&
     player.classId === 'druid' &&
@@ -95,8 +98,9 @@ export function castTalentAbility(
         : ability.range;
     if (
       !healingTarget(players, player, player, radius, (player.tactics ?? DEFAULT_TACTICS).healBelow)
-    )
+    ) {
       return false;
+    }
   }
 
   player.talentCooldowns = {

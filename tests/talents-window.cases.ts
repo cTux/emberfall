@@ -21,22 +21,25 @@ test('talents use one vertical scrollbar and fit desktop, narrow and short windo
   ]) {
     await page.setViewportSize(viewport);
     await expect(tree.locator('[data-talent-node]')).toHaveCount(30);
-    const scrollable = await tree
-      .locator('*')
-      .evaluateAll((elements) =>
-        elements
-          .filter(
-            (element) =>
-              /auto|scroll/.test(getComputedStyle(element).overflowY) &&
-              element.scrollHeight > element.clientHeight,
-          )
-          .map((element) => element.className),
-      );
+    const scrollable = await tree.locator('*').evaluateAll((elements) => {
+      return elements
+        .filter((element) => {
+          return (
+            /auto|scroll/.test(getComputedStyle(element).overflowY) &&
+            element.scrollHeight > element.clientHeight
+          );
+        })
+        .map((element) => {
+          return element.className;
+        });
+    });
     expect(scrollable).toHaveLength(1);
     expect(
-      await tree.evaluate((element) =>
-        [...element.querySelectorAll('*')].every((child) => child.scrollWidth <= child.clientWidth),
-      ),
+      await tree.evaluate((element) => {
+        return [...element.querySelectorAll('*')].every((child) => {
+          return child.scrollWidth <= child.clientWidth;
+        });
+      }),
     ).toBe(true);
     await tree.locator('[data-talent-node]').first().focus();
     await page.mouse.move(0, 0);
@@ -57,7 +60,9 @@ test('three independent columns support rank learning, custom tooltips, LMB assi
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Talent hero');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((entry) => {
+    return entry.players.size;
+  })!;
   const player = [...world.players.values()][0];
   await page.getByRole('button', { name: 'Talents' }).click();
   const tree = page.getByRole('region', { name: 'Talents', exact: true });
@@ -92,7 +97,11 @@ test('three independent columns support rank learning, custom tooltips, LMB assi
   await cast.hover();
   const tooltip = page.getByRole('tooltip');
   await expect(tooltip).toContainText(
-    talentDescription(TALENT_TREE.find((node) => node.id === 'v2:warrior:0:1')!),
+    talentDescription(
+      TALENT_TREE.find((node) => {
+        return node.id === 'v2:warrior:0:1';
+      })!,
+    ),
   );
   await expect(tooltip).not.toContainText(/LMB|RMB|auto-cast|to cast/);
   await cast.focus();
@@ -102,7 +111,11 @@ test('three independent columns support rank learning, custom tooltips, LMB assi
   player.y = TRAINING_ZONES[0].y;
   await page.mouse.move(190, 350);
   await page.keyboard.press('1');
-  await expect.poll(() => player.talentCooldowns?.['talent:warrior:0'] ?? 0).toBeGreaterThan(0);
+  await expect
+    .poll(() => {
+      return player.talentCooldowns?.['talent:warrior:0'] ?? 0;
+    })
+    .toBeGreaterThan(0);
   await expect(cast.getByRole('progressbar')).toBeVisible();
   await cast.click({ button: 'right' });
   await expect(cast).toHaveAttribute('data-auto-cast', 'true');
@@ -113,7 +126,11 @@ test('three independent columns support rank learning, custom tooltips, LMB assi
   await page.waitForTimeout(500);
   expect(player.talentCooldowns!['talent:warrior:0']).toBe(0);
   await page.keyboard.press('f');
-  await expect.poll(() => player.talentCooldowns!['talent:warrior:0']).toBeGreaterThan(cooldown);
+  await expect
+    .poll(() => {
+      return player.talentCooldowns!['talent:warrior:0'];
+    })
+    .toBeGreaterThan(cooldown);
   await cast.click();
   const clear = page.getByRole('menuitem', { name: 'Clear slot', exact: true });
   const abilityTile = page.getByRole('menuitem', { name: 'Cleaving Strike', exact: true });

@@ -2,7 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LootHints, lootHintFrame } from '../packages/client/src/loot-hints.ts';
 
-const item = (itemId: string, quantity = 1, id = itemId) => ({ id, itemId, quantity });
+const item = (itemId: string, quantity = 1, id = itemId) => {
+  return { id, itemId, quantity };
+};
+
 test('confirmed quantity increases are silent on join and never replay snapshots', () => {
   const hints = new LootHints();
   hints.observe([item('stone', 3)], true, 0);
@@ -21,7 +24,9 @@ test('confirmed quantity increases are silent on join and never replay snapshots
 test('no stack cap, disabled receipts and reconnects stay silent', () => {
   const hints = new LootHints();
   hints.observe([], true, 0);
-  const items = Array.from({ length: 20 }, (_, i) => item(`item-${i}`));
+  const items = Array.from({ length: 20 }, (_, i) => {
+    return item(`item-${i}`);
+  });
   hints.observe(items, true, 10);
   assert.equal(hints.hints.length, 20);
   hints.observe([...items, item('extra')], false, 20);

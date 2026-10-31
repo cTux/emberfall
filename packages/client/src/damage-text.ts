@@ -12,7 +12,10 @@ export const CRITICAL_TEXT_STYLE = { fill: '#ffffff', outline: '#d52b3f', width:
 /** Stateless animation survives snapshot replacement without replaying a hit. */
 export function damageTextFrame(hit: DamageEvent, now: number) {
   const age = now - hit.at;
-  if (age < 0 || age >= 750) return undefined;
+  if (age < 0 || age >= 750) {
+    return undefined;
+  }
+
   const progress = age / 750;
   const rise = 1 - (1 - progress) ** 2;
   const lane = (((hit.id % 5) + 5) % 5) - 2;
@@ -30,7 +33,9 @@ export function damageTextFrame(hit: DamageEvent, now: number) {
 export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[] {
   const totals: DamageEvent[] = [];
   const latest = new Map<string, DamageEvent>();
-  for (const hit of [...hits].sort((a, b) => a.at - b.at)) {
+  for (const hit of [...hits].sort((a, b) => {
+    return a.at - b.at;
+  })) {
     const key = JSON.stringify([hit.ownerId, hit.target, hit.damageType ?? 'physical']);
     const previous = hit.ownerId ? latest.get(key) : undefined;
     if (previous && hit.at - previous.at <= 10) {
@@ -39,7 +44,9 @@ export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[
     } else {
       const total = { ...hit };
       totals.push(total);
-      if (hit.ownerId) latest.set(key, total);
+      if (hit.ownerId) {
+        latest.set(key, total);
+      }
     }
   }
 
@@ -54,7 +61,10 @@ export function drawDamageNumbers(
   onlyPlayerId?: string,
 ) {
   for (const hit of combineDamageNumbers(hits)) {
-    if (onlyPlayerId && hit.ownerId !== onlyPlayerId && hit.target !== onlyPlayerId) continue;
+    if (onlyPlayerId && hit.ownerId !== onlyPlayerId && hit.target !== onlyPlayerId) {
+      continue;
+    }
+
     drawDamageNumber(ctx, hit, project(hit.x, hit.y), now);
   }
 }
@@ -67,7 +77,10 @@ export function drawDamageNumber(
   now: number,
 ) {
   const frame = damageTextFrame(hit, now);
-  if (!frame || hit.amount <= 0) return;
+  if (!frame || hit.amount <= 0) {
+    return;
+  }
+
   ctx.save();
   ctx.globalAlpha *= frame.alpha;
   ctx.translate(point.x + frame.x, point.y + frame.y);

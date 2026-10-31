@@ -6,7 +6,11 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('manual cast requests acknowledge acceptance, cooldown rejection and duplicates without held-input repeats', async () => {
@@ -17,8 +21,8 @@ test('manual cast requests acknowledge acceptance, cooldown rejection and duplic
   tickPlayerCombat(arena, [player], 1000, 0.05);
   assert.equal(player.attackAt, undefined);
   Object.assign(player, { attacking: true, combatInputAt: 1000 });
-  const cast = (id: number, now: number) =>
-    requestPlayerCast(
+  const cast = (id: number, now: number) => {
+    return requestPlayerCast(
       arena,
       player,
       {
@@ -32,6 +36,8 @@ test('manual cast requests acknowledge acceptance, cooldown rejection and duplic
       },
       now,
     );
+  };
+
   assert(cast(1, 1000));
   tickPlayerCombat(arena, [player], 1000, 0.05);
   assert.equal(player.attackAt, 1000);
@@ -63,8 +69,8 @@ test('slightly early held casts wait for cooldown and retain aim without duplica
     const player: Player = { ...hero(), classId, autoAttack: false, autoTarget: false };
     const arena = scene();
     const count = classId === 'druid' ? 1 : 2;
-    const cast = (id: number, now: number) =>
-      requestPlayerCast(
+    const cast = (id: number, now: number) => {
+      return requestPlayerCast(
         arena,
         player,
         {
@@ -78,6 +84,8 @@ test('slightly early held casts wait for cooldown and retain aim without duplica
         },
         now,
       );
+    };
+
     assert(cast(1, 1000));
     tickPlayerCombat(arena, [player], 1000, 0);
     assert.equal(cast(2, 1899), false, 'requests beyond the buffer are rejected');

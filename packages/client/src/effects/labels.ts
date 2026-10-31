@@ -2,7 +2,10 @@ import type { DrawingContext } from '../rendering/drawing-context';
 import { drawWorldBar } from '../world-bar.ts';
 
 export function drawChatBubble(ctx: DrawingContext, x: number, y: number, text?: string) {
-  if (!text) return;
+  if (!text) {
+    return;
+  }
+
   ctx.save();
   ctx.font = '10px "Alegreya Sans", sans-serif';
   ctx.textAlign = 'center';
@@ -11,11 +14,19 @@ export function drawChatBubble(ctx: DrawingContext, x: number, y: number, text?:
   for (const word of text.trim().split(/\s+/u)) {
     const line = lines.at(-1)!;
     const next = line ? `${line} ${word}` : word;
-    if (line && ctx.measureText(next).width > 200) lines.push(word);
-    else lines[lines.length - 1] = next;
+    if (line && ctx.measureText(next).width > 200) {
+      lines.push(word);
+    } else {
+      lines[lines.length - 1] = next;
+    }
   }
 
-  const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 16;
+  const width =
+    Math.max(
+      ...lines.map((line) => {
+        return ctx.measureText(line).width;
+      }),
+    ) + 16;
   const height = lines.length * 13 + 10;
   const bottom = y - 52; // Two units above the player health bar; overlays the debuff area.
   const left = x - width / 2;
@@ -42,7 +53,9 @@ export function drawChatBubble(ctx: DrawingContext, x: number, y: number, text?:
   ctx.shadowColor = 'transparent';
   ctx.stroke();
   ctx.fillStyle = '#f4ecd6';
-  lines.forEach((line, i) => ctx.fillText(line, x, top + 11.5 + i * 13));
+  lines.forEach((line, i) => {
+    return ctx.fillText(line, x, top + 11.5 + i * 13);
+  });
   ctx.restore();
 }
 
@@ -156,7 +169,7 @@ export function drawPlayerHealth(
   const width = Math.max(boss ? 64 : 40, Math.ceil(metrics.width) + 12);
   const bottom = y + (boss ? 9 : 7);
   // Grow upward to preserve the existing name and sprite clearance.
-  if (showHealth)
+  if (showHealth) {
     drawWorldBar(
       ctx,
       x - width / 2,
@@ -165,6 +178,8 @@ export function drawPlayerHealth(
       hp / Math.max(1, max),
       boss ? '#c084fc' : '#86d9a2',
     );
+  }
+
   drawCharacterName(ctx, x, bottom, name, color);
   ctx.restore();
 

@@ -26,8 +26,9 @@ test('village player masks sample the same high-resolution cells as the visible 
         source.naturalWidth === 512 &&
         source.naturalHeight === 1280 &&
         coordinates.length === 8
-      )
+      ) {
         samples.push(coordinates.slice(0, 4));
+      }
 
       return Reflect.apply(drawImage, this, [source, ...coordinates]);
     };
@@ -35,7 +36,9 @@ test('village player masks sample the same high-resolution cells as the visible 
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.classId = 'mage';
   player.equipment = starterEquipment('mage');
@@ -43,27 +46,32 @@ test('village player masks sample the same high-resolution cells as the visible 
   player.x = 235;
   player.y = 205;
   await expect
-    .poll(() =>
-      page.evaluate(
-        () => (window as unknown as { playerMaskSamples: number[][] }).playerMaskSamples.length,
-      ),
-    )
+    .poll(() => {
+      return page.evaluate(() => {
+        return (window as unknown as { playerMaskSamples: number[][] }).playerMaskSamples.length;
+      });
+    })
     .toBeGreaterThan(1);
-  const samples = await page.evaluate(
-    () => (window as unknown as { playerMaskSamples: number[][] }).playerMaskSamples,
-  );
+  const samples = await page.evaluate(() => {
+    return (window as unknown as { playerMaskSamples: number[][] }).playerMaskSamples;
+  });
   await page.screenshot({ path: 'test-results/village-player-cutout.png' });
-  expect(samples.filter(([x, y, w, h]) => x % 128 || y % 128 || w !== 128 || h !== 128)).toEqual(
-    [],
-  );
+  expect(
+    samples.filter(([x, y, w, h]) => {
+      return x % 128 || y % 128 || w !== 128 || h !== 128;
+    }),
+  ).toEqual([]);
 });
 
 test('foreground sprites reveal a silhouette hole with a 10-pixel margin', async ({ page }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   page.on('console', (message) => {
-    if (message.type() === 'warning' && /mask|texture/i.test(message.text()))
+    if (message.type() === 'warning' && /mask|texture/i.test(message.text())) {
       errors.push(message.text());
+    }
   });
   const require = createRequire(resolve('packages/client/package.json'));
   const { build } = await import(pathToFileURL(require.resolve('vite')).href);
@@ -82,10 +90,12 @@ test('foreground sprites reveal a silhouette hole with a 10-pixel margin', async
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
-  await page.route('**/cutout-test', (route) =>
-    route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-  );
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
+  await page.route('**/cutout-test', (route) => {
+    return route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' });
+  });
   await page.goto('/cutout-test');
   await page.addScriptTag({ content: code });
   const { samples, cached } = await page.evaluate(async () => {
@@ -101,7 +111,11 @@ test('foreground sprites reveal a silhouette hole with a 10-pixel margin', async
   // Exact mask boundary: 10 pixels reveals ground; the next pixel stays opaque.
   expect(samples.silhouette).toEqual([ground, wall, ground, wall, wall, player, ground]);
   expect(samples['camera-and-clip']).toEqual(samples.silhouette);
-  expect(samples.moved).toEqual(samples.silhouette.map(() => wall));
+  expect(samples.moved).toEqual(
+    samples.silhouette.map(() => {
+      return wall;
+    }),
+  );
   expect(samples['no-player']).toEqual(samples.moved);
   // Cutting a foreground layer must never erase a previously drawn background.
   expect(samples['background-preserved']).toEqual(samples.moved);

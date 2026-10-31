@@ -4,8 +4,10 @@ import { fileURLToPath } from 'node:url';
 
 try {
   const args = process.argv.slice(2);
-  if (args.length !== 0 && args.length !== 2)
+  if (args.length !== 0 && args.length !== 2) {
     throw new Error('Usage: pnpm import-save [<legacy-backup.sqlite> <new-destination.sqlite>]');
+  }
+
   const source =
     args[0] ??
     resolve(

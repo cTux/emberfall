@@ -16,7 +16,11 @@ import { hero } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('class records migrate legacy progress, save independently, and survive restart', async () => {
@@ -80,9 +84,21 @@ test('class selection schema and wardrobe interaction reject invalid classes and
 });
 
 test('one spawn roll gives exactly ten percent big and ten percent ranged with health multipliers', async () => {
-  const types = Array.from({ length: 100 }, (_, i) => spawnArchetype(i / 100, i));
-  assert.equal(types.filter((a) => a === 'brute').length, 10);
-  assert.equal(types.filter((a) => a === 'caster').length, 10);
+  const types = Array.from({ length: 100 }, (_, i) => {
+    return spawnArchetype(i / 100, i);
+  });
+  assert.equal(
+    types.filter((a) => {
+      return a === 'brute';
+    }).length,
+    10,
+  );
+  assert.equal(
+    types.filter((a) => {
+      return a === 'caster';
+    }).length,
+    10,
+  );
   assert.equal(enemyMaxHealth({ archetype: 'brute' }), 30);
   assert.equal(enemyMaxHealth({ archetype: 'caster' }), 7);
   assert.equal(enemyMaxHealth({ archetype: 'brute', kind: 'elite' }), 90);

@@ -26,8 +26,10 @@ export function prepareTalentCast(
   healBelow = 1,
   context: Game = game,
 ) {
-  const effectArea = (scene: SceneState, point: { x: number; y: number }, radius: number) =>
-    area(scene, point, radius * (1 + stats.bonuses.areaOfEffect / 100));
+  const effectArea = (scene: SceneState, point: { x: number; y: number }, radius: number) => {
+    return area(scene, point, radius * (1 + stats.bonuses.areaOfEffect / 100));
+  };
+
   const column = Math.floor(slot / 4),
     tier = slot % 4;
   const classId = player.classId ?? 'warrior';
@@ -60,9 +62,12 @@ export function prepareTalentCast(
     wrappedDelta(aim.y, player.y, FOREST.height),
     wrappedDelta(aim.x, player.x, FOREST.width),
   );
-  if (classId === 'warrior' && column === 0 && (tier === 0 || tier === 2))
+  if (classId === 'warrior' && column === 0 && (tier === 0 || tier === 2)) {
     targets = scene.enemies.filter((enemy) => {
-      if (enemy.hitpoints <= 0) return false;
+      if (enemy.hitpoints <= 0) {
+        return false;
+      }
+
       const dx = wrappedDelta(enemy.x, player.x, FOREST.width),
         dy = wrappedDelta(enemy.y, player.y, FOREST.height);
       const forward = dx * Math.cos(heading) + dy * Math.sin(heading),
@@ -76,14 +81,19 @@ export function prepareTalentCast(
             forward <= maxRange &&
             Math.abs(sideways) <= 65 * (1 + stats.bonuses.areaOfEffect / 100);
     });
+  }
+
   const primary = [...scene.enemies]
-    .filter(
-      (enemy) =>
+    .filter((enemy) => {
+      return (
         enemy.hitpoints > 0 &&
         forestDistance(enemy, aim) <
-          talentCast.primaryRadius * (1 + stats.bonuses.areaOfEffect / 100),
-    )
-    .sort((a, b) => forestDistance(a, aim) - forestDistance(b, aim))[0];
+          talentCast.primaryRadius * (1 + stats.bonuses.areaOfEffect / 100)
+      );
+    })
+    .sort((a, b) => {
+      return forestDistance(a, aim) - forestDistance(b, aim);
+    })[0];
   const ailment: DebuffKind =
     classId === 'warrior'
       ? 'bleed'

@@ -41,19 +41,27 @@ test('gear stock migrates to Bram once, preserving rolls, balances and both buyb
 });
 
 test('gear prices rise with rarity and stat value, normalize stat units and price scarce affixes higher', () => {
-  const prices = Object.values(Rarity).map((rarity) =>
-    itemPrice({
+  const prices = Object.values(Rarity).map((rarity) => {
+    return itemPrice({
       itemId: 'loot-helmet',
       rarity,
-      stats: rollItemStats('helmet', rarity, () => 0.5),
+      stats: rollItemStats('helmet', rarity, () => {
+        return 0.5;
+      }),
+    });
+  });
+  assert(
+    prices.every((price, i) => {
+      return Number.isSafeInteger(price) && price > (prices[i - 1] ?? 1);
     }),
   );
-  assert(prices.every((price, i) => Number.isSafeInteger(price) && price > (prices[i - 1] ?? 1)));
   assert.equal(itemPrice({ itemId: 'empty-bottle' }), 1);
   assert.equal(itemPrice({ itemId: 'health-potion' }), 1);
   assert.equal(itemPrice({ itemId: 'loot-helmet' }), 1);
-  const priced = (stats: Record<string, number>) =>
-    itemPrice({ itemId: 'warrior-sword', rarity: Rarity.Legendary, stats });
+  const priced = (stats: Record<string, number>) => {
+    return itemPrice({ itemId: 'warrior-sword', rarity: Rarity.Legendary, stats });
+  };
+
   assert.equal(priced({ [ItemStat.Power]: 2 }), priced({ [ItemStat.MaximumHealth]: 10 }));
   assert(priced({ [ItemStat.Power]: 2 }) > priced({ [ItemStat.Power]: 1 }));
   assert(priced({ [ItemStat.AdditionalAttack]: 1 }) > priced({ [ItemStat.Power]: 2 }));
@@ -63,7 +71,9 @@ test('Bram uses authoritative prices, rejects another shop IDs and failed saves,
   const runtime = await createRuntime();
   const messages: ServerMessage[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   try {
@@ -71,10 +81,14 @@ test('Bram uses authoritative prices, rejects another shop IDs and failed saves,
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Gear buyer', password: '' });
     const player = [...world.players.values()][0];
-    const bram = world.npcs!.find((npc) => npc.id === 'craftsman')!;
+    const bram = world.npcs!.find((npc) => {
+      return npc.id === 'craftsman';
+    })!;
     Object.assign(bram, { x: 1000, y: 1000 });
     Object.assign(
-      world.npcs!.find((npc) => npc.id === 'innkeeper')!,
+      world.npcs!.find((npc) => {
+        return npc.id === 'innkeeper';
+      })!,
       { x: 1020, y: 1000 },
     );
     Object.assign(player, { x: 1000, y: 985, coins: 1000 });
@@ -119,13 +133,18 @@ test('Sell all and buyback use the same rolled price without rounding drift', ()
   const merchant = freshMerchant().craftsman;
   const player = { ...freshProgress(), id: 'p', name: 'Seller', x: 0, y: 0, color: 0 } as Player;
   player.backpack = merchant.backpack.slice(0, 3);
-  const total = player.backpack.reduce((sum, item) => sum + itemPrice(item), 0);
+  const total = player.backpack.reduce((sum, item) => {
+    return sum + itemPrice(item);
+  }, 0);
   sellAll(player, merchant);
   assert.equal(player.coins, total);
   assert.equal(merchant.coins, 5000 - total);
   // Snapshot the queue because each purchase removes its entry.
   // oxlint-disable-next-line unicorn/no-useless-spread
-  for (const entry of [...merchant.buyback]) tradeItem(player, merchant, entry.id, true);
+  for (const entry of [...merchant.buyback]) {
+    tradeItem(player, merchant, entry.id, true);
+  }
+
   assert.equal(player.coins, 0);
   assert.equal(merchant.coins, 5000);
 });

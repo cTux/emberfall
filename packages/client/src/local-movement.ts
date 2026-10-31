@@ -48,18 +48,25 @@ export class LocalMovement {
     const elapsed = Math.max(0, now - this.at);
     this.at = Math.max(this.at, now);
     if (this.base) {
-      const queued = this.pending.reduce((n, p) => n + p.durationMs, 0);
+      const queued = this.pending.reduce((n, p) => {
+        return n + p.durationMs;
+      }, 0);
       this.unsent += Math.min(
         Math.max(0, elapsed),
         100,
         Math.max(0, PREDICTION_LIMIT_MS - queued - this.unsent),
       );
-      while (this.unsent >= 50) this.flush(50);
+      while (this.unsent >= 50) {
+        this.flush(50);
+      }
     }
   }
 
   private flush(duration = this.unsent) {
-    if (duration <= 0.0001 || !this.base) return;
+    if (duration <= 0.0001 || !this.base) {
+      return;
+    }
+
     const command: Move = {
       type: 'move',
       seq: ++this.seq,
@@ -101,8 +108,13 @@ export class LocalMovement {
 
   render(world: WorldState, now: number): Player | undefined {
     this.advance(now);
-    const authoritative = world.players.find((p) => p.id === this.id);
-    if (!authoritative) return;
+    const authoritative = world.players.find((p) => {
+      return p.id === this.id;
+    });
+    if (!authoritative) {
+      return;
+    }
+
     const epoch = authoritative.scene === 'forest' ? world.scene!.id : 'lobby';
     if (
       !this.base ||
@@ -126,19 +138,27 @@ export class LocalMovement {
       this.sourceAt = now;
       this.base = { ...authoritative };
       this.attacks.confirm({ world, player: this.base, epoch, receivedAt: now });
-      const acknowledged = this.pending.find((p) => p.seq === authoritative.inputSeq);
-      if (acknowledged) this.acknowledgedDelay = Math.max(0, now - acknowledged.sentAt);
-      this.pending = this.pending.filter(
-        (p) =>
+      const acknowledged = this.pending.find((p) => {
+        return p.seq === authoritative.inputSeq;
+      });
+      if (acknowledged) {
+        this.acknowledgedDelay = Math.max(0, now - acknowledged.sentAt);
+      }
+
+      this.pending = this.pending.filter((p) => {
+        return (
           p.seq > (authoritative.inputSeq ?? 0) ||
           (p.seq === authoritative.inputSeq &&
-            (authoritative.inputElapsed ?? Infinity) < p.durationMs - 0.0001),
-      );
+            (authoritative.inputElapsed ?? Infinity) < p.durationMs - 0.0001)
+        );
+      });
       const after = this.predict();
       const error = this.difference(before, after);
       this.offset.x += error.x;
       this.offset.y += error.y;
-      if (Math.hypot(this.offset.x, this.offset.y) > SNAP_DISTANCE) this.offset = { x: 0, y: 0 };
+      if (Math.hypot(this.offset.x, this.offset.y) > SNAP_DISTANCE) {
+        this.offset = { x: 0, y: 0 };
+      }
     }
 
     const predicted = this.predict();
@@ -165,7 +185,10 @@ export class LocalMovement {
     };
     this.offset = this.difference(displayed, predicted);
     const probe = { ...predicted };
-    if (now - this.sourceAt <= PREDICTION_LIMIT_MS) movePlayer(probe, this.x, this.y, 1 / 60);
+    if (now - this.sourceAt <= PREDICTION_LIMIT_MS) {
+      movePlayer(probe, this.x, this.y, 1 / 60);
+    }
+
     const motion = this.difference(probe, predicted);
 
     return { ...predicted, ...displayed, inputX: motion.x, inputY: motion.y };

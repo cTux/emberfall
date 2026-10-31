@@ -8,12 +8,15 @@ export const inventoryItemSchema = itemRollSchema.extend({
   itemId: z.string().min(1).max(128),
   quantity: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
 });
-export const backpackSchema = z
-  .array(inventoryItemSchema)
-  .refine(
-    (items) => new Set(items.map((item) => item.id)).size === items.length,
-    'Duplicate item identity',
+export const backpackSchema = z.array(inventoryItemSchema).refine((items) => {
+  return (
+    new Set(
+      items.map((item) => {
+        return item.id;
+      }),
+    ).size === items.length
   );
+}, 'Duplicate item identity');
 export type BackpackItem = z.infer<typeof backpackSchema>[number];
 export const INVENTORY_SLOTS = 20;
 export const STORAGE_SLOTS = 40;
@@ -26,17 +29,25 @@ export const storagesSchema = z
   .array(
     z.object({
       name: storageNameSchema,
-      items: backpackSchema.refine((items) => items.length <= STORAGE_SLOTS),
+      items: backpackSchema.refine((items) => {
+        return items.length <= STORAGE_SLOTS;
+      }),
     }),
   )
   .length(3)
   .refine((storages) => {
-    const ids = storages.flatMap((storage) => storage.items.map((item) => item.id));
+    const ids = storages.flatMap((storage) => {
+      return storage.items.map((item) => {
+        return item.id;
+      });
+    });
 
     return new Set(ids).size === ids.length;
   }, 'Duplicate stored item identity');
 export function freshStorages(): z.infer<typeof storagesSchema> {
-  return Array.from({ length: 3 }, (_, index) => ({ name: `Storage ${index + 1}`, items: [] }));
+  return Array.from({ length: 3 }, (_, index) => {
+    return { name: `Storage ${index + 1}`, items: [] };
+  });
 }
 
 export const storehouseSchema = z.object({
@@ -48,7 +59,11 @@ const traderSchema = z.object({
   refreshAt: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   backpack: backpackSchema,
-  buyback: backpackSchema.refine((items) => items.length <= BUYBACK_SLOTS).optional(),
+  buyback: backpackSchema
+    .refine((items) => {
+      return items.length <= BUYBACK_SLOTS;
+    })
+    .optional(),
 });
 export const merchantSchema = traderSchema.extend({ craftsman: traderSchema.optional() });
 export interface Merchant {

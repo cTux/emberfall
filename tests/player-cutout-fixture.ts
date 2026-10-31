@@ -37,9 +37,9 @@ export async function cutoutPixels() {
     output.drawImage(canvas, 0, 0);
     image.dataset.preview = name;
     document.body.append(image);
-    samples[name] = points.map(([x, y]) => [
-      ...output.getImageData(x * scale + tx, y * scale + ty, 1, 1).data,
-    ]);
+    samples[name] = points.map(([x, y]) => {
+      return [...output.getImageData(x * scale + tx, y * scale + ty, 1, 1).data];
+    });
   };
 
   const frame = (scale = 1, tx = 0, ty = 0) => {

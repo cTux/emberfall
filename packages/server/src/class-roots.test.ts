@@ -15,7 +15,11 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('one root projectile bounces three times at full power without repeating targets', () => {
@@ -47,7 +51,9 @@ test('one root projectile bounces three times at full power without repeating ta
 
     assert.deepEqual(shot.hitIds, [1, 2, 3, 4]);
     assert.deepEqual(
-      s.enemies.map((e) => e.hitpoints),
+      s.enemies.map((e) => {
+        return e.hitpoints;
+      }),
       [97, 97, 97, 97, 100, 0],
     );
     assert.equal(s.playerShots!.length, 0);
@@ -76,7 +82,10 @@ test('root bounce radius includes 250 units and excludes targets just beyond it'
     fireClassAttack(s, p, 1000);
     tickPlayerShots(s, [p], 1050, 0.05);
     assert.equal(s.playerShots!.length, distance === 250 ? 1 : 0);
-    for (let i = 0; i < 20; i++) tickPlayerShots(s, [p], 1100 + i * 50, 0.05);
+    for (let i = 0; i < 20; i++) {
+      tickPlayerShots(s, [p], 1100 + i * 50, 0.05);
+    }
+
     assert.equal(s.enemies[1].hitpoints, distance === 250 ? 97 : 100);
     assert.equal(s.enemies[0].hitpoints, 97);
     assert.equal(s.playerShots!.length, 0);
@@ -114,7 +123,11 @@ test('root bounce selects across seams, excludes dead targets, and stops when it
   s.enemies = [enemy(1, 30), enemy(2, FOREST.width - 20), enemy(3, 130), enemy(4, 32, 0)];
   fireClassAttack(s, p, 1000);
   tickPlayerShots(s, [p], 1050, 0.05);
-  assert(s.playerShots!.every((shot) => shot.targetId === 2));
+  assert(
+    s.playerShots!.every((shot) => {
+      return shot.targetId === 2;
+    }),
+  );
   tickPlayerShots(s, [p], 1250, 0.2);
   assert.equal(s.enemies[1].hitpoints, 97);
   assert.equal(s.enemies[2].hitpoints, 100);
@@ -166,7 +179,9 @@ test('roots slow ordinary enemies, bosses are immune, and root kills complete th
 });
 
 test('root primary and bounce both use full critical weapon damage', (t) => {
-  t.mock.method(Math, 'random', () => 0);
+  t.mock.method(Math, 'random', () => {
+    return 0;
+  });
   const s = scene(),
     p = { ...hero(), classId: 'druid' as const };
   s.enemies = [enemy(1, 2420), enemy(2, 2480)];
@@ -174,11 +189,15 @@ test('root primary and bounce both use full critical weapon damage', (t) => {
   tickPlayerShots(s, [p], 1050, 0.05);
   tickPlayerShots(s, [p], 1250, 0.2);
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [95.5, 95.5],
   );
   assert(
-    s.damage.every((hit) => hit.amount === 4.5 && hit.critical && hit.damageType === 'nature'),
+    s.damage.every((hit) => {
+      return hit.amount === 4.5 && hit.critical && hit.damageType === 'nature';
+    }),
   );
 });
 
@@ -189,9 +208,18 @@ test('a lethal root impact still bounces and credits both kills through the shar
   fireClassAttack(s, p, 1000);
   tickPlayerShots(s, [p], 1050, 0.05);
   tickPlayerShots(s, [p], 1250, 0.2);
-  assert(s.enemies.every((e) => e.hitpoints === 0));
+  assert(
+    s.enemies.every((e) => {
+      return e.hitpoints === 0;
+    }),
+  );
   tickPlayerShots(s, [p], 2300, 1);
   assert.equal(p.experience, 2);
-  assert.equal(s.drops!.filter((drop) => drop.kind === 'experience').length, 2);
+  assert.equal(
+    s.drops!.filter((drop) => {
+      return drop.kind === 'experience';
+    }).length,
+    2,
+  );
   assert.equal(s.playerShots!.length, 0);
 });

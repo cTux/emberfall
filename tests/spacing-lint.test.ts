@@ -8,20 +8,25 @@ import test from 'node:test';
 const root = path.resolve(import.meta.dirname, '..');
 const cli = path.join(root, 'node_modules/oxlint/bin/oxlint');
 
-test('spacing lint rejects dense code, fixes it and preserves compact guards', () => {
+test('spacing lint rejects dense code, fixes it and preserves braced guards', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'emberfall-spacing-'));
   const file = path.join(directory, 'spacing.ts');
-  const lint = (...args: string[]) =>
-    spawnSync(process.execPath, [cli, '-c', path.join(root, '.oxlintrc.json'), file, ...args], {
-      cwd: root,
-      encoding: 'utf8',
-    });
+  const lint = (...args: string[]) => {
+    return spawnSync(
+      process.execPath,
+      [cli, '-c', path.join(root, '.oxlintrc.json'), file, ...args],
+      {
+        cwd: root,
+        encoding: 'utf8',
+      },
+    );
+  };
 
   try {
     writeFileSync(
       file,
       `export function finish(active: boolean) {
-  if (!active) return;
+  if (!active) { return; }
   const value = 1;
   return value;
 }
@@ -45,7 +50,7 @@ export class Example {
     const fixed = lint('--fix');
     assert.equal(fixed.status, 0, fixed.stdout + fixed.stderr);
     const source = readFileSync(file, 'utf8');
-    assert.match(source, /if \(!active\) return;\n  const value/);
+    assert.match(source, /if \(!active\) \{ return; \}\n\n  const value/);
     assert.match(source, /const value = 1;\n\n  return value;/);
     assert.match(source, /}\n\nexport function fail/);
     assert.match(source, /console\.log\('failure'\);\n\n  throw/);

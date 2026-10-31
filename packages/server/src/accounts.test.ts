@@ -14,7 +14,10 @@ import { steamRequest, steamCallback, heroId, friendId } from './testing/steam.t
 test('Steam verifier rejects forged, wrong-site, unsigned, stale and replayed assertions', async () => {
   const provider = new SteamProvider('test', steamRequest);
   const returnTo = 'https://game.example/auth/steam/callback?state=test';
-  const callback = () => steamCallback(provider.loginUrl(returnTo)).searchParams;
+  const callback = () => {
+    return steamCallback(provider.loginUrl(returnTo)).searchParams;
+  };
+
   const valid = callback();
   assert.equal(await provider.verify(valid, returnTo), heroId);
   await assert.rejects(provider.verify(valid, returnTo));
@@ -41,7 +44,12 @@ test('Steam verifier rejects forged, wrong-site, unsigned, stale and replayed as
     provider.verify(simultaneous, returnTo),
     provider.verify(simultaneous, returnTo),
   ]);
-  assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
+  assert.equal(
+    results.filter((result) => {
+      return result.status === 'fulfilled';
+    }).length,
+    1,
+  );
 });
 
 test('Steam persistence preserves legacy saves, account identity and nickname across restart', async () => {
@@ -98,7 +106,9 @@ test(
         () => {},
         () => {},
       );
-      const closed = new Promise<number>((resolve) => peer.once('close', resolve));
+      const closed = new Promise<number>((resolve) => {
+        return peer.once('close', resolve);
+      });
       accounts.attach(peer, token);
       assert.equal(await closed, 1008);
       assert.equal(store.session(token), undefined);

@@ -5,11 +5,13 @@ const meta = {
   component: PerformanceMonitor,
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
-      <div style={{ width: 224 }}>
-        <Story />
-      </div>
-    ),
+    (Story) => {
+      return (
+        <div style={{ width: 224 }}>
+          <Story />
+        </div>
+      );
+    },
   ],
   args: {
     samples: [
@@ -25,12 +27,14 @@ export default meta;
 export const Playground: StoryObj<typeof meta> = {};
 export const NetworkDiagnostics: StoryObj<typeof meta> = {
   args: {
-    samples: Array.from({ length: 60 }, (_, index) => ({
-      fps: 232 + (index % 5) * 3,
-      latency: 8 + (index % 7),
-      inputDelay: 85 + (index % 4) * 12,
-      snapshotAge: 95 + (index % 6) * 10,
-    })),
+    samples: Array.from({ length: 60 }, (_, index) => {
+      return {
+        fps: 232 + (index % 5) * 3,
+        latency: 8 + (index % 7),
+        inputDelay: 85 + (index % 4) * 12,
+        snapshotAge: 95 + (index % 6) * 10,
+      };
+    }),
   },
 };
 export const FpsOnly: StoryObj<typeof meta> = { args: { showLatency: false } };

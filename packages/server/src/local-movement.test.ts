@@ -17,13 +17,15 @@ const hero: Player = {
   experience: 0,
   playtimeSeconds: 0,
 };
-const world = (player = hero, time = 10000): WorldState => ({
-  id: 'room',
-  name: 'R',
-  hostId: 'p',
-  players: [{ ...player }],
-  serverNow: time,
-});
+const world = (player = hero, time = 10000): WorldState => {
+  return {
+    id: 'room',
+    name: 'R',
+    hostId: 'p',
+    players: [{ ...player }],
+    serverNow: time,
+  };
+};
 
 test('lobby prediction and reconciliation cross both seams by the shortest path', async () => {
   for (const axis of ['x', 'y'] as const) {
@@ -45,7 +47,9 @@ test('lobby prediction and reconciliation cross both seams by the shortest path'
 
 test('local input is instant and partial acknowledgements replay exactly the remaining duration', async () => {
   const sent: ClientMessage[] = [];
-  const movement = new LocalMovement('p', (m) => sent.push(m));
+  const movement = new LocalMovement('p', (m) => {
+    return sent.push(m);
+  });
   const initial = world();
   movement.render(initial, 0);
   movement.input(1, 0, 0);
@@ -69,7 +73,9 @@ test('local input is instant and partial acknowledgements replay exactly the rem
 
 test('interleaved event and RAF timestamps cannot manufacture movement time or input backlog', () => {
   const sent: ClientMessage[] = [];
-  const movement = new LocalMovement('p', (message) => sent.push(message));
+  const movement = new LocalMovement('p', (message) => {
+    return sent.push(message);
+  });
   const initial = world();
   movement.render(initial, 0);
   movement.input(1, 0, 0);
@@ -81,7 +87,11 @@ test('interleaved event and RAF timestamps cannot manufacture movement time or i
     const next = structuredClone(current);
     movePlayer(next.players[0], 1, 0, 0.05);
     next.serverNow = 10000 + now;
-    const last = sent.filter((m) => m.type === 'move').at(-1)!;
+    const last = sent
+      .filter((m) => {
+        return m.type === 'move';
+      })
+      .at(-1)!;
     next.players[0].inputSeq = last.seq;
     next.players[0].inputElapsed = last.durationMs;
     const rendered = movement.render(next, now)!;
@@ -89,10 +99,9 @@ test('interleaved event and RAF timestamps cannot manufacture movement time or i
     current = next;
   }
 
-  const duration = sent.reduce(
-    (total, message) => total + (message.type === 'move' ? (message.durationMs ?? 0) : 0),
-    0,
-  );
+  const duration = sent.reduce((total, message) => {
+    return total + (message.type === 'move' ? (message.durationMs ?? 0) : 0);
+  }, 0);
   assert.equal(duration, 10000, 'ten seconds of real time sends exactly ten seconds of movement');
 });
 
@@ -104,7 +113,10 @@ test('small visual errors stay still, accumulated error converges, large correct
   const corrected = world({ ...hero, x: 414 }, 10150);
   const blended = movement.render(corrected, 150)!.x;
   assert(blended > 414 && blended < 420);
-  for (let now = 200; now <= 600; now += 50) movement.render(corrected, now);
+  for (let now = 200; now <= 600; now += 50) {
+    movement.render(corrected, now);
+  }
+
   assert(movement.render(corrected, 650)!.x <= 416);
   assert.equal(movement.render(world({ ...hero, x: 350 }, 10200), 700)!.x, 350);
   assert.equal(movement.render(world({ ...hero, x: 345, hitpoints: 0 }, 10250), 750)!.x, 345);
@@ -117,7 +129,10 @@ test('prediction passes through scenery and stops movement and animation on miss
   movement.render(initial, 0);
   movement.input(0, 1, 0);
   let player = start;
-  for (let now = 50; now <= 2000; now += 50) player = movement.render(initial, now)!;
+  for (let now = 50; now <= 2000; now += 50) {
+    player = movement.render(initial, now)!;
+  }
+
   const expected = { ...start };
   movePlayer(expected, 0, 1, 1);
   assert(Math.abs(player.y - expected.y) < 6);
@@ -151,7 +166,10 @@ test('stale movement stops walking animation and fresh acknowledgements restore 
   const movement = new LocalMovement('p', () => {});
   movement.render(initial, 0);
   movement.input(1, 0, 0);
-  for (let now = 50; now <= 1000; now += 50) movement.render(initial, now);
+  for (let now = 50; now <= 1000; now += 50) {
+    movement.render(initial, now);
+  }
+
   const stopped = movement.render(initial, 1001)!;
   assert.equal(stopped.inputX, 0);
   assert.equal(stopped.inputY, 0);

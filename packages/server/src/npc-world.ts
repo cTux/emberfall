@@ -5,5 +5,8 @@ export interface NpcWorld {
   npcs?: VillageNpc[];
   chat?: ChatMessage[];
 }
-export const villagePlayers = (world: NpcWorld) =>
-  [...world.players.values()].filter((p) => !p.scene && p.hitpoints > 0 && !p.reconnecting);
+export const villagePlayers = (world: NpcWorld) => {
+  return [...world.players.values()].filter((p) => {
+    return !p.scene && p.hitpoints > 0 && !p.reconnecting;
+  });
+};

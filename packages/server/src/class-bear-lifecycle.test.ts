@@ -7,7 +7,11 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('Bear moves at player speed in forest and village', async () => {
@@ -54,9 +58,16 @@ test('Bear dodges telegraphed attacks and sidesteps incoming projectiles', async
   assert(bear.y > p.y);
   p.x = 2280;
   p.attackAt = 1e6;
-  for (let i = 1; i <= 8; i++) stepCombat(s, [p], 12000 + i * 50, 0.05);
+  for (let i = 1; i <= 8; i++) {
+    stepCombat(s, [p], 12000 + i * 50, 0.05);
+  }
+
   assert.equal(bear.hitpoints, 150);
-  assert(s.projectiles.some((shot) => shot.x > 2400));
+  assert(
+    s.projectiles.some((shot) => {
+      return shot.x > 2400;
+    }),
+  );
 });
 
 test('Bear teleports only beyond 500 pixels, using wrapped forest distance, without bypassing death', async () => {

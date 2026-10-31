@@ -27,10 +27,12 @@ test('texture filtering changes pixels on cached sources and restores nearest sa
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
-  await page.route('**/filtering-test', (route) =>
-    route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-  );
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
+  await page.route('**/filtering-test', (route) => {
+    return route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' });
+  });
   await page.goto('/filtering-test');
   await page.addScriptTag({ content: code });
   const samples = await page.evaluate(async () => {
@@ -54,14 +56,17 @@ test('smooth textures apply live in village and forest, follow presets and persi
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.setViewportSize({ width: 960, height: 640 });
   // Exercise migration from saved preferences that predate Smooth textures.
   const { smoothTextures: _, ...legacy } = GRAPHICS_PRESETS.Low;
   await page.addInitScript(
     (settings) => {
-      if (!localStorage.getItem('emberfall-new.graphics'))
+      if (!localStorage.getItem('emberfall-new.graphics')) {
         localStorage.setItem('emberfall-new.graphics', JSON.stringify(settings));
+      }
     },
     { ...legacy, frameLimit: 30 },
   );
@@ -94,7 +99,9 @@ test('smooth textures apply live in village and forest, follow presets and persi
   await close.click();
   await expect(canvas).toHaveCSS('image-rendering', 'auto');
   await page.screenshot({ path: 'test-results/softer-village-linear.png' });
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x - 35;
   player.y = LOBBY_PORTAL.y + 9;

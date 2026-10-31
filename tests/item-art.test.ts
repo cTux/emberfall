@@ -9,7 +9,10 @@ test('every non-plant bundled item resolves to its own shipped artwork', () => {
   const plants = new Set<string>(['plant', ...PLANT_KINDS]);
   const hashes = new Set<string>();
   for (const item of game.registries.items.values()) {
-    if (plants.has(item.id)) continue;
+    if (plants.has(item.id)) {
+      continue;
+    }
+
     const name = itemArtName(item.id);
     assert(name, `Missing artwork mapping for ${item.id}`);
     assert(!name.startsWith('slot-'), `Placeholder for ${item.id}`);

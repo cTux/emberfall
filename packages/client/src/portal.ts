@@ -45,7 +45,7 @@ export function drawPortal(
   opacity = 1,
 ) {
   if (portalArt.naturalWidth) {
-    if (shadows)
+    if (shadows) {
       castShadow(ctx, {
         id: 'portal',
         x,
@@ -54,6 +54,8 @@ export function drawPortal(
         height: 80,
         mask: spriteMask(portalArt, 0, 0, false, 128, false, 128)!,
       });
+    }
+
     ctx.save();
     ctx.globalAlpha = opacity;
     if (bloom) {
@@ -63,14 +65,21 @@ export function drawPortal(
 
     drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
     ctx.restore();
-    if (outline) drawInteractionOutline(ctx, outline);
-    if (name) drawNameBadge(ctx, x, y - 72, name);
+    if (outline) {
+      drawInteractionOutline(ctx, outline);
+    }
+
+    if (name) {
+      drawNameBadge(ctx, x, y - 72, name);
+    }
 
     return;
   }
 
-  if (shadows)
+  if (shadows) {
     castShadow(ctx, { id: 'portal', x, y: y + 8, width: 50, height: 76, mask: portalMask });
+  }
+
   ctx.save();
   ctx.globalAlpha = opacity;
   ctx.translate(x, y);
@@ -127,6 +136,11 @@ export function drawPortal(
 
   ctx.restore();
   ctx.restore();
-  if (outline) drawInteractionOutline(ctx, outline);
-  if (name) drawNameBadge(ctx, x, y - 60, name);
+  if (outline) {
+    drawInteractionOutline(ctx, outline);
+  }
+
+  if (name) {
+    drawNameBadge(ctx, x, y - 60, name);
+  }
 }

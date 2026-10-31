@@ -10,11 +10,13 @@ test('all bundled items render dedicated artwork in inventory', async ({ page, g
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
-  player.backpack = catalog.registries.items
-    .values()
-    .map((item) => ({ id: item.id, itemId: item.id, quantity: 1 }));
+  player.backpack = catalog.registries.items.values().map((item) => {
+    return { id: item.id, itemId: item.id, quantity: 1 };
+  });
   await page.getByRole('button', { name: 'Inventory' }).click();
   const backpack = page.getByRole('region', { name: 'Your backpack' });
   const plants = new Set<string>(['plant', ...PLANT_KINDS]);
@@ -58,7 +60,9 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
   await page.goto('/?art-gallery');
   await page.addScriptTag({ content: code });
   const result = await page.evaluate(
@@ -67,9 +71,15 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
         window as unknown as { VillageScenery: typeof import('./village-scenery-fixture') }
       ).VillageScenery;
       while (
-        fixture.artImages.some((image) => !image.complete || image.dataset.artReady !== 'true')
-      )
-        await new Promise((done) => setTimeout(done, 20));
+        fixture.artImages.some((image) => {
+          return !image.complete || image.dataset.artReady !== 'true';
+        })
+      ) {
+        await new Promise((done) => {
+          return setTimeout(done, 20);
+        });
+      }
+
       const preview = document.createElement('canvas');
       preview.id = 'resource-states';
       preview.width = 1440;
@@ -80,21 +90,25 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
       ctx.fillStyle = '#677452';
       ctx.fillRect(0, 0, preview.width, preview.height);
       const nodes: ResourceNode[] = [
-        ...(['tree', 'rock', 'stone', 'plant'] as const).map((kind) => ({
-          id: kind,
-          kind,
-          x: 0,
-          y: 0,
-          size: 90,
-        })),
-        ...plantKinds.map((id, variant) => ({
-          id,
-          kind: 'plant' as const,
-          variant,
-          x: 0,
-          y: 0,
-          size: 90,
-        })),
+        ...(['tree', 'rock', 'stone', 'plant'] as const).map((kind) => {
+          return {
+            id: kind,
+            kind,
+            x: 0,
+            y: 0,
+            size: 90,
+          };
+        }),
+        ...plantKinds.map((id, variant) => {
+          return {
+            id,
+            kind: 'plant' as const,
+            variant,
+            x: 0,
+            y: 0,
+            size: 90,
+          };
+        }),
       ];
 
       return nodes.map((node, index) => {
@@ -114,12 +128,16 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
             .getImageData(0, 0, state.sprite.width, state.sprite.height).data;
 
           return (
-            sprite.some((value, i) => i % 4 === 3 && value > 128) &&
-            mask.every((value, i) => i % 4 !== 3 || value === sprite[i])
+            sprite.some((value, i) => {
+              return i % 4 === 3 && value > 128;
+            }) &&
+            mask.every((value, i) => {
+              return i % 4 !== 3 || value === sprite[i];
+            })
           );
         });
-        const shadows = states.flatMap((state, stateIndex) =>
-          [false, true].map((lamp) => {
+        const shadows = states.flatMap((state, stateIndex) => {
+          return [false, true].map((lamp) => {
             const x = 80 + (index % 5) * 280 + (lamp ? 120 : 0);
             const y = 140 + Math.floor(index / 5) * 350 + stateIndex * 145;
             const shadow = document.createElement('canvas');
@@ -149,11 +167,15 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
               x - 65,
               y + 20,
             );
-            if (stateIndex === 0 && !lamp) ctx.fillText(node.id, x - 65, y - 100);
+            if (stateIndex === 0 && !lamp) {
+              ctx.fillText(node.id, x - 65, y - 100);
+            }
 
-            return pixels.some((value, i) => i % 4 === 3 && value > 0);
-          }),
-        );
+            return pixels.some((value, i) => {
+              return i % 4 === 3 && value > 0;
+            });
+          });
+        });
 
         return {
           id: node.id,
@@ -167,8 +189,20 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
     },
     [...PLANT_KINDS],
   );
-  expect(new Set(result.map((node) => node.live)).size).toBe(result.length);
-  expect(new Set(result.map((node) => node.depleted)).size).toBe(result.length);
+  expect(
+    new Set(
+      result.map((node) => {
+        return node.live;
+      }),
+    ).size,
+  ).toBe(result.length);
+  expect(
+    new Set(
+      result.map((node) => {
+        return node.depleted;
+      }),
+    ).size,
+  ).toBe(result.length);
   for (const node of result) {
     expect(node.live, node.id).not.toBe(node.depleted);
     expect(node.matching, node.id).toBe(true);

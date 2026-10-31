@@ -9,7 +9,9 @@ function clock(interval: number) {
   return (callback: (now: number) => void) => {
     const at = now;
     now += interval;
-    queueMicrotask(() => callback(at));
+    queueMicrotask(() => {
+      return callback(at);
+    });
 
     return ++sequence;
   };
@@ -19,7 +21,9 @@ test('slow frames extend sampling while retaining actual duration and frame inte
   assert.deepEqual(
     await sampleFrameTiming(
       clock(600),
-      () => 0,
+      () => {
+        return 0;
+      },
       () => {},
     ),
     {
@@ -35,7 +39,9 @@ test('the sampling deadline preserves an insufficient-frame result instead of hi
   assert.deepEqual(
     await sampleFrameTiming(
       clock(3000),
-      () => 0,
+      () => {
+        return 0;
+      },
       () => {},
     ),
     {
@@ -51,9 +57,15 @@ test('sampling resolves with failure evidence and cancels a frame when callbacks
   context.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 0 });
   const cancelled: number[] = [];
   const sample = sampleFrameTiming(
-    () => 17,
-    () => Date.now(),
-    (id) => cancelled.push(id),
+    () => {
+      return 17;
+    },
+    () => {
+      return Date.now();
+    },
+    (id) => {
+      return cancelled.push(id);
+    },
   );
   context.mock.timers.tick(15000);
   assert.deepEqual(await sample, { frames: 0, averageMs: 0, p95Ms: 0, sampleMs: 15000 });

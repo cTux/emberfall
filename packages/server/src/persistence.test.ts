@@ -30,18 +30,20 @@ test('import CLI defaults to the configured save and prints a restart path witho
   const before = readFileSync(source);
   const script = fileURLToPath(new URL('../scripts/import-save.ts', import.meta.url));
   const server = fileURLToPath(new URL('../', import.meta.url));
-  const run = (...args: string[]) =>
-    spawnSync(process.execPath, [script, ...args], {
+  const run = (...args: string[]) => {
+    return spawnSync(process.execPath, [script, ...args], {
       cwd: dir,
       env: { ...process.env, SAVE_PATH_NEW: relative(server, source) },
       encoding: 'utf8',
     });
+  };
+
   try {
     const imported = run();
     assert.equal(imported.status, 0, imported.stderr);
-    const setting = imported.stdout
-      .split(/\r?\n/)
-      .find((line) => line.startsWith('SAVE_PATH_NEW='))!;
+    const setting = imported.stdout.split(/\r?\n/).find((line) => {
+      return line.startsWith('SAVE_PATH_NEW=');
+    })!;
     const configured = parseEnv(setting).SAVE_PATH_NEW;
     assert(configured);
     assert.equal(resolve(configured), destination);
@@ -84,7 +86,9 @@ test('save revisions reject stale writers and interoperate with Colyseus cloud s
     const hero = first.create('Hero');
     second.load(hero.token);
     first.save(hero.id, 'Renamed', { ...hero.progress, experience: 21 });
-    assert.throws(() => second.save(hero.id, 'Stale', hero.progress), /Version conflict/);
+    assert.throws(() => {
+      return second.save(hero.id, 'Stale', hero.progress);
+    }, /Version conflict/);
     assert.equal(second.load(hero.token).name, 'Renamed');
     const save = (await first.database.saves.load(hero.id))!;
     assert.equal(save.version, 2);
@@ -92,8 +96,12 @@ test('save revisions reject stale writers and interoperate with Colyseus cloud s
     const slots = await first.database.saves.listSlots(hero.id);
     assert(Math.abs(slots[0].updatedAt.getTime() - Date.now()) < 2000);
     await first.database.saves.save(hero.id, save.data, 0, save.version);
-    assert.throws(() => first.save(hero.id, 'Stale again', hero.progress), /Version conflict/);
-    assert.throws(() => decodeProgress('{"formatVersion":999}'), /Unsupported/);
+    assert.throws(() => {
+      return first.save(hero.id, 'Stale again', hero.progress);
+    }, /Version conflict/);
+    assert.throws(() => {
+      return decodeProgress('{"formatVersion":999}');
+    }, /Unsupported/);
   } finally {
     second.close();
     first.close();
@@ -115,7 +123,9 @@ test('legacy backup import preserves progress and identity without altering or o
   legacy.close();
   const before = readFileSync(source);
   try {
-    assert.throws(() => new CharacterStore(source), /Legacy database/);
+    assert.throws(() => {
+      return new CharacterStore(source);
+    }, /Legacy database/);
     assert.deepEqual(await importLegacy(source, target), { characters: 1, worlds: 0 });
     assert.deepEqual(readFileSync(source), before);
     const store = new CharacterStore(target);

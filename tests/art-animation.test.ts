@@ -10,18 +10,24 @@ test('action frames follow timestamps, do not animate future actions, and death 
   assert.equal(actorFrame(1260, false, true, 1000), 0);
   assert.equal(actorFrame(1100, true, false, 1000), 7);
   assert.deepEqual(
-    [0, 120, 240, 360, 480].map((time) => actorFrame(time, true, true)),
+    [0, 120, 240, 360, 480].map((time) => {
+      return actorFrame(time, true, true);
+    }),
     [1, 2, 3, 4, 1],
   );
 });
 
 test('players use all six gait poses without changing action timing or left facing', () => {
   assert.deepEqual(
-    [0, 80, 160, 240, 320, 400, 480].map((time) => playerFrame(time, true, true)),
+    [0, 80, 160, 240, 320, 400, 480].map((time) => {
+      return playerFrame(time, true, true);
+    }),
     [1, 2, 3, 4, 8, 9, 1],
   );
-  for (const time of [999, 1000, 1104, 1260])
+  for (const time of [999, 1000, 1104, 1260]) {
     assert.equal(playerFrame(time, false, true, 1000), actorFrame(time, false, true, 1000));
+  }
+
   assert.equal(playerFrame(1100, true, false, 1000), 7);
   assert.equal(movementFacing(-1, 0, 3), 2);
   assert.equal(movementFacing(1, 0, 2), 3);
