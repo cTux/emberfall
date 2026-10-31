@@ -728,8 +728,8 @@ L 634.06726 387.271702
    <text style="font-size: 15px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle" x="360" y="14.397896" transform="rotate(-0 360 14.397896)">Emberfall runtime: measured local load</text>
   </g>
   <g id="text_54">
-   <text style="font-size: 9px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif" transform="translate(192.571172 443.934311)">4 players and 40 enemies per occupied world Â· 5 s warmup + 35 s sample</text>
-   <text style="font-size: 9px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif" transform="translate(191.664844 454.736772)">Windows Â· Ryzen 9 9950X3D Â· localhost HTTP Â· disk SQLite Â· fixture healing</text>
+   <text style="font-size: 9px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif" transform="translate(192.571172 443.934311)">4 players and 40 enemies per occupied world · 5 s warmup + 35 s sample</text>
+   <text style="font-size: 9px; font-family: 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif" transform="translate(191.664844 454.736772)">Windows · Ryzen 9 9950X3D · localhost HTTP · disk SQLite · fixture healing</text>
   </g>
  </g>
  <defs>
