@@ -5,7 +5,7 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 ## Project constraints
 
 - Use single quotes for code string literals and JSX attribute values. Follow Oxfmt's escape-minimizing exceptions; JSON retains double quotes.
-- When adding or refactoring code, follow [code structure and strict checks](docs/development/code-structure.md#code-structure): keep modules below 250 nonblank lines, split by responsibility, and use typed declarative definitions for repeated domain rules. Separate functions and logical steps with blank lines as described there.
+- When adding or refactoring code, follow [code structure and strict checks](docs/development/code-structure.md#code-structure): keep modules below 250 nonblank lines, split by responsibility, and use typed declarative definitions for repeated domain rules. Separate functions and logical steps with [blank lines](docs/development/quality.md#blank-lines).
 - Emberfall is an online-only cooperative browser game. The server owns movement validation, damage, health, deaths, rewards and saves; client prediction is presentation only.
 - Verify browser behavior on desktop. Skip mobile devices, mobile emulation, touch-only scenarios and phone-sized viewport/layout checks unless the user explicitly requests mobile testing; missing mobile coverage is not a completion or merge blocker.
 - Progression must not require a player choice or interrupt gameplay. Read [PROG-01](docs/specs/progression.md) before designing progression; automatic leveling and optional talents are implemented.
