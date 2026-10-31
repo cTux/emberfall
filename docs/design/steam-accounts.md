@@ -108,7 +108,9 @@ switch that disables authentication. The server factory's omitted Steam option
 exists only for isolated legacy-protocol/parity fixtures; the executable always
 supplies validated Steam configuration.
 
-[Account tests](../../packages/server/src/accounts.test.ts) cover assertion
+[Account tests](../../packages/server/src/accounts.test.ts),
+[HTTP admission](../../packages/server/src/account-http-admission.test.ts) and
+[client origin tests](../../packages/server/src/account-client-origin.test.ts) cover assertion
 rejections, browser binding, CSRF, session/ticket authorization, nickname ownership,
 logout, database restart and untouched legacy saves. [Browser tests](../../tests/accounts.spec.ts)
 cover onboarding/reload, edit/cancel/failure, another player's view, repeat login,

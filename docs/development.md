@@ -32,6 +32,15 @@ pnpm build
 
 The formatter is Oxfmt; `pnpm fmt` writes formatting. `pnpm test` uses Node's test runner for `packages/server/src/*.test.ts`, and `tests/*.test.ts`, including shared simulation, client helpers and asset checks. Build includes client, server and the static UI Storybook through Turborepo. The [GitHub Pages workflow](../.github/workflows/deploy-pages.yml) builds and deploys the fully verified client after a successful manual Verify run on current `main`; local verification commands remain separate from deployment.
 
+Node suites are grouped by behavior, such as cast admission, companion lifecycle,
+NPC reply scheduling and persistence. Related suites share their domain's
+`*.fixture.ts` factories; per-file hooks stay in the test modules. Fixtures are
+not test entry points. Keep server test files directly in `packages/server/src`
+and core registry tests in `packages/core/src/content/tests` so the existing
+runner globs discover them. Cross-package presentation fixtures live in `tests`
+so production package dependency rules still apply. When splitting suites, preserve case bodies,
+parameterized cases and hook scope, then verify discovery and the complete suite.
+
 ## Lint policy
 
 The root `.oxlintrc.json` is shared by local commands, editors and CI runners.
@@ -160,7 +169,7 @@ The UI suite starts Storybook on port 6007; interactive Storybook uses 6006. It 
 Focused examples:
 
 ```sh
-node --test packages/server/src/classes.test.ts packages/server/src/training.test.ts
+node --test packages/server/src/class*.test.ts packages/server/src/training*.test.ts
 pnpm exec playwright test tests/gameplay.spec.ts
 pnpm benchmark
 ```

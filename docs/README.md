@@ -41,7 +41,7 @@ covers the static client and a separately hosted backend. Implementation:
 [workflow](../.github/workflows/deploy-pages.yml),
 [client URLs](../packages/client/src/urls.ts),
 [account origin policy](../packages/server/src/accounts.ts).
-Verification: [account integration tests](../packages/server/src/accounts.test.ts).
+Verification: [account integration tests](../packages/server/src/account-client-origin.test.ts).
 
 ## Feature map
 
@@ -49,18 +49,23 @@ Tactics: [UI-01](specs/interface-and-audio.md#tactics),
 [controlled window](../packages/client/src/Tactics.tsx),
 [structural contract](../packages/common/src/tactics.ts),
 [shared selectors](../packages/core/src/tactics.ts),
-[authoritative checks](../packages/server/src/tactics.test.ts), and
+[authoritative checks](../packages/server/src/tactics.test.ts),
+[healing checks](../packages/server/src/tactics-healing.test.ts),
+[persistence checks](../packages/server/src/tactics-persistence.test.ts), and
 [desktop interactions](../tests/tactics.spec.ts).
 
 Village merchants: [CHAR-04](specs/characters.md#char-04--equipment-new-runtime),
 [shared trading rules](design/new-runtime.md#inventory-loot-and-shared-trading),
-[merchant validation](../packages/server/src/merchant.test.ts) and
+[stock refresh](../packages/server/src/merchant.test.ts),
+[merchant validation](../packages/server/src/merchant-pricing.test.ts) and
 [desktop gear trading](../tests/item-rarities.spec.ts). Marta stocks supplies; Bram stocks gear.
 
 Random gear rarity, stats and prices: [ITEM-01–04](specs/item-rolls.md),
 [core configuration](../packages/core/src/item-stats.ts),
 [instance rules](../packages/core/src/content/rules.ts),
-[rule/persistence checks](../packages/server/src/item-rolls.test.ts) and
+[rule checks](../packages/server/src/item-rolls.test.ts),
+[persistence checks](../packages/server/src/item-roll-persistence.test.ts),
+[combat and reward checks](../packages/server/src/item-roll-talents-rewards.test.ts) and
 [desktop verification](../tests/item-rarities.spec.ts).
 
 DOT Speed: [equipped effects](specs/item-rolls.md#item-02--equipped-effects-and-drops),
@@ -123,7 +128,9 @@ Floating battle text: [GRAPHICS-04](specs/graphics.md#graphics-04--combat-readab
 [Pixi pixel checks](../tests/renderer-pixels.spec.ts).
 
 Inventory drag-and-drop verification: [native browser transfers](../tests/inventory-drag.spec.ts),
-[storage rules and failure paths](../packages/server/src/storehouse.test.ts), and
+[storage rules](../packages/server/src/storehouse.test.ts),
+[save failure paths](../packages/server/src/storehouse-transactions.test.ts),
+[migrations](../packages/server/src/storehouse-migrations.test.ts), and
 [shared UI drag/keyboard checks](../packages/ui/tests/ui.spec.ts).
 
 Bottom-center action bar: [UI-01](specs/interface-and-audio.md#ui-01--hud-and-windows),
@@ -138,21 +145,21 @@ The default-on combat gathering hint toggle is covered by
 [gathering scenarios](../tests/gathering.spec.ts) and
 [preference validation](../tests/preferences.test.ts).
 
-| Feature group                                    | Specification                                                   | Design                                                           | Verification entry points                                                                                                                                                                                                                               |
-| ------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Worlds, recovery and chat                        | [WORLD/CHAT](specs/worlds-and-chat.md)                          | [Network](design/network-and-persistence.md)                     | `worlds.test.ts`, `reconnect.test.ts`, `chat.test.ts`, `gameplay.spec.ts`, `reconnect.spec.ts`, `chat-presentation.spec.ts`, `npc-chat.test.ts`, `npc-models.test.ts`, `npcs.spec.ts`                                                                   |
-| Steam accounts, characters and classes           | [CHAR](specs/characters.md)                                     | [Accounts](design/steam-accounts.md)                             | `accounts.test.ts`, `characters.test.ts`, `classes.test.ts`, `accounts.spec.ts`                                                                                                                                                                         |
-| Village, forest and training                     | [SCENE](specs/scenes-and-village.md), [COMBAT](specs/combat.md) | [Simulation](design/simulation.md)                               | `scenes.test.ts`, `village.test.ts`, `village-scenery.test.ts`, `village-scenery.spec.ts`, `npcs.test.ts`, `npcs.spec.ts`, `training.test.ts`, `enemies.test.ts`, `gameplay.spec.ts`                                                                    |
-| Prediction and replication                       | [SCENE/UI](specs/interface-and-audio.md)                        | [Movement](design/movement.md), [runtime](design/new-runtime.md) | `local-movement.test.ts`, `local-projectiles.test.ts`, `snapshots.test.ts`, `protocol.test.ts`                                                                                                                                                          |
-| Inventory, equipment, storage and trading        | [CHAR](specs/characters.md)                                     | [Runtime](design/new-runtime.md)                                 | `inventory.test.ts`, [storage rules](../packages/server/src/storehouse.test.ts), [storage UI](../tests/storehouse.spec.ts), `equipment.test.ts`, `inventory.spec.ts`, `equipment.spec.ts`, `innkeeper.spec.ts`, [auto-loot](../tests/auto-loot.spec.ts) |
-| HUD, controls, settings and audio                | [UI](specs/interface-and-audio.md)                              | [Presentation](design/presentation.md)                           | `gameplay.spec.ts`, `companion-hud.spec.ts`, `packages/ui/tests/ui.spec.ts`                                                                                                                                                                             |
-| Rendering, shadows and assets                    | [GRAPHICS](specs/graphics.md), [assets](assets.md)              | [Runtime](design/new-runtime.md)                                 | `rendering.spec.ts`, `renderer-pixels.spec.ts`, `entity-layering.spec.ts`, `terrain-loading.spec.ts`, `player-art.spec.ts`, `test:images`                                                                                                               |
-| Performance                                      | [GRAPHICS](specs/graphics.md)                                   | [Development](development.md)                                    | Opt-in `frame-budget.spec.ts` and `pnpm benchmark`                                                                                                                                                                                                      |
-| Progression, paragon, talents and bullseye reset | [PROG-01–03](specs/progression.md)                              | [Runtime](design/new-runtime.md#simulation-and-replication)      | `packages/server/src/progression.test.ts`, `packages/server/src/talents.test.ts`, `tests/progression.spec.ts`, `tests/talents.spec.ts`                                                                                                                  |
+| Feature group                                    | Specification                                                   | Design                                                           | Verification entry points                                                                                                                                                                                                                                 |
+| ------------------------------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Worlds, recovery and chat                        | [WORLD/CHAT](specs/worlds-and-chat.md)                          | [Network](design/network-and-persistence.md)                     | `world*.test.ts`, `reconnect.test.ts`, `chat.test.ts`, `gameplay.spec.ts`, `reconnect.spec.ts`, `chat-presentation.spec.ts`, `npc-chat.test.ts`, `npc-models.test.ts`, `npcs.spec.ts`                                                                     |
+| Steam accounts, characters and classes           | [CHAR](specs/characters.md)                                     | [Accounts](design/steam-accounts.md)                             | `account*.test.ts`, `characters.test.ts`, `classes.test.ts`, `accounts.spec.ts`                                                                                                                                                                           |
+| Village, forest and training                     | [SCENE](specs/scenes-and-village.md), [COMBAT](specs/combat.md) | [Simulation](design/simulation.md)                               | `scene*.test.ts`, `village.test.ts`, `village-scenery.test.ts`, `village-scenery.spec.ts`, `npc*.test.ts`, `npcs.spec.ts`, `training*.test.ts`, `enem*.test.ts`, `gameplay.spec.ts`                                                                       |
+| Prediction and replication                       | [SCENE/UI](specs/interface-and-audio.md)                        | [Movement](design/movement.md), [runtime](design/new-runtime.md) | `local-*.test.ts`, `snapshot*.test.ts`, `protocol.test.ts`                                                                                                                                                                                                |
+| Inventory, equipment, storage and trading        | [CHAR](specs/characters.md)                                     | [Runtime](design/new-runtime.md)                                 | `inventory*.test.ts`, [storage rules](../packages/server/src/storehouse.test.ts), [storage UI](../tests/storehouse.spec.ts), `equipment*.test.ts`, `inventory.spec.ts`, `equipment.spec.ts`, `innkeeper.spec.ts`, [auto-loot](../tests/auto-loot.spec.ts) |
+| HUD, controls, settings and audio                | [UI](specs/interface-and-audio.md)                              | [Presentation](design/presentation.md)                           | `gameplay.spec.ts`, `companion-hud.spec.ts`, `packages/ui/tests/ui.spec.ts`                                                                                                                                                                               |
+| Rendering, shadows and assets                    | [GRAPHICS](specs/graphics.md), [assets](assets.md)              | [Runtime](design/new-runtime.md)                                 | `rendering.spec.ts`, `renderer-pixels.spec.ts`, `entity-layering.spec.ts`, `terrain-loading.spec.ts`, `player-art.spec.ts`, `test:images`                                                                                                                 |
+| Performance                                      | [GRAPHICS](specs/graphics.md)                                   | [Development](development.md)                                    | Opt-in `frame-budget.spec.ts` and `pnpm benchmark`                                                                                                                                                                                                        |
+| Progression, paragon, talents and bullseye reset | [PROG-01–03](specs/progression.md)                              | [Runtime](design/new-runtime.md#simulation-and-replication)      | `packages/server/src/progression.test.ts`, `packages/server/src/talent*.test.ts`, `tests/progression.spec.ts`, `tests/talents.spec.ts`                                                                                                                    |
 
 New-runtime Steam accounts and nickname onboarding/editing are specified in
 [CHAR-05](specs/characters.md#char-05--steam-accounts-and-nickname), with
-[design and verification](design/steam-accounts.md). Evidence: [server tests](../packages/server/src/accounts.test.ts) and [browser tests](../tests/accounts.spec.ts).
+[design and verification](design/steam-accounts.md). Evidence: [server tests](../packages/server/src/account-http-admission.test.ts) and [browser tests](../tests/accounts.spec.ts).
 
 Server tests live in [packages/server/src](../packages/server/src), game browser tests in [tests](../tests), and shared UI tests in [packages/ui/tests](../packages/ui/tests). See [development](development.md) for commands and evidence expectations.
 
@@ -162,7 +169,7 @@ Resident workstations: [SCENE-06](specs/scenes-and-village.md#scene-06--village-
 [registered work spots](../packages/core/src/mods/base/worlds/village.ts),
 [authoritative routines](../packages/server/src/npcs.ts),
 [work poses and effects](../packages/client/src/npc-art.ts),
-[server verification](../packages/server/src/npcs.test.ts) and
+[server verification](../packages/server/src/npc-workstations.test.ts) and
 [browser verification](../tests/npcs.spec.ts).
 
 New-runtime Innkeeper: [SCENE-01](specs/scenes-and-village.md#scene-01--village-and-interactions),

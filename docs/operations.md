@@ -117,7 +117,7 @@ Without `BASE_API`, the client connects to its own origin, preserving local setu
 
 Verification: test `/health` from outside the home network, a real Steam login,
 nickname save, game join and logout from the deployed Pages URL in the target
-browsers. Automated [account tests](../packages/server/src/accounts.test.ts) cover
+browsers. Automated [account tests](../packages/server/src/account-client-origin.test.ts) cover
 cross-origin HTTP, redirects, cookie attributes and SDK authorization with a
 mocked Steam provider; they do not verify the public certificate, router or
 browser third-party-cookie policy.

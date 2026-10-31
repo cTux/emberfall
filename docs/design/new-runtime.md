@@ -428,7 +428,7 @@ and retains both merchants' buybacks. It saves before publishing stock or the sy
 failed writes retain the old state and retry at the autosave cadence. Legacy merchants without a deadline
 refresh once on load. Empty bottles use the existing resource stacking rules.
 
-Verification: `packages/server/src/inventory.test.ts` and
+Verification: `packages/server/src/inventory*.test.ts` and
 `tests/inventory.spec.ts` cover transfers, failures, migration, restart,
 stacking, loot, unarmed casting and the replicated UI. `tests/auto-loot.spec.ts` covers the live setting, item pickup and reload persistence.
 

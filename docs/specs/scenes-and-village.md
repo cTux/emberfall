@@ -134,7 +134,7 @@ At timer expiry, regular spawning continues and one Brute Boss with 300 Easy HP 
 - After 120 seconds the boss spawns; regular spawning continues until boss death. Each participant receives a fixed nearby return portal.
 - Early scene exit retains world membership; village exit removes it. Buildings remain service placeholders.
 
-Evidence: [scenes.test.ts](../../packages/server/src/scenes.test.ts), [pass-through.test.ts](../../packages/server/src/pass-through.test.ts), [village.test.ts](../../packages/server/src/village.test.ts).
+Evidence: [scene transitions](../../packages/server/src/scenes.test.ts), [voting](../../packages/server/src/scene-voting-lifecycle.test.ts), [pause/resume](../../packages/server/src/scene-pause-resume.test.ts), [difficulty](../../packages/server/src/scene-difficulty.test.ts), [pass-through.test.ts](../../packages/server/src/pass-through.test.ts), [village.test.ts](../../packages/server/src/village.test.ts).
 
 ## VILLAGE-07 — Gathering
 

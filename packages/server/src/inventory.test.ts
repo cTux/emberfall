@@ -1,107 +1,23 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { type ServerMessage } from '@emberfall/common';
+
 import {
   addItem,
   useBackpackItem,
   unequipItem,
   tradeItem,
   freshMerchant,
-  sellAll,
-  merchantSchema,
-  BUYBACK_SLOTS,
   INVENTORY_SLOTS,
   characterStats,
   CLASS_IDS,
-  LOOT_ITEM_IDS,
-  GEAR_DEFINITIONS,
   backpackSchema,
   clientMessage,
-  INNKEEPER,
 } from '@emberfall/core';
-import { createTrainingScene, requestPlayerCast, stepCombat, hitEnemy } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
-import { CharacterStore, freshProgress, decodeProgress } from './characters.ts';
-import { createRuntime } from './runtime.ts';
-import { Peer } from './network/peer.ts';
+import { createTrainingScene, requestPlayerCast } from '@emberfall/core';
 
-const hero = (): Player => ({
-  ...freshProgress('warrior'),
-  classId: 'warrior',
-  id: 'p',
-  name: 'Hero',
-  x: 2400,
-  y: 1280,
-  color: 0,
-});
-const item = (itemId: string, quantity = 1) => ({ id: crypto.randomUUID(), itemId, quantity });
+import { freshProgress, decodeProgress } from './characters.ts';
 
-test('trade amounts transfer ten or a whole stack at the total price, including buyback', () => {
-  const player = hero();
-  player.coins = 1000;
-  const merchant = freshMerchant();
-  const bottle = merchant.backpack.find((entry) => entry.itemId === 'empty-bottle')!;
-  tradeItem(player, merchant, bottle.id, true, 10);
-  assert.equal(bottle.quantity, 190);
-  assert.equal(player.backpack![0].quantity, 10);
-  assert.equal(player.coins, 990);
-  assert.equal(merchant.coins, 5010);
-  tradeItem(player, merchant, bottle.id, true, 'stack');
-  assert.equal(player.backpack![0].quantity, 200);
-  assert.equal(player.coins, 800);
-  assert.equal(merchant.coins, 5200);
-  assert(!merchant.backpack.some((entry) => entry.id === bottle.id));
-  tradeItem(player, merchant, player.backpack![0].id, false, 10);
-  assert.equal(player.backpack![0].quantity, 190);
-  assert.equal(merchant.buyback[0].quantity, 10);
-  assert.equal(player.coins, 810);
-  tradeItem(player, merchant, merchant.buyback[0].id, true, 'stack');
-  assert.equal(player.backpack![0].quantity, 200);
-  tradeItem(player, merchant, player.backpack![0].id, false, 'stack');
-  assert.equal(player.backpack!.length, 0);
-  assert.equal(merchant.buyback[0].quantity, 200);
-  assert.equal(player.coins, 1000);
-  assert.equal(merchant.coins, 5000);
-  const potion = merchant.backpack.find((entry) => entry.itemId === 'health-potion')!;
-  tradeItem(player, merchant, potion.id, true, 10);
-  assert.equal(player.backpack![0].quantity, 5);
-});
-
-test('bulk trades reject invalid amounts, insufficient gold, full inventory and overflow atomically', () => {
-  const player = hero();
-  const merchant = freshMerchant();
-  const bottle = merchant.backpack.find((entry) => entry.itemId === 'empty-bottle')!;
-  const rejectsUnchanged = (action: () => void, error: RegExp) => {
-    const before = structuredClone({ player, merchant });
-    assert.throws(action, error);
-    assert.deepEqual({ player, merchant }, before);
-  };
-  player.coins = 9;
-  rejectsUnchanged(() => tradeItem(player, merchant, bottle.id, true, 10), /gold/);
-  player.coins = 1000;
-  player.backpack = Array.from({ length: INVENTORY_SLOTS }, () => item('loot-helmet'));
-  rejectsUnchanged(() => tradeItem(player, merchant, bottle.id, true, 'stack'), /full/);
-  player.backpack = [item('empty-bottle', 20)];
-  merchant.coins = 9;
-  rejectsUnchanged(() => tradeItem(player, merchant, player.backpack![0].id, false, 10), /gold/);
-  merchant.coins = Number.MAX_SAFE_INTEGER;
-  rejectsUnchanged(() => tradeItem(player, merchant, bottle.id, true, 10), /balance/);
-  for (const amount of [0, -1, 2, 1.5, 'all', null, Number.MAX_SAFE_INTEGER]) {
-    assert.equal(
-      clientMessage.safeParse({ type: 'trade', id: bottle.id, buying: true, amount }).success,
-      false,
-    );
-  }
-  for (const amount of [undefined, 1, 10, 'stack']) {
-    assert.equal(
-      clientMessage.safeParse({ type: 'trade', id: bottle.id, buying: true, amount }).success,
-      true,
-    );
-  }
-});
+import { hero, item } from './inventory.fixture.ts';
 
 test('twenty slots reject purchases and unequipping without losing items or gold; stacks and swaps still work', () => {
   const player = hero();
@@ -124,54 +40,6 @@ test('twenty slots reject purchases and unequipping without losing items or gold
   useBackpackItem(legacy, legacy.backpack[0].id);
   assert.equal(legacy.backpack.length, 23);
   assert.equal(decodeProgress(JSON.stringify(legacy)).progress.backpack!.length, 23);
-});
-
-test('full players leave item drops for nearby players while still collecting gold', (t) => {
-  t.mock.method(Math, 'random', () => 0);
-  const player = {
-    ...hero(),
-    scene: 'forest' as const,
-    backpack: Array.from({ length: INVENTORY_SLOTS }, () => item('loot-boots')),
-  };
-  const scene = {
-    ...createTrainingScene(0),
-    training: false,
-    enemies: [],
-    endsAt: 1e9,
-    nextSpawn: 1e9,
-  };
-  hitEnemy(scene, { id: 1, x: player.x, y: player.y, hitpoints: 1, angle: 0 }, 2, player, 1000);
-  stepCombat(scene, [player], 1400, 0.05);
-  assert.equal(player.backpack.length, INVENTORY_SLOTS);
-  assert.equal(scene.drops!.filter((drop) => drop.kind === 'item').length, 1);
-  assert((player.coins ?? 0) > 0);
-  const second = { ...hero(), id: 'second', scene: 'forest' as const };
-  stepCombat(scene, [player, second], 1450, 0.05);
-  assert.equal(second.backpack!.length, 1);
-  assert.equal(scene.drops!.filter((drop) => drop.kind === 'item').length, 0);
-});
-
-test('auto-loot off leaves items for others without blocking shared XP or gold', (t) => {
-  t.mock.method(Math, 'random', () => 0);
-  const player = { ...hero(), scene: 'forest' as const, autoLoot: false };
-  const scene = {
-    ...createTrainingScene(0),
-    training: false,
-    enemies: [],
-    endsAt: 1e9,
-    nextSpawn: 1e9,
-  };
-  hitEnemy(scene, { id: 1, x: player.x, y: player.y, hitpoints: 1, angle: 0 }, 2, player, 1000);
-  stepCombat(scene, [player], 1400, 0.05);
-  assert.equal(player.backpack?.length ?? 0, 0);
-  assert(player.experience > 0);
-  assert.equal(player.coins, 1);
-  assert.equal(scene.drops!.length, 1);
-  assert.equal(scene.drops![0].collectorId, undefined);
-  const second = { ...hero(), id: 'second', scene: 'forest' as const };
-  stepCombat(scene, [player, second], 1450, 0.05);
-  assert.equal(second.backpack!.length, 1);
-  assert.equal(scene.drops!.length, 0);
 });
 
 test('gear exchange updates totals and weapon removal rejects casts in every class', () => {
@@ -246,32 +114,6 @@ test('consumables stack, heal one at a time and remain unused at full health', (
   assert.equal(player.backpack.length, 0);
 });
 
-test('shared merchant trades conserve items and gold, reject stale and unaffordable purchases', () => {
-  const player = hero();
-  const merchant = freshMerchant();
-  const helmet = item('loot-helmet');
-  player.backpack = [helmet];
-  tradeItem(player, merchant, helmet.id, false);
-  assert.equal(player.coins, 1);
-  assert.equal(merchant.coins, 4999);
-  assert.equal(player.backpack.length, 0);
-  const sold = merchant.buyback.find((item) => item.itemId === helmet.itemId)!;
-  const second = hero();
-  second.coins = 1;
-  tradeItem(second, merchant, sold.id, true);
-  assert.equal(second.coins, 0);
-  assert.equal(second.backpack![0].itemId, helmet.itemId);
-  assert.equal(merchant.coins, 5000);
-  assert.throws(() => tradeItem(player, merchant, sold.id, true), /available/);
-  const potion = merchant.backpack[0];
-  tradeItem(player, merchant, potion.id, true);
-  assert.equal(potion.quantity, 4);
-  assert.equal(player.backpack[0].quantity, 1);
-  const before = structuredClone({ player, merchant });
-  assert.throws(() => tradeItem(player, merchant, potion.id, true), /gold/);
-  assert.deepEqual({ player, merchant }, before);
-});
-
 test('backpack and command validation reject unknown items, forged stacks and duplicates', () => {
   assert.equal(backpackSchema.safeParse([item('missing')]).success, false);
   assert.equal(backpackSchema.safeParse([item('__proto__')]).success, false);
@@ -281,182 +123,4 @@ test('backpack and command validation reject unknown items, forged stacks and du
   assert.equal(clientMessage.safeParse({ type: 'unequip', slot: 'unknown' }).success, false);
   assert.equal(clientMessage.safeParse({ type: 'trade', id: 'a', buying: 'yes' }).success, false);
   assert.deepEqual(decodeProgress(JSON.stringify(freshProgress())).progress.backpack, []);
-});
-
-test('buyback keeps the latest 20 sales separate, migrates legacy gear, and rejects expired IDs', () => {
-  const player = hero();
-  const merchant = freshMerchant();
-  player.backpack = Array.from({ length: 24 }, () => item('loot-helmet'));
-  const ids: string[] = [];
-  // Trading mutates the backpack; iterate a snapshot so every original item is sold.
-  // oxlint-disable-next-line unicorn/no-useless-spread
-  for (const entry of [...player.backpack]) {
-    tradeItem(player, merchant, entry.id, false);
-    ids.push(merchant.buyback[0].id);
-  }
-  assert.equal(merchant.backpack.length, 2);
-  assert.equal(merchant.buyback.length, BUYBACK_SLOTS);
-  assert.deepEqual(
-    merchant.buyback.map((entry) => entry.id),
-    ids.slice(-20).reverse(),
-  );
-  assert.throws(() => tradeItem(player, merchant, ids[0], true), /available/);
-  const legacy = merchantSchema.parse({
-    coins: 100,
-    backpack: [item('health-potion', 3), ...Array.from({ length: 20 }, () => item('loot-boots'))],
-  });
-  assert.equal(legacy.backpack.length, 1);
-  assert.equal(legacy.backpack[0].quantity, 3);
-  assert.equal(legacy.buyback.length, 20);
-  assert.deepEqual(merchantSchema.parse(merchant), merchant);
-  assert.equal(
-    merchantSchema.safeParse({
-      ...merchant,
-      buyback: Array.from({ length: 21 }, () => item('loot-boots')),
-    }).success,
-    false,
-  );
-});
-
-test('sell all transfers stacks and gold atomically, preserves equipment and rejects unaffordable or overflowing sales', () => {
-  const player = hero();
-  const merchant = freshMerchant();
-  const equipment = structuredClone(player.equipment);
-  player.backpack = [item('loot-helmet'), item('health-potion', 5)];
-  merchant.coins = 5;
-  const before = structuredClone({ player, merchant });
-  assert.throws(() => sellAll(player, merchant), /gold/);
-  assert.deepEqual({ player, merchant }, before);
-  merchant.coins = 5000;
-  sellAll(player, merchant);
-  assert.equal(player.coins, 6);
-  assert.equal(merchant.coins, 4994);
-  assert.equal(player.backpack.length, 0);
-  assert.deepEqual(player.equipment, equipment);
-  assert.deepEqual(
-    merchant.buyback.map((entry) => entry.quantity),
-    [5, 1],
-  );
-  tradeItem(player, merchant, merchant.buyback[0].id, true);
-  assert.equal(player.backpack[0].quantity, 1);
-  assert.equal(merchant.buyback[0].quantity, 4);
-  player.coins = Number.MAX_SAFE_INTEGER;
-  const overflow = structuredClone({ player, merchant });
-  assert.throws(() => sellAll(player, merchant), /large/);
-  assert.deepEqual({ player, merchant }, overflow);
-});
-
-test('successful item rolls include weapons and preserve rolls across a wrapped pickup; training drops none', (t) => {
-  for (const [index, id] of LOOT_ITEM_IDS.entries()) {
-    const rolls = [0.5, 0, 0, (index + 0.5) / LOOT_ITEM_IDS.length];
-    t.mock.method(Math, 'random', () => rolls.shift() ?? 0.5);
-    const player = hero();
-    player.scene = 'forest';
-    player.x = 4798;
-    player.y = 1280;
-    const scene = {
-      ...createTrainingScene(0),
-      training: false,
-      enemies: [],
-      endsAt: 1e9,
-      nextSpawn: 1e9,
-    };
-    hitEnemy(scene, { id: 1, x: 8, y: 1280, hitpoints: 1, angle: 0 }, 2, player, 1000);
-    const drop = scene.drops!.find((drop) => drop.kind === 'item')!;
-    assert.equal(drop.itemId, id);
-    assert(GEAR_DEFINITIONS[id]);
-    assert.equal(drop.rarity, 'common');
-    assert.equal(Object.keys(drop.stats!).length, 1);
-    stepCombat(scene, [player], 1400, 0.05);
-    assert.equal(player.backpack!.length, 1);
-    assert.deepEqual(player.backpack![0].stats, drop.stats);
-    stepCombat(scene, [player], 1450, 0.05);
-    assert.equal(player.backpack!.length, 1);
-    const training = createTrainingScene(0);
-    hitEnemy(training, { id: 1, x: 8, y: 1280, hitpoints: 1, angle: 0 }, 2, player, 1000);
-    assert.equal(training.drops?.length ?? 0, 0);
-    t.mock.restoreAll();
-  }
-});
-
-test('trade save survives restart and rolls both owners back on failed validation', async () => {
-  const directory = await mkdtemp(join(tmpdir(), 'emberfall-inventory-'));
-  const path = join(directory, 'save.sqlite');
-  let store = new CharacterStore(path);
-  await store.ready;
-  try {
-    const saved = store.create('Trader');
-    const worldId = crypto.randomUUID();
-    store.saveWorld({ id: worldId, name: 'World', salt: '' }, true);
-    const player = { ...hero(), ...saved.progress };
-    player.backpack = [item('loot-helmet')];
-    const merchant = store.merchant(worldId);
-    tradeItem(player, merchant, player.backpack[0].id, false);
-    store.save(saved.id, player.name, player, { worldId, state: merchant });
-    const bad = { ...player, coins: 999 };
-    assert.throws(() =>
-      store.save(saved.id, player.name, bad, { worldId, state: { ...merchant, coins: -1 } }),
-    );
-    assert.equal(store.load(saved.token).progress.coins, 1);
-    assert.equal(store.merchant(worldId).coins, 4999);
-    store.close();
-    store = new CharacterStore(path);
-    await store.ready;
-    assert.equal(store.load(saved.token).progress.coins, 1);
-    assert.equal(
-      store.merchant(worldId).buyback.find((entry) => entry.itemId === 'loot-helmet')?.quantity,
-      1,
-    );
-    assert.equal(store.merchant(worldId).coins, 4999);
-  } finally {
-    store.close();
-    await rm(directory, { recursive: true, force: true });
-  }
-});
-
-test('session-owned commands reject remote trading and retain live items after a failed save', async (t) => {
-  const runtime = await createRuntime();
-  const messages: ServerMessage[] = [];
-  const peer = new Peer(
-    (message) => messages.push(message),
-    () => {},
-  );
-  try {
-    runtime.connect(peer);
-    const world = [...runtime.worlds.values()][0];
-    peer.receive({ type: 'join', worldId: world.id, playerName: 'Trader', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    assert.equal(world.players.size, 1);
-    const player = [...world.players.values()][0];
-    player.backpack = [item('loot-helmet')];
-    peer.receive({ type: 'sellAll' });
-    assert.match((messages.at(-1) as { message: string }).message, /Trade near Marta/);
-    assert.equal(player.backpack.length, 1);
-    player.x = INNKEEPER.x;
-    player.y = INNKEEPER.y - 15;
-    const before = structuredClone(player);
-    const failSave = t.mock.method(runtime.characters, 'save', () => {
-      throw new Error('Test database failure');
-    });
-    peer.receive({ type: 'sellAll' });
-    assert.match((messages.at(-1) as { message: string }).message, /Unable to save/);
-    assert.deepEqual(player, before);
-    assert.equal(world.merchant!.coins, 5000);
-    assert.equal(world.merchant!.backpack.length, 2);
-    failSave.mock.restore();
-    peer.receive({ type: 'trade', id: player.backpack[0].id, buying: false, coins: 99999 });
-    assert.equal(player.backpack.length, 0);
-    assert.equal(player.coins, 1, 'wire currency cannot override the server calculation');
-    const soldId = world.merchant!.buyback.find((entry) => entry.itemId === 'loot-helmet')!.id;
-    peer.receive({ type: 'trade', id: soldId, buying: true });
-    peer.receive({ type: 'trade', id: soldId, buying: true });
-    assert.match((messages.at(-1) as { message: string }).message, /no longer available/);
-    assert.equal(player.backpack.length, 1);
-    assert.equal(player.coins, 0);
-    assert.equal(world.merchant!.coins, 5000);
-  } finally {
-    t.mock.restoreAll();
-    await runtime.close();
-  }
 });
