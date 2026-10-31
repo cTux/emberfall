@@ -111,8 +111,10 @@ test('attack rotation takes the short path and is consistent at server and displ
   const rotate = (steps: number) => {
     let value = 0;
     for (let i = 0; i < steps; i++) value = smoothAttackAngle(value, Math.PI / 2, 0.3 / steps);
+
     return value;
   };
+
   assert(Math.abs(rotate(6) - rotate(18)) < 1e-10);
   assert.equal(smoothAttackAngle(undefined, 1.2, 0), 1.2);
   assert.equal(smoothAttackAngle(0.5, 1.2, 0), 0.5);

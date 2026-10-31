@@ -40,14 +40,17 @@ export function stepMovement(
         player.inputX = command.x;
         player.inputY = command.y;
       }
+
       command.elapsed = elapsed + dt;
       player.inputSeq = command.seq;
       player.inputElapsed = command.elapsed;
       budget -= dt;
       if (command.elapsed >= command.durationMs! - 0.0001) session.inputs.shift();
     }
+
     return;
   }
+
   const command = session.inputs.shift();
   if (command) player.inputSeq = command.seq;
   const epoch = player.scene === 'forest' ? sceneId : 'lobby';
@@ -56,6 +59,7 @@ export function stepMovement(
     session.x = command.x;
     session.y = command.y;
   }
+
   const fresh = now - session.inputAt <= 250 && (session.lastSeq === 0 || session.epoch === epoch);
   const x = fresh ? session.x : 0;
   const y = fresh ? session.y : 0;

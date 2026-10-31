@@ -23,18 +23,21 @@ export function talentIncomingDamage(
     amount *= 1 - reduction;
     value.guardUntil = 0;
   }
+
   if (value.wallUntil > now) {
     value.wallPrevented = true;
     const reduction = value.wallRank === 2 ? 0.75 : 0.6;
     prevented += amount * reduction;
     amount *= 1 - reduction;
   }
+
   if (value.barrierUntil > now && value.barrier > 0) {
     const absorbed = Math.min(value.barrier, amount);
     value.barrier -= absorbed;
     amount -= absorbed;
     prevented += absorbed;
   }
+
   const retaliation = rank(player, 2, 6);
   if (prevented > 0 && retaliation && now >= value.reprisalAt) {
     value.reprisalAt = now + 2000;
@@ -50,6 +53,7 @@ export function talentIncomingDamage(
       );
     talentVisual(scene, player, 2, player, now);
   }
+
   const rebirth = rank(player, 2, 9);
   if (amount > 0) amount = Math.max(1, amount);
   if (
@@ -62,8 +66,10 @@ export function talentIncomingDamage(
     amount = Math.max(0, player.hitpoints - player.maxHitpoints * (rebirth === 2 ? 0.25 : 0.15));
     talentVisual(scene, player, 2, player, now);
   }
+
   return amount;
 }
+
 export function talentWeaponHit(
   scene: SceneState,
   player: Player,
@@ -94,10 +100,12 @@ export function talentWeaponHit(
       context,
     );
   }
+
   if (guard && now >= value.guardReadyAt && context.random() < (guard === 2 ? 0.25 : 0.15)) {
     value.guardUntil = now + 3000;
     value.guardReadyAt = now + 4000;
   }
+
   value.hits++;
   const follow = rank(player, 0, 0);
   if (!companion && follow && value.hits % 3 === 0)
@@ -159,6 +167,7 @@ export function talentWeaponHit(
             context,
           );
   }
+
   if (
     player.classId !== 'warrior' &&
     player.classId !== 'druid' &&

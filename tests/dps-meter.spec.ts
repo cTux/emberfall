@@ -163,6 +163,7 @@ test('party damage bars drill into abilities and return with right click anywher
     await expect(meter).toContainText('Damage done');
     await rows.first().click();
   }
+
   await meter.getByRole('button', { name: 'Back to party' }).click();
   await rows.first().focus();
   await page.keyboard.press('Enter');

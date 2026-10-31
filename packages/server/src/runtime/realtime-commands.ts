@@ -53,6 +53,7 @@ export function createRealtimeCommands({
             now,
           );
         }
+
         broadcastState(world, now);
       } catch (cause) {
         error(cause instanceof Error ? cause.message : 'Unable to gather.');
@@ -117,18 +118,22 @@ export function createRealtimeCommands({
           session.x = message.x;
           session.y = message.y;
         }
+
         session.inputAt = now;
       }
     },
   };
+
   function handles(message: ClientMessage): message is Messages[CommandType] {
     return Object.hasOwn(handlers, message.type);
   }
+
   function execute<K extends CommandType>(
     message: Messages[K] & { type: K },
     context: CommandContext,
   ) {
     handlers[message.type](message, context);
   }
+
   return { handles, execute };
 }

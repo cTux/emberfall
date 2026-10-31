@@ -62,6 +62,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const sameWorld = previous.worldId === current.worldId;
       if (sameWorld && previous.scene !== current.scene) {
         const errors = log.filter((entry) => entry.local);
+
         return [
           ...current.messages.flatMap((message) => [
             { message, local: false },
@@ -72,6 +73,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           ),
         ].slice(-20);
       }
+
       const retained = log.filter(
         (entry) =>
           entry.local ||
@@ -80,6 +82,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const received = current.messages
         .filter((message) => !sameWorld || !previous.messages.some((old) => old.id === message.id))
         .map((message) => ({ message, local: false }));
+
       // Retain room for the visible world buffer and private errors before applying the display limit.
       return (sameWorld ? [...retained, ...received] : [...received, ...retained]).slice(-20);
     });
@@ -103,6 +106,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     );
   }, []);
   const context = useMemo(() => ({ reportError, configureChat }), [reportError, configureChat]);
+
   return (
     <ChatContext value={context}>
       <ThemeProvider theme={chatTheme}>{children}</ThemeProvider>

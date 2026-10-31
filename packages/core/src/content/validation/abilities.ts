@@ -16,6 +16,7 @@ export function validateAbilities(context: ValidationContext) {
       check(!talentSlots.has(key), 'abilities', ability.id, 'duplicate talent class/slot');
       talentSlots.add(key);
     }
+
     check(
       ['slash', 'arrow', 'fireball', 'roots'].includes(ability.kind),
       'abilities',
@@ -65,6 +66,7 @@ export function validateAbilities(context: ValidationContext) {
         );
     }
   }
+
   for (const player of r.classes.values()) {
     reference('classes', player.id, 'abilities', player.attack);
     reference('classes', player.id, 'ailments', player.ailment);

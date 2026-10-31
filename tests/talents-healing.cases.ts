@@ -24,6 +24,7 @@ test('Mending Seed heals a party teammate through the server and shows its targe
       await client.getByRole('button', { name: /^Join Playtest Default/ }).click();
       await expect(client.getByRole('button', { name: 'Leave world' })).toBeVisible();
     }
+
     const world = [...game.runtime.worlds.values()].find((world) => world.players.size === 2)!;
     const healer = [...world.players.values()].find((player) => player.name === 'Healer')!;
     const patient = [...world.players.values()].find((player) => player.name === 'Patient')!;

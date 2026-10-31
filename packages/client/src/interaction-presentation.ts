@@ -43,9 +43,11 @@ type Frame = {
 export class InteractionPresentation {
   private clock?: { activity: NonNullable<Player['gathering']>; offset: number };
   private options: Options;
+
   constructor(options: Options) {
     this.options = options;
   }
+
   frame(frame: Frame) {
     const { element, signal, playerId, send, blocked } = this.options;
     const {
@@ -82,6 +84,7 @@ export class InteractionPresentation {
               offset: (authoritative?.serverNow ?? 0) - Math.min(now, receivedAt),
             };
           }
+
           const activityTime = now + this.clock.offset;
           element.dataset.gatheringIndicator = String(activityIndicator(activity, activityTime));
           element.dataset.gatheringZone = String(activity.zoneStart);
@@ -103,8 +106,10 @@ export class InteractionPresentation {
             },
           };
         }
+
         return;
       }
+
       const hideGatheringHint =
         hideGatheringHintInCombat &&
         signal.current?.id.startsWith('gather:') &&
@@ -124,6 +129,7 @@ export class InteractionPresentation {
       if (element.dataset.interactionPrompt !== label) element.dataset.interactionPrompt = label;
       if (local && label) drawInteractionPrompt(ctx, local.x, local.y, label);
     };
+
     let nearby = authoritativePlayer
       ? nearbyInteraction(
           authoritativePlayer,
@@ -142,6 +148,7 @@ export class InteractionPresentation {
       if (node)
         nearby = { id: `gather:${node.id}`, name: `Gather ${node.kind}`, x: node.x, y: node.y };
     }
+
     const updateGatherDiagnostics = () => {
       element.dataset.resource = signal.current?.id.startsWith('gather:')
         ? signal.current.id.slice(7)
@@ -153,11 +160,14 @@ export class InteractionPresentation {
         view?.resources?.[element.dataset.resource]?.remaining ?? '',
       );
     };
+
     const outlines = () => {
       const highlighted = highlightInteractions;
       for (const target of targets) target.highlighted = highlighted;
+
       return highlighted ? targets : hovered ? [hovered] : [];
     };
+
     return {
       draw: drawPrompt,
       outlines,
@@ -204,6 +214,7 @@ export function forestInteractionTargets(
       ),
     );
   }
+
   if (local?.scene === 'forest') {
     targets.push(
       ...resourceNodes(local, Math.hypot(camera.width, camera.height) / 2 + 150)
@@ -215,5 +226,6 @@ export function forestInteractionTargets(
     );
     targets.sort((a, b) => a.y + a.height - b.y - b.height);
   }
+
   return targets;
 }

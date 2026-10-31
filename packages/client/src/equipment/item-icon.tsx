@@ -29,10 +29,13 @@ function PlantIcon({ variant }: { variant: number }) {
       ctx?.clearRect(0, 0, 32, 32);
       ctx?.drawImage(sprite, 0, 0, 32, 32);
     };
+
     image.addEventListener('load', draw);
     draw();
+
     return () => image.removeEventListener('load', draw);
   }, [variant]);
+
   return <canvas ref={canvas} width={32} height={32} aria-hidden='true' />;
 }
 
@@ -50,6 +53,7 @@ export function itemIcon(itemId: string) {
   const fallback =
     slotViews.find((view) => view.id === slot)?.icon ??
     clientAsset('/assets/wardrobe-style/slot-offHand.png');
+
   return (
     <img
       src={

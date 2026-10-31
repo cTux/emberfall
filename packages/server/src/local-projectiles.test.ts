@@ -19,6 +19,7 @@ test('automatic combat entry waits for its first authoritative swing in forest a
         assert.equal(waiting.player.attackAt, undefined);
         assert.equal(waiting.scene.playerShots?.length ?? 0, 0);
       }
+
       const confirmed = structuredClone(source);
       confirmed.serverNow = 10200;
       confirmed.players[0].attackAt = 10150;
@@ -54,8 +55,10 @@ test('all local attacks stop on stale or paused snapshots and resume from fresh 
         const view = structuredClone(world);
         const started = movement.animateAttack(player, view, now);
         movement.animateProjectiles(player, view, now, started);
+
         return { player, started, scene: (training ? view.training : view.scene)! };
       };
+
       attack(source, 0);
       assert.equal(attack(source, 100).started, true);
       assert.notEqual(attack(source, 1000).player.attackAt, undefined);
@@ -65,6 +68,7 @@ test('all local attacks stop on stale or paused snapshots and resume from fresh 
         assert.equal(stale.player.attackAt, undefined);
         assert.equal(stale.scene.playerShots?.length ?? 0, 0);
       }
+
       const older = structuredClone(source);
       older.serverNow = 9950;
       assert.equal(attack(older, 2250).started, false, 'an old packet cannot restart prediction');

@@ -19,6 +19,7 @@ const portalMask = makeMask(portalSilhouette);
 
 export function portalInteraction(source: Interaction, x: number, y: number): InteractionTarget {
   const stone = !!portalArt.naturalWidth;
+
   return {
     source,
     x: x - (stone ? 32 : 25),
@@ -59,12 +60,15 @@ export function drawPortal(
       ctx.shadowBlur = 12;
       ctx.shadowColor = '#53c9ff';
     }
+
     drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
     ctx.restore();
     if (outline) drawInteractionOutline(ctx, outline);
     if (name) drawNameBadge(ctx, x, y - 72, name);
+
     return;
   }
+
   if (shadows)
     castShadow(ctx, { id: 'portal', x, y: y + 8, width: 50, height: 76, mask: portalMask });
   ctx.save();
@@ -77,11 +81,13 @@ export function drawPortal(
     ctx.ellipse(0, 1, 31, 12, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+
   ctx.save();
   if (bloom) {
     ctx.shadowBlur = 20;
     ctx.shadowColor = '#53c9ff';
   }
+
   ctx.fillStyle = '#101e68';
   ctx.beginPath();
   ctx.ellipse(0, -30, 25, 38, 0, 0, Math.PI * 2);
@@ -101,6 +107,7 @@ export function drawPortal(
       ctx.fillRect(px, py, 3, 3);
     }
   }
+
   ctx.restore();
   ctx.strokeStyle = '#8cddff';
   ctx.lineWidth = 2;
@@ -117,6 +124,7 @@ export function drawPortal(
       2,
     );
   }
+
   ctx.restore();
   ctx.restore();
   if (outline) drawInteractionOutline(ctx, outline);

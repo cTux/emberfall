@@ -53,6 +53,7 @@ test('bulk trades reject invalid amounts, insufficient gold, full inventory and 
     assert.throws(action, error);
     assert.deepEqual({ player, merchant }, before);
   };
+
   player.coins = 9;
   rejectsUnchanged(() => tradeItem(player, merchant, bottle.id, true, 10), /gold/);
   player.coins = 1000;
@@ -69,6 +70,7 @@ test('bulk trades reject invalid amounts, insufficient gold, full inventory and 
       false,
     );
   }
+
   for (const amount of [undefined, 1, 10, 'stack']) {
     assert.equal(
       clientMessage.safeParse({ type: 'trade', id: bottle.id, buying: true, amount }).success,
@@ -114,6 +116,7 @@ test('buyback keeps the latest 20 sales separate, migrates legacy gear, and reje
     tradeItem(player, merchant, entry.id, false);
     ids.push(merchant.buyback[0].id);
   }
+
   assert.equal(merchant.backpack.length, 2);
   assert.equal(merchant.buyback.length, BUYBACK_SLOTS);
   assert.deepEqual(

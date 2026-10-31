@@ -37,8 +37,10 @@ export function useGameHotkeys({
       ) {
         event.preventDefault();
         setMenu(menu === 'tactics' ? null : 'tactics');
+
         return;
       }
+
       if (
         event.code === 'KeyN' &&
         world &&
@@ -51,8 +53,10 @@ export function useGameHotkeys({
       ) {
         event.preventDefault();
         setMenu(menu === 'talents' ? null : 'talents');
+
         return;
       }
+
       if (
         /^Digit[1-4]$/.test(event.code) &&
         world &&
@@ -64,13 +68,17 @@ export function useGameHotkeys({
       ) {
         event.preventDefault();
         castTalent(Number(event.code.slice(-1)) - 1);
+
         return;
       }
+
       if (event.key === 'Escape' && menu === 'talents') {
         event.preventDefault();
         setMenu(null);
+
         return;
       }
+
       if (
         event.code === 'KeyI' &&
         world &&
@@ -84,8 +92,10 @@ export function useGameHotkeys({
       ) {
         event.preventDefault();
         setMenu(menu === 'equipment' ? null : 'equipment');
+
         return;
       }
+
       if (
         world &&
         !menu &&
@@ -99,6 +109,7 @@ export function useGameHotkeys({
           setPreferences((p) => ({ ...p, [option]: !p[option] }));
         }
       }
+
       if (
         (event.code === 'F1' || event.key === 'Escape') &&
         !typing &&
@@ -111,8 +122,10 @@ export function useGameHotkeys({
       ) {
         event.preventDefault();
         setMenu(event.code === 'F1' ? (menu === 'codex' ? null : 'codex') : 'settings');
+
         return;
       }
+
       if (
         event.code === 'KeyE' &&
         !menu &&
@@ -121,7 +134,9 @@ export function useGameHotkeys({
       )
         interact();
     };
+
     window.addEventListener('keydown', key);
+
     return () => window.removeEventListener('keydown', key);
   });
 }

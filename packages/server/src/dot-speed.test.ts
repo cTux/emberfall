@@ -46,6 +46,7 @@ function hero(id = 'hero'): Player {
   ];
   assert(game.rules.backpackSchema.safeParse(player.backpack).success);
   equipBackpackItem(player, 'dot-sword');
+
   return player;
 }
 

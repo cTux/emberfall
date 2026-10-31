@@ -9,10 +9,12 @@ export class WebSocket extends EventEmitter {
   static CLOSED = 3;
   readyState = 0;
   private room?: Room<SessionState>;
+
   constructor(url: string, _options?: unknown) {
     super();
     void this.connect(url);
   }
+
   private async connect(url: string) {
     try {
       const endpoint = new URL(url);
@@ -40,6 +42,7 @@ export class WebSocket extends EventEmitter {
       this.emit('error', error);
     }
   }
+
   send(raw: string | Buffer) {
     let command: unknown;
     try {
@@ -47,12 +50,15 @@ export class WebSocket extends EventEmitter {
     } catch {
       command = raw.toString();
     }
+
     this.room?.send('command', command);
   }
+
   close(code = 1000) {
     if (code === 1000) void this.room?.leave();
     else this.room?.connection.close(code);
   }
+
   terminate() {
     this.room?.connection.close(4001);
   }

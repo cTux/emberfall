@@ -23,6 +23,7 @@ export function gameAudio(preferences: () => Preferences) {
           const key = zone as keyof typeof tracks;
           if (selected[key] === index) selected[key] = (index + 1) % names.length;
         });
+
         return audio;
       }),
     ]),
@@ -33,6 +34,7 @@ export function gameAudio(preferences: () => Preferences) {
       Array.from({ length: 4 }, () => {
         const audio = new Audio(clientAsset(`/audio/${name}.wav`));
         audio.preload = 'auto';
+
         return audio;
       }),
     ]),
@@ -46,11 +48,13 @@ export function gameAudio(preferences: () => Preferences) {
     started.add(audio);
     void audio.play().catch(() => started.delete(audio));
   };
+
   const unlock = () => {
     audioUnlocked = true;
     unlocked = true;
     if (preferences().music && !document.hidden) start(music[area][selected[area]]);
   };
+
   window.addEventListener('pointerdown', unlock);
   window.addEventListener('keydown', unlock);
   const silence = () => {
@@ -59,7 +63,9 @@ export function gameAudio(preferences: () => Preferences) {
       audio.pause();
     started.clear();
   };
+
   document.addEventListener('visibilitychange', silence);
+
   return {
     update(nextArea: keyof typeof tracks, now: number) {
       area = nextArea;
@@ -79,6 +85,7 @@ export function gameAudio(preferences: () => Preferences) {
             started.delete(audio);
           }
         }
+
       if (!prefs.sound)
         for (const pool of Object.values(sounds)) for (const audio of pool) audio.pause();
     },

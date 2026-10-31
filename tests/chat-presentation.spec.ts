@@ -22,6 +22,7 @@ test('chat inherits window styling and preserves keyboard interaction at desktop
     .locator('.game-window-surface')
     .evaluate((element) => {
       const style = getComputedStyle(element);
+
       return {
         background: style.backgroundColor,
         border: style.borderTopColor,
@@ -93,6 +94,7 @@ test('fog is opt-in and player messages sit above health in village and forest',
     await page.getByRole('button', { name: preset, exact: true }).click();
     await expect(fog).not.toBeChecked();
   }
+
   await fog.check();
   await page.reload();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -115,6 +117,7 @@ test('fog is opt-in and player messages sit above health in village and forest',
     // Allow the confirmed snapshot and subsequent render to reach the canvas.
     await page.waitForTimeout(300);
   };
+
   await send('hello');
   await page.screenshot({ path: 'test-results/new-chat-village.png' });
   await page.setViewportSize({ width: 800, height: 600 });

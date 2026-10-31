@@ -23,6 +23,7 @@ type Story = StoryObj<typeof meta>;
 export const Fonts: Story = {
   render: function Fonts() {
     const [font, setFont] = useState<GameFont>('Alegreya Sans');
+
     return (
       <GameUiProvider font={font}>
         <Stack spacing={2}>
@@ -53,6 +54,7 @@ export const Fonts: Story = {
 export const Tokens: Story = {
   render: function Tokens() {
     const theme = useTheme();
+
     return (
       <Stack spacing={3}>
         <Typography variant='h1'>Emberfall UI</Typography>

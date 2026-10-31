@@ -31,6 +31,7 @@ test('pet cats with clicks and E, respect range and cooldown, and keep speech ab
       });
     }).toPass();
   };
+
   player.x = 590;
   player.y = 570;
   await hoverCat(false);

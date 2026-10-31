@@ -7,6 +7,7 @@ import { stage, panel } from './styles';
 
 export function Codex() {
   const [value, select] = useState('controls');
+
   return (
     <Box sx={stage}>
       <Box sx={{ ...panel, maxWidth: 720 }}>

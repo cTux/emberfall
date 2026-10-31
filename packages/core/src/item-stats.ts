@@ -17,17 +17,21 @@ import { itemTypeStats } from './configs/itemTypeStats.ts';
 export function itemRarity(item?: { rarity?: string }): Rarity {
   return Object.values(Rarity).find((rarity) => rarity === item?.rarity) ?? Rarity.Common;
 }
+
 export function statValue(stat: ItemStat, rarity: Rarity) {
   return itemStatBaseValue[stat] * (itemStatWeight[stat] < 1 ? 1 : rarityStatMultiplier[rarity]);
 }
+
 export function rollRarity(random = Math.random): Rarity {
   let roll = random() * 100;
   for (const [rarity, chance] of Object.entries(rarityDropChance)) {
     if (roll < chance) return rarity as Rarity;
     roll -= chance;
   }
+
   return Rarity.Common;
 }
+
 export function rollItemStats(gearType: string, rarity: Rarity, random = Math.random) {
   const pool = (itemTypeStats[gearType] ?? []).filter(
     (stat) => rarity === Rarity.Legendary || itemStatWeight[stat] === 1,
@@ -39,5 +43,6 @@ export function rollItemStats(gearType: string, rarity: Rarity, random = Math.ra
     const [stat] = pool.splice(index < 0 ? pool.length - 1 : index, 1);
     stats[stat] = statValue(stat, rarity);
   }
+
   return stats;
 }

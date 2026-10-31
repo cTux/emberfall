@@ -51,6 +51,7 @@ export function Lobby() {
       )}
     </Stack>
   );
+
   return (
     <Box sx={stage}>
       <Box sx={panel}>

@@ -7,7 +7,9 @@ export function movementFacing(x: number, y: number, previous: number) {
     vertical = y < 0 ? 1 : 0;
   if (Math.abs(ax - ay) <= Math.max(ax, ay) * 0.1) {
     if (previous === horizontal || previous === vertical) return previous;
+
     return horizontal;
   }
+
   return ax > ay ? horizontal : vertical;
 }

@@ -91,10 +91,12 @@ test('HUD surfaces match and draggable panels and windows persist across session
     await expect
       .poll(async () => {
         const box = (await panel.boundingBox())!;
+
         return box.x >= 0 && box.y >= 0 && box.x + box.width <= 390 && box.y + box.height <= 844;
       })
       .toBe(true);
   }
+
   await next.screenshot({ path: 'test-results/hud-panels-narrow.png' });
   await context.close();
 });
@@ -141,6 +143,7 @@ test('nickname persists in a new session, viewport is full, party bars and contr
     expect(dot!.y + dot!.height).toBe(viewport.height - 16);
     await next.screenshot({ path: `test-results/hud-${viewport.width}.png` });
   }
+
   await next.getByRole('button', { name: 'Codex', exact: true }).click();
   await expect(next.getByRole('dialog')).toContainText(
     'Trees, buildings and torch posts block movement',

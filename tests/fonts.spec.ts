@@ -58,6 +58,7 @@ test('font selection updates UI and world text, survives presets and reload, and
     await expect
       .poll(async () => {
         const stats = JSON.parse((await canvas.getAttribute('data-render-stats'))!);
+
         return stats.text.fontFamily;
       })
       .toBe(`"${font}", sans-serif`);
@@ -77,10 +78,12 @@ test('font selection updates UI and world text, survives presets and reload, and
       await expect(canvas).toHaveCSS('image-rendering', 'auto');
       await page.screenshot({ path: `test-results/font-${font.replaceAll(' ', '-')}-${zoom}.png` });
     }
+
     await page.evaluate(() => {
       document.body.style.zoom = '';
     });
   }
+
   await page.getByRole('combobox', { name: 'Font', exact: true }).click();
   await page.getByRole('option', { name: 'Inter', exact: true }).click();
   await page.getByRole('button', { name: 'Low', exact: true }).click();
@@ -113,6 +116,7 @@ test('the bundled Alegreya Sans font loads and is used throughout the interface'
           ),
         )
       ).flat();
+
       return faces.length > 0 && faces.every((face) => face.status === 'loaded');
     }),
   ).toBe(true);
@@ -127,11 +131,13 @@ test('the bundled Alegreya Sans font loads and is used throughout the interface'
         '"Alegreya Sans", sans-serif',
       );
     }
+
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
     await page.screenshot({ path: `test-results/font-lobby-${viewport.width}.png` });
   }
+
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
@@ -148,5 +154,6 @@ test('the bundled Alegreya Sans font loads and is used throughout the interface'
       '"Alegreya Sans", sans-serif',
     );
   }
+
   await page.screenshot({ path: 'test-results/font-codex.png' });
 });

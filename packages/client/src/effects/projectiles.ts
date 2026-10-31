@@ -10,6 +10,7 @@ export const talentCastArt = new Image();
 talentCastArt.src = clientAsset('/assets/talents/cast-effects.png');
 
 const projectileOutlines = new Map<string, HTMLCanvasElement>();
+
 function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'roots', now: number) {
   const arrow = kind === 'arrow';
   const image = arrow ? pickupArt : effectsArt;
@@ -40,7 +41,9 @@ function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'ro
     outlineContext.drawImage(sprite, 1, 1);
     projectileOutlines.set(key, outlined);
   }
+
   ctx.drawImage(outlined, -size / 2 - 1, -size / 2 - 1);
+
   return true;
 }
 
@@ -69,6 +72,7 @@ export function drawClassProjectiles(
       ctx.restore();
       continue;
     }
+
     if (shot.kind === 'roots') ctx.scale(0.5, 0.5);
     ctx.strokeStyle = '#baffaa';
     ctx.lineWidth = shot.kind === 'roots' ? 2 : 1;
@@ -106,8 +110,10 @@ export function drawClassProjectiles(
       ctx.arc(2, -1, 4, 0, Math.PI * 2);
       ctx.fill();
     }
+
     ctx.restore();
   }
+
   for (const explosion of scene.explosions ?? []) {
     const opacity = abilityEffectOpacity(preferences, playerId, explosion.ownerId);
     if (opacity === 0) continue;
@@ -133,6 +139,7 @@ export function drawClassProjectiles(
           200,
         );
       }
+
       const colors = [
         '#ffd18a',
         '#e96060',
@@ -162,8 +169,10 @@ export function drawClassProjectiles(
         );
         ctx.fill();
       }
+
       continue;
     }
+
     ctx.globalAlpha = opacity * (1 - age);
     ctx.fillStyle = '#ffb53d44';
     ctx.strokeStyle = '#ffcb6b';
@@ -173,5 +182,6 @@ export function drawClassProjectiles(
     ctx.fill();
     ctx.stroke();
   }
+
   ctx.restore();
 }

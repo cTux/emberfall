@@ -32,6 +32,7 @@ test('Steam verifier rejects forged, wrong-site, unsigned, stale and replayed as
     query.set(key, value);
     await assert.rejects(provider.verify(query, returnTo), { name: 'Error' }, key);
   }
+
   const duplicate = callback();
   duplicate.append('openid.claimed_id', valid.get('openid.claimed_id')!);
   await assert.rejects(provider.verify(duplicate, returnTo));

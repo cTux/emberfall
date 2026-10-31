@@ -44,8 +44,10 @@ export function compareBattleText(pixi: PixiContext, gpu: HTMLCanvasElement) {
             bottom = Math.max(bottom, y);
           }
         }
+
       return { age, count, top, height: count ? bottom - top + 1 : 0 };
     }),
   );
+
   return battleTextPixels;
 }

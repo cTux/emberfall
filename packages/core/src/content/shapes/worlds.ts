@@ -100,6 +100,7 @@ export const worldShapes = {
           });
         ids.add(station.id);
       }
+
       for (const npc of village.villagers ?? [])
         if (village.workstations.filter((station) => station.npcId === npc.id).length !== 2)
           ctx.addIssue({

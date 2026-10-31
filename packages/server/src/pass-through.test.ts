@@ -140,6 +140,7 @@ test('pass-through preserves wrapping in both areas, speed and death rules', asy
       assert.equal(player.y, (y + dy * 18 + FOREST.height) % FOREST.height);
     }
   }
+
   player.hitpoints = 0;
   const dead = { ...player };
   movePlayer(player, 1, 1, 1);

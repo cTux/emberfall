@@ -33,6 +33,7 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
         expanded.fill(1, start - dx, start + dx + 1);
       }
     }
+
   const runs: Run[] = [];
   for (let y = 0; y < h + radius * 2; y++)
     for (let x = 0; x < stride;) {
@@ -40,10 +41,13 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
         x++;
         continue;
       }
+
       const start = x++;
       while (x < stride && expanded[y * stride + x]) x++;
       runs.push([start, y, x - start]);
     }
+
   poses.set(key, runs);
+
   return runs;
 }

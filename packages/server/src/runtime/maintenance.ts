@@ -26,6 +26,7 @@ export function startMaintenance({
         ws.terminate();
         continue;
       }
+
       session.alive = false;
       ws.ping();
     }
@@ -57,6 +58,7 @@ export function startMaintenance({
       }
     }
   }, RUNTIME.autosaveMs);
+
   return () => {
     clearInterval(heartbeat);
     clearInterval(progressTick);

@@ -67,6 +67,7 @@ export function prepareState(source: WorldState) {
     record.payload = JSON.stringify(payload);
     entities.push(record);
   };
+
   const sceneHeader = (scene: SceneState | undefined, prefix: string) => {
     if (!scene) return undefined;
     const header = { ...scene };
@@ -76,11 +77,14 @@ export function prepareState(source: WorldState) {
       );
       delete header[collection];
     }
+
     return header;
   };
+
   source.players.forEach((player, order) => put(`player:${player.id}`, player, order));
   source.npcs?.forEach((npc, order) => put(`npc:${npc.id}`, npc, order));
   const { players: _, npcs: _npcs, scene, training, serverNow, ...header } = source;
+
   return {
     header: JSON.stringify({
       ...header,
@@ -92,6 +96,7 @@ export function prepareState(source: WorldState) {
     serverNow: serverNow ?? 0,
   };
 }
+
 export type PreparedState = ReturnType<typeof prepareState>;
 export function applyState(target: SessionState, source: PreparedState) {
   const present = new Set<string>();
@@ -102,15 +107,18 @@ export function applyState(target: SessionState, source: PreparedState) {
       record = new EntityState();
       target.entities.set(value.key, record);
     }
+
     for (const field of HOT_SCALARS) record[field] = value[field];
     record.fields = value.fields;
     record.order = value.order;
     record.payload = value.payload;
   }
+
   target.header = source.header;
   target.serverNow = source.serverNow;
   for (const key of target.entities.keys()) if (!present.has(key)) target.entities.delete(key);
 }
+
 export function projectState(target: SessionState, source: WorldState) {
   applyState(target, prepareState(source));
 }
@@ -124,6 +132,7 @@ export function materializeState(state: SessionState): WorldState | undefined {
     if (scene) {
       for (const key of collections) Object.assign(scene, { [key]: [] });
     }
+
   for (const [key, record] of [...state.entities].sort((a, b) => a[1].order - b[1].order)) {
     const value = JSON.parse(record.payload);
     HOT_SCALARS.forEach((field, bit) => {
@@ -138,5 +147,6 @@ export function materializeState(state: SessionState): WorldState | undefined {
         (scene[collection as (typeof collections)[number]] as unknown[]).push(value);
     }
   }
+
   return world;
 }

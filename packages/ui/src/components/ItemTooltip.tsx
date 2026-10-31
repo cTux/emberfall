@@ -57,6 +57,7 @@ export function ItemTooltip({
 }) {
   const root = useRef<HTMLDivElement>(null);
   const [openStat, setOpenStat] = useState<number | null>(null);
+
   return (
     <ItemTooltipContentStyled ref={root}>
       <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }} className='item-header'>

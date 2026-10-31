@@ -22,6 +22,7 @@ test('town health bars default hidden, toggle live, persist and stay visible in 
   // Count actual rendered health-fill pixels, rather than a diagnostic setting flag.
   const healthPixels = async () => {
     const png = (await canvas.screenshot()).toString('base64');
+
     return page.evaluate(async (png) => {
       const image = new Image();
       image.src = `data:image/png;base64,${png}`;
@@ -35,9 +36,11 @@ test('town health bars default hidden, toggle live, persist and stay visible in 
       let count = 0;
       for (let i = 0; i < pixels.length; i += 4)
         if (pixels[i] === 134 && pixels[i + 1] === 217 && pixels[i + 2] === 162) count++;
+
       return count;
     }, png);
   };
+
   await openSettings();
   await expect(toggle).toBeChecked();
   await closeSettings();

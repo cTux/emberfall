@@ -43,8 +43,10 @@ export function createWorldMembership(
       life = new VillageLife(world, dialogue, now);
       villageLives.set(world, life);
     }
+
     return life;
   };
+
   const partyWorlds = new WeakMap<World, Parties>();
   const parties = (world: World) => {
     let value = partyWorlds.get(world);
@@ -52,10 +54,13 @@ export function createWorldMembership(
       value = new Parties(world);
       partyWorlds.set(world, value);
     }
+
     return value;
   };
+
   const resourceOwner = (world: World, player?: Player) =>
     player?.scene ? parties(world).run(player) : world;
+
   function leave(session: Session, shuttingDown = false) {
     const world = worlds.get(session.worldId ?? '');
     if (world) {
@@ -71,6 +76,7 @@ export function createWorldMembership(
             player.id,
           );
       }
+
       if (player) parties(world).leave(player, true);
       world.players.delete(session.id);
       if (player) serverLog.info('Player left world', { sessionId: session.id, worldId: world.id });
@@ -80,6 +86,7 @@ export function createWorldMembership(
           worlds.delete(world.id);
           serverLog.info('Empty world removed', { worldId: world.id });
         }
+
         world.hostId = '';
         world.chat = [];
         villageLives.get(world)?.close();
@@ -87,6 +94,7 @@ export function createWorldMembership(
         world.npcs = undefined;
       } else if (world.hostId === session.id) world.hostId = world.players.keys().next().value!;
     }
+
     clearTimeout(session.reconnectTimer);
     session.worldId = undefined;
     session.inputs = [];
@@ -95,10 +103,13 @@ export function createWorldMembership(
     session.x = 0;
     session.y = 0;
   }
+
   function closeVillageLives() {
     for (const life of villageLives.values()) life.close();
     villageLives.clear();
   }
+
   return { worlds, permanentWorld, parties, villageLife, resourceOwner, leave, closeVillageLives };
 }
+
 export type WorldMembership = ReturnType<typeof createWorldMembership>;

@@ -36,6 +36,7 @@ export function createRules(content: Registries, random = () => Math.random()) {
   const { addItem, transferStoredItem, moveStorageItem, useBackpackItem, unequipItem } = inventory;
   const { BUYBACK_SLOTS, merchantSchema, freshMerchant, tradeItem, sellAll } = merchant;
   const { classSchema, progressSchema, clientMessage } = validation;
+
   return Object.freeze({
     canEquip,
     equipmentSchema,

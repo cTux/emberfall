@@ -10,7 +10,47 @@ accessibility, plus selected suspicious checks (`no-debugger`, `no-eval` and
 `no-implied-eval`). Review new suspicious rules individually before enforcing
 them; pedantic, restriction and nursery categories are not enabled wholesale.
 Formatting belongs to Oxfmt: single quotes, JSX single quotes, consistent
-indentation and wrapping. Run `pnpm fmt:check` before submitting changes.
+indentation and wrapping. Oxlint loads `@stylistic/eslint-plugin` for the
+blank-line rules below; Oxfmt preserves their spacing. Run `pnpm fmt:check`
+before submitting changes.
+
+### Blank lines
+
+Use one blank line to separate functions and logical steps:
+
+- Separate function declarations from adjacent statements, including other functions.
+- Separate class methods (including constructors and accessors) from adjacent
+  members; consecutive data fields can stay together.
+- Put a blank line before `return` and `throw` when another statement precedes
+  them in the same block or switch case. A sole return or throw, including a
+  compact guard, needs no extra padding.
+- Put a blank line after control-flow blocks before the next statement.
+  Keep related assignments and declarations together; use judgement to separate
+  other logical steps, including arrow-function bindings and object methods.
+
+These rules are errors in `pnpm lint`, including editor and CI checks. Apply
+spacing fixes with `pnpm exec oxlint . --fix`, then run `pnpm fmt`. Avoid blank
+lines at the start/end of a block and repeated empty lines; Oxfmt normalizes them.
+
+```ts
+function finish() {
+  flush();
+
+  return result;
+}
+
+function trim() {
+  if (!active) return;
+
+  compact();
+}
+```
+
+![Concept preview: blank lines separate functions and the returned result.](../images/code-spacing.svg)
+
+The examples illustrate source layout; they are not gameplay captures.
+
+### Other strict checks
 
 Selected rules additionally require immutable bindings when possible, block-scoped
 declarations, consolidated imports, explicit type imports, exhaustive union

@@ -43,6 +43,7 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
       }));
   rows.sort((a, b) => b.damage - a.damage || a.name.localeCompare(b.name));
   const denominator = selected ? (selected.damageMeter?.total ?? 0) : total;
+
   return (
     // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Right-click anywhere is a shortcut; rows and Back also support keyboard activation.
     <aside
@@ -110,6 +111,7 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
           const rowStyle = {
             '--class-color': classColors[row.classId ?? 'warrior'] ?? '#a7c4bc',
           } as CSSProperties;
+
           return selected ? (
             <div key={row.id} className='damage-meter-row' style={rowStyle}>
               {content}

@@ -31,6 +31,7 @@ test('confirmed movement interpolates, never extrapolates, and holds through pac
     buffer.push(snapshot(10000 + i * 50, 420 + i * 9), i * 50);
     buffer.render(i * 50);
   }
+
   const middle = buffer.render(225)!;
   assert(middle.players[0].x > 438 && middle.players[0].x < 447);
   assert.equal(buffer.render(2000)!.players[0].x, 456);
@@ -63,6 +64,7 @@ test('Bear animation follows confirmed movement, stops during packet gaps, and s
     buffer.push(next, i * 50);
     buffer.render(i * 50);
   }
+
   assert.equal(buffer.render(225)!.players[0].bear!.moving, true);
   assert.equal(buffer.render(2000)!.players[0].bear!.moving, false);
   const teleported = structuredClone(base);

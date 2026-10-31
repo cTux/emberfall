@@ -54,6 +54,7 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
         .poll(() => log.locator('.chat-danger').count())
         .toBeGreaterThanOrEqual(Math.min(count, 8));
     }
+
     await expect(log.locator(':scope > div')).toHaveCount(10);
     await expect(log).toContainText('System: The destination inventory is full.');
     await expect(page.locator('.notice')).toHaveCount(0);
@@ -118,6 +119,7 @@ test('renderer startup failure is reported only as system chat', async ({ page }
       ...args: Parameters<typeof getContext>
     ) {
       if (String(args[0]).startsWith('webgl')) return null;
+
       return getContext.apply(this, args);
     } as typeof getContext;
   });

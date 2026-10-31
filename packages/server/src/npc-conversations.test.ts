@@ -8,6 +8,7 @@ test('automatic greetings are bounded across multiple players and explicit repli
   const { world, life } = setup({
     generate: async () => {
       calls++;
+
       return { status: 'ok', text: 'Hello!' };
     },
   });
@@ -37,6 +38,7 @@ test('nearby NPCs wait two seconds to answer and stop without another mention; o
   const { world, life } = setup({
     generate: async () => {
       calls++;
+
       return { status: 'ok', text: 'Fine weather.' };
     },
   });
@@ -79,6 +81,7 @@ test('mentions in a player greeting trigger delayed NPC replies capped at five l
     generate: async (context) => {
       const parsed = JSON.parse(context);
       contexts.push(parsed);
+
       return {
         status: 'ok',
         text: parsed.character.startsWith('Marta')
@@ -98,6 +101,7 @@ test('mentions in a player greeting trigger delayed NPC replies capped at five l
     life.tick(10_000 + i * 2000, 0);
     await flush();
   }
+
   assert.equal(world.chat!.length, 5);
   assert.deepEqual(
     world.chat!.map((line) => line.npcId),
@@ -119,6 +123,7 @@ test('automatic starts wait twice as long while player replies bypass that inter
   const { world, life } = setup({
     generate: async () => {
       calls++;
+
       return { status: 'ok', text: 'Mind the forest goblins.' };
     },
   });

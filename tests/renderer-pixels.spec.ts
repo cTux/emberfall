@@ -28,9 +28,11 @@ async function renderFixture(page: import('@playwright/test').Page) {
   );
   await page.goto('/renderer-test');
   await page.addScriptTag({ content: code });
+
   return page.evaluate(async () => {
     const fixture = (window as unknown as { RendererFixture: typeof import('./renderer-fixture') })
       .RendererFixture;
+
     return fixture.compare();
   });
 }
@@ -81,6 +83,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     expect(red).toBeGreaterThan(green);
     expect(green).toBeGreaterThan(blue);
   }
+
   const shaftCenter = results['shaft center'].actual[0];
   expect(shaftCenter).toBeGreaterThan(131);
   for (const edge of ['shaft left feather', 'shaft right feather'])
@@ -95,6 +98,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     expect(fading.count).toBeGreaterThan(0);
     expect(expired.count).toBe(0);
   }
+
   expect(battleTextPixels[1][1].height).toBeGreaterThan(battleTextPixels[0][1].height);
   expect(lootPixels).toHaveLength(LOOT_ITEM_IDS.length + 1);
   for (const { itemId, colored, purple, beam, above, beside } of lootPixels) {
@@ -104,6 +108,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     expect(above, `${itemId} beam stays short`).toBe(0);
     expect(beside, `${itemId} beam stays narrow`).toBe(0);
   }
+
   expect(projectilePixels).toHaveLength(20);
   for (const [index, count] of projectilePixels.entries())
     expect(count, `projectile frame ${index}: ${projectilePixels.join(', ')}`).toBeGreaterThan(8);
@@ -111,6 +116,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     expect(white, 'critical white fill survives Pixi rendering').toBeGreaterThan(3);
     expect(red, 'critical red outline survives Pixi rendering').toBeGreaterThan(3);
   }
+
   expect(lights.reused).toBe(lights.first);
   expect(lights.translated).toBe(lights.first);
   expect(lights.moved).toBeGreaterThan(lights.first);

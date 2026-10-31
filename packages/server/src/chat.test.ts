@@ -21,6 +21,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
   };
+
   async function connect() {
     const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`);
     sockets.push(ws);
@@ -32,6 +33,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
       if (message.type === 'joined' || message.type === 'state') world = message.world;
     });
     await once(ws, 'open');
+
     return {
       ws,
       send: (message: unknown) => ws.send(JSON.stringify(message)),
@@ -41,6 +43,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
       },
     };
   }
+
   try {
     const alice = await connect(),
       bob = await connect(),
@@ -69,6 +72,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
         alice.world!.players.find((player) => message.text === `${player.name} joined.`)!.id,
       );
     }
+
     alice.send({ type: 'chat', text: '  First message  ', playerId: 'fake', name: 'Fake' });
     await wait(() => bob.world?.chat?.at(-1)?.text === 'First message');
     const first = bob.world!.chat!.at(-1)!;
@@ -84,6 +88,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
       bob.send({ type: 'chat', text: `Message ${i}` });
       await wait(() => alice.world?.chat?.at(-1)?.text === `Message ${i}`);
     }
+
     assert.equal(alice.world!.chat!.length, 10);
     assert.equal(alice.world!.chat![0].text, 'Message 1');
     await wait(() => bob.world?.chat?.at(-1)?.text === 'Message 10');

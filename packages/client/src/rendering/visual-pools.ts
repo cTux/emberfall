@@ -39,6 +39,7 @@ export class VisualPools {
   constructor() {
     this.stage.eventMode = 'none';
   }
+
   begin() {
     this.childCursors.clear();
     this.childCursors.set(this.stage, 0);
@@ -49,10 +50,12 @@ export class VisualPools {
     this.currentGroup = undefined;
     this.cursors = { sprite: 0, graphics: 0, text: 0 };
   }
+
   finish() {
     for (const [parent, count] of this.childCursors)
       if (parent.children.length > count) parent.removeChildren(count);
   }
+
   trim() {
     for (const kind of ['sprite', 'graphics', 'text'] as const) {
       const pool = this.pools[kind];
@@ -66,19 +69,23 @@ export class VisualPools {
       }
     }
   }
+
   get active() {
     return { ...this.cursors };
   }
+
   destroy() {
     for (const entry of this.ecs) {
       entry.frameTexture?.destroy();
       entry.blur?.destroy();
       entry.object.destroy();
     }
+
     for (const group of this.maskGroups) group.destroy();
     this.stage.destroy();
     this.childCursors.clear();
   }
+
   visual(
     kind: Visual['kind'],
     state: VisualStyle,
@@ -98,6 +105,7 @@ export class VisualPools {
       entity = this.ecs.add({ object, kind, active: true });
       this.pools[kind].push(entity);
     }
+
     const object = entity.object;
     entity.active = true;
     object.visible = true;
@@ -123,14 +131,17 @@ export class VisualPools {
         this.currentMask = state.mask;
         this.currentGroup = group;
       }
+
       this.place(this.currentGroup, object);
     } else {
       this.currentMask = null;
       this.currentGroup = undefined;
       this.place(this.stage, object);
     }
+
     return entity;
   }
+
   place(parent: Container, object: Container) {
     const index = this.childCursors.get(parent) ?? 0;
     if (parent.children[index] !== object) parent.addChildAt(object, index);

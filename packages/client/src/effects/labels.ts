@@ -14,6 +14,7 @@ export function drawChatBubble(ctx: DrawingContext, x: number, y: number, text?:
     if (line && ctx.measureText(next).width > 200) lines.push(word);
     else lines[lines.length - 1] = next;
   }
+
   const width = Math.max(...lines.map((line) => ctx.measureText(line).width)) + 16;
   const height = lines.length * 13 + 10;
   const bottom = y - 52; // Two units above the player health bar; overlays the debuff area.
@@ -166,5 +167,6 @@ export function drawPlayerHealth(
     );
   drawCharacterName(ctx, x, bottom, name, color);
   ctx.restore();
+
   return width;
 }

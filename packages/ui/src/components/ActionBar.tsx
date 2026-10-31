@@ -62,6 +62,7 @@ function AbilityCooldown({ ability }: { ability: ActionBarAbility }) {
   const seconds =
     remaining >= 1000 ? Math.ceil(remaining / 1000) : (Math.ceil(remaining / 100) / 10).toFixed(1);
   if (fraction <= 0) return null;
+
   return (
     <Box
       role='progressbar'
@@ -109,6 +110,7 @@ export function ActionBar({
   onChoose,
 }: ActionBarProps) {
   const duration = baseAbility?.cooldownMs ?? 0;
+
   return (
     <Stack component='section' aria-label='Action bar' direction='row' spacing={1}>
       {baseAbility && (
@@ -188,6 +190,7 @@ export function ActionBar({
               <ActionIndicatorStyled aria-hidden='true'>{slot}</ActionIndicatorStyled>
             </ActionSlotStyled>
           );
+
         return (
           <Tooltip
             describeChild
@@ -218,6 +221,7 @@ export function ActionBar({
                   event.preventDefault();
                   ability.onToggleAutoCast?.();
                 }
+
                 if (event.key === 'F2') onChoose?.(slot - 1, event.currentTarget);
               }}
               sx={{

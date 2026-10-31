@@ -27,6 +27,7 @@ export interface InteractionTarget {
 export function sceneryInteraction(object: Scenery): InteractionTarget | null {
   if (/^(tree|forest|plant|rock):/.test(object.id)) {
     if (object.gathered) return null;
+
     return {
       source: {
         id: `gather:${object.id}`,
@@ -43,6 +44,7 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
       radius: GATHER_RANGE,
     };
   }
+
   const id = object.id.replace(/^(building|npc|workstation):/, '');
   const building = BUILDINGS.find((b) => b.id === id && b.id !== 'inn');
   const bullseye = !!BULLSEYE && object.id === `workstation:${BULLSEYE.id}`;
@@ -54,6 +56,7 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
     object.id !== 'npc:craftsman'
   )
     return null;
+
   return {
     source: {
       id,
@@ -111,8 +114,10 @@ export function pickInteraction(
         .getImageData(0, 0, target.mask.width, target.mask.height).data;
       pixels.set(target.mask, data);
     }
+
     if (data[(y * target.mask.width + x) * 4 + 3] > 0) return target;
   }
+
   return null;
 }
 
@@ -135,6 +140,7 @@ export function drawInteractionOutline(ctx: DrawingContext, target: InteractionT
     outline = hitOutline(mask, color, radius);
     cache.set(key, outline);
   }
+
   ctx.save();
   ctx.globalAlpha = 1;
   ctx.drawImage(outline, target.x - radius, target.y - radius);
@@ -160,6 +166,7 @@ export function partyInteraction(
     const name = partyAction(world, player, target);
     if (name) return { id: `party:${target.id}`, name, x: target.x, y: target.y };
   }
+
   return null;
 }
 
@@ -180,6 +187,7 @@ export function partyAction(
     target.reconnecting
   )
     return null;
+
   return world.partyRequests?.some((r) => r.fromId === target.id)
     ? 'Accept'
     : !player.partyId && target.partyId

@@ -29,6 +29,7 @@ export function ConnectionStatus({
     />
   );
 }
+
 export interface HudAction {
   id: string;
   label: string;
@@ -63,6 +64,7 @@ export function HudActions({ actions }: { actions: HudAction[] }) {
     </Stack>
   );
 }
+
 export function BossHealth({
   name,
   health,
@@ -81,14 +83,17 @@ export function BossHealth({
     </BossHealthStyled>
   );
 }
+
 export function InteractionPrompt({ action, keys = 'E' }: { action: string; keys?: string }) {
   return <Chip role='status' variant='outlined' label={`${keys} · ${action}`} />;
 }
+
 export function SceneStatus({ label, seconds }: { label: string; seconds?: number }) {
   const time =
     seconds === undefined
       ? undefined
       : Math.max(0, Math.floor(Number.isFinite(seconds) ? seconds : 0));
+
   return (
     <Typography role='status' color='primary'>
       {label}

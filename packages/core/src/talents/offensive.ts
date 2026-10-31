@@ -73,6 +73,7 @@ export function offensive(cast: TalentCast) {
       }
     }
   };
+
   if (tier === 1 && column === 1 && primary) {
     hit(primary, now, learned === 2 ? 1.5 : 1);
     if (primary.kind !== 'boss') {
@@ -85,6 +86,7 @@ export function offensive(cast: TalentCast) {
         FOREST.height,
       );
     }
+
     const trail = rank(player, 1, 4);
     if (trail)
       for (const enemy of effectArea(scene, primary, 150))
@@ -137,6 +139,7 @@ export function offensive(cast: TalentCast) {
             return forestDistance(previous, enemy) <= 300 * (1 + stats.bonuses.range / 100);
           const dx = wrappedDelta(enemy.x, player.x, FOREST.width);
           const dy = wrappedDelta(enemy.y, player.y, FOREST.height);
+
           return (
             dx * Math.cos(heading) + dy * Math.sin(heading) >= 0 &&
             Math.abs(-dx * Math.sin(heading) + dy * Math.cos(heading)) <= 32 &&
@@ -149,6 +152,7 @@ export function offensive(cast: TalentCast) {
       previous = next;
     }
   }
+
   const second = column === 0 ? rank(player, column, 2) : 0;
   if (second && tier === 0 && context.random() < (second === 2 ? 0.5 : 0.25))
     schedule(scene, player, nodeId, now + 300, 0, 1, (at) => {
@@ -170,6 +174,7 @@ export function offensive(cast: TalentCast) {
       );
     value.fissure = undefined;
   }
+
   const momentum = rank(player, 0, 8);
   if (column === 0 && tier === 3 && primary && primary.hitpoints <= 0 && momentum) {
     const id = `talent:${classId}:${slot}`;
@@ -179,6 +184,7 @@ export function offensive(cast: TalentCast) {
     );
     value.empoweredUntil = now + 6000;
   }
+
   if (tier === 0 && value.empoweredUntil && value.empoweredUntil > now) {
     value.empoweredUntil = undefined;
     for (const enemy of targets)
@@ -192,6 +198,7 @@ export function offensive(cast: TalentCast) {
         context,
       );
   }
+
   value.sequence = value.sequence.filter((entry) => now - entry.at <= 6000 && entry.slot !== slot);
   value.sequence.push({ slot, at: now });
   const rhythm = rank(player, 0, 9);

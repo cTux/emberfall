@@ -20,12 +20,14 @@ test('forest and expanded lobby share dimensions; all edges wrap; indexed trunks
     assert(forestDistance(moved, { x: x + dx, y: y + dy }) < 0.001);
     assert(moved.x >= 0 && moved.x < FOREST.width && moved.y >= 0 && moved.y < FOREST.height);
   }
+
   const tree = forestTrees(400, 400, 100)[0];
   for (const radius of [10, 12]) {
     const moved = moveForestActor({ x: tree.x - 60, y: tree.y }, 120, 0, radius);
     assert(moved.x <= tree.x - tree.radius - radius);
     assert(moved.x > tree.x - 60);
   }
+
   const left = forestTrees(0, 200, 200),
     right = forestTrees(FOREST.width, 200, 200);
   assert.deepEqual(

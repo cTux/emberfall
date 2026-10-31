@@ -38,6 +38,7 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
     await page.screenshot({ path: `test-results/hitboxes-training-${classId}.png` });
     world.training!.damage = [];
   }
+
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
   const portal = page.getByRole('dialog', { name: 'Forest portal' });

@@ -8,6 +8,7 @@ const flush = () => new Promise<void>((resolve) => setImmediate(resolve));
 test('server filters NPC speech and silence announcements by dimension while player chat stays world-wide', async () => {
   const app = await createRuntime(':memory:', { generate: async () => ({ status: 'busy' }) });
   const peers: Peer[] = [];
+
   function connect() {
     let world: WorldState | undefined;
     const peer = new Peer(
@@ -19,6 +20,7 @@ test('server filters NPC speech and silence announcements by dimension while pla
     );
     peers.push(peer);
     app.connect(peer);
+
     return {
       peer,
       get world() {
@@ -26,6 +28,7 @@ test('server filters NPC speech and silence announcements by dimension while pla
       },
     };
   }
+
   try {
     const a = connect(),
       b = connect(),

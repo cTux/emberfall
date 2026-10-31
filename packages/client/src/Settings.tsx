@@ -37,6 +37,7 @@ export function Settings({
       onChange={(checked) => setPreferences((p) => ({ ...p, [key]: checked }))}
     />
   );
+
   return (
     <ChapterTabs
       label='Settings areas'

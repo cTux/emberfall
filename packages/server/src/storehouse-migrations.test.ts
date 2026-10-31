@@ -105,6 +105,7 @@ test('legacy class gold and full storages migrate once without losing overflow i
           name: `${id} ${tab + 1}`,
           items: Array.from({ length: 40 }, () => item()),
         }));
+
         return [id, progress];
       }),
     );

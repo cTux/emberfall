@@ -18,10 +18,13 @@ export function spawnArchetype(
     threshold += rule.chance;
     if (roll < threshold) return rule.enemy;
   }
+
   const fallbacks = context.registries.settings.require('spawnFallbacks')
     .value as readonly string[];
+
   return fallbacks[count % fallbacks.length];
 }
+
 export function enemyMaxHealth(
   enemy: Pick<Enemy, 'kind' | 'archetype' | 'maxHitpoints'>,
   difficulty: Difficulty = Difficulty.Easy,
@@ -57,6 +60,7 @@ export function moveEnemies(
     if (!cells.has(cell)) cells.set(cell, new Set());
     cells.get(cell)!.add(enemy);
   }
+
   for (const enemy of enemies) {
     if (enemy.attack || (enemy.controlledUntil ?? 0) > now) continue;
     const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
@@ -98,6 +102,7 @@ export function moveEnemies(
         .map((tree) => {
           const x = tree.x - enemy.x,
             y = tree.y - enemy.y - 15;
+
           return {
             x,
             y,
@@ -144,6 +149,7 @@ export function moveEnemies(
                 clear = false;
             }
           }
+
         if (!clear) continue;
         enemy.angle = Math.atan2(
           wrappedDelta(point.y, enemy.y, FOREST.height),
@@ -154,6 +160,7 @@ export function moveEnemies(
         break;
       }
     }
+
     const cell = key(enemy.x, enemy.y);
     if (!cells.has(cell)) cells.set(cell, new Set());
     cells.get(cell)!.add(enemy);

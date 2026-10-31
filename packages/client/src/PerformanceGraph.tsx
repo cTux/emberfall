@@ -40,8 +40,10 @@ export function PerformanceGraph({
         { at, fps: frameRate.current, latency: roundTrip.current, ...networkTiming.current },
       ]);
     }, 500);
+
     return () => clearInterval(timer);
   }, [visible, frameRate, networkTiming]);
+
   return (
     <div
       className='performance-stats'

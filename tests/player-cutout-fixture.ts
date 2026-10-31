@@ -41,6 +41,7 @@ export async function cutoutPixels() {
       ...output.getImageData(x * scale + tx, y * scale + ty, 1, 1).data,
     ]);
   };
+
   const frame = (scale = 1, tx = 0, ty = 0) => {
     pixi.resize(256 * scale, 200 * scale);
     pixi.begin();
@@ -48,6 +49,7 @@ export async function cutoutPixels() {
     pixi.fillRect(0, 0, canvas.width, canvas.height);
     pixi.setTransform(scale, 0, 0, scale, tx, ty);
   };
+
   const draw = () => {
     pixi.drawImage(pose, 80, 60);
     pixi.occlusion = true;
@@ -58,6 +60,7 @@ export async function cutoutPixels() {
     pixi.fillStyle = '#2266ff';
     pixi.fillRect(85, 56, 35, 2);
   };
+
   frame();
   pixi.setPlayerCutout(pose, 80, 60, 48, 48);
   draw();
@@ -95,5 +98,6 @@ export async function cutoutPixels() {
   capture('background-preserved');
   const cached = playerCutoutRuns(pose, 48, 48) === playerCutoutRuns(pose, 48, 48);
   pixi.destroy();
+
   return { samples, cached };
 }

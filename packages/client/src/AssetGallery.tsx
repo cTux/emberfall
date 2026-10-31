@@ -41,6 +41,7 @@ export function AssetGallery() {
     const ctx = canvas.current!.getContext('2d')!;
     let request = 0,
       previous = performance.now();
+
     function draw(now: number) {
       if (!paused) elapsed.current += now - previous;
       const clock = elapsed.current;
@@ -93,6 +94,7 @@ export function AssetGallery() {
         );
         ctx.fillText(['Boar', 'Cat', 'Chicken', 'Raccoon'][i], 115 + i * 230, 565);
       }
+
       const bearFrame =
         action === 'fallen'
           ? 7
@@ -136,6 +138,7 @@ export function AssetGallery() {
         else
           drawArt(ctx, environmentArt, i % 3, Math.floor(i / 3), 10 + i * 132, 840, 126, 160, 128);
       }
+
       canvas.current!.dataset.ready = String(
         artImages.every(
           (image) => image.complete && image.naturalWidth > 0 && image.dataset.artReady === 'true',
@@ -144,9 +147,12 @@ export function AssetGallery() {
       canvas.current!.dataset.frame = String(row);
       request = requestAnimationFrame(draw);
     }
+
     request = requestAnimationFrame(draw);
+
     return () => cancelAnimationFrame(request);
   }, [action, direction, paused, background]);
+
   return (
     <main
       style={{

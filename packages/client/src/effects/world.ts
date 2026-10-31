@@ -9,6 +9,7 @@ export function vegetationSway(
   grass = false,
 ) {
   const phase = x * 0.013 + y * 0.017;
+
   return (
     (Math.sin(now / 1600 + phase) + Math.sin(now / 2700 + phase * 1.7) * 0.3) *
     (width / height) *
@@ -57,8 +58,10 @@ export function drawParticles(
         2,
       );
     }
+
   ctx.restore();
 }
+
 export function drawVignette(
   ctx: DrawingContext,
   x: number,
@@ -80,6 +83,7 @@ export function drawVignette(
   ctx.fillStyle = gradient;
   ctx.fillRect(x, y, width, height);
 }
+
 export function drawAtmosphere(
   ctx: DrawingContext,
   x: number,
@@ -96,6 +100,7 @@ export function drawAtmosphere(
     ctx.fillStyle = '#bea26f25';
     ctx.fillRect(x, y, width, height);
   }
+
   if (settings.lightShafts) {
     ctx.globalAlpha *= daylight;
     ctx.globalCompositeOperation = 'screen';
@@ -124,5 +129,6 @@ export function drawAtmosphere(
       ctx.fill();
     }
   }
+
   ctx.restore();
 }

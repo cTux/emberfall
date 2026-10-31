@@ -5,6 +5,7 @@ import { BlendModeFilter, extensions, ExtensionType } from 'pixi.js';
  */
 class SoftLight extends BlendModeFilter {
   static extension = { name: 'soft-light', type: ExtensionType.BlendMode };
+
   constructor() {
     super({
       gl: {

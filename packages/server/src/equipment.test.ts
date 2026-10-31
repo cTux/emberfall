@@ -40,6 +40,7 @@ test('every class starts with exactly its compatible weapon and preserves base s
     assert.equal(stats.criticalMultiplier, 1.5);
     assert.deepEqual(validateClassEquipment(player.equipment!, classId), player.equipment);
   }
+
   assert.throws(() => validateClassEquipment({ weapon: 'mage-staff' }, 'warrior'));
   assert.throws(() => validateClassEquipment({ ring: 'warrior-sword' }, 'warrior'));
   assert.throws(() => validateClassEquipment({ weapon: 'forged-item' }, 'warrior'));
@@ -77,6 +78,7 @@ test('all nine slots aggregate and gear controls real power, range, cadence and 
     });
     player.equipment![slot] = id;
   }
+
   const context = createGame([
     baseMod,
     {

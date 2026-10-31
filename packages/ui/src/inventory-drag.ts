@@ -11,6 +11,7 @@ export function inventoryDropProps(drop?: InventoryDrop) {
     drop?.accepts.find((inventory) =>
       event.dataTransfer.types.includes(`${INVENTORY_DRAG_PREFIX}${inventory}`),
     );
+
   return {
     onDragOver(event: DragEvent) {
       if (!source(event)) return;

@@ -34,17 +34,23 @@ const nodesById = new Map(TALENT_TREE.map((node) => [node.id, node]));
 type Progress = Pick<CharacterProgress, 'level' | 'talents'> & { classId?: string };
 export function talentRank(progress: Pick<CharacterProgress, 'talents'>, id: string) {
   const value = progress.talents?.[id];
+
   return nodesById.has(id) && Number.isInteger(value) && value! > 0 && value! <= 2 ? value! : 0;
 }
+
 export function isTalentLearned(progress: Pick<CharacterProgress, 'talents'>, id: string) {
   return talentRank(progress, id) > 0;
 }
+
 export function availableTalentPoints(progress: Progress) {
   const spent = TALENT_TREE.reduce((sum, node) => sum + talentRank(progress, node.id), 0);
+
   return Math.max(0, Math.min(20, progress.level) - spent);
 }
+
 export function canLearnTalent(progress: Progress, id: string) {
   const node = nodesById.get(id);
+
   return (
     !!node &&
     node.classId === (progress.classId ?? 'warrior') &&
@@ -53,11 +59,13 @@ export function canLearnTalent(progress: Progress, id: string) {
     availableTalentPoints(progress) > 0
   );
 }
+
 export function learnTalent(progress: Progress, id: string) {
   if (!canLearnTalent(progress, id))
     throw new Error('Talent is locked, fully ranked, or no points remain.');
   progress.talents = { ...progress.talents, [id]: talentRank(progress, id) + 1 };
 }
+
 export const TALENT_RESET_COST = 50;
 export function resetTalents(
   progress: Pick<CharacterProgress, 'talents' | 'coins' | 'talentSlots'>,
@@ -70,12 +78,14 @@ export function resetTalents(
   progress.talentSlots = [null, null, null, null];
   progress.coins = (progress.coins ?? 0) - TALENT_RESET_COST;
 }
+
 /** A versioned, idempotent migration refunds old trees and repairs invalid budgets. */
 export function normalizeTalents(progress: CharacterProgress, classId: string) {
   const valid =
     progress.talentVersion === 2 &&
     Object.entries(progress.talents ?? {}).every(([id, rank]) => {
       const node = nodesById.get(id);
+
       return (
         !!node &&
         node.classId === classId &&
@@ -91,15 +101,18 @@ export function normalizeTalents(progress: CharacterProgress, classId: string) {
     progress.talents = {};
     progress.talentSlots = [null, null, null, null];
   }
+
   progress.talentVersion = 2;
   progress.talentSlots = Array.from({ length: 4 }, (_, index) => {
     const id = progress.talentSlots?.[index];
     const node = id ? nodesById.get(id) : undefined;
+
     return node?.kind === 'ability' && node.classId === classId && talentRank(progress, node.id) > 0
       ? node.id
       : null;
   });
 }
+
 export function equipTalent(
   progress: Progress & Pick<CharacterProgress, 'talentSlots'>,
   slot: number,

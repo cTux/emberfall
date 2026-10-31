@@ -31,12 +31,15 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     readonly database: GameDatabase;
     readonly ready: Promise<void>;
     private versions = new Map<string, number>();
+
     private get savesTable() {
       return getTableName(this.database.tables.cloudSaves);
     }
+
     private get usersTable() {
       return getTableName(this.database.tables.users);
     }
+
     constructor(path: string) {
       this.db = openCharacterDatabase(path);
       this.worldRepository = createWorldRepository(this.db, (operation) =>
@@ -55,33 +58,43 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         })
         .catch((error) => {
           this.close();
+
           throw error;
         });
     }
+
     worlds() {
       return this.worldRepository.worlds();
     }
+
     saveWorld(world: { id: string; name: string; salt: string; hash?: Buffer }, permanent = false) {
       return this.worldRepository.saveWorld(world, permanent);
     }
+
     deleteWorld(id: string) {
       return this.worldRepository.deleteWorld(id);
     }
+
     rememberWorld(characterId: string, worldId: string) {
       return this.worldRepository.rememberWorld(characterId, worldId);
     }
+
     forgetWorld(characterId: string) {
       return this.worldRepository.forgetWorld(characterId);
     }
+
     canResume(characterId: string, worldId: string) {
       return this.worldRepository.canResume(characterId, worldId);
     }
+
     load(token: string) {
       const hash = createHash('sha256').update(token).digest('hex');
       const identity = this.db.prepare('SELECT id FROM characters WHERE token_hash=?').get(hash);
       if (!identity) throw new Error('Character save not found.');
+
       return this.loadById(String(identity.id));
     }
+
     loadById(id: string) {
       const row = this.db
         .prepare(
@@ -94,8 +107,10 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         );
       const result = decodeProgress(String(row.data));
       this.versions.set(String(row.id), Number(row.version));
+
       return { id: String(row.id), name: String(row.name), ...result };
     }
+
     create(name: string) {
       const token = randomBytes(32).toString('hex'),
         id = randomUUID();
@@ -105,8 +120,10 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         name,
         JSON.stringify(freshProgress()),
       );
+
       return { token, ...this.load(token) };
     }
+
     importCharacter(id: string, tokenHash: string, name: string, raw: string) {
       const { classId, classes, storehouse } = decodeProgress(raw);
       if (this.db.prepare('SELECT 1 FROM characters WHERE id=? OR token_hash=?').get(id, tokenHash))
@@ -127,13 +144,16 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       });
       this.versions.set(id, 1);
     }
+
     merchant(worldId: string): Merchant {
       const row = this.db.prepare('SELECT data FROM merchants WHERE world_id=?').get(worldId);
       if (row) return merchantSchema.parse(JSON.parse(String(row.data)));
       const merchant = freshMerchant();
       this.saveMerchant(worldId, merchant);
+
       return merchant;
     }
+
     saveMerchant(worldId: string, state: Merchant) {
       this.db
         .prepare(
@@ -141,6 +161,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         )
         .run(worldId, JSON.stringify(merchantSchema.parse(state)));
     }
+
     save(
       id: string,
       name: string,
@@ -163,6 +184,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         delete classes[id].coins;
         delete classes[id].storages;
       }
+
       const storehouse = storehouseSchema.parse({
         coins: progress.coins ?? previous.storehouse.coins,
         storages: progress.storages ?? previous.storehouse.storages,
@@ -189,42 +211,54 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       });
       this.versions.set(id, version + 1);
     }
+
     selectClass(id: string, player: Player, classId: ClassId) {
       const updated = selectClassProgress(player, classId);
       this.save(id, player.name, updated);
       Object.assign(player, updated);
     }
+
     steamAccount(steamId: string) {
       return this.accountRepository.steamAccount(steamId);
     }
+
     loginSteam(steamId: string, steamName: string) {
       return this.accountRepository.loginSteam(steamId, steamName);
     }
+
     renameSteam(steamId: string, nickname: string) {
       return this.accountRepository.renameSteam(steamId, nickname);
     }
+
     createSession(steamId: string, expiresAt: number) {
       return this.accountRepository.createSession(steamId, expiresAt);
     }
+
     session(token: string) {
       return this.accountRepository.session(token);
     }
+
     revokeSession(token: string) {
       return this.accountRepository.revokeSession(token);
     }
+
     private transactionId = 0;
+
     private transaction<T>(operation: () => T): T {
       const savepoint = `operation_${++this.transactionId}`;
       this.db.exec(`SAVEPOINT ${savepoint}`);
       try {
         const result = operation();
         this.db.exec(`RELEASE ${savepoint}`);
+
         return result;
       } catch (error) {
         this.db.exec(`ROLLBACK TO ${savepoint}; RELEASE ${savepoint}`);
+
         throw error;
       }
     }
+
     close() {
       if (this.db.isOpen) this.db.close();
     }
@@ -232,5 +266,6 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
   return { freshProgress, decodeProgress, CharacterStore };
 }
+
 export const { freshProgress, decodeProgress, CharacterStore } = createCharacterPersistence();
 export type CharacterStore = InstanceType<typeof CharacterStore>;

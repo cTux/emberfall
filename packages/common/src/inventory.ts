@@ -32,11 +32,13 @@ export const storagesSchema = z
   .length(3)
   .refine((storages) => {
     const ids = storages.flatMap((storage) => storage.items.map((item) => item.id));
+
     return new Set(ids).size === ids.length;
   }, 'Duplicate stored item identity');
 export function freshStorages(): z.infer<typeof storagesSchema> {
   return Array.from({ length: 3 }, (_, index) => ({ name: `Storage ${index + 1}`, items: [] }));
 }
+
 export const storehouseSchema = z.object({
   coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
   storages: storagesSchema,

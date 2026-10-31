@@ -7,6 +7,7 @@ import { talentNodeId, talentRank } from './talent-tree.ts';
 export function rank(player: Player, column: number, row: number) {
   return talentRank(player, talentNodeId(player.classId ?? 'warrior', column, row));
 }
+
 export function applyTalentAilment(
   enemy: Enemy,
   player: Player,
@@ -36,9 +37,11 @@ export function applyTalentAilment(
     };
     enemy.debuffs.push(entry);
   }
+
   entry.stacks = kind === 'roots' ? 1 : Math.min(5, entry.stacks + stacks);
   entry.expiresAt = now + duration;
 }
+
 export function talentArea(
   scene: SceneState,
   point: { x: number; y: number },
@@ -46,16 +49,20 @@ export function talentArea(
   player?: Player,
 ) {
   radius *= 1 + (player ? characterStats(player).bonuses.areaOfEffect / 100 : 0);
+
   return scene.enemies.filter(
     (enemy) => enemy.hitpoints > 0 && forestDistance(point, enemy) <= radius,
   );
 }
+
 /** Extra bleed chance is additive with the weapon's existing roll. */
 export function talentAilmentChance(player: Player, kind: DebuffKind) {
   if (kind !== 'bleed' || (player.classId ?? 'warrior') !== 'warrior') return 0;
   const learned = rank(player, 1, 0);
+
   return learned === 2 ? 0.35 : learned === 1 ? 0.2 : 0;
 }
+
 export function talentEnemyDeath(
   scene: SceneState,
   player: Player,

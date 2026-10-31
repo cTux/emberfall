@@ -12,6 +12,7 @@ test('world lifecycle, passwords, movement, capacity and isolation over real soc
   const address = app.server.address();
   assert(address && typeof address !== 'string');
   const clients: WebSocket[] = [];
+
   async function connect() {
     const ws = new WebSocket(
       `ws://127.0.0.1:${address && typeof address !== 'string' ? address.port : 0}/ws`,
@@ -20,6 +21,7 @@ test('world lifecycle, passwords, movement, capacity and isolation over real soc
     ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
     clients.push(ws);
     await once(ws, 'open');
+
     async function wait(predicate: (m: ServerMessage) => boolean): Promise<ServerMessage> {
       const until = Date.now() + 3000;
       while (Date.now() < until) {
@@ -27,10 +29,13 @@ test('world lifecycle, passwords, movement, capacity and isolation over real soc
         if (i >= 0) return messages.splice(i, 1)[0];
         await new Promise((r) => setTimeout(r, 10));
       }
+
       throw new Error('Timed out waiting for server message');
     }
+
     return { ws, messages, wait, send: (message: unknown) => ws.send(JSON.stringify(message)) };
   }
+
   try {
     const host = await connect();
     const guest = await connect();
@@ -74,6 +79,7 @@ test('world lifecycle, passwords, movement, capacity and isolation over real soc
       c.send({ type: 'join', worldId: id, playerName: `Player ${i}`, password: 'secret' });
       await c.wait((m) => m.type === 'joined');
     }
+
     const excess = await connect();
     excess.send({ type: 'join', worldId: id, playerName: 'Extra', password: 'secret' });
     const full = await excess.wait((m) => m.type === 'error');
@@ -157,8 +163,10 @@ test('Playtest Default admits 32 players and rejects the 33rd', async () => {
           assert(Date.now() < deadline, `Missing ${type}`);
           await new Promise((resolve) => setTimeout(resolve, 5));
         }
+
         return messages.find((m) => m.type === type)!;
       };
+
       const listing = await wait('worlds');
       assert(listing.type === 'worlds');
       const world = listing.worlds[0];

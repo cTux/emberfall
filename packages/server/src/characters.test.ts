@@ -18,6 +18,7 @@ test('server saves survive restart, authenticate independently of nickname, and 
   const listen = async () => {
     await app.listen(0, '127.0.0.1');
   };
+
   async function connect() {
     const address = app.server.address();
     assert(address && typeof address !== 'string');
@@ -26,6 +27,7 @@ test('server saves survive restart, authenticate independently of nickname, and 
     const messages: ServerMessage[] = [];
     ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
     await once(ws, 'open');
+
     return {
       ws,
       send: (message: unknown) => ws.send(JSON.stringify(message)),
@@ -35,10 +37,12 @@ test('server saves survive restart, authenticate independently of nickname, and 
           if (index >= 0) return messages.splice(index, 1)[0];
           await new Promise((r) => setTimeout(r, 10));
         }
+
         throw new Error(`Missing ${type}`);
       },
     };
   }
+
   try {
     await listen();
     const first = await connect();
@@ -177,6 +181,7 @@ test('old single-class and per-class saves discard mana without losing progress'
         assert(!('manapoints' in progress));
         assert(!('maxManapoints' in progress));
       }
+
       store.save(created.id, loaded.name, {
         ...loaded.progress,
         classId: loaded.classId,

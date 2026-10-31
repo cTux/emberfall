@@ -48,6 +48,7 @@ export function returnToLobby(world: SceneWorld, player: Player) {
     player.bear.returning = false;
   }
 }
+
 export function sceneAction(
   world: SceneWorld,
   player: Player,
@@ -68,6 +69,7 @@ export function sceneAction(
       for (const participant of world.players.values())
         if (participant.scene === 'forest') returnToLobby(world, participant);
     }
+
     world.scene = {
       id: randomUUID(),
       type: 'Forest',
@@ -111,6 +113,7 @@ export function sceneAction(
     cleanupScene(world);
   }
 }
+
 export function cleanupScene(world: SceneWorld) {
   if (
     world.scene &&
@@ -119,6 +122,7 @@ export function cleanupScene(world: SceneWorld) {
   )
     world.scene = undefined;
 }
+
 function enterScene(world: SceneWorld, player: Player, offset = 0) {
   addChat(
     world,
@@ -141,6 +145,7 @@ function enterScene(world: SceneWorld, player: Player, offset = 0) {
     player.bear.returning = false;
   }
 }
+
 export function reconcileVote(world: SceneWorld, now: number) {
   const scene = world.scene;
   if (!scene || !['voting', 'countdown'].includes(scene.phase)) return;
@@ -150,6 +155,7 @@ export function reconcileVote(world: SceneWorld, now: number) {
     scene.countdownAt = null;
     scene.electorate = electorate;
   }
+
   scene.ready = scene.ready.filter((id) => ids.includes(id));
   if (ids.length && ids.every((id) => scene.ready.includes(id))) {
     scene.countdownAt ??= now + FOREST_DEFINITION.countdownMs;
@@ -159,6 +165,7 @@ export function reconcileVote(world: SceneWorld, now: number) {
     scene.countdownAt = null;
   }
 }
+
 export function tickScene(world: SceneWorld, now: number, dt: number) {
   const entities = simulationFor(world.players);
   if (!world.skipTraining) world.training ??= createTrainingScene(now);
@@ -180,6 +187,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
       enterScene(world, player, (index++ - world.players.size / 2) * 30);
     }
   }
+
   if (scene.phase !== 'active' && scene.phase !== 'ended') return;
   const living = [...world.players.values()].filter((player) => player.hitpoints > 0);
   stepCombat(scene, [...world.players.values()], now, dt, undefined, world.rewardPlayers);
@@ -188,6 +196,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     if (player.hitpoints <= 0) addChat(world, `${player.name} died.`, undefined, player.id);
   cleanupScene(world);
 }
+
 export function sceneState(scene?: Scene): SceneState | undefined {
   if (!scene) return undefined;
   const {
@@ -212,6 +221,7 @@ export function sceneState(scene?: Scene): SceneState | undefined {
     explosions,
     pausedAt,
   } = scene;
+
   return {
     id,
     type,

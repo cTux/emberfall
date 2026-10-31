@@ -39,6 +39,7 @@ export function instance(
     if (rarity !== Rarity.Legendary && itemStatWeight[key] < 1) continue;
     stats[key] = statValue(key, rarity);
   }
+
   return { id: crypto.randomUUID(), itemId, quantity: 1, rarity, stats };
 }
 
@@ -46,6 +47,7 @@ export function equip(player: Player, slot: string, itemId: string, stat: ItemSt
   const item = instance(itemId, stat);
   player.equipment = { ...player.equipment, [slot]: itemId };
   player.equipmentItems = { ...player.equipmentItems, [slot]: item };
+
   return item;
 }
 

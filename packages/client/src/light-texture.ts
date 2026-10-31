@@ -66,11 +66,14 @@ export function lightTexture(
       light.radius * 2,
     );
   }
+
   if (shadows) {
     ctx.globalCompositeOperation = 'destination-out';
     for (const caster of blockers) castShadow(ctx, caster, light);
   }
+
   const dynamic = canvas as HTMLCanvasElement & { textureRevision?: number };
   dynamic.textureRevision = (dynamic.textureRevision ?? 0) + 1;
+
   return canvas;
 }

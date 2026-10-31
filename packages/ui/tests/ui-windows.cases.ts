@@ -10,6 +10,7 @@ test('settings dropdowns share window surfaces and wood selection states', async
     const surface = page.locator('.game-window-surface');
     const colors = await surface.evaluate((element) => {
       const style = getComputedStyle(element);
+
       return {
         border: style.borderTop,
         radius: style.borderRadius,
@@ -80,6 +81,7 @@ test('external modal tabs scroll, navigate and stay with the window at viewport 
     await expect
       .poll(async () => {
         const box = (await dialog.boundingBox())!;
+
         return box.y + box.height;
       })
       .toBeLessThanOrEqual(size.height + 0.1);
@@ -99,6 +101,7 @@ test('external modal tabs scroll, navigate and stay with the window at viewport 
     await expect(dialog.getByRole('tabpanel', { name: 'Chapter 12', exact: true })).toBeVisible();
     await page.screenshot({ path: testInfo.outputPath(`external-tabs-${size.width}.png`) });
   }
+
   await page.goto(story('components-gamewindow--tabbed-auto-height'));
   const surface = dialog.locator('.game-window-surface');
   await expect(surface).toBeVisible();

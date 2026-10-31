@@ -28,6 +28,7 @@ test('each tree allows five independent rolls, shows remaining health and restor
     );
     assert.equal(states[node.id].remaining, 4 - i);
   }
+
   assert.deepEqual(
     player.backpack!.map((i) => i.quantity),
     [5, 5, 5],

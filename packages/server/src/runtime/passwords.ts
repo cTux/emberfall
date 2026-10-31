@@ -5,6 +5,7 @@ const derive = promisify(scrypt);
 
 export function createWorldPasswords() {
   let pending = 0;
+
   return {
     get pending() {
       return pending;

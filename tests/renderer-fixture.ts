@@ -41,6 +41,7 @@ export async function compare() {
       ctx.fillRect(0, 0, 256, 256);
       draw(ctx);
     }
+
     pixi.present();
     const capture = document.createElement('canvas');
     capture.width = capture.height = 256;
@@ -59,9 +60,11 @@ export async function compare() {
         const channels = [pixels[i], pixels[i + 1], pixels[i + 2]];
         if (Math.max(...channels) - Math.min(...channels) > 40) icons[name]++;
       }
+
       delete results[name];
     }
   };
+
   compareSurfaces(compare, canvas, stackLabels);
   const { lights, edges } = compareLighting(pixi, gpu);
   // Leave both renderers showing the same composited scene for visual inspection.
@@ -79,6 +82,7 @@ export async function compare() {
   const { projectilePixels, lootPixels, rarityPixels } = await compareLoot(pixi, gpu);
   const battleTextPixels = compareBattleText(pixi, gpu);
   pixi.destroy();
+
   return {
     results,
     icons,

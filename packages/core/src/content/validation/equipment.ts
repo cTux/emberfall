@@ -26,6 +26,7 @@ export function validateEquipment(context: ValidationContext) {
     );
     for (const type of slot.gearTypes) reference('slots', slot.id, 'gearTypes', type);
   }
+
   for (const item of r.items.values()) {
     check(
       typeof item.name === 'string' && (item.price === undefined || nonnegative(item.price)),

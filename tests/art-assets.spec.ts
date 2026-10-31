@@ -42,6 +42,7 @@ test('animated asset gallery loads transparent frames and changes action and fac
         if (radius < 0.9) interiorChanges++;
         else if (radius > 1.1) stoneChanges++;
       }
+
     return {
       interiorChanges,
       stoneChanges,
@@ -79,6 +80,7 @@ test('animated asset gallery loads transparent frames and changes action and fac
     );
     await writeFile(`test-results/wardrobe-attack-${direction}.png`, Buffer.from(png, 'base64'));
   }
+
   await page.screenshot({ path: 'test-results/wardrobe-art-attacks.png', fullPage: true });
   await page.getByLabel('Animation', { exact: true }).selectOption('fallen');
   await expect(canvas).toHaveAttribute('data-frame', '7');

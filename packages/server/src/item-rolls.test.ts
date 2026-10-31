@@ -93,6 +93,7 @@ test('all gear pools include reward stats, distinct configured values and restri
       }
     }
   }
+
   assert.equal(statValue(ItemStat.AttackSpeed, Rarity.Uncommon), 2.4);
   assert.equal(statValue(ItemStat.MovementSpeed, Rarity.Epic), 3 * 1.7);
   let specials = 0;

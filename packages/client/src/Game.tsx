@@ -47,14 +47,17 @@ export function Game({
     onEvent: (event) => {
       if (event === 'voting') {
         setMenu((current) => current ?? 'portal');
+
         return;
       }
+
       setMenu(null);
       if (event === 'joined') {
         clearCatMessages();
         setJoinPassword('');
         setSelected(null);
       }
+
       if (event === 'sceneChanged') setDeathWindow(true);
       if (event === 'left' || event === 'resumeFailed' || event === 'disconnected')
         setBrowserOpen(true);
@@ -122,6 +125,7 @@ export function Game({
     !hasLivingScenePlayers(
       world?.players.filter((p) => p.runId === (me?.scene ? me.runId : me?.homeRunId)) ?? [],
     );
+
   return (
     <main>
       <section className={`stage ${world ? 'in-world' : ''}`} inert={!!menu && menu !== 'talents'}>

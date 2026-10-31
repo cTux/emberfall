@@ -27,6 +27,7 @@ const panels: Record<GameMenu, Panel> = {
 
 export function gamePanel(menu: GameMenu, building: string, trading: boolean): Panel {
   const panel = panels[menu];
+
   return menu === 'building'
     ? { ...panel, title: building, width: trading || building === 'Storehouse' ? 520 : undefined }
     : panel;

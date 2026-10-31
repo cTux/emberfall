@@ -19,6 +19,7 @@ export const Tabbed: StoryObj<typeof meta> = {
   args: { height: 420 },
   render: function Tabbed(args) {
     const [value, setValue] = useState('chapter-0');
+
     return (
       <div>
         <GameWindow {...args} title='Tabbed window' modal>

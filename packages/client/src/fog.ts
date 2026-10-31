@@ -15,6 +15,7 @@ for (let i = 0; i < 36; i++) {
       fogContext.fillRect(x - 100, y - 100, 200, 200);
     }
 }
+
 export function drawFog(
   ctx: DrawingContext,
   x: number,
@@ -49,5 +50,6 @@ export function drawFog(
           tileHeight,
         );
   }
+
   ctx.restore();
 }

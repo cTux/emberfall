@@ -52,6 +52,7 @@ export function tickEnemyCombat(
       target: target.id,
     });
   };
+
   for (const enemy of scene.enemies) {
     if ((enemy.controlledUntil ?? 0) > now) continue;
     const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
@@ -115,6 +116,7 @@ export function tickEnemyCombat(
       };
     }
   }
+
   scene.projectiles = scene.projectiles.filter((shot) => {
     if (now >= shot.expiresAt) return false;
     const steps = Math.max(1, Math.ceil((Math.hypot(shot.vx, shot.vy) * dt) / 6));
@@ -137,9 +139,11 @@ export function tickEnemyCombat(
           shot.damage ??
             enemyAttributes(EnemyKind.Caster, EnemyType.Normal, scene.difficulty).damage,
         );
+
         return false;
       }
     }
+
     return true;
   });
 }

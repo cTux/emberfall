@@ -35,8 +35,10 @@ export function forestTrees(x: number, y: number, radius: number) {
       let seed = (Math.imul(c + 17, 73856093) ^ Math.imul(r + 31, 19349663)) >>> 0;
       const random = () => {
         seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
         return seed / 4294967296;
       };
+
       const tx = col * FOREST_DEFINITION.treeCellSize + 25 + random() * 110,
         ty = row * FOREST_DEFINITION.treeCellSize + 25 + random() * 110;
       if (forestDistance({ x: tx, y: ty }, FOREST_PORTAL) < 180) continue;
@@ -49,8 +51,10 @@ export function forestTrees(x: number, y: number, radius: number) {
       });
     }
   }
+
   return trees;
 }
+
 export function moveForestActor(
   position: { x: number; y: number },
   dx: number,
@@ -74,8 +78,10 @@ export function moveForestActor(
     if (clear(x + dx / steps, y)) x += dx / steps;
     if (clear(x, y + dy / steps)) y += dy / steps;
   }
+
   return { x: wrap(x, FOREST.width), y: wrap(y, FOREST.height) };
 }
+
 export function traderInRange(
   player: { x: number; y: number; scene?: string; hitpoints: number },
   npcId: string,
@@ -92,6 +98,7 @@ export function traderInRange(
     )
   );
 }
+
 export function nearbyInteraction(
   player: { x: number; y: number; scene?: string; hitpoints: number },
   ended = false,
@@ -101,8 +108,10 @@ export function nearbyInteraction(
   if (player.hitpoints <= 0) return null;
   if (player.scene === 'forest') {
     const portal = portals.find((p) => forestDistance(player, p) < INTERACTION_RADIUS);
+
     return ended && portal ? { id: 'return', name: 'Return to village', ...portal } : null;
   }
+
   const distance = (point: { x: number; y: number }) =>
     forestDistance({ x: player.x, y: player.y + 15 }, point);
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS)
@@ -116,10 +125,12 @@ export function nearbyInteraction(
   const building = BUILDINGS.find(
     (b) => b.id !== 'inn' && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS,
   );
+
   return building
     ? { id: building.id, name: building.name, x: building.doorX, y: building.y }
     : null;
 }
+
 export function hasLivingScenePlayers(players: Iterable<{ scene?: string; hitpoints: number }>) {
   return [...players].some((p) => p.scene === 'forest' && p.hitpoints > 0);
 }

@@ -16,10 +16,12 @@ export class GameConnection {
   private room?: Room<SessionState>;
   private closed = false;
   private steam: boolean;
+
   constructor(url: string, steam = false) {
     this.steam = steam;
     void this.connect(url);
   }
+
   private async connect(url: string) {
     try {
       const endpoint = new URL(url);
@@ -29,6 +31,7 @@ export class GameConnection {
           ? {
               urlBuilder: (url: URL) => {
                 if (url.protocol.startsWith('ws')) url.pathname = `/colyseus${url.pathname}`;
+
                 return url.toString();
               },
             }
@@ -43,6 +46,7 @@ export class GameConnection {
         if (!response.ok) throw new Error('Authentication required');
         ticket = (await response.json()).ticket;
       }
+
       const room = await new Client(endpoint.toString(), options).create<SessionState>(
         'session',
         { protocolVersion: RUNTIME.protocolVersion, ticket },
@@ -52,8 +56,10 @@ export class GameConnection {
       room.reconnection.enabled = false;
       if (this.closed) {
         await room.leave();
+
         return;
       }
+
       room.onMessage('event', (message: ServerMessage) => this.onmessage?.({ data: message }));
       room.onStateChange((state) => {
         const world = materializeState(state);
@@ -75,9 +81,11 @@ export class GameConnection {
       }
     }
   }
+
   send(data: ClientMessage) {
     if (this.readyState === GameConnection.OPEN) this.room?.send('command', data);
   }
+
   close(code = 1000, reason?: string) {
     this.closed = true;
     if (code === 1000) void this.room?.leave();

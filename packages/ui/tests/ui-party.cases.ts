@@ -50,6 +50,7 @@ test('companion health sits beneath the player at desktop and narrow widths', as
     );
     await page.screenshot({ path: testInfo.outputPath(`companion-${width}.png`) });
   }
+
   await page.goto(story('components-partycard--defeated-companion'));
   await expect(page.getByRole('progressbar', { name: 'Bear', exact: true })).toHaveAttribute(
     'aria-valuenow',

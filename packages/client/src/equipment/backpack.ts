@@ -26,6 +26,7 @@ export function backpackViews(
       gear && !EQUIPMENT_SLOTS.some((slot) => canEquip(slot, gear, player.classId ?? 'warrior'))
         ? 'Your class cannot equip this item.'
         : undefined;
+
     return {
       ...item,
       stackable: definition.kind !== 'gear',

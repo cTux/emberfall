@@ -8,6 +8,7 @@ import { spriteMask } from './lighting';
 
 function companionFrame(bear: Bear, now: number) {
   const age = now - (bear.attackAt ?? -Infinity);
+
   return {
     column:
       bear.hitpoints <= 0
@@ -22,11 +23,13 @@ function companionFrame(bear: Bear, now: number) {
     left: Math.cos(bear.attackAngle ?? 0) < 0,
   };
 }
+
 export function companionCaster(bear: Bear, x: number, y: number, now: number, id: string) {
   if (bear.hitpoints <= 0) return null;
   const { column, left } = companionFrame(bear, now);
   const scale = (bear.size ?? 48) / 48;
   const mask = spriteMask(image, column % 4, Math.floor(column / 4), left, 64, false, 64);
+
   return mask
     ? { id, x, y: y + 15 + 3 * scale, width: 42.5 * scale, height: 40 * scale, mask }
     : null;
@@ -53,6 +56,7 @@ export function drawCompanion(
     ctx.ellipse(x, y + 15, 15, 6, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+
   const angle = bear.attackAngle ?? 0;
   const { column, left } = companionFrame(bear, now);
   const dead = bear.hitpoints <= 0;
@@ -83,6 +87,7 @@ export function drawCompanion(
       now - (bear.hurtAt ?? -Infinity),
     );
   }
+
   ctx.restore();
   ctx.save();
   ctx.globalAlpha = 1;
@@ -109,5 +114,6 @@ export function drawCompanion(
       ctx.stroke();
     }
   }
+
   ctx.restore();
 }

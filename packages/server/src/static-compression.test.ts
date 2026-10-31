@@ -86,6 +86,7 @@ test('static files negotiate compressed representations and preserve HTTP semant
     assert.equal(Number(result.headers['content-length']), bytes.length);
     assert.deepEqual(result.body, bytes);
   }
+
   const head = await get('/' + name, 'br', 'HEAD');
   assert.equal(head.headers['content-encoding'], 'br');
   assert.equal(Number(head.headers['content-length']), br.length);

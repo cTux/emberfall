@@ -22,6 +22,7 @@ function actorOrientation(name: string, row: number, col: number) {
     (col === 0 && (['caster', 'warden'].includes(name) || (name === 'brute' && row !== 6))) ||
     (col === 1 && ((name === 'caster' && row === 6) || (name === 'warden' && row !== 5))) ||
     (col === 2 && name === 'caster');
+
   return { col, flip };
 }
 
@@ -93,6 +94,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
             top = Math.min(top, y);
             bottom = Math.max(bottom, y + 1);
           }
+
         return { left, top, width: Math.max(1, right - left), height: Math.max(1, bottom - top) };
       }),
     );
@@ -143,7 +145,9 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
     result.src = output.toDataURL();
     result.dataset.artReady = 'true';
   };
+
   source.src = artUrl(name);
+
   return result;
 }
 
@@ -167,15 +171,20 @@ export const actorArt = (name: string) => {
     image.src = output.toDataURL();
     image.dataset.artReady = 'true';
   };
+
   source.src = artUrl(`${name}-atlas`);
+
   return image;
 };
+
 export function loadNativeArt(name: string) {
   const image = new Image();
   image.onload = () => {
     image.dataset.artReady = 'true';
   };
+
   artImages.push(image);
   image.src = artUrl(name);
+
   return image;
 }

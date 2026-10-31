@@ -24,6 +24,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
   });
   const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
   let release: () => void = () => {};
+
   const gate = new Promise<void>((done) => {
     release = done;
   });
@@ -51,6 +52,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       Object.values(fixture.villageImages).some((image) => !image.complete)
     )
       await new Promise((done) => setTimeout(done, 20));
+
     return fixture.villageBackground(fixture.GRAPHICS_PRESETS.High) === undefined;
   });
   expect(pending).toBe(true);
@@ -84,6 +86,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
     const signatures = sprites.map((sprite, index) => {
       ctx.drawImage(sprite, 20 + index * 150, 25, 128, 128);
       ctx.drawImage(sprite, 65 + index * 150, 180, 36, 36);
+
       return sprite.toDataURL();
     });
     ctx.drawImage(rocks[0].sprite, 760, 25, 128, 128);
@@ -99,8 +102,10 @@ test('village waits for plant art and packages five distinct silhouettes with sh
         for (let x = 0; x < sprite.width; x++)
           if (pixels[(y * sprite.width + x) * 4 + 3] >= 128) bottom = y + 1;
       ctx.drawImage(sprite, 260 + index * 150, 240 - object.height, object.width, object.height);
+
       return ((sprite.height - bottom) / sprite.height) * object.height;
     });
+
     return {
       gatheredGroundGaps,
       sizes: [
@@ -121,6 +126,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
           .getImageData(0, 0, sprite.width, sprite.height).data;
         let count = 0;
         for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) count++;
+
         return count;
       }),
     };

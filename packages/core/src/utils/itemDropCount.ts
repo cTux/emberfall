@@ -4,6 +4,7 @@ import { isMultiChanced } from './isMultiChanced.ts';
 
 export function itemDropCount(type: EnemyType, random = Math.random) {
   const percent = itemCountDropPercent[type];
+
   return isMultiChanced(
     typeof percent === 'number'
       ? percent

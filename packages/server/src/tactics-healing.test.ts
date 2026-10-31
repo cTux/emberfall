@@ -39,6 +39,7 @@ test('healing applies ordered preferences after party, scene, run, connection, r
   ]) {
     assert.equal(healingTarget([p, { ...ally, ...patch }], p, p, 700), undefined);
   }
+
   assert.equal(healingTarget([p, ally], p, p, 700, 0.3), undefined);
   assert.equal(healingTarget([p, ally], p, p, 700, 0.5), ally);
 });

@@ -51,6 +51,7 @@ function recordingContext() {
       ]);
     },
   };
+
   return { ctx: context as unknown as CanvasRenderingContext2D, text, backgrounds };
 }
 

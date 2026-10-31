@@ -50,6 +50,7 @@ export function createMerchantRules(
     }));
   type Trader = z.infer<typeof traderSchema>;
   type Merchant = z.infer<typeof merchantSchema>;
+
   function freshMerchant(now = Date.now()): Merchant {
     return {
       refreshAt: now + 30 * 60 * 1000,
@@ -69,6 +70,7 @@ export function createMerchantRules(
       },
     };
   }
+
   /** Both owners commit together; older callers still transfer one item. */
   function tradeItem(
     player: Player,
@@ -100,6 +102,7 @@ export function createMerchantRules(
       merchant.buyback.unshift(transferred);
       merchant.buyback.length = Math.min(merchant.buyback.length, BUYBACK_SLOTS);
     }
+
     item.quantity -= quantity;
     if (item.quantity === 0) backpack.splice(index, 1);
     target.coins = (target.coins ?? 0) - price;

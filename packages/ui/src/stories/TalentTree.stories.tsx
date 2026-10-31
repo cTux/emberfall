@@ -39,6 +39,7 @@ export const Interactive: Story = {
   render: function Example() {
     const [ranks, setRanks] = useState<Record<string, number>>({});
     const points = 2 - Object.values(ranks).reduce((sum, value) => sum + value, 0);
+
     return (
       <TalentTree
         columns={columns}

@@ -18,6 +18,7 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
     const messages: ServerMessage[] = [];
     ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
     await once(ws, 'open');
+
     return {
       ws,
       send: (message: unknown) => ws.send(JSON.stringify(message)),
@@ -28,10 +29,12 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
           if (index >= 0) return messages.splice(index, 1)[0];
           await new Promise((resolve) => setTimeout(resolve, 10));
         }
+
         throw new Error(`Missing ${type}`);
       },
     };
   };
+
   try {
     const first = await connect();
     first.send({ type: 'create', name: 'Retained', playerName: 'Owner', password: 'secret' });

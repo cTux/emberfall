@@ -11,6 +11,7 @@ export function sampleFrameTiming(
       let pending: number | undefined;
       let finished = false;
       const deadline = setTimeout(() => finish(clock()), 15000);
+
       function finish(now: number) {
         if (finished) return;
         finished = true;
@@ -24,6 +25,7 @@ export function sampleFrameTiming(
           sampleMs: now - startedAt,
         });
       }
+
       function frame(now: number) {
         if (finished) return;
         if (previous !== undefined && now > previous) intervals.push(now - previous);
@@ -33,6 +35,7 @@ export function sampleFrameTiming(
           pending = requestFrame(frame);
         else finish(now);
       }
+
       pending = requestFrame(frame);
     },
   );

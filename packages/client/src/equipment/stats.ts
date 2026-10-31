@@ -6,6 +6,7 @@ import { number, percent, capitalize } from './metadata';
 
 export function equipmentStatRows(player: Player): EquipmentStatView[] {
   const stats = characterStats(player);
+
   return [
     { label: 'Power', value: number(stats.power) },
     { label: 'Damage type', value: stats.hasWeapon ? capitalize(stats.damageType) : '—' },

@@ -11,6 +11,7 @@ test('outage announces silence once, keeps walking, and recovers after a shared 
   const { world, life } = setup({
     generate: async () => {
       calls++;
+
       return available ? { status: 'ok', text: 'My voice is back!' } : { status: 'unavailable' };
     },
   });

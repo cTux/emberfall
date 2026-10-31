@@ -18,6 +18,7 @@ export function softenArtTones(pixels: Uint8ClampedArray, width: number, height:
             if (original[candidate + 3] < 200) continue;
             if (light(candidate) > light(neighbor)) neighbor = candidate;
           }
+
       for (let channel = 0; channel < 3; channel++)
         pixels[offset + channel] =
           (original[offset + channel] * (1 - blend) + original[neighbor + channel] * blend) * 0.96 +

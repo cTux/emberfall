@@ -61,6 +61,7 @@ test('hunter base arrows stop after four hits; two legendary pierce bonuses allo
       equip(player, 'weapon', 'ranger-bow', ItemStat.ProjectilePierce);
       equip(player, 'offHand', 'loot-quiver', ItemStat.ProjectilePierce);
     }
+
     const scene = arena(false);
     scene.enemies = Array.from({ length: 7 }, (_, index) => ({
       id: index + 1,

@@ -59,6 +59,7 @@ test('a whole column costs exactly twenty points; mixing columns and inactive ex
     assert.equal(availableTalentPoints(player), 0);
     assert.throws(() => learnTalent(player, talentNodeId(classId, 1, 0)));
   }
+
   const player = hero();
   learnTalent(player, talentNodeId('warrior', 0, 6));
   learnTalent(player, talentNodeId('warrior', 2, 8));

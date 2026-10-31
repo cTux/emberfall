@@ -29,8 +29,10 @@ test('every resident sends their own personality to Ollama for greetings, player
           kind === 'exchange' && contexts.length === 1
             ? `@${definition.name.split(' ')[0]}, the goblins stole my boots.`
             : 'The goblins finally found their sole purpose.';
+
         return Response.json({ message: { content: text }, done: true });
       };
+
       const { world, life } = setup(
         new OllamaNpcDialogue(request, () => 0, {
           baseUrl: 'http://127.0.0.1:11434',
@@ -56,6 +58,7 @@ test('every resident sends their own personality to Ollama for greetings, player
         } else {
           life.tick(10_000, 0);
         }
+
         await flush();
         assert.equal(contexts.length, kind === 'exchange' ? 2 : 1);
         const context = contexts.at(-1)!;
@@ -87,6 +90,7 @@ test('each resident rotates all personal topics and player questions take priori
       {
         generate: async (context) => {
           contexts.push(JSON.parse(context));
+
           return { status: 'ok', text: 'There is a story behind that.' };
         },
       },
@@ -101,6 +105,7 @@ test('each resident rotates all personal topics and player questions take priori
         life.tick(10_000 + index * 240_000, 0);
         await flush();
       }
+
       assert.equal(contexts.length, count + 1);
       assert.equal(new Set(contexts.slice(0, count).map((context) => context.topic)).size, count);
       assert.notEqual(contexts[count].topic, contexts[count - 1].topic);

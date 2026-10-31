@@ -38,6 +38,7 @@ export function createAdmission({
   broadcastList: () => void;
 }) {
   const passwords = createWorldPasswords();
+
   return async (
     ws: WebSocket,
     session: RuntimeModels.Session,
@@ -49,16 +50,21 @@ export function createAdmission({
     const error = (message: string) => send(ws, { type: 'error', message });
     if (session.worldId) {
       error('Leave your current world first.');
+
       return;
     }
+
     if (now - session.actionAt > 10_000) {
       session.actionAt = now;
       session.actions = 0;
     }
+
     if (++session.actions > 5 || passwords.pending >= 8) {
       error('Too many attempts. Try again in a moment.');
+
       return;
     }
+
     session.busy = true;
     let createdWorld: RuntimeModels.World | undefined;
     try {
@@ -72,8 +78,10 @@ export function createAdmission({
         [...sessions.values()].some((s) => s.worldId && s.characterId === existingCharacter.id);
       if (message.type !== 'resume' && active()) {
         error('This character is already playing in another tab. Leave that world first.');
+
         return;
       }
+
       if (message.type === 'resume') {
         const retained = [...sessions.entries()].find(
           ([oldWs, old]) =>
@@ -90,8 +98,10 @@ export function createAdmission({
           (!retained && !characters.canResume(existingCharacter.id, message.worldId))
         ) {
           error('Your previous session is no longer available. Join or create a world again.');
+
           return;
         }
+
         if (retained) {
           const [oldWs, old] = retained;
           session.id = old.id;
@@ -111,25 +121,32 @@ export function createAdmission({
             world: state(world, now, world.players.get(session.id)),
             characterToken: authenticated ? '' : message.characterToken,
           });
+
           return;
         }
       }
+
       let world: RuntimeModels.World;
       if (message.type === 'create') {
         if (worlds.size >= 64) {
           error('The server is full. Try again later.');
+
           return;
         }
+
         const salt = randomBytes(16).toString('hex');
         let hash: Buffer | undefined;
         if (message.password) {
           hash = await passwords.hash(message.password, salt);
         }
+
         if (ws.readyState !== WebSocket.OPEN) return;
         if (worlds.size >= 64) {
           error('The server is full.');
+
           return;
         }
+
         world = {
           id: randomUUID(),
           name: message.name,
@@ -145,31 +162,41 @@ export function createAdmission({
         const existing = worlds.get(message.worldId);
         if (!existing) {
           error('This world has closed.');
+
           return;
         }
+
         world = existing;
         if (world.hash && message.type !== 'resume') {
           const hash = await passwords.hash(message.password, world.salt);
           if (!timingSafeEqual(hash, world.hash)) {
             error('Incorrect world password.');
+
             return;
           }
         }
+
         if (ws.readyState !== WebSocket.OPEN) return;
         if (!worlds.has(world.id)) {
           error('This world has closed.');
+
           return;
         }
+
         if (world.players.size >= (world === permanentWorld ? 32 : MAX_PLAYERS)) {
           error('This world is full.');
+
           return;
         }
       }
+
       world.merchant ??= characters.merchant(world.id);
       if (active()) {
         error('This character is already playing in another tab.');
+
         return;
       }
+
       // Password hashing yields; refresh after it so a recent save cannot be overwritten.
       if (ws.readyState !== WebSocket.OPEN || (account && !account()?.nickname)) return;
       let character = authenticated
@@ -185,6 +212,7 @@ export function createAdmission({
         character = created;
         token = created.token;
       }
+
       const playerName = authenticated
         ? account!()!.nickname!
         : message.type === 'resume'
@@ -239,6 +267,7 @@ export function createAdmission({
         characters.deleteWorld(createdWorld.id);
         worlds.delete(createdWorld.id);
       }
+
       session.busy = false;
     }
   };

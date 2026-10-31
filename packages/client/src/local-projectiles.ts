@@ -52,8 +52,10 @@ export class LocalProjectiles {
     this.shotsAt = now;
     if (!scene) {
       this.shots = [];
+
       return;
     }
+
     if (
       player.hitpoints <= 0 ||
       scene.phase !== 'active' ||
@@ -93,15 +95,18 @@ export class LocalProjectiles {
           if (serverShot.kind === 'roots' && serverShot.hitIds.length > shot.hitIds.length) {
             Object.assign(shot, serverShot, { hitIds: [...serverShot.hitIds] });
           }
+
           shot.targetId = serverShot.targetId;
           shot.targetX = serverShot.targetX;
           shot.targetY = serverShot.targetY;
           // A ballistic visual keeps its launch heading. Re-aiming it from a
           // newer server origin creates a visible kink in the flight path.
         }
+
         // Buffered enemies are behind the local shot's clock. They must not
         // invent an impact that hides a projectile the server still has alive.
         advancePlayerShot(shot, confirmed?.enemies ?? [], dt, undefined, false);
+
         return shot.remaining > 0.001;
       });
       if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
@@ -126,6 +131,7 @@ export class LocalProjectiles {
           if (cast.playerShots.length) this.shotCastAt = attack.at;
         }
       }
+
       // A target absent from our snapshots cannot be predicted. Launch that server cast here too.
       const missed =
         confirmed?.playerShots?.filter(
@@ -142,6 +148,7 @@ export class LocalProjectiles {
         this.shots.push(adopt(shot));
       if (missed.length) this.shotCastAt = Math.max(...missed.map((s) => s.castAt!));
     }
+
     // Only replace our projectiles; other players retain snapshot interpolation.
     scene.playerShots = [
       ...(scene.playerShots ?? []).filter(

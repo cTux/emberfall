@@ -60,10 +60,12 @@ export function createArenaInput({
       y: (event.clientY - rect.top) / rect.height,
     };
   };
+
   const pointerLeave = () => {
     pointerInside = false;
     element.dataset.cursor = 'default';
   };
+
   const pointerDown = (event: PointerEvent) => {
     if (event.button !== 0 || blocked()) return;
     pointerMove(event);
@@ -71,16 +73,20 @@ export function createArenaInput({
     if (target) {
       held = false;
       if (interactionInRange(target, confirmedPlayer())) activate(target.source);
+
       return;
     }
+
     held = true;
     sendMovement();
   };
+
   const pointerUp = (event: PointerEvent) => {
     if (event.button !== 0) return;
     held = false;
     sendMovement();
   };
+
   element.addEventListener('pointermove', pointerMove);
   element.addEventListener('pointerenter', pointerMove);
   element.addEventListener('pointerleave', pointerLeave);
@@ -97,8 +103,10 @@ export function createArenaInput({
         altKeys.delete(event.code);
         if (altKeys.size === 0) altHeldAt = Infinity;
       }
+
       return;
     }
+
     if (document.querySelector('[role="dialog"][aria-modal="true"]')) return;
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
       return;
@@ -116,6 +124,7 @@ export function createArenaInput({
     else keys.delete(value);
     if (changed) sendMovement();
   };
+
   const down = (event: KeyboardEvent) => key(event, true);
   const up = (event: KeyboardEvent) => key(event, false);
   const reset = () => {
@@ -127,6 +136,7 @@ export function createArenaInput({
     element.dataset.cursor = 'default';
     sendMovement();
   };
+
   window.addEventListener('keydown', down);
   window.addEventListener('keyup', up);
   window.addEventListener('blur', reset);
@@ -139,6 +149,7 @@ export function createArenaInput({
       Number(keys.has('KeyS') || keys.has('ArrowDown')) -
       Number(keys.has('KeyW') || keys.has('ArrowUp')),
   });
+
   function sendMovement() {
     const current = world();
     if (!current) return;
@@ -146,6 +157,7 @@ export function createArenaInput({
       keys.clear();
       held = false;
     }
+
     if (combat)
       send({
         ...combat,
@@ -157,7 +169,9 @@ export function createArenaInput({
     const { x, y } = movement();
     move(x, y, performance.now());
   }
+
   const input = setInterval(sendMovement, TICK_MS);
+
   return {
     get camera() {
       return inputCamera;

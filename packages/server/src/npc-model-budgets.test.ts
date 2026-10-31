@@ -12,12 +12,14 @@ test('concurrency is bounded; cancellation releases slots without poisoning shar
   let calls = 0;
   const request: typeof fetch = async (_url, options) => {
     if (++calls > 2) return answer();
+
     return new Promise((_resolve, reject) =>
       options?.signal?.addEventListener('abort', () => reject(new Error('aborted')), {
         once: true,
       }),
     );
   };
+
   const pool = new OllamaNpcDialogue(request, () => 0, defaults);
   const abort = new AbortController();
   const a = pool.generate('{}', abort.signal),
@@ -56,6 +58,7 @@ test('deadline bounds loading and body reads and permits recovery after cooldown
             },
           }),
         );
+
       return new Promise((_resolve, reject) => {
         options?.signal?.addEventListener(
           'abort',
@@ -67,12 +70,14 @@ test('deadline bounds loading and body reads and permits recovery after cooldown
         );
       });
     };
+
     const pool = new OllamaNpcDialogue(request, () => now, { ...defaults, timeoutMs: 10 });
     assert.deepEqual(await pool.generate('{}', signal()), { status: 'unavailable' });
     assert.equal(calls, 1);
     now = 60_001;
     assert.equal((await pool.generate('{}', signal())).status, 'ok');
   }
+
   assert.equal(lines.length, 4);
   assert(lines.filter((line) => line.includes('"reason":"timeout"')).length === 2);
   assert(lines.filter((line) => line.includes('NPC dialogue provider recovered')).length === 2);

@@ -58,6 +58,7 @@ export function resourceNodes(
         },
       ])
     : VILLAGE_RESOURCES;
+
   return nodes
     .map((node) => ({
       ...node,
@@ -66,20 +67,24 @@ export function resourceNodes(
     }))
     .filter((node) => Math.hypot(node.x - player.x, node.y - player.y) <= radius);
 }
+
 export function resourceState(
   states: Record<string, ResourceState> | undefined,
   node: ResourceNode,
   now: number,
 ) {
   const state = states?.[node.id];
+
   return state && state.restoresAt > now ? state : undefined;
 }
+
 export function nearbyResource(
   player: Pick<Player, 'x' | 'y' | 'scene' | 'hitpoints'>,
   states: Record<string, ResourceState> | undefined,
   now: number,
 ) {
   if (player.hitpoints <= 0) return undefined;
+
   return resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE)
     .filter((node) => resourceState(states, node, now)?.remaining !== 0)
     .sort(
@@ -88,6 +93,7 @@ export function nearbyResource(
         Math.hypot(b.x - player.x, b.y - player.y - 15),
     )[0];
 }
+
 export function gatheringNode(
   player: Player,
   states: Record<string, ResourceState> | undefined,
@@ -102,6 +108,7 @@ export function gatheringNode(
   if (!node) throw new Error('Move closer to this resource.');
   if (resourceState(states, node, now)?.remaining === 0)
     throw new Error('This resource is restoring.');
+
   return node;
 }
 
@@ -129,10 +136,13 @@ export function tickGathering(
     gatheringNode(player, states, activity.nodeId, now);
   } catch {
     delete player.gathering;
+
     return;
   }
+
   if (now < activity.endsAt) return;
   delete player.gathering;
+
   return gatherResource(player, states, activity.nodeId, now);
 }
 
@@ -170,8 +180,10 @@ export function gatherResource(
         ? now + RESOURCE_RESTORE_MS
         : (previous?.restoresAt ?? now + RESOURCE_RESTORE_MS),
   };
+
   return items;
 }
+
 export function restoreResources(states: Record<string, ResourceState> | undefined, now: number) {
   for (const [id, state] of Object.entries(states ?? {}))
     if (state.restoresAt <= now) delete states![id];

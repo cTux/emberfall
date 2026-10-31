@@ -40,6 +40,7 @@ test('lobby window drags across the viewport without outer scrollbars', async ({
   await expect
     .poll(async () => {
       const box = (await panel.boundingBox())!;
+
       return box.y + box.height;
     })
     .toBeLessThanOrEqual(160);
@@ -72,6 +73,7 @@ test('server browser shows columns and disables creation', async ({ page }) => {
       true,
     );
   }
+
   await page.screenshot({ path: 'test-results/server-browser-narrow.png' });
 });
 

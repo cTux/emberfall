@@ -48,6 +48,7 @@ test('XP bar follows authoritative leveling and saved paragon after rejoining', 
     expect(experience!.height).toBeLessThan(health!.height);
     await page.screenshot({ path: testInfo.outputPath(`xp-forest-${width}.png`) });
   }
+
   player.level = 20;
   player.paragon = 1;
   player.experience = experienceRequired(20, 1) + 12;

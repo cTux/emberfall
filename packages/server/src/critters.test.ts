@@ -18,6 +18,7 @@ test('ambient critters wander, stay bounded, cull and repeat across forest seams
       assert.equal(p.y, first[i].y);
     });
   }
+
   assert.deepEqual(crittersAt('village', 0, { x: 1000, y: 1000, width: 100, height: 100 }), []);
   const bounds = { x: 2080, y: 960, width: 960, height: 640 };
   const forest = crittersAt('forest', 2000, bounds);

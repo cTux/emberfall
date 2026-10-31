@@ -27,6 +27,8 @@ export async function resizeAndDispose() {
     pixels.push([...output.getImageData(20, 20, 1, 1).data]);
     document.body.append(capture);
   }
+
   context.destroy();
+
   return pixels;
 }

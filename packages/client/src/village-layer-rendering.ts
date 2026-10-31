@@ -56,6 +56,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
           serverTime - hit.at,
         );
     }
+
     ctx.globalAlpha = 1;
     ctx.occlusion = false;
     if (!preferences.hideHealthBarsInTown)
@@ -71,6 +72,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
 
     return;
   }
+
   if (layer.portal) {
     drawPortal(
       ctx,
@@ -83,15 +85,19 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
       quality.shadows,
       quality.wavingVegetation,
     );
+
     return;
   }
+
   if (layer.critter) {
     drawCritter(ctx, layer.critter, quality.shadows);
     const outline = outlines.find((target) => target.source.id === layer.critter.id);
     if (outline) drawInteractionOutline(ctx, outline);
     ctx.globalAlpha = 1;
+
     return;
   }
+
   if (layer.bear) {
     drawCompanion(
       ctx,
@@ -103,8 +109,10 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
       1,
       !preferences.hideHealthBarsInTown,
     );
+
     return;
   }
+
   if (layer.object) {
     const object = layer.object;
 
@@ -174,6 +182,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
         object.npc?.silenced ? '#ff8794' : undefined,
       );
     else if (object.name) drawNameBadge(ctx, object.x, object.y, object.name);
+
     return;
   }
 }

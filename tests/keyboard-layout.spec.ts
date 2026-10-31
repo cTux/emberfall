@@ -27,6 +27,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
     await page.mouse.move(700, 400);
     await expect(page.getByRole('tooltip')).toBeHidden();
   }
+
   await page.keyboard.press('F1');
   await expect(codex).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-f1-prevented', 'true');
@@ -62,6 +63,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
     await page.mouse.move(700, 400);
     await expect(page.getByRole('tooltip')).toBeHidden();
   }
+
   const controls = page.getByRole('navigation', { name: 'Game controls' });
   await expect(controls.getByRole('button')).toHaveText(['I', 'N', 'T', 'F1', 'Esc', '']);
   await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'T', 'F1', 'Esc']);
@@ -99,6 +101,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
       await page.keyboard.press('Escape');
       await expect(window).toBeHidden();
     }
+
     await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'T', 'F1', 'Esc']);
     await page.screenshot({ path: `test-results/hud-toolbar-${scene}.png` });
     if (scene === 'village') await controls.screenshot({ path: 'test-results/hud-toolbar.png' });
@@ -121,6 +124,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
       await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
     }
   }
+
   await page.getByRole('button', { name: 'Leave world' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
 });
@@ -130,8 +134,10 @@ test('movement follows physical keys across layouts and layout changes', async (
     const player = [...game.runtime.worlds.values()].flatMap((world) => [
       ...world.players.values(),
     ])[0];
+
     return { x: player?.inputX ?? 0, y: player?.inputY ?? 0 };
   };
+
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
@@ -164,12 +170,14 @@ test('movement follows physical keys across layouts and layout changes', async (
       await expect.poll(movement).toEqual({ x: 0, y: 0 });
     }
   }
+
   for (const [index, code] of ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].entries()) {
     await sendKey('keydown', code, code);
     await expect.poll(movement).toEqual(directions[index]);
     await sendKey('keyup', code, code);
     await expect.poll(movement).toEqual({ x: 0, y: 0 });
   }
+
   await sendKey('keydown', 'KeyD', 'в');
   await sendKey('keydown', 'ArrowRight', 'ArrowRight');
   await sendKey('keyup', 'KeyD', 'd');

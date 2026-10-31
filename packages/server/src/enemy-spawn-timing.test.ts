@@ -58,6 +58,7 @@ test('successful elite rolls use configured HP; timer spawns only one configured
   for (let now = 1000; (scene.spawnCount ?? 0) < 20 && now < 50000; now += 400) {
     stepCombat(scene, [p], now, 0);
   }
+
   assert.equal(scene.spawnCount, 20);
   const elites = [...scene.enemies, ...scene.spawns!].filter((e) => e.kind === 'elite');
   assert.equal(elites.length, 20);

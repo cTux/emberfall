@@ -38,6 +38,7 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
       viewport.height / 2 + (dummy.y - 9 - player.y) * scale,
     );
   };
+
   await hoverDummy();
   await expect(canvas).toHaveAttribute('data-cursor', 'attack');
   await expect(canvas).toHaveCSS('cursor', /attack\.png/);
@@ -108,6 +109,7 @@ test('native game cursors follow UI hovers, dragging, combat and input blocking'
             const image = new Image();
             image.src = `/assets/cursors/${size}/${name}.png`;
             await image.decode();
+
             return [image.naturalWidth, image.naturalHeight];
           },
           { name: state, size },
@@ -177,10 +179,12 @@ test('cursor enable and size settings apply immediately and persist across reloa
         document.body.append(probe);
         const cursor = getComputedStyle(probe).cursor;
         probe.remove();
+
         return cursor;
       }, state),
     ).toBe(keyword);
   }
+
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect(toggle).not.toBeChecked();
   await toggle.check();
@@ -214,6 +218,7 @@ test('pointing hotspots stay on the visible artwork at every size', async ({ pag
         canvas.height = image.naturalHeight;
         const context = canvas.getContext('2d')!;
         context.drawImage(image, 0, 0);
+
         return context.getImageData(Number(match[2]), Number(match[3]), 1, 1).data[3];
       }, state);
       expect(alpha, `${size}px ${state} hotspot must touch the solid icon`).toBeGreaterThanOrEqual(
@@ -229,8 +234,10 @@ test('drag cursor anchors match the default cursor at every size', async ({ page
     const anchors = await page.locator('body').evaluate((body, size) => {
       body.dataset.cursorSize = String(size);
       const style = getComputedStyle(body);
+
       return ['default', 'grab', 'grabbing'].map((state) => {
         const cursor = style.getPropertyValue(`--cursor-${state}`);
+
         return /\)\s+(\d+)\s+(\d+)/.exec(cursor)!.slice(1).map(Number);
       });
     }, size);

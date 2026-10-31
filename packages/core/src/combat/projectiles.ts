@@ -121,6 +121,7 @@ export function tickPlayerShots(
               shot.remaining = 0;
               break;
             }
+
             if (
               enemy.hitpoints <= 0 ||
               shot.hitIds.includes(enemy.id) ||
@@ -181,12 +182,15 @@ export function tickPlayerShots(
               shot.targetId = next.id;
               shot.targetX = next.x;
               shot.targetY = next.y;
+
               return true;
             }
           }
         }
+
         return false;
       }
+
       appendSceneEntities(scene, 'explosions', {
         ownerId: shot.ownerId,
         id: ++scene.sequence,
@@ -222,8 +226,10 @@ export function tickPlayerShots(
             false,
             context,
           );
+
       return false;
     }
+
     return shot.remaining > 0.001;
   });
 }

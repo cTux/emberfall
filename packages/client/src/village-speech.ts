@@ -14,9 +14,11 @@ const NPC_SILENCE = { debuffs: [{ kind: 'silence' as const }] };
 export class VillageSpeech {
   private speech = new CatSpeech();
   private onSpeech: (text: string) => void;
+
   constructor(onSpeech: (text: string) => void) {
     this.onSpeech = onSpeech;
   }
+
   targets(critters: ReturnType<typeof crittersAt>) {
     const cats: InteractionTarget[] = [];
     for (const cat of critters) {
@@ -43,8 +45,10 @@ export class VillageSpeech {
         radius: INTERACTION_RADIUS,
       });
     }
+
     return cats;
   }
+
   draw(
     ctx: DrawingContext,
     players: Player[],
@@ -63,6 +67,7 @@ export class VillageSpeech {
         catMessages.push(message);
       }
     }
+
     for (const object of visibleScenery) {
       // NPC positions are feet anchors; this matches the 40-unit actor health/status row.
       if (object.npc?.silenced)
@@ -70,6 +75,7 @@ export class VillageSpeech {
       else if (object.npc && (object.npc.chatUntil ?? 0) > serverTime)
         drawChatBubble(ctx, object.x, object.y - 24, object.npc.chat);
     }
+
     return catMessages.join(',');
   }
 }

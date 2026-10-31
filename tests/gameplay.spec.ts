@@ -55,6 +55,7 @@ test('druid roots visibly bounce through authoritative training with one refresh
     player.bear.hitpoints = 0;
     player.bear.resurrectAt = Date.now() + 60000;
   }
+
   await expect
     .poll(
       () =>
@@ -80,6 +81,7 @@ test('druid roots visibly bounce through authoritative training with one refresh
       expect(debuff.expiresAt - Date.now()).toBeGreaterThan(3500);
       expect(debuff.expiresAt - Date.now()).toBeLessThanOrEqual(5000);
     }
+
   expect(player.experience).toBe(0);
   expect(world.training!.drops?.length ?? 0).toBe(0);
   await page.screenshot({ path: 'test-results/druid-bounce-training.png' });

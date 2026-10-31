@@ -32,6 +32,7 @@ export async function compareFiltering() {
     samples.push([...capture.getImageData(60, 32, 1, 1).data]);
     document.body.append(copy);
   }
+
   // A logical one-pixel cell must crop two backing pixels, even on a cached source.
   const atlas = document.createElement('canvas');
   atlas.width = 4;
@@ -84,7 +85,9 @@ export async function compareFiltering() {
       image.style.height = 'auto';
       row.append(image);
     }
+
     document.body.append(row);
   }
+
   return samples;
 }

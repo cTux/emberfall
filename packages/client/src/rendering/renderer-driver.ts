@@ -14,6 +14,7 @@ export class RendererDriver {
   private height = 1;
   readonly canvas: HTMLCanvasElement;
   readonly ready: Promise<void>;
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ready = autoDetectRenderer({
@@ -40,14 +41,17 @@ export class RendererDriver {
       }
     });
   }
+
   resize(width: number, height: number) {
     this.width = width;
     this.height = height;
     this.renderer?.resize(width, height);
   }
+
   get initialized() {
     return !!this.renderer;
   }
+
   render(stage: Container) {
     if (!this.renderer) return;
     if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height)
@@ -67,6 +71,7 @@ export class RendererDriver {
       group.setResource(Texture.EMPTY.source, 3);
     }
   }
+
   destroy() {
     this.disposed = true;
     this.renderer?.destroy();

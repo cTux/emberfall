@@ -53,6 +53,7 @@ test('import CLI defaults to the configured save and prints a restart path witho
     } finally {
       store.close();
     }
+
     const saved = readFileSync(destination);
     const repeated = run();
     assert.equal(repeated.status, 1);
@@ -124,6 +125,7 @@ test('legacy backup import preserves progress and identity without altering or o
     } finally {
       store.close();
     }
+
     await assert.rejects(importLegacy(source, target), /already exists/);
     await assert.rejects(importLegacy(source, source), /must differ/);
     const bad = new DatabaseSync(source);

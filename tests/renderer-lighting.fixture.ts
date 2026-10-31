@@ -39,5 +39,6 @@ export function compareLighting(pixi: PixiContext, gpu: HTMLCanvasElement) {
       if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) edges[x % 2]++;
   glyph.style.imageRendering = 'pixelated';
   document.body.append(glyph);
+
   return { lights, edges };
 }

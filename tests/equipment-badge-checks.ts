@@ -56,5 +56,6 @@ export async function checkWeaponBadges(page: Page, dialog: Locator) {
   await expect(itemTooltip).not.toContainText('Attack speed');
   await expect(sword).toHaveCSS('border-top-width', '1px');
   await expect(sword).toHaveCSS('border-top-color', 'rgb(255, 255, 255)');
+
   return content;
 }

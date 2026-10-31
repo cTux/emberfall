@@ -8,6 +8,7 @@ export const panelPositions = {
     } catch {
       /* Invalid or unavailable storage falls back to the default layout. */
     }
+
     return { x: 0, y: 0 };
   },
   save(key: string, position: PanelPosition) {

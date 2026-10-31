@@ -36,6 +36,7 @@ test('boar leaves its wardrobe spawn, follows its owner and attacks training tar
     tickTraining(s, [p], now, 0.05);
     bearHit ||= s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5);
   }
+
   assert(bearHit, 'boar must chase and hit the dummy');
   assert.equal(p.experience, 0);
 });
@@ -79,6 +80,7 @@ test('training area boundaries gate server attacks, Bear hunting, and client swi
     assert(inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 - 0.01 }));
     assert(!inTrainingZone({ x: zone.x, y: zone.y - 15 + zone.radius * 0.85 + 0.01 }));
   }
+
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'] as const) {
     const p = { ...hero(), classId, x: 480, y: 340 };
     const s = tickTraining(undefined, [p], 10000, 0.05);
@@ -122,6 +124,7 @@ test('all lobby classes damage dummies, Bear contributes, and forest players can
     assert(p.dps! > 0, classId);
     if (classId === 'druid') assert(p.bear?.attackAt !== undefined);
   }
+
   const p = { ...hero(), scene: 'forest' as const };
   const s = tickTraining(undefined, [p], 10000, 0.05);
   assert(s.enemies.every((e) => e.hitpoints === 1e9));

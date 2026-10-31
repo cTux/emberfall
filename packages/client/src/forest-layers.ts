@@ -98,18 +98,24 @@ export function drawForestLayer(
       quality.shadows,
       quality.wavingVegetation,
     );
+
     return;
   }
+
   if (layer.critter) {
     drawCritter(ctx, layer.critter, quality.shadows);
     ctx.globalAlpha = 1;
+
     return;
   }
+
   if (layer.bear) {
     const point = near(layer.bear.x, layer.bear.y);
     drawCompanion(ctx, layer.bear, point.x, point.y, serverTime, quality.shadows);
+
     return;
   }
+
   if (layer.tree) {
     const t = layer.tree;
 
@@ -139,8 +145,10 @@ export function drawForestLayer(
     drawResourceHealth(ctx, t, state);
     const outline = outlines.find((target) => target.source.id === `gather:${t.id}`);
     if (outline) drawInteractionOutline(ctx, outline);
+
     return;
   }
+
   const actor = layer.actor;
   drawForestActor(ctx, actor, damageByTarget.get(actor.id), frame);
 }

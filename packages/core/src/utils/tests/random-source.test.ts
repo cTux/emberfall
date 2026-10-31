@@ -7,8 +7,10 @@ test('injected probability sources retain guaranteed outcomes and range draw ord
   const values = [0.5, 0.004, 0.049, 0.05];
   const random = () => {
     assert(values.length, 'unexpected random draw');
+
     return values.shift()!;
   };
+
   assert.equal(isChanced(0, random), false);
   assert.equal(isChanced(100, random), true);
   assert.equal(isMultiChanced(300, random), 3);

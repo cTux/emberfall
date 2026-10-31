@@ -43,8 +43,10 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
     assert.equal(result.headers.get('location'), '/');
     assert.match(result.headers.getSetCookie()[0], /HttpOnly; Secure; SameSite=Lax/);
     assert.equal((await call(path, cookie)).headers.get('location'), '/?login=failed');
+
     return result.headers.getSetCookie()[0].split(';')[0];
   };
+
   const sdk = new Client(base, { headers: { Origin: origin } });
   try {
     const cookies = await login();
@@ -133,6 +135,7 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
     app.runtime.characters.renameSteam = () => {
       throw new Error('Injected save failure');
     };
+
     try {
       assert.equal(
         (await call('/api/account/nickname', cookies, 'PATCH', { nickname: 'Lost' })).status,
@@ -147,6 +150,7 @@ test('HTTP login binding, CSRF, onboarding, account isolation, SDK admission and
     } finally {
       app.runtime.characters.renameSteam = rename;
     }
+
     await call('/api/account/nickname', cookies, 'PATCH', { nickname: 'Renamed' });
     assert(
       [...app.runtime.worlds.values()].some((world) =>

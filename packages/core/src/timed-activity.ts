@@ -7,6 +7,7 @@ export const ACTIVITY_INPUT_WINDOW_MS = 500;
 
 export function activityIndicator(activity: TimedActivity, now: number) {
   const phase = (Math.max(0, now - activity.startedAt) / ACTIVITY_SWEEP_MS) % 2;
+
   return phase <= 1 ? phase : 2 - phase;
 }
 
@@ -47,5 +48,6 @@ export function checkTimedActivity(
   activity.zoneStart = indicator < 0.5 ? 0.65 + roll() * 0.17 : 0.04 + roll() * 0.17;
   activity.zoneAt = now;
   activity.checkId = crypto.randomUUID();
+
   return true;
 }

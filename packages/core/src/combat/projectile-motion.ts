@@ -20,8 +20,10 @@ export function advancePlayerShot(
     const target = enemies.find((enemy) => enemy.id === shot.targetId && enemy.hitpoints > 0);
     if (!target) {
       shot.remaining = 0;
+
       return false;
     }
+
     const destination = enemyHitbox(target, context);
     shot.angle = Math.atan2(
       wrappedDelta(destination.y, shot.y, FOREST.height),
@@ -31,6 +33,7 @@ export function advancePlayerShot(
     // Hold at the target while waiting for the next authoritative bounce.
     travelLimit = detectHits ? shot.remaining : forestDistance(shot, destination);
   }
+
   const distance = Math.min(
     travelLimit,
     Math.max(0, dt) * context.registries.abilities.require(shot.abilityId ?? shot.kind).speed,
@@ -52,9 +55,11 @@ export function advancePlayerShot(
       );
       if (hit) {
         shot.hitIds.push(hit.id);
+
         return true;
       }
     }
   }
+
   return false;
 }

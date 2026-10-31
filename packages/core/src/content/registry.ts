@@ -17,8 +17,10 @@ export function immutableData<T>(value: T, path: string, seen = new Set<unknown>
         ]),
       );
   seen.delete(value);
+
   return Object.freeze(copy) as T;
 }
+
 export function validId(id: unknown): id is string {
   return (
     typeof id === 'string' &&
@@ -26,6 +28,7 @@ export function validId(id: unknown): id is string {
     !['constructor', 'prototype', '__proto__'].includes(id)
   );
 }
+
 export function createRegistry<T extends { id: string }>(name: string) {
   const entries = new Map<string, Readonly<T>>();
   const owners = new Map<string, string>();
@@ -39,11 +42,13 @@ export function createRegistry<T extends { id: string }>(name: string) {
     require(id: string) {
       const entry = entries.get(id);
       if (!entry) throw new Error(`Unknown ${name} '${id}'`);
+
       return entry;
     },
     values: () => Object.freeze([...entries.values()]),
     entries: () => Object.freeze([...entries].map((entry) => Object.freeze(entry))),
   });
+
   return {
     view,
     register(definition: T, mod: string) {

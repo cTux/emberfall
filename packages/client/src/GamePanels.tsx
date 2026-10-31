@@ -73,6 +73,7 @@ export function GamePanels({
   onClose: () => void;
 }) {
   const scene = world?.scene;
+
   return (
     menu && (
       <Box

@@ -74,6 +74,7 @@ export function GameWindow({
       </Paper>
     </WindowTabsContext.Provider>
   );
+
   return modal ? (
     <Dialog
       open

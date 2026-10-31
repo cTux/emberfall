@@ -72,6 +72,7 @@ export function WeaponActionBar({
     '& > img': { width: '100%', height: '100%' },
   };
   const classId = player.classId ?? 'warrior';
+
   return (
     <div className='action-bar'>
       <ActionBar
@@ -79,6 +80,7 @@ export function WeaponActionBar({
         abilities={[0, 1, 2, 3].map((slot) => {
           const node = equippedTalent(player, slot);
           const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot);
+
           return ability && node && isTalentLearned(player, node.id)
             ? {
                 name: ability.name!,

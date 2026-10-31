@@ -23,11 +23,14 @@ export function prepareForestTick(
       enemy.hitpoints *= healthRatio;
     }
   }
+
   scene.playerCount = playerCount;
   if (!hasLivingScenePlayers(players)) {
     scene.pausedAt ??= now;
+
     return;
   }
+
   if (scene.pausedAt !== undefined) {
     const delay = Math.max(0, now - scene.pausedAt);
     shiftTalentEffects(scene, players, delay);
@@ -51,12 +54,14 @@ export function prepareForestTick(
     const shift = (value: Partial<Record<(typeof keys)[number], number | null>>) => {
       for (const key of keys) if (typeof value[key] === 'number') value[key] += delay;
     };
+
     shift(scene);
     for (const enemy of [...scene.enemies, ...(scene.spawns ?? [])]) {
       shift(enemy);
       if (enemy.attack) shift(enemy.attack);
       for (const debuff of enemy.debuffs ?? []) shift(debuff);
     }
+
     for (const event of [
       ...scene.damage,
       ...(scene.drops ?? []),
@@ -69,7 +74,9 @@ export function prepareForestTick(
       shift(player);
       if (player.bear) shift(player.bear);
     }
+
     scene.pausedAt = undefined;
   }
+
   return healthScale;
 }

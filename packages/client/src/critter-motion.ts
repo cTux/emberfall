@@ -19,6 +19,7 @@ export function crittersAt(area: 'village' | 'forest', now: number, bounds: Boun
 /** One instance per arena mount; decorative reactions never mutate world state. */
 export function createCritterMotion() {
   const chickens = new Map<number, Point & { now: number; left: boolean; panicking: boolean }>();
+
   return (now: number, bounds: Bounds, players: readonly Point[], wanderNow = now) =>
     sampleCritters('village', wanderNow, bounds, (critter, index) => {
       if (critter.kind !== 'chicken') return critter;
@@ -27,6 +28,7 @@ export function createCritterMotion() {
         state = { ...critter, now, panicking: false };
         chickens.set(index, state);
       }
+
       const dt = Math.max(0, Math.min(100, now - state.now)) / 1000;
       state.now = now;
       let distance = state.panicking ? 100 : 70;
@@ -40,6 +42,7 @@ export function createCritterMotion() {
           away = length > 0 ? { x: dx / length, y: dy / length } : { x: state.left ? -1 : 1, y: 0 };
         }
       }
+
       state.panicking = !!away;
       const dx = away?.x ?? wrappedDelta(critter.x, state.x, ARENA.width);
       const dy = away?.y ?? wrappedDelta(critter.y, state.y, ARENA.height);
@@ -50,8 +53,10 @@ export function createCritterMotion() {
         state.y = wrap(state.y + (dy / length) * step, ARENA.height);
         if (Math.abs(dx) > 1e-6) state.left = dx < 0;
       }
+
       const cx = bounds.x + bounds.width / 2;
       const cy = bounds.y + bounds.height / 2;
+
       return {
         ...critter,
         x: cx + wrappedDelta(state.x, cx, ARENA.width),
@@ -103,6 +108,7 @@ function sampleCritters(
         homes.push({ x, y, kind: 'raccoon' });
       }
   }
+
   return homes
     .map((home, index) => {
       const phase =
@@ -116,6 +122,7 @@ function sampleCritters(
         left: phase >= 6,
         frame: moving ? 1 + (Math.floor(now / 180) % 3) : phase > 4.5 && phase < 5.5 ? 4 : 0,
       };
+
       return react ? react(critter, index) : critter;
     })
     .filter(

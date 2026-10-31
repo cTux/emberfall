@@ -48,6 +48,7 @@ export function Equipment({
     const gear = GEAR_DEFINITIONS[equipment[id] ?? ''];
     const itemClass = gear ? ITEM_CLASSES[gear.id] : undefined;
     const instance = player.equipmentItems?.[id];
+
     return {
       id,
       onUnequip: gear ? () => send({ type: 'unequip', slot: id }) : undefined,
@@ -98,6 +99,7 @@ export function Equipment({
           : undefined,
     };
   });
+
   return (
     <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 1.5 }}>
       <ChapterTabs

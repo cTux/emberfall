@@ -78,8 +78,10 @@ test(
       (message) => {
         if (message.type === 'state' && failState) {
           failState = false;
+
           throw new Error('private delivery detail');
         }
+
         if (message.type === 'joined') joined(message);
         if (message.type === 'error') errors.push(message.message);
       },

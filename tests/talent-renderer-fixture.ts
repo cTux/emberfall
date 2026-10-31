@@ -60,8 +60,10 @@ export async function render() {
       counts.push(painted);
     }
   }
+
   document.body.append(preview);
   pixi.destroy();
   gpu.remove();
+
   return counts;
 }

@@ -21,6 +21,7 @@ export function tickTraining(
       (Math.floor((now - scene.nextSpawn) / TRAINING_DEFINITION.refreshMs) + 1) *
       TRAINING_DEFINITION.refreshMs;
   }
+
   scene.damage = scene.damage.filter((hit) => now - hit.at < TRANSIENT_EFFECTS.damage.lifetimeMs);
   const lobby = players.filter(
     (player) => !player.scene && player.hitpoints > 0 && !player.reconnecting,
@@ -30,6 +31,7 @@ export function tickTraining(
     tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt, context);
   tickPlayerCombat(scene, lobby, now, dt, context);
   for (const player of players) player.dps = damagePerSecond(player, now);
+
   return scene;
 }
 

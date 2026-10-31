@@ -11,10 +11,12 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
     value: class {
       x: number;
       y: number;
+
       constructor(x: number, y: number) {
         this.x = x;
         this.y = y;
       }
+
       matrixTransform(matrix: { e: number; f: number }) {
         return { x: this.x + matrix.e, y: this.y + matrix.f };
       }
@@ -93,6 +95,7 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
     assert.ok(labelBox.x >= 5 && labelBox.x + labelBox.width <= 795);
     assert.ok(labelBox.y >= 0 && labelBox.y + labelBox.height <= 600);
   }
+
   player.x = FOREST.width - 100;
   player.y = LOBBY_PORTAL.y;
 

@@ -24,6 +24,7 @@ test('dummies, remote players and forest enemies layer around the local player',
     await page.screenshot({ path: `test-results/layering-${name}.png` });
     expect(player.hitpoints).toBe(player.maxHitpoints);
   };
+
   const captureAbilities = async (scene: SceneState, area: string, x: number, y: number) => {
     for (const talentClass of CLASS_IDS) {
       scene.explosions = [0, 1, 2].map((talentColumn) => ({
@@ -37,8 +38,10 @@ test('dummies, remote players and forest enemies layer around the local player',
       }));
       await capture(`${area}-${talentClass}-abilities`, x, y + 12);
     }
+
     scene.explosions = [];
   };
+
   const house = BUILDINGS[0];
   await capture('house-behind', house.x, house.y - 34);
   await capture('house-front', house.x, house.y + 20);

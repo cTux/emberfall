@@ -68,6 +68,7 @@ export function decideCompanion(
         hitpoints: 1,
       };
     }
+
     const danger =
       tactics.avoidHazards && forest && scene?.phase === 'active'
         ? scene.enemies.find(
@@ -92,6 +93,7 @@ export function decideCompanion(
         hitpoints: 1,
       };
     }
+
     if (tactics.avoidHazards && forest && scene?.phase === 'active') {
       const shot = scene.projectiles?.find((s) => {
         const dx = wrappedDelta(bear.x, s.x, FOREST.width),
@@ -99,6 +101,7 @@ export function decideCompanion(
         const speedSquared = s.vx * s.vx + s.vy * s.vy;
         if (s.expiresAt <= now || speedSquared === 0) return false;
         const time = (dx * s.vx + dy * s.vy) / speedSquared;
+
         return (
           time >= 0 &&
           time <= Math.min(0.35, (s.expiresAt - now) / 1000) &&
@@ -120,6 +123,7 @@ export function decideCompanion(
         };
       }
     }
+
     decision = {
       at: now,
       scene,

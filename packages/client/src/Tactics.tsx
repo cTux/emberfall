@@ -73,6 +73,7 @@ export function Tactics({
       ))}
     </TextField>
   );
+
   return (
     <ChapterTabs
       label='Tactics sections'

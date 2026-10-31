@@ -25,6 +25,7 @@ export class ArenaPresentation {
   private lastSlashAt = -Infinity;
   private lastHit = 0;
   private lastWarning = 0;
+
   constructor(
     playerId: string,
     send: (message: ClientMessage) => void,
@@ -37,9 +38,11 @@ export class ArenaPresentation {
     this.movement = new LocalMovement(playerId, send);
     this.audio = gameAudio(preferences);
   }
+
   input(x: number, y: number, now: number) {
     this.movement.input(x, y, now);
   }
+
   render(
     world: WorldState | null,
     now: number,
@@ -74,6 +77,7 @@ export class ArenaPresentation {
       this.movement.animateProjectiles(local, view, now, localSwing);
       alignLocalPickups(view, local);
     }
+
     this.world.update(view, this.playerId, local);
     const cursor = combatCursor(
       view,
@@ -105,14 +109,17 @@ export class ArenaPresentation {
       this.lastWarning = warning;
       this.audio.play('warning');
     }
+
     const hp = Object.fromEntries((view?.players ?? []).map((p) => [p.id, p.hitpoints]));
     const hpKey = JSON.stringify(hp);
     if (hpKey !== this.previousHp) {
       this.previousHp = hpKey;
       this.onHitpoints(hp);
     }
+
     return { view, local, localSwing, cursor, timing, cycle };
   }
+
   effects(
     frame: Pick<ReturnType<ArenaPresentation['render']>, 'view' | 'local' | 'localSwing'>,
     now: number,
@@ -122,12 +129,14 @@ export class ArenaPresentation {
       this.lastSlashAt = now;
       this.audio.play('slash');
     }
+
     const hit = view?.scene?.damage.at(-1);
     if (local?.scene === 'forest' && hit && hit.id !== this.lastHit) {
       this.lastHit = hit.id;
       this.audio.play('hit');
     }
   }
+
   dispose() {
     this.world.clear();
     this.audio.dispose();

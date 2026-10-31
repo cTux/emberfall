@@ -26,8 +26,10 @@ export function connectSession(
 ) {
   if (sessions.size >= 256) {
     ws.close(1008, 'Server is full');
+
     return;
   }
+
   const session: Session = {
     id: randomUUID(),
     x: 0,
@@ -53,8 +55,10 @@ export function connectSession(
     serverLog.info('Client disconnected', { sessionId: session.id, code });
     if (isClosing()) {
       sessions.delete(ws);
+
       return;
     }
+
     if (session.worldId && !isClosing() && code !== 1008) {
       session.reconnectUntil = Date.now() + RUNTIME.reconnectMs;
       serverLog.info('Waiting for player reconnect', {
@@ -71,6 +75,7 @@ export function connectSession(
         delete player.gathering;
         player.inputX = player.inputY = 0;
       }
+
       session.reconnectTimer = setTimeout(() => {
         try {
           leave(session);
@@ -87,8 +92,10 @@ export function connectSession(
       } catch (error) {
         serverLog.error('Character save failed on disconnect; autosave will retry:', error);
       }
+
       return;
     }
+
     try {
       leave(session);
     } catch (error) {
@@ -96,10 +103,13 @@ export function connectSession(
       // Keep the session in memory for the autosave retry; it cannot move.
       session.x = 0;
       session.y = 0;
+
       return;
     }
+
     sessions.delete(ws);
     broadcastList();
   });
+
   return session;
 }

@@ -40,6 +40,7 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
       dialog.getByRole('region', { name: `Storage ${tab}`, exact: true }).locator('button'),
     ).toHaveCount(40);
   }
+
   await dialog
     .getByRole('button', { name: 'Deposit Health potion (5)' })
     .click({ button: 'right' });
@@ -77,6 +78,7 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
     });
     await rename.getByRole('button', { name: 'Cancel', exact: true }).click();
   }
+
   await page.setViewportSize({ width: 1440, height: 1000 });
   await longTab.click({ button: 'right' });
   await rename.getByRole('textbox', { name: 'Storage name' }).fill(' Potions ');

@@ -37,6 +37,7 @@ function fixture() {
   const bob = player('bob');
   world.players.set(alice.id, alice);
   world.players.set(bob.id, bob);
+
   return { world, parties, projection, alice, bob };
 }
 

@@ -21,6 +21,7 @@ export class LocalAttacks {
   private frame!: ConfirmedFrame;
   private projectiles = new LocalProjectiles();
   private send: (message: ClientMessage) => void;
+
   constructor(send: (message: ClientMessage) => void) {
     this.send = send;
   }
@@ -74,8 +75,10 @@ export class LocalAttacks {
       player.attackAt = undefined;
       this.attackAt = -Infinity;
       this.aimAt = undefined;
+
       return false;
     }
+
     // Aim follows the selected control mode independently of the cast cooldown.
     const ability = game.registries.abilities.require(
       game.registries.classes.require(player.classId ?? 'warrior').attack,
@@ -94,6 +97,7 @@ export class LocalAttacks {
         this.attackAt = this.frame.player.attackAt ?? -Infinity;
         this.attackId = this.frame.player.attackId;
       }
+
       const confirmedAt =
         this.frame.player.attackAt === undefined
           ? -Infinity
@@ -125,8 +129,10 @@ export class LocalAttacks {
         player.attackAt = undefined;
         this.attackAt = -Infinity;
         this.attackId = undefined;
+
         return false;
       }
+
       const canRepeat =
         ability.kind === 'slash' ||
         player.autoTarget === false ||
@@ -140,6 +146,7 @@ export class LocalAttacks {
       this.attackAt = cycle;
       this.attackId = undefined;
     }
+
     const cycle = this.attackAt;
     player.attackId = this.attackId;
     player.attackAt =
@@ -149,8 +156,10 @@ export class LocalAttacks {
           ? now - (serverNow - cycle)
           : undefined;
     player.attackAngle = this.attackAngle;
+
     return started;
   }
+
   animateProjectiles(player: Player, world: WorldState, now: number, started: boolean) {
     this.projectiles.animate(player, world, now, started, this.frame, {
       id: this.attackId,

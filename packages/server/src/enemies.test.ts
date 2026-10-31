@@ -57,8 +57,10 @@ test('enemies detour around a trunk from both sides and keep solid bodies', asyn
       moveEnemies([e], [target], 0.05);
       assert(Math.hypot(e.x - tree.x, e.y + 15 - tree.y) >= 25 - 1e-8);
     }
+
     assert(forestDistance(e, target) < 10, `enemy ${id} must get past the tree`);
   }
+
   const enemies = Array.from({ length: 16 }, (_, i) =>
     enemy(i, 2300 + (i % 4) * 24, 1200 + Math.floor(i / 4) * 24),
   );

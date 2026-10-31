@@ -72,6 +72,7 @@ export function drawNpcWork(
         ctx.globalAlpha = opacity * (1 - flight);
         break;
       }
+
       case 'smelting':
         // Red embers accelerate upward from the furnace mouth.
         ctx.fillStyle = i % 2 ? '#ff7842' : '#ffc35b';
@@ -91,6 +92,7 @@ export function drawNpcWork(
         if (i >= 4 && flight < 1) continue;
         break;
       }
+
       case 'leatherworking':
         // Tan shavings fall from the hide in a loose outward tumble.
         ctx.fillStyle = i % 2 ? '#d1a071' : '#a57650';
@@ -99,9 +101,11 @@ export function drawNpcWork(
         radius = 0.8 + (i % 3) * 0.2;
         break;
     }
+
     ctx.beginPath();
     ctx.arc(px, py, radius, 0, Math.PI * 2);
     ctx.fill();
   }
+
   ctx.restore();
 }

@@ -119,6 +119,7 @@ test('gathering cancels on range, death, disconnect, area change and competing d
     assert.deepEqual(player.backpack, []);
     assert.deepEqual(states, {});
   }
+
   const states: Record<string, ResourceState> = {};
   const a = hero(node),
     b = hero(node);

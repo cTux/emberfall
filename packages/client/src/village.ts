@@ -37,6 +37,7 @@ export function villageSprites(
     CanvasImageSource,
     Map<string, { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }>
   >();
+
   function add(
     id: string,
     x: number,
@@ -77,6 +78,7 @@ export function villageSprites(
         frame = { sprite, mask: makeMask(sprite) };
         frames.set(key, frame);
       }
+
       return frame;
     });
     objects.push({
@@ -89,6 +91,7 @@ export function villageSprites(
       ...(frameCount > 1 ? { frames: animation } : {}),
     });
   }
+
   if (environmentArt.naturalWidth) {
     TREES.forEach((t, i) =>
       add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
@@ -97,6 +100,7 @@ export function villageSprites(
       objects.push(resourceScenery({ ...rock, id: `rock:${i}`, kind: i % 2 ? 'stone' : 'rock' })),
     );
   }
+
   if (plantArt.naturalWidth)
     PLANTS.forEach((plant, i) =>
       add(
@@ -165,8 +169,10 @@ export function villageSprites(
     TORCHES.forEach((t, i) =>
       add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128),
     );
+
   return objects.sort((a, b) => a.y - b.y);
 }
+
 export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
   ...t,
   height: 85,

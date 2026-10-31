@@ -91,5 +91,6 @@ export function loadPreferences(): Preferences {
   } catch {
     /* Defaults work without browser storage. */
   }
+
   return result;
 }

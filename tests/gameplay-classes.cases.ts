@@ -53,6 +53,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
       // Isolate companion hits from the Druid's root projectiles.
       player.attackAt = Date.now() + 60000;
     }
+
     world.training!.damage = [];
     world.training!.playerShots = [];
     for (const enemy of world.training!.enemies) enemy.debuffs = [];
@@ -64,6 +65,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
       player.bear.x = player.x;
       player.bear.y = player.y;
     }
+
     // Damage records live for 800ms; 1s polling can miss every 1s companion hit.
     await expect
       .poll(() => world.training!.damage.some((hit) => hit.id > previousHit), {
@@ -89,8 +91,10 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
         .poll(() => forestDistance(player.bear!, world.training!.enemies[0]))
         .toBeLessThan(95);
     }
+
     await page.screenshot({ path: `test-results/new-training-${classId}.png` });
   }
+
   await page.getByRole('complementary', { name: 'World chat', exact: true }).hover();
   await page.getByLabel('Chat message', { exact: true }).fill('Same party, new runtime');
   await page.keyboard.press('Enter');

@@ -77,19 +77,23 @@ for (let tick = 0; tick < 500; tick++) {
     if (tick >= 100) bytes += patch.byteLength;
     encoders[client].discardChanges();
   }
+
   if (tick >= 100) {
     simulation.push(simulated - start);
     replication.push(performance.now() - simulated);
   }
 }
+
 const summary = (values: number[]) => {
   const sorted = [...values].sort((a, b) => a - b);
+
   return {
     meanMs: values.reduce((sum, value) => sum + value, 0) / values.length,
     p95Ms: sorted[Math.floor(sorted.length * 0.95)],
     maxMs: sorted.at(-1),
   };
 };
+
 console.log(
   JSON.stringify(
     {

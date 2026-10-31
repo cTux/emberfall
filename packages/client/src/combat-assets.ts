@@ -8,8 +8,10 @@ export const classAbility = Object.fromEntries(
 const load = (src: string) => {
   const image = new Image();
   image.src = src;
+
   return image;
 };
+
 export const weaponImages = Object.fromEntries(
   game.registries.classes.values().map((player) => [player.id, load(weaponSrc(player.id))]),
 );

@@ -36,6 +36,7 @@ function recorder() {
       marks.push(['stroke', this.strokeStyle]);
     },
   };
+
   return { ctx: ctx as unknown as CanvasRenderingContext2D, marks, translations };
 }
 
@@ -67,6 +68,7 @@ test('every workstation has distinct, bounded, animated particles and preserves 
       assert.ok(marks.length <= 16);
       frames.push(marks);
     }
+
     assert.ok(
       frames.some((frame) => JSON.stringify(frame) !== '[]'),
       station.id,
@@ -74,6 +76,7 @@ test('every workstation has distinct, bounded, animated particles and preserves 
     assert.ok(new Set(frames.map((frame) => JSON.stringify(frame))).size > 1, station.id);
     signatures.add(JSON.stringify(frames));
   }
+
   assert.equal(signatures.size, VILLAGE_DEFINITION.workstations.length);
 });
 

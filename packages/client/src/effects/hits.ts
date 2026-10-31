@@ -22,8 +22,10 @@ export function hitOutline(mask: HTMLCanvasElement, color = '#ff3737', radius = 
   c.fillRect(0, 0, outline.width, outline.height);
   c.globalCompositeOperation = 'destination-out';
   c.drawImage(mask, radius, radius);
+
   return outline;
 }
+
 const hitSprites = new WeakMap<
   HTMLCanvasElement,
   { outline: HTMLCanvasElement; tint: HTMLCanvasElement }
@@ -51,6 +53,7 @@ export function drawTargetHit(
     sprites = { outline: hitOutline(mask), tint };
     hitSprites.set(mask, sprites);
   }
+
   const padX = (2 * width) / mask.width;
   const padY = (2 * height) / mask.height;
   ctx.save();
@@ -59,6 +62,7 @@ export function drawTargetHit(
   ctx.drawImage(sprites.tint, x, y, width, height);
   ctx.restore();
 }
+
 export function drawDamageFlash(ctx: DrawingContext, world: WorldState | null, id: string) {
   const hit = world?.scene?.damage.filter((d) => d.target === id).at(-1);
   const age = (world?.serverNow ?? 0) - (hit?.at ?? -10000);
@@ -70,6 +74,7 @@ export function drawDamageFlash(ctx: DrawingContext, world: WorldState | null, i
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.restore();
 }
+
 const partyOutlines = new WeakMap<HTMLCanvasElement, Map<boolean, HTMLCanvasElement>>();
 export function drawPartyOutline(
   ctx: DrawingContext,
@@ -91,5 +96,6 @@ export function drawPartyOutline(
     outline = hitOutline(silhouette, highlighted ? '#00ff00' : '#339dff', 1);
     cache.set(highlighted, outline);
   }
+
   ctx.drawImage(outline, x - width / 48, y - height / 48, (width * 50) / 48, (height * 50) / 48);
 }

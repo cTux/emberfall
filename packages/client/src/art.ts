@@ -71,11 +71,14 @@ export function terrainTile(column: number, size = 320) {
             (pixels[c + channel] * (1 - blendX) + pixels[d + channel] * blendX) * blendY;
       }
     }
+
     ctx.putImageData(output, 0, 0);
     terrainTiles.set(key, tile);
   }
+
   return tile;
 }
+
 export function drawArt(
   ctx: DrawingContext,
   image: HTMLImageElement,

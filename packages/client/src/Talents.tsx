@@ -18,6 +18,7 @@ export function Talents({
   send: (message: ClientMessage) => void;
 }) {
   const classId = player.classId ?? 'warrior';
+
   return (
     <TalentTree
       columns={TALENT_COLUMNS[classId]}

@@ -37,20 +37,27 @@ export function useGameInteractions({
       epoch: me.scene === 'forest' ? (scene?.id ?? '') : 'lobby',
     });
   };
+
   const interact = (source = interaction.current) => {
     if (me?.gathering && interaction.current?.activate && source?.id.startsWith('gather:')) {
       interaction.current.activate();
+
       return;
     }
+
     if (!source) return;
     if (source.activate) {
       source.activate();
+
       return;
     }
+
     if (source.id.startsWith('party:')) {
       send({ type: 'partyInteract', targetId: source.id.slice(6) });
+
       return;
     }
+
     if (source.id.startsWith('gather:')) {
       if (me)
         send({
@@ -67,5 +74,6 @@ export function useGameInteractions({
       setMenu('building');
     }
   };
+
   return { interaction, setCursorAim, castTalent, interact };
 }

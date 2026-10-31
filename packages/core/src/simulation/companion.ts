@@ -21,8 +21,10 @@ export function tickCompanion(
 ) {
   if (!context.registries.classes.require(player.classId ?? 'warrior').companion) {
     player.bear = undefined;
+
     return;
   }
+
   const bear = (player.bear ??= {
     id: `bear:${player.id}`,
     name: BEAR_DEFINITION.name,
@@ -52,6 +54,7 @@ export function tickCompanion(
     bear.attackAt = undefined;
     bear.returning = false;
   }
+
   if (player.hitpoints <= 0) return;
   const forest = player.scene === 'forest';
   const tactics = player.tactics ?? DEFAULT_TACTICS;
@@ -69,8 +72,10 @@ export function tickCompanion(
     bear.returning = false;
     bear.attackAt = undefined;
     companionDecisions.delete(bear);
+
     return;
   }
+
   if (distance > huntRadius) bear.returning = true;
   if (bear.returning && distance <= BEAR_DEFINITION.returnRadius) bear.returning = false;
   const decision = decideCompanion(bear, player, scene, now, huntRadius);
@@ -129,18 +134,23 @@ export function tickCompanion(
       bear.y = wrap(next.y - 15, ARENA.height);
     }
   }
+
   bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > 0.001;
   if (bear.moving) bear.attackAngle = heading;
   if (target) bear.attackAngle = nearestEnemyAngle(bear, [target], heading);
   if (forestDistance(bear, player) > huntRadius && forest) bear.returning = true;
   if (!target || bear.returning || !scene) {
     bear.attackAt = undefined;
+
     return;
   }
+
   if (!stats.hasWeapon || !Number.isFinite(stats.attackIntervalMs)) {
     bear.attackAt = undefined;
+
     return;
   }
+
   if (bear.attackAt === undefined || now - bear.attackAt >= stats.attackIntervalMs)
     bear.attackAt = now;
   if (now - bear.attackAt < PLAYER_ATTACK_DURATION) slash(scene, bear, player, now, context);

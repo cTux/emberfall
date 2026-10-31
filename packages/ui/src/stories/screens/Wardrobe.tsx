@@ -7,6 +7,7 @@ import { stage, panel } from './styles';
 
 export function Wardrobe() {
   const [selected, select] = useState('Warrior');
+
   return (
     <Box sx={stage}>
       <Box sx={{ ...panel, maxWidth: 600 }}>

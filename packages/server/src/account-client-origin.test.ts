@@ -69,6 +69,7 @@ test('Pages client uses credentialed accounts, client redirects and origin-bound
         403,
       );
     }
+
     assert.equal(
       (
         await call('/api/account/nickname', {

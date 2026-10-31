@@ -125,6 +125,7 @@ export const Empty: StoryObj<typeof meta> = {
 export const Inventory: StoryObj<typeof meta> = {
   render: function Inventory(args) {
     const [tab, setTab] = useState('equipment');
+
     return (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <ChapterTabs
@@ -160,6 +161,7 @@ export const Rarities: StoryObj<typeof meta> = {
       ['Epic', '#a335ee'],
       ['Legendary', '#ff8000'],
     ];
+
     return (
       <Backpack
         label='Rarity examples'
@@ -188,6 +190,7 @@ export const DragToEquip: StoryObj<typeof meta> = {
     const equip = (id: string) => {
       if (id === 'helmet') setEquipped(true);
     };
+
     return (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <EquipmentPanel

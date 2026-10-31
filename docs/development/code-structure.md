@@ -7,7 +7,8 @@
 Keep each module focused on one responsibility. Split implementation, declarative
 definitions and domain test groups at their ownership boundaries; keep composition
 roots small and their dependencies explicit. Oxlint caps JavaScript and TypeScript
-files at **249 physical lines**, including comments and blanks. The reviewed
+files at **249 nonblank lines**, including comments. Blank lines are excluded so
+readable spacing does not compete with the size limit. The reviewed
 `packages/client/src/rendering/pixi-context.ts` drawing façade has a **260-line cap**:
 it implements one drawing interface while state, textures, pools and lifecycle live
 in separate modules. Its exception permits no further growth. Extract meaningful

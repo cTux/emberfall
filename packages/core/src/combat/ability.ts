@@ -11,6 +11,7 @@ export function effectiveAbility(
   context: Game = game,
 ) {
   const { bonuses } = context.rules.characterStats(player);
+
   return {
     ...ability,
     range: ability.range * (1 + bonuses.range / 100),
@@ -33,6 +34,7 @@ export function defaultSpellRange(
   const attack = context.registries.abilities.require(
     context.registries.classes.require(player.classId ?? 'warrior').attack,
   );
+
   return range * (attack.kind === 'slash' ? 1 + stats.bonuses.areaOfEffect / 100 : 1);
 }
 

@@ -41,6 +41,7 @@ test('manual cast eligibility rejects stale areas/classes, death and inactive co
       player.scene = undefined;
       request.epoch = 'lobby';
     }
+
     assert.equal(
       requestPlayerCast(reason === 'missing' ? undefined : arena, player, request, 1000),
       false,
@@ -50,6 +51,7 @@ test('manual cast eligibility rejects stale areas/classes, death and inactive co
     assert.equal(player.attackAt, undefined);
     assert.equal(player.attackId, undefined);
   }
+
   for (const bad of [{ id: 0 }, { id: 1.5 }, { aimX: Infinity }, { classId: 'unknown' }]) {
     assert.equal(
       clientMessage.safeParse({
@@ -102,6 +104,7 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
       assert.equal(arena.explosions?.length, 0);
       assert(arena.enemies.every((e) => e.hitpoints === 100 && e.debuffs === undefined));
     }
+
     const player: Player = { ...hero(), classId, autoTarget: false, aimX: 2600, aimY: 1280 };
     const arena = scene();
     arena.enemies = [enemy(1, 2480)];

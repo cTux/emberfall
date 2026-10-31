@@ -31,6 +31,7 @@ export async function importLegacy(sourcePath: string, destinationPath: string) 
         throw new Error('Invalid legacy character identity');
       decodeProgress(String(row.progress));
     }
+
     const hasTable = (name: string) =>
       !!legacy.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(name);
     const worlds = hasTable('worlds') ? legacy.prepare('SELECT * FROM worlds').all() : [];
@@ -60,6 +61,7 @@ export async function importLegacy(sourcePath: string, destinationPath: string) 
     for (const row of members) store.rememberWorld(String(row.character_id), String(row.world_id));
     store.close();
     copyFileSync(temporary, destination, constants.COPYFILE_EXCL);
+
     return { characters: characters.length, worlds: worlds.length };
   } finally {
     legacy.close();

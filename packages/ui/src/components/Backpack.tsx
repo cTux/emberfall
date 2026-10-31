@@ -43,6 +43,7 @@ export function Backpack({
   onUse,
 }: BackpackProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+
   return (
     <Box
       ref={panelRef}
@@ -124,8 +125,10 @@ export function Backpack({
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault();
                   onUse(item.id, event);
+
                   return;
                 }
+
                 if (event.key !== 'Tab' || event.shiftKey) return;
                 const tooltipId = event.currentTarget.getAttribute('aria-describedby');
                 const stat = tooltipId

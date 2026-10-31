@@ -88,6 +88,7 @@ test('interleaved event and RAF timestamps cannot manufacture movement time or i
     assert(Math.abs(wrappedDelta(rendered.x, next.players[0].x, FOREST.width)) < 1e-7);
     current = next;
   }
+
   const duration = sent.reduce(
     (total, message) => total + (message.type === 'move' ? (message.durationMs ?? 0) : 0),
     0,
@@ -172,6 +173,7 @@ test('diagonal facing keeps its current axis despite floating-point noise and fo
       assert.equal(facing, start);
     }
   }
+
   assert.equal(movementFacing(0, -1, 2), 1);
   assert.equal(movementFacing(-1, 0, 1), 2);
   assert.equal(movementFacing(1, 1, 2), 3);

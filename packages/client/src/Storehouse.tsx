@@ -34,6 +34,7 @@ export function Storehouse({
       setTab(String(index));
     },
   });
+
   return (
     <Stack spacing={0.5}>
       <GoldBalance name='Storehouse' coins={player.coins ?? 0} />

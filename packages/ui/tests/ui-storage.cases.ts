@@ -11,10 +11,12 @@ test('inventory slots stay fixed when extra stats add a scrollbar', async ({ pag
       await expect(slot).toHaveCSS('width', '44px');
       await expect(slot).toHaveCSS('height', '44px');
     }
+
     expect(await content.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
       true,
     );
   };
+
   await expectFixedSlots();
   expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
     false,
@@ -71,6 +73,7 @@ test('inventory dragging moves once, ignores unrelated drops and preserves keybo
   const unrelated = await page.evaluateHandle(() => {
     const data = new DataTransfer();
     data.setData('text/plain', 'potion');
+
     return data;
   });
   await backpack.dispatchEvent('drop', { dataTransfer: unrelated });
@@ -78,6 +81,7 @@ test('inventory dragging moves once, ignores unrelated drops and preserves keybo
   const malformed = await page.evaluateHandle(() => {
     const data = new DataTransfer();
     data.setData('application/x-emberfall-inventory-1', 'x'.repeat(65));
+
     return data;
   });
   await backpack.dispatchEvent('drop', { dataTransfer: malformed });
@@ -117,6 +121,7 @@ test('inventory artwork stays centered inside every filled slot', async ({ page 
       expect(Math.abs(icon.y + icon.height / 2 - bounds.y - bounds.height / 2)).toBeLessThan(1);
     }
   }
+
   await page.screenshot({ path: testInfo.outputPath('centered-inventory-icons.png') });
 });
 
@@ -130,6 +135,7 @@ test('backpacks show twenty wood-colored slots and tabs sit outside the left win
     await expect(slots.first()).toHaveCSS('border-top-color', 'rgb(135, 80, 57)');
     await expect(slots.first()).toHaveCSS('background-color', 'rgb(40, 26, 20)');
   }
+
   await page.goto(story('screens-compositions--settings'));
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 800 });
@@ -169,6 +175,7 @@ test('backpack header action mirrors gold and works with the keyboard', async ({
     expect(a.x).toBeGreaterThan(g.x + g.width);
     expect(Math.abs(a.y + a.height / 2 - g.y - g.height / 2)).toBeLessThan(2);
   }
+
   await action.focus();
   await page.keyboard.press('Enter');
   await expect(action).toBeDisabled();

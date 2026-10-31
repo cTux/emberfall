@@ -27,15 +27,19 @@ export class Parties {
   readonly requests: Request[] = [];
   private sentAt = new Map<string, number>();
   private world: PartyWorld;
+
   constructor(world: PartyWorld) {
     this.world = world;
   }
+
   home(player: Player) {
     return (player.homeRunId ??= randomUUID());
   }
+
   key(player: Player) {
     return player.scene ? (player.runId ?? this.home(player)) : this.home(player);
   }
+
   run(player: Player) {
     const key = this.key(player);
     let run = this.runs.get(key);
@@ -43,9 +47,12 @@ export class Parties {
       run = { players: createPlayers(), skipTraining: true, runKey: key };
       this.runs.set(key, run);
     }
+
     this.sync(run, key);
+
     return run;
   }
+
   private sync(run: SceneWorld, key: string) {
     run.rewardPlayers = [...this.world.players.values()];
     run.voters = [...this.world.players.values()].filter((p) => this.home(p) === key);
@@ -55,6 +62,7 @@ export class Parties {
     for (const p of this.world.players.values())
       if (this.key(p) === key && !run.players.has(p.id)) run.players.set(p.id, p);
   }
+
   tick(now: number, dt: number) {
     this.expire(now);
     for (const [key, run] of this.runs) {
@@ -64,6 +72,7 @@ export class Parties {
         this.runs.delete(key);
         continue;
       }
+
       restoreResources(run.resources, now);
       run.chat = this.world.chat;
       tickScene(run, now, dt);
@@ -74,10 +83,12 @@ export class Parties {
       }
     }
   }
+
   announce(text: string, ids: string[]) {
     addChat(this.world, text);
     this.world.chat!.at(-1)!.recipientIds = ids;
   }
+
   private expire(now: number) {
     for (let i = this.requests.length - 1; i >= 0; i--) {
       const r = this.requests[i];
@@ -99,10 +110,13 @@ export class Parties {
       }
     }
   }
+
   incoming(player: Player, now: number) {
     this.expire(now);
+
     return this.requests.filter((r) => r.toId === player.id);
   }
+
   request(from: Player, target: Player, now: number) {
     this.expire(now);
     if (from.id === target.id || (from.partyId && from.partyId === target.partyId))
@@ -133,6 +147,7 @@ export class Parties {
       [from.id, to.id],
     );
   }
+
   accept(to: Player, fromId: string | undefined, now: number) {
     const incoming = this.incoming(to, now).filter((r) => !fromId || r.fromId === fromId);
     if (incoming.length !== 1) throw new Error('Specify /accept @name for one pending request.');
@@ -151,6 +166,7 @@ export class Parties {
       p.partyLeaderId = leader.id;
       p.homeRunId = this.home(leader);
     }
+
     this.requests.splice(this.requests.indexOf(r), 1);
     this.announce(
       `${to.name} accepted ${from.name}'s request. Party: ${party.members.map((id) => this.world.players.get(id)!.name).join(', ')}.`,
@@ -158,6 +174,7 @@ export class Parties {
     );
     this.expire(now);
   }
+
   leave(player: Player, departing = false) {
     if (departing) {
       this.sentAt.delete(player.id);
@@ -166,11 +183,14 @@ export class Parties {
         if (r.fromId === player.id || r.toId === player.id) this.requests.splice(i, 1);
       }
     }
+
     const party = this.parties.get(player.partyId ?? '');
     if (!party) {
       if (!departing) throw new Error('You are not in a party.');
+
       return;
     }
+
     const members = [...party.members];
     if (player.scene) {
       const run = this.run(player);
@@ -178,6 +198,7 @@ export class Parties {
       returnToLobby(run, player);
       this.world.chat = run.chat;
     }
+
     delete player.gathering;
     delete player.runId;
     delete player.partyId;
@@ -192,6 +213,7 @@ export class Parties {
         delete p.partyLeaderId;
       }
     }
+
     if (party.members.length < 2) this.parties.delete(party.id);
     this.announce(
       `${player.name} left the party.${party.members.length === 1 ? ' Party dissolved; the remaining dimension is retained.' : ''}`,
@@ -200,6 +222,7 @@ export class Parties {
     this.sentAt.delete(player.id);
     this.expire(Date.now());
   }
+
   interact(player: Player, targetId: string, now: number) {
     const target = this.world.players.get(targetId);
     if (
@@ -216,6 +239,7 @@ export class Parties {
       this.accept(player, targetId, now);
     else this.request(player, target, now);
   }
+
   command(player: Player, text: string, now: number) {
     const [command, raw, ...extra] = text.trim().split(/\s+/);
     if (extra.length || (command === '/leave' && raw)) throw new Error('Invalid party command.');

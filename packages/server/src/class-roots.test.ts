@@ -26,6 +26,7 @@ test('one root projectile bounces three times at full power without repeating ta
       s.training = true;
       delete p.scene;
     }
+
     s.enemies = [
       enemy(1, 2420),
       enemy(2, 2480),
@@ -43,6 +44,7 @@ test('one root projectile bounces three times at full power without repeating ta
       assert.equal(shot.targetId, i + 1);
       tickPlayerShots(s, [p], 10050 + i * 200, 0.2);
     }
+
     assert.deepEqual(shot.hitIds, [1, 2, 3, 4]);
     assert.deepEqual(
       s.enemies.map((e) => e.hitpoints),

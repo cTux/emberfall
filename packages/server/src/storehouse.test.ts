@@ -52,6 +52,7 @@ test('storage schemas bound tabs, slots, names and identities; legacy progress g
       false,
     );
   }
+
   for (const name of ['', '  ', 'bad\nname', 'bad\u200bname'])
     assert.equal(clientMessage.safeParse({ type: 'renameStorage', tab: 0, name }).success, false);
   const rename = clientMessage.parse({ type: 'renameStorage', tab: 0, name: ' Gear ' });

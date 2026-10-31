@@ -20,27 +20,33 @@ export class NpcSpeech {
   private topics = new Map<string, { remaining: string[]; last?: string }>();
   private world: NpcWorld;
   private random: () => number;
+
   constructor(world: NpcWorld, random: () => number) {
     this.world = world;
     this.random = random;
   }
+
   chooseTopic(npcId: string) {
     let rotation = this.topics.get(npcId);
     if (!rotation) {
       rotation = { remaining: [] };
       this.topics.set(npcId, rotation);
     }
+
     if (!rotation.remaining.length) rotation.remaining = [...VILLAGE_DEFINITION.dialogueTopics];
     let index = Math.floor(this.random() * rotation.remaining.length);
     if (rotation.remaining[index] === rotation.last && rotation.remaining.length > 1)
       index = (index + 1) % rotation.remaining.length;
     const [topic] = rotation.remaining.splice(index, 1);
     rotation.last = topic;
+
     return topic;
   }
+
   context(conversation: Conversation, npc: VillageNpc, target: { name: string }) {
     const definition = VILLAGE_DEFINITION.villagers.find((n) => n.id === npc.id)!;
     if (!conversation.text) conversation.topic = this.chooseTopic(npc.id);
+
     return JSON.stringify({
       character: definition.name,
       personality: definition.personality,
@@ -60,12 +66,14 @@ export class NpcSpeech {
       recentConversation: this.memories.get(npc.id) ?? [],
     });
   }
+
   publish(conversation: Conversation, npc: VillageNpc, raw: string, at: number) {
     let text = raw;
     for (const resident of VILLAGE_DEFINITION.villagers) {
       const name = resident.name.split(' ')[0];
       text = text.replace(new RegExp(`(?<![\\p{L}\\p{N}_])@?${name}\\b`, 'giu'), `@${name}`);
     }
+
     text = spokenLine(text);
     npc.chat = text;
     npc.chatUntil = at + 10_000;
@@ -88,8 +96,10 @@ export class NpcSpeech {
       [npc.id, conversation.otherNpc, mentioned?.id].filter((id): id is string => !!id),
     ))
       this.memories.set(id, [...(this.memories.get(id) ?? []), line].slice(-6));
+
     return { text, mentioned };
   }
+
   silence(value: boolean) {
     const npcs = this.world.npcs ?? [];
     if (npcs.every((npc) => npc.silenced === value)) return;
@@ -97,6 +107,7 @@ export class NpcSpeech {
       npc.silenced = value;
       if (value) npc.chat = undefined;
     }
+
     this.world.chat = [
       ...(this.world.chat ?? []),
       {

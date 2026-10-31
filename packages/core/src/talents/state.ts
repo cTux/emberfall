@@ -28,6 +28,7 @@ export function clearTalentEffects(player: Player) {
   fighters.delete(player);
   generations.set(player, (generations.get(player) ?? 0) + 1);
 }
+
 export const deepCuts = new WeakMap<Enemy, WeakMap<Player, number>>();
 export function state(player: Player, scene: SceneState): FighterState {
   let value = fighters.get(player);
@@ -48,8 +49,10 @@ export function state(player: Player, scene: SceneState): FighterState {
     };
     fighters.set(player, value);
   }
+
   return value;
 }
+
 interface Scheduled {
   generation: number;
   at: number;
@@ -83,6 +86,7 @@ export function schedule(
   });
   scheduled.set(scene, entries);
 }
+
 export function tickTalentEffects(scene: SceneState, players: Player[], now: number) {
   if (scene.pausedAt !== undefined || scene.phase !== 'active') return;
   const entries = scheduled.get(scene) ?? [];
@@ -101,15 +105,18 @@ export function tickTalentEffects(scene: SceneState, players: Player[], now: num
         entry.run(entry.at, players);
         entry.at += entry.interval;
       }
+
       return entry.at <= entry.until;
     }),
   );
 }
+
 export function shiftTalentEffects(scene: SceneState, players: Player[], delay: number) {
   for (const entry of scheduled.get(scene) ?? []) {
     entry.at += delay;
     entry.until += delay;
   }
+
   for (const player of players) {
     const value = fighters.get(player);
     if (!value || value.scene !== scene) continue;

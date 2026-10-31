@@ -106,6 +106,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
         expect(Math.abs(left.width - left.height)).toBeLessThan(1);
         expect(Math.abs(left.width - right.width)).toBeLessThan(1);
       }
+
       if (width > 320) {
         const window = (await trader.locator('.game-window-surface').boundingBox())!;
         const first = (await merchantSlots.first().boundingBox())!;
@@ -118,8 +119,10 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
         expect(Math.abs(window.y + window.height - last.y - last.height - padding)).toBeLessThan(1);
       }
     }
+
     await page.screenshot({ path: `test-results/innkeeper-aligned-${width}.png` });
   }
+
   await page.setViewportSize({ width: 1280, height: 800 });
   await trader.getByRole('button', { name: 'Sell Helmet', exact: true }).click({ button: 'right' });
   await expect(trader.getByRole('button', { name: 'Buy Helmet', exact: true })).toHaveCount(0);
@@ -184,6 +187,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   } finally {
     await context.close();
   }
+
   await page.bringToFront();
   player.backpack = Array.from({ length: 24 }, (_, index) => ({
     id: `bulk-${index}`,

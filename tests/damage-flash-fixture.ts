@@ -31,8 +31,10 @@ export async function compare() {
         );
         alphas.push(ctx.globalAlpha);
       }
+
       pixi.present();
       capture.drawImage(gpu, 0, 0);
+
       return {
         age,
         alphas,

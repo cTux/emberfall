@@ -44,6 +44,7 @@ for (const base of ['/', '/emberfall/']) {
           document.fonts.load(`${style} "Alegreya Sans"`),
         ),
       );
+
       return faces.map((group) => group.map((face) => face.status));
     });
     assert.deepEqual(fonts, [['loaded'], ['loaded'], ['loaded'], ['loaded']]);

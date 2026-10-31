@@ -109,6 +109,7 @@ export const RestrictedGear: StoryObj<typeof meta> = {
 export const InventoryStats: StoryObj<typeof meta> = {
   render: function InventoryStats(args) {
     const [extraStats, setExtraStats] = useState(false);
+
     return (
       <>
         <Button onClick={() => setExtraStats(!extraStats)}>Toggle extra stats</Button>
@@ -142,6 +143,7 @@ export const InventoryStats: StoryObj<typeof meta> = {
 export const Modifiers: StoryObj<typeof meta> = {
   render: function Modifiers(args) {
     const [lastAction, setLastAction] = useState('No action');
+
     return (
       <>
         <Backpack
@@ -170,6 +172,7 @@ export const DragAndDrop: StoryObj<typeof meta> = {
         ),
       );
     };
+
     return (
       <Box
         sx={{
@@ -200,6 +203,7 @@ export const DragAndDrop: StoryObj<typeof meta> = {
 export const Selling: StoryObj<typeof meta> = {
   render: function Selling(args) {
     const [items, setItems] = useState(args.items);
+
     return (
       <Backpack
         {...args}

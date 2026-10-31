@@ -19,6 +19,7 @@ test('HUD actions show hotkey badges and retain keyboard focus and disabled stat
     await expect(button).toBeFocused();
     await expect(button.locator('kbd')).toBeVisible();
   }
+
   await expect(controls.getByRole('button', { name: 'Leave world' })).toBeDisabled();
   await expect(controls.getByRole('button', { name: 'Leave world' }).locator('kbd')).toHaveCount(0);
 });
@@ -62,6 +63,7 @@ test('action bar hotkeys stay in slot corners and automation respects reduced mo
       // The corner overlays are above the radial cooldown mask.
       expect(await indicator.evaluate((element) => getComputedStyle(element).zIndex)).toBe('1');
     }
+
     for (const key of [1, 2, 3, 4]) {
       const slot = bar.getByRole('group', { name: `Empty ability slot ${key}`, exact: true });
       const label = slot.getByText(String(key), { exact: true });
@@ -70,12 +72,14 @@ test('action bar hotkeys stay in slot corners and automation respects reduced mo
       expect(l.x).toBeGreaterThan(s.x + s.width / 2);
       expect(l.y).toBeGreaterThan(s.y + s.height / 2);
     }
+
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await expect(fire).toHaveCSS('animation-name', 'none');
     await expect(target).toHaveCSS('animation-name', 'none');
     await expect(fire).not.toHaveCSS('box-shadow', 'none');
     await page.screenshot({ path: `test-results/action-bar-hotkeys-${width}.png` });
   }
+
   for (const [state, fire, target] of [
     ['manual', false, false],
     ['auto-fire-only', true, false],
