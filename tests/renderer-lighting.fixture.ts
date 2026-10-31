@@ -31,8 +31,8 @@ export function compareLighting(pixi: PixiContext, gpu: HTMLCanvasElement) {
   const glyphCtx = glyph.getContext('2d')!;
   glyphCtx.drawImage(gpu, 0, 0);
   const pixels = glyphCtx.getImageData(0, 0, 256, 256).data;
-  // A 4x text texture at 8x world scale repeats each raster column twice. Linear filtering
-  // instead introduces intermediate columns and fails this edge-grid check.
+  // Linear sampling of a 4x text texture at 8x world scale introduces
+  // intermediate columns on both halves of the raster grid.
   const edges = [0, 0];
   for (let y = 0; y < 100; y++)
     for (let x = 1; x < 220; x++)

@@ -113,7 +113,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   expect(lights.translated).toBe(lights.first);
   expect(lights.moved).toBeGreaterThan(lights.first);
   expect(lights.toggled).toBeGreaterThan(lights.moved);
-  expect(edges.filter((count) => count > 0)).toHaveLength(1);
+  expect(edges.every((count) => count > 0)).toBe(true);
   expect(stackLabels.silence).toEqual([]);
   for (const kind of ['bleed', 'poison', 'burn', 'roots'])
     expect(stackLabels[kind], `${kind} retains its stack count`).toEqual(['1']);

@@ -173,6 +173,8 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await closeDialog();
 
       const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
+      // Keep the pointer target still while snapshots and hover retries catch up.
+      marta.chatUntil = Date.now() + 180_000;
       await expect(async () => {
         player.x = marta.x - 35;
         player.y = marta.y + 9;
