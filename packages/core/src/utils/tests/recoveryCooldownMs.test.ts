@@ -12,5 +12,5 @@ test('recovery rate divides base cooldown and supports reductions without negati
     [-1, Infinity],
     [-1.5, Infinity],
   ])
-    assert.equal(recoveryCooldownMs(6000, rate!), expected);
+    assert.equal(recoveryCooldownMs(6000, rate), expected);
 });

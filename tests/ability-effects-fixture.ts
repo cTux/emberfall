@@ -57,7 +57,7 @@ export async function compare() {
       pixi.fillStyle = '#000000';
       pixi.fillRect(0, 0, 256, 256);
       drawClassProjectiles(
-        pixi as unknown as CanvasRenderingContext2D,
+        pixi,
         scene,
         150,
         (x, y) => ({ x, y }),
@@ -67,7 +67,7 @@ export async function compare() {
       );
       if (kind === 'swing')
         drawPlayerAttack(
-          pixi as unknown as CanvasRenderingContext2D,
+          pixi,
           {
             id: owner,
             classId: 'warrior',

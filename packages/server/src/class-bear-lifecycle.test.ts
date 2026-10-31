@@ -1,8 +1,7 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { FOREST, ARENA, forestDistance } from '@emberfall/core';
-import { stepCombat, tickCompanion } from '@emberfall/core';
+import { FOREST, ARENA, forestDistance, stepCombat, tickCompanion } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { hero, enemy, scene } from './classes.fixture.ts';
 

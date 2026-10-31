@@ -14,7 +14,7 @@ import {
   equippedItems,
   canEquip,
 } from '@emberfall/core';
-import type { ClientMessage, GearType, Player } from '@emberfall/common';
+import type { ClientMessage, Player } from '@emberfall/common';
 import {
   slotViews,
   SLOT_POSITIONS,
@@ -62,11 +62,11 @@ export function Equipment({
       },
       label: SLOT_LABELS[id],
       position: SLOT_POSITIONS[id],
-      accepts: (SLOT_GEAR_TYPES[id] as readonly GearType[])
+      accepts: SLOT_GEAR_TYPES[id]
         .filter(
           (type) =>
             !game.registries.slots.require(id).classRestricted ||
-            (CLASS_GEAR_TYPES[classId] as readonly GearType[]).includes(type),
+            CLASS_GEAR_TYPES[classId].includes(type),
         )
         .map((type) => GEAR_LABELS[type])
         .join(', '),

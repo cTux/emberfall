@@ -1,4 +1,4 @@
-import { type Player } from '@emberfall/common';
+import type { Player } from '@emberfall/common';
 
 import { freshProgress } from './characters.ts';
 

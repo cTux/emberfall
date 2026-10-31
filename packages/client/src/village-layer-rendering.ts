@@ -87,7 +87,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
   }
   if (layer.critter) {
     drawCritter(ctx, layer.critter, quality.shadows);
-    const outline = outlines.find((target) => target.source.id === layer.critter!.id);
+    const outline = outlines.find((target) => target.source.id === layer.critter.id);
     if (outline) drawInteractionOutline(ctx, outline);
     ctx.globalAlpha = 1;
     return;

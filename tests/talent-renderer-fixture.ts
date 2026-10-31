@@ -20,7 +20,7 @@ export async function render() {
       pixi.fillStyle = '#000000';
       pixi.fillRect(0, 0, 256, 256);
       drawClassProjectiles(
-        pixi as unknown as CanvasRenderingContext2D,
+        pixi,
         {
           id: 'talent-preview',
           type: 'Forest',

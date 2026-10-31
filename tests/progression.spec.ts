@@ -1,6 +1,5 @@
 import { test, expect } from './fixtures';
-import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
-import { experienceRequired } from '../packages/core/src/index.ts';
+import { LOBBY_PORTAL, experienceRequired } from '../packages/core/src/index.ts';
 
 test('XP bar follows authoritative leveling and saved paragon after rejoining', async ({
   page,

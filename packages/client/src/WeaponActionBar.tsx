@@ -10,8 +10,8 @@ import {
   talentDescription,
   talentCooldownMs,
   equippedTalent,
+  characterStats,
 } from '@emberfall/core';
-import { characterStats } from '@emberfall/core';
 import { ActionBar } from '@emberfall/ui';
 import { clientAsset } from './urls';
 import { spellSrc } from './class-art';

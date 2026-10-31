@@ -1,15 +1,16 @@
-import { createGame, baseMod } from '@emberfall/core';
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-
-import { companionStats } from '@emberfall/core';
 import {
+  createGame,
+  baseMod,
+  companionStats,
   tickCompanion,
   defaultSpellRange,
   stepCombat,
   swordOverlapsEnemy,
   tickDebuffs,
 } from '@emberfall/core';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+
 import { enemyHitbox } from '../../core/src/hitboxes.ts';
 import type { GearDefinition } from '@emberfall/common';
 

@@ -8,8 +8,10 @@ import {
   WARDROBE,
   forestDistance,
   wrappedDelta,
+  tickTraining,
+  tickPlayerCombat,
+  hitEnemy,
 } from '@emberfall/core';
-import { tickTraining, tickPlayerCombat, hitEnemy } from '@emberfall/core';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 
 import { hero } from './training.fixture.ts';

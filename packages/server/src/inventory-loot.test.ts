@@ -1,8 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { INVENTORY_SLOTS, LOOT_ITEM_IDS, GEAR_DEFINITIONS } from '@emberfall/core';
-import { createTrainingScene, stepCombat, hitEnemy } from '@emberfall/core';
+import {
+  INVENTORY_SLOTS,
+  LOOT_ITEM_IDS,
+  GEAR_DEFINITIONS,
+  createTrainingScene,
+  stepCombat,
+  hitEnemy,
+} from '@emberfall/core';
 
 import { hero, item } from './inventory.fixture.ts';
 

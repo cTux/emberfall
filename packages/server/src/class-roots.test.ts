@@ -1,8 +1,9 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { FOREST, forestDistance } from '@emberfall/core';
 import {
+  FOREST,
+  forestDistance,
   stepCombat,
   tickDebuffs,
   fireClassAttack,
@@ -121,7 +122,7 @@ test('root bounce selects across seams, excludes dead targets, and stops when it
   tickPlayerShots(s, [p], 2050, 0.05);
   s.enemies[1].hitpoints = 0;
   tickPlayerShots(s, [p], 2250, 0.2);
-  assert.equal(s.playerShots!.length, 0);
+  assert.equal(s.playerShots.length, 0);
   assert.equal(s.enemies[2].hitpoints, 100);
 });
 

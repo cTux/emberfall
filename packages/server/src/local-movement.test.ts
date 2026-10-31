@@ -3,8 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 import { wrappedDelta } from '@emberfall/common';
-import { ARENA, FOREST } from '@emberfall/core';
-import { movePlayer } from '@emberfall/core';
+import { ARENA, FOREST, movePlayer } from '@emberfall/core';
 import type { WorldState, Player, ClientMessage } from '@emberfall/common';
 const hero: Player = {
   id: 'p',
@@ -196,7 +195,7 @@ test('attack aim follows a new nearest target before the next swing and uses ser
   assert.equal(player.attackAt, -100, 'render the server swing age, not a fresh local swing');
   initial.scene.enemies[1].x = 2380;
   assert.equal(movement.animateAttack(player, initial, 16), false);
-  assert(player.attackAngle! > 0 && player.attackAngle! < Math.PI);
+  assert(player.attackAngle > 0 && player.attackAngle < Math.PI);
   assert.equal(player.attackAt, -100);
 });
 

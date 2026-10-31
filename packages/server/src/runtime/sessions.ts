@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
-import { Peer as WebSocket } from '../network/peer.ts';
+import type { Peer as WebSocket } from '../network/peer.ts';
 import { serverLog } from '../log.ts';
 import type { CharacterStore } from '../characters.ts';
 import type { Sessions, Session, World } from './models.ts';

@@ -1,25 +1,26 @@
 import { wrappedDelta } from '@emberfall/common';
-import { FOREST, resourceState } from '@emberfall/core';
-import { sceneryInteraction } from './interaction-targets';
-import { resourceScenery } from './gathering';
-import { portalInteraction } from './portal';
-import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import {
+  FOREST,
+  resourceState,
   resourceNodes,
   nearbyInteraction,
   nearbyResource,
   activityIndicator,
   inTrainingZone,
 } from '@emberfall/core';
-import type { DrawingContext } from './rendering/drawing-context';
-import { drawTimedActivity } from './timed-activity';
-import { drawInteractionPrompt, type Interaction } from './effects';
 import {
+  sceneryInteraction,
   partyInteraction,
   pickInteraction,
   interactionInRange,
   type InteractionTarget,
 } from './interaction-targets';
+import { resourceScenery } from './gathering';
+import { portalInteraction } from './portal';
+import type { ClientMessage, WorldState, Player } from '@emberfall/common';
+import type { DrawingContext } from './rendering/drawing-context';
+import { drawTimedActivity } from './timed-activity';
+import { drawInteractionPrompt, type Interaction } from './effects';
 
 type Options = {
   element: HTMLCanvasElement;

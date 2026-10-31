@@ -95,8 +95,8 @@ test('automatic weapon launch and replicated target use offensive priorities whi
     p.aimY = p.y;
     s.playerShots = [];
     fireClassAttack(s, p, 11000);
-    assert.equal(s.playerShots![0].targetId, undefined);
-    assert(Math.abs(Math.abs(s.playerShots![0].angle) - Math.PI) < 0.1);
+    assert.equal(s.playerShots[0].targetId, undefined);
+    assert(Math.abs(Math.abs(s.playerShots[0].angle) - Math.PI) < 0.1);
   }
 });
 
@@ -148,14 +148,14 @@ test('companion stances, preferred distance, assist and changed preferences affe
     p.tactics = { ...p.tactics!, stance: 'passive' };
     tickCompanion(p, s, 10001, 0);
     assert.equal(p.bear!.attackAt, undefined);
-    p.tactics = { ...p.tactics!, stance: 'aggressive', distance: 'far', companionTarget: 'assist' };
+    p.tactics = { ...p.tactics, stance: 'aggressive', distance: 'far', companionTarget: 'assist' };
     p.attackTargetId = 2;
     tickCompanion(p, s, 10002, 0);
     assert.equal(p.bear!.attackAt, 10002);
     p.bear!.x = p.x + 250;
     tickCompanion(p, s, 10003, 0);
     assert.equal(p.bear!.returning, false);
-    p.tactics = { ...p.tactics!, stance: 'protect' };
+    p.tactics = { ...p.tactics, stance: 'protect' };
     tickCompanion(p, s, 10004, 0);
     assert.equal(p.bear!.returning, true);
     assert.equal(p.bear!.attackAt, undefined);

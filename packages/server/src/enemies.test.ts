@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { forestTrees, forestDistance, FOREST } from '@emberfall/core';
-import { stepCombat, moveEnemies } from '@emberfall/core';
+import { forestTrees, forestDistance, FOREST, stepCombat, moveEnemies } from '@emberfall/core';
 import type { Enemy, SceneState } from '@emberfall/common';
 
 import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
@@ -38,8 +37,7 @@ test('authoritative movement scales base speed by difficulty, then roots, for ev
           };
           stepCombat(scene, [player(2700, 1280)], 1000, 0.01);
           const slow = rooted && kind !== EnemyType.Boss ? 0.9 : 1;
-          const expected =
-            speeds[archetype as keyof typeof speeds] * multipliers[difficulty] * slow * 0.01;
+          const expected = speeds[archetype] * multipliers[difficulty] * slow * 0.01;
           assert.ok(
             Math.abs(forestDistance({ x: 2300, y: 1280 }, e) - expected) < 1e-8,
             `${difficulty} ${kind} ${archetype}, roots=${rooted}`,

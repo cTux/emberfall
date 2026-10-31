@@ -9,7 +9,7 @@ import type { WorldDrawingContext } from './drawing-context';
 import { DrawingState } from './drawing-state';
 import { VisualPools, type Visual } from './visual-pools';
 import { Paints } from './paints';
-import { Container, Sprite, Graphics, Texture } from 'pixi.js';
+import { type Container, type Sprite, type Graphics, Texture } from 'pixi.js';
 import type { DirectionalShadow } from '../lighting';
 
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU

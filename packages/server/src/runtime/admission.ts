@@ -1,4 +1,4 @@
-import type { AdmissionMessage } from './models.ts';
+import type * as RuntimeModels from './models.ts';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createWorldPasswords } from './passwords.ts';
 import { MAX_PLAYERS } from '@emberfall/core';
@@ -9,7 +9,6 @@ import { addChat } from '../chat.ts';
 import { serverLog } from '../log.ts';
 import type { CharacterStore } from '../characters.ts';
 import type { WorldMembership } from './world-membership.ts';
-import type { Sessions, Session, World, AccountIdentity, Snapshot, Send } from './models.ts';
 
 export function createAdmission({
   worlds,
@@ -21,7 +20,7 @@ export function createAdmission({
   send,
   broadcastList,
 }: Pick<WorldMembership, 'worlds' | 'permanentWorld' | 'villageLife'> & {
-  sessions: Sessions;
+  sessions: RuntimeModels.Sessions;
   characters: Pick<
     CharacterStore,
     | 'loadById'
@@ -34,18 +33,18 @@ export function createAdmission({
     | 'rememberWorld'
     | 'deleteWorld'
   >;
-  state: Snapshot;
-  send: Send;
+  state: RuntimeModels.Snapshot;
+  send: RuntimeModels.Send;
   broadcastList: () => void;
 }) {
   const passwords = createWorldPasswords();
   return async (
     ws: WebSocket,
-    session: Session,
-    message: AdmissionMessage,
+    session: RuntimeModels.Session,
+    message: RuntimeModels.AdmissionMessage,
     now: number,
-    authenticated: ReturnType<AccountIdentity>,
-    account?: AccountIdentity,
+    authenticated: ReturnType<RuntimeModels.AccountIdentity>,
+    account?: RuntimeModels.AccountIdentity,
   ) => {
     const error = (message: string) => send(ws, { type: 'error', message });
     if (session.worldId) {
@@ -61,7 +60,7 @@ export function createAdmission({
       return;
     }
     session.busy = true;
-    let createdWorld: World | undefined;
+    let createdWorld: RuntimeModels.World | undefined;
     try {
       const existingCharacter = authenticated
         ? characters.loadById(authenticated.characterId)
@@ -115,7 +114,7 @@ export function createAdmission({
           return;
         }
       }
-      let world: World;
+      let world: RuntimeModels.World;
       if (message.type === 'create') {
         if (worlds.size >= 64) {
           error('The server is full. Try again later.');

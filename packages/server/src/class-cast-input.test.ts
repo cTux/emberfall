@@ -98,8 +98,8 @@ test('slightly early held casts wait for cooldown and retain aim without duplica
     tickPlayerCombat(arena, [player], 2050, 0);
     assert.equal(arena.playerShots!.length, count * 2, 'buffered casts fire once');
     for (let id = 5; id < 15; id++) {
-      assert(cast(id, player.attackAt! + 950));
-      tickPlayerCombat(arena, [player], player.attackAt!, 0);
+      assert(cast(id, player.attackAt + 950));
+      tickPlayerCombat(arena, [player], player.attackAt, 0);
       assert.equal(arena.playerShots!.at(-1)!.castId, id);
     }
     assert.equal(player.attackAt, 12000, 'repeated early arrivals never shorten cooldown');

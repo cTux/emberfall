@@ -49,6 +49,31 @@ in `Screens.stories.tsx`, with private render components in `stories/screens`.
 The renderer pixel fixture keeps canvas ownership and comparison results in its
 entry module and delegates surface, lighting, damage and loot probes to helpers.
 
+## Code structure
+
+Keep each module focused on one responsibility. Split implementation, declarative
+definitions and domain test groups at their ownership boundaries; keep composition
+roots small and their dependencies explicit. Oxlint caps JavaScript and TypeScript
+files at **249 physical lines**, including comments and blanks. The reviewed
+`packages/client/src/rendering/pixi-context.ts` drawing façade has a **260-line cap**:
+it implements one drawing interface while state, textures, pools and lifecycle live
+in separate modules. Its exception permits no further growth. Extract meaningful
+ownership rather than forwarding wrappers or compressed formatting to meet a cap.
+Review stylesheet and configuration size by the same responsibility guideline.
+
+Name functions for their actions and values for their domain meaning. Keep guards
+and error paths explicit, and break complex expressions into named steps when
+that makes their purpose clearer. Short geometry names such as `x` and `y` are
+appropriate when their meaning is clear. Human review still checks readability;
+passing automated checks alone does not establish a good module boundary.
+
+Represent repeated content choices with typed objects or maps, checked with
+`satisfies` where it preserves useful literals. Let existing rules consume those
+definitions, as core's drop tables do. Keep side effects and transactions in their
+own owners; a configuration table does not replace validation, save ordering or
+error handling. Reuse the documented package dependency directions, enforced by
+[`package-boundaries.test.ts`](../tests/package-boundaries.test.ts).
+
 ## Lint policy
 
 The root `.oxlintrc.json` is shared by local commands, editors and CI runners.
@@ -56,12 +81,38 @@ It enables correctness rules from TypeScript, Oxc, Unicorn, React and JSX
 accessibility, plus selected suspicious checks (`no-debugger`, `no-eval` and
 `no-implied-eval`). Review new suspicious rules individually before enforcing
 them; pedantic, restriction and nursery categories are not enabled wholesale.
-Formatting belongs to Oxfmt.
+Formatting belongs to Oxfmt: single quotes, JSX single quotes, consistent
+indentation and wrapping. Run `pnpm fmt:check` before submitting changes.
+
+Selected rules additionally require immutable bindings when possible, block-scoped
+declarations, consolidated imports, explicit type imports, exhaustive union
+switches and throwable errors. Strict equality permits the conventional
+`value == null` check for both null and undefined. Separate type imports and inline
+`type` specifiers are supported, as are colocated `import()` type expressions for
+lazy module contracts. Use top-level `import type` when every imported binding is
+type-only, so verbatim module syntax does not introduce runtime side effects.
+Redundant assertions, duplicate/redundant union members,
+unnecessary type arguments and unsafe assertions after optional chaining fail lint.
 
 `oxlint-tsgolint` provides type-aware checks, including floating and misused
 promises. Keep `pnpm typecheck` separately: experimental Oxlint type checking
 is not enabled. TypeScript includes are scoped to workspace source, package
 configuration and tests, excluding dependencies and generated build output.
+The root includes the CI TypeScript scripts as well as packages and tests. It
+requires explicit overrides, complete return paths, unused-code cleanup, no switch
+fallthrough, no unreachable code or unused labels, checked side-effect imports,
+consistent path casing, explicit type-only module syntax and erasable TypeScript.
+Package configs inherit these compiler options. Prefix a required callback's
+unused positional parameter with `_`; remove unused parameters from private
+functions and their callers instead.
+
+`strict` remains enabled. `noUncheckedIndexedAccess` and
+`exactOptionalPropertyTypes` remain separate migrations: initial probes produced
+over a thousand indexed-access diagnostics and 276 optional-property errors.
+Adopting them requires validating collection lookups and distinguishing omitted
+fields from explicit undefined throughout saves, protocols and rendering. Blanket
+non-null assertions or widened optional types would hide that work.
+
 The root remains a source-checking project; it is not a project-reference
 solution, so replacing its includes with `files: []` would skip source checks.
 

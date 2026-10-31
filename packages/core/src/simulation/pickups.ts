@@ -12,7 +12,7 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
     if (now - drop.at >= PICKUP_RULES.lifetimeMs) return false;
     if (now - drop.at < PICKUP_RULES.initialHopMs) return true;
     let target: Player | undefined;
-    let distance = PICKUP_RULES.attractionRadius as number;
+    let distance = PICKUP_RULES.attractionRadius;
     for (const player of collectors) {
       if (
         drop.kind === 'item' &&

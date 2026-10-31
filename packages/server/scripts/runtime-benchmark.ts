@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { fork } from 'node:child_process';
-import { execFileSync } from 'node:child_process';
+import { fork, execFileSync } from 'node:child_process';
 import { once } from 'node:events';
 import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir, cpus, availableParallelism, totalmem, release } from 'node:os';

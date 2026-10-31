@@ -1,8 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { LOBBY_PORTAL, nearbyInteraction } from '@emberfall/core';
+import {
+  LOBBY_PORTAL,
+  nearbyInteraction,
+  clientMessage as validatedMessage,
+} from '@emberfall/core';
 import { clientMessage } from '@emberfall/common';
-import { clientMessage as validatedMessage } from '@emberfall/core';
 import { sceneAction, tickScene, reconcileVote } from './scenes.ts';
 import type { SceneWorld } from './scenes.ts';
 import { hero } from './scenes.fixture.ts';
@@ -50,7 +53,7 @@ test('server scene lifecycle: proximity, unanimous votes, retract, membership ch
   assert.equal(a.scene, 'forest');
   assert.equal(b.scene, 'forest');
   assert.equal(world.scene?.endsAt, 144000);
-  const scene = world.scene!;
+  const scene = world.scene;
   scene.nextSpawn = Infinity;
   scene.spawns = [];
   scene.enemies = [{ id: 999, x: a.x + 45, y: a.y, hitpoints: 10, angle: 0 }];

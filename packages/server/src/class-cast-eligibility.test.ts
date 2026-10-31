@@ -1,8 +1,7 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { FOREST, clientMessage } from '@emberfall/core';
-import { fireClassAttack, tickPlayerShots } from '@emberfall/core';
+import { FOREST, clientMessage, fireClassAttack, tickPlayerShots } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { hero, enemy, scene } from './classes.fixture.ts';
 
@@ -84,7 +83,7 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
       arena.enemies = [enemy(1, 2440), enemy(2, 2580)];
       fireClassAttack(arena, player, 1000);
       assert.equal(arena.playerShots?.length, classId === 'druid' ? 1 : 2);
-      const shot = arena.playerShots![0];
+      const shot = arena.playerShots[0];
       assert.equal(shot.targetId, undefined);
       assert.equal(shot.angle, Math.PI / 2 - (classId === 'druid' ? 0 : Math.PI / 60));
       assert.equal(shot.remaining, 1000);
@@ -95,7 +94,7 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
       assert(shot.x >= player.x);
       assert(shot.y > 1300, 'continues beyond cursor without turning');
       tickPlayerShots(arena, [player], 4000, 10);
-      assert.equal(arena.playerShots!.length, 0);
+      assert.equal(arena.playerShots.length, 0);
       assert(
         Math.abs(shot.y - (player.y + 1000 * Math.cos(classId === 'druid' ? 0 : Math.PI / 60))) <
           0.001,
@@ -118,7 +117,7 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
     arena.enemies = [];
     arena.playerShots = [];
     fireClassAttack(arena, player, 2000);
-    const shot = arena.playerShots![0];
+    const shot = arena.playerShots[0];
     advancePlayerShot(shot, [], 10);
     assert(
       Math.abs(shot.x - (1000 * Math.cos(classId === 'druid' ? 0 : Math.PI / 60) - 10)) < 0.001,

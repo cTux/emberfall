@@ -45,10 +45,10 @@ export async function createGameServer(
     applyState(state, projection);
   }
   class SessionRoom extends Room<{ state: SessionState }> {
-    state = new SessionState();
-    maxClients = 1;
+    override state = new SessionState();
+    override maxClients = 1;
     private peer?: Peer;
-    onAuth(_client: Client, options: { ticket?: string }, context: { headers: Headers }) {
+    override onAuth(_client: Client, options: { ticket?: string }, context: { headers: Headers }) {
       if (!accounts) return true;
       if (context.headers.get('origin') !== accounts.clientOrigin)
         throw new ServerError(401, 'Invalid origin');
@@ -56,14 +56,14 @@ export async function createGameServer(
       if (!token) throw new ServerError(401, 'Please sign in again');
       return token;
     }
-    async onCreate(options: { protocolVersion?: number }) {
+    override async onCreate(options: { protocolVersion?: number }) {
       if (options.protocolVersion !== RUNTIME.protocolVersion)
         throw new ServerError(4002, 'Client protocol version is incompatible. Reload the game.');
       await this.setPrivate(true);
       this.setPatchRate(50);
       this.onMessage('command', (_client, command) => this.peer?.receive(command));
     }
-    onJoin(client: Client) {
+    override onJoin(client: Client) {
       if (accounts && (typeof client.auth !== 'string' || !accounts.valid(client.auth)))
         throw new ServerError(401, 'Please sign in again');
       this.peer = new Peer(
@@ -86,7 +86,7 @@ export async function createGameServer(
         accounts ? accounts.attach(this.peer, client.auth as string) : undefined,
       );
     }
-    onLeave(_client: Client, code: number) {
+    override onLeave(_client: Client, code: number) {
       this.peer?.detached(code === 4000 ? 1000 : code === 1008 ? 1008 : 1006);
     }
   }
@@ -107,6 +107,7 @@ export async function createGameServer(
       } catch {
         return new Response('Forbidden', { status: 403 });
       }
+      return undefined;
     },
   });
   const game = new Server({

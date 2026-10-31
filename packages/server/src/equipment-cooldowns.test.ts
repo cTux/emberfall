@@ -1,8 +1,6 @@
-import { createGame, baseMod } from '@emberfall/core';
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-
 import {
+  createGame,
+  baseMod,
   CLASS_IDS,
   learnTalent,
   equipTalent,
@@ -10,8 +8,11 @@ import {
   talentAbility,
   talentCooldownMs,
   castTalentAbility,
+  tickPlayerCombat,
+  requestPlayerCast,
 } from '@emberfall/core';
-import { tickPlayerCombat, requestPlayerCast } from '@emberfall/core';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
 
 import { hero, scene } from './equipment.fixture.ts';
 
@@ -81,7 +82,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
         assert.equal(player.attackAt, 1000);
         // Stay within floating-point precision of the fractional cooldown boundary.
         tickPlayerCombat(arena, [player], 1000 + stats.attackIntervalMs + 1e-9, 0, context);
-        assert(Math.abs(player.attackAt! - 1000 - stats.attackIntervalMs) < 1e-8);
+        assert(Math.abs(player.attackAt - 1000 - stats.attackIntervalMs) < 1e-8);
         assert.equal(
           castTalentAbility(arena, player, request, 1000 + cooldown - 1, context),
           false,

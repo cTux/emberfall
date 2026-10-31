@@ -9,7 +9,7 @@ import { drawPlayerAttack } from './player-rendering';
 import type { WorldDrawingContext } from './rendering/drawing-context';
 import { abilityEffectOpacity } from './ability-effects';
 
-import { resourceNodes, resourceState } from '@emberfall/core';
+import { resourceNodes, resourceState, FOREST } from '@emberfall/core';
 import { resourceScenery } from './gathering';
 
 import { idleBreath } from './animation';
@@ -23,7 +23,6 @@ import { drawHitboxes } from './hitboxes';
 import type { InteractionTarget } from './interaction-targets';
 import { bloodPuddleRenderer, drawLootAndBlood, drawClassProjectiles } from './combat-effects';
 import { wrappedDelta } from '@emberfall/common';
-import { FOREST } from '@emberfall/core';
 
 import { drawDanger } from './danger';
 import type { WorldState } from '@emberfall/common';

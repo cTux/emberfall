@@ -67,9 +67,7 @@ export function drawLootAndBlood(
       ctx.fillStyle = beam;
       ctx.fillRect(p.x - 3, p.y - 36, 6, 36);
       const gear = GEAR_DEFINITIONS[drop.itemId ?? ''];
-      const slot = EQUIPMENT_SLOTS.find((slot) =>
-        (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear?.gearType),
-      );
+      const slot = EQUIPMENT_SLOTS.find((slot) => SLOT_GEAR_TYPES[slot].includes(gear?.gearType));
       const icon = loadArt(itemArtName(drop.itemId ?? '') ?? equipmentSlotArt(slot ?? 'amulet'));
       drawArt(ctx, icon, 0, 0, p.x - 10, p.y - 18 - jump, 20, 20);
     } else if (pickupArt.naturalWidth)

@@ -1,4 +1,4 @@
-import { PixiContext } from '../packages/client/src/rendering/pixi-context';
+import type { PixiContext } from '../packages/client/src/rendering/pixi-context';
 
 import { lightTexture } from '../packages/client/src/village';
 

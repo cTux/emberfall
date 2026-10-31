@@ -1,8 +1,6 @@
-import { createGame, baseMod } from '@emberfall/core';
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-
 import {
+  createGame,
+  baseMod,
   CLASS_IDS,
   EQUIPMENT_SLOTS,
   SLOT_GEAR_TYPES,
@@ -10,13 +8,13 @@ import {
   validateClassEquipment,
   canEquip,
   clientMessage,
-} from '@emberfall/core';
-import {
   tickPlayerCombat,
   defaultSpellRange,
   requestPlayerCast,
   stepCombat,
 } from '@emberfall/core';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
 
 import type { GearDefinition } from '@emberfall/common';
 
@@ -45,7 +43,7 @@ test('every class starts with exactly its compatible weapon and preserves base s
   assert.throws(() => validateClassEquipment({ weapon: 'mage-staff' }, 'warrior'));
   assert.throws(() => validateClassEquipment({ ring: 'warrior-sword' }, 'warrior'));
   assert.throws(() => validateClassEquipment({ weapon: 'forged-item' }, 'warrior'));
-  assert.throws(() => validateClassEquipment({ unknown: 'warrior-sword' } as never, 'warrior'));
+  assert.throws(() => validateClassEquipment({ unknown: 'warrior-sword' }, 'warrior'));
   for (const [gearType, allowed] of [
     ['shield', 'warrior'],
     ['quiver', 'ranger'],

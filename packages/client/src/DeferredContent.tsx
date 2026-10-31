@@ -11,17 +11,17 @@ class ContentBoundary extends Component<
   { children: ReactNode; reportError: (text: string) => void },
   { failed: boolean }
 > {
-  state = { failed: false };
+  override state = { failed: false };
 
   static getDerivedStateFromError() {
     return { failed: true };
   }
 
-  componentDidCatch() {
+  override componentDidCatch() {
     this.props.reportError('Could not load this content. Reload to try again.');
   }
 
-  render() {
+  override render() {
     if (this.state.failed) return <Button onClick={() => location.reload()}>Reload</Button>;
     return (
       <Suspense

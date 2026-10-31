@@ -16,12 +16,12 @@ import {
   tickPlayerCombat,
   stepCombat,
   TRAINING_ZONES,
+  createTrainingScene,
 } from '@emberfall/core';
 import { enemyHitbox } from '@emberfall/core/hitboxes';
 import { extensionMod } from '../../core/src/content/tests/fixture.ts';
 import { createCharacterPersistence, decodeProgress as decodeBase } from './characters.ts';
 import { registeredSlotViews, additionalStatViews } from '../../client/src/content-views.ts';
-import { createTrainingScene } from '@emberfall/core';
 import type { Player, Enemy } from '@emberfall/common';
 import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
 

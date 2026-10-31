@@ -72,7 +72,7 @@ test('Bear animation follows confirmed movement, stops during packet gaps, and s
   const bear = buffer.render(2075)!.players[0].bear!;
   assert.equal(bear.x, 800);
   assert.equal(bear.moving, false);
-  assert.equal(base.players[0].bear!.x, 420);
+  assert.equal(base.players[0].bear.x, 420);
 });
 
 test('snapshot playback wraps edges, snaps area transfers, and does not predict damage', async () => {

@@ -1,6 +1,5 @@
-import { game } from '@emberfall/core';
+import { game, CLASS_IDS } from '@emberfall/core';
 import { actorArt } from './art';
-import { CLASS_IDS } from '@emberfall/core';
 import type { ClassId } from '@emberfall/common';
 export { classSprite } from './class-art';
 export const characterImages = Object.fromEntries(

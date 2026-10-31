@@ -1,8 +1,7 @@
-import { swordOverlapsEnemy, smoothAttackAngle, stepCombat } from '@emberfall/core';
+import { swordOverlapsEnemy, smoothAttackAngle, stepCombat, FOREST } from '@emberfall/core';
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { FOREST } from '@emberfall/core';
 import type { SceneState } from '@emberfall/common';
 import { hero } from './snapshots.fixture.ts';
 

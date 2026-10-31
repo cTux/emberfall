@@ -1,10 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { wrappedDelta, type WorldState } from '@emberfall/common';
-import { FOREST } from '@emberfall/core';
+import { FOREST, createTrainingScene } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 import { alignLocalPickups } from '../../client/src/pickup-presentation.ts';
-import { createTrainingScene } from '@emberfall/core';
 import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
 import { Encoder, Decoder } from '@colyseus/schema';
 

@@ -96,7 +96,7 @@ export function drawForestActor(
       players.find((player) => player.id === playerId),
       a.player,
     );
-  if (highlightPlayer || (a.player && world?.partyRequests?.some((r) => r.fromId === a.player!.id)))
+  if (highlightPlayer || (a.player && world?.partyRequests?.some((r) => r.fromId === a.player.id)))
     drawPartyOutline(
       ctx,
       forestActorMask(a.image, a.facing, a.row),

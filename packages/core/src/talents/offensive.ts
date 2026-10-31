@@ -134,7 +134,7 @@ export function offensive(cast: TalentCast) {
         .filter((enemy) => {
           if (enemy.hitpoints <= 0 || hitIds.has(enemy.id)) return false;
           if (classId === 'druid')
-            return forestDistance(previous!, enemy) <= 300 * (1 + stats.bonuses.range / 100);
+            return forestDistance(previous, enemy) <= 300 * (1 + stats.bonuses.range / 100);
           const dx = wrappedDelta(enemy.x, player.x, FOREST.width);
           const dy = wrappedDelta(enemy.y, player.y, FOREST.height);
           return (
@@ -143,7 +143,7 @@ export function offensive(cast: TalentCast) {
             forestDistance(player, enemy) <= maxRange
           );
         })
-        .sort((a, b) => forestDistance(previous!, a) - forestDistance(previous!, b))[0];
+        .sort((a, b) => forestDistance(previous, a) - forestDistance(previous, b))[0];
       if (!next) break;
       hit(next, now, learned === 2 ? 2.1 : 1.5);
       previous = next;

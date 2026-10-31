@@ -1,9 +1,15 @@
 import { FOREST_DEFINITION } from '@emberfall/core/definitions/worlds/forest';
-import { levelUp, stepCombat, tickTraining, createTrainingScene } from '@emberfall/core';
+import {
+  levelUp,
+  stepCombat,
+  tickTraining,
+  createTrainingScene,
+  FOREST_PORTAL,
+  nearbyInteraction,
+} from '@emberfall/core';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { randomUUID } from 'node:crypto';
 import { hasLivingScenePlayers } from '@emberfall/common';
-import { FOREST_PORTAL, nearbyInteraction } from '@emberfall/core';
 import type { Player, SceneState, ClientMessage, ChatMessage } from '@emberfall/common';
 import { addChat } from './chat.ts';
 import { simulationFor } from './ecs/simulation.ts';
@@ -84,7 +90,7 @@ export function sceneAction(
       throw new Error(
         'This scene is not open for joining. Create a new one after everyone returns.',
       );
-    enterScene(world, player, now);
+    enterScene(world, player);
   } else if (message.type === 'ready') {
     const scene = world.scene;
     if (!scene || !['voting', 'countdown'].includes(scene.phase) || player.scene)
@@ -113,7 +119,7 @@ export function cleanupScene(world: SceneWorld) {
   )
     world.scene = undefined;
 }
-function enterScene(world: SceneWorld, player: Player, now: number, offset = 0) {
+function enterScene(world: SceneWorld, player: Player, offset = 0) {
   addChat(
     world,
     `${player.name} joined the scene. Everyone became stronger.`,
@@ -171,7 +177,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     scene.nextSpawn = now;
     let index = 0;
     for (const player of world.voters ?? world.players.values()) {
-      enterScene(world, player, now, (index++ - world.players.size / 2) * 30);
+      enterScene(world, player, (index++ - world.players.size / 2) * 30);
     }
   }
   if (scene.phase !== 'active' && scene.phase !== 'ended') return;

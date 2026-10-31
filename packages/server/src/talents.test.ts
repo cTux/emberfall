@@ -76,7 +76,7 @@ test('migration refunds old allocations once and repairs wrong-class, overbudget
   const snapshot = structuredClone(player);
   normalizeTalents(player, 'warrior');
   assert.deepEqual(player, snapshot);
-  player.talents![talentNodeId('mage', 0, 0)] = 1;
+  player.talents[talentNodeId('mage', 0, 0)] = 1;
   normalizeTalents(player, 'warrior');
   assert.deepEqual(player.talents, {});
   player.level = 1;

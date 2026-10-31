@@ -62,9 +62,7 @@ export function createEquipmentRules(content: Registries) {
             content.slots.has(slot) &&
             (id === null ||
               (!!GEAR_DEFINITIONS[id] &&
-                (SLOT_GEAR_TYPES[slot as EquipmentSlot] as readonly string[]).includes(
-                  GEAR_DEFINITIONS[id].gearType,
-                ))),
+                SLOT_GEAR_TYPES[slot].includes(GEAR_DEFINITIONS[id].gearType))),
         ),
       'Unknown or incompatible equipment',
     );
@@ -76,8 +74,7 @@ export function createEquipmentRules(content: Registries) {
     const parsed = equipmentSchema.parse(equipment);
     if (
       !Object.entries(parsed).every(
-        ([slot, id]) =>
-          id === null || canEquip(slot as EquipmentSlot, GEAR_DEFINITIONS[id], classId),
+        ([slot, id]) => id === null || canEquip(slot, GEAR_DEFINITIONS[id], classId),
       )
     )
       throw new Error('Equipment is incompatible with this class');
@@ -101,7 +98,7 @@ export function createEquipmentRules(content: Registries) {
       const gear = id ? GEAR_DEFINITIONS[id] : undefined;
       if (!gear || !canEquip(slot, gear, classId)) continue;
       if (slot === 'weapon') weapon = gear;
-      for (const key of Object.keys(gear.stats) as string[]) stats[key] += gear.stats[key] ?? 0;
+      for (const key of Object.keys(gear.stats)) stats[key] += gear.stats[key] ?? 0;
       const instance = player.equipmentItems?.[slot];
       if (instance?.itemId === id)
         for (const [stat, value] of Object.entries(instance.stats ?? {}))
@@ -147,7 +144,7 @@ export function createEquipmentRules(content: Registries) {
       player.classId === 'druid' && talentRank(player, talentNodeId('druid', 1, 3)) > 0;
     return {
       ...characterStats(player),
-      damageType: BEAR_DEFINITION.damageType as DamageType,
+      damageType: BEAR_DEFINITION.damageType,
       range: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
       manualRange: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
       maxHitpoints: player.maxHitpoints * BEAR_DEFINITION.healthMultiplier * (packHowl ? 1.3 : 1),

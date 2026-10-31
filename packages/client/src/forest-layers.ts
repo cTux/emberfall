@@ -1,5 +1,5 @@
 import type { Player, WorldState, DamageEvent } from '@emberfall/common';
-import { resourceNodes, resourceState } from '@emberfall/core';
+import { type resourceNodes, resourceState } from '@emberfall/core';
 import type { WorldDrawingContext } from './rendering/drawing-context';
 import type { ForestActor, ForestProjection } from './forest-actors';
 import { drawForestActor, type ActorFrame } from './forest-actor-rendering';
@@ -8,7 +8,7 @@ import { resourceScenery, drawResourceHealth } from './gathering';
 import { drawVegetation } from './effects';
 import { drawInteractionOutline, type InteractionTarget } from './interaction-targets';
 import { drawCompanion } from './companion';
-import { crittersAt, drawCritter } from './critters';
+import { type crittersAt, drawCritter } from './critters';
 
 export function forestLayers(
   world: WorldState | null,
@@ -141,6 +141,6 @@ export function drawForestLayer(
     if (outline) drawInteractionOutline(ctx, outline);
     return;
   }
-  const actor = layer.actor!;
+  const actor = layer.actor;
   drawForestActor(ctx, actor, damageByTarget.get(actor.id), frame);
 }

@@ -1,9 +1,8 @@
 import { edgeArrow } from '../../client/src/navigation.ts';
-import { stepCombat } from '@emberfall/core';
+import { stepCombat, FOREST } from '@emberfall/core';
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
-import { FOREST } from '@emberfall/core';
 import type { SceneState } from '@emberfall/common';
 import { hero, snapshot } from './snapshots.fixture.ts';
 

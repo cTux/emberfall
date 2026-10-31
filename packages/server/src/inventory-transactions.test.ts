@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { type ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/common';
 import { tradeItem, INNKEEPER } from '@emberfall/core';
 
 import { CharacterStore } from './characters.ts';

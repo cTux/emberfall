@@ -21,7 +21,7 @@ test('tactics save per class, round trip through persistence, and missing old-sa
     p.tactics = { ...tactics(), stance: 'passive' };
     store.save(created.id, p.name, p);
     store.selectClass(created.id, p, 'warrior');
-    assert.equal(p.tactics!.keepTarget, true);
+    assert.equal(p.tactics.keepTarget, true);
     assert.equal(store.load(created.token).classes.druid.tactics!.stance, 'passive');
   } finally {
     store.close();

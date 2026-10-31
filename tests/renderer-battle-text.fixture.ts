@@ -1,4 +1,4 @@
-import { PixiContext } from '../packages/client/src/rendering/pixi-context';
+import type { PixiContext } from '../packages/client/src/rendering/pixi-context';
 
 import { drawDamageNumber } from '../packages/client/src/damage-text';
 
@@ -11,7 +11,7 @@ export function compareBattleText(pixi: PixiContext, gpu: HTMLCanvasElement) {
   for (const [index, age] of ages.entries())
     for (const critical of [false, true])
       drawDamageNumber(
-        pixi as unknown as CanvasRenderingContext2D,
+        pixi,
         { id: 2, x: 0, y: 0, amount: 125, at: 1000, target: 'enemy:1', critical },
         { x: 85 + index * 170, y: critical ? 250 : 120 },
         1000 + age,

@@ -1,4 +1,4 @@
-import { PixiContext } from '../packages/client/src/rendering/pixi-context';
+import type { PixiContext } from '../packages/client/src/rendering/pixi-context';
 
 import { drawClassProjectiles, drawLootAndBlood } from '../packages/client/src/combat-effects';
 import { pickupArt, effectsArt, artImages } from '../packages/client/src/art';
@@ -21,7 +21,7 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
         const x = 32 + frame * 64,
           y = 40 + row * 80;
         drawClassProjectiles(
-          pixi as unknown as CanvasRenderingContext2D,
+          pixi,
           {
             playerShots: [{ kind, x, y, angle: (frame * Math.PI) / 3 }],
             explosions: [],
@@ -66,7 +66,7 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
   const drawDrops = () => {
     pixi.begin();
     drawLootAndBlood(
-      pixi as unknown as CanvasRenderingContext2D,
+      pixi,
       { drops, damage: [] } as unknown as SceneState,
       1000,
       (x, y) => ({ x, y }),
@@ -106,7 +106,7 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
   pixi.begin();
   const rarities = Object.values(Rarity);
   drawLootAndBlood(
-    pixi as unknown as CanvasRenderingContext2D,
+    pixi,
     {
       drops: rarities.map((rarity, id) => ({
         id,

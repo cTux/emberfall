@@ -1,9 +1,8 @@
-import { createGame, baseMod } from '@emberfall/core';
-import { test } from 'node:test';
-import assert from 'node:assert/strict';
-
-import { CLASS_IDS, characterStats } from '@emberfall/core';
 import {
+  createGame,
+  baseMod,
+  CLASS_IDS,
+  characterStats,
   tickCompanion,
   stepCombat,
   hitWithWeapon,
@@ -13,6 +12,8 @@ import {
   tickPlayerShots,
   fireClassAttack,
 } from '@emberfall/core';
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
 
 import { drawDamageNumber, DAMAGE_COLORS } from '../../client/src/damage-text.ts';
 import { hero, target, scene } from './equipment.fixture.ts';
