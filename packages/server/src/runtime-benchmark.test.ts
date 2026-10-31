@@ -2,34 +2,42 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fork } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 import { createGameServer } from './worlds.ts';
 import { connectWorkload } from '../scripts/runtime-clients.ts';
 
 test('benchmark worker refuses an existing database before startup', async (t) => {
   const directory = mkdtempSync(join(tmpdir(), 'emberfall-runtime-benchmark-'));
   const path = join(directory, 'characters.sqlite');
-  const original = 'Existing database sentinel: must remain untouched';
-  writeFileSync(path, original);
+  const database = new DatabaseSync(path);
+  database.exec('CREATE TABLE benchmark_sentinel (value TEXT);');
+  database.close();
+  const original = readFileSync(path);
   const child = fork(
     fileURLToPath(new URL('../scripts/runtime-worker.ts', import.meta.url)),
     [path, '1'],
     {
       windowsHide: true,
       execArgv: [],
-      stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+      stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
     },
   );
+  let stderr = '';
+  child.stderr!.on('data', (chunk: Buffer) => {
+    stderr += chunk.toString();
+  });
   const closed = new Promise<void>((resolve) => child.once('close', () => resolve()));
   try {
     const [code] = await once(child, 'exit', {
       signal: AbortSignal.any([t.signal, AbortSignal.timeout(10000)]),
     });
     assert.equal(code, 1);
-    assert.equal(readFileSync(path, 'utf8'), original);
+    assert.match(stderr, /Never open an existing save database/);
+    assert.deepEqual(readFileSync(path), original);
   } finally {
     if (child.exitCode === null && child.signalCode === null) child.kill();
     await closed;
