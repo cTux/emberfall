@@ -98,7 +98,10 @@ Legendary orange `#ff8000`. Tooltips identify rarity and every rolled stat.
 
 ![Concept preview of rarity borders and beams, not a gameplay capture](../images/item-rarities.svg)
 
-Verification: [rule and persistence checks](../../packages/server/src/item-rolls.test.ts)
+Verification: [roll rules](../../packages/server/src/item-rolls.test.ts),
+[persistence checks](../../packages/server/src/item-roll-persistence.test.ts),
+[combat effects](../../packages/server/src/item-roll-combat.test.ts),
+[talent and party rewards](../../packages/server/src/item-roll-talents-rewards.test.ts)
 and [desktop inventory/storage/trading checks](../../tests/item-rarities.spec.ts).
 
 ## ITEM-04 — Gear prices
@@ -120,5 +123,5 @@ selling and independent buyback lists. Verified desktop gameplay capture:
 
 ![Bram gear buyback with rarity-aware price](../images/bram-gear-buyback.png)
 
-Evidence: [merchant rules and command tests](../../packages/server/src/merchant.test.ts),
+Evidence: [merchant rules and command tests](../../packages/server/src/merchant-pricing.test.ts),
 [desktop rarity and buyback test](../../tests/item-rarities.spec.ts).

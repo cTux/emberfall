@@ -173,7 +173,8 @@ Steam acceptance:
 
 Evidence: [characters.test.ts](../../packages/server/src/characters.test.ts), [classes.test.ts](../../packages/server/src/classes.test.ts).
 
-Steam evidence: [server account tests](../../packages/server/src/accounts.test.ts) and
+Steam evidence: [server account tests](../../packages/server/src/accounts.test.ts),
+[HTTP admission tests](../../packages/server/src/account-http-admission.test.ts) and
 [browser account tests](../../tests/accounts.spec.ts).
 
 Gathered logs, sticks, leaves, rocks and stones are saved resource items. Each

@@ -70,7 +70,9 @@ dimension. No model call blocks simulation, and requests are aborted on world re
 or shutdown.
 
 Evidence: [Ollama provider](../../packages/server/src/npc-models.test.ts),
-[village life](../../packages/server/src/npcs.test.ts),
+[village movement](../../packages/server/src/npcs.test.ts),
+[reply scheduling](../../packages/server/src/npc-reply-scheduling.test.ts),
+[outage recovery](../../packages/server/src/npc-outages.test.ts),
 [dimension filtering](../../packages/server/src/npc-chat.test.ts),
 [browser presentation](../../tests/npcs.spec.ts).
 
