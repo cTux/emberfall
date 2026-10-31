@@ -38,6 +38,8 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   const wardrobe = page.getByRole('dialog', { name: 'Wardrobe' });
 
   for (const classId of CLASS_IDS) {
+    // Keep wandering NPCs under the old close-button position from overriding the E target.
+    await page.getByRole('navigation', { name: 'Game controls' }).hover();
     player.x = WARDROBE.x;
     player.y = WARDROBE.y - 15;
     await expect(

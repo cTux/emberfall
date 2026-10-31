@@ -30,3 +30,26 @@ definitions, as core's drop tables do. Keep side effects and transactions in the
 own owners; a configuration table does not replace validation, save ordering or
 error handling. Reuse the documented package dependency directions, enforced by
 [`package-boundaries.test.ts`](../../tests/package-boundaries.test.ts).
+
+### Dispatch tables
+
+When one value selects independent operations, use a typed handler table and
+call `methods[method](...)`. When branches only select data, use a typed value
+map or an indexed array. Give handlers domain parameter names (`x`, `y`,
+`radius`, `player`, `message`) and concrete types. For queued commands with
+different signatures, use named tuple elements and mapped handler types to
+keep each command's parameters checked; see
+[`drawing-path.ts`](../../packages/client/src/rendering/drawing-path.ts).
+Keep reusable tables outside hot loops and avoid creating unselected UI content.
+
+Preserve validation, receiver binding, side effects, execution order and the
+existing fallback. For open string keys, check `Object.hasOwn` before indexing
+an object, or use `Map.get`; inherited keys must not become handlers. Use a
+complete `Record` or mapped type for a closed union. Keep guards, ranges,
+overlapping predicates and ordered state transitions as explicit conditions.
+A two-way decision can remain an `if` or ternary when that is clearer.
+
+![Concept preview: a command key selects a typed handler with named parameters.](../images/command-dispatch.svg)
+
+This source-code example illustrates the convention, not verified gameplay.
+The [lint policy](quality.md#dispatch-lint) describes the automated subset.

@@ -49,13 +49,8 @@ export function Wardrobe() {
                   }}
                   spell={{
                     name:
-                      name === 'Warrior'
-                        ? 'Slash'
-                        : name === 'Ranger'
-                          ? 'Piercing arrows'
-                          : name === 'Mage'
-                            ? 'Fireball'
-                            : 'Roots',
+                      { Warrior: 'Slash', Ranger: 'Piercing arrows', Mage: 'Fireball' }[name] ??
+                      'Roots',
                     icon: <Typography>S</Typography>,
                     description: `${description}. Cooldown: 0.7 seconds.`,
                   }}

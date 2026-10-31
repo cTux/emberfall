@@ -1,13 +1,13 @@
+import { enterScene, returnToLobby } from './scene-travel.ts';
+export { returnToLobby } from './scene-travel.ts';
 import { FOREST_DEFINITION } from '@emberfall/core/definitions/worlds/forest';
 import {
   levelUp,
   stepCombat,
   tickTraining,
   createTrainingScene,
-  FOREST_PORTAL,
   nearbyInteraction,
 } from '@emberfall/core';
-import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { randomUUID } from 'node:crypto';
 import { hasLivingScenePlayers } from '@emberfall/common';
 import type { Player, SceneState, ClientMessage, ChatMessage } from '@emberfall/common';
@@ -30,35 +30,37 @@ export interface SceneWorld {
   voters?: Player[];
   resources?: Record<string, import('@emberfall/common').ResourceState>;
 }
-export function returnToLobby(world: SceneWorld, player: Player) {
-  if (player.scene) {
-    addChat(world, `${player.name} left the scene. Everyone became weaker.`, undefined, player.id);
-  }
 
-  player.scene = undefined;
-  player.x = VILLAGE_DEFINITION.returnSpawn.x;
-  player.y = VILLAGE_DEFINITION.returnSpawn.y;
-  player.hitpoints = player.maxHitpoints;
-  player.attackAt = undefined;
-  player.attackAngle = undefined;
-  player.attackTargetId = undefined;
+type SceneHandlers = {
+  [K in ClientMessage['type']]?: (
+    world: SceneWorld,
+    player: Player,
+    message: Extract<ClientMessage, { type: K }>,
+    now: number,
+  ) => void;
+};
 
-  if (player.bear) {
-    player.bear.hitpoints = player.bear.maxHitpoints;
-    player.bear.resurrectAt = undefined;
-    player.bear.x = player.x;
-    player.bear.y = player.y;
-    player.bear.returning = false;
-  }
-}
-
-export function sceneAction(
+function leaveScene(
   world: SceneWorld,
   player: Player,
-  message: ClientMessage,
-  now: number,
+  message: Extract<ClientMessage, { type: 'returnLobby' | 'leaveScene' }>,
 ) {
-  if (message.type === 'createScene') {
+  if (
+    player.scene !== 'forest' ||
+    (message.type !== 'leaveScene' &&
+      player.hitpoints > 0 &&
+      nearbyInteraction(player, world.scene?.phase === 'ended', world.scene?.portals)?.id !==
+        'return')
+  ) {
+    throw new Error('Use the return portal after the scene ends.');
+  }
+
+  returnToLobby(world, player);
+  cleanupScene(world);
+}
+
+const sceneHandlers: SceneHandlers = {
+  createScene(world, player, message) {
     if (nearbyInteraction(player)?.id !== 'portal') {
       throw new Error('Move closer to the village portal.');
     }
@@ -95,7 +97,8 @@ export function sceneAction(
       portals: [],
       electorate: '',
     };
-  } else if (message.type === 'joinScene') {
+  },
+  joinScene(world, player) {
     if (nearbyInteraction(player)?.id !== 'portal') {
       throw new Error('Move closer to the village portal.');
     }
@@ -107,7 +110,8 @@ export function sceneAction(
     }
 
     enterScene(world, player);
-  } else if (message.type === 'ready') {
+  },
+  ready(world, player, message, now) {
     const scene = world.scene;
 
     if (!scene || !['voting', 'countdown'].includes(scene.phase) || player.scene) {
@@ -123,20 +127,18 @@ export function sceneAction(
     }
 
     reconcileVote(world, now);
-  } else if (message.type === 'returnLobby' || message.type === 'leaveScene') {
-    if (
-      player.scene !== 'forest' ||
-      (message.type !== 'leaveScene' &&
-        player.hitpoints > 0 &&
-        nearbyInteraction(player, world.scene?.phase === 'ended', world.scene?.portals)?.id !==
-          'return')
-    ) {
-      throw new Error('Use the return portal after the scene ends.');
-    }
+  },
+  returnLobby: leaveScene,
+  leaveScene,
+};
 
-    returnToLobby(world, player);
-    cleanupScene(world);
-  }
+export function sceneAction<K extends ClientMessage['type']>(
+  world: SceneWorld,
+  player: Player,
+  message: Extract<ClientMessage, { type: K }> & { type: K },
+  now: number,
+) {
+  sceneHandlers[message.type]?.(world, player, message, now);
 }
 
 export function cleanupScene(world: SceneWorld) {
@@ -148,37 +150,6 @@ export function cleanupScene(world: SceneWorld) {
     })
   ) {
     world.scene = undefined;
-  }
-}
-
-function enterScene(world: SceneWorld, player: Player, offset = 0) {
-  addChat(
-    world,
-    `${player.name} joined the scene. Everyone became stronger.`,
-    undefined,
-    player.id,
-  );
-  player.scene = 'forest';
-
-  if (world.runKey) {
-    player.runId = world.runKey;
-  }
-
-  if (!world.players.has(player.id)) {
-    world.players.set(player.id, player);
-  }
-
-  player.x = FOREST_PORTAL.x + offset;
-  player.y = FOREST_PORTAL.y;
-  player.hitpoints = player.maxHitpoints;
-  player.attackAt = undefined;
-  player.attackAngle = undefined;
-  player.attackTargetId = undefined;
-
-  if (player.bear) {
-    player.bear.x = player.x;
-    player.bear.y = player.y;
-    player.bear.returning = false;
   }
 }
 

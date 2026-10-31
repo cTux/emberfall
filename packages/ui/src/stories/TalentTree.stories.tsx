@@ -18,14 +18,7 @@ const nodes = Array.from({ length: 30 }, (_, index) => {
     column: index % 3,
     row: Math.floor(index / 3),
     level: index < 3 ? 1 : Math.floor(index / 3) * 2,
-    name:
-      index === 0
-        ? 'Follow Through'
-        : index === 1
-          ? 'Open Wounds'
-          : index === 2
-            ? 'Reactive Guard'
-            : `Talent ${index + 1}`,
+    name: ['Follow Through', 'Open Wounds', 'Reactive Guard'][index] ?? `Talent ${index + 1}`,
     description:
       'Rank 1 unlocks a combat interaction. Rank 2 improves its effect. No prerequisite talents.',
     learned: false,

@@ -12,6 +12,11 @@ import { talentVisual } from './effects.ts';
 import { talentCast } from '../configs/talentCast.ts';
 
 type Game = ReturnType<typeof createGame>;
+const ailments = new Map<string, DebuffKind>([
+  ['warrior', 'bleed'],
+  ['ranger', 'poison'],
+  ['mage', 'burn'],
+]);
 export function prepareTalentCast(
   scene: SceneState,
   player: Player,
@@ -96,14 +101,7 @@ export function prepareTalentCast(
     .sort((a, b) => {
       return forestDistance(a, aim) - forestDistance(b, aim);
     })[0];
-  const ailment: DebuffKind =
-    classId === 'warrior'
-      ? 'bleed'
-      : classId === 'ranger'
-        ? 'poison'
-        : classId === 'mage'
-          ? 'burn'
-          : 'roots';
+  const ailment = ailments.get(classId) ?? 'roots';
 
   return {
     context,
