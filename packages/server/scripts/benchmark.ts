@@ -2,7 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { Encoder } from '@colyseus/schema';
 import { type Player, type SceneState } from '@emberfall/common';
 
-import { stepCombat } from '@emberfall/core';
+import { stepCombat, createGame, GAME_MODS } from '@emberfall/core';
 import { prepareState, applyState, SessionState } from '@emberfall/common/protocol';
 import { SimulationWorld } from '../src/ecs/simulation.ts';
 import { freshProgress } from '../src/characters.ts';
@@ -54,12 +54,14 @@ const simulation: number[] = [],
   replication: number[] = [];
 let bytes = 0;
 let seed = 12345;
-const originalRandom = Math.random;
-Math.random = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+const context = createGame(
+  GAME_MODS,
+  () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32,
+);
 for (let tick = 0; tick < 500; tick++) {
   const now = 10000 + tick * 50;
   const start = performance.now();
-  stepCombat(scene, players, now, 0.05);
+  stepCombat(scene, players, now, 0.05, context);
   const simulated = performance.now();
   const projection = prepareState({
     id: 'world',
@@ -80,7 +82,6 @@ for (let tick = 0; tick < 500; tick++) {
     replication.push(performance.now() - simulated);
   }
 }
-Math.random = originalRandom;
 const summary = (values: number[]) => {
   const sorted = [...values].sort((a, b) => a - b);
   return {
