@@ -39,6 +39,7 @@ export async function createGameServer(
     message: Extract<ServerMessage, { type: 'state' | 'joined' }>,
   ) {
     let projection = projections.get(message);
+
     if (!projection) {
       projection = prepareState(message.world);
       projections.set(message, projection);
@@ -62,6 +63,7 @@ export async function createGameServer(
       }
 
       const token = accounts.consumeTicket(options.ticket);
+
       if (!token) {
         throw new ServerError(401, 'Please sign in again');
       }

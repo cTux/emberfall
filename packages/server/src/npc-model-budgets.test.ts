@@ -55,6 +55,7 @@ test('deadline bounds loading and body reads and permits recovery after cooldown
   t.mock.method(console, 'info', (line: string) => {
     return lines.push(line);
   });
+
   for (const stallBody of [false, true]) {
     let now = 0,
       calls = 0;
@@ -64,6 +65,7 @@ test('deadline bounds loading and body reads and permits recovery after cooldown
       }
 
       const keepAlive = setTimeout(() => {}, 500);
+
       if (stallBody) {
         return new Response(
           new ReadableStream({

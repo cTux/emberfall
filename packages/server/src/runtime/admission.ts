@@ -101,6 +101,7 @@ export function createAdmission({
           );
         });
         const world = worlds.get(message.worldId);
+
         if (
           !world ||
           !existingCharacter ||
@@ -137,6 +138,7 @@ export function createAdmission({
       }
 
       let world: RuntimeModels.World;
+
       if (message.type === 'create') {
         if (worlds.size >= 64) {
           error('The server is full. Try again later.');
@@ -146,6 +148,7 @@ export function createAdmission({
 
         const salt = randomBytes(16).toString('hex');
         let hash: Buffer | undefined;
+
         if (message.password) {
           hash = await passwords.hash(message.password, salt);
         }
@@ -173,6 +176,7 @@ export function createAdmission({
         characters.saveWorld(world);
       } else {
         const existing = worlds.get(message.worldId);
+
         if (!existing) {
           error('This world has closed.');
 
@@ -180,8 +184,10 @@ export function createAdmission({
         }
 
         world = existing;
+
         if (world.hash && message.type !== 'resume') {
           const hash = await passwords.hash(message.password, world.salt);
+
           if (!timingSafeEqual(hash, world.hash)) {
             error('Incorrect world password.');
 
@@ -207,6 +213,7 @@ export function createAdmission({
       }
 
       world.merchant ??= characters.merchant(world.id);
+
       if (active()) {
         error('This character is already playing in another tab.');
 
@@ -224,6 +231,7 @@ export function createAdmission({
           ? characters.load(message.characterToken)
           : undefined;
       let token = authenticated ? '' : message.characterToken;
+
       if (!character) {
         const created = characters.create(
           message.type === 'resume' ? existingCharacter!.name : message.playerName,
@@ -247,6 +255,7 @@ export function createAdmission({
       session.worldId = world.id;
       spawnPlayer(world, session.id, playerName, character);
       villageLife(world, now);
+
       if (createdWorld) {
         serverLog.info('World created', { worldId: world.id });
       }
@@ -256,6 +265,7 @@ export function createAdmission({
         worldId: world.id,
         players: world.players.size,
       });
+
       if (!world.hostId) {
         world.hostId = session.id;
       }

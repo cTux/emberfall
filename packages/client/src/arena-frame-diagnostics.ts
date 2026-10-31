@@ -13,6 +13,7 @@ export function updateFrameDiagnostics(
         return r.fromId;
       })
       .join(',') ?? '';
+
   if (element.dataset.cursor !== presented.cursor) {
     element.dataset.cursor = presented.cursor;
   }

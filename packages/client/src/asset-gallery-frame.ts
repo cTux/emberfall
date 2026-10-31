@@ -63,6 +63,7 @@ export function drawAssetGalleryFrame(
     ctx.fillStyle = '#eedebc';
     ctx.fillText(names[i], x + 117, y + 169);
   });
+
   for (let i = 0; i < 4; i++) {
     drawArt(
       ctx,
@@ -102,6 +103,7 @@ export function drawAssetGalleryFrame(
   ['Wardrobe', 'Lantern', 'Portal', 'Fireball', 'Roots'].forEach((name, i) => {
     return ctx.fillText(name, 120 + i * 200, 798);
   });
+
   for (let i = 0; i < 9; i++) {
     if (i < 3 && buildingArt.complete && buildingArt.naturalWidth) {
       const frame = buildingFrames[i];

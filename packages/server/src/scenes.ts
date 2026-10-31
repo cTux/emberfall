@@ -42,6 +42,7 @@ export function returnToLobby(world: SceneWorld, player: Player) {
   player.attackAt = undefined;
   player.attackAngle = undefined;
   player.attackTargetId = undefined;
+
   if (player.bear) {
     player.bear.hitpoints = player.bear.maxHitpoints;
     player.bear.resurrectAt = undefined;
@@ -108,6 +109,7 @@ export function sceneAction(
     enterScene(world, player);
   } else if (message.type === 'ready') {
     const scene = world.scene;
+
     if (!scene || !['voting', 'countdown'].includes(scene.phase) || player.scene) {
       throw new Error('There is no departure vote.');
     }
@@ -115,6 +117,7 @@ export function sceneAction(
     scene.ready = scene.ready.filter((id) => {
       return id !== player.id;
     });
+
     if (message.ready) {
       scene.ready.push(player.id);
     }
@@ -156,6 +159,7 @@ function enterScene(world: SceneWorld, player: Player, offset = 0) {
     player.id,
   );
   player.scene = 'forest';
+
   if (world.runKey) {
     player.runId = world.runKey;
   }
@@ -170,6 +174,7 @@ function enterScene(world: SceneWorld, player: Player, offset = 0) {
   player.attackAt = undefined;
   player.attackAngle = undefined;
   player.attackTargetId = undefined;
+
   if (player.bear) {
     player.bear.x = player.x;
     player.bear.y = player.y;
@@ -179,6 +184,7 @@ function enterScene(world: SceneWorld, player: Player, offset = 0) {
 
 export function reconcileVote(world: SceneWorld, now: number) {
   const scene = world.scene;
+
   if (!scene || !['voting', 'countdown'].includes(scene.phase)) {
     return;
   }
@@ -189,6 +195,7 @@ export function reconcileVote(world: SceneWorld, now: number) {
     }) ?? [...world.players.keys()]
   ).sort();
   const electorate = ids.join(',');
+
   if (scene.electorate !== electorate) {
     scene.countdownAt = null;
     scene.electorate = electorate;
@@ -197,6 +204,7 @@ export function reconcileVote(world: SceneWorld, now: number) {
   scene.ready = scene.ready.filter((id) => {
     return ids.includes(id);
   });
+
   if (
     ids.length &&
     ids.every((id) => {
@@ -213,11 +221,13 @@ export function reconcileVote(world: SceneWorld, now: number) {
 
 export function tickScene(world: SceneWorld, now: number, dt: number) {
   const entities = simulationFor(world.players);
+
   if (!world.skipTraining) {
     world.training ??= createTrainingScene(now);
   }
 
   entities?.retain([world.training, world.scene]);
+
   if (world.training) {
     entities?.bind(world.training);
   }
@@ -232,6 +242,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
 
   reconcileVote(world, now);
   const scene = world.scene;
+
   if (!scene) {
     return;
   }
@@ -242,6 +253,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     scene.countdownAt = null;
     scene.nextSpawn = now;
     let index = 0;
+
     for (const player of world.voters ?? world.players.values()) {
       enterScene(world, player, (index++ - world.players.size / 2) * 30);
     }
@@ -255,6 +267,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     return player.hitpoints > 0;
   });
   stepCombat(scene, [...world.players.values()], now, dt, undefined, world.rewardPlayers);
+
   for (const player of world.players.values()) {
     Object.assign(player, levelUp(player));
   }

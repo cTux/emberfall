@@ -13,6 +13,7 @@ test('automatic combat entry waits for its first authoritative swing in forest a
       const source = fixture(classId, training);
       source.players[0].attackAt = undefined;
       const movement = new LocalMovement('p', () => {});
+
       for (const now of [0, 25, 75, 150]) {
         const waiting = frame(movement, source, now);
         assert.equal(waiting.started, false, 'no invented first swing or sound');
@@ -62,6 +63,7 @@ test('all local attacks stop on stale or paused snapshots and resume from fresh 
       attack(source, 0);
       assert.equal(attack(source, 100).started, true);
       assert.notEqual(attack(source, 1000).player.attackAt, undefined);
+
       for (const now of [1001, 1500, 2200]) {
         const stale = attack(source, now);
         assert.equal(stale.started, false, 'no new swing or slash sound without server updates');

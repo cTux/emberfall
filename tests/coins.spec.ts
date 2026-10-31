@@ -41,6 +41,7 @@ test('collected gold credits the account Storehouse across classes and rejoining
   expect(game.runtime.parties(world).run([...world.players.values()][0]).scene!.drops).toHaveLength(
     0,
   );
+
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.screenshot({ path: testInfo.outputPath(`coins-forest-${width}.png`) });

@@ -73,6 +73,7 @@ test('druid roots visibly bounce through authoritative training with one refresh
   const zone = TRAINING_ZONES[1];
   player.x = zone.x - 120;
   player.y = zone.y;
+
   if (player.bear) {
     player.bear.hitpoints = 0;
     player.bear.resurrectAt = Date.now() + 60000;
@@ -101,6 +102,7 @@ test('druid roots visibly bounce through authoritative training with one refresh
       { intervals: [50] },
     )
     .toBeGreaterThanOrEqual(4);
+
   for (const enemy of world.training!.enemies) {
     for (const debuff of enemy.debuffs ?? []) {
       if (debuff.kind !== 'roots') {

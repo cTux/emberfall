@@ -41,6 +41,7 @@ test('inventory tabs preserve the bag, aligned square gear and calculated stat t
   const bag = dialog.getByRole('region', { name: 'Your backpack' });
   await expect(equipment).toHaveAttribute('aria-selected', 'true');
   const surface = (await dialog.locator('.game-window-surface').boundingBox())!;
+
   for (const tab of [equipment, statsTab]) {
     const box = (await tab.boundingBox())!;
     expect(box.x + box.width).toBeLessThan(surface.x);
@@ -57,11 +58,13 @@ test('inventory tabs preserve the bag, aligned square gear and calculated stat t
     ring: [3, 3],
     boots: [2, 4],
   };
+
   for (const width of [1440, 1024]) {
     await page.setViewportSize({ width, height: 1000 });
     const bagBox = (await bag.locator('button').first().boundingBox())!;
     expect(bagBox.width).toBe(44);
     const origin = (await dialog.locator('[data-equipment-slot=helmet]').boundingBox())!;
+
     for (const [id, [column, row]] of Object.entries(positions)) {
       const box = (await dialog.locator(`[data-equipment-slot=${id}]`).boundingBox())!;
       expect(box.width).toBeCloseTo(bagBox.width * 1.2, 1);

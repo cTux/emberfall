@@ -44,6 +44,7 @@ export function checkTimedActivity(
   }
 
   const indicator = activityIndicator(activity, at);
+
   if (indicator < activity.zoneStart || indicator > activity.zoneStart + ACTIVITY_ZONE_WIDTH) {
     return false;
   }

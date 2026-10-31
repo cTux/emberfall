@@ -39,6 +39,7 @@ export function shadowProjection(
   const dx = caster.x - light.x,
     dy = caster.y - bottomInset - light.y;
   const distance = Math.hypot(dx, dy);
+
   if (distance >= light.radius || distance < 1) {
     return null;
   }
@@ -62,6 +63,7 @@ export function castShadow(ctx: DrawingContext, caster: Caster, light?: Light) {
 
   const bottomInset = (maskBottomInsets.get(caster.mask) ?? 0) * caster.height;
   const projection = shadowProjection(caster, light, bottomInset, ctx.directionalShadow);
+
   if (!projection || projection.opacity <= 0) {
     return;
   }
@@ -96,6 +98,7 @@ export function makeMask(sprite: HTMLCanvasElement) {
   let bottom = mask.height;
   while (bottom > 0) {
     let occupied = false;
+
     for (let x = 0; x < mask.width; x++) {
       if (pixels[((bottom - 1) * mask.width + x) * 4 + 3] >= 32) {
         occupied = true;
@@ -130,16 +133,19 @@ export function spriteMask(
   }
 
   let masks = spriteMasks.get(image);
+
   if (!masks) {
     spriteMasks.set(image, (masks = new Map()));
   }
 
   const key = `${column}:${row}:${flip}:${frameWidth}:${trimBottom}:${frameHeight}`;
+
   if (!masks.has(key)) {
     const tile = document.createElement('canvas');
     tile.width = frameWidth;
     tile.height = frameHeight;
     const ctx = tile.getContext('2d', { willReadFrequently: trimBottom })!;
+
     if (flip) {
       ctx.translate(frameWidth, 0);
       ctx.scale(-1, 1);
@@ -158,6 +164,7 @@ export function spriteMask(
       frameHeight,
     );
     const mask = makeMask(tile);
+
     if (trimBottom) {
       const pixels = ctx.getImageData(0, 0, tile.width, tile.height).data;
       let bottom = tile.height;

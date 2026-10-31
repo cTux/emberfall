@@ -44,6 +44,7 @@ export async function connectWorkload(port: number, worldCount: number) {
   try {
     for (let world = 0; world < worldCount; world++) {
       let worldId = '';
+
       for (let player = 0; player < BENCHMARK.playersPerWorld; player++) {
         const room = await new Client(`http://127.0.0.1:${port}`).create<SessionState>(
           'session',
@@ -88,12 +89,14 @@ export async function connectWorkload(port: number, worldCount: number) {
         room.onStateChange((state) => {
           try {
             const view = materializeState(state);
+
             if (!view) {
               return;
             }
 
             peer.latest = view;
             peer.receivedAt = performance.now();
+
             if (!measuring) {
               return;
             }
@@ -117,6 +120,7 @@ export async function connectWorkload(port: number, worldCount: number) {
               }),
               [`benchmark-private:${peer.playerId}`],
             );
+
             if (peer.lastServerNow) {
               gaps.push(view.serverNow! - peer.lastServerNow);
             }
@@ -127,8 +131,10 @@ export async function connectWorkload(port: number, worldCount: number) {
               view.players.find((actor) => {
                 return actor.id === peer.playerId;
               })!.inputSeq ?? 0;
+
             if (ack > peer.lastAck) {
               const sent = peer.sent.get(ack);
+
               if (sent !== undefined) {
                 acknowledgements.push(performance.now() - sent);
               }
@@ -184,6 +190,7 @@ export async function connectWorkload(port: number, worldCount: number) {
       scenes = epochs;
       input = setInterval(() => {
         sequence++;
+
         for (const [index, peer] of peers.entries()) {
           if (measuring) {
             peer.sent.set(sequence, performance.now());
@@ -202,6 +209,7 @@ export async function connectWorkload(port: number, worldCount: number) {
     },
     begin() {
       gaps.length = acknowledgements.length = 0;
+
       for (const peer of peers) {
         peer.states = peer.saved = peer.lastServerNow = peer.lastAck = 0;
         peer.sent.clear();
@@ -213,6 +221,7 @@ export async function connectWorkload(port: number, worldCount: number) {
       measuring = false;
       clearInterval(input);
       assert.deepEqual(errors, []);
+
       for (const peer of peers) {
         assert(peer.states > 0 && peer.lastAck > 0);
         assert(peer.saved >= 5, 'Measure multiple real autosave cycles per player');

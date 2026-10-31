@@ -19,6 +19,7 @@ export function companion(cast: TalentCast) {
   } = cast;
 
   const bear = player.bear;
+
   if (!bear || bear.hitpoints <= 0) {
     return;
   }
@@ -32,6 +33,7 @@ export function companion(cast: TalentCast) {
       bear.maxHitpoints,
       bear.hitpoints + bear.maxHitpoints * (learned === 2 ? 0.3 : 0.2),
     );
+
     for (const enemy of effectArea(scene, bear, 200)) {
       applyTalentAilment(enemy, player, 'roots', 1, now, 1500);
     }
@@ -53,6 +55,7 @@ export function companion(cast: TalentCast) {
   }
 
   const hunting = rank(player, 1, 4);
+
   if (hunting && tier === 1) {
     for (const enemy of effectArea(scene, bear, 200)) {
       applyTalentAilment(enemy, player, 'bleed', hunting, now, undefined, stats);

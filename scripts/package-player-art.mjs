@@ -16,6 +16,7 @@ const classes = {
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
+
   for (const [name, config] of Object.entries(classes)) {
     const source = await readFile(`${root}/${name}-complete.png`);
     const stride = await readFile(`${root}/${name}-stride.png`);

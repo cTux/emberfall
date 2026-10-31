@@ -14,6 +14,7 @@ export function levelUp({
   let requiredExperience = experienceRequired(level, paragon);
   while (experience >= requiredExperience) {
     experience -= requiredExperience;
+
     if (level < 20) {
       level++;
     } else {

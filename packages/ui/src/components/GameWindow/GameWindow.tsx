@@ -35,6 +35,7 @@ export function GameWindow({
     style: dragStyle,
     handleProps: dragHandle,
   } = useDraggable(positionKey, open);
+
   if (!open) {
     return null;
   }

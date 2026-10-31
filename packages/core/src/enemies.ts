@@ -14,8 +14,10 @@ export function spawnArchetype(
   context: ReturnType<typeof createGame> = game,
 ): NonNullable<Enemy['archetype']> {
   let threshold = 0;
+
   for (const rule of context.registries.spawnRules.values()) {
     threshold += rule.chance;
+
     if (roll < threshold) {
       return rule.enemy;
     }
@@ -61,6 +63,7 @@ export function moveEnemies(
 
   for (const enemy of enemies) {
     const cell = key(enemy.x, enemy.y);
+
     if (!cells.has(cell)) {
       cells.set(cell, new Set());
     }
@@ -89,11 +92,13 @@ export function moveEnemies(
         .reduce<(typeof players)[number] | undefined>((best, p) => {
           return !best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best;
         }, undefined);
+
     if (!target) {
       continue;
     }
 
     const targetDistance = forestDistance(enemy, target);
+
     if (stats.behavior === 'ranged' && targetDistance < ENEMY_RULES.casterStopRange) {
       continue;
     }
@@ -112,6 +117,7 @@ export function moveEnemies(
       targetDistance,
     );
     const steps = Math.max(1, Math.ceil(distance / 5));
+
     for (let step = 0; step < steps && distance > 0; step++) {
       const dx = wrappedDelta(target.x, enemy.x, FOREST.width);
       const dy = wrappedDelta(target.y, enemy.y, FOREST.height);
@@ -138,6 +144,7 @@ export function moveEnemies(
         .sort((a, b) => {
           return a.ahead - b.ahead;
         })[0];
+
       if (blocker) {
         angle =
           Math.atan2(blocker.y, blocker.x) +
@@ -146,6 +153,7 @@ export function moveEnemies(
       }
 
       const stride = distance / steps;
+
       for (const offset of [
         0,
         (side * Math.PI) / 6,
@@ -163,11 +171,13 @@ export function moveEnemies(
           stats.radius,
         );
         const point = { x: next.x, y: wrap(next.y - 15, FOREST.height) };
+
         if (forestDistance(point, enemy) < stride * 0.9) {
           continue;
         }
 
         let clear = true;
+
         for (let row = -1; row <= 1; row++) {
           for (let col = -1; col <= 1; col++) {
             for (const other of cells.get(key(point.x + col * 40, point.y + row * 40)) ?? []) {
@@ -196,6 +206,7 @@ export function moveEnemies(
     }
 
     const cell = key(enemy.x, enemy.y);
+
     if (!cells.has(cell)) {
       cells.set(cell, new Set());
     }

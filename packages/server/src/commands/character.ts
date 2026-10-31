@@ -48,11 +48,13 @@ const handlers: Handlers = {
     const from = order.findIndex((rule) => {
       return rule === message.rule;
     });
+
     if (from < 0) {
       throw new Error('Priority does not belong to this list.');
     }
 
     const to = from + message.direction;
+
     if (to >= 0 && to < order.length) {
       [order[from], order[to]] = [order[to], order[from]];
       next.tactics = { ...next.tactics, [message.list]: order };
@@ -129,6 +131,7 @@ export function commitCharacterCommand<K extends CommandType>(
       hitpoints: next.hitpoints,
       maxHitpoints: next.maxHitpoints,
     });
+
     if (message.type === 'setTactics' || message.type === 'moveTacticsPriority') {
       player.attackTargetId = undefined;
     }
@@ -163,6 +166,7 @@ export function executeCharacterCommand(
     message.type === 'moveStorageItem';
 
   const player = world?.players.get(session.id);
+
   if (!world || !player || !session.characterId || player.hitpoints <= 0) {
     error('Join a world with a living character first.');
 
@@ -170,6 +174,7 @@ export function executeCharacterCommand(
   }
 
   const changingTactics = message.type === 'setTactics' || message.type === 'moveTacticsPriority';
+
   if (changingTactics && message.classId !== player.classId) {
     error('Tactics must match your current class.');
 
@@ -180,6 +185,7 @@ export function executeCharacterCommand(
   const traderId = trading
     ? (message.npcId ?? nearbyInteraction(player, false, undefined, world.npcs)?.id)
     : undefined;
+
   if (trading && (!traderId || !traderInRange(player, traderId, world.npcs))) {
     error('Trade near Marta the Innkeeper or Bram the Craftsman in the village.');
 

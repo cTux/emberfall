@@ -54,6 +54,7 @@ test('font selection updates UI and world text, survives presets and reload, and
   await expect(canvas).toHaveAttribute('data-renderer', 'pixijs-webgl');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
+
   for (const font of ['Inter', 'Source Sans 3', 'Atkinson Hyperlegible Next', 'Alegreya Sans']) {
     await page.getByRole('combobox', { name: 'Font', exact: true }).click();
     await page.getByRole('option', { name: font, exact: true }).click();
@@ -75,6 +76,7 @@ test('font selection updates UI and world text, survives presets and reload, and
         });
       }, font),
     ).toBe(true);
+
     for (const zoom of [0.8, 1, 1.25, 1.5]) {
       await page.evaluate((value) => {
         document.body.style.zoom = String(value);
@@ -129,11 +131,13 @@ test('the bundled Alegreya Sans font loads and is used throughout the interface'
       );
     }),
   ).toBe(true);
+
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport);
+
     for (const selector of ['h2', 'input', 'button']) {
       await expect(page.locator(selector).first()).toHaveCSS(
         'font-family',
@@ -159,6 +163,7 @@ test('the bundled Alegreya Sans font loads and is used throughout the interface'
   await page.screenshot({ path: 'test-results/font-settings.png' });
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
   await page.getByRole('button', { name: 'Codex', exact: true }).click();
+
   for (const selector of ['[role="dialog"] h3', '[role="tabpanel"] p']) {
     await expect(page.locator(selector).first()).toHaveCSS(
       'font-family',

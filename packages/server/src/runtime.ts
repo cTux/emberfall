@@ -51,6 +51,7 @@ export async function createRuntime(
 
   const broadcastList = () => {
     const message = list();
+
     for (const ws of sessions.keys()) {
       send(ws, message);
     }
@@ -93,6 +94,7 @@ export async function createRuntime(
         return shuttingDown;
       },
     });
+
     if (!session) {
       return;
     }
@@ -109,6 +111,7 @@ export async function createRuntime(
       };
 
       const authenticated = account?.();
+
       if (account && !authenticated?.nickname) {
         ws.close(1008, 'Please sign in again');
 
@@ -131,6 +134,7 @@ export async function createRuntime(
       }
 
       const now = Date.now();
+
       if (now - session.windowAt > 1000) {
         session.windowAt = now;
         session.messages = 0;
@@ -159,6 +163,7 @@ export async function createRuntime(
 
       const message = parsed.data;
       const context = { session, world: worlds.get(session.worldId ?? ''), now, reply, error };
+
       if (realtime.handles(message)) {
         realtime.execute(message, context);
 
@@ -225,6 +230,7 @@ export async function createRuntime(
     stopMaintenance();
     membership.closeVillageLives();
     const failures: unknown[] = [];
+
     for (const session of sessions.values()) {
       clearTimeout(session.reconnectTimer);
       try {
@@ -239,6 +245,7 @@ export async function createRuntime(
     }
 
     characters.close();
+
     if (failures.length) {
       throw new AggregateError(failures, 'Some characters could not be saved during shutdown');
     }
@@ -253,6 +260,7 @@ export async function createRuntime(
       }
 
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
+
       if (player) {
         player.name = nickname;
       }

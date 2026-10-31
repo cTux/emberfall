@@ -76,6 +76,7 @@ export function worldHitboxes(
 
     const body = modelHitbox(player);
     circle(body.x, body.y, body.radius, HITBOX_COLORS.body, 'body');
+
     if (
       game.registries.abilities.require(
         game.registries.classes.require(player.classId ?? 'warrior').attack,
@@ -85,6 +86,7 @@ export function worldHitboxes(
     }
 
     const bear = player.bear;
+
     if (bear && bear.hitpoints > 0) {
       const body = modelHitbox(bear);
       circle(body.x, body.y, body.radius, HITBOX_COLORS.body, 'body');
@@ -99,6 +101,7 @@ export function worldHitboxes(
 
     const body = enemyHitbox(enemy);
     circle(body.x, body.y, body.radius, HITBOX_COLORS.body, 'body');
+
     if (enemy.attack) {
       circle(enemy.attack.x, enemy.attack.y, enemy.attack.radius, HITBOX_COLORS.range, 'attack');
     }
@@ -167,6 +170,7 @@ export function worldHitboxes(
       HITBOX_COLORS.range,
       'interact',
     );
+
     for (const building of BUILDINGS) {
       shapes.push({
         x: building.x - building.sourceWidth + 8,
@@ -175,6 +179,7 @@ export function worldHitboxes(
         height: 40,
         color: HITBOX_COLORS.scenery,
       });
+
       if (building.id !== 'inn') {
         circle(
           building.doorX,
@@ -223,11 +228,13 @@ export function drawHitboxes(
   ctx.lineWidth = 1.5;
   ctx.font = '10px monospace';
   ctx.textAlign = 'center';
+
   for (const shape of worldHitboxes(world, forest, view)) {
     const width = 'radius' in shape ? shape.radius * 2 : shape.width;
     const height = 'radius' in shape ? shape.radius * 2 : shape.height;
     const x = cx + wrappedDelta(shape.x + ('radius' in shape ? 0 : width / 2), cx, size.width);
     const y = cy + wrappedDelta(shape.y + ('radius' in shape ? 0 : height / 2), cy, size.height);
+
     if (
       x + width / 2 < view.x ||
       x - width / 2 > view.x + view.width ||
@@ -239,6 +246,7 @@ export function drawHitboxes(
 
     ctx.strokeStyle = shape.color;
     ctx.beginPath();
+
     if ('radius' in shape) {
       if (shape.angle !== undefined) {
         ctx.moveTo(x, y);

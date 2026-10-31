@@ -61,6 +61,7 @@ export function Game({
       }
 
       setMenu(null);
+
       if (event === 'joined') {
         clearCatMessages();
         setJoinPassword('');

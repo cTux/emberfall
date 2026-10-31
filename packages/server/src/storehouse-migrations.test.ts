@@ -129,6 +129,7 @@ test('legacy class gold and full storages migrate once without losing overflow i
     const migrated = store.load(saved.token);
     assert.equal(migrated.progress.coins, 10);
     assert.equal(migrated.progress.storages[0].name, 'mage 1');
+
     for (const storage of migrated.progress.storages) {
       assert.equal(storage.items.length, 40);
     }

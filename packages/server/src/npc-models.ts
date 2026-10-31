@@ -30,6 +30,7 @@ class InvalidDialogueResponse extends Error {
 
 export function spokenLine(content: string) {
   let text = content.replace(/[\t\r\n\u2028\u2029]+/gu, ' ');
+
   if (/[\p{Cc}\p{Cf}]/u.test(text)) {
     throw new InvalidDialogueResponse('control_characters');
   }
@@ -40,6 +41,7 @@ export function spokenLine(content: string) {
     .replace(/(?<![\p{L}\p{N}])['‘’]|['‘’](?![\p{L}\p{N}])/gu, '')
     .replace(/ +/gu, ' ')
     .trim();
+
   if (!text) {
     throw new InvalidDialogueResponse('empty_text');
   }
@@ -62,11 +64,13 @@ async function boundedJson(response: Response) {
   try {
     for (;;) {
       const { value, done } = await reader.read();
+
       if (done) {
         break;
       }
 
       size += value.length;
+
       if (size > 32_768) {
         throw new InvalidDialogueResponse('response_too_large');
       }
@@ -108,6 +112,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
     const baseUrl = new URL(
       options.baseUrl ?? process.env.OLLAMA_BASE_URL ?? 'http://127.0.0.1:11434',
     );
+
     if (
       !['http:', 'https:'].includes(baseUrl.protocol) ||
       baseUrl.username ||
@@ -122,11 +127,13 @@ export class OllamaNpcDialogue implements NpcDialogue {
 
     this.endpoint = `${baseUrl.href.replace(/\/+$/u, '')}/api/chat`;
     this.model = (options.model ?? process.env.OLLAMA_MODEL ?? DEFAULT_NPC_MODEL).trim();
+
     if (!this.model || /cloud/i.test(this.model)) {
       throw new Error('OLLAMA_MODEL must name a downloaded local model, not a cloud model');
     }
 
     this.timeoutMs = options.timeoutMs ?? 60_000;
+
     if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs <= 0 || this.timeoutMs > 300_000) {
       throw new Error('Invalid NPC dialogue timeout');
     }
@@ -170,6 +177,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
           }),
         });
         receivedResponse = true;
+
         if (!response.ok) {
           const retry = Number(response.headers.get('retry-after'));
           const date = Date.parse(response.headers.get('retry-after') ?? '');
@@ -188,6 +196,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
 
         const data = await boundedJson(response);
         const content = data?.message?.content;
+
         if (data?.done !== true) {
           throw new InvalidDialogueResponse('incomplete');
         }
@@ -197,6 +206,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
         }
 
         const text = spokenLine(content);
+
         if (this.failed) {
           serverLog.info('NPC dialogue provider recovered', { provider: 'ollama', model });
           this.failed = false;

@@ -9,6 +9,7 @@ test('projectiles hit heads and feet of every model in forest and training, acro
   t.mock.method(Math, 'random', () => {
     return 0.5;
   });
+
   for (const training of [false, true]) {
     for (const archetype of Object.keys(ENEMY_STATS)) {
       for (const kind of ['arrow', 'fireball', 'roots'] as const) {
@@ -70,6 +71,7 @@ test('projectiles hit heads and feet of every model in forest and training, acro
                 !outside,
                 `${training}/${archetype}/${kind}/${wrapped}/${edge}/${outside}`,
               );
+
               if (!outside) {
                 const hp = target.hitpoints;
                 tickPlayerShots(scene, [owner], 10050, 0);

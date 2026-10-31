@@ -39,14 +39,17 @@ export function tickCompanion(
   bear.range = stats.range;
   bear.size = talentRank(player, talentNodeId('druid', 1, 3)) > 0 ? 96 : 48;
   const max = stats.maxHitpoints;
+
   if (bear.hitpoints > 0) {
     bear.hitpoints = Math.min(max, bear.hitpoints + Math.max(0, max - bear.maxHitpoints));
   }
 
   bear.maxHitpoints = max;
+
   if (bear.hitpoints <= 0) {
     companionDecisions.delete(bear);
     bear.resurrectAt ??= now + BEAR_DEFINITION.resurrectionMs;
+
     if (now < bear.resurrectAt) {
       return;
     }
@@ -74,6 +77,7 @@ export function tickCompanion(
         ? preferredRadius
         : Math.min(BEAR_DEFINITION.huntRadius, preferredRadius);
   const distance = forestDistance(bear, player);
+
   if (distance > BEAR_DEFINITION.teleportRadius) {
     bear.x = player.x;
     bear.y = player.y;
@@ -113,9 +117,11 @@ export function tickCompanion(
   const startX = bear.x,
     startY = bear.y;
   const destinationDistance = forestDistance(bear, destination);
+
   if (destination !== player || destinationDistance > BEAR_DEFINITION.returnRadius) {
     const speed =
       ARENA.speed * (1 + context.rules.characterStats(player).bonuses.movementSpeed / 100);
+
     if (forest) {
       const body: Enemy = {
         id: 1,
@@ -150,6 +156,7 @@ export function tickCompanion(
   }
 
   bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > 0.001;
+
   if (bear.moving) {
     bear.attackAngle = heading;
   }

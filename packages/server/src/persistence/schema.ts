@@ -8,6 +8,7 @@ export function openCharacterDatabase(path: string) {
   }
 
   const db = new DatabaseSync(path);
+
   if (
     db
       .prepare('PRAGMA table_info(characters)')

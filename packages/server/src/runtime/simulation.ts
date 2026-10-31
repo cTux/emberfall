@@ -25,6 +25,7 @@ export function startSimulation({
   let simulationAt = Date.now();
   const tick = setInterval(() => {
     const wallTime = Date.now();
+
     if (wallTime - simulationAt > 250) {
       simulationAt = wallTime - 250;
     }
@@ -32,9 +33,11 @@ export function startSimulation({
     while (wallTime - simulationAt >= TICK_MS) {
       simulationAt += TICK_MS;
       const now = simulationAt;
+
       for (const session of sessions.values()) {
         const world = worlds.get(session.worldId ?? '');
         const player = world?.players.get(session.id);
+
         if (!player) {
           continue;
         }
@@ -56,12 +59,14 @@ export function startSimulation({
         }
 
         restoreResources(world.resources, wallTime);
+
         for (const player of world.players.values()) {
           syncEquipmentVitals(player);
         }
 
         tickScene(world, now, TICK_MS / 1000);
         parties(world).tick(now, TICK_MS / 1000);
+
         for (const player of world.players.values()) {
           try {
             tickGathering(

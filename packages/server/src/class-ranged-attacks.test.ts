@@ -39,6 +39,7 @@ test('projectile spread centers odd and even counts with six-degree spacing', as
 
 test('ranged classes launch their configured straight projectiles in both aiming modes', async () => {
   const { advancePlayerShot } = await import('@emberfall/core');
+
   for (const classId of ['mage', 'ranger', 'druid'] as const) {
     for (const autoTarget of [false, true]) {
       const p = { ...hero(), classId, autoTarget, aimX: 2600, aimY: 1280 };
@@ -53,6 +54,7 @@ test('ranged classes launch their configured straight projectiles in both aiming
         classId === 'druid' ? [0] : [-Math.PI / 60, Math.PI / 60],
       );
       s.enemies[0].y += 100;
+
       for (const shot of s.playerShots!) {
         const angle = shot.angle;
         advancePlayerShot(shot, s.enemies, 0.05);
@@ -91,6 +93,7 @@ test('ranger arrows hit each of the first four targets once, wrap, and expire at
   s.enemies = [enemy(1, FOREST.width - 20, 10), enemy(2, 30, 10), enemy(3, 960, 10)];
   fireClassAttack(s, p);
   assert.equal(s.playerShots!.length, 2);
+
   for (let i = 1; i <= 40; i++) {
     tickPlayerShots(s, [p], i * 50, 0.05);
   }
@@ -158,6 +161,7 @@ test('mage aims at the nearest target; each impact deals three direct and one sp
     }),
     [1, 1],
   );
+
   for (let i = 1; i <= 10; i++) {
     tickPlayerShots(s, [p], i * 50, 0.05);
   }
@@ -182,6 +186,7 @@ test('fireball damages the actual collision target only once and splashes across
     p = { ...hero(), classId: 'mage' as const, x: 5 };
   const direct = enemy(1, FOREST.width - 5);
   s.enemies = [direct, enemy(2, 119), enemy(3, 119.01), enemy(4, FOREST.width - 200)];
+
   for (const target of s.enemies) {
     target.y += 6;
   } // Model centers align with the explosion.
@@ -211,6 +216,7 @@ test('class attacks fire once per cycle and ranged classes never deal a melee sl
   t.mock.method(Math, 'random', () => {
     return 0.5;
   });
+
   for (const classId of ['ranger', 'mage'] as const) {
     const s = scene(),
       p = { ...hero(), classId };

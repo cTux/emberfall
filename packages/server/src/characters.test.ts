@@ -40,6 +40,7 @@ test('server saves survive restart, authenticate independently of nickname, and 
           const index = messages.findIndex((m) => {
             return m.type === type;
           });
+
           if (index >= 0) {
             return messages.splice(index, 1)[0];
           }
@@ -99,6 +100,7 @@ test('server saves survive restart, authenticate independently of nickname, and 
     assert.throws(() => {
       return store.save(saved.id, 'Hero', { ...saved.progress, level: -1 });
     });
+
     for (const coins of [-1, 1.5, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
       assert.throws(() => {
         return store.save(saved.id, 'Hero', { ...saved.progress, coins });
@@ -185,6 +187,7 @@ test('old single-class and per-class saves discard mana without losing progress'
       maxManapoints: 50,
     };
     delete legacy.coins;
+
     for (const raw of [
       legacy,
       {
@@ -208,6 +211,7 @@ test('old single-class and per-class saves discard mana without losing progress'
         0,
         'old saves start with zero coins without losing progress',
       );
+
       for (const progress of Object.values(loaded.classes)) {
         assert(!('manapoints' in progress));
         assert(!('maxManapoints' in progress));

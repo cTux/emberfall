@@ -33,6 +33,7 @@ test('day-night tint changes sprites, preserves warnings and lights, and repeats
   expect(samples[0][0]).toEqual([255, 255, 255, 255]);
   expect(samples[2][0][2]).toBeGreaterThan(samples[2][0][0]);
   expect(samples[2][0][0]).toBeGreaterThan(120);
+
   for (const frame of samples) {
     expect(frame[1]).toEqual([255, 0, 0, 255]);
     expect(frame[2]).toEqual([255, 255, 255, 255]);

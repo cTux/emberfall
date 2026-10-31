@@ -27,6 +27,7 @@ test('every class starts with exactly its compatible weapon and preserves base s
     mage: [3, 250, 'fire'],
     druid: [3, 250, 'nature'],
   };
+
   for (const classId of CLASS_IDS) {
     const player = hero(classId);
     assert.deepEqual(Object.keys(player.equipment!), ['weapon']);
@@ -53,6 +54,7 @@ test('every class starts with exactly its compatible weapon and preserves base s
   assert.throws(() => {
     return validateClassEquipment({ unknown: 'warrior-sword' }, 'warrior');
   });
+
   for (const [gearType, allowed] of [
     ['shield', 'warrior'],
     ['quiver', 'ranger'],
@@ -60,6 +62,7 @@ test('every class starts with exactly its compatible weapon and preserves base s
     ['natureFocus', 'druid'],
   ] as const) {
     const item: GearDefinition = { id: 'test', name: 'Off-hand', gearType, stats: {} };
+
     for (const classId of CLASS_IDS) {
       assert.equal(canEquip('offHand', item, classId), classId === allowed);
     }
@@ -72,6 +75,7 @@ test('all nine slots aggregate and gear controls real power, range, cadence and 
   });
   const items: GearDefinition[] = [];
   const player = hero();
+
   for (const slot of EQUIPMENT_SLOTS.filter((slot) => {
     return slot !== 'weapon';
   })) {

@@ -2,6 +2,7 @@ import type { ValidationContext } from './context.ts';
 
 export function validateWorlds(context: ValidationContext) {
   const { r, check, positive, reference } = context;
+
   for (const id of ['warrior', 'ranger', 'mage', 'druid']) {
     r.classes.require(id);
   }
@@ -67,6 +68,7 @@ export function validateWorlds(context: ValidationContext) {
   reference('encounters', 'forest', 'bosses', encounter.boss);
   check(positive(encounter.spawnIntervalMs), 'encounters', 'forest', 'invalid spawnIntervalMs');
   const critters = r.settings.require('villageCritters').value as { kind: string }[];
+
   for (const critter of critters) {
     reference('settings', 'villageCritters', 'critters', critter.kind);
   }
@@ -86,6 +88,7 @@ export function validateWorlds(context: ValidationContext) {
   }
 
   const runtime = r.settings.require('runtime').value as Record<string, number>;
+
   for (const [key, value] of Object.entries(runtime)) {
     check(positive(value), 'settings', 'runtime', `invalid ${key}`);
   }

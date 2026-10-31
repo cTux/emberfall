@@ -36,6 +36,7 @@ async function connect(url: string) {
         const index = messages.findIndex((message) => {
           return message.type === type;
         });
+
         if (index >= 0) {
           return messages.splice(index, 1)[0] as Extract<ServerMessage, { type: T }>;
         }

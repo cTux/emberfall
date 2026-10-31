@@ -2,6 +2,7 @@ import type { ValidationContext } from './context.ts';
 
 export function validateEnemies(context: ValidationContext) {
   const { r, check, positive, nonnegative, reference } = context;
+
   for (const enemy of r.enemies.values()) {
     check(
       ['melee', 'ranged'].includes(enemy.behavior) &&
@@ -10,6 +11,7 @@ export function validateEnemies(context: ValidationContext) {
       enemy.id,
       'unsupported behavior or art',
     );
+
     for (const key of [
       'speed',
       'radius',
@@ -26,6 +28,7 @@ export function validateEnemies(context: ValidationContext) {
   }
 
   let spawnChance = 0;
+
   for (const spawn of r.spawnRules.values()) {
     reference('spawnRules', spawn.id, 'enemies', spawn.enemy);
     spawnChance += spawn.chance;
@@ -38,6 +41,7 @@ export function validateEnemies(context: ValidationContext) {
     'combined spawn chances exceed 1',
   );
   const fallbacks = r.settings.require('spawnFallbacks').value as string[];
+
   for (const enemy of fallbacks) {
     reference('settings', 'spawnFallbacks', 'enemies', enemy);
   }
@@ -55,6 +59,7 @@ export function validateEnemies(context: ValidationContext) {
       companion.id,
       'only the bear companion/melee family is supported',
     );
+
     for (const key of [
       'healthMultiplier',
       'range',

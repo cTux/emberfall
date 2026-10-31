@@ -14,6 +14,7 @@ test('talents use one vertical scrollbar and fit desktop, narrow and short windo
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await page.getByRole('button', { name: 'Talents' }).click();
   const tree = page.getByRole('region', { name: 'Talents', exact: true });
+
   for (const viewport of [
     { width: 1440, height: 1000 },
     { width: 320, height: 740 },

@@ -26,6 +26,7 @@ test('session gathering validates the area epoch and owns rewards independently 
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Gatherer', password: '' });
+
     for (let i = 0; i < 200 && !world.players.size; i++) {
       await new Promise((resolve) => {
         return setTimeout(resolve, 10);
@@ -114,6 +115,7 @@ test('gathering cancels on range, death, disconnect, area change and competing d
   const node = VILLAGE_RESOURCES.find((n) => {
     return n.kind === 'rock';
   })!;
+
   for (const cancel of [
     (p: Player) => {
       p.x += 100;

@@ -90,6 +90,7 @@ export function loadGraphics(): GraphicsSettings {
   const settings = { ...GRAPHICS_PRESETS.High };
   try {
     const value = JSON.parse(localStorage.getItem('emberfall-new.graphics') ?? '{}');
+
     if (!value || typeof value !== 'object') {
       return settings;
     }

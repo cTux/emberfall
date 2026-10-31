@@ -11,11 +11,13 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
     radius = PLAYER_CUTOUT_MARGIN;
   const key = `${w}:${h}`;
   let poses = silhouettes.get(mask);
+
   if (!poses) {
     silhouettes.set(mask, (poses = new Map()));
   }
 
   const cached = poses.get(key);
+
   if (cached) {
     return cached;
   }
@@ -29,6 +31,7 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
   const pixels = ctx.getImageData(0, 0, w, h).data;
   const stride = w + radius * 2;
   const expanded = new Uint8Array(stride * (h + radius * 2));
+
   // Circular dilation, preserving the shape rather than its bounding rectangle.
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -45,6 +48,7 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
   }
 
   const runs: Run[] = [];
+
   for (let y = 0; y < h + radius * 2; y++) {
     for (let x = 0; x < stride;) {
       if (!expanded[y * stride + x]) {

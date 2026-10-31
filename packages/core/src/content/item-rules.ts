@@ -40,6 +40,7 @@ export function createItemRules(
 
   const itemSchema = inventoryItemSchema.refine((item) => {
     const definition = content.items.get(item.itemId);
+
     if (
       !definition ||
       (item.rarity !== undefined && !Object.values(Rarity).includes(item.rarity as Rarity))
@@ -49,6 +50,7 @@ export function createItemRules(
 
     const rarity = itemRarity(item);
     const entries = Object.entries(item.stats ?? {});
+
     if (definition.kind !== 'gear') {
       return (
         rarity === Rarity.Common &&
@@ -89,6 +91,7 @@ export function createItemRules(
 
   function rollItem(itemId: string, random = roll): BackpackItem {
     const definition = itemDefinition(itemId);
+
     if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType]) {
       return { id: crypto.randomUUID(), itemId, quantity: 1 };
     }
@@ -107,6 +110,7 @@ export function createItemRules(
   function itemPrice(item: { itemId: string; rarity?: string; stats?: Record<string, number> }) {
     const definition = itemDefinition(item.itemId);
     const base = definition.price ?? 1;
+
     if (definition.kind !== 'gear') {
       return base;
     }

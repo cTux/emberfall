@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 export function accountResponse(req: IncomingMessage, res: ServerResponse, clientOrigin: string) {
   res.setHeader('Vary', 'Origin');
+
   if (req.headers.origin && req.headers.origin !== clientOrigin) {
     res.removeHeader('Access-Control-Allow-Origin');
     res.writeHead(403);

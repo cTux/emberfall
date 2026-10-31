@@ -67,12 +67,14 @@ test('server browser shows columns and disables creation', async ({ page }) => {
   await expect(page.getByRole('status', { name: 'World server online' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Create a world' })).toBeDisabled();
   await expect(page.getByText(/^Playing as /)).toHaveCount(0);
+
   for (const name of ['Name', 'Latency', 'Players']) {
     await expect(page.getByRole('columnheader', { name, exact: true })).toBeVisible();
   }
 
   await expect(page.getByRole('table')).toContainText('0/32');
   await expect(page.getByRole('table')).toContainText(/\d+ ms/);
+
   for (const width of [960, 390, 320]) {
     await page.setViewportSize({ width, height: 800 });
     expect(

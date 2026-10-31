@@ -13,7 +13,11 @@
   "rules": {
     "@stylistic/padding-line-between-statements": [
       "error",
-      { "blankLine": "always", "prev": "*", "next": ["function", "return", "throw"] },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": ["function", "return", "throw", "for", "switch", "if"]
+      },
       { "blankLine": "always", "prev": ["function", "block-like"], "next": "*" }
     ],
     "@stylistic/lines-between-class-members": [

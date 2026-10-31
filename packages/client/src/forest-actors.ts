@@ -36,6 +36,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
     serverTime: number,
   ) => {
     const { cx, cy, width, height, near } = projection;
+
     if (world?.scene?.id !== lastScene) {
       positions.clear();
       lastScene = world?.scene?.id;
@@ -87,6 +88,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
         return a.id;
       }),
     );
+
     for (const id of positions.keys()) {
       if (!live.has(id)) {
         positions.delete(id);
@@ -112,6 +114,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
         const ix = actor.player ? (actor.player.inputX ?? 0) : Math.cos(actor.enemy.angle),
           iy = actor.player ? (actor.player.inputY ?? 0) : Math.sin(actor.enemy.angle);
         const moving = actor.player ? Math.hypot(ix, iy) > 0 : Math.hypot(dx, dy) > 0.05;
+
         if (moving && Math.hypot(ix, iy) > 0) {
           pos.facing = movementFacing(ix, iy, pos.facing);
         }
@@ -139,6 +142,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
                   game.registries.enemies.require(actor.enemy?.archetype ?? 'skeleton').art
                 ] ?? skeleton);
         const size = actor.enemy ? ENEMY_STATS[actor.enemy.archetype ?? 'skeleton'].size : 48;
+
         if (row === 5 || row === 6) {
           const angle = actor.player?.attackAngle ?? actor.enemy?.angle ?? 0;
           pos.facing = movementFacing(Math.cos(angle), Math.sin(angle), pos.facing);

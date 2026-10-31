@@ -59,8 +59,10 @@ function worker(stationId: string): VillageNpc {
 
 test('every workstation has distinct, bounded, animated particles and preserves scenery opacity', () => {
   const signatures = new Set<string>();
+
   for (const station of VILLAGE_DEFINITION.workstations) {
     const frames: unknown[] = [];
+
     for (const time of [0, 720, 960, 1480, 1_000_000]) {
       const { ctx, marks } = recorder();
       drawNpcWork(ctx, worker(station.id), 100, 100, time);

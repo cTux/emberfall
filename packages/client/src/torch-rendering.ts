@@ -54,6 +54,7 @@ export function drawTorchFire(
   ctx.globalAlpha = opacity * (0.08 + Math.sin(now / 113) * 0.035);
   ctx.fillStyle = '#ffd477';
   ctx.fillRect(-3, 26, 6, 10);
+
   if (particles) {
     if (bloom) {
       ctx.shadowBlur = 3;

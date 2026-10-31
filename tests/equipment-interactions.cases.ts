@@ -84,6 +84,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   await expect(dialog).toBeHidden();
   await chat.fill('');
   await chat.blur();
+
   for (const classId of CLASS_IDS) {
     player.x = WARDROBE.x;
     player.y = WARDROBE.y - 15;
@@ -96,6 +97,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await page.keyboard.press('e');
     await expect(wardrobe).toBeVisible();
     const choice = wardrobe.getByRole('button', { name: new RegExp(`^${CLASS_LABELS[classId]}`) });
+
     if (player.classId !== classId) {
       await choice.click();
     }
@@ -184,6 +186,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
   }
 
   await opener.click();
+
   for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 800 });
     await expect(dialog).toBeVisible();
@@ -206,6 +209,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await dialog.locator('[data-equipment-slot="weapon"]').hover();
     await page.getByRole('button', { name: 'Roots', exact: true }).hover();
     await expect(page.getByRole('tooltip').last()).toContainText('Bosses are immune to roots.');
+
     for (const tooltip of await page.getByRole('tooltip').all()) {
       const box = (await tooltip.boundingBox())!;
       expect(box.x).toBeGreaterThanOrEqual(0);

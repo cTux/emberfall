@@ -6,6 +6,7 @@ const item = { id: 'new', itemId: 'loot-amulet', quantity: 1, stats: { expIncrea
 
 test('weapon comparison uses only the active range and never exposes attack-speed rows', () => {
   const weapon = { id: 'staff', itemId: 'mage-staff', quantity: 1 };
+
   for (const autoTarget of [true, false]) {
     const rows = itemComparison(weapon, { classId: 'mage', equipment: {}, autoTarget })!.rows;
     assert.equal(

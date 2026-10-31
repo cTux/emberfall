@@ -32,6 +32,7 @@ test('chat inherits window styling and preserves keyboard interaction at desktop
       };
     });
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
+
   for (const width of [1440, 800, 390]) {
     await page.setViewportSize({ width, height: 800 });
     await page.locator('canvas').click({ position: { x: width - 1, y: 400 } });
@@ -92,6 +93,7 @@ test('fog is opt-in and player messages sit above health in village and forest',
   await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
   const fog = page.getByLabel('Volumetric fog (2D)', { exact: true });
   await expect(fog).not.toBeChecked();
+
   for (const preset of ['Low', 'Balanced', 'High']) {
     await page.getByRole('button', { name: preset, exact: true }).click();
     await expect(fog).not.toBeChecked();

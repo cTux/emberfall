@@ -10,6 +10,7 @@ test('performance overlay stays compact and draggable with both traces enabled',
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Compact hero');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+
   for (const name of ['FPS graph', 'Latency graph']) {
     await page.getByRole('switch', { name, exact: true }).check();
   }
@@ -42,12 +43,14 @@ test('optional HUD widgets start centered without moving party frames', async ({
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const party = page.locator('.party');
   await expect(party).toBeVisible();
+
   for (const viewport of [
     { width: 1440, height: 1000 },
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport);
     const original = await party.boundingBox();
+
     for (const name of ['DPS meter', 'FPS graph', 'Latency graph']) {
       await page.keyboard.press('Escape');
       await page.getByRole('switch', { name, exact: true }).check();

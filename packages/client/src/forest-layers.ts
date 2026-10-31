@@ -89,6 +89,7 @@ export function drawForestLayer(
   frame: LayerFrame,
 ) {
   const { world, near, now, serverTime, quality, outlines, damageByTarget } = frame;
+
   if (layer.portal) {
     const portal = layer.portal;
     const point = near(portal.x, portal.y);
@@ -132,6 +133,7 @@ export function drawForestLayer(
 
     const state = resourceState(world?.resources, t, serverTime);
     const object = resourceScenery(t, state);
+
     if ((t.kind === 'tree' || t.kind === 'plant') && state?.remaining !== 0) {
       drawVegetation(
         ctx,
@@ -159,6 +161,7 @@ export function drawForestLayer(
     const outline = outlines.find((target) => {
       return target.source.id === `gather:${t.id}`;
     });
+
     if (outline) {
       drawInteractionOutline(ctx, outline);
     }

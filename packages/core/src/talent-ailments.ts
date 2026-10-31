@@ -25,6 +25,7 @@ export function applyTalentAilment(
   let entry = enemy.debuffs.find((value) => {
     return value.kind === kind && value.ownerId === player.id && value.expiresAt > now;
   });
+
   if (!entry) {
     const tickIntervalMs =
       kind === 'bleed' || kind === 'poison' || kind === 'burn'
@@ -88,6 +89,7 @@ export function talentEnemyDeath(
       ['bleed', 'poison', 'burn'].includes(entry.kind)
     );
   });
+
   if (spread && wounds) {
     const kind =
       player.classId === 'warrior' || player.classId === 'druid'
@@ -95,6 +97,7 @@ export function talentEnemyDeath(
         : player.classId === 'ranger'
           ? 'poison'
           : 'burn';
+
     for (const other of talentArea(scene, enemy, 180, player).slice(0, spread === 2 ? 4 : 2)) {
       applyTalentAilment(other, player, kind, spread, now, undefined, stats);
     }

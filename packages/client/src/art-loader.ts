@@ -33,6 +33,7 @@ function actorOrientation(name: string, row: number, col: number) {
 export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = false) {
   const key = `${name}:${columns}:${rows}:${cell}:${actor}`;
   const cached = loadedArt.get(key);
+
   if (cached) {
     return cached;
   }
@@ -94,6 +95,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
           top = y1,
           right = x0,
           bottom = y0;
+
         for (let y = Math.floor(y0); y < Math.floor(y1); y++) {
           for (let x = x0; x < x1; x++) {
             if (pixels[(y * input.width + x) * 4 + 3] < 32) {
@@ -151,6 +153,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
       const height = Math.max(1, Math.round(f.height * frameScale));
       ctx.save();
       ctx.translate(col * cell + cell / 2, row * cell);
+
       if (orientation.flip) {
         ctx.scale(-1, 1);
       }
@@ -168,6 +171,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
       );
       ctx.restore();
     });
+
     if (actor) {
       softenAtlas(output);
     }
@@ -188,6 +192,7 @@ export const actorArt = (name: string) => {
 
   const key = `${name}:player-atlas`;
   const cached = loadedArt.get(key);
+
   if (cached) {
     return cached;
   }

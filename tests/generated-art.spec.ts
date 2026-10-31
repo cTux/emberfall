@@ -20,9 +20,11 @@ test('all bundled items render dedicated artwork in inventory', async ({ page, g
   await page.getByRole('button', { name: 'Inventory' }).click();
   const backpack = page.getByRole('region', { name: 'Your backpack' });
   const plants = new Set<string>(['plant', ...PLANT_KINDS]);
+
   for (const item of catalog.registries.items.values()) {
     const button = backpack.getByRole('button', { name: `Use ${item.name}`, exact: true });
     await expect(button).toBeVisible();
+
     if (plants.has(item.id)) {
       await expect(button.locator('canvas')).toBeVisible();
     } else {
@@ -167,6 +169,7 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
               x - 65,
               y + 20,
             );
+
             if (stateIndex === 0 && !lamp) {
               ctx.fillText(node.id, x - 65, y - 100);
             }
@@ -203,6 +206,7 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
       }),
     ).size,
   ).toBe(result.length);
+
   for (const node of result) {
     expect(node.live, node.id).not.toBe(node.depleted);
     expect(node.matching, node.id).toBe(true);

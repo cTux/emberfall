@@ -43,6 +43,7 @@ test('balance tables cover every shared enum value with valid attributes and per
     assert.ok(itemDropChance[type] >= 0 && itemDropChance[type] <= 100);
     assert.ok(enemyTypeAttributesMultiplier[type] > 0);
     const count = itemCountDropPercent[type];
+
     if (typeof count === 'number') {
       assert.ok(count >= 0);
     } else {

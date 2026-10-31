@@ -20,6 +20,7 @@ export class FrameBudget {
 
   begin(now: number, settings: GraphicsSettings): number | undefined {
     const limit = settings.frameLimit;
+
     if (limit && now - this.previous + 0.5 < 1000 / limit) {
       return;
     }
@@ -41,6 +42,7 @@ export class FrameBudget {
             ),
           )
         : 1;
+
       if (Math.abs(next - this.scale) > 0.001) {
         this.scale = next;
         this.resize();
@@ -53,6 +55,7 @@ export class FrameBudget {
 
     const delta = Math.min(0.1, (now - this.previous) / 1000);
     this.previous = now;
+
     if (this.settings !== settings) {
       this.settings = settings;
       this.scale = 1;
@@ -64,6 +67,7 @@ export class FrameBudget {
 
   sample(now: number): number | undefined {
     this.fpsFrames++;
+
     if (now - this.fpsAt < 500) {
       return;
     }

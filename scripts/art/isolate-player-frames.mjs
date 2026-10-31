@@ -3,6 +3,7 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
   const strideIndex = sources.length - 2;
   const allFrames = [];
   const images = [];
+
   for (let sourceIndex = 0; sourceIndex < sources.length; sourceIndex++) {
     const isStride = sourceIndex >= strideIndex;
     const rowCount = isStride ? 6 : sourceIndex ? config.extraRows : config.rows;
@@ -18,6 +19,7 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
     const pixels = ctx.getImageData(0, 0, image.width, image.height).data;
     const visited = new Uint8Array(image.width * image.height);
     const components = [];
+
     for (let start = 0; start < visited.length; start++) {
       if (visited[start] || pixels[start * 4 + 3] <= 32) {
         continue;
@@ -29,6 +31,7 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
         right = 0,
         top = image.height,
         bottom = 0;
+
       for (let i = 0; i < queue.length; i++) {
         const point = queue[i],
           x = point % image.width,
@@ -37,11 +40,13 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
         right = Math.max(right, x + 1);
         top = Math.min(top, y);
         bottom = Math.max(bottom, y + 1);
+
         for (let dy = -1; dy <= 1; dy++) {
           for (let dx = -1; dx <= 1; dx++) {
             const nx = x + dx,
               ny = y + dy,
               next = ny * image.width + nx;
+
             if (
               nx < 0 ||
               nx >= image.width ||
@@ -76,6 +81,7 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
       const merged = components.findIndex((f) => {
         return f.top > image.height * 0.9 && f.width > image.width / 3;
       });
+
       if (merged >= 0) {
         components.splice(merged, 1);
       }
@@ -91,6 +97,7 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
       return a.top + a.height / 2 - (b.top + b.height / 2);
     });
     const frames = [];
+
     for (let row = 0; row < rowCount; row++) {
       const group = components.slice(row * 4, row * 4 + 4).sort((a, b) => {
         return a.left - b.left;

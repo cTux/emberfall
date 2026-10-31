@@ -29,6 +29,7 @@ test('combat feedback gates all classes on weapon, life, training, scene and inp
     training,
   };
   const pointer = enemyHitbox(training.enemies[0]);
+
   for (const classId of CLASS_IDS) {
     player.classId = classId;
     player.equipment = starterEquipment(classId);

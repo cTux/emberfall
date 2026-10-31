@@ -9,6 +9,7 @@ import {
 import { outlineProbes } from './interaction-outlines.fixture.ts';
 
 import './interaction-party-outlines.cases.ts';
+
 for (const graphicsPreset of ['Low', 'High'] as const) {
   test.describe(graphicsPreset, () => {
     test.use({ graphicsPreset });
@@ -25,6 +26,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         return w.players.size;
       })!;
       const player = [...world.players.values()][0];
+
       // Ambient walkers must not enter unrelated E-key checks or move pointer targets.
       for (const npc of world.npcs!) {
         npc.chatUntil = Date.now() + 180_000;

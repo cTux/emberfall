@@ -83,6 +83,7 @@ export function selectBrowserTests(paths: string[]): BrowserSelection {
 
   const groups = new Set<Group>();
   let ui = false;
+
   for (const path of paths) {
     if (
       path.endsWith('.md') ||
@@ -106,6 +107,7 @@ export function selectBrowserTests(paths: string[]): BrowserSelection {
       : rules.find(([pattern]) => {
           return pattern.test(path);
         })?.[1];
+
     if (!matched) {
       return full(`Unmapped change: ${path}`);
     }
@@ -135,6 +137,7 @@ export function selectionForEvent(
 
   const base = event.pull_request?.base.sha;
   const head = event.pull_request?.head.sha;
+
   if (
     !base ||
     !head ||
@@ -190,6 +193,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         .filter(Boolean);
     });
     console.log(JSON.stringify(selection));
+
     if (process.env.GITHUB_OUTPUT) {
       appendFileSync(
         process.env.GITHUB_OUTPUT,
@@ -205,8 +209,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     }
   } else if (process.argv[2] === 'game') {
     const selection: BrowserSelection = JSON.parse(readFileSync(process.argv[3], 'utf8'));
+
     for (const args of gameCommands(selection)) {
       const result = spawnSync('pnpm', args, { stdio: 'inherit' });
+
       if (result.error) {
         throw result.error;
       }

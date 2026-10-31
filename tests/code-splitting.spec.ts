@@ -34,6 +34,7 @@ test('account gate renders before account access and game code waits for access'
   });
   await page.goto('/');
   await expect(page.getByRole('link', { name: 'Sign in through Steam' })).toBeVisible();
+
   for (const name of ['Game', ...optional]) {
     expect(
       requests.some((path) => {
@@ -55,6 +56,7 @@ test('world browser defers rendering and panels load only when opened', async ({
   });
   await page.goto('/');
   await expect(page.getByRole('status', { name: 'World server online' })).toBeVisible();
+
   for (const name of optional) {
     expect(
       requests.some((path) => {
@@ -168,6 +170,7 @@ for (const [query, selected, other] of [
       })
       .toBe(true);
     await expect(page.locator('canvas').first()).toBeVisible();
+
     for (const name of ['Game', 'Arena', other]) {
       expect(
         requests.some((path) => {

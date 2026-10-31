@@ -40,8 +40,10 @@ test('damage flash fades through fractional expiry without a Pixi color crash', 
 
     return fixture.compare();
   });
+
   for (const { age, alphas, actual, expected } of results) {
     expect(alphas, `restored opacity at ${age}`).toEqual([0.5, 0.5]);
+
     for (let channel = 0; channel < 4; channel++) {
       expect(
         Math.abs(actual[channel] - expected[channel]),

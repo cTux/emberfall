@@ -29,6 +29,7 @@ test('healing applies ordered preferences after party, scene, run, connection, r
   assert.equal(healingTarget([p, ally], p, p, 700), p);
   p.tactics!.includeCompanions = false;
   p.hitpoints = p.maxHitpoints;
+
   for (const patch of [
     { partyId: 'other' },
     { runId: 'other' },
@@ -48,6 +49,7 @@ test('automatic healing waits below threshold without spending cooldown; manual 
   for (const training of [false, true]) {
     const p = hero();
     p.scene = training ? undefined : 'forest';
+
     if (training) {
       Object.assign(p, TRAINING_ZONES[0]);
     }

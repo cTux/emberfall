@@ -36,6 +36,7 @@ export function compareLighting(pixi: PixiContext, gpu: HTMLCanvasElement) {
   // Linear sampling of a 4x text texture at 8x world scale introduces
   // intermediate columns on both halves of the raster grid.
   const edges = [0, 0];
+
   for (let y = 0; y < 100; y++) {
     for (let x = 1; x < 220; x++) {
       if (pixels[(y * 256 + x) * 4] !== pixels[(y * 256 + x - 1) * 4]) {

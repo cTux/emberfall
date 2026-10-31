@@ -78,6 +78,7 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
         (tile, column) => {
           const pixels = tile.getContext('2d')!.getImageData(0, 0, tile.width, tile.height).data;
           let opaque = 0;
+
           for (let i = 3; i < pixels.length; i += 4) {
             if (pixels[i] === 255) {
               opaque++;
@@ -85,6 +86,7 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
           }
 
           let edgeDifference = 0;
+
           for (let i = 0; i < tile.width; i++) {
             for (let channel = 0; channel < 4; channel++) {
               edgeDifference += Math.abs(
@@ -115,6 +117,7 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
     });
     await page.screenshot({ path: 'test-results/terrain-repeat.png', fullPage: true });
     console.log('Terrain edge differences', JSON.stringify(tiles));
+
     for (const tile of tiles) {
       expect(tile.opaque).toBe(1);
       expect(tile.edgeDifference).toBe(0);

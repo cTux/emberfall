@@ -30,6 +30,7 @@ export function drawStonePortal(
   now: number,
 ) {
   drawArt(ctx, portalArt, 0, 0, x, y, width, height, 128);
+
   if (!portalArt.naturalWidth) {
     return;
   }
@@ -39,6 +40,7 @@ export function drawStonePortal(
   ctx.ellipse(x + width * 0.5, y + height * 0.58, width * 0.22, height * 0.3, 0, 0, Math.PI * 2);
   ctx.clip();
   const alpha = ctx.globalAlpha;
+
   for (let i = 0; i < 3; i++) {
     const phase = now / 2300 + (i * Math.PI * 2) / 3;
     ctx.globalAlpha = alpha * 0.38;
@@ -58,6 +60,7 @@ export function drawStonePortal(
 export function drawChimneySmoke(ctx: DrawingContext, x: number, y: number, now: number) {
   ctx.save();
   const opacity = ctx.globalAlpha;
+
   for (let i = 0; i < 5; i++) {
     // Phase must not depend on projected coordinates, which wrap at world seams.
     const age = ((now + i * 1700) % 8500) / 8500;

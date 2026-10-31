@@ -31,6 +31,7 @@ export function applyTransform(
 ) {
   const tx = m.a * x + m.c * y + m.tx;
   const ty = m.b * x + m.d * y + m.ty;
+
   if (m.b === 0 && m.c === 0 && m.a * sx >= 0 && m.d * sy >= 0) {
     object.position.set(tx, ty);
     object.scale.set(m.a * sx, m.d * sy);

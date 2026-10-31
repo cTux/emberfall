@@ -17,6 +17,7 @@ test('lobby portal navigation renders in the village and across a wrapped edge',
     return world.players.size;
   })!;
   const player = [...world.players.values()][0];
+
   for (const [name, x] of [
     ['offscreen', 1800],
     ['wrapped', 4700],
@@ -39,6 +40,7 @@ test('lobby portal navigation renders in the village and across a wrapped edge',
           return [28, sample.width - 28].map((x) => {
             const pixels = context.getImageData(x - 8, sample.height / 2 - 8, 16, 16).data;
             let blue = 0;
+
             for (let i = 0; i < pixels.length; i += 4) {
               if (pixels[i] > 80 && pixels[i] < 150 && pixels[i + 1] > 180 && pixels[i + 2] > 220) {
                 blue++;
@@ -68,6 +70,7 @@ test('portal navigation labels stay clear of edge arrows', async ({ page, game }
     return world.players.size;
   })!;
   const player = [...world.players.values()][0];
+
   for (const [name, dx, dy] of [
     ['left', 1500, 0],
     ['right', -1500, 0],

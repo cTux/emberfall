@@ -15,6 +15,7 @@ export function outlineProbes(page: Page, canvas: Locator, graphicsPreset: strin
     });
     const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
     let count = 0;
+
     for (let i = 0; i < data.length; i += info.channels) {
       if (data[i] > 220 && data[i + 1] > 180 && data[i + 2] < 45) {
         count++;
@@ -30,6 +31,7 @@ export function outlineProbes(page: Page, canvas: Locator, graphicsPreset: strin
     });
     const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
     let count = 0;
+
     for (let i = 0; i < data.length; i += info.channels) {
       if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.18 && data[i + 2] < data[i + 1] * 0.18) {
         count++;

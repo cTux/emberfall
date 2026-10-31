@@ -15,6 +15,7 @@ test('prediction wraps, expires and clears on death, class/area changes and stal
   assert.equal(frame(movement, source, 100).scene.playerShots!.length, 2);
   assert(frame(movement, source, 150).scene.playerShots![0].x < 80);
   assert.equal(frame(movement, source, 1100).scene.playerShots!.length, 0);
+
   for (const change of ['death', 'class', 'area', 'paused'] as const) {
     const current = fixture(),
       m = new LocalMovement('p', () => {});
@@ -22,6 +23,7 @@ test('prediction wraps, expires and clears on death, class/area changes and stal
     assert.equal(frame(m, current, 100).scene.playerShots!.length, 2);
     const next = structuredClone(current);
     next.serverNow = 10050;
+
     if (change === 'death') {
       next.players[0].hitpoints = 0;
     }
@@ -78,6 +80,7 @@ test('a local root projectile remains visible through all confirmed bounces desp
     const id = scene.playerShots![0].id;
     const movement = new LocalMovement('p', () => {});
     assert.equal(frame(movement, source, 0).scene.playerShots!.length, 1);
+
     for (let bounce = 1; bounce <= 3; bounce++) {
       const reply = structuredClone(source);
       reply.serverNow! += bounce * 100;
@@ -89,6 +92,7 @@ test('a local root projectile remains visible through all confirmed bounces desp
       });
       shot.targetId = confirmed.enemies[1].id;
       movement.render(reply, bounce * 100);
+
       for (let elapsed = 0; elapsed <= 60; elapsed += 20) {
         // The buffered world can still have no projectile at the transition.
         const buffered = structuredClone(reply);

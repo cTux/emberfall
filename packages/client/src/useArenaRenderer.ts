@@ -104,11 +104,13 @@ export function useArenaRenderer(props: ArenaProps) {
 
     function draw(now: number) {
       const openWardrobe = interaction.current?.id === 'wardrobe';
+
       if (openWardrobe && !wardrobeActive) {
         wardrobeOpenedAt = now;
       }
 
       wardrobeActive = openWardrobe;
+
       if (!renderer.initialized) {
         frame = requestAnimationFrame(draw);
 
@@ -116,6 +118,7 @@ export function useArenaRenderer(props: ArenaProps) {
       }
 
       const delta = budget.begin(now, quality.current);
+
       if (delta === undefined) {
         frame = requestAnimationFrame(draw);
 
@@ -128,6 +131,7 @@ export function useArenaRenderer(props: ArenaProps) {
       ctx.imageSmoothingEnabled = quality.current.smoothTextures;
       // Sprite filtering is independent; CSS resampling must preserve smooth text.
       const imageRendering = 'auto';
+
       if (element.style.imageRendering !== imageRendering) {
         element.style.imageRendering = imageRendering;
       }
@@ -135,6 +139,7 @@ export function useArenaRenderer(props: ArenaProps) {
       const el = element;
       // Keep the original view scale independent of the walkable map size.
       const scale = Math.max(el.width / 960, el.height / 640);
+
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
         input.clearKeys();
       }
@@ -164,17 +169,20 @@ export function useArenaRenderer(props: ArenaProps) {
       });
       input.targets = forestInteractionTargets(view, local, input.camera);
       interactionFrame.select(input.targets, input.pointerPoint());
+
       if (local?.scene !== previousScene) {
         village.clear();
         previousScene = local?.scene;
       }
 
       const fps = budget.sample(now);
+
       if (fps !== undefined) {
         frameRate.current = fps;
       }
 
       presentation.effects(presented, now);
+
       if (!view || local?.scene === 'forest') {
         element.dataset.catSpeech = '';
         drawForest(
@@ -189,6 +197,7 @@ export function useArenaRenderer(props: ArenaProps) {
           highlightInteractions,
         );
         interactionFrame.draw();
+
         if (local && prefs.current.lootHints) {
           drawLootHints(ctx, lootHints.current.hints, local, now);
         }
@@ -226,6 +235,7 @@ export function useArenaRenderer(props: ArenaProps) {
       });
       interactionFrame.draw();
       Object.assign(element.dataset, village.overlays(ctx, villageFrame, drawn, prefs.current));
+
       if (local && prefs.current.lootHints) {
         drawLootHints(ctx, lootHints.current.hints, local, now);
       }

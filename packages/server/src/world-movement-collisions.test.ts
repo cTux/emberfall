@@ -16,6 +16,7 @@ test('the server allows a connected player to walk into a tree', async () => {
   const samples: Player[] = [];
   ws.on('message', (raw) => {
     const message = JSON.parse(raw.toString()) as ServerMessage;
+
     if (message.type === 'joined' || message.type === 'state') {
       player = message.world.players[0];
       samples.push(player);
@@ -34,6 +35,7 @@ test('the server allows a connected player to walk into a tree', async () => {
     const tree = [...TREES].sort((a, b) => {
       return Math.hypot(a.x - 420, a.y - 363) - Math.hypot(b.x - 420, b.y - 363);
     })[0];
+
     for (let i = 0; i < 70; i++) {
       if (player) {
         const dx = tree.x - player.x;
@@ -74,6 +76,7 @@ test('tree trunks block player and enemy bodies, including fast movement, with s
     );
   });
   assert(tree);
+
   for (const radius of [12, 18]) {
     const start: { x: number; y: number } = {
       x: tree.x - tree.radius - radius - 10,

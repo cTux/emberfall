@@ -8,6 +8,7 @@ test('shutdown attempts every save and closes resources even when one save fails
   const game = await createGameServer();
   await game.listen(0);
   const peers: Peer[] = [];
+
   for (const name of ['First', 'Second']) {
     const messages: ServerMessage[] = [];
     const peer = new Peer(
@@ -36,6 +37,7 @@ test('shutdown attempts every save and closes resources even when one save fails
   const attempted: string[] = [];
   game.runtime.characters.save = (id, name, progress) => {
     attempted.push(name);
+
     if (name === 'First') {
       throw new Error('Injected write failure');
     }

@@ -32,6 +32,7 @@ export function damagePerSecond(player: Player, now: number) {
     return now - hit.at < 5000;
   });
   damageHistory.set(player, recent);
+
   for (const value of Object.values(player.damageMeter?.abilities ?? {})) {
     value.dps = 0;
   }
@@ -67,6 +68,7 @@ export function hitEnemy(
   amount = Math.max(1, amount);
   const dealt = Math.min(enemy.hitpoints, amount);
   enemy.hitpoints = Math.max(0, enemy.hitpoints - amount);
+
   if (owner) {
     if (owner.damageMeter && owner.damageMeter.classId !== (owner.classId ?? 'warrior')) {
       damagePerSecond(owner, now);
@@ -101,6 +103,7 @@ export function hitEnemy(
         ? { archetype: enemy.archetype, kind: enemy.kind, angle: enemy.angle }
         : undefined,
   });
+
   if (
     enemy.hitpoints > 0 &&
     ailment &&
@@ -115,6 +118,7 @@ export function hitEnemy(
     let debuff = enemy.debuffs.find((d) => {
       return d.kind === ailment && d.ownerId === owner.id && d.expiresAt >= now;
     });
+
     if (!debuff) {
       const tickIntervalMs = dotTickIntervalMs(owner, AILMENT_DEFINITIONS[ailment].tickMs, stats);
       debuff = {
@@ -173,6 +177,7 @@ export function hitEnemy(
       context.random,
     );
   scene.drops ??= [];
+
   for (let copy = 0; copy < experienceCopies; copy++) {
     appendSceneEntities(scene, 'drops', {
       id: ++scene.sequence,
@@ -193,6 +198,7 @@ export function hitEnemy(
         }, 0),
         context.random,
       );
+
     for (let copy = 0; copy < goldCopies; copy++) {
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,
@@ -205,8 +211,10 @@ export function hitEnemy(
   }
 
   const type = enemy.kind ?? EnemyType.Normal;
+
   if (shouldDropItem(type, context.random)) {
     const count = itemDropCount(type, context.random);
+
     for (let i = 0; i < count; i++) {
       const item = context.rules.rollItem(
         LOOT_ITEM_IDS[Math.floor(context.random() * LOOT_ITEM_IDS.length)],

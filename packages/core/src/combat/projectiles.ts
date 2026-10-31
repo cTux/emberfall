@@ -36,6 +36,7 @@ export function fireClassAttack(
   abilityId?: string,
 ) {
   const stats = context.rules.characterStats(player);
+
   if (!stats.hasWeapon) {
     return;
   }
@@ -55,6 +56,7 @@ export function fireClassAttack(
   const target = manual ? undefined : nearestSpellTarget(player, scene.enemies, range);
   scene.playerShots ??= [];
   const shotTargets: (Enemy | undefined)[] = manual ? [undefined] : target ? [target] : [];
+
   for (const target of shotTargets) {
     const destination = target ?? aim;
     const aimAngle = Math.atan2(
@@ -72,6 +74,7 @@ export function fireClassAttack(
     const defaultAilment =
       attack.kind === 'arrow' ? 'poison' : attack.kind === 'fireball' ? 'burn' : 'roots';
     const count = attack.kind === 'slash' ? 0 : attack.count;
+
     for (let index = 0; index < count; index++) {
       appendSceneEntities(scene, 'playerShots', {
         id: ++scene.sequence,
@@ -112,6 +115,7 @@ export function tickPlayerShots(
         p.hitpoints > 0
       );
     });
+
     if (!owner) {
       return false;
     }
@@ -154,6 +158,7 @@ export function tickPlayerShots(
               false,
               context,
             );
+
             if (shot.hitIds.length >= 1 + ability.pierce) {
               shot.remaining = 0;
             }
@@ -163,11 +168,13 @@ export function tickPlayerShots(
       true,
       context,
     );
+
     if (impacted) {
       if (shot.kind === 'roots') {
         const target = scene.enemies.find((enemy) => {
           return enemy.id === shot.hitIds.at(-1);
         });
+
         if (target) {
           hitWithWeapon(
             scene,
@@ -180,6 +187,7 @@ export function tickPlayerShots(
             false,
             context,
           );
+
           if (target.hitpoints > 0) {
             applyRoots(target, owner.id, now);
           }
@@ -198,6 +206,7 @@ export function tickPlayerShots(
                   ? enemy
                   : best;
               }, undefined);
+
             if (next) {
               shot.targetId = next.id;
               shot.targetX = next.x;
@@ -219,6 +228,7 @@ export function tickPlayerShots(
         at: now,
         radius: ability.splashRadius,
       });
+
       for (const enemy of scene.enemies) {
         if (enemy.id === shot.hitIds[0]) {
           hitWithWeapon(

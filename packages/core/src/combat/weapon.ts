@@ -31,6 +31,7 @@ export function hitWithWeapon(
     !companion && context.registries.classes.require(owner.classId ?? 'warrior').art === 'warrior'
       ? 1 + stats.bonuses.additionalAttack
       : 1;
+
   for (let attack = 0; attack < attacks && enemy.hitpoints > 0; attack++) {
     const critical = isChanced(stats.criticalChance * 100, context.random);
     hitEnemy(

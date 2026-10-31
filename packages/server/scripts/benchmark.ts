@@ -25,6 +25,7 @@ const players: Player[] = Array.from({ length: 8 }, (_, i) => {
     classId: 'warrior',
   };
 });
+
 for (const player of players) {
   ecs.players.set(player.id, player);
 }
@@ -68,6 +69,7 @@ let seed = 12345;
 const context = createGame(GAME_MODS, () => {
   return (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32;
 });
+
 for (let tick = 0; tick < 500; tick++) {
   const now = 10000 + tick * 50;
   const start = performance.now();
@@ -81,9 +83,11 @@ for (let tick = 0; tick < 500; tick++) {
     scene,
     serverNow: now,
   });
+
   for (let client = 0; client < 8; client++) {
     applyState(states[client], projection);
     const patch = encoders[client].encode();
+
     if (tick >= 100) {
       bytes += patch.byteLength;
     }

@@ -17,10 +17,12 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
   }
 
   const projectilePixels: number[] = [];
+
   for (const fallback of [false, true]) {
     pixi.begin();
     pixi.fillStyle = '#17251d';
     pixi.fillRect(0, 0, 256, 256);
+
     if (fallback) {
       for (const image of [pickupArt, effectsArt]) {
         image.dataset.artReady = 'false';
@@ -53,10 +55,12 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     const c = preview.getContext('2d')!;
     c.drawImage(gpu, 0, 0);
     document.body.append(preview);
+
     for (const [row, kind] of (['arrow', 'fireball', 'roots'] as const).entries()) {
       for (let frame = 0; frame < (kind === 'arrow' ? 4 : 3); frame++) {
         const pixels = c.getImageData(frame * 64, row * 80 + 8, 64, 64).data;
         let green = 0;
+
         for (let i = 0; i < pixels.length; i += 4) {
           if (
             pixels[i] >= 175 &&
@@ -126,6 +130,7 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     const pixels = lootContext.getImageData(x - 12, y - 18, 24, 30).data;
     let colored = 0,
       purple = 0;
+
     for (let i = 0; i < pixels.length; i += 4) {
       if (pixels[i + 3] > 128) {
         colored++;

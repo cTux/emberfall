@@ -14,6 +14,7 @@ const projectileOutlines = new Map<string, HTMLCanvasElement>();
 function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'roots', now: number) {
   const arrow = kind === 'arrow';
   const image = arrow ? pickupArt : effectsArt;
+
   if (!image.naturalWidth || image.dataset.artReady !== 'true') {
     return false;
   }
@@ -22,6 +23,7 @@ function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'ro
   const size = arrow ? 44 : kind === 'roots' ? 24 : 48;
   const key = `${kind}:${column}`;
   let outlined = projectileOutlines.get(key);
+
   if (!outlined) {
     const sprite = document.createElement('canvas');
     sprite.width = sprite.height = size;
@@ -63,8 +65,10 @@ export function drawClassProjectiles(
   playerId = '',
 ) {
   ctx.save();
+
   for (const shot of scene.playerShots ?? []) {
     const opacity = abilityEffectOpacity(preferences, playerId, shot.ownerId);
+
     if (opacity === 0) {
       continue;
     }
@@ -74,6 +78,7 @@ export function drawClassProjectiles(
     ctx.save();
     ctx.translate(p.x, p.y);
     ctx.rotate(shot.angle);
+
     if (drawProjectileArt(ctx, shot.kind, now)) {
       ctx.restore();
       continue;
@@ -85,6 +90,7 @@ export function drawClassProjectiles(
 
     ctx.strokeStyle = '#baffaa';
     ctx.lineWidth = shot.kind === 'roots' ? 2 : 1;
+
     if (shot.kind === 'arrow') {
       ctx.lineWidth = 4;
       ctx.beginPath();
@@ -125,19 +131,23 @@ export function drawClassProjectiles(
 
   for (const explosion of scene.explosions ?? []) {
     const opacity = abilityEffectOpacity(preferences, playerId, explosion.ownerId);
+
     if (opacity === 0) {
       continue;
     }
 
     const age = Math.max(0, (now - explosion.at) / (explosion.durationMs ?? 350));
+
     if (age >= 1) {
       continue;
     }
 
     const p = near(explosion.x, explosion.y);
+
     if (explosion.talentClass) {
       const classIndex = ['warrior', 'ranger', 'mage', 'druid'].indexOf(explosion.talentClass);
       const row = Math.max(0, classIndex) * 3 + (explosion.talentColumn ?? 0);
+
       if (talentCastArt.complete && talentCastArt.naturalWidth > 0) {
         const width = talentCastArt.naturalWidth / 4,
           height = talentCastArt.naturalHeight / 12;
@@ -171,6 +181,7 @@ export function drawClassProjectiles(
       ];
       ctx.fillStyle = colors[row];
       ctx.globalAlpha = opacity * (1 - age);
+
       for (let index = 0; particles && index < 10; index++) {
         const angle = (index * Math.PI * 2) / 10 + explosion.id;
         const radius = 20 + age * 110;

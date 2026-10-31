@@ -20,6 +20,7 @@ test('legacy saves acquire class-specific equipment; empty loadouts and class sw
       ),
     }),
   );
+
   for (const id of CLASS_IDS) {
     assert.deepEqual(legacy.classes[id].equipment, starterEquipment(id));
   }

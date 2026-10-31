@@ -40,6 +40,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   const inventory = page.getByRole('dialog', { name: 'Inventory', exact: true });
   await expect(inventory).toBeVisible();
   const backpack = inventory.getByRole('region', { name: 'Your backpack' });
+
   for (const rarity of Object.values(Rarity)) {
     const slot = backpack.locator(`[data-backpack-item='rarity-${rarity}']`);
     const hex = rarityColor[rarity];

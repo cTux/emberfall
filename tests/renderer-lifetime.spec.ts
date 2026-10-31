@@ -48,6 +48,7 @@ test('filter textures are released before resize and disposal', async ({ page })
   });
   expect(errors).toEqual([]);
   expect(pixels).toHaveLength(3);
+
   for (const pixel of pixels) {
     expect(pixel).toEqual(pixels[0]);
     expect(pixel[3]).toBe(255);

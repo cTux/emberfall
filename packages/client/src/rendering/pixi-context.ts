@@ -69,6 +69,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
     this.cutout.finish();
     this.visuals.finish();
     this.driver.render(this.visuals.stage);
+
     if (this.frame === 1 || this.frame % 60 === 0) {
       this.canvas.dataset.renderStats = JSON.stringify(this.stats());
     }
@@ -170,6 +171,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
       return this.drawImage(source, ...args);
     });
     const draw = this.sources.prepare(source, args, this.frame);
+
     if (!draw) {
       return;
     }
@@ -192,6 +194,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
       Math.round(((base & 255) * (ambient & 255)) / 255);
     sprite.alpha *= tint.alpha;
     this.applyTransform(sprite, dx, dy, dw / sw, dh / sh);
+
     if (this.state.occlusion && !this.shadowPass) {
       this.cutout.apply(sprite, this.state.matrix, dx, dy, dw, dh);
     }
@@ -199,6 +202,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
 
   fillRect(x: number, y: number, width: number, height: number) {
     this.rectangleShadow(x, y, width, height);
+
     if (typeof this.state.fillStyle !== 'string') {
       const g = this.visual('graphics').object as Graphics;
       g.clear().rect(x, y, width, height).fill(this.paints.paint(this.state.fillStyle, this.frame));

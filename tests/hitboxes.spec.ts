@@ -29,6 +29,7 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
   await expect(canvas).toHaveAttribute('data-debug-hitboxes', /^[1-9]\d*$/);
   player = [...world.players.values()][0];
+
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'] as const) {
     player.classId = classId;
     player.equipment = starterEquipment(classId);
@@ -36,6 +37,7 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
     player.x = dummy.x - 40;
     player.y = dummy.y;
     player.attackAt = undefined;
+
     for (const enemy of world.training!.enemies) {
       enemy.hitpoints = enemy.maxHitpoints!;
     }

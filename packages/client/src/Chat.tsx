@@ -92,12 +92,14 @@ export function Chat({
         className='chat-input'
         onSubmit={(event) => {
           event.preventDefault();
+
           if (disabled || !text.trim()) {
             return;
           }
 
           send({ type: 'chat', text: text.trim() });
           setText('');
+
           if (
             !event.currentTarget.closest('.chat')?.matches(':hover') &&
             document.activeElement instanceof HTMLElement &&
@@ -119,6 +121,7 @@ export function Chat({
           disabled={disabled}
           onKeyDown={(event) => {
             event.stopPropagation();
+
             if (event.key === 'Escape') {
               input.current?.blur();
             }

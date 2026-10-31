@@ -74,6 +74,7 @@ test('server environment configures the provider used by runtime and diagnostic'
 test('usable model speech is folded to one complete line without cooling down', async (t) => {
   const log = t.mock.method(console, 'info', () => {});
   const long = 'Welcome to our village, traveller. '.repeat(10);
+
   for (const [content, expected] of [
     ['Good morning!\r\n\tWelcome, traveller.', 'Good morning! Welcome, traveller.'],
     [long, long.trim()],

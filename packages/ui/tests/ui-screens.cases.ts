@@ -14,11 +14,13 @@ test('lobby shows server columns, locked worlds and disabled creation', async ({
   await expect(page.getByRole('alert')).toContainText('password submitted');
   await expect(page.getByRole('tab', { name: 'Create a world' })).toBeDisabled();
   await expect(page.getByRole('textbox', { name: 'World name', exact: true })).toHaveCount(0);
+
   for (const name of ['Name', 'Latency', 'Players']) {
     await expect(page.getByRole('columnheader', { name, exact: true })).toBeVisible();
   }
 
   await expect(page.getByRole('table')).toContainText('42 ms');
+
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 800 });
     expect(
@@ -38,6 +40,7 @@ test('all stories render; desktop and narrow screens fit', async ({ page, reques
     return errors.push(error.message);
   });
   const index = await (await request.get('/index.json')).json();
+
   for (const entry of Object.values(index.entries) as { id: string; type: string }[]) {
     if (entry.type !== 'story') {
       continue;
@@ -46,11 +49,13 @@ test('all stories render; desktop and narrow screens fit', async ({ page, reques
     await page.goto(story(entry.id));
     await expect(page.locator('#storybook-root > *').first()).toBeAttached();
     await expect(page.locator('.sb-errordisplay')).toBeHidden();
+
     if (
       entry.id.startsWith('components-backpack--') ||
       entry.id.startsWith('components-equipmentpanel--')
     ) {
       const icons = page.locator('#storybook-root img');
+
       for (const icon of await icons.all()) {
         await expect
           .poll(() => {
@@ -68,8 +73,10 @@ test('all stories render; desktop and narrow screens fit', async ({ page, reques
   }
 
   expect(errors).toEqual([]);
+
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
+
     for (const name of [
       'lobby',
       'settings',
@@ -155,6 +162,7 @@ test('server rows join once from every cell and keyboard, respecting disabled st
     await expect(join).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect(row).not.toHaveCSS('background-color', restingBackground);
     const status = page.getByRole('status');
+
     for (let cell = 0; cell < 3; cell++) {
       await row
         .getByRole('cell')
@@ -172,6 +180,7 @@ test('server rows join once from every cell and keyboard, respecting disabled st
     await page.keyboard.press('Space');
     await expect(status).toHaveText('Joins: 6');
     const full = page.getByRole('row').filter({ hasText: 'Full world' });
+
     for (let cell = 0; cell < 3; cell++) {
       await full
         .getByRole('cell')
@@ -182,6 +191,7 @@ test('server rows join once from every cell and keyboard, respecting disabled st
     await expect(full.getByRole('button')).toBeDisabled();
     await expect(status).toHaveText('Joins: 6');
     await page.goto(story('components-worldlist--disabled'));
+
     for (let cell = 0; cell < 3; cell++) {
       await row
         .getByRole('cell')

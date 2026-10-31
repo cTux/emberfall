@@ -8,6 +8,7 @@ import { itemArtName } from '../packages/client/src/class-art.ts';
 test('every non-plant bundled item resolves to its own shipped artwork', () => {
   const plants = new Set<string>(['plant', ...PLANT_KINDS]);
   const hashes = new Set<string>();
+
   for (const item of game.registries.items.values()) {
     if (plants.has(item.id)) {
       continue;

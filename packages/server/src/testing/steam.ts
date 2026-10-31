@@ -5,6 +5,7 @@ export const friendId = '76561198000000002';
 /** Fake upstream only; tests still exercise the complete OpenID verifier. */
 export const steamRequest: typeof fetch = async (input, init) => {
   const url = new URL(input instanceof Request ? input.url : input);
+
   if (url.hostname === 'steamcommunity.com') {
     const query = new URLSearchParams(
       typeof init?.body === 'string'
@@ -31,6 +32,7 @@ export const steamRequest: typeof fetch = async (input, init) => {
 export function steamCallback(loginUrl: string, steamId = heroId) {
   const callback = new URL(new URL(loginUrl).searchParams.get('openid.return_to')!);
   const identity = `https://steamcommunity.com/openid/id/${steamId}`;
+
   for (const [key, value] of Object.entries({
     ns: 'http://specs.openid.net/auth/2.0',
     mode: 'id_res',

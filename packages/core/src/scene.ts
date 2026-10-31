@@ -21,6 +21,7 @@ export const forestDistance = (a: { x: number; y: number }, b: { x: number; y: n
 // One deterministic trunk per grid cell; collision and rendering query only nearby cells.
 export function forestTrees(x: number, y: number, radius: number) {
   const trees: { id: string; x: number; y: number; size: number; radius: number }[] = [];
+
   for (
     let row = Math.floor((y - radius) / FOREST_DEFINITION.treeCellSize);
     row <= Math.floor((y + radius) / FOREST_DEFINITION.treeCellSize);
@@ -42,6 +43,7 @@ export function forestTrees(x: number, y: number, radius: number) {
 
       const tx = col * FOREST_DEFINITION.treeCellSize + 25 + random() * 110,
         ty = row * FOREST_DEFINITION.treeCellSize + 25 + random() * 110;
+
       if (forestDistance({ x: tx, y: ty }, FOREST_PORTAL) < 180) {
         continue;
       }
@@ -72,6 +74,7 @@ export function moveForestActor(
 
   let { x, y } = position;
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
+
   for (let i = 0; i < steps; i++) {
     const trees = forestTrees(x, y, 40);
     const clear = (px: number, py: number) => {
@@ -147,6 +150,7 @@ export function nearbyInteraction(
   const trader = (npcs ?? VILLAGE_DEFINITION.villagers).find((npc) => {
     return (npc.id === 'innkeeper' || npc.id === 'craftsman') && distance(npc) < INTERACTION_RADIUS;
   });
+
   if (trader) {
     return { id: trader.id, name: trader.name, x: trader.x, y: trader.y };
   }

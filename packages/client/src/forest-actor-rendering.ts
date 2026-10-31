@@ -26,6 +26,7 @@ export function drawForestActor(
   frame: ActorFrame,
 ) {
   const { world, players, playerId, now, serverTime, quality, highlightInteractions } = frame;
+
   if (!a.image.naturalWidth) {
     return;
   }
@@ -64,6 +65,7 @@ export function drawForestActor(
     top = a.y + 15 - (a.size * 45) / 48;
   const bodyOpacity = a.player?.hitpoints === 0 ? 0.35 : 1;
   ctx.globalAlpha = bodyOpacity;
+
   if (quality.motionBlur && a.moving) {
     ctx.globalAlpha = 0.13 * bodyOpacity;
     ctx.drawImage(
@@ -104,6 +106,7 @@ export function drawForestActor(
       }),
       a.player,
     );
+
   if (
     highlightPlayer ||
     (a.player &&
@@ -136,6 +139,7 @@ export function drawForestActor(
 
   ctx.globalAlpha = 1;
   ctx.occlusion = false;
+
   if (a.enemy) {
     if (a.enemy.kind === 'boss') {
       const width = drawPlayerHealth(

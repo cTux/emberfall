@@ -51,6 +51,7 @@ for (const client of ['client']) {
       return name.endsWith('.png');
     });
     assert.ok(bundled, 'fixture PNG must be emitted instead of inlined');
+
     for (const path of [join('nested', 'sprite.PNG'), join('assets', bundled)]) {
       const output = await readFile(join(root, 'dist', path));
       assert.ok(output.length < original.length, `${path} should shrink`);
@@ -71,6 +72,7 @@ for (const client of ['client']) {
     assert.deepEqual(await readFile(join(root, 'public', 'nested', 'sprite.PNG')), original);
     assert.deepEqual(await readFile(join(root, 'sprite.png')), original);
     const html = await readFile(join(root, 'dist', 'index.html'));
+
     for (const [extension, decode] of [
       ['br', brotliDecompressSync],
       ['gz', gunzipSync],

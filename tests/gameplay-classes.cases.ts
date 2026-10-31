@@ -36,6 +36,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   })!;
   const player = [...world.players.values()][0];
   const wardrobe = page.getByRole('dialog', { name: 'Wardrobe' });
+
   for (const classId of CLASS_IDS) {
     player.x = WARDROBE.x;
     player.y = WARDROBE.y - 15;
@@ -45,6 +46,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
     await page.keyboard.press('e');
     await expect(wardrobe).toBeVisible();
     const choice = wardrobe.getByRole('button', { name: new RegExp(`^${CLASS_LABELS[classId]}`) });
+
     if ((player.classId ?? 'warrior') !== classId) {
       await choice.click();
     }
@@ -57,6 +59,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
       .toBe(classId);
     await wardrobe.getByRole('button', { name: 'Close Wardrobe', exact: true }).click();
     await expect(wardrobe).toBeHidden();
+
     if (classId === 'druid') {
       player.x = 480;
       player.y = 360;
@@ -71,6 +74,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
 
     world.training!.damage = [];
     world.training!.playerShots = [];
+
     for (const enemy of world.training!.enemies) {
       enemy.debuffs = [];
     }
@@ -78,6 +82,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
     const previousHit = world.training!.sequence;
     player.x = TRAINING_ZONES[0].x + 65;
     player.y = TRAINING_ZONES[0].y;
+
     // Exercise companion combat here; forest chasing is covered below.
     if (classId === 'druid' && player.bear) {
       player.bear.x = player.x;
@@ -105,6 +110,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
       .toBeGreaterThan(0);
     expect(player.hitpoints).toBe(player.maxHitpoints);
     expect(player.experience).toBe(0);
+
     if (classId === 'druid') {
       await expect
         .poll(() => {

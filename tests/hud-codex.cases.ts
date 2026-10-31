@@ -20,6 +20,7 @@ test('Codex chapters have formatted content and loaded artwork without resizing'
     expect(initial.y).toBeGreaterThanOrEqual(16);
     expect(initial.y + initial.height).toBeLessThanOrEqual(viewport.height - 16);
     const tabs = codex.getByRole('tab');
+
     for (const tab of await tabs.all()) {
       await tab.click();
       await expect(tab).toHaveAttribute('aria-selected', 'true');
@@ -28,6 +29,7 @@ test('Codex chapters have formatted content and loaded artwork without resizing'
       expect(await panel.getByRole('heading', { level: 4 }).count()).toBeGreaterThan(0);
       const images = panel.getByRole('img');
       expect(await images.count()).toBeGreaterThan(0);
+
       for (const image of await images.all()) {
         await expect(image).toHaveAttribute('alt', /\S/);
         await expect

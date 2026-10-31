@@ -6,6 +6,7 @@ export async function resizeAndDispose() {
   const context = new PixiContext(canvas);
   await context.ready;
   const pixels: number[][] = [];
+
   for (const [width, height] of [
     [173, 137],
     [211, 159],

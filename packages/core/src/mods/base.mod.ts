@@ -91,6 +91,7 @@ export const baseMod: GameMod = {
         row: slotPositions[index][1],
       });
     });
+
     for (const [id, value] of Object.entries(INNATE_STATS)) {
       r.stats.register({
         id,
@@ -114,6 +115,7 @@ export const baseMod: GameMod = {
       price: 1,
       healing: 25,
     });
+
     for (const [id, name] of Object.entries({
       'empty-bottle': 'Empty bottle',
       log: 'Log',
@@ -178,11 +180,13 @@ export const baseMod: GameMod = {
     r.spawnRules.register({ id: 'brute', enemy: 'brute', chance: ENEMY_RULES.bruteChance });
     r.spawnRules.register({ id: 'caster', enemy: 'caster', chance: ENEMY_RULES.casterChance });
     r.settings.register({ id: 'spawnFallbacks', value: ['runner', 'skeleton'] });
+
     for (const boss of Object.values(BOSS_DEFINITIONS)) {
       r.bosses.register(boss);
     }
 
     r.companions.register(BEAR_DEFINITION);
+
     for (const [id, ailment] of Object.entries(AILMENT_DEFINITIONS)) {
       r.ailments.register({
         chance: 0,
@@ -210,6 +214,7 @@ export const baseMod: GameMod = {
     r.encounters.register({ id: 'training', value: TRAINING_DEFINITION });
     r.worlds.register({ id: 'village', value: VILLAGE_DEFINITION });
     r.worlds.register({ id: 'forest', value: FOREST_DEFINITION });
+
     for (const [id, value] of Object.entries({
       runtime: RUNTIME,
       collision: COLLISION,
@@ -244,6 +249,7 @@ export const baseMod: GameMod = {
       dropChance: 50,
       dropCount: { min: 100, max: 500 },
     });
+
     for (const [id, balance] of Object.entries({
       Easy: { multiplier: 1, speedMultiplier: 1 },
       Medium: { multiplier: 2, speedMultiplier: 1.05 },

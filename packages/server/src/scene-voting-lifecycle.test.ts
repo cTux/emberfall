@@ -112,6 +112,7 @@ test('server scene lifecycle: proximity, unanimous votes, retract, membership ch
   });
   b.x = boss.x - 70;
   b.y = boss.y;
+
   for (let hit = 1; hit <= 59; hit++) {
     tickScene(world, 145000 + hit * 1000, 0);
   }

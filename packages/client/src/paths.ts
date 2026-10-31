@@ -19,9 +19,11 @@ export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
   mask.beginPath();
   mask.ellipse(480, 355, 110, 75, 0, 0, Math.PI * 2);
   mask.fill();
+
   for (const path of PATHS) {
     mask.beginPath();
     mask.moveTo(path[0].x, path[0].y);
+
     for (const point of path.slice(1)) {
       mask.lineTo(point.x, point.y);
     }

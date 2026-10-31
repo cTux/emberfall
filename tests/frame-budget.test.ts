@@ -11,6 +11,7 @@ test('drawing budget retains capped cadence, adaptive thresholds and settings re
   });
   assert.equal(budget.begin(10, settings), undefined);
   assert.equal(budget.begin(34, settings), 0.034);
+
   for (let now = 84; now < 2050; now += 50) {
     budget.begin(now, settings);
   }

@@ -84,11 +84,13 @@ export function useGameSession({
           cache: 'no-store',
           signal: AbortSignal.any([versionRequest.signal, AbortSignal.timeout(3000)]),
         });
+
         if (!response.ok) {
           throw new Error('Version check unavailable');
         }
 
         const { buildId } = await response.json();
+
         if (typeof buildId !== 'string' || !buildId) {
           throw new Error('Invalid build ID');
         }
@@ -118,6 +120,7 @@ export function useGameSession({
       failedConnections.current = 0;
 
       resuming = !!previousWorld.current && (steam || !!characterToken.current);
+
       if (resuming) {
         setPending(true);
         ws.send({
@@ -172,6 +175,7 @@ export function useGameSession({
         const nextScene = message.world.players.find((p) => {
           return p.id === joinedId;
         })?.scene;
+
         if (nextScene !== previousScene) {
           events.current('sceneChanged');
         }

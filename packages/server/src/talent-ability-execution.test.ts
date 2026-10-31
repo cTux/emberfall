@@ -84,6 +84,7 @@ test('all twelve ability entries execute for every class and both ranks without 
           };
           ability(player, column, row, learned);
           assert.equal(cast(player, scene), true, `${classId}:${column}:${row}:${learned}`);
+
           for (let now = 1000; now <= 7000; now += 500) {
             tickTalentEffects(scene, [player], now);
           }

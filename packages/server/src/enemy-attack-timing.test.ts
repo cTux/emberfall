@@ -41,6 +41,7 @@ test('melee windup can be dodged and ranged attacks launch visible, colliding pr
   stepCombat(scene, [p], 12900, 0);
   assert.equal(scene.projectiles!.length, 1);
   p.y = 1350;
+
   for (let i = 1; i <= 12; i++) {
     stepCombat(scene, [p], 12900 + i * 50, 0.05);
   }

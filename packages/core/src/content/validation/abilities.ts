@@ -3,6 +3,7 @@ import type { ValidationContext } from './context.ts';
 export function validateAbilities(context: ValidationContext) {
   const { r, check, positive, nonnegative, reference } = context;
   const talentSlots = new Set<string>();
+
   for (const ability of r.abilities.values()) {
     if (ability.classId !== undefined || ability.talentSlot !== undefined) {
       check(
@@ -23,6 +24,7 @@ export function validateAbilities(context: ValidationContext) {
       ability.id,
       'unsupported mechanic kind',
     );
+
     for (const key of [
       'range',
       'manualRange',
@@ -40,6 +42,7 @@ export function validateAbilities(context: ValidationContext) {
       'piercing must match supported mechanic family',
     );
     check(nonnegative(ability.damage), 'abilities', ability.id, 'invalid damage');
+
     if (ability.kind !== 'slash') {
       check(
         positive(ability.speed) &&
@@ -50,6 +53,7 @@ export function validateAbilities(context: ValidationContext) {
         ability.id,
         'invalid projectile speed, count or spread',
       );
+
       if (ability.kind === 'fireball') {
         check(
           positive(ability.splashRadius) && nonnegative(ability.splashDamage),
@@ -82,6 +86,7 @@ export function validateAbilities(context: ValidationContext) {
       player.id,
       'roots ailment requires the roots mechanic',
     );
+
     if (player.companion) {
       reference('classes', player.id, 'companions', player.companion);
     }
@@ -98,6 +103,7 @@ export function validateAbilities(context: ValidationContext) {
       player.id,
       'invalid label or sprite',
     );
+
     for (const type of player.gearTypes) {
       reference('classes', player.id, 'gearTypes', type);
     }

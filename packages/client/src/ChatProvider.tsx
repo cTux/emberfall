@@ -68,6 +68,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setSession(current);
     setEntries((log) => {
       const sameWorld = previous.worldId === current.worldId;
+
       if (sameWorld && previous.scene !== current.scene) {
         const errors = log.filter((entry) => {
           return entry.local;

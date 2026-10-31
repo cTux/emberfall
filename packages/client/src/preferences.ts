@@ -52,6 +52,7 @@ export function loadPreferences(): Preferences {
   };
   try {
     const saved = JSON.parse(localStorage.getItem('emberfall-new.preferences') ?? '{}');
+
     if (Array.isArray(saved?.autoCastAbilities)) {
       result.autoCastAbilities = saved.autoCastAbilities
         .filter((id: unknown) => {

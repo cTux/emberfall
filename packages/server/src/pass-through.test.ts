@@ -32,6 +32,7 @@ test('server movement, prediction and interpolation pass through every scenery k
       return { ...tree, scene: 'forest' };
     }),
   ];
+
   for (const obstacle of obstacles) {
     for (const [dx, dy] of [
       [90, 0],
@@ -46,6 +47,7 @@ test('server movement, prediction and interpolation pass through every scenery k
         hitpoints: 100,
         scene: 'scene' in obstacle ? obstacle.scene : undefined,
       } as Player;
+
       if (
         !player.scene &&
         (Math.min(player.x, player.x + dx) < 12 ||
@@ -90,6 +92,7 @@ test('server movement, prediction and interpolation pass through every scenery k
       const local = new LocalMovement('p', () => {});
       local.render(world, 0);
       local.input(dx / 90, dy / 90, 0);
+
       for (let now = 50; now <= 500; now += 50) {
         local.render(world, now);
       }
@@ -135,8 +138,10 @@ test('pass-through preserves wrapping in both areas, speed and death rules', asy
   movePlayer(player, -1, -1, 100);
   assert(Math.abs(player.x - (420 + 18 / Math.sqrt(2))) < 1e-9);
   assert(Math.abs(player.y - (340 + 18 / Math.sqrt(2))) < 1e-9);
+
   for (const scene of [undefined, 'forest'] as const) {
     player.scene = scene;
+
     for (const [x, y, dx, dy] of [
       [2, 1280, -1, 0],
       [FOREST.width - 2, 1280, 1, 0],
@@ -182,6 +187,7 @@ test('companion escapes owner-position spawns inside trees without disabling tre
     tickCompanion(p, undefined, 10100, 0);
     assert.equal(p.bear!.x, center.x, 'teleport must use the owner position');
     p.x += 60;
+
     for (let now = 10150; now <= 14100; now += 50) {
       tickCompanion(p, undefined, now, 0.05);
     }

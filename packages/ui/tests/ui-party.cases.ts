@@ -10,6 +10,7 @@ test('party bars use sixty percent of their old width with compact coins immedia
     ['millions', 3000000, '3m'],
   ] as const) {
     await page.goto(story(`components-partycard--${variant}`));
+
     for (const width of [1280, 320]) {
       await page.setViewportSize({ width, height: 800 });
       const meter = page.getByRole('progressbar', { name: 'Astrid, lvl 1' });
@@ -36,6 +37,7 @@ test('companion health sits beneath the player at desktop and narrow widths', as
   page,
 }, testInfo) => {
   await page.goto(story('components-partycard--with-companion'));
+
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 800 });
     const player = page.getByRole('progressbar', { name: 'Astrid, lvl 1' });
@@ -66,6 +68,7 @@ test('party keeps portrait corner icons beside health with a thinner XP row belo
   page,
 }, testInfo) => {
   await page.goto(story('components-partycard--host-away'));
+
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 800 });
     const card = page.getByRole('article');

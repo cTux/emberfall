@@ -21,6 +21,7 @@ test('a player mention during an NPC greeting receives an answer in the chat log
   const contexts: { quotedSpeech?: string }[] = [];
   npcDialogueState.generate = async (context) => {
     contexts.push(JSON.parse(context));
+
     if (contexts.length === 1) {
       return new Promise<DialogueResult>((resolve) => {
         return (finish = resolve);
@@ -239,6 +240,7 @@ test('players can address Marta, see her answer, and watch her walk after leavin
       { timeout: 12_000 },
     )
     .toBeGreaterThan(5);
+
   for (let frame = 0; frame < 4; frame++) {
     await page.screenshot({ path: `test-results/npc-walking-${frame}.png` });
     await page.waitForTimeout(160);

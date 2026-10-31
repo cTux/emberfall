@@ -71,6 +71,7 @@ test('injected combat and spawn outcomes match default seeded draw order', (t) =
     const player = hero(),
       scene = arena();
     const stats = context.rules.characterStats(player);
+
     for (let id = 1; id <= 80; id++) {
       const enemy = { id, x: 1050, y: 1000, angle: 0, hitpoints: 1, kind: 'boss' as const };
       scene.enemies.push(enemy);
@@ -79,6 +80,7 @@ test('injected combat and spawn outcomes match default seeded draw order', (t) =
 
     scene.enemies = [];
     const enemies = Object.fromEntries(context.registries.enemies.entries());
+
     for (let i = 0; i < 20; i++) {
       scene.nextSpawn = 0;
       scene.spawns = [];

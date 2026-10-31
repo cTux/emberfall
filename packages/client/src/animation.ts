@@ -16,6 +16,7 @@ export function actorFrame(
   }
 
   const age = now - attackAt;
+
   if (age >= 0 && age < duration) {
     return age < duration * 0.4 ? 5 : 6;
   }
@@ -55,6 +56,7 @@ export function playerFrame(
   duration = 260,
 ) {
   const frame = actorFrame(now, moving, alive, attackAt, duration);
+
   if (frame === 0 || frame >= 5) {
     return frame;
   }

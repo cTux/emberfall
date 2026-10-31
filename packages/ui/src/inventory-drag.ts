@@ -24,6 +24,7 @@ export function inventoryDropProps(drop?: InventoryDrop) {
     },
     onDrop(event: DragEvent) {
       const inventory = source(event);
+
       if (!inventory) {
         return;
       }
@@ -31,6 +32,7 @@ export function inventoryDropProps(drop?: InventoryDrop) {
       event.preventDefault();
       event.stopPropagation();
       const id = event.dataTransfer.getData(`${INVENTORY_DRAG_PREFIX}${inventory}`);
+
       if (id && id.length <= 64) {
         drop?.onDrop(inventory, id, event);
       }

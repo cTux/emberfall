@@ -15,6 +15,7 @@ export function itemComparison(
   player: Pick<Player, 'classId' | 'equipment' | 'equipmentItems' | 'autoTarget'>,
 ) {
   const gear = GEAR_DEFINITIONS[item.itemId];
+
   if (!gear) {
     return undefined;
   }
@@ -22,6 +23,7 @@ export function itemComparison(
   const slot = EQUIPMENT_SLOTS.find((slot) => {
     return canEquip(slot, gear, player.classId ?? 'warrior');
   });
+
   if (!slot) {
     return undefined;
   }
@@ -31,6 +33,7 @@ export function itemComparison(
   const instance = player.equipmentItems?.[slot];
   const previousBonuses = instance?.itemId === equippedId ? instance?.stats : undefined;
   const rows: { label: string; value: string; improved: boolean }[] = [];
+
   for (const [bonus, next, previous] of [
     [false, gear.stats, equipped?.stats ?? {}],
     [true, item.stats ?? {}, previousBonuses ?? {}],
@@ -45,6 +48,7 @@ export function itemComparison(
       }
 
       const delta = (next[stat] ?? 0) - (previous[stat] ?? 0);
+
       if (!delta) {
         continue;
       }
@@ -77,6 +81,7 @@ export function itemComparison(
 
   const nextRate = gear.stats.attacksPerSecond ?? 0;
   const previousRate = equipped?.stats.attacksPerSecond ?? 0;
+
   if (nextRate > 0 && previousRate > 0 && nextRate !== previousRate) {
     const delta = 1 / nextRate - 1 / previousRate;
     rows.push({

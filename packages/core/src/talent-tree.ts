@@ -114,6 +114,7 @@ export function normalizeTalents(progress: CharacterProgress, classId: string) {
     TALENT_TREE.reduce((sum, node) => {
       return sum + talentRank(progress, node.id);
     }, 0) <= Math.min(20, progress.level);
+
   if (!valid) {
     progress.talents = {};
     progress.talentSlots = [null, null, null, null];
@@ -136,6 +137,7 @@ export function equipTalent(
   nodeId: string | null,
 ) {
   const node = nodeId ? nodesById.get(nodeId) : undefined;
+
   if (
     !Number.isInteger(slot) ||
     slot < 0 ||

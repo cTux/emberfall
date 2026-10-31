@@ -37,6 +37,7 @@ export class PresentationWorld {
     ) => {
       present.add(id);
       let entity = this.index.get(id);
+
       if (!entity) {
         entity = { id, order, [component]: value, ...(local ? { local: true as const } : {}) };
         this.ecs.add(entity);
@@ -50,10 +51,12 @@ export class PresentationWorld {
       const local = confirmed.id === playerId;
       const player = local && predicted ? { ...predicted, bear: confirmed.bear } : confirmed;
       put(`player:${player.id}`, 'player', player, order, local);
+
       if (player.bear) {
         put(`companion:${player.bear.id}`, 'companion', player.bear, order);
       }
     });
+
     for (const scene of [world?.scene, world?.training]) {
       if (scene) {
         for (const key of SCENE_COLLECTIONS) {

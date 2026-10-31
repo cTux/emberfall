@@ -22,6 +22,7 @@ export function drawDebuffs(
   debuffs.forEach((debuff, index) => {
     const px = x + index * 14;
     const image = statusImages[debuff.kind];
+
     if (image.naturalWidth) {
       ctx.drawImage(image, px, y - 12, 12, 12);
     }

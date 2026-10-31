@@ -37,6 +37,7 @@ test('ability images, particles and swings apply opacity and owner filtering in 
       window as unknown as { AbilityFixture: typeof import('./ability-effects-fixture') }
     ).AbilityFixture.compare();
   });
+
   for (const [kind, [full, half, invisible, otherHidden, ownVisible]] of Object.entries(results)) {
     expect(full, kind).toBeGreaterThan(0);
     expect(half, kind).toBeGreaterThan(full * 0.35);
@@ -66,6 +67,7 @@ test('ability settings default, update, survive presets and reload in village an
   await expect(slider).toHaveAttribute('aria-valuenow', '0');
   await slider.focus();
   await page.keyboard.press('Home');
+
   for (let i = 0; i < 10; i++) {
     await page.keyboard.press('ArrowRight');
   }

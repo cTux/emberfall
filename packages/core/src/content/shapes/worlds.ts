@@ -88,10 +88,12 @@ export const worldShapes = {
       }
 
       const ids = new Set<string>();
+
       for (const [index, station] of village.workstations.entries()) {
         const resident = village.villagers?.find((npc) => {
           return npc.id === station.npcId;
         });
+
         if (
           ids.has(station.id) ||
           !resident ||

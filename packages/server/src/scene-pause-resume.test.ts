@@ -16,6 +16,7 @@ test('empty and dead scenes freeze combat deadlines, resume on entry, and can re
     ]),
   };
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 0);
+
   for (const player of [a, b]) {
     sceneAction(world, player, { type: 'ready', ready: true }, 0);
   }
@@ -98,11 +99,13 @@ test('empty and dead scenes freeze combat deadlines, resume on entry, and can re
   assert.deepEqual(world.scene!.ready, []);
   assert.equal(a.scene, undefined);
   assert.equal(a.hitpoints, a.maxHitpoints);
+
   for (const player of [a, b, c]) {
     sceneAction(world, player, { type: 'ready', ready: true }, 66000);
   }
 
   tickScene(world, 71000, 0);
+
   for (const player of [a, b, c]) {
     sceneAction(world, player, { type: 'leaveScene' }, 71000);
   }

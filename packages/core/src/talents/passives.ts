@@ -17,6 +17,7 @@ export function talentIncomingDamage(
 ) {
   const value = state(player, scene);
   let prevented = 0;
+
   if (value.guardUntil > now) {
     const reduction = rank(player, 2, 0) === 2 ? 0.6 : 0.4;
     prevented += amount * reduction;
@@ -39,8 +40,10 @@ export function talentIncomingDamage(
   }
 
   const retaliation = rank(player, 2, 6);
+
   if (prevented > 0 && retaliation && now >= value.reprisalAt) {
     value.reprisalAt = now + 2000;
+
     for (const enemy of area(scene, player, 130, player)) {
       strike(
         scene,
@@ -57,6 +60,7 @@ export function talentIncomingDamage(
   }
 
   const rebirth = rank(player, 2, 9);
+
   if (amount > 0) {
     amount = Math.max(1, amount);
   }
@@ -87,6 +91,7 @@ export function talentWeaponHit(
   const value = state(player, scene);
   value.stats = stats ?? characterStats(player);
   const guard = rank(player, 2, 0);
+
   if (
     !companion &&
     enemy.challengedBy === player.id &&
@@ -113,6 +118,7 @@ export function talentWeaponHit(
 
   value.hits++;
   const follow = rank(player, 0, 0);
+
   if (!companion && follow && value.hits % 3 === 0) {
     for (const other of area(scene, enemy, 100, player)) {
       if (other !== enemy) {
@@ -131,6 +137,7 @@ export function talentWeaponHit(
 
   if ((player.classId ?? 'warrior') === 'druid' && companion) {
     const bond = rank(player, 1, 0);
+
     if (bond && value.hits % 3 === 0) {
       strike(
         scene,
@@ -144,16 +151,19 @@ export function talentWeaponHit(
     }
 
     const rake = rank(player, 1, 2);
+
     if (rake && context.random() < (rake === 2 ? 0.45 : 0.25)) {
       applyTalentAilment(enemy, player, 'bleed', 1, now, undefined, value.stats);
     }
 
     const life = rank(player, 1, 8);
+
     if (life && value.hits % 5 === 0) {
       heal(player, life === 2 ? 0.04 : 0.02);
     }
 
     const shared = rank(player, 1, 6);
+
     if (
       shared &&
       enemy.debuffs?.some((entry) => {
@@ -172,6 +182,7 @@ export function talentWeaponHit(
     }
 
     const instinct = rank(player, 1, 9);
+
     if (instinct && value.hits % 5 === 0) {
       for (const other of area(scene, enemy, 160, player)) {
         if (other !== enemy) {

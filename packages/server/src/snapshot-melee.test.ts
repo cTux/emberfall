@@ -108,6 +108,7 @@ test('every enemy overlapping during a swing is hit once, including late entrant
   scene.enemies.push({ id: 4, x: 2460, y: 1280, hitpoints: 50, angle: 0 });
   stepCombat(scene, [player], 10300, 0);
   assert.equal(scene.enemies[3].hitpoints, 50, 'no hits after the active window');
+
   for (const enemy of scene.enemies) {
     enemy.debuffs = undefined;
   }
@@ -127,6 +128,7 @@ test('attack rotation takes the short path and is consistent at server and displ
   assert(angle > 179 * degrees && angle < Math.PI);
   const rotate = (steps: number) => {
     let value = 0;
+
     for (let i = 0; i < steps; i++) {
       value = smoothAttackAngle(value, Math.PI / 2, 0.3 / steps);
     }

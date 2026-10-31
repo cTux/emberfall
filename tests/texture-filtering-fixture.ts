@@ -16,6 +16,7 @@ export async function compareFiltering() {
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(1, 0, 1, 1);
   const samples = [];
+
   for (const smooth of [false, true, false]) {
     renderer.begin();
     renderer.imageSmoothingEnabled = smooth;
@@ -60,6 +61,7 @@ export async function compareFiltering() {
   samples.push([...pixels.getImageData(10, 32, 1, 1).data]);
   samples.push([...pixels.getImageData(100, 32, 1, 1).data]);
   renderer.destroy();
+
   // Show the same source artwork before and after the tone transform, at game scale.
   for (const name of ['environment', 'mage-atlas', 'warrior-atlas']) {
     const source = new Image();
@@ -79,6 +81,7 @@ export async function compareFiltering() {
     const row = document.createElement('div');
     row.style.background = '#777d49';
     row.append(`${name}: original / softer tones`);
+
     for (const image of [original, softened]) {
       image.style.position = 'static';
       image.style.width = name === 'environment' ? '384px' : '256px';

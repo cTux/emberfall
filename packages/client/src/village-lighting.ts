@@ -26,14 +26,17 @@ export function drawVillageLighting(
     visibleScenery,
     camera: { x: cameraX, y: cameraY, width: viewWidth, height: viewHeight },
   } = frame;
+
   if (quality.lighting) {
     ctx.save();
     ctx.fillStyle = '#f3ca7a09';
     ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
     ctx.globalCompositeOperation = 'screen';
+
     for (let i = 0; i < TORCH_LIGHTS.length; i++) {
       const source = TORCH_LIGHTS[i];
       const light = { ...source, ...project(source.x, source.y) };
+
       if (
         light.x + light.radius < cameraX ||
         light.x - light.radius > cameraX + viewWidth ||
@@ -44,6 +47,7 @@ export function drawVillageLighting(
       }
 
       const texture = torchTextures[i];
+
       if (!texture) {
         continue;
       }
@@ -64,6 +68,7 @@ export function drawVillageLighting(
     }
 
     ctx.globalAlpha = cycle.lightAlpha;
+
     for (const player of players) {
       const pos = poses.pose(player);
       const lantern: Light = {

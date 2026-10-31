@@ -81,6 +81,7 @@ test('click and E gather replicated resources in village and forest, show deplet
     .toBe(4);
   await expect(canvas).toHaveAttribute('data-resource-health', '4');
   await page.screenshot({ path: 'test-results/gathering-tree-health.png' });
+
   for (let remaining = 3; remaining >= 0; remaining--) {
     await page.keyboard.press('e');
     await expect
@@ -174,6 +175,7 @@ test('green-zone E hits shorten gathering, replace the zone and allow the next g
   await page.waitForFunction(() => {
     const data = document.querySelector('canvas')!.dataset;
     const offset = Number(data.gatheringIndicator) - Number(data.gatheringZone);
+
     if (offset <= 0.03 || offset >= 0.11) {
       return false;
     }

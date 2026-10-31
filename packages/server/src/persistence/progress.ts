@@ -47,6 +47,7 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
 
   function decodeProgress(raw: string) {
     const data = JSON.parse(raw);
+
     if (data.classes) {
       for (const id of Object.keys(data.classes)) {
         if (!context.registries.classes.has(id)) {
@@ -74,6 +75,7 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
       }),
     ) as Record<ClassId, CharacterProgress>;
     let storehouse;
+
     if (data.formatVersion === 2) {
       storehouse = storehouseSchema.parse(data.storehouse);
     } else {
@@ -84,12 +86,15 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
           return id !== classId;
         }),
       ];
+
       for (const id of order) {
         const progress = classes[id];
         storehouse.coins += progress.coins ?? 0;
+
         for (const [tab, storage] of progress.storages!.entries()) {
           const destination = storehouse.storages[tab];
           const defaultName = `Storage ${tab + 1}`;
+
           if (destination.name === defaultName && storage.name !== defaultName) {
             destination.name = storage.name;
           }
@@ -100,6 +105,7 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
               destination.items.some((entry) => {
                 return entry.itemId === item.itemId;
               });
+
             if (destination.items.length < STORAGE_SLOTS || stacks) {
               addItem(destination.items, item, STORAGE_SLOTS);
             } else {

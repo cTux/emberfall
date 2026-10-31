@@ -57,6 +57,7 @@ export function prepareState(source: WorldState) {
     let fields = 0;
     HOT_SCALARS.forEach((field, bit) => {
       const scalar = scalars[field];
+
       if (typeof scalar === 'number') {
         fields |= 1 << bit;
         record[field] = scalar;
@@ -76,6 +77,7 @@ export function prepareState(source: WorldState) {
     }
 
     const header = { ...scene };
+
     for (const collection of collections) {
       scene[collection]?.forEach((value, order) => {
         return put(`${prefix}:${collection}:${value.id}`, value, order);
@@ -109,9 +111,11 @@ export function prepareState(source: WorldState) {
 export type PreparedState = ReturnType<typeof prepareState>;
 export function applyState(target: SessionState, source: PreparedState) {
   const present = new Set<string>();
+
   for (const value of source.entities) {
     present.add(value.key);
     let record = target.entities.get(value.key);
+
     if (!record) {
       record = new EntityState();
       target.entities.set(value.key, record);
@@ -128,6 +132,7 @@ export function applyState(target: SessionState, source: PreparedState) {
 
   target.header = source.header;
   target.serverNow = source.serverNow;
+
   for (const key of target.entities.keys()) {
     if (!present.has(key)) {
       target.entities.delete(key);
@@ -147,6 +152,7 @@ export function materializeState(state: SessionState): WorldState | undefined {
   const world = JSON.parse(state.header) as WorldState;
   world.serverNow = state.serverNow;
   world.players = [];
+
   for (const scene of [world.scene, world.training]) {
     if (scene) {
       for (const key of collections) {
@@ -164,6 +170,7 @@ export function materializeState(state: SessionState): WorldState | undefined {
         value[field] = record[field];
       }
     });
+
     if (key.startsWith('player:')) {
       world.players.push(value);
     } else if (key.startsWith('npc:')) {
@@ -171,6 +178,7 @@ export function materializeState(state: SessionState): WorldState | undefined {
     } else {
       const [prefix, collection] = key.split(':');
       const scene = prefix === 'scene' ? world.scene : world.training;
+
       if (scene && collections.includes(collection as (typeof collections)[number])) {
         (scene[collection as (typeof collections)[number]] as unknown[]).push(value);
       }

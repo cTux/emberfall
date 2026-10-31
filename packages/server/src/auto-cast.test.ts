@@ -14,6 +14,7 @@ test('ranged auto-casts wait for a living target in range, then launch and damag
   t.mock.method(Math, 'random', () => {
     return 0.5;
   });
+
   for (const training of [false, true]) {
     for (const classId of ['ranger', 'mage', 'druid']) {
       for (const axis of ['x', 'y'] as const) {
@@ -52,6 +53,7 @@ test('ranged auto-casts wait for a living target in range, then launch and damag
         );
         // At maximum bow range its spread can legitimately pass beside a small body.
         target[axis] = (player[axis] - 100 + boundary) % boundary;
+
         for (let now = 10600; now <= 11450; now += 50) {
           tickPlayerCombat(scene, [player], now, 0.05);
         }

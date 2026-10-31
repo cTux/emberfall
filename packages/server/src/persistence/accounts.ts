@@ -8,6 +8,7 @@ export function createAccountRepository(
 ) {
   function steamAccount(steamId: string) {
     const row = db.prepare('SELECT * FROM steam_accounts WHERE steam_id=?').get(steamId);
+
     if (!row) {
       return undefined;
     }
@@ -43,6 +44,7 @@ export function createAccountRepository(
   function renameSteam(steamId: string, nickname: string) {
     return transaction(() => {
       const account = steamAccount(steamId);
+
       if (!account) {
         throw new Error('Account not found');
       }

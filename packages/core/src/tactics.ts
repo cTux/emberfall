@@ -36,6 +36,7 @@ export function attackTarget(
     } else {
       for (const rule of tactics.offensive) {
         const difference = score(enemy, rule) - score(best, rule);
+
         if (difference < 0) {
           best = enemy;
         }
@@ -93,11 +94,13 @@ export function healingTarget(
       }
 
       const candidate: Candidate = { body, player: body === ally, self: body === owner };
+
       if (!best) {
         best = candidate;
       } else {
         for (const rule of tactics.defensive) {
           const difference = score(candidate, rule) - score(best, rule);
+
           if (difference < 0) {
             best = candidate;
           }

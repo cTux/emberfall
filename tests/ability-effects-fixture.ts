@@ -16,6 +16,7 @@ export async function compare() {
   sample.width = sample.height = 256;
   const ctx = sample.getContext('2d')!;
   const results: Record<string, number[]> = {};
+
   for (const kind of [
     'arrow',
     'fireball',
@@ -26,6 +27,7 @@ export async function compare() {
     'swing',
   ]) {
     results[kind] = [];
+
     for (const [transparency, hide, owner] of [
       [0, false, 'me'],
       [0.5, false, 'me'],
@@ -67,6 +69,7 @@ export async function compare() {
         preferences,
         'me',
       );
+
       if (kind === 'swing') {
         drawPlayerAttack(
           pixi,
@@ -90,6 +93,7 @@ export async function compare() {
       ctx.drawImage(canvas, 0, 0);
       const pixels = ctx.getImageData(0, 0, 256, 256).data;
       let brightness = 0;
+
       for (let i = 0; i < pixels.length; i += 4) {
         brightness += pixels[i] + pixels[i + 1] + pixels[i + 2];
       }

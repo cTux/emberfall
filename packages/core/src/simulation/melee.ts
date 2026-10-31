@@ -16,6 +16,7 @@ export function slash(
   context: Game = game,
 ) {
   let swing = swordHits.get(actor);
+
   if (!swing || swing.at !== actor.attackAt || swing.sceneId !== scene.id) {
     swing = { sceneId: scene.id, at: actor.attackAt!, enemies: new Set() };
     swordHits.set(actor, swing);
@@ -23,6 +24,7 @@ export function slash(
 
   const range =
     actor === owner ? defaultSpellRange(owner, context) : context.rules.companionStats(owner).range;
+
   for (const enemy of scene.enemies) {
     if (
       enemy.hitpoints <= 0 ||
@@ -33,6 +35,7 @@ export function slash(
     }
 
     swing.enemies.add(enemy.id);
+
     if (actor === owner) {
       hitWithWeapon(
         scene,

@@ -33,12 +33,14 @@ export function drawCritter(
   shadows = false,
 ) {
   const image = animalArt;
+
   if (!image.naturalWidth) {
     return;
   }
 
   ctx.save();
   ctx.translate(critter.x, critter.y);
+
   if (!shadows) {
     ctx.fillStyle = '#06181050';
     ctx.beginPath();

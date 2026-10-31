@@ -57,6 +57,7 @@ test('successful elite rolls use configured HP; timer spawns only one configured
     portals: [],
   };
   const p = player(2400, 1280);
+
   for (let now = 1000; (scene.spawnCount ?? 0) < 20 && now < 50000; now += 400) {
     stepCombat(scene, [p], now, 0);
   }

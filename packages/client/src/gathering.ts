@@ -45,10 +45,12 @@ export function resourceScenery(node: ResourceNode, state?: ResourceState): Scen
             : environmentArt;
   const key = `${node.kind}:${depleted}:${column}:${row}:${node.variant ?? ''}`;
   let frame = frames.get(key);
+
   if (!frame || !image.naturalWidth || image.dataset.artReady !== 'true') {
     const sprite = document.createElement('canvas');
     const resolution = Number(image.dataset.artResolution ?? 1);
     sprite.width = sprite.height = 128 * resolution;
+
     if (image.naturalWidth && image.dataset.artReady === 'true') {
       sprite
         .getContext('2d')!

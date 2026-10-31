@@ -30,6 +30,7 @@ export class WebSocket extends EventEmitter {
       });
       this.room.onStateChange((state) => {
         const world = materializeState(state);
+
         if (world) {
           this.emit('message', Buffer.from(JSON.stringify({ type: 'state', world })));
         }

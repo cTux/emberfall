@@ -47,6 +47,7 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
   await page.screenshot({ path: 'test-results/innkeeper-idle.png' });
+
   for (let frame = 0; frame < 4; frame++) {
     await page.waitForTimeout(400);
     await page.screenshot({

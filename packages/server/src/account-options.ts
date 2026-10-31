@@ -9,6 +9,7 @@ export interface SteamOptions {
 export function steamOptionsFromEnv(): SteamOptions {
   const origin = process.env.STEAM_ORIGIN;
   const apiKey = process.env.STEAM_WEB_API_KEY;
+
   if (!origin || !apiKey) {
     throw new Error('Set STEAM_ORIGIN and STEAM_WEB_API_KEY to enable Steam login.');
   }
@@ -18,6 +19,7 @@ export function steamOptionsFromEnv(): SteamOptions {
 
 export function accountOrigins(options: Pick<SteamOptions, 'origin' | 'clientUrl'>) {
   const origin = new URL(options.origin);
+
   if (origin.protocol !== 'https:' || origin.origin !== options.origin) {
     throw new Error('STEAM_ORIGIN must be an HTTPS origin without a path or trailing slash.');
   }
@@ -25,8 +27,10 @@ export function accountOrigins(options: Pick<SteamOptions, 'origin' | 'clientUrl
   const canonicalOrigin = origin.origin;
   let clientUrl: string | undefined;
   let clientOrigin: string;
+
   if (options.clientUrl) {
     const client = new URL(options.clientUrl);
+
     if (
       client.protocol !== 'https:' ||
       client.username ||

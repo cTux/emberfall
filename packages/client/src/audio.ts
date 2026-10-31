@@ -22,6 +22,7 @@ export function gameAudio(preferences: () => Preferences) {
             started.delete(audio);
             audio.currentTime = 0;
             const key = zone as keyof typeof tracks;
+
             if (selected[key] === index) {
               selected[key] = (index + 1) % names.length;
             }
@@ -63,6 +64,7 @@ export function gameAudio(preferences: () => Preferences) {
   const unlock = () => {
     audioUnlocked = true;
     unlocked = true;
+
     if (preferences().music && !document.hidden) {
       start(music[area][selected[area]]);
     }
@@ -90,6 +92,7 @@ export function gameAudio(preferences: () => Preferences) {
       const prefs = preferences();
       const dt = Math.min(0.1, Math.max(0, (now - lastTime) / 1000));
       lastTime = now;
+
       for (const [key, playlist] of Object.entries(music)) {
         for (const [index, audio] of playlist.entries()) {
           const target =
@@ -97,6 +100,7 @@ export function gameAudio(preferences: () => Preferences) {
               ? prefs.musicVolume
               : 0;
           audio.volume += Math.max(-dt, Math.min(dt, target - audio.volume));
+
           if (target > 0) {
             start(audio);
           } else if (audio.volume <= 0.001) {
@@ -116,6 +120,7 @@ export function gameAudio(preferences: () => Preferences) {
     },
     play(name: 'slash' | 'hit' | 'warning') {
       const prefs = preferences();
+
       if (!unlocked || !prefs.sound || document.hidden || prefs.volume === 0) {
         return;
       }
@@ -123,6 +128,7 @@ export function gameAudio(preferences: () => Preferences) {
       const audio = sounds[name].find((voice) => {
         return voice.paused || voice.ended;
       });
+
       if (!audio) {
         return;
       }
@@ -135,6 +141,7 @@ export function gameAudio(preferences: () => Preferences) {
       window.removeEventListener('pointerdown', unlock);
       window.removeEventListener('keydown', unlock);
       document.removeEventListener('visibilitychange', silence);
+
       for (const audio of [...Object.values(music).flat(), ...Object.values(sounds).flat()]) {
         audio.pause();
         audio.removeAttribute('src');

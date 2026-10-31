@@ -10,9 +10,11 @@ test('DPS meter uses custom cursors and respects cursor preferences', async ({ p
   await page.getByRole('button', { name: 'Close Settings' }).click();
   const meter = page.getByLabel('Damage per second', { exact: true });
   const header = meter.locator('header');
+
   for (const size of [32, 48, 64, null]) {
     await page.locator('body').evaluate((body, size) => {
       body.dataset.customCursor = String(size !== null);
+
       if (size !== null) {
         body.dataset.cursorSize = String(size);
       }
@@ -60,6 +62,7 @@ test('DPS meter toggles independently of performance graphs and persists across 
   const toggle = page.getByRole('switch', { name: 'DPS meter', exact: true });
   await openSettings();
   await expect(toggle).not.toBeChecked();
+
   for (const name of ['FPS graph', 'Latency graph']) {
     await expect(page.getByRole('switch', { name, exact: true })).not.toBeChecked();
   }
@@ -107,6 +110,7 @@ test('party damage bars drill into abilities and return with right click anywher
   const druid = { ...player, id: randomUUID(), name: 'Willow', classId: 'druid' };
   const ranger = { ...player, id: randomUUID(), name: 'Arrow', classId: 'ranger' };
   const outsider = { ...player, id: randomUUID(), name: 'Outsider', partyId: undefined };
+
   for (const member of [mage, druid, ranger, outsider]) {
     world.players.set(member.id, member);
   }
@@ -172,6 +176,7 @@ test('party damage bars drill into abilities and return with right click anywher
       .locator('.damage-meter-icon img'),
   ).toHaveAttribute('src', /bleed\.png$/);
   await meter.screenshot({ path: 'test-results/damage-meter-abilities.png' });
+
   for (const target of [
     meter.locator('header'),
     meter.locator('.damage-meter-row').first(),

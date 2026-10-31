@@ -10,6 +10,7 @@ export function interactParty(
   now: number,
 ) {
   const target = players.get(targetId);
+
   if (
     !target ||
     player.hitpoints <= 0 ||
@@ -41,6 +42,7 @@ export function partyCommand(
   now: number,
 ) {
   const [command, raw, ...extra] = text.trim().split(/\s+/);
+
   if (extra.length || (command === '/leave' && raw)) {
     throw new Error('Invalid party command.');
   }
@@ -51,6 +53,7 @@ export function partyCommand(
         return p.name.toLowerCase() === name.toLowerCase();
       })
     : [];
+
   if (name && matches.length !== 1) {
     throw new Error('Player name was not found or is ambiguous.');
   }

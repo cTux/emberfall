@@ -24,13 +24,16 @@ test('action bar slots follow custom cursor size and native fallback', async ({ 
   const bar = page.getByRole('region', { name: 'Action bar', exact: true });
   const ability = bar.getByRole('button', { name: 'Choose ability for slot 1: Cleaving Strike' });
   await expect(ability).toBeVisible();
+
   for (const size of [32, 48, 64, null]) {
     await page.locator('body').evaluate((body, size) => {
       body.dataset.customCursor = String(size !== null);
+
       if (size !== null) {
         body.dataset.cursorSize = String(size);
       }
     }, size);
+
     for (const slot of [ability, bar.getByRole('button', { name: 'Empty ability slot 2' })]) {
       await slot.hover();
       await expect(slot).toHaveCSS(
@@ -88,6 +91,7 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   })!;
   const player = [...world.players.values()][0];
   const names = { warrior: 'Slash', ranger: 'Piercing arrows', mage: 'Fireball', druid: 'Roots' };
+
   for (const classId of CLASS_IDS) {
     player.classId = classId;
     player.equipment = starterEquipment(classId);
@@ -143,6 +147,7 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   await expect(cooldown).toHaveCount(0);
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
+
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 320, height: 700 },
@@ -155,6 +160,7 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
     const empty = bar.getByRole('button', { name: 'Empty ability slot 1', exact: true });
     await expect(empty).toHaveCSS('background-color', 'rgba(0, 0, 0, 0.76)');
     await expect(empty).toHaveCSS('border-top', '1px solid rgb(135, 80, 57)');
+
     if (viewport.width === 320) {
       const chat = (await page
         .getByRole('complementary', { name: 'World chat', exact: true })

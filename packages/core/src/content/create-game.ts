@@ -60,6 +60,7 @@ export function createGame(
         ),
       ) as Registration;
       const result: unknown = mod.register(registration);
+
       if (result !== undefined) {
         throw new Error(`Mod '${mod.id}': registration must be synchronous and return no value`);
       }

@@ -15,8 +15,10 @@ export async function preview() {
   await image.decode();
   const counts: number[] = [];
   const disabled: number[] = [];
+
   for (const enabled of [false, true]) {
     pixi.begin();
+
     for (const station of VILLAGE_DEFINITION.workstations) {
       const column = station.art % 4,
         row = Math.floor(station.art / 4);
@@ -51,6 +53,7 @@ export async function preview() {
     capture.height = 480;
     const pixels = capture.getContext('2d')!;
     pixels.drawImage(canvas, 0, 0);
+
     for (const station of VILLAGE_DEFINITION.workstations) {
       const data = pixels.getImageData(
         (station.art % 4) * 260,
@@ -59,6 +62,7 @@ export async function preview() {
         240,
       ).data;
       let count = 0;
+
       for (let i = 0; i < data.length; i += 4) {
         if (data[i] || data[i + 1] || data[i + 2]) {
           count++;
@@ -73,6 +77,7 @@ export async function preview() {
   pixi.begin();
   ctx.fillStyle = '#323b2d';
   ctx.fillRect(0, 0, 1040, 480);
+
   for (const station of VILLAGE_DEFINITION.workstations) {
     const column = station.art % 4,
       row = Math.floor(station.art / 4);

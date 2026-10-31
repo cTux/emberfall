@@ -15,6 +15,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
         : node.classId === 'mage'
           ? 'Burn'
           : 'Roots';
+
   if (node.classId === 'druid' && node.column === 1) {
     return [
       'Every third Bear hit deals an additional 40% / 70% weapon damage.',

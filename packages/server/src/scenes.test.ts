@@ -16,6 +16,7 @@ test('system chat announces scene transitions and deaths exactly once', async ()
     ]),
   };
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 0);
+
   for (const player of [a, b]) {
     sceneAction(world, player, { type: 'ready', ready: true }, 0);
   }
@@ -147,12 +148,14 @@ test('every scene exit restores all classes and injured or dead companions to th
         { type: 'createScene', scene: 'Forest', difficulty: 'Easy' },
         10000,
       );
+
       for (const player of players) {
         sceneAction(world, player, { type: 'ready', ready: true }, 10000);
       }
 
       tickScene(world, 15000, 0);
       const scene = world.scene!;
+
       if (exit === 'portal') {
         scene.phase = 'ended';
         scene.portals = players.map((p) => {
@@ -163,6 +166,7 @@ test('every scene exit restores all classes and injured or dead companions to th
       for (const player of players) {
         player.maxHitpoints = 120;
         player.hitpoints = exit === 'death' ? 0 : 12;
+
         if (player.bear) {
           player.bear.maxHitpoints = 180;
           player.bear.hitpoints = bearHealth;
@@ -179,6 +183,7 @@ test('every scene exit restores all classes and injured or dead companions to th
         );
         assert.equal(player.scene, undefined);
         assert.equal(player.hitpoints, 120);
+
         if (player.bear) {
           assert.equal(player.bear.hitpoints, 180);
           assert.equal(player.bear.resurrectAt, undefined);

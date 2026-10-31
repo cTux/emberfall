@@ -38,6 +38,7 @@ export function prepareVillageFrame(
     }),
     ...npcScenery(view.npcs ?? [], view.serverNow ?? now),
   ];
+
   for (const object of scenery) {
     if (object.frames) {
       Object.assign(object, object.frames[Math.floor(now / 400) % object.frames.length]);

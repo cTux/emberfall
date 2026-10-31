@@ -38,6 +38,7 @@ export function stepMovement(
       const epoch = player.scene === 'forest' ? sceneId : 'lobby';
       const elapsed = command.elapsed ?? 0;
       const dt = Math.min(budget, command.durationMs! - elapsed);
+
       if (command.epoch === epoch && now - session.inputAt <= 1000) {
         movePlayer(player, command.x, command.y, dt / 1000);
         player.inputX = command.x;
@@ -48,6 +49,7 @@ export function stepMovement(
       player.inputSeq = command.seq;
       player.inputElapsed = command.elapsed;
       budget -= dt;
+
       if (command.elapsed >= command.durationMs! - 0.0001) {
         session.inputs.shift();
       }
@@ -57,11 +59,13 @@ export function stepMovement(
   }
 
   const command = session.inputs.shift();
+
   if (command) {
     player.inputSeq = command.seq;
   }
 
   const epoch = player.scene === 'forest' ? sceneId : 'lobby';
+
   if (command) {
     session.epoch = command.epoch;
     session.x = command.x;

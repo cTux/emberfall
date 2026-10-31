@@ -40,6 +40,7 @@ export async function compare() {
   ) => {
     pixi.begin();
     canvas.reset();
+
     for (const ctx of [pixi as unknown as CanvasRenderingContext2D, canvas]) {
       ctx.fillStyle = '#809060';
       ctx.fillRect(0, 0, 256, 256);
@@ -55,13 +56,16 @@ export async function compare() {
       actual: [...ctx.getImageData(x, y, 1, 1).data],
       expected: [...canvas.getImageData(x, y, 1, 1).data],
     };
+
     if (name in statusImages) {
       // Exclude the stack numeral and count colored glyph pixels, allowing the
       // small antialiasing differences between SVG scaling and nearest textures.
       const pixels = ctx.getImageData(80, 88, 12, 6).data;
       icons[name] = 0;
+
       for (let i = 0; i < pixels.length; i += 4) {
         const channels = [pixels[i], pixels[i + 1], pixels[i + 2]];
+
         if (Math.max(...channels) - Math.min(...channels) > 40) {
           icons[name]++;
         }

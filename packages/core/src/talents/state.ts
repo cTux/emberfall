@@ -32,6 +32,7 @@ export function clearTalentEffects(player: Player) {
 export const deepCuts = new WeakMap<Enemy, WeakMap<Player, number>>();
 export function state(player: Player, scene: SceneState): FighterState {
   let value = fighters.get(player);
+
   if (!value || value.scene !== scene || value.classId !== (player.classId ?? 'warrior')) {
     value = {
       scene,
@@ -124,6 +125,7 @@ export function shiftTalentEffects(scene: SceneState, players: Player[], delay: 
 
   for (const player of players) {
     const value = fighters.get(player);
+
     if (!value || value.scene !== scene) {
       continue;
     }

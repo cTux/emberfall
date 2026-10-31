@@ -27,6 +27,7 @@ serverLog.info('Server listening', {
   url: `${tls ? 'https' : 'http'}://localhost:${port}`,
   host: process.env.HOST ?? '0.0.0.0',
 });
+
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
     serverLog.info('Shutdown requested', { signal });

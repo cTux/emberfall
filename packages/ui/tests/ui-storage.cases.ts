@@ -120,6 +120,7 @@ test('inventory artwork stays centered inside every filled slot', async ({ page 
     await page.goto(story(`components-backpack--${state}`));
     const slots = page.locator('[data-backpack-item]');
     await expect(slots.first()).toBeVisible();
+
     for (const slot of await slots.all()) {
       const bounds = (await slot.boundingBox())!;
       const icon = (await slot.locator('img').boundingBox())!;
@@ -143,6 +144,7 @@ test('backpacks show twenty wood-colored slots and tabs sit outside the left win
   }
 
   await page.goto(story('screens-compositions--settings'));
+
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 800 });
     const title = page.getByRole('heading', { name: 'Settings', exact: true });
@@ -174,6 +176,7 @@ test('backpack header action mirrors gold and works with the keyboard', async ({
   await page.goto(story('components-backpack--selling'));
   const action = page.getByRole('button', { name: 'Sell all', exact: true });
   const gold = page.getByLabel('Your backpack: 5000 coins');
+
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 800 });
     const a = (await action.boundingBox())!;

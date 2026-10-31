@@ -40,13 +40,16 @@ export function offensive(cast: TalentCast) {
         : classId === 'mage'
           ? stats.bonuses.moreProjectiles
           : 0);
+
     for (let copy = 0; copy < copies && enemy.hitpoints > 0; copy++) {
       strike(scene, player, enemy, scale, at, ability, context);
+
       if (classId === 'warrior' && stats.bonuses.additionalAttack > 0) {
         talentWeaponHit(scene, player, enemy, at, false, stats, context);
       }
 
       const serrated = rank(player, 1, 2);
+
       if (column === 0 && serrated && context.random() < (serrated === 2 ? 0.45 : 0.25)) {
         applyTalentAilment(enemy, player, ailment, 1, at, undefined, stats);
       }
@@ -56,6 +59,7 @@ export function offensive(cast: TalentCast) {
       }
 
       const deep = rank(player, 1, 9);
+
       if (
         deep &&
         enemy.debuffs?.some((entry) => {
@@ -82,6 +86,7 @@ export function offensive(cast: TalentCast) {
 
   if (tier === 1 && column === 1 && primary) {
     hit(primary, now, learned === 2 ? 1.5 : 1);
+
     if (primary.kind !== 'boss') {
       primary.x = wrap(
         player.x + wrappedDelta(primary.x, player.x, FOREST.width) * 0.25,
@@ -94,6 +99,7 @@ export function offensive(cast: TalentCast) {
     }
 
     const trail = rank(player, 1, 4);
+
     if (trail) {
       for (const enemy of effectArea(scene, primary, 150)) {
         applyTalentAilment(enemy, player, ailment, trail, now, undefined, stats);
@@ -112,6 +118,7 @@ export function offensive(cast: TalentCast) {
 
       talentVisual(scene, player, column, column === 0 ? player : aim, at);
       const advancing = rank(player, 0, 4);
+
       if (column === 0 && advancing && at === now + (count - 1) * 500) {
         for (const enemy of effectArea(scene, aim, 220)) {
           strike(
@@ -150,6 +157,7 @@ export function offensive(cast: TalentCast) {
         : classId === 'ranger'
           ? stats.bonuses.projectilePierce
           : 0;
+
     for (let extra = 0; previous && extra < extras; extra++) {
       const next = scene.enemies
         .filter((enemy) => {
@@ -173,6 +181,7 @@ export function offensive(cast: TalentCast) {
         .sort((a, b) => {
           return forestDistance(previous, a) - forestDistance(previous, b);
         })[0];
+
       if (!next) {
         break;
       }
@@ -183,6 +192,7 @@ export function offensive(cast: TalentCast) {
   }
 
   const second = column === 0 ? rank(player, column, 2) : 0;
+
   if (second && tier === 0 && context.random() < (second === 2 ? 0.5 : 0.25)) {
     schedule(scene, player, nodeId, now + 300, 0, 1, (at) => {
       for (const enemy of effectArea(scene, aim, 125)) {
@@ -192,6 +202,7 @@ export function offensive(cast: TalentCast) {
   }
 
   const value = state(player, scene);
+
   if (column === 0 && tier === 2 && rank(player, 0, 6)) {
     value.fissure = { ...aim, until: now + 4000 };
   } else if (tier === 0 && value.fissure && value.fissure.until > now) {
@@ -211,6 +222,7 @@ export function offensive(cast: TalentCast) {
   }
 
   const momentum = rank(player, 0, 8);
+
   if (column === 0 && tier === 3 && primary && primary.hitpoints <= 0 && momentum) {
     const id = `talent:${classId}:${slot}`;
     player.talentCooldowns![id] = Math.max(
@@ -222,6 +234,7 @@ export function offensive(cast: TalentCast) {
 
   if (tier === 0 && value.empoweredUntil && value.empoweredUntil > now) {
     value.empoweredUntil = undefined;
+
     for (const enemy of targets) {
       strike(
         scene,
@@ -240,9 +253,11 @@ export function offensive(cast: TalentCast) {
   });
   value.sequence.push({ slot, at: now });
   const rhythm = rank(player, 0, 9);
+
   if (rhythm && value.sequence.length >= 3 && now >= value.rhythmAt) {
     value.rhythmAt = now + 8000;
     value.sequence = [];
+
     for (const enemy of effectArea(scene, player, 200)) {
       strike(
         scene,

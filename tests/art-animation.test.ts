@@ -24,6 +24,7 @@ test('players use all six gait poses without changing action timing or left faci
     }),
     [1, 2, 3, 4, 8, 9, 1],
   );
+
   for (const time of [999, 1000, 1104, 1260]) {
     assert.equal(playerFrame(time, false, true, 1000), actorFrame(time, false, true, 1000));
   }

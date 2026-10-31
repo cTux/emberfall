@@ -37,6 +37,7 @@ export function startMaintenance({
   const progressTick = setInterval(() => {
     for (const [ws, session] of sessions) {
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
+
       if (player && ws.readyState === WebSocket.OPEN) {
         player.playtimeSeconds++;
       }
@@ -45,6 +46,7 @@ export function startMaintenance({
   const autosave = setInterval(() => {
     for (const [ws, session] of sessions) {
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
+
       if (!player || !session.characterId) {
         continue;
       }
@@ -52,6 +54,7 @@ export function startMaintenance({
       try {
         characters.save(session.characterId, player.name, player);
         send(ws, { type: 'saved', savedAt: Date.now() });
+
         if (ws.readyState === WebSocket.CLOSED && (session.reconnectUntil ?? 0) <= Date.now()) {
           leave(session);
           sessions.delete(ws);

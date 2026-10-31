@@ -56,6 +56,7 @@ export function createRegistry<T extends { id: string }>(name: string) {
     },
     require(id: string) {
       const entry = entries.get(id);
+
       if (!entry) {
         throw new Error(`Unknown ${name} '${id}'`);
       }

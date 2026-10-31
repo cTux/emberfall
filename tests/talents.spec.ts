@@ -73,6 +73,7 @@ test('all class columns, generated icons and confirmed cast effects render in th
     return entry.players.size;
   })!;
   const player = [...world.players.values()][0];
+
   for (const classId of CLASS_IDS) {
     Object.assign(player, {
       classId,
@@ -84,6 +85,7 @@ test('all class columns, generated icons and confirmed cast effects render in th
       x: TRAINING_ZONES[0].x,
       y: TRAINING_ZONES[0].y - 15,
     });
+
     for (const node of TALENT_TREE.filter((node) => {
       return node.classId === classId && node.kind === 'ability';
     })) {
@@ -92,11 +94,13 @@ test('all class columns, generated icons and confirmed cast effects render in th
 
     await page.getByRole('button', { name: 'Talents' }).click();
     const tree = page.getByRole('region', { name: 'Talents', exact: true });
+
     for (const column of TALENT_COLUMNS[classId]) {
       await expect(tree.getByText(column, { exact: true })).toBeVisible();
     }
 
     await expect(tree.locator('[data-talent-node]')).toHaveCount(30);
+
     for (const node of TALENT_TREE.filter((node) => {
       return node.classId === classId;
     })) {
@@ -113,6 +117,7 @@ test('all class columns, generated icons and confirmed cast effects render in th
     await page.mouse.move(0, 0);
     await page.screenshot({ path: `test-results/talents-${classId}.png` });
     await page.keyboard.press('n');
+
     for (let column = 0; column < 3; column++) {
       const node = TALENT_TREE.find((node) => {
         return node.classId === classId && node.column === column && node.row === 1;

@@ -6,6 +6,7 @@ export function hitOutline(mask: HTMLCanvasElement, color = '#ff3737', radius = 
   outline.width = mask.width + radius * 2;
   outline.height = mask.height + radius * 2;
   const c = outline.getContext('2d')!;
+
   for (const [x, y] of [
     [0, 2],
     [4, 2],
@@ -46,6 +47,7 @@ export function drawTargetHit(
   }
 
   let sprites = hitSprites.get(mask);
+
   if (!sprites) {
     const tint = document.createElement('canvas');
     tint.width = mask.width;
@@ -75,6 +77,7 @@ export function drawDamageFlash(ctx: DrawingContext, world: WorldState | null, i
     })
     .at(-1);
   const age = (world?.serverNow ?? 0) - (hit?.at ?? -10000);
+
   if (age < 0 || age > 280) {
     return;
   }
@@ -98,11 +101,13 @@ export function drawPartyOutline(
   highlighted = false,
 ) {
   let cache = partyOutlines.get(mask);
+
   if (!cache) {
     partyOutlines.set(mask, (cache = new Map()));
   }
 
   let outline = cache.get(highlighted);
+
   if (!outline) {
     const silhouette = document.createElement('canvas');
     silhouette.width = 48;

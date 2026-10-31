@@ -40,6 +40,7 @@ test('XP bar follows authoritative leveling and saved paragon after rejoining', 
   await expect(
     card.getByRole('progressbar', { name: 'XP hero, lvl 2', exact: true }),
   ).toBeVisible();
+
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     const health = await card

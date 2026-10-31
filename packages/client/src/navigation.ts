@@ -19,6 +19,7 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
   const me = world.players.find((p) => {
     return p.id === id;
   });
+
   if (!me) {
     return;
   }
@@ -37,6 +38,7 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
     .map((p) => {
       return { x: p.x, y: p.y, name: p.name, color: '#89e5c5' };
     });
+
   if (me.scene !== 'forest') {
     targets.push({ ...LOBBY_PORTAL, name: 'Forest portal', color: '#70d8ff' });
   }
@@ -45,6 +47,7 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
     const boss = world.scene?.enemies.find((e) => {
       return e.kind === 'boss' && e.hitpoints > 0;
     });
+
     if (boss) {
       targets.push({
         x: boss.x,
@@ -68,11 +71,13 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
     sy = ctx.canvas.height / height;
   ctx.save();
   ctx.setTransform(sx, 0, 0, sy, 0, 0);
+
   for (const target of targets) {
     const x = me.x + wrappedDelta(target.x, me.x, FOREST.width);
     const y = me.y + wrappedDelta(target.y, me.y, FOREST.height);
     const point = new DOMPoint(x, y).matrixTransform(matrix);
     const arrow = edgeArrow(point.x / sx, point.y / sy, width, height);
+
     if (!arrow) {
       continue;
     }

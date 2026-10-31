@@ -23,6 +23,7 @@ export function sampleFrameTiming(
 
         finished = true;
         clearTimeout(deadline);
+
         if (pending !== undefined) {
           cancelFrame(pending);
         }
@@ -52,6 +53,7 @@ export function sampleFrameTiming(
 
         previous = now;
         const sampleMs = now - startedAt;
+
         if ((sampleMs < 3000 || intervals.length < 6) && sampleMs < 15000) {
           pending = requestFrame(frame);
         } else {

@@ -25,8 +25,10 @@ test('village rocks and all five plant kinds leave paths and service clearings o
     ).size,
     5,
   );
+
   for (const collection of [ROCKS, PLANTS]) {
     assert(Object.isFrozen(collection));
+
     for (const object of collection) {
       assert(Object.isFrozen(object));
       assert(object.x >= 35 && object.x < ARENA.width - 35);
@@ -66,6 +68,7 @@ test('village rocks and all five plant kinds leave paths and service clearings o
   }
 
   const decorations = [...ROCKS, ...PLANTS];
+
   for (let i = 0; i < decorations.length; i++) {
     for (let j = i + 1; j < decorations.length; j++) {
       assert(

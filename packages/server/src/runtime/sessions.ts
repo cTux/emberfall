@@ -55,6 +55,7 @@ export function connectSession(
   });
   ws.on('close', (code: number) => {
     serverLog.info('Client disconnected', { sessionId: session.id, code });
+
     if (isClosing()) {
       sessions.delete(ws);
 
@@ -72,6 +73,7 @@ export function connectSession(
       session.x = session.y = 0;
       session.inputAt = 0;
       const player = worlds.get(session.worldId)?.players.get(session.id);
+
       if (player) {
         player.reconnecting = true;
         delete player.gathering;
@@ -87,6 +89,7 @@ export function connectSession(
           serverLog.error('Character save failed on reconnect expiry; autosave will retry:', error);
         }
       }, RUNTIME.reconnectMs);
+
       if (player?.attacking) {
         player.attacking = false;
       }

@@ -2,6 +2,7 @@
 const host = import.meta.env?.BASE_API;
 const port = import.meta.env?.BASE_PORT;
 const configured = host ? new URL(`https://${host}`) : undefined;
+
 if (configured && port) {
   configured.port = port;
 }

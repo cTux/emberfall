@@ -97,6 +97,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     load(token: string) {
       const hash = createHash('sha256').update(token).digest('hex');
       const identity = this.db.prepare('SELECT id FROM characters WHERE token_hash=?').get(hash);
+
       if (!identity) {
         throw new Error('Character save not found.');
       }
@@ -110,6 +111,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
           `SELECT c.id, c.name, s.data, s.version FROM characters c JOIN ${this.savesTable} s ON s.user_id=c.id AND s.slot=0 WHERE c.id=?`,
         )
         .get(id);
+
       if (!row) {
         throw new Error(
           'Character save not found. Check that you are connected to the correct server.',
@@ -137,6 +139,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
     importCharacter(id: string, tokenHash: string, name: string, raw: string) {
       const { classId, classes, storehouse } = decodeProgress(raw);
+
       if (
         this.db.prepare('SELECT 1 FROM characters WHERE id=? OR token_hash=?').get(id, tokenHash)
       ) {
@@ -162,6 +165,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
     merchant(worldId: string): Merchant {
       const row = this.db.prepare('SELECT data FROM merchants WHERE world_id=?').get(worldId);
+
       if (row) {
         return merchantSchema.parse(JSON.parse(String(row.data)));
       }
@@ -189,6 +193,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       const row = this.db
         .prepare(`SELECT data, version FROM ${this.savesTable} WHERE user_id=? AND slot=0`)
         .get(id);
+
       if (!row) {
         throw new Error('Character save is missing.');
       }
@@ -200,6 +205,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
         ...progress.classes,
         [classId]: progressSchema.parse(progress),
       };
+
       for (const id of CLASS_IDS) {
         classes[id] = classProgress(classes[id], id);
         delete classes[id].coins;
@@ -222,6 +228,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
             id,
             version,
           );
+
         if (!result.changes) {
           throw new VersionConflictError(id, 0, version);
         }

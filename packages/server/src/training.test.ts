@@ -27,6 +27,7 @@ test('boar leaves its wardrobe spawn, follows its owner and attacks training tar
   const s = tickTraining(undefined, [p], 10000, 0);
   p.x = 480;
   p.y = 360;
+
   for (let now = 10050; now <= 12000; now += 50) {
     tickTraining(s, [p], now, 0.05);
   }
@@ -35,6 +36,7 @@ test('boar leaves its wardrobe spawn, follows its owner and attacks training tar
   p.x = TRAINING_ZONES[0].x + 35;
   p.y = 355;
   let bearHit = false;
+
   for (let now = 12050; now <= 16000; now += 50) {
     tickTraining(s, [p], now, 0.05);
     bearHit ||= s.damage.some((hit) => {
@@ -149,12 +151,14 @@ test('all lobby classes damage dummies, Bear contributes, and forest players can
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'] as const) {
     const p = { ...hero(), classId, x: TRAINING_ZONES[0].x + 35 };
     const s = tickTraining(undefined, [p], 10000, 0.05);
+
     for (let now = 10050; now < 11000; now += 50) {
       tickTraining(s, [p], now, 0.05);
     }
 
     assert(s.enemies[0].hitpoints < 1e9, classId);
     assert(p.dps! > 0, classId);
+
     if (classId === 'druid') {
       assert(p.bear?.attackAt !== undefined);
     }
@@ -187,6 +191,7 @@ test('boar reaches a stationary dummy from every side and keeps landing tusk att
     };
     assert(inTrainingZone(p));
     const s = tickTraining(undefined, [p], 10000, 0.05);
+
     for (let now = 10050; now <= 12500; now += 50) {
       tickTraining(s, [p], now, 0.05);
     }

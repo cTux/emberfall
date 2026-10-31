@@ -130,6 +130,7 @@ export function gatheringNode(
   const node = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE).find((n) => {
     return n.id === nodeId;
   });
+
   if (!node) {
     throw new Error('Move closer to this resource.');
   }
@@ -159,6 +160,7 @@ export function tickGathering(
   now: number,
 ) {
   const activity = player.gathering;
+
   if (!activity) {
     return;
   }
@@ -194,6 +196,7 @@ export function gatherResource(
   const node = gatheringNode(player, states, nodeId, now);
   const previous = resourceState(states, node, now);
   const remaining = previous?.remaining ?? (node.kind === 'tree' ? 5 : 1);
+
   if (!remaining) {
     throw new Error('This resource is restoring.');
   }
@@ -218,6 +221,7 @@ export function gatherResource(
   const backpack = (player.backpack ?? []).map((item) => {
     return { ...item };
   });
+
   for (const itemId of items) {
     addItem(backpack, { id: crypto.randomUUID(), itemId, quantity: 1 });
   }

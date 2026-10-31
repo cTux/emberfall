@@ -67,17 +67,20 @@ export class InteractionPresentation {
     });
     const drawPrompt = () => {
       const activity = authoritativePlayer?.gathering;
+
       if (!activity) {
         this.clock = undefined;
       }
 
       element.dataset.gathering = activity?.nodeId ?? '';
       element.dataset.gatheringCheck = activity?.checkId ?? '';
+
       if (activity && local) {
         element.dataset.interactionPrompt = '';
         const node = resourceNodes(local, 250).find((node) => {
           return node.id === activity.nodeId;
         });
+
         if (node) {
           if (
             !this.clock ||
@@ -136,6 +139,7 @@ export class InteractionPresentation {
         !hideGatheringHint
           ? (signal.current?.name ?? '')
           : '';
+
       if (element.dataset.interactionPrompt !== label) {
         element.dataset.interactionPrompt = label;
       }
@@ -154,12 +158,14 @@ export class InteractionPresentation {
         )
       : null;
     nearby = partyInteraction(authoritative, authoritativePlayer) ?? nearby;
+
     if (!nearby && authoritativePlayer) {
       const node = nearbyResource(
         authoritativePlayer,
         authoritative?.resources,
         authoritative?.serverNow ?? 0,
       );
+
       if (node) {
         nearby = { id: `gather:${node.id}`, name: `Gather ${node.kind}`, x: node.x, y: node.y };
       }
@@ -181,6 +187,7 @@ export class InteractionPresentation {
 
     const outlines = () => {
       const highlighted = highlightInteractions;
+
       for (const target of targets) {
         target.highlighted = highlighted;
       }
@@ -209,6 +216,7 @@ export class InteractionPresentation {
               return interactionInRange(cat, authoritativePlayer);
             })?.source ??
             null);
+
         if (
           nearby &&
           !nearby.id.startsWith('gather:') &&
@@ -233,6 +241,7 @@ export function forestInteractionTargets(
   camera: { width: number; height: number },
 ) {
   let targets: InteractionTarget[] = [];
+
   if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
     targets = view.scene.portals.map((portal) => {
       return portalInteraction(

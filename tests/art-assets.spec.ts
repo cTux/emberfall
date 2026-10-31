@@ -38,17 +38,20 @@ test('animated asset gallery loads transparent frames and changes action and fac
     const smokeAfter = ctx.getImageData(10, 800, 396, 48).data;
     let interiorChanges = 0,
       stoneChanges = 0;
+
     for (let y = 0; y < 176; y++) {
       for (let x = 0; x < 176; x++) {
         const index = (y * 176 + x) * 4;
         const changed = [0, 1, 2].some((c) => {
           return portalBefore[index + c] !== portalAfter[index + c];
         });
+
         if (!changed) {
           continue;
         }
 
         const radius = ((x - 88) / (176 * 0.22)) ** 2 + ((y - 176 * 0.58) / (176 * 0.3)) ** 2;
+
         if (radius < 0.9) {
           interiorChanges++;
         } else if (radius > 1.1) {
@@ -92,6 +95,7 @@ test('animated asset gallery loads transparent frames and changes action and fac
   await page.getByLabel('Animation', { exact: true }).selectOption('attack');
   await expect(canvas).toHaveAttribute('data-frame', '6');
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
+
   for (const direction of ['0', '1', '2', '3']) {
     await page.getByLabel('Direction', { exact: true }).selectOption(direction);
     await page.waitForTimeout(50);

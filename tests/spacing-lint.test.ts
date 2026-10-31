@@ -40,6 +40,20 @@ export class Example {
   finish() { return this.x; }
   trim() { return this.y; }
 }
+export async function controls(values: number[], record: Record<string, number>, stream: AsyncIterable<number>) {
+  console.log('for');
+  for (let index = 0; index < values.length; index++) { console.log(index); }
+  console.log('for in');
+  for (const key in record) { console.log(key); }
+  console.log('for of');
+  for (const value of values) { console.log(value); }
+  console.log('for await');
+  for await (const value of stream) { console.log(value); }
+  console.log('switch');
+  switch (values.length) { default: { console.log('default'); } }
+  console.log('if');
+  if (values.length) { console.log('some'); } else if (!values.length) { console.log('none'); }
+}
 `,
     );
     const before = lint();
@@ -56,6 +70,13 @@ export class Example {
     assert.match(source, /console\.log\('failure'\);\n\n  throw/);
     assert.match(source, /x = 1;\n  y = 2;\n\n  finish/);
     assert.match(source, /finish\(\) { return this.x; }\n\n  trim/);
+
+    for (const label of ['for', 'for in', 'for of', 'for await', 'switch', 'if']) {
+      assert.ok(source.includes(`console.log('${label}');\n\n  `), label);
+    }
+
+    assert.match(source, /} else if \(!values.length\)/);
+    assert.match(source, /function finish\(active: boolean\) {\n  if/);
     assert.equal(lint().status, 0);
     assert.equal(lint('--fix').status, 0);
     assert.equal(readFileSync(file, 'utf8'), source);

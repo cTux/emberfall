@@ -96,8 +96,10 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
     await expect(trader).toBeVisible({ timeout: 1000 });
   }).toPass({ intervals: [200], timeout: 6000 });
   await expect(trader.getByLabel("Innkeeper's backpack: 5000 coins")).toBeVisible();
+
   for (const width of [1280, 883]) {
     await page.setViewportSize({ width, height: 800 });
+
     for (const tab of ['Buyback', 'Buy']) {
       await trader.getByRole('tab', { name: tab, exact: true }).click();
       const merchantSlots = trader
@@ -109,6 +111,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
       const playerSlots = trader
         .getByRole('region', { name: 'Your backpack' })
         .locator('[data-backpack-item], button[aria-hidden="true"]');
+
       for (let index = 0; index < 20; index++) {
         const left = (await merchantSlots.nth(index).boundingBox())!;
         const right = (await playerSlots.nth(index).boundingBox())!;

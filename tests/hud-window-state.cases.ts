@@ -9,6 +9,7 @@ test('HUD surfaces match and draggable panels and windows persist across session
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Panel hero');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
+
   for (const name of ['DPS meter', 'FPS graph', 'Latency graph']) {
     await page.getByRole('switch', { name, exact: true }).check();
   }
@@ -98,6 +99,7 @@ test('HUD surfaces match and draggable panels and windows persist across session
     .toBe(settingsTransform);
   await next.getByRole('button', { name: 'Close Settings' }).click();
   await next.setViewportSize({ width: 390, height: 844 });
+
   for (const panel of [
     next.locator('.performance-stats'),
     next.getByLabel('Damage per second', { exact: true }),
@@ -127,6 +129,7 @@ test('nickname persists in a new session, viewport is full, party bars and contr
   await next.goto('/');
   await expect(next.getByLabel('Your adventurer name')).toHaveValue('Persistent hero');
   await next.getByRole('button', { name: 'Settings', exact: true }).click();
+
   for (const name of ['DPS meter', 'FPS graph', 'Latency graph']) {
     await next.getByRole('switch', { name, exact: true }).check();
   }
@@ -140,6 +143,7 @@ test('nickname persists in a new session, viewport is full, party bars and contr
   await expect(next.getByRole('progressbar', { name: 'Persistent hero MP' })).toHaveCount(0);
   await expect(next.getByText('Persistent hero, lvl 1', { exact: true })).toBeVisible();
   await expect(next.locator('header, footer')).toHaveCount(0);
+
   for (const viewport of [
     { width: 1440, height: 900 },
     { width: 390, height: 844 },

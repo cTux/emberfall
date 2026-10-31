@@ -41,9 +41,11 @@ test('player shadow masks sample complete high-resolution frames in every facing
     return world.players.size;
   })!;
   const player = [...world.players.values()][0];
+
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'] as const) {
     player.classId = classId;
     player.equipment = starterEquipment(classId);
+
     for (const key of ['ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowUp']) {
       await page.keyboard.down(key);
       await page.waitForTimeout(350);

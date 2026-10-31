@@ -20,11 +20,13 @@ export function stepCombat(
   setRewardPlayers(scene, partyPlayers);
   const ENEMY_STATS = Object.fromEntries(context.registries.enemies.entries());
   const healthScale = prepareForestTick(scene, players, now, context);
+
   if (healthScale === undefined) {
     return;
   }
 
   tickPickups(scene, players, now, dt);
+
   for (const player of players.filter((p) => {
     return p.scene === 'forest' && !p.reconnecting;
   })) {
@@ -44,6 +46,7 @@ export function stepCombat(
   tickDebuffs(scene, players, now, context);
   tickPlayerCombat(scene, alive, now, dt, context);
   tickEnemyCombat(scene, alive, now, dt, ENEMY_STATS, context);
+
   if (
     scene.bossId !== undefined &&
     !scene.enemies.some((e) => {

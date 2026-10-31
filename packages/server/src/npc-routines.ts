@@ -73,6 +73,7 @@ export class NpcRoutines {
 
   interact(player: Player, npcId: string | null) {
     this.interactions.delete(player.id);
+
     if (
       !npcId ||
       !villagePlayers(this.world).includes(player) ||
@@ -98,16 +99,19 @@ export class NpcRoutines {
 
   tick(now: number, dt: number, players: readonly Player[], blocked: ReadonlySet<string>) {
     const npcs = this.world.npcs ?? [];
+
     for (const [playerId, npcId] of this.interactions) {
       const player = players.find((p) => {
         return p.id === playerId;
       });
+
       if (!player || !traderInRange(player, npcId, npcs)) {
         this.interactions.delete(playerId);
       }
     }
 
     const interacting = new Set(this.interactions.values());
+
     for (const npc of npcs) {
       if ((npc.chatUntil ?? 0) < now) {
         npc.chat = undefined;
@@ -115,6 +119,7 @@ export class NpcRoutines {
 
       const walk = this.walks.get(npc.id)!;
       npc.workstationId = npc.workStartedAt = undefined;
+
       if (
         !players.length ||
         blocked.has(npc.id) ||
@@ -130,6 +135,7 @@ export class NpcRoutines {
         return s.npcId === npc.id;
       });
       const station = stations[walk.station % stations.length];
+
       if (walk.work && station) {
         npc.moving = false;
         npc.angle = Math.atan2(
@@ -141,6 +147,7 @@ export class NpcRoutines {
         const active = Math.max(0, dt * 1000);
         walk.work.remaining -= active;
         walk.work.elapsed += active;
+
         if (walk.work.remaining <= 0) {
           walk.work = undefined;
           walk.station++;
@@ -166,9 +173,11 @@ export class NpcRoutines {
         dy = wrappedDelta(target.y, npc.y, VILLAGE_DEFINITION.geometry.height);
       const distance = Math.hypot(dx, dy);
       const step = Math.min(distance, SPEED * dt);
+
       if (distance < 1) {
         npc.x = target.x;
         npc.y = target.y;
+
         if (returning && station) {
           walk.work = { remaining: 60_000 + this.random() * 30_000, elapsed: 0 };
           npc.workstationId = station.id;

@@ -80,6 +80,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
     const ctx = preview.getContext('2d')!;
     ctx.fillStyle = '#677452';
     ctx.fillRect(0, 0, preview.width, preview.height);
+
     for (const [index, object] of buildings.entries()) {
       for (let row = 0; row < 2; row++) {
         const caster = { ...object, x: 150 + index * 340, y: 220 + row * 310 };
@@ -161,6 +162,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
     });
   });
   expect(buildings).toHaveLength(BUILDINGS.length);
+
   for (const building of BUILDINGS) {
     const rendered = buildings.find((object) => {
       return object.id === `building:${building.id}`;

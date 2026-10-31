@@ -17,6 +17,7 @@ import { hero, ability } from './talents.fixture.ts';
 
 test('all classes have thirty independent talents and twelve abilities, with a defensive third column', () => {
   assert.equal(TALENT_TREE.length, 120);
+
   for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
     const nodes = TALENT_TREE.filter((node) => {
       return node.classId === classId;
@@ -73,6 +74,7 @@ test('one starting point, two ranks, level-only gates, no stat bonuses and no pa
 test('a whole column costs exactly twenty points; mixing columns and inactive extensions is allowed', () => {
   for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
     const player = hero(classId);
+
     for (let row = 0; row < 10; row++) {
       for (let n = 0; n < 2; n++) {
         learnTalent(player, talentNodeId(classId, 0, row));

@@ -42,10 +42,12 @@ export function bloodPuddleRenderer() {
 
     ctx.save();
     ctx.fillStyle = '#8c1728';
+
     for (const puddle of puddles.values()) {
       ctx.globalAlpha =
         0.5 * (1 - Math.max(0, now - puddle.at) / TRANSIENT_EFFECTS.blood.lifetimeMs);
       const p = near(puddle.x, puddle.y + 15);
+
       if (
         p.x < view.x - 40 ||
         p.x > view.x + view.width + 40 ||
@@ -65,11 +67,13 @@ export function bloodPuddleRenderer() {
 
       // One fill keeps overlapping splash shapes at the same fading opacity.
       ctx.beginPath();
+
       for (let i = 0; i < 24; i++) {
         const angle = (i / 24) * Math.PI * 2 + puddle.id;
         const radius = 9 + random() * 19;
         const x = p.x + Math.cos(angle) * radius;
         const y = p.y + Math.sin(angle) * radius * 0.55;
+
         if (i === 0) {
           ctx.moveTo(x, y);
         } else {
@@ -78,6 +82,7 @@ export function bloodPuddleRenderer() {
       }
 
       ctx.closePath();
+
       for (let i = 0; i < 10; i++) {
         const angle = random() * Math.PI * 2;
         const distance = 24 + random() * 13;

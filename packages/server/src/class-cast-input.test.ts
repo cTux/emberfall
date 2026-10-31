@@ -65,6 +65,7 @@ test('manual cast requests acknowledge acceptance, cooldown rejection and duplic
 
 test('slightly early held casts wait for cooldown and retain aim without duplicate launches', async () => {
   const { requestPlayerCast, tickPlayerCombat } = await import('@emberfall/core');
+
   for (const classId of ['mage', 'ranger', 'druid'] as const) {
     const player: Player = { ...hero(), classId, autoAttack: false, autoTarget: false };
     const arena = scene();
@@ -105,6 +106,7 @@ test('slightly early held casts wait for cooldown and retain aim without duplica
     );
     tickPlayerCombat(arena, [player], 2050, 0);
     assert.equal(arena.playerShots!.length, count * 2, 'buffered casts fire once');
+
     for (let id = 5; id < 15; id++) {
       assert(cast(id, player.attackAt + 950));
       tickPlayerCombat(arena, [player], player.attackAt, 0);

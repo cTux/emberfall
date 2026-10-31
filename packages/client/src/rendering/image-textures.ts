@@ -36,6 +36,7 @@ export class ImageTextures {
     const image = source as HTMLImageElement | HTMLCanvasElement;
     const iw = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
     const ih = image instanceof HTMLImageElement ? image.naturalHeight : image.height;
+
     if (!iw || !ih) {
       return;
     }
@@ -48,6 +49,7 @@ export class ImageTextures {
       dy = 0,
       dw = iw,
       dh = ih;
+
     if (args.length === 2) {
       [dx, dy] = args;
     } else if (args.length === 4) {
@@ -70,11 +72,13 @@ export class ImageTextures {
     }
 
     let entry = this.entries.get(source);
+
     if (!entry) {
       // WebGL uploads of SVG images without explicit dimensions can produce an
       // empty texture. Rasterize once at the decoded size, keeping the SVG asset
       // and the normal source-texture cache shared by all status sprites.
       let resource: HTMLImageElement | HTMLCanvasElement = image;
+
       if (
         image instanceof HTMLImageElement &&
         /\.svg(?:[?#]|$)|^data:image\/svg\+xml/i.test(image.currentSrc || image.src)
@@ -95,6 +99,7 @@ export class ImageTextures {
     // Dynamic light canvases explicitly mark their revision when repainted.
     const revision = (image as HTMLCanvasElement & { textureRevision?: number }).textureRevision;
     const textureRevision = (entry as typeof entry & { revision?: number }).revision;
+
     if (revision !== undefined && revision !== textureRevision) {
       entry.texture.source.update();
       (entry as typeof entry & { revision?: number }).revision = revision;
@@ -119,6 +124,7 @@ export class ImageTextures {
     const sprite = entity.object as Sprite;
     let texture = entity.frameTexture;
     const scaleMode = smoothing ? 'linear' : 'nearest';
+
     if (draw.texture.source.scaleMode !== scaleMode) {
       draw.texture.source.scaleMode = scaleMode;
       draw.texture.source.style.update();

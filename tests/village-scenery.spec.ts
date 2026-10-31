@@ -127,6 +127,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       const { sprite } = object;
       const pixels = sprite.getContext('2d')!.getImageData(0, 0, sprite.width, sprite.height).data;
       let bottom = 0;
+
       for (let y = 0; y < sprite.height; y++) {
         for (let x = 0; x < sprite.width; x++) {
           if (pixels[(y * sprite.width + x) * 4 + 3] >= 128) {
@@ -169,6 +170,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
           .getContext('2d')!
           .getImageData(0, 0, sprite.width, sprite.height).data;
         let count = 0;
+
         for (let i = 3; i < pixels.length; i += 4) {
           if (pixels[i]) {
             count++;
@@ -185,6 +187,7 @@ test('village waits for plant art and packages five distinct silhouettes with sh
   expect(result.signatures).toBe(5);
   expect(result.masks).toBe(5);
   expect(result.sorted).toBe(true);
+
   for (const gap of result.gatheredGroundGaps) {
     expect(gap).toBeLessThanOrEqual(4);
   }

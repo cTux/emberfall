@@ -28,6 +28,7 @@ export function statValue(stat: ItemStat, rarity: Rarity) {
 
 export function rollRarity(random = Math.random): Rarity {
   let roll = random() * 100;
+
   for (const [rarity, chance] of Object.entries(rarityDropChance)) {
     if (roll < chance) {
       return rarity as Rarity;
@@ -44,6 +45,7 @@ export function rollItemStats(gearType: string, rarity: Rarity, random = Math.ra
     return rarity === Rarity.Legendary || itemStatWeight[stat] === 1;
   });
   const stats: Partial<Record<ItemStat, number>> = {};
+
   for (let i = 0; i < rarityStatCount[rarity] && pool.length; i++) {
     let roll =
       random() *

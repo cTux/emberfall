@@ -8,6 +8,7 @@ export interface LootHint {
 
 export function lootHintFrame(at: number, now: number) {
   const age = now - at;
+
   if (age < 0 || age >= 2100) {
     return undefined;
   }
@@ -36,6 +37,7 @@ export class LootHints {
     }
 
     const totals = new Map<string, number>();
+
     for (const item of items) {
       totals.set(item.itemId, (totals.get(item.itemId) ?? 0) + item.quantity);
     }
@@ -45,9 +47,11 @@ export class LootHints {
           return lootHintFrame(hint.at, now);
         })
       : [];
+
     if (enabled && this.previous) {
       for (const [itemId, total] of totals) {
         const quantity = total - (this.previous.get(itemId) ?? 0);
+
         if (quantity > 0) {
           this.hints.push({ itemId, quantity, at: now });
         }

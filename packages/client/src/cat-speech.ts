@@ -6,6 +6,7 @@ export class CatSpeech {
 
   pet(id: string, now: number) {
     const previous = this.responses.get(id);
+
     if (previous && now - previous.at < 2000) {
       return;
     }

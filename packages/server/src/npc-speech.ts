@@ -28,6 +28,7 @@ export class NpcSpeech {
 
   chooseTopic(npcId: string) {
     let rotation = this.topics.get(npcId);
+
     if (!rotation) {
       rotation = { remaining: [] };
       this.topics.set(npcId, rotation);
@@ -38,6 +39,7 @@ export class NpcSpeech {
     }
 
     let index = Math.floor(this.random() * rotation.remaining.length);
+
     if (rotation.remaining[index] === rotation.last && rotation.remaining.length > 1) {
       index = (index + 1) % rotation.remaining.length;
     }
@@ -52,6 +54,7 @@ export class NpcSpeech {
     const definition = VILLAGE_DEFINITION.villagers.find((n) => {
       return n.id === npc.id;
     })!;
+
     if (!conversation.text) {
       conversation.topic = this.chooseTopic(npc.id);
     }
@@ -78,6 +81,7 @@ export class NpcSpeech {
 
   publish(conversation: Conversation, npc: VillageNpc, raw: string, at: number) {
     let text = raw;
+
     for (const resident of VILLAGE_DEFINITION.villagers) {
       const name = resident.name.split(' ')[0];
       text = text.replace(new RegExp(`(?<![\\p{L}\\p{N}_])@?${name}\\b`, 'giu'), `@${name}`);
@@ -107,6 +111,7 @@ export class NpcSpeech {
         return candidate && candidate.id !== npc.id;
       });
     const line = `${npc.name}: ${text}`;
+
     for (const id of new Set(
       [npc.id, conversation.otherNpc, mentioned?.id].filter((id): id is string => {
         return !!id;
@@ -120,6 +125,7 @@ export class NpcSpeech {
 
   silence(value: boolean) {
     const npcs = this.world.npcs ?? [];
+
     if (
       npcs.every((npc) => {
         return npc.silenced === value;
@@ -130,6 +136,7 @@ export class NpcSpeech {
 
     for (const npc of npcs) {
       npc.silenced = value;
+
       if (value) {
         npc.chat = undefined;
       }

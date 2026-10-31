@@ -30,23 +30,27 @@ export function createRealtimeCommands({
   const handlers: Handlers = {
     gather: (message, { session, world, now, error }) => {
       const player = world?.players.get(session.id);
+
       if (!world || !player) {
         return;
       }
 
       const epoch = player.scene === 'forest' ? parties(world).run(player).scene?.id : 'lobby';
+
       if (message.epoch !== epoch) {
         return;
       }
 
       try {
         const activity = player.gathering;
+
         if (message.checkId) {
           if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) {
             return;
           }
 
           gatheringNode(player, resourceOwner(world, player).resources, message.nodeId, now);
+
           if (
             message.at === undefined ||
             !checkTimedActivity(activity, message.checkId, message.at, now)
@@ -72,6 +76,7 @@ export function createRealtimeCommands({
     },
     npcInteraction: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);
+
       if (world && player) {
         villageLife(world, now).interact(player, message.npcId);
       }
@@ -81,6 +86,7 @@ export function createRealtimeCommands({
     },
     combatInput: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);
+
       if (player) {
         const { type: _, ...controls } = message;
         Object.assign(player, controls, { combatInputAt: now });
@@ -88,6 +94,7 @@ export function createRealtimeCommands({
     },
     talentCast: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);
+
       if (player) {
         castTalentAbility(
           player.scene === 'forest' ? parties(world!).run(player).scene : world!.training,
@@ -101,6 +108,7 @@ export function createRealtimeCommands({
     },
     cast: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);
+
       if (player) {
         requestPlayerCast(
           player.scene === 'forest' ? parties(world!).run(player).scene : world!.training,
@@ -118,6 +126,7 @@ export function createRealtimeCommands({
           }
 
           const timed = message.durationMs !== undefined;
+
           if (session.timed !== undefined && session.timed !== timed) {
             return;
           }
@@ -136,6 +145,7 @@ export function createRealtimeCommands({
             epoch: message.epoch,
             durationMs: message.durationMs,
           };
+
           if (timed) {
             session.inputs.push(command);
           } else {

@@ -23,8 +23,10 @@ export function drawDanger(
     ctx.beginPath();
     ctx.arc(p.x, p.y, radius * Math.sqrt(Math.max(0, Math.min(1, progress))), 0, Math.PI * 2);
     ctx.fill();
+
     if (!spawn && progress > 0.65) {
       ctx.fillStyle = '#ff8790';
+
       for (let i = 0; i < 8; i++) {
         const angle = (i * Math.PI) / 4 + progress * 2;
         ctx.fillRect(
@@ -58,6 +60,7 @@ export function drawDanger(
 
   for (const enemy of projectilesOnly ? [] : scene.enemies) {
     const attack = enemy.attack;
+
     if (!attack) {
       continue;
     }
@@ -68,6 +71,7 @@ export function drawDanger(
       attack.radius,
       (now - attack.startedAt) / (attack.endsAt - attack.startedAt),
     );
+
     if (attack.ranged) {
       const from = near(enemy.x, enemy.y + 15),
         to = near(attack.x, attack.y + 15);

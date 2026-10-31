@@ -40,6 +40,7 @@ export function useDraggable(key: string, active = true) {
 
   const move = (dx: number, dy: number) => {
     const box = ref.current?.getBoundingClientRect();
+
     if (!box) {
       return;
     }
