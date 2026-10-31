@@ -6,7 +6,7 @@ import {
   LOBBY_PORTAL,
   wrappedDelta,
 } from '../packages/core/src/index.ts';
-import { sharp } from './interaction-outlines.fixture.ts';
+import { outlineProbes } from './interaction-outlines.fixture.ts';
 
 import './interaction-party-outlines.cases.ts';
 for (const graphicsPreset of ['Low', 'High'] as const) {
@@ -49,55 +49,11 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         }).toPass();
       };
 
-      const yellowPixels = async (name: string) => {
-        const image = await canvas.screenshot({
-          path: `test-results/${graphicsPreset}-${name}.png`,
-        });
-        const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
-        let count = 0;
-        for (let i = 0; i < data.length; i += info.channels) {
-          if (data[i] > 220 && data[i + 1] > 180 && data[i + 2] < 45) {
-            count++;
-          }
-        }
-
-        return count;
-      };
-
-      const greenPixels = async (name: string) => {
-        const image = await canvas.screenshot({
-          path: `test-results/${graphicsPreset}-${name}.png`,
-        });
-        const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
-        let count = 0;
-        for (let i = 0; i < data.length; i += info.channels) {
-          if (
-            data[i + 1] > 70 &&
-            data[i] < data[i + 1] * 0.18 &&
-            data[i + 2] < data[i + 1] * 0.18
-          ) {
-            count++;
-          }
-        }
-
-        return count;
-      };
-
-      const altDefaultsPrevented = async (code: string, type: 'keydown' | 'keyup') => {
-        return page.evaluate(
-          ({ code, type }) => {
-            return !window.dispatchEvent(
-              new KeyboardEvent(type, {
-                key: 'Alt',
-                code,
-                bubbles: true,
-                cancelable: true,
-              }),
-            );
-          },
-          { code, type },
-        );
-      };
+      const { yellowPixels, greenPixels, altDefaultsPrevented } = outlineProbes(
+        page,
+        canvas,
+        graphicsPreset,
+      );
 
       player.x = WARDROBE.x - 120;
       player.y = WARDROBE.y + 9;

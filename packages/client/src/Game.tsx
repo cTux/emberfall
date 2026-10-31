@@ -1,3 +1,4 @@
+import { gameSceneStatus } from './game-scene-status';
 import { useGameInteractions } from './useGameInteractions';
 import { GamePanels } from './GamePanels';
 import { useGameHotkeys } from './useGameHotkeys';
@@ -10,7 +11,7 @@ import type { GameMenu } from './game-panels';
 import { WorldBrowser } from './WorldBrowser';
 import { useGameSession } from './useGameSession';
 import type { AccountView, WorldSummary } from '@emberfall/common';
-import { Difficulty, hasLivingScenePlayers } from '@emberfall/common';
+import { Difficulty } from '@emberfall/common';
 import { INNKEEPER } from '@emberfall/core';
 import { lazy, useEffect, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
@@ -125,28 +126,7 @@ export function Game({
     setBuilding,
   });
   useGameHotkeys({ world: !!world, menu, setMenu, setPreferences, castTalent, interact });
-  const boss =
-    me?.scene === 'forest' && scene?.phase === 'active'
-      ? scene.enemies.find((enemy) => {
-          return enemy.id === scene.bossId && enemy.hitpoints > 0;
-        })
-      : undefined;
-  const departure = Math.max(
-    1,
-    Math.ceil(((scene?.countdownAt ?? 0) - (world?.serverNow ?? 0)) / 1000),
-  );
-  const remaining = Math.max(
-    0,
-    Math.ceil(((scene?.endsAt ?? 0) - (scene?.pausedAt ?? world?.serverNow ?? 0)) / 1000),
-  );
-  const canRegenerate =
-    !!scene &&
-    ['active', 'ended'].includes(scene.phase) &&
-    !hasLivingScenePlayers(
-      world?.players.filter((p) => {
-        return p.runId === (me?.scene ? me.runId : me?.homeRunId);
-      }) ?? [],
-    );
+  const { boss, departure, remaining, canRegenerate } = gameSceneStatus(world, me);
 
   return (
     <main>

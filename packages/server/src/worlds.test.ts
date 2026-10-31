@@ -1,3 +1,4 @@
+import { connectWorldClient, waitForWorldMessage } from './worlds.fixture.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
@@ -13,42 +14,9 @@ test('world lifecycle, passwords, movement, capacity and isolation over real soc
   assert(address && typeof address !== 'string');
   const clients: WebSocket[] = [];
 
-  async function connect() {
-    const ws = new WebSocket(
-      `ws://127.0.0.1:${address && typeof address !== 'string' ? address.port : 0}/ws`,
-    );
-    const messages: ServerMessage[] = [];
-    ws.on('message', (raw) => {
-      return messages.push(JSON.parse(raw.toString()));
-    });
-    clients.push(ws);
-    await once(ws, 'open');
-
-    async function wait(predicate: (m: ServerMessage) => boolean): Promise<ServerMessage> {
-      const until = Date.now() + 3000;
-      while (Date.now() < until) {
-        const i = messages.findIndex(predicate);
-        if (i >= 0) {
-          return messages.splice(i, 1)[0];
-        }
-
-        await new Promise((r) => {
-          return setTimeout(r, 10);
-        });
-      }
-
-      throw new Error('Timed out waiting for server message');
-    }
-
-    return {
-      ws,
-      messages,
-      wait,
-      send: (message: unknown) => {
-        return ws.send(JSON.stringify(message));
-      },
-    };
-  }
+  const connect = () => {
+    return connectWorldClient(address.port, clients);
+  };
 
   try {
     const host = await connect();
@@ -239,22 +207,8 @@ test('Playtest Default admits 32 players and rejects the 33rd', async () => {
         return messages.push(JSON.parse(raw.toString()));
       });
       await once(ws, 'open');
-      const wait = async (type: ServerMessage['type']) => {
-        const deadline = Date.now() + 5000;
-        while (
-          !messages.some((m) => {
-            return m.type === type;
-          })
-        ) {
-          assert(Date.now() < deadline, `Missing ${type}`);
-          await new Promise((resolve) => {
-            return setTimeout(resolve, 5);
-          });
-        }
-
-        return messages.find((m) => {
-          return m.type === type;
-        })!;
+      const wait = (type: ServerMessage['type']) => {
+        return waitForWorldMessage(messages, type);
       };
 
       const listing = await wait('worlds');

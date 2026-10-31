@@ -15,7 +15,7 @@ import { drawVillageBackground } from './village-background';
 import { abilityEffectOpacity } from './ability-effects';
 import { drawClassProjectiles, drawLootAndBlood } from './combat-effects';
 import { drawPlayerAttack } from './player-rendering';
-import { companionCaster } from './companion';
+import { companionShadows } from './companion-shadows';
 import { critterCaster } from './critters';
 import { castShadow } from './lighting';
 import { drawVillageLighting } from './village-lighting';
@@ -169,23 +169,11 @@ export class VillageScene {
       }
     }
 
-    for (const player of players) {
-      if (!player.bear) {
-        continue;
-      }
-
-      const point = player.bear;
-      const caster = companionCaster(
-        player.bear,
-        point.x,
-        point.y,
-        view.serverNow ?? now,
-        `bear:${player.id}`,
-      );
-      if (caster) {
-        dynamic.push(caster);
-      }
-    }
+    dynamic.push(
+      ...companionShadows(players, view.serverNow ?? now, (x, y) => {
+        return { x, y };
+      }),
+    );
 
     if (quality.shadows) {
       for (const caster of dynamic) {

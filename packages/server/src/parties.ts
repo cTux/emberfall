@@ -1,30 +1,16 @@
+import type { Party, PartyRequest, PartyWorld } from './party-models.ts';
+import { interactParty, partyCommand } from './party-interactions.ts';
 import { randomUUID } from 'node:crypto';
-import type { Player, ChatMessage } from '@emberfall/common';
-import { forestDistance, INTERACTION_RADIUS, restoreResources } from '@emberfall/core';
+import type { Player } from '@emberfall/common';
+import { restoreResources } from '@emberfall/core';
 import { createPlayers, simulationFor } from './ecs/simulation.ts';
 import { returnToLobby, tickScene, type SceneWorld } from './scenes.ts';
 import { addChat } from './chat.ts';
 
-interface Party {
-  id: string;
-  members: string[];
-}
-interface Request {
-  fromId: string;
-  toId: string;
-  partyId?: string;
-  fromPartyId?: string;
-  toPartyId?: string;
-  expiresAt: number;
-}
-interface PartyWorld {
-  players: Map<string, Player>;
-  chat?: ChatMessage[];
-}
 export class Parties {
   readonly parties = new Map<string, Party>();
   readonly runs = new Map<string, SceneWorld>();
-  readonly requests: Request[] = [];
+  readonly requests: PartyRequest[] = [];
   private sentAt = new Map<string, number>();
   private world: PartyWorld;
 
@@ -281,54 +267,10 @@ export class Parties {
   }
 
   interact(player: Player, targetId: string, now: number) {
-    const target = this.world.players.get(targetId);
-    if (
-      !target ||
-      player.hitpoints <= 0 ||
-      target.hitpoints <= 0 ||
-      target.reconnecting ||
-      player.scene !== target.scene ||
-      (player.scene && this.key(player) !== this.key(target)) ||
-      forestDistance(player, target) >= INTERACTION_RADIUS
-    ) {
-      throw new Error('Move closer to that player.');
-    }
-
-    if (
-      this.incoming(player, now).some((r) => {
-        return r.fromId === targetId;
-      })
-    ) {
-      this.accept(player, targetId, now);
-    } else {
-      this.request(player, target, now);
-    }
+    interactParty(this, this.world.players, player, targetId, now);
   }
 
   command(player: Player, text: string, now: number) {
-    const [command, raw, ...extra] = text.trim().split(/\s+/);
-    if (extra.length || (command === '/leave' && raw)) {
-      throw new Error('Invalid party command.');
-    }
-
-    const name = raw?.replace(/^@/, '');
-    const matches = name
-      ? [...this.world.players.values()].filter((p) => {
-          return p.name.toLowerCase() === name.toLowerCase();
-        })
-      : [];
-    if (name && matches.length !== 1) {
-      throw new Error('Player name was not found or is ambiguous.');
-    }
-
-    if (command === '/leave') {
-      this.leave(player);
-    } else if (command === '/party' && matches.length === 1) {
-      this.request(player, matches[0], now);
-    } else if (command === '/accept') {
-      this.accept(player, matches[0]?.id, now);
-    } else {
-      throw new Error('Use /party @name, /accept [@name] or /leave.');
-    }
+    partyCommand(this, this.world.players, player, text, now);
   }
 }

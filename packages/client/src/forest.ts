@@ -15,7 +15,7 @@ import { resourceScenery } from './gathering';
 import { idleBreath } from './animation';
 import { createForestGround } from './forest-ground';
 
-import { companionCaster } from './companion';
+import { companionShadows } from './companion-shadows';
 import { critterCaster, crittersAt } from './critters';
 import { drawNavigation } from './navigation';
 import { drawHitboxes } from './hitboxes';
@@ -147,23 +147,7 @@ export function forestRenderer(
       }
     }
 
-    for (const player of players) {
-      if (!player.bear) {
-        continue;
-      }
-
-      const point = near(player.bear.x, player.bear.y);
-      const caster = companionCaster(
-        player.bear,
-        point.x,
-        point.y,
-        serverTime,
-        `bear:${player.id}`,
-      );
-      if (caster) {
-        casters.push(caster);
-      }
-    }
+    casters.push(...companionShadows(players, serverTime, near));
 
     if (quality.shadows) {
       for (const caster of casters) {

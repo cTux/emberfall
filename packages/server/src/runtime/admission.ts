@@ -2,7 +2,7 @@ import type * as RuntimeModels from './models.ts';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createWorldPasswords } from './passwords.ts';
 import { MAX_PLAYERS } from '@emberfall/core';
-import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
+import { spawnPlayer } from './spawn-player.ts';
 import { Peer as WebSocket } from '../network/peer.ts';
 import { createPlayers } from '../ecs/simulation.ts';
 import { addChat } from '../chat.ts';
@@ -245,27 +245,7 @@ export function createAdmission({
       session.characterId = character.id;
       characters.rememberWorld(character.id, world.id);
       session.worldId = world.id;
-      const used = new Set(
-        [...world.players.values()].map((p) => {
-          return p.color;
-        }),
-      );
-      let color = 0;
-      while (used.has(color)) {
-        color++;
-      }
-
-      world.players.set(session.id, {
-        id: session.id,
-        name: playerName,
-        x: VILLAGE_DEFINITION.spawn.x + color * VILLAGE_DEFINITION.spawn.spacing,
-        y: VILLAGE_DEFINITION.spawn.y,
-        color,
-        ...character.progress,
-        classId: character.classId,
-        classes: character.classes,
-        hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
-      });
+      spawnPlayer(world, session.id, playerName, character);
       villageLife(world, now);
       if (createdWorld) {
         serverLog.info('World created', { worldId: world.id });

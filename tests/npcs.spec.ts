@@ -1,16 +1,16 @@
+import { npcDialogueState } from './npcs.fixture';
+import { registerWorkstationCases } from './npc-workstations.cases';
 import { test, expect } from './fixtures';
 import type { DialogueResult } from '../packages/server/src/npc-models.ts';
-let response: DialogueResult = { status: 'unavailable' };
-let generate: ((context: string) => Promise<DialogueResult>) | undefined;
 test.use({
   npcDialogue: {
     generate: async (context) => {
-      return generate?.(context) ?? response;
+      return npcDialogueState.generate?.(context) ?? npcDialogueState.response;
     },
   },
 });
 test.afterEach(() => {
-  generate = undefined;
+  npcDialogueState.generate = undefined;
 });
 
 test('a player mention during an NPC greeting receives an answer in the chat log', async ({
@@ -19,7 +19,7 @@ test('a player mention during an NPC greeting receives an answer in the chat log
 }) => {
   let finish!: (result: DialogueResult) => void;
   const contexts: { quotedSpeech?: string }[] = [];
-  generate = async (context) => {
+  npcDialogueState.generate = async (context) => {
     contexts.push(JSON.parse(context));
     if (contexts.length === 1) {
       return new Promise<DialogueResult>((resolve) => {
@@ -69,7 +69,7 @@ test('a long NPC reply keeps its ending and remains readable while scrolling on 
 }) => {
   const text =
     'The forest goblins keep borrowing my soup spoons. '.repeat(8) + 'Please bring them back!';
-  response = { status: 'ok', text };
+  npcDialogueState.response = { status: 'ok', text };
   await page.setViewportSize({ width: 390, height: 640 });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
@@ -118,7 +118,7 @@ test('Marta walks near a player, stops for trading, and resumes when the window 
   page,
   game,
 }) => {
-  response = { status: 'busy' };
+  npcDialogueState.response = { status: 'busy' };
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.locator('canvas').first()).toHaveAttribute('data-npcs', '4');
@@ -169,7 +169,7 @@ test('LLM outage gives every villager a visible silence debuff and one red villa
   page,
   game,
 }) => {
-  response = { status: 'unavailable' };
+  npcDialogueState.response = { status: 'unavailable' };
   const errors: string[] = [];
   page.on('pageerror', (error) => {
     return errors.push(error.message);
@@ -204,7 +204,7 @@ test('players can address Marta, see her answer, and watch her walk after leavin
   page,
   game,
 }) => {
-  response = { status: 'ok', text: 'Welcome! Have you met our neighbours?' };
+  npcDialogueState.response = { status: 'ok', text: 'Welcome! Have you met our neighbours?' };
   const errors: string[] = [];
   page.on('pageerror', (error) => {
     return errors.push(error.message);
@@ -247,77 +247,4 @@ test('players can address Marta, see her answer, and watch her walk after leavin
   expect(errors).toEqual([]);
 });
 
-test('eight home workstations render and Marta switches from work to trading and speech, then back', async ({
-  page,
-  game,
-}) => {
-  test.setTimeout(120_000);
-  response = { status: 'ok', text: 'The soup is almost ready!' };
-  const errors: string[] = [];
-  page.on('pageerror', (error) => {
-    return errors.push(error.message);
-  });
-  await page.goto('/');
-  await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
-  const canvas = page.locator('canvas').first();
-  await expect(canvas).toHaveAttribute('data-workstations', '8');
-  const world = [...game.runtime.worlds.values()].find((w) => {
-    return w.players.size;
-  })!;
-  const player = [...world.players.values()][0];
-  const marta = world.npcs!.find((n) => {
-    return n.id === 'innkeeper';
-  })!;
-  // Let the real scheduler walk her home; minute-long timing is covered with explicit Node-test clocks.
-  await expect
-    .poll(
-      () => {
-        return marta.workstationId;
-      },
-      { timeout: 85_000 },
-    )
-    .toBe('inn-cooking');
-  await expect(canvas).toHaveAttribute('data-working-npc-ids', /innkeeper/);
-  await page.screenshot({ path: 'test-results/npc-workstations-overview.png' });
-  Object.assign(player, { x: marta.x + 45, y: marta.y - 15 });
-  await expect(canvas).not.toHaveAttribute('data-working-npcs', '0');
-  await page.screenshot({ path: 'test-results/npc-workstations.png' });
-  await page.keyboard.press('e');
-  const trading = page.getByRole('dialog', { name: marta.name });
-  await expect(trading).toBeVisible();
-  await expect
-    .poll(() => {
-      return marta.workstationId;
-    })
-    .toBeUndefined();
-  await expect(canvas).not.toHaveAttribute('data-working-npc-ids', /innkeeper/);
-  await page.keyboard.press('Escape');
-  await expect(trading).not.toBeVisible();
-  await expect
-    .poll(() => {
-      return marta.workstationId;
-    })
-    .toBe('inn-cooking');
-  await page.keyboard.press('Enter');
-  await page.getByRole('textbox', { name: 'Chat message' }).fill('@Marta What are you cooking?');
-  await page.keyboard.press('Enter');
-  await expect
-    .poll(() => {
-      return marta.workstationId;
-    })
-    .toBeUndefined();
-  await expect(canvas).not.toHaveAttribute('data-working-npc-ids', /innkeeper/);
-  await expect(page.getByRole('log')).toContainText('The soup is almost ready!');
-  await page.screenshot({ path: 'test-results/npc-work-interrupted.png' });
-  await expect
-    .poll(
-      () => {
-        return marta.workstationId;
-      },
-      { timeout: 15_000 },
-    )
-    .toBe('inn-cooking');
-  await expect(canvas).toHaveAttribute('data-working-npc-ids', /innkeeper/);
-  await page.screenshot({ path: 'test-results/npc-work-resumed.png' });
-  expect(errors).toEqual([]);
-});
+registerWorkstationCases();

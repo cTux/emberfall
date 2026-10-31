@@ -1,3 +1,5 @@
+import { accountResponse } from './account-response.ts';
+import { readAccountBody } from './account-body.ts';
 import { cookie, setCookie } from './account-cookies.ts';
 import { accountOrigins, type SteamOptions } from './account-options.ts';
 export { steamOptionsFromEnv, type SteamOptions } from './account-options.ts';
@@ -123,29 +125,12 @@ export class Accounts {
       return false;
     }
 
-    res.setHeader('Vary', 'Origin');
-    if (req.headers.origin && req.headers.origin !== this.clientOrigin) {
-      res.removeHeader('Access-Control-Allow-Origin');
-      res.writeHead(403);
-      res.end();
-
+    const response = accountResponse(req, res, this.clientOrigin);
+    if (!response) {
       return true;
     }
 
-    res.setHeader('Access-Control-Allow-Origin', this.clientOrigin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Cache-Control', 'no-store');
-    res.setHeader('Referrer-Policy', 'no-referrer');
-    const json = (status: number, value: unknown) => {
-      res.writeHead(status, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(value));
-    };
-
-    const redirect = (path: string) => {
-      res.writeHead(303, { Location: path });
-      res.end();
-    };
-
+    const { json, redirect } = response;
     const token = cookie(req.headers.cookie, sessionCookie);
     try {
       if (req.method === 'GET' && url.pathname === '/auth/steam') {
@@ -261,23 +246,7 @@ export class Accounts {
           throw new Error('Expected JSON.');
         }
 
-        let body = req.body;
-        if (body !== undefined && Buffer.byteLength(JSON.stringify(body)) > 2048) {
-          throw new Error('Request too large.');
-        }
-
-        if (body === undefined) {
-          let raw = '';
-          for await (const chunk of req) {
-            raw += chunk;
-            if (Buffer.byteLength(raw) > 2048) {
-              throw new Error('Request too large.');
-            }
-          }
-
-          body = JSON.parse(raw);
-        }
-
+        const body = await readAccountBody(req);
         const parsed = nicknameSchema.safeParse(
           body && typeof body === 'object' && 'nickname' in body ? body.nickname : undefined,
         );

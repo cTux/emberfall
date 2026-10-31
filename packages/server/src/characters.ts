@@ -1,3 +1,4 @@
+import { createTransaction } from './persistence/transaction.ts';
 import { createProgressCodec } from './persistence/progress.ts';
 import { createWorldRepository } from './persistence/worlds.ts';
 import { createAccountRepository } from './persistence/accounts.ts';
@@ -26,6 +27,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
    */
   class CharacterStore {
     private db: DatabaseSync;
+    private transaction: ReturnType<typeof createTransaction>;
     private worldRepository: ReturnType<typeof createWorldRepository>;
     private accountRepository: ReturnType<typeof createAccountRepository>;
     readonly database: GameDatabase;
@@ -42,6 +44,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
     constructor(path: string) {
       this.db = openCharacterDatabase(path);
+      this.transaction = createTransaction(this.db);
       this.worldRepository = createWorldRepository(this.db, (operation) => {
         return this.transaction(operation);
       });
@@ -264,23 +267,6 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
     revokeSession(token: string) {
       return this.accountRepository.revokeSession(token);
-    }
-
-    private transactionId = 0;
-
-    private transaction<T>(operation: () => T): T {
-      const savepoint = `operation_${++this.transactionId}`;
-      this.db.exec(`SAVEPOINT ${savepoint}`);
-      try {
-        const result = operation();
-        this.db.exec(`RELEASE ${savepoint}`);
-
-        return result;
-      } catch (error) {
-        this.db.exec(`ROLLBACK TO ${savepoint}; RELEASE ${savepoint}`);
-
-        throw error;
-      }
     }
 
     close() {

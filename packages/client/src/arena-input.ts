@@ -1,3 +1,4 @@
+import { inputBlocked } from './arena-keyboard';
 import { wrap, type ClientMessage, type Player, type WorldState } from '@emberfall/common';
 import { ARENA, FOREST, TICK_MS } from '@emberfall/core';
 import { pickInteraction, interactionInRange, type InteractionTarget } from './interaction-targets';
@@ -29,7 +30,7 @@ export function createArenaInput({
   let pointerInside = false;
   let targets: InteractionTarget[] = [];
   const pointerPoint = () => {
-    return pointerInside && pointer && !blocked()
+    return pointerInside && pointer && !inputBlocked()
       ? {
           x: inputCamera.x + pointer.x * inputCamera.width,
           y: inputCamera.y + pointer.y * inputCamera.height,
@@ -48,15 +49,6 @@ export function createArenaInput({
     width: ARENA.width,
     height: ARENA.height,
   };
-  const blocked = () => {
-    return (
-      !!document.querySelector('[role="dialog"][aria-modal="true"]') ||
-      document.hidden ||
-      document.activeElement instanceof HTMLInputElement ||
-      document.activeElement instanceof HTMLTextAreaElement
-    );
-  };
-
   const currentAim = () => {
     return {
       aimX: wrap(inputCamera.x + (pointer?.x ?? 0.5) * inputCamera.width, FOREST.width),
@@ -79,7 +71,7 @@ export function createArenaInput({
   };
 
   const pointerDown = (event: PointerEvent) => {
-    if (event.button !== 0 || blocked()) {
+    if (event.button !== 0 || inputBlocked()) {
       return;
     }
 
@@ -211,7 +203,7 @@ export function createArenaInput({
       return;
     }
 
-    if (blocked()) {
+    if (inputBlocked()) {
       keys.clear();
       held = false;
     }
@@ -222,7 +214,7 @@ export function createArenaInput({
         autoAttack: preferences().autoAttack,
         autoTarget: preferences().autoTarget,
         autoLoot: preferences().autoLoot,
-        attacking: held && !blocked(),
+        attacking: held && !inputBlocked(),
       });
     }
 
@@ -260,7 +252,7 @@ export function createArenaInput({
     get pointer() {
       return pointerInside ? pointer : undefined;
     },
-    blocked,
+    blocked: inputBlocked,
     currentAim,
     pointerPoint,
     clearKeys: () => {

@@ -1,3 +1,4 @@
+import { connectionLatency } from './connection-latency';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
 import { GameConnection } from './connection';
@@ -72,26 +73,8 @@ export function useGameSession({
     let joinedId = '';
     let previousScene: string | undefined;
     let voteScene: string | undefined;
-    let probeId = 0;
-    let pendingProbe: { id: number; at: number } | null = null;
-    const ping = () => {
-      if (ws.readyState !== GameConnection.OPEN) {
-        return;
-      }
-
-      const now = performance.now();
-      if (pendingProbe && now - pendingProbe.at < 5000) {
-        return;
-      }
-
-      if (pendingProbe) {
-        setLatency(null);
-      }
-
-      pendingProbe = { id: ++probeId, at: now };
-      ws.send({ type: 'ping', id: probeId });
-    };
-
+    const latencyProbe = connectionLatency(ws, setLatency);
+    const ping = latencyProbe.ping;
     const pingTimer = setInterval(ping, 2000);
     // The version request catches failures and closes the connection for retry.
     // oxlint-disable-next-line typescript/no-misused-promises
@@ -151,10 +134,7 @@ export function useGameSession({
 
     ws.onmessage = (event) => {
       const message = event.data;
-      if (message.type === 'pong' && pendingProbe?.id === message.id) {
-        setLatency(Math.max(0, Math.round(performance.now() - pendingProbe.at)));
-        pendingProbe = null;
-      }
+      latencyProbe.receive(message);
 
       if (message.type === 'worlds') {
         setWorlds(message.worlds);

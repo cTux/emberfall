@@ -13,6 +13,9 @@ readable spacing does not compete with the size limit. The reviewed
 it implements one drawing interface while state, textures, pools and lifecycle live
 in separate modules. Its exception permits no further growth. Extract meaningful
 ownership rather than forwarding wrappers or compressed formatting to meet a cap.
+Required braces and explicit arrow-function returns count toward these limits.
+Keep those rules enabled when splitting a file; preserve public exports, story
+IDs, test entry points and lifecycle ownership across the new modules.
 Review stylesheet and configuration size by the same responsibility guideline.
 
 Name functions for their actions and values for their domain meaning. Keep guards

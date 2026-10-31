@@ -1,12 +1,13 @@
+import { updateFrameDiagnostics } from './arena-frame-diagnostics';
 import type { ArenaProps } from './arena-contract';
 import { ArenaPresentation } from './arena-presentation';
 import { InteractionPresentation, forestInteractionTargets } from './interaction-presentation';
 import { VillageScene } from './village-scene';
 
 import { FrameBudget } from './frame-budget';
-import { createArenaInput } from './arena-input';
+import { createPresentationInput } from './arena-presentation-input';
 
-import { LootHints } from './loot-hints';
+import { useArenaState } from './useArenaState';
 import { drawLootHints } from './loot-hint-rendering';
 
 import { useChat } from './ChatProvider';
@@ -25,59 +26,24 @@ import { useTheme } from '@mui/material';
 
 import { forestRenderer } from './forest';
 
-export function useArenaRenderer({
-  world,
-  playerId,
-  send,
-  graphics,
-  preferences,
-  interaction,
-  onCursorAim,
-  onInteract,
-  onHitpoints,
-  onCatSpeech,
-}: ArenaProps) {
+export function useArenaRenderer(props: ArenaProps) {
+  const { playerId, interaction, onCursorAim, onHitpoints } = props;
   const canvas = useRef<HTMLCanvasElement>(null);
   const { reportError } = useChat();
-  const lootHints = useRef(new LootHints());
-  const latest = useRef(world);
-  const receivedAt = useRef(0);
-  const sender = useRef(send);
-  const activate = useRef(onInteract);
-  const catSpoke = useRef(onCatSpeech);
-  const quality = useRef(graphics);
-  const prefs = useRef(preferences);
   const selectedFont = useTheme().typography.fontFamily ?? 'sans-serif';
-  const fontFamily = useRef(selectedFont);
-  const frameRate = useRef<number | null>(null);
-  const networkTiming = useRef<{ inputDelay: number | null; snapshotAge: number | null }>({
-    inputDelay: null,
-    snapshotAge: null,
-  });
-  useEffect(() => {
-    lootHints.current = new LootHints();
-  }, [playerId]);
-  useEffect(() => {
-    if (latest.current !== world) {
-      receivedAt.current = performance.now();
-    }
-
-    const confirmedPlayer = world?.players.find((player) => {
-      return player.id === playerId;
-    });
-    lootHints.current.observe(
-      confirmedPlayer ? (confirmedPlayer.backpack ?? []) : undefined,
-      preferences.lootHints,
-      performance.now(),
-    );
-    latest.current = world;
-    sender.current = send;
-    activate.current = onInteract;
-    catSpoke.current = onCatSpeech;
-    quality.current = graphics;
-    prefs.current = preferences;
-    fontFamily.current = selectedFont;
-  }, [world, playerId, send, graphics, preferences, onInteract, onCatSpeech, selectedFont]);
+  const {
+    lootHints,
+    latest,
+    receivedAt,
+    sender,
+    activate,
+    catSpoke,
+    quality,
+    prefs,
+    fontFamily,
+    frameRate,
+    networkTiming,
+  } = useArenaState(props, selectedFont);
   useEffect(() => {
     const element = canvas.current!;
     const renderer = new PixiContext(element);
@@ -104,28 +70,11 @@ export function useArenaRenderer({
     const { nature } = villageImages;
     const skeleton = actorArt('skeleton');
     const drawForest = forestRenderer(nature, knight, skeleton);
-    const input = createArenaInput({
-      element,
-      world: () => {
-        return latest.current;
-      },
-      player: () => {
-        return latest.current?.players.find((p) => {
-          return p.id === playerId;
-        });
-      },
-      preferences: () => {
-        return prefs.current;
-      },
-      send: (message) => {
-        return sender.current(message);
-      },
-      activate: (source) => {
-        return activate.current(source);
-      },
-      move: (x, y, now) => {
-        return presentation.input(x, y, now);
-      },
+    const input = createPresentationInput(element, playerId, presentation, {
+      latest,
+      prefs,
+      sender,
+      activate,
     });
     onCursorAim(input.currentAim);
     const village = new VillageScene(playerId, (text) => {
@@ -197,22 +146,10 @@ export function useArenaRenderer({
         { width: el.width / scale, height: el.height / scale },
         prefs.current,
       );
-      const { view, local, cursor, cycle } = presented;
+      const { view, local, cycle } = presented;
       renderer.ambientTint = cycle.tint;
       renderer.directionalShadow = cycle.shadow;
-      element.dataset.daylight = cycle.daylight.toFixed(3);
-      element.dataset.celestial = cycle.celestial;
-      element.dataset.shadowDirection = `${cycle.shadow.x.toFixed(3)},${cycle.shadow.y.toFixed(3)}`;
-      element.dataset.partyRequests =
-        view?.partyRequests
-          ?.map((r) => {
-            return r.fromId;
-          })
-          .join(',') ?? '';
-      if (element.dataset.cursor !== cursor) {
-        element.dataset.cursor = cursor;
-      }
-
+      updateFrameDiagnostics(element, presented);
       networkTiming.current = presented.timing;
       const highlightInteractions = now - input.altHeldAt > 500 && !input.blocked();
       const interactionFrame = prompts.frame({
@@ -309,7 +246,24 @@ export function useArenaRenderer({
       renderer.destroy();
       presentation.dispose();
     };
-  }, [playerId, interaction, onCursorAim, onHitpoints, reportError]);
+  }, [
+    playerId,
+    interaction,
+    onCursorAim,
+    onHitpoints,
+    reportError,
+    lootHints,
+    latest,
+    receivedAt,
+    sender,
+    activate,
+    catSpoke,
+    quality,
+    prefs,
+    fontFamily,
+    frameRate,
+    networkTiming,
+  ]);
 
   return { canvas, frameRate, networkTiming };
 }

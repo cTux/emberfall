@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { CssBaseline, GlobalStyles, ThemeProvider, createTheme } from '@mui/material';
 import { windowSurface } from './window-surface';
-import { GAME_FONTS, type GameFont } from './fonts';
+import type { GameFont } from './fonts';
+import { fontFaces } from './font-faces';
 
 declare module '@mui/material/styles' {
   interface Palette {
@@ -20,48 +21,6 @@ declare module '@mui/material/LinearProgress' {
 }
 
 // One source of truth: forest surfaces, parchment text, ember actions.
-const fontFaces = (fontBaseUrl: string) => {
-  return [
-    ...Object.entries(GAME_FONTS)
-      .filter(([family]) => {
-        return family !== 'Alegreya Sans';
-      })
-      .flatMap(([family, file]) => {
-        return ['normal', 'italic'].map((style) => {
-          return {
-            '@font-face': {
-              fontFamily: family,
-              fontStyle: style,
-              fontWeight: '400 700',
-              fontDisplay: 'swap' as const,
-              src: `url('${fontBaseUrl}${file}-${style === 'italic' ? 'Italic' : 'Variable'}.ttf') format('truetype')`,
-            },
-          };
-        });
-      }),
-    ...[400, 500, 700].map((weight) => {
-      return {
-        '@font-face': {
-          fontFamily: 'Alegreya Sans',
-          fontStyle: 'normal' as const,
-          fontWeight: weight,
-          fontDisplay: 'swap' as const,
-          src: `url('${fontBaseUrl}AlegreyaSans-${weight === 400 ? 'Regular' : weight === 500 ? 'Medium' : 'Bold'}.ttf') format('truetype')`,
-        },
-      };
-    }),
-    {
-      '@font-face': {
-        fontFamily: 'Alegreya Sans',
-        fontStyle: 'italic' as const,
-        fontWeight: 400,
-        fontDisplay: 'swap' as const,
-        src: `url('${fontBaseUrl}AlegreyaSans-Italic.ttf') format('truetype')`,
-      },
-    },
-  ];
-};
-
 const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') => {
   return createTheme({
     palette: {

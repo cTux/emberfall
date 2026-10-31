@@ -1,5 +1,9 @@
-import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
-import { forestDistance, wrappedDelta } from '@emberfall/core';
+import {
+  conversationParticipants,
+  faceConversation,
+  conversationBlocks,
+} from './npc-participants.ts';
+import { forestDistance } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { NpcRoutines } from './npc-routines.ts';
 import { villagePlayers, type NpcWorld } from './npc-world.ts';
@@ -107,24 +111,11 @@ export class VillageLife {
       }
     }
 
-    const blocked = new Set<string>();
-    for (const conversation of [
+    const blocked = conversationBlocks([
       this.inFlight ? this.activeConversation : undefined,
       this.continuation?.conversation,
-    ]) {
-      if (!conversation) {
-        continue;
-      }
-
-      blocked.add(conversation.speaker);
-      if (conversation.otherNpc) {
-        blocked.add(conversation.otherNpc);
-      }
-    }
-
-    if (this.reply) {
-      blocked.add(this.reply.conversation.speaker);
-    }
+      this.reply?.conversation,
+    ]);
 
     this.routines.tick(now, dt, players, blocked);
     if (!players.length || this.inFlight || now < this.retryAt) {
@@ -196,50 +187,13 @@ export class VillageLife {
 
   private activeConversation?: Conversation;
 
-  private participants(conversation: Conversation) {
-    const npc = this.world.npcs?.find((n) => {
-      return n.id === conversation.speaker;
-    });
-    const target = conversation.playerId
-      ? this.world.players.get(conversation.playerId)
-      : this.world.npcs?.find((n) => {
-          return n.id === conversation.otherNpc;
-        });
-    if (
-      !npc ||
-      !target ||
-      (conversation.playerId &&
-        !villagePlayers(this.world).some((p) => {
-          return p.id === conversation.playerId;
-        })) ||
-      forestDistance(npc, target) > (conversation.playerId ? PLAYER_RANGE : NPC_RANGE)
-    ) {
-      return undefined;
-    }
-
-    return { npc, target };
-  }
-
   private start(conversation: Conversation, now: number) {
-    const actors = this.participants(conversation);
+    const actors = conversationParticipants(this.world, conversation);
     if (!actors) {
       return;
     }
 
-    actors.npc.moving = false;
-    actors.npc.workstationId = actors.npc.workStartedAt = undefined;
-    actors.npc.angle = Math.atan2(
-      wrappedDelta(actors.target.y, actors.npc.y, VILLAGE_DEFINITION.geometry.height),
-      wrappedDelta(actors.target.x, actors.npc.x, VILLAGE_DEFINITION.geometry.width),
-    );
-    if (conversation.otherNpc) {
-      const other = this.world.npcs!.find((n) => {
-        return n.id === conversation.otherNpc;
-      })!;
-      other.moving = false;
-      other.workstationId = other.workStartedAt = undefined;
-      other.angle = actors.npc.angle + Math.PI;
-    }
+    faceConversation(this.world, conversation, actors);
 
     this.inFlight = true;
     this.activeConversation = conversation;
@@ -295,7 +249,7 @@ export class VillageLife {
         }
 
         this.speech.silence(false);
-        const current = this.participants(conversation);
+        const current = conversationParticipants(this.world, conversation);
         if (!current) {
           return;
         }

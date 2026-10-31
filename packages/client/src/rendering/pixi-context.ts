@@ -3,10 +3,9 @@ import { updateText } from './drawing-text';
 import { PlayerOcclusion } from './player-occlusion';
 import { applyTransform } from './drawing-transform';
 import { RendererDriver } from './renderer-driver';
-import { DrawingPath } from './drawing-path';
+import { PathCommands } from './path-commands';
 import { ImageTextures } from './image-textures';
 import type { WorldDrawingContext } from './drawing-context';
-import { DrawingState } from './drawing-state';
 import { VisualPools, type Visual } from './visual-pools';
 import { Paints } from './paints';
 import { type Container, type Sprite, type Graphics, Texture } from 'pixi.js';
@@ -15,7 +14,7 @@ import type { DirectionalShadow } from '../lighting';
 /** Drawing command adapter: images become batched GPU sprites, paths become GPU
  * geometry. Canvas is used only by asset baking and text metrics, never a world-frame upload.
  */
-export class PixiContext extends DrawingState implements WorldDrawingContext {
+export class PixiContext extends PathCommands implements WorldDrawingContext {
   private visuals = new VisualPools();
 
   get ecs() {
@@ -36,7 +35,6 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
   private shadowPass = false;
   private shadowStrength = 0;
   private shadowRects = new ShadowPrimitives();
-  private path = new DrawingPath();
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -228,47 +226,6 @@ export class PixiContext extends DrawingState implements WorldDrawingContext {
 
   clearRect() {
     this.begin();
-  }
-
-  beginPath() {
-    this.path.reset();
-  }
-
-  closePath() {
-    this.path.add('closePath', []);
-  }
-
-  moveTo(...args: number[]) {
-    this.path.add('moveTo', args);
-  }
-
-  lineTo(...args: number[]) {
-    this.path.add('lineTo', args);
-  }
-
-  quadraticCurveTo(...args: number[]) {
-    this.path.add('quadraticCurveTo', args);
-  }
-
-  bezierCurveTo(...args: number[]) {
-    this.path.add('bezierCurveTo', args);
-  }
-
-  arc(x: number, y: number, r: number, start: number, end: number, ccw = false) {
-    this.path.add('arc', [x, y, r, start, end, Number(ccw)]);
-  }
-
-  ellipse(
-    x: number,
-    y: number,
-    rx: number,
-    ry: number,
-    rotation: number,
-    start: number,
-    end: number,
-    ccw = false,
-  ) {
-    this.path.add('ellipse', [x, y, rx, ry, rotation, start, end, Number(ccw)]);
   }
 
   fill() {
