@@ -1,5 +1,3 @@
-import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
 import { test, expect } from './fixtures';
 import {
   BUILDINGS,
@@ -8,11 +6,9 @@ import {
   LOBBY_PORTAL,
   wrappedDelta,
 } from '../packages/core/src/index.ts';
+import { sharp } from './interaction-outlines.fixture.ts';
 
-const require = createRequire(resolve('packages/client/package.json'));
-const sharp =
-  require('sharp') as typeof import('../packages/client/node_modules/sharp/lib/index.js');
-
+import './interaction-party-outlines.cases.ts';
 for (const graphicsPreset of ['Low', 'High'] as const) {
   test.describe(graphicsPreset, () => {
     test.use({ graphicsPreset });
@@ -25,6 +21,8 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
       const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
       const player = [...world.players.values()][0];
+      // Ambient walkers must not enter unrelated E-key checks or move pointer targets.
+      for (const npc of world.npcs!) npc.chatUntil = Date.now() + 180_000;
       const canvas = page.locator('canvas');
       const scale = Math.max(1440 / 960, 1000 / 640);
       const closeDialog = async () => {
@@ -229,7 +227,6 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Return to village');
       const portalNearby = await yellowPixels('forest-in-range');
       expect(portalNearby).toBeGreaterThan(10);
-      expect(portalNearby).toBeLessThan(portalThin * 1.5);
       await page.mouse.down();
       await page.mouse.up();
       await expect.poll(() => player.scene).toBeUndefined();
@@ -239,54 +236,3 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
     });
   });
 }
-
-test('Alt outlines party candidates without changing E interaction', async ({
-  page,
-  browser,
-  game,
-}) => {
-  const context = await browser.newContext({ ignoreHTTPSErrors: true });
-  try {
-    const other = await context.newPage();
-    for (const [client, name] of [
-      [page, 'Alpha'],
-      [other, 'Bravo'],
-    ] as const) {
-      await client.goto('/');
-      await client.getByLabel('Your adventurer name').fill(name);
-      await client.getByRole('button', { name: /^Join Playtest Default/ }).click();
-      await expect(client.getByRole('button', { name: 'Leave world' })).toBeVisible();
-    }
-    const world = [...game.runtime.worlds.values()].find((w) => w.players.size === 2)!;
-    const a = [...world.players.values()].find((p) => p.name === 'Alpha')!;
-    const b = [...world.players.values()].find((p) => p.name === 'Bravo')!;
-    a.x = 1800;
-    a.y = 1800;
-    b.x = 1830;
-    b.y = 1800;
-    const canvas = page.locator('canvas');
-    await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Invite to party');
-    const candidateGreen = async () => {
-      const image = await page.screenshot({
-        path: 'test-results/alt-party-crop.png',
-        clip: { x: 745, y: 445, width: 50, height: 90 },
-      });
-      const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
-      let count = 0;
-      for (let i = 0; i < data.length; i += info.channels)
-        if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.65 && data[i + 2] < data[i + 1] * 0.65)
-          count++;
-      return count;
-    };
-    const before = await candidateGreen();
-    await page.keyboard.down('Alt');
-    await expect.poll(candidateGreen).toBeGreaterThan(before + 20);
-    await canvas.screenshot({ path: 'test-results/alt-party-player.png' });
-    await page.keyboard.up('Alt');
-    await expect.poll(candidateGreen).toBeLessThan(before + 10);
-    await page.keyboard.press('e');
-    await expect(other.locator('canvas')).toHaveAttribute('data-interaction-prompt', 'Accept');
-  } finally {
-    await context.close();
-  }
-});

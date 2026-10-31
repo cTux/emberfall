@@ -41,6 +41,14 @@ runner globs discover them. Cross-package presentation fixtures live in `tests`
 so production package dependency rules still apply. When splitting suites, preserve case bodies,
 parameterized cases and hook scope, then verify discovery and the complete suite.
 
+Browser suites retain their `*.spec.ts` entry points and import focused
+`*.cases.ts` groups. These groups are not separately discovered, so existing
+commands, CI selectors and per-entry hooks continue to apply. Shared setup lives
+in `*.fixture.ts` modules. Screen composition stories retain their named exports
+in `Screens.stories.tsx`, with private render components in `stories/screens`.
+The renderer pixel fixture keeps canvas ownership and comparison results in its
+entry module and delegates surface, lighting, damage and loot probes to helpers.
+
 ## Lint policy
 
 The root `.oxlintrc.json` is shared by local commands, editors and CI runners.
