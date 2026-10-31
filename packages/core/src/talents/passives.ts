@@ -1,3 +1,4 @@
+import { game, type createGame } from '../game.ts';
 import type { Enemy, Player, SceneState } from '@emberfall/common';
 import type { CharacterStats } from '../content/rules.ts';
 import { rank, applyTalentAilment, talentArea as area } from '../talent-ailments.ts';
@@ -6,11 +7,13 @@ import { characterStats } from '../equipment.ts';
 import { state } from './state.ts';
 import { strike, heal, talentVisual } from './effects.ts';
 
+type Game = ReturnType<typeof createGame>;
 export function talentIncomingDamage(
   scene: SceneState,
   player: Player,
   amount: number,
   now: number,
+  context: Game = game,
 ) {
   const value = state(player, scene);
   let prevented = 0;
@@ -43,6 +46,7 @@ export function talentIncomingDamage(
         retaliation === 2 ? 1 : 0.6,
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][2][6],
+        context,
       );
     talentVisual(scene, player, 2, player, now);
   }
@@ -67,6 +71,7 @@ export function talentWeaponHit(
   now: number,
   companion = false,
   stats?: CharacterStats,
+  context: Game = game,
 ) {
   const value = state(player, scene);
   value.stats = stats ?? characterStats(player);
@@ -86,9 +91,10 @@ export function talentWeaponHit(
       rank(player, 2, 5) === 2 ? 1.2 : 0.5,
       now,
       TALENT_NAMES[player.classId ?? 'warrior'][2][5],
+      context,
     );
   }
-  if (guard && now >= value.guardReadyAt && Math.random() < (guard === 2 ? 0.25 : 0.15)) {
+  if (guard && now >= value.guardReadyAt && context.random() < (guard === 2 ? 0.25 : 0.15)) {
     value.guardUntil = now + 3000;
     value.guardReadyAt = now + 4000;
   }
@@ -104,6 +110,7 @@ export function talentWeaponHit(
           follow === 2 ? 0.7 : 0.4,
           now,
           TALENT_NAMES[player.classId ?? 'warrior'][0][0],
+          context,
         );
   if ((player.classId ?? 'warrior') === 'druid' && companion) {
     const bond = rank(player, 1, 0);
@@ -115,9 +122,10 @@ export function talentWeaponHit(
         bond === 2 ? 0.7 : 0.4,
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][1][0],
+        context,
       );
     const rake = rank(player, 1, 2);
-    if (rake && Math.random() < (rake === 2 ? 0.45 : 0.25))
+    if (rake && context.random() < (rake === 2 ? 0.45 : 0.25))
       applyTalentAilment(enemy, player, 'bleed', 1, now, undefined, value.stats);
     const life = rank(player, 1, 8);
     if (life && value.hits % 5 === 0) heal(player, life === 2 ? 0.04 : 0.02);
@@ -135,6 +143,7 @@ export function talentWeaponHit(
         shared === 2 ? 0.6 : 0.3,
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][1][6],
+        context,
       );
     const instinct = rank(player, 1, 9);
     if (instinct && value.hits % 5 === 0)
@@ -147,6 +156,7 @@ export function talentWeaponHit(
             instinct === 2 ? 1 : 0.6,
             now,
             TALENT_NAMES[player.classId ?? 'warrior'][1][9],
+            context,
           );
   }
   if (
@@ -154,7 +164,7 @@ export function talentWeaponHit(
     player.classId !== 'druid' &&
     rank(player, 1, 0) &&
     !companion &&
-    Math.random() < (rank(player, 1, 0) === 2 ? 0.35 : 0.2)
+    context.random() < (rank(player, 1, 0) === 2 ? 0.35 : 0.2)
   )
     applyTalentAilment(
       enemy,

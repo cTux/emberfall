@@ -26,6 +26,7 @@ export function tickDebuffs(
           false,
           debuff.kind[0].toUpperCase() + debuff.kind.slice(1),
           owner ? context.rules.characterStats(owner) : undefined,
+          context,
         );
         debuff.nextTick += debuff.tickIntervalMs ?? AILMENT_DEFINITIONS[debuff.kind].tickMs;
       }

@@ -3,7 +3,7 @@ import type { ContentTypes, GameMod, Registries, Registration } from './contract
 import { createRegistry, validId } from './registry.ts';
 import { createRules } from './rules.ts';
 
-export function createGame(mods: readonly GameMod[]) {
+export function createGame(mods: readonly GameMod[], random = () => Math.random()) {
   const stores = {
     items: createRegistry<ContentTypes['items']>('items'),
     gearTypes: createRegistry<ContentTypes['gearTypes']>('gearTypes'),
@@ -51,10 +51,11 @@ export function createGame(mods: readonly GameMod[]) {
     // Failed compositions also close retained registration handles.
     for (const store of Object.values(stores)) store.seal();
   }
-  const rules = createRules(registries);
+  const rules = createRules(registries, random);
   return Object.freeze({
     registries,
     rules,
+    random,
     modIds: Object.freeze([...loaded]),
     status: 'ready' as const,
   });

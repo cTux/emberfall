@@ -1,3 +1,4 @@
+import { game, type createGame } from '../game.ts';
 import type { Enemy, Player, SceneState } from '@emberfall/common';
 import { appendSceneEntities } from '@emberfall/common';
 import { characterStats } from '../equipment.ts';
@@ -5,6 +6,7 @@ import { hitEnemy } from '../combat/damage.ts';
 import { isChanced } from '../utils/isChanced.ts';
 import { state } from './state.ts';
 
+type Game = ReturnType<typeof createGame>;
 export function talentVisual(
   scene: SceneState,
   player: Player,
@@ -35,9 +37,10 @@ export function strike(
   scale: number,
   now: number,
   source: string,
+  context: Game = game,
 ) {
   const stats = state(player, scene).stats ?? characterStats(player);
-  const critical = isChanced(stats.criticalChance * 100);
+  const critical = isChanced(stats.criticalChance * 100, context.random);
   hitEnemy(
     scene,
     enemy,
@@ -49,6 +52,7 @@ export function strike(
     critical,
     source,
     stats,
+    context,
   );
 }
 type HealingTarget = Pick<Player, 'x' | 'y' | 'hitpoints' | 'maxHitpoints'>;

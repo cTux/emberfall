@@ -45,6 +45,14 @@ extension tests, while the live game uses the default bundled composition.
 Shared forest/training paths, spawn/reward ordering and server authority remain
 intact. See the [mod design](mods.md).
 
+Each ready game context owns a `random` function. Shared hit resolution, loot,
+spawn selection and talent callbacks use that context, including callbacks that
+run after the cast. Training accepts the same context and still exits before
+death rewards. Default gameplay uses `Math.random()` with the existing draw
+order and probability boundaries. Injected sources isolate outcome tests; UUID
+generation and host timing remain outside this seam. Coverage lives in
+`packages/server/src/random-context.test.ts` and core's `random-source.test.ts`.
+
 ## Scene states
 
 ```mermaid

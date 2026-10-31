@@ -1,3 +1,4 @@
+import { game, type createGame } from './game.ts';
 import { TRANSIENT_EFFECTS } from './definitions/effects/transient.ts';
 import { TRAINING_DEFINITION } from './definitions/encounters/training.ts';
 import { TRAINING_ZONES, inTrainingZone } from './world.ts';
@@ -5,11 +6,13 @@ import { tickCompanion, tickPlayerCombat } from './simulation.ts';
 import { damagePerSecond, tickDebuffs } from './class-combat.ts';
 import type { Player, SceneState } from '@emberfall/common';
 
+type Game = ReturnType<typeof createGame>;
 export function tickTraining(
   scene: SceneState | undefined,
   players: Player[],
   now: number,
   dt: number,
+  context: Game = game,
 ) {
   scene ??= createTrainingScene(now);
   if (now >= scene.nextSpawn) {
@@ -22,10 +25,10 @@ export function tickTraining(
   const lobby = players.filter(
     (player) => !player.scene && player.hitpoints > 0 && !player.reconnecting,
   );
-  tickDebuffs(scene, lobby, now);
+  tickDebuffs(scene, lobby, now, context);
   for (const player of lobby)
-    tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt);
-  tickPlayerCombat(scene, lobby, now, dt);
+    tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt, context);
+  tickPlayerCombat(scene, lobby, now, dt, context);
   for (const player of players) player.dps = damagePerSecond(player, now);
   return scene;
 }
