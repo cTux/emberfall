@@ -50,160 +50,10 @@ four framed tiles in one horizontal row with padding, without text or weapons.
 
 ## Prompt log
 
-### Health potion
-
-`health-potion.png` was generated on 2026-10-10 by GPT-6 Astra with built-in
-imagegen, using `slot-amulet.png` and `mage-weapon.png` as style references.
-The identical shared UI copy is `packages/ui/src/assets/health-potion.png`.
-Both are 96 x 96 transparent PNGs, mechanically reduced with nearest-neighbor
-sampling from the 1280 x 1280 tool output. Generated alpha is preserved; no
-external image was composited. This asset follows this collection's CC BY-SA
-3.0 distribution and retained LPC notices above.
-
-Prompt: Use case: stylized-concept. Asset type: a single inventory item icon for Emberfall, displayed at 36px. Input images: the amulet and red-gold staff are STYLE REFERENCES ONLY. Primary request: one red health potion, a squat round glass bottle filled with ruby-red liquid, short narrow neck and simple warm brown cork, subtle warm ivory glass highlight at upper left. Match the references' dark brown contour, warm ochre highlights, restrained pixel-art material ramps and chunky distinct pixel clusters. Front view with a little visible top of cork, upright, centered on square canvas, full bottle occupying about 85% height and 62% width. Simple unmistakable flask silhouette readable at 36px. Genuine transparent alpha outside the bottle. No text, labels, cross, runes, sparkles, extra objects, background, floor shadow, glow, border, smooth gradient or photorealism. This is a new icon, not an edit of the reference items.
-
-Inspected the source, final 96px asset, and 36px nearest-neighbor preview: the
-cork, neck, round red liquid body and highlight remain recognizable, with no
-background or shadow. Corner alpha is zero; both delivered copies have SHA-256
-`796c6d88150e15886d2583e17750bbbd2cb0aa70bd4921cebf2d1813fb0e2df4`.
-Actual inventory integration is verified separately by the integrating task.
-
-### Player stride correction
-
-`warrior-stride.png`, `ranger-stride.png`, `mage-stride.png` and `druid-stride.png`
-were generated with built-in imagegen using each approved class atlas as its
-identity reference. The packager replaces only the six walking rows, retaining
-idle, attack and fallen poses. Inspect all directions at `/?class-movement`.
-
-Prompt applied per class: preserve the class design, palette, pixel outlines and
-weapon hands; draw a transparent four-column (down/up/left/right), six-row walk
-cycle with left contact, recoil, right passing, right contact, recoil and left
-passing poses. Show distinct planted/lifted boots, knee bends and fore/aft stride,
-including boots below robes. Keep the camera and scale stable, use generous
-gutters, and omit text, shadows, grids and scenery. A second imagegen edit removed
-the unwanted painted background while preserving the 24 poses.
-
-Whole-frame uniqueness is insufficient: the lower-leg alpha silhouettes must
-change, and the loop must be reviewed enlarged and at game size.
-
-Color continuity is mandatory for every class generation and revision: use the
-approved idle turnaround as the direction-specific palette reference. Keep
-material hues, saturation, brightness, shading, highlights and outlines identical
-across idle, walking, attacks and fallen poses. Do not relight or recolor motion
-frames. Compare idle with all six gait phases and start/stop transitions on the
-same background at game size and enlarged; reject visible tone jumps. See the
-required rule in [REVISION-PROMPTS.md](REVISION-PROMPTS.md). Packaging matches the
-walking tonal distribution to idle, then maps walk RGB to the nearest standing
-color for the same direction with one mapping for all six phases, preserving alpha and all
-existing geometry; idle, attack and fallen pixels are untouched.
-
-The `*-stride-revised.png` sources refine the remaining directions after visual
-feedback. Packaging retains Warrior left/right and Ranger down from the earlier
-stride sheets at exactly their earlier scale. Other columns use the revised
-sources. The follow-up prompt requests separate boot tracks for front/back,
-opposite leading/supporting legs across the half-cycles, and near/far knee
-changes in profile, preserving upper bodies and weapon hands. Background removal
-is a separate built-in imagegen pass. Automated silhouette/contact checks are
-rejection filters, not evidence that the animation looks natural.
-The profile correction explicitly requests long contact strides, a vertical
-supporting leg with the other heel raised, and narrow passing poses with boots
-beneath the hip. This avoids six variations of the same split-foot stance.
-
-### warrior
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: WARRIOR from the reference, closed steel helmet with narrow black visor and central silver ridge, reddish brown neck scarf, layered steel pauldrons and plate armor, brown belt boots and gloves, short steel sword and small dark steel shield. Attack windup raises sword; release sweeps sword forward. Keep sword modest so every pose stays inside its cell.
-
-### ranger
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: RANGER from reference, green hood with face visible, dark brown leather tunic and boots, moss green cape, brown quiver with ivory arrows, compact wooden bow. Attack windup draws bowstring and release extends bow arm. Same adult proportions as warrior, not chibi.
-
-### mage
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: MAGE from reference, burnt orange hood and robe, dark recessed face with small visible eyes, red brown belt boots gloves, ornate short dark wooden staff topped with amber crystal. Attack windup lifts free hand, release thrusts staff and palm with small ember spark (no large effects crossing cells). Keep same stature and costume in all cells.
-
-### druid
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: DRUID from reference, muted moss green hood and mantle with a few leaves, cream inner tunic, brown belt and boots, pale beard visible, crooked wooden staff with small leaves and green crystal. Windup raises staff; release points staff and open hand with a tiny green spark. Do not add a pet inside any cell.
-
-### wardrobe
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-Regenerate the WARDROBE itself as a new detailed dark walnut cabinet matching the approved environment style. Keep the recognizable two doors, scalloped carved cornice, reddish brown panel moldings, small dark steel handles and short block feet. Render four frames in EXACTLY ONE HORIZONTAL ROW of four equal square cells, canvas 2048x512 if possible. Frame 1 doors shut; frame 2 doors a quarter open; frame 3 doors halfway open; frame 4 doors fully open revealing hanging green cloak and orange robe, a shelf and boots. Same cabinet body and footprint in every frame, only doors swing. No character, no scenery, no floor, transparent background. Center in each cell, base at 90% height, cabinet height 75% cell, leave room for open doors. No labels. This is usable sprite artwork, not a mockup sheet.
-
-### skeleton
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: SKELETON enemy from reference, warm ivory skull and bones, dark empty eye sockets, ragged brown waistcloth, rusty short sword and small round wooden shield. Attack rows raise then swing sword. Fallen row pile of collapsed bones retaining sword/shield. Keep thin readable limbs.
-
-### runner
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: RUNNER enemy from reference, lean hunched gray-skinned goblin-like ghoul, ragged brown loincloth, long arms and clawed hands, bald head with small red eyes, no weapon. Fast scrambling running gait. Windup crouches and draws claws back; attack lunges with claw. Fallen pose curled body. All four directions and eight rows.
-
-### brute
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: BRUTE enemy from reference, hulking broad gray ogre, bald heavy brow, thick brown leather shoulder straps, ragged brown waistcloth, large rough wooden club held down. No gore. Heavy stomping walk. Attack windup lifts club overhead, release slams forward. Fallen collapsed sideways. Pay particular attention to all EIGHT rows: idle; FOUR walking poses; windup; slam; fallen.
-
-### caster
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: CASTER enemy from reference, charcoal purple hooded robe, skeletal pale face in dark hood, thin leather belt, crooked wooden staff with small skull ornament and teal crystal. Teal magical glow on free hand only in attack release. Windup draws staff back, release extends free hand. Four complete walking rows before the two attack rows. Fallen robe and skull collapsed.
-
-### warden
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-EXACT grid: FOUR equally sized columns by EIGHT equally sized rows, 32 sprite cells total, canvas aspect ratio 1:2, ideally 1024x2048. All cells square, equal, touching as an invisible grid, no outer margins. Character feet anchored at 85% height of EVERY cell, centered x at 50%, same scale, occupies 60% cell height and at most 80% width. Columns in EVERY row are respectively facing DOWN toward viewer, UP back to viewer, LEFT profile, RIGHT profile. Rows top to bottom: 1 idle relaxed; 2 walking left foot forward; 3 walking passing pose; 4 walking right foot forward; 5 walking passing opposite pose; 6 attack/cast windup; 7 attack/cast release; 8 dead collapsed body on ground. Use clearly different limbs between walk frames. All 32 cells populated with exactly one full body each, including back-facing attacks and four collapsed poses. Do not draw extra portraits or weapons separate from bodies. Weapons remain part of character. Preserve same face and costume.
-Subject: THE HOLLOW WARDEN boss from reference, intimidating tall forest guardian with ivory deer-skull mask and branching antlers, layered bark armor, dark moss cloak, large crooked wooden staff carrying a small teal lantern. Keep antlers within cell. Heavy deliberate walking. Attack windup raises staff; release brings staff down. Fallen heap of cloak bark and antler mask. Eight rows, all four directions.
-
-### animals
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-ANIMAL animation atlas, EXACT FOUR COLUMNS by SIX ROWS. Every cell same size, full animal on alpha, no ground shadows. Column 1 brown friendly wild boar with ivory tusks and bristled back; column 2 orange tabby cat; column 3 white chicken red comb; column 4 gray raccoon black mask ringed tail. ALL animals face RIGHT side profile in EVERY cell, not directional changes. Six rows top to bottom: idle, walk left legs forward, walk passing, walk right legs forward, attack/sniff/peck forward, resting lying down. Boar row five is charging tusk strike. Keep same animal identity, size, and root anchor across rows; same scale within each column. Row six boar lies still for defeated pose, not sleeping upright. Layout 4x6 with exactly 24 animals. No other objects.
-
-### animals-alpha-repair
-
-Precise background extraction of this animal sprite sheet. Remove the ENTIRE brown/black glowing background and ALL glows/shadows/speed lines. Preserve the exact 24 pixel-art animals, their positions, colors, details and layout. Output genuine transparent alpha everywhere outside animal silhouettes, including gaps within limbs. Do not rearrange, redraw, resize or add any animal. This must be a usable game sprite atlas with transparent background, not a visual of a sheet on a background.
-
-### environment
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-Environment object atlas EXACT THREE columns by THREE rows, nine equal square cells on genuine transparent alpha. No text. Row 1: three modest timber village buildings (one red tiled cottage, one taller timber hall, one thatched cottage), front-facing top-down RPG camera. Row 2: broadleaf moss-green tree, dark green conifer tree, dense shrub with grass tufts. Row 3: dark walnut lantern POST with amber lantern attached, wooden straw training dummy, gray mossy rock cluster. Full objects centered with transparent margins, do not overlap adjacent cells. Render buildings and trunks with reference wardrobe's reddish carved wood, crisp dark outlines and restrained pixel highlights. No wardrobe in this sheet. No ground tiles or background. Canvas square.
-
-### effects
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-Animated effects atlas EXACT FOUR columns by FOUR rows, 16 equal square cells, square canvas. Each ROW is a four-frame sequence left to right. Row 1: same dark bronze hanging lantern with amber flame flickering in glass, keep lantern shell identical and fixed, only flame changes. Row 2: same gray carved stone arch return portal with cyan/blue swirling magical surface, fixed stone silhouette across all four frames, moving blue ripple only. Row 3: orange fireball flying RIGHT, four flame-tail variations, isolated. Row 4: green twisted root magic projectile flying RIGHT, four leaf/root-tail variations. Transparent background, no text, no diffuse glow outside silhouettes, generous gutters. Portals keep identical size. Lantern should match reference walnut and bronze design.
-
-### icons
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-Inventory and portrait atlas: EXACT 4 columns and 3 rows, 12 equal square cells, canvas 4:3. Row ONE four isolated class weapons: steel sword, wooden green bow, red-gold mage staff, green druid staff. Row TWO four status symbols: red bleeding droplet, green poison droplet, orange flame, twisting green roots. Row THREE four SQUARE head-and-shoulders portraits matching characters: steel helmet warrior with brown scarf, green hood ranger with face, orange hood mage dark face, moss hood druid pale beard. Portrait backgrounds dark charcoal inside a thin dark walnut square frame; everything outside frame transparent. All items centered in their own equal square cells, generous consistent empty margins, no text or headings or numbers. No glow outside silhouettes. Precise four by three layout.
-
-### terrain
-
-Use case: stylized-concept. Production TOP DOWN pixel-art terrain texture atlas for Emberfall matching attached environment. EXACT three equally sized square tiles in a single horizontal row, no margins, no gaps, no labels. Tile 1 muted moss/olive grass ground with sparse tiny grass pixels, tile 2 warm brown compacted dirt footpath texture with sparse tiny pebbles, tile 3 darker forest leaf litter/soil with sparse olive grass. Each tile completely fills its square edge to edge. Each tile must be seamless on all four edges, no border, no large feature, evenly lit, no vignette or shadows. Deliberately low contrast so small characters stand out. Crisp hand-drawn LPC pixel clusters, no blur no photorealism. NO buildings, trees, objects, paths drawn across tiles, or transparency. These are flat repeating materials, not scenery. Landscape 3:1.
-
-### pickups
-
-Production game sprite atlas for Emberfall. Match attached approved concept art and the original wardrobe's crisp pixel art: dark brown contours, warm walnut / ochre highlights, restrained material ramps, muted colors, distinct hand-placed pixel clusters. NOT a poster, no text, no labels, no border, no grid lines, no background scenery, NO ground shadows. Genuine transparent alpha background. Each sprite is completely isolated with generous transparent padding. Consistent camera, light, scale, anatomy, costume across frames. Top-down RPG 3/4 overhead camera with visible fronts, no isometric angle. Sharp pixels without antialiasing or smooth gradients.
-Small gameplay VFX atlas: EXACT FOUR columns THREE rows, 12 equal square cells on transparent alpha, landscape 4:3. Row 1 is four frames of a small wooden arrow flying RIGHT with ivory triangular arrowhead and green feather fletching, consistent arrow body and subtle shifting tiny trailing flecks. Row 2 four frames of one warm gold coin turning around vertical axis (front, three-quarter, edge, three-quarter), simple embossed ember mark, no text. Row 3 four frames of a single small teal experience crystal sparkling, stable angular crystal body with changing bright pixels. No labels, no background, no floor shadows, no diffuse bloom. All objects fully inside their cell with generous gutters. Match wardrobe style crisp pixel outlines and limited ramps.
-
-### panel
-
-Use case: stylized-concept. One production pixel-art UI panel skin for Emberfall in the attached wardrobe style. Square 512x512 image, edge-to-edge dark reddish walnut frame, slender carved stepped molding occupying the outermost 32 pixels, restrained ochre highlights on upper left edges, subtle small ornamental square corners. The entire central interior is completely flat uniform very dark brown #211916, empty, no text no icons no objects no gradients. This is a 9-slice UI texture: top bottom and side center segments must be simple straight repeatable wood borders; corner motifs confined to corners, no centered ornament. No outside margins, opaque background. Crisp pixel art without antialiasing. The border should look like the wardrobe's panel molding.
+- [Health potion generation record](prompts/items.md)
+- [Player generation prompts](prompts/players.md)
+- [Enemy and animal generation prompts](prompts/enemies.md)
+- [Scenery, effects and interface generation prompts](prompts/scenery.md)
 
 ## Gathered resources
 
@@ -219,3 +69,83 @@ freshly chopped oak stump with mossy roots and golden growth rings, a depleted
 stone outcrop with scattered gray chips, and harvested short green stems with
 fallen leaves. Match the source's crisp dark outlined pixel art, muted olive greens,
 warm brown wood and gray stones in a top-down three-quarter RPG view.
+
+<a id="health-potion"></a>
+
+See [topic detail](prompts/items.md#health-potion).
+
+<a id="player-stride-correction"></a>
+
+See [topic detail](prompts/players.md#player-stride-correction).
+
+<a id="warrior"></a>
+
+See [topic detail](prompts/players.md#warrior).
+
+<a id="ranger"></a>
+
+See [topic detail](prompts/players.md#ranger).
+
+<a id="mage"></a>
+
+See [topic detail](prompts/players.md#mage).
+
+<a id="druid"></a>
+
+See [topic detail](prompts/players.md#druid).
+
+<a id="wardrobe"></a>
+
+See [topic detail](prompts/players.md#wardrobe).
+
+<a id="skeleton"></a>
+
+See [topic detail](prompts/enemies.md#skeleton).
+
+<a id="runner"></a>
+
+See [topic detail](prompts/enemies.md#runner).
+
+<a id="brute"></a>
+
+See [topic detail](prompts/enemies.md#brute).
+
+<a id="caster"></a>
+
+See [topic detail](prompts/enemies.md#caster).
+
+<a id="warden"></a>
+
+See [topic detail](prompts/enemies.md#warden).
+
+<a id="animals"></a>
+
+See [topic detail](prompts/enemies.md#animals).
+
+<a id="animals-alpha-repair"></a>
+
+See [topic detail](prompts/enemies.md#animals-alpha-repair).
+
+<a id="environment"></a>
+
+See [topic detail](prompts/scenery.md#environment).
+
+<a id="effects"></a>
+
+See [topic detail](prompts/scenery.md#effects).
+
+<a id="icons"></a>
+
+See [topic detail](prompts/scenery.md#icons).
+
+<a id="terrain"></a>
+
+See [topic detail](prompts/scenery.md#terrain).
+
+<a id="pickups"></a>
+
+See [topic detail](prompts/scenery.md#pickups).
+
+<a id="panel"></a>
+
+See [topic detail](prompts/scenery.md#panel).

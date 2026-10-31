@@ -25,4 +25,4 @@ blockers and no active claim. Claims, labels, comments and closure must remain
 within the authorized map workflow. Preserve other sessions' claims and edits.
 
 Implementation alone does not close an issue or authorize a merge. Follow the
-[repository PR rules](../development.md#pr-and-merge) and report actual readiness.
+[repository PR rules](../development/pull-requests.md#pr-and-merge) and report actual readiness.

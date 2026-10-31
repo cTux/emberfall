@@ -5,13 +5,13 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 ## Project constraints
 
 - Use single quotes for code string literals and JSX attribute values. Follow Oxfmt's escape-minimizing exceptions; JSON retains double quotes.
-- When adding or refactoring code, follow [code structure and strict checks](docs/development.md#code-structure): keep modules below 250 lines, split by responsibility, and use typed declarative definitions for repeated domain rules.
+- When adding or refactoring code, follow [code structure and strict checks](docs/development/code-structure.md#code-structure): keep modules below 250 lines, split by responsibility, and use typed declarative definitions for repeated domain rules.
 - Emberfall is an online-only cooperative browser game. The server owns movement validation, damage, health, deaths, rewards and saves; client prediction is presentation only.
 - Verify browser behavior on desktop. Skip mobile devices, mobile emulation, touch-only scenarios and phone-sized viewport/layout checks unless the user explicitly requests mobile testing; missing mobile coverage is not a completion or merge blocker.
-- Progression must not require a player choice or interrupt gameplay. Read [PROG-01](docs/specs/progression.md) before designing progression; no replacement system is selected yet.
+- Progression must not require a player choice or interrupt gameplay. Read [PROG-01](docs/specs/progression.md) before designing progression; automatic leveling and optional talents are implemented.
 - Reuse shared simulation in forest and training. Preserve wrapped geometry in both areas. Keep UI presentation separate from client actions and server rules.
 - Core owns registries, bundled mods and content-aware rules; common owns contracts and pure geometry and must never import core. Start content work in [the core guide](packages/core/README.md) and preserve saved/wire IDs.
-- Every item and entity must have its own generated image or sprite frames, matching the game's existing art style. Ship and wire that artwork with the feature; emoji, generic icons and another item's or entity's artwork do not satisfy this rule. Follow [artwork delivery](docs/development.md#artwork-delivery).
+- Every item and entity must have its own generated image or sprite frames, matching the game's existing art style. Ship and wire that artwork with the feature; emoji, generic icons and another item's or entity's artwork do not satisfy this rule. Follow [artwork delivery](docs/development/artwork.md#artwork-delivery).
 - Every new feature must update its affected documentation and include a committed visual representation (animated or static image) embedded in those docs. Label concept previews separately from verified gameplay captures.
 - Keep credentials, SQLite data, certificates and generated build output out of Git. Commit shipped artwork with its credits and licenses.
 

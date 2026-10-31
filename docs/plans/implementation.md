@@ -39,7 +39,7 @@ no progression effect or gameplay rebalance.
 
 ## Next gameplay work: decision required
 
-Automatic saved leveling and paragon are implemented under PROG-02. Stat growth and ability changes remain undecided. The earlier run-level upgrade selector was rejected. Further progression must apply without required choices or gameplay interruption.
+Automatic saved leveling and paragon are implemented under PROG-02. Optional class talents are implemented under PROG-03; additional automatic stat growth remains undecided. The earlier run-level upgrade selector was rejected. Further progression must apply without required choices or gameplay interruption.
 
 When a specific progression feature is requested:
 
@@ -48,7 +48,7 @@ When a specific progression feature is requested:
 3. Implement the smallest complete vertical slice across common/server/client. Keep all movement and combat available when a grant occurs.
 4. Verify threshold boundaries, multiple grants, save/reconnect behavior, two-client independence and unobtrusive feedback using PROG-01 acceptance scenarios.
 
-Do not implement thresholds, new currency, talent effects, a rune inventory, automatic upgrades or pre-run loadouts from this outline alone. They remain open product choices, not missing pieces of the current baseline.
+Do not implement thresholds, new currency, a rune inventory, automatic upgrades or pre-run loadouts from this outline alone. They remain open product choices, not missing pieces of the current baseline.
 
 ## Ongoing maintenance
 
