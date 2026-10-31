@@ -1,8 +1,7 @@
 import type { Player, EquipmentSlot } from '@emberfall/common';
 import type { createEquipmentRules } from './equipment-rules.ts';
-import type { createItemRules } from './item-rules.ts';
+import type { createItemRules, BackpackItem } from './item-rules.ts';
 import type { createStorageRules } from './storage-rules.ts';
-import type { BackpackItem } from './item-rules.ts';
 
 export function createInventoryRules(
   equipment: ReturnType<typeof createEquipmentRules>,

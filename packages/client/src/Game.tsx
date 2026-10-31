@@ -6,7 +6,7 @@ import { useWorldChat } from './useWorldChat';
 import { GameControls } from './GameControls';
 import { PartyHud } from './PartyHud';
 import { SceneOverlay } from './SceneOverlay';
-import { type GameMenu } from './game-panels';
+import type { GameMenu } from './game-panels';
 import { WorldBrowser } from './WorldBrowser';
 import { useGameSession } from './useGameSession';
 import type { AccountView, WorldSummary } from '@emberfall/common';

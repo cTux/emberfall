@@ -13,8 +13,9 @@ import {
   forestDistance,
   wrap,
   wrappedDelta,
+  movePlayer,
+  tickCompanion,
 } from '@emberfall/core';
-import { movePlayer, tickCompanion } from '@emberfall/core';
 import type { Player, WorldState } from '@emberfall/common';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';

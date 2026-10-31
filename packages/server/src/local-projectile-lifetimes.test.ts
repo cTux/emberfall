@@ -2,8 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 
-import { FOREST } from '@emberfall/core';
-import { fireClassAttack } from '@emberfall/core';
+import { FOREST, fireClassAttack } from '@emberfall/core';
 
 import { fixture, frame } from '../../../tests/local-projectiles.fixture.ts';
 
@@ -83,10 +82,10 @@ test('a local root projectile remains visible through all confirmed bounces desp
         view.playerShots = [];
         const player = movement.render(reply, bounce * 100 + elapsed)!;
         movement.animateProjectiles(player, buffered, bounce * 100 + elapsed, false);
-        assert.equal(view.playerShots!.length, 1);
-        assert.equal(view.playerShots![0].id, id);
-        assert.deepEqual(view.playerShots![0].hitIds, shot.hitIds);
-        assert(view.playerShots![0].x >= shot.x);
+        assert.equal(view.playerShots.length, 1);
+        assert.equal(view.playerShots[0].id, id);
+        assert.deepEqual(view.playerShots[0].hitIds, shot.hitIds);
+        assert(view.playerShots[0].x >= shot.x);
         assert(
           confirmed.enemies.every((e) => e.hitpoints === 100),
           'presentation never damages enemies',

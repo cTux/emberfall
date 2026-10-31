@@ -1,4 +1,4 @@
-import { type TextStyleOptions, type Text } from 'pixi.js';
+import type { TextStyleOptions, Text } from 'pixi.js';
 import type { Visual } from './visual-pools';
 
 type TextSettings = { font: string; textAlign: CanvasTextAlign; textBaseline: CanvasTextBaseline };

@@ -1,9 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { worldHitboxes, drawHitboxes, HITBOX_COLORS } from '../packages/client/src/hitboxes.ts';
-import { type WorldState } from '../packages/common/src/index.ts';
-import { ENEMY_STATS, FOREST } from '../packages/core/src/index.ts';
-import { createTrainingScene } from '../packages/core/src/index.ts';
+import type { WorldState } from '../packages/common/src/index.ts';
+import { ENEMY_STATS, FOREST, createTrainingScene } from '../packages/core/src/index.ts';
 import { loadPreferences } from '../packages/client/src/preferences.ts';
 import { INITIAL_PROGRESS } from '../packages/core/src/definitions/entities/players.ts';
 import { modelHitbox, enemyHitbox } from '../packages/core/src/hitboxes.ts';
@@ -61,7 +60,7 @@ test('all enemy archetypes, both projectile sides and pickup ranges use rule geo
   scene.training = false;
   scene.enemies = Object.keys(ENEMY_STATS).map((archetype, id) => ({
     id,
-    archetype: archetype as string,
+    archetype: archetype,
     x: 100 + id * 50,
     y: 100,
     angle: 0,

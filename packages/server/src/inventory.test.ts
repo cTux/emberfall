@@ -12,8 +12,9 @@ import {
   CLASS_IDS,
   backpackSchema,
   clientMessage,
+  createTrainingScene,
+  requestPlayerCast,
 } from '@emberfall/core';
-import { createTrainingScene, requestPlayerCast } from '@emberfall/core';
 
 import { freshProgress, decodeProgress } from './characters.ts';
 

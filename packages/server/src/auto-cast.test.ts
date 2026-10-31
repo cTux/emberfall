@@ -43,7 +43,7 @@ test('ranged auto-casts wait for a living target in range, then launch and damag
         tickPlayerCombat(scene, [player], 10550, 0);
         assert.equal(player.attackAt, 10550, 'entering range starts a fresh cast immediately');
         assert.equal(scene.playerShots?.length, classId === 'druid' ? 1 : 2);
-        assert(scene.playerShots!.every((shot) => shot.targetId === target.id));
+        assert(scene.playerShots.every((shot) => shot.targetId === target.id));
         // At maximum bow range its spread can legitimately pass beside a small body.
         target[axis] = (player[axis] - 100 + boundary) % boundary;
         for (let now = 10600; now <= 11450; now += 50) tickPlayerCombat(scene, [player], now, 0.05);
@@ -55,13 +55,13 @@ test('ranged auto-casts wait for a living target in range, then launch and damag
         scene.enemies = [target];
         tickPlayerCombat(scene, [player], 12550, 0);
         assert.equal(player.attackAt, 12550, 'resume at the actual cast time after a long wait');
-        assert(scene.playerShots!.length > 0, 'an overdue cast must still launch');
-        const shot = scene.playerShots![0];
+        assert(scene.playerShots.length > 0, 'an overdue cast must still launch');
+        const shot = scene.playerShots[0];
         const position = { x: shot.x, y: shot.y };
         scene.enemies = [];
         tickPlayerCombat(scene, [player], 12600, 0.05);
         assert(
-          scene.playerShots!.includes(shot),
+          scene.playerShots.includes(shot),
           'losing the target must not cancel shots in flight',
         );
         assert.notDeepEqual({ x: shot.x, y: shot.y }, position);

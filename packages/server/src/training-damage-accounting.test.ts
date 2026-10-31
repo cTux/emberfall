@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import { executeTalent } from '../../core/src/talent-effects.ts';
 import assert from 'node:assert/strict';
-import { FOREST } from '@emberfall/core';
 import {
+  FOREST,
   tickTraining,
   tickDebuffs,
   createTrainingScene,

@@ -13,9 +13,9 @@ test('ambient critters wander, stay bounded, cull and repeat across forest seams
   for (let now = 0; now < 12000; now += 100) {
     const critters = crittersAt('village', now, lobby);
     critters.forEach((p, i) => {
-      assert.ok(Math.abs(p.x - first[i]!.x) <= 40);
+      assert.ok(Math.abs(p.x - first[i].x) <= 40);
       assert.ok(Number.isInteger(p.frame) && p.frame >= 0 && p.frame <= 4);
-      assert.equal(p.y, first[i]!.y);
+      assert.equal(p.y, first[i].y);
     });
   }
   assert.deepEqual(crittersAt('village', 0, { x: 1000, y: 1000, width: 100, height: 100 }), []);
@@ -25,8 +25,8 @@ test('ambient critters wander, stay bounded, cull and repeat across forest seams
   const repeated = crittersAt('forest', 2000, { ...bounds, x: bounds.x + 4800 });
   assert.equal(repeated.length, forest.length);
   repeated.forEach((p, i) => {
-    assert.ok(Math.abs(p.x - 4800 - forest[i]!.x) < 1e-9);
-    assert.deepEqual({ ...p, x: 0 }, { ...forest[i]!, x: 0 });
+    assert.ok(Math.abs(p.x - 4800 - forest[i].x) < 1e-9);
+    assert.deepEqual({ ...p, x: 0 }, { ...forest[i], x: 0 });
   });
 });
 
@@ -44,13 +44,13 @@ test('chickens flee in every direction at eight times walking speed and animate 
   ]) {
     const motion = createCritterMotion();
     const start = chicken(motion(0, village, []));
-    const player = { x: start.x + dx!, y: start.y + dy! };
+    const player = { x: start.x + dx, y: start.y + dy };
     const before = motion(0, village, [player]);
     const after = motion(100, village, [player]);
     const end = chicken(after);
-    const distance = Math.hypot(dx!, dy!);
-    assert.ok(Math.abs(end.x - start.x + (dx! / distance) * 8) < 1e-9);
-    assert.ok(Math.abs(end.y - start.y + (dy! / distance) * 8) < 1e-9);
+    const distance = Math.hypot(dx, dy);
+    assert.ok(Math.abs(end.x - start.x + (dx / distance) * 8) < 1e-9);
+    assert.ok(Math.abs(end.y - start.y + (dy / distance) * 8) < 1e-9);
     if (dx) assert.equal(end.left, dx > 0);
     assert.equal(chicken(motion(140, village, [player])).frame, 3);
     assert.deepEqual(

@@ -59,8 +59,8 @@ export function prepareState(source: WorldState) {
       const scalar = scalars[field];
       if (typeof scalar === 'number') {
         fields |= 1 << bit;
-        record![field] = scalar;
-      } else record![field] = 0;
+        record[field] = scalar;
+      } else record[field] = 0;
     });
     record.fields = fields;
     record.order = order;

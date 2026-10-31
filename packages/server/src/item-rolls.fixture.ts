@@ -1,7 +1,7 @@
 import type { BackpackItem, Player, SceneState } from '@emberfall/common';
 import {
   Rarity,
-  ItemStat,
+  type ItemStat,
   rarityStatCount,
   itemTypeStats,
   itemStatWeight,

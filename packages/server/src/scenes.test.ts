@@ -91,6 +91,8 @@ test('players can join and rejoin an unfinished scene, but not after return port
   sceneAction(world, a, { type: 'returnLobby' }, 9000);
   assert.equal(world.scene, undefined);
   sceneAction(world, b, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 10000);
+  // The assertion above narrows scene to undefined; sceneAction mutates it again.
+  // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
   assert.notEqual((world as SceneWorld).scene?.id, scene.id);
 });
 

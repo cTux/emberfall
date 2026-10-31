@@ -15,7 +15,7 @@ export function lightTexture(
   light: Light,
   casters: readonly Caster[],
   shadows: boolean,
-  base?: HTMLCanvasElement,
+  base?: HTMLCanvasElement & { textureRevision?: number },
 ) {
   const key = `${base ? 'occlusion' : 'glow'}:${light.owner ?? `${light.x}:${light.y}`}`;
   const blockers = shadows
@@ -27,8 +27,7 @@ export function lightTexture(
     : [];
   // Camera translation cancels out. Only silhouettes inside the light radius
   // can change this texture; flicker is applied to the resulting sprite.
-  const revision =
-    (base as (HTMLCanvasElement & { textureRevision?: number }) | undefined)?.textureRevision ?? 0;
+  const revision = base?.textureRevision ?? 0;
   const signature =
     `${light.radius}:${light.height}:${light.strength}:${revision}:` +
     blockers

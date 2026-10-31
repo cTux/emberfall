@@ -44,7 +44,7 @@ test('save failure cannot publish learned points or equipped slots; bullseye res
     assert.equal(player.coins, 50);
     assert.equal(availableTalentPoints(player), 20);
     const token = messages.find((message) => message.type === 'joined')!.characterToken!;
-    const saved = runtime.characters.load(token)!;
+    const saved = runtime.characters.load(token);
     assert.equal(saved.progress.coins, 50);
     assert.equal(availableTalentPoints(saved.progress), 20);
   } finally {
@@ -67,7 +67,7 @@ test('per-class allocations and selected abilities survive a save round trip', a
     } as Player;
     ability(player, 0, 1, 2);
     store.save(created.id, player.name, player);
-    const loaded = store.load(created.token)!;
+    const loaded = store.load(created.token);
     assert.equal(talentRank(loaded.progress, talentNodeId('warrior', 0, 1)), 2);
     assert.equal(loaded.progress.talentSlots?.[0], talentNodeId('warrior', 0, 1));
     assert.equal(availableTalentPoints(loaded.classes.mage), 1);

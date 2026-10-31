@@ -49,7 +49,7 @@ export function createRealtimeCommands({
             player,
             resourceOwner(world, player).resources,
             message.nodeId,
-            epoch!,
+            epoch,
             now,
           );
         }

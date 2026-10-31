@@ -1,5 +1,5 @@
 import type { DrawingContext } from './rendering/drawing-context';
-import { crittersAt } from './critter-motion.ts';
+import type { crittersAt } from './critter-motion.ts';
 export { crittersAt } from './critter-motion.ts';
 import { spriteMask } from './lighting.ts';
 import { animalArt } from './art';

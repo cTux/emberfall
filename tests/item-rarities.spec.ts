@@ -104,7 +104,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
   await expect(page.getByRole('tooltip')).toContainText(`${itemPrice(original)} gold`);
   await page.screenshot({ path: 'test-results/bram-gear-buyback.png' });
   await buyback.click({ button: 'right' });
-  expect(player.backpack!.find((item) => item.rarity === Rarity.Legendary)!.stats).toEqual(
+  expect(player.backpack.find((item) => item.rarity === Rarity.Legendary)!.stats).toEqual(
     original.stats,
   );
   await trader.getByRole('button', { name: 'Close Bram the Craftsman' }).click();

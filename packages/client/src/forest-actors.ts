@@ -85,8 +85,8 @@ export function createForestActors(skeleton: HTMLImageElement) {
         const pos = positions.get(actor.id) ?? { x: actor.x, y: actor.y, facing: 0 };
         const dx = wrappedDelta(actor.x, pos.x, FOREST.width),
           dy = wrappedDelta(actor.y, pos.y, FOREST.height);
-        const ix = actor.player ? (actor.player.inputX ?? 0) : Math.cos(actor.enemy!.angle),
-          iy = actor.player ? (actor.player.inputY ?? 0) : Math.sin(actor.enemy!.angle);
+        const ix = actor.player ? (actor.player.inputX ?? 0) : Math.cos(actor.enemy.angle),
+          iy = actor.player ? (actor.player.inputY ?? 0) : Math.sin(actor.enemy.angle);
         const moving = actor.player ? Math.hypot(ix, iy) > 0 : Math.hypot(dx, dy) > 0.05;
         if (moving && Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
         pos.x = actor.x;
@@ -99,10 +99,10 @@ export function createForestActors(skeleton: HTMLImageElement) {
             : enemyFrame(
                 serverTime,
                 moving,
-                actor.enemy!.hitpoints > 0,
-                actor.enemy!.attack,
-                (actor.enemy!.cooldownUntil ?? -Infinity) -
-                  ENEMY_STATS[actor.enemy!.archetype ?? 'skeleton'].cooldown,
+                actor.enemy.hitpoints > 0,
+                actor.enemy.attack,
+                (actor.enemy.cooldownUntil ?? -Infinity) -
+                  ENEMY_STATS[actor.enemy.archetype ?? 'skeleton'].cooldown,
               ),
           image = actor.player
             ? characterImages[actor.player.classId ?? 'warrior'].walk

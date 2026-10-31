@@ -4,7 +4,7 @@ import { test, expect } from './fixtures';
 const manifest: Record<string, { file: string }> = JSON.parse(
   readFileSync('packages/client/dist/.vite/manifest.json', 'utf8'),
 );
-const chunk = (name: string) => manifest[`src/${name}.tsx`]!.file;
+const chunk = (name: string) => manifest[`src/${name}.tsx`].file;
 const optional = [
   'Arena',
   'WeaponActionBar',
@@ -108,9 +108,9 @@ for (const [query, selected, other] of [
     const requests: string[] = [];
     page.on('request', (request) => requests.push(new URL(request.url()).pathname));
     await page.goto(`/?${query}`);
-    await expect.poll(() => requests.some((path) => path.endsWith(chunk(selected!)))).toBe(true);
+    await expect.poll(() => requests.some((path) => path.endsWith(chunk(selected)))).toBe(true);
     await expect(page.locator('canvas').first()).toBeVisible();
-    for (const name of ['Game', 'Arena', other!])
+    for (const name of ['Game', 'Arena', other])
       expect(
         requests.some((path) => path.endsWith(chunk(name))),
         name,

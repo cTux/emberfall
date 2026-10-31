@@ -1,8 +1,8 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { FOREST } from '@emberfall/core';
 import {
+  FOREST,
   stepCombat,
   tickCompanion,
   fireClassAttack,

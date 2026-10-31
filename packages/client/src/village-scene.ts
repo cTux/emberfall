@@ -179,7 +179,7 @@ export class VillageScene {
         drawVillageLayer(ctx, layer, layerFrame);
         continue;
       }
-      this.players.draw(ctx, layer.player!, layerFrame);
+      this.players.draw(ctx, layer.player, layerFrame);
     }
     ctx.occlusion = false;
     if (training) {

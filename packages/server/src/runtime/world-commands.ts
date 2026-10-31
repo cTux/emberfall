@@ -1,11 +1,10 @@
 import type { ClientMessage } from '@emberfall/common';
-import type { CommandContext, BroadcastState } from './models.ts';
+import type { CommandContext, BroadcastState, Session, Snapshot } from './models.ts';
 import type { WorldMembership } from './world-membership.ts';
 import { nearbyInteraction } from '@emberfall/core';
 import { sceneAction } from '../scenes.ts';
 import { addChat } from '../chat.ts';
 import type { CharacterStore } from '../characters.ts';
-import type { Session, Snapshot } from './models.ts';
 type CommandType =
   | 'chat'
   | 'partyInteract'
@@ -106,7 +105,7 @@ export function createWorldCommands({
       }
       broadcastState(world, now);
     },
-    leave: (message, { session, reply, error }) => {
+    leave: (_message, { session, reply, error }) => {
       try {
         leave(session);
         if (session.characterId) characters.forgetWorld(session.characterId);

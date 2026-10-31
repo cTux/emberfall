@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { inventoryItemSchema } from '@emberfall/common';
 import {
-  ItemStat,
+  type ItemStat,
   Rarity,
   itemRarity,
   itemStatBaseValue,
@@ -21,7 +21,7 @@ export function createItemRules(content: Registries, roll = () => Math.random())
       content.items
         .values()
         .filter((item) => item.kind === 'consumable')
-        .map((item) => [item.id, Object.freeze({ ...item, healing: item.healing! })]),
+        .map((item) => [item.id, Object.freeze({ ...item, healing: item.healing })]),
     ),
   );
   function itemDefinition(id: string) {

@@ -1,7 +1,6 @@
 import { attackTarget } from '../tactics.ts';
-import { DEFAULT_TACTICS, type Tactics } from '@emberfall/common';
+import { DEFAULT_TACTICS, type Tactics, wrappedDelta, wrap } from '@emberfall/common';
 import { BEAR_DEFINITION } from '../definitions/entities/companions.ts';
-import { wrappedDelta, wrap } from '@emberfall/common';
 import { FOREST, forestDistance } from '../scene.ts';
 import type { Player, Bear, SceneState, Enemy } from '@emberfall/common';
 

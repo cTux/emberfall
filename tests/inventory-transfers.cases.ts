@@ -194,7 +194,7 @@ test('inventory equips, unequips and consumes stacks; shared trading transfers i
   await expect(trader.getByRole('button', { name: 'Sell Boots', exact: true })).toHaveCount(24);
   await expect(trader.getByRole('button', { name: 'Sell all', exact: true })).toBeEnabled();
   await page.screenshot({ path: 'test-results/innkeeper-before-sell-all.png' });
-  const oldCoins = player.coins!;
+  const oldCoins = player.coins;
   await trader.getByRole('button', { name: 'Sell all', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(trader.getByRole('button', { name: 'Sell all', exact: true })).toBeDisabled();

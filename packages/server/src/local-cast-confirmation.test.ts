@@ -2,8 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 
-import { FOREST } from '@emberfall/core';
-import { fireClassAttack } from '@emberfall/core';
+import { FOREST, fireClassAttack } from '@emberfall/core';
 
 import { fixture, frame } from '../../../tests/local-projectiles.fixture.ts';
 

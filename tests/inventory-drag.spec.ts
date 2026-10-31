@@ -76,7 +76,7 @@ test('native inventory drags equip compatible slots and swap gear without consum
     .locator('[data-backpack-item="forest-sword"]')
     .dragTo(dialog.locator('[data-equipment-slot="weapon"]'));
   await expect(dialog.getByRole('button', { name: "Weapon: Warrior's sword" })).toBeVisible();
-  expect(player.equipment!.weapon).toBe(STARTER_WEAPONS.warrior);
+  expect(player.equipment.weapon).toBe(STARTER_WEAPONS.warrior);
   expect(player.backpack).toHaveLength(0);
 });
 

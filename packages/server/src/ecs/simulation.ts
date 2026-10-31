@@ -85,7 +85,7 @@ export class SimulationWorld {
           values === undefined
             ? undefined
             : (Object.freeze(
-                [...query].sort((a, b) => a.order - b.order).map((entity) => entity[key]!),
+                [...query].sort((a, b) => a.order - b.order).map((entity) => entity[key]),
               ) as unknown as object[]);
       };
       replace(scene[key]);

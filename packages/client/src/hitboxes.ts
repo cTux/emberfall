@@ -1,7 +1,6 @@
 import type { DrawingContext } from './rendering/drawing-context';
-import { game } from '@emberfall/core';
-import { wrappedDelta, type WorldState } from '@emberfall/common';
 import {
+  game,
   ARENA,
   FOREST,
   TREES,
@@ -13,8 +12,10 @@ import {
   INTERACTION_RADIUS,
   ENEMY_STATS,
   forestTrees,
+  defaultSpellRange,
+  PLAYER_ATTACK_DURATION,
 } from '@emberfall/core';
-import { defaultSpellRange, PLAYER_ATTACK_DURATION } from '@emberfall/core';
+import { wrappedDelta, type WorldState } from '@emberfall/common';
 import { COLLISION } from '@emberfall/core/definitions/collision';
 import { BEAR_DEFINITION } from '@emberfall/core/definitions/entities/companions';
 import { PICKUP_RULES } from '@emberfall/core/definitions/entities/pickups';

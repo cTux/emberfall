@@ -47,10 +47,10 @@ test('scene population compounds enemy HP and dropped XP, preserving fractions i
       const newcomer = { ...player(2400, 1280), id: 'new' };
       stepCombat(scene, [...players, lobby, newcomer], 11050, 0);
       assert.equal(target.maxHitpoints, base * 1.75 ** count);
-      assert.equal(target.hitpoints, target.maxHitpoints! / 2);
+      assert.equal(target.hitpoints, target.maxHitpoints / 2);
       stepCombat(scene, [...players, lobby], 11100, 0);
       assert.equal(target.maxHitpoints, base * 1.75 ** (count - 1));
-      assert.equal(target.hitpoints, target.maxHitpoints! / 2);
+      assert.equal(target.hitpoints, target.maxHitpoints / 2);
       hitEnemy(scene, target, target.hitpoints, players[0], 11200);
       const drop = scene.drops![0];
       assert.equal(drop.amount, 1.2 ** (count - 1));

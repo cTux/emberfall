@@ -4,8 +4,13 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { CharacterStore } from './characters.ts';
-import { nearbyInteraction, WARDROBE, clientMessage } from '@emberfall/core';
-import { spawnArchetype, enemyMaxHealth } from '@emberfall/core';
+import {
+  nearbyInteraction,
+  WARDROBE,
+  clientMessage,
+  spawnArchetype,
+  enemyMaxHealth,
+} from '@emberfall/core';
 
 import { hero } from './classes.fixture.ts';
 

@@ -45,9 +45,7 @@ export function itemIcon(itemId: string) {
   const gear = GEAR_DEFINITIONS[itemId];
   const itemClass = ITEM_CLASSES[itemId];
   const slot = gear
-    ? EQUIPMENT_SLOTS.find((slot) =>
-        (SLOT_GEAR_TYPES[slot] as readonly string[]).includes(gear.gearType),
-      )
+    ? EQUIPMENT_SLOTS.find((slot) => SLOT_GEAR_TYPES[slot].includes(gear.gearType))
     : 'amulet';
   const fallback =
     slotViews.find((view) => view.id === slot)?.icon ??

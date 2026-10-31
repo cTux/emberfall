@@ -1,4 +1,4 @@
-import { PixiContext } from '../packages/client/src/rendering/pixi-context';
+import type { PixiContext } from '../packages/client/src/rendering/pixi-context';
 
 import { drawDamageNumber, drawDamageNumbers } from '../packages/client/src/damage-text';
 
@@ -9,7 +9,7 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
   for (const [index, damageType] of (['physical', 'fire', 'poison', 'nature'] as const).entries()) {
     for (const critical of [false, true])
       drawDamageNumber(
-        pixi as unknown as CanvasRenderingContext2D,
+        pixi,
         { id: index, x: 0, y: 0, amount: 15, at: 1000, target: 'enemy:1', damageType, critical },
         { x: 32 + index * 64, y: critical ? 120 : 70 },
         1000,
@@ -43,7 +43,7 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
     fillText(text, x, y);
   };
   drawDamageNumbers(
-    pixi as unknown as CanvasRenderingContext2D,
+    pixi,
     [
       {
         id: 1,

@@ -3,15 +3,15 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { type SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/common';
 import {
   CLASS_IDS,
   freshStorages,
   transferStoredItem,
   tradeItem,
   freshMerchant,
+  stepCombat,
 } from '@emberfall/core';
-import { stepCombat } from '@emberfall/core';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 
 import { item, hero } from './storehouse.fixture.ts';
@@ -24,14 +24,14 @@ test('account storage and collected gold survive class changes and restart witho
     await store.ready;
     const saved = store.create('Keeper');
     const player = { ...hero(), ...saved.progress, classId: saved.classId, classes: saved.classes };
-    player.storages![1].name = 'Armor';
+    player.storages[1].name = 'Armor';
     player.coins = 13;
     player.backpack = [item()];
     transferStoredItem(player, 1, player.backpack[0].id, true);
     store.save(saved.id, player.name, player);
     store.selectClass(saved.id, player, 'mage');
-    assert.equal(player.storages![1].name, 'Armor');
-    assert.equal(player.storages![1].items.length, 1);
+    assert.equal(player.storages[1].name, 'Armor');
+    assert.equal(player.storages[1].items.length, 1);
     assert.equal(player.coins, 13);
     const scene: SceneState = {
       id: 'account-loot',
@@ -55,24 +55,24 @@ test('account storage and collected gold survive class changes and restart witho
     const merchant = freshMerchant();
     tradeItem(player, merchant, merchant.backpack[0].id, true);
     assert.equal(player.coins, 13, 'purchases spend the same shared balance');
-    transferStoredItem(player, 1, player.storages![1].items[0].id, false);
-    assert(player.backpack!.some((entry) => entry.itemId === 'loot-helmet'));
+    transferStoredItem(player, 1, player.storages[1].items[0].id, false);
+    assert(player.backpack.some((entry) => entry.itemId === 'loot-helmet'));
     transferStoredItem(
       player,
       1,
-      player.backpack!.find((entry) => entry.itemId === 'loot-helmet')!.id,
+      player.backpack.find((entry) => entry.itemId === 'loot-helmet')!.id,
       true,
     );
     store.selectClass(saved.id, player, 'warrior');
-    assert.equal(player.storages![1].items.length, 1);
+    assert.equal(player.storages[1].items.length, 1);
     const other = store.create('Other');
     assert.deepEqual(other.progress.storages, freshStorages());
     store.close();
     store = new CharacterStore(path);
     await store.ready;
-    const restored = store.load(saved.token)!;
-    assert.equal(restored.progress.storages![1].name, 'Armor');
-    assert.equal(restored.progress.storages![1].items.length, 1);
+    const restored = store.load(saved.token);
+    assert.equal(restored.progress.storages[1].name, 'Armor');
+    assert.equal(restored.progress.storages[1].items.length, 1);
     assert.equal(restored.progress.backpack!.length, 0);
     assert.equal(restored.progress.coins, 13);
     assert.equal(restored.classes.warrior.storages, undefined);
@@ -101,7 +101,7 @@ test('legacy class gold and full storages migrate once without losing overflow i
         const progress = freshProgress(id);
         progress.coins = index + 1;
         progress.backpack = [item('loot-boots')];
-        progress.storages = freshStorages().map((storage, tab) => ({
+        progress.storages = freshStorages().map((_storage, tab) => ({
           name: `${id} ${tab + 1}`,
           items: Array.from({ length: 40 }, () => item()),
         }));
@@ -117,12 +117,12 @@ test('legacy class gold and full storages migrate once without losing overflow i
     );
     const migrated = store.load(saved.token);
     assert.equal(migrated.progress.coins, 10);
-    assert.equal(migrated.progress.storages![0].name, 'mage 1');
-    for (const storage of migrated.progress.storages!) assert.equal(storage.items.length, 40);
+    assert.equal(migrated.progress.storages[0].name, 'mage 1');
+    for (const storage of migrated.progress.storages) assert.equal(storage.items.length, 40);
     for (const id of CLASS_IDS)
       assert.equal(migrated.classes[id].backpack!.length, id === 'mage' ? 1 : 121);
     const ids = [
-      ...migrated.progress.storages!.flatMap((storage) => storage.items.map((entry) => entry.id)),
+      ...migrated.progress.storages.flatMap((storage) => storage.items.map((entry) => entry.id)),
       ...Object.values(migrated.classes).flatMap((progress) =>
         progress.backpack!.map((entry) => entry.id),
       ),
@@ -153,9 +153,9 @@ test('migration combines consumables, preserves names and rejects unsafe gold to
   classes.ranger.storages![0].items = [item('health-potion', 3)];
   const raw = { formatVersion: 1, classId: 'mage', classes };
   const migrated = decodeProgress(JSON.stringify(raw));
-  assert.equal(migrated.progress.storages![0].name, 'Gear');
-  assert.equal(migrated.progress.storages![0].items.length, 1);
-  assert.equal(migrated.progress.storages![0].items[0].quantity, 5);
+  assert.equal(migrated.progress.storages[0].name, 'Gear');
+  assert.equal(migrated.progress.storages[0].items.length, 1);
+  assert.equal(migrated.progress.storages[0].items[0].quantity, 5);
   classes.warrior.coins = Number.MAX_SAFE_INTEGER;
   classes.ranger.coins = 1;
   assert.throws(() => decodeProgress(JSON.stringify(raw)));

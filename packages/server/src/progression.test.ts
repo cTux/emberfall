@@ -44,7 +44,7 @@ test('shared XP pickups level every eligible player once and retain fractional X
   world.scene!.drops = [{ id: 1, kind: 'experience', amount: 1.5, x: 2400, y: 1280, at: 0 }];
   tickScene(world, 1000, 0);
   tickScene(world, 1050, 0);
-  assert.equal(world.scene!.drops!.length, 0);
+  assert.equal(world.scene!.drops.length, 0);
   for (const player of players) {
     assert.equal(player.level, 2);
     assert.equal(player.experience, 0.5);

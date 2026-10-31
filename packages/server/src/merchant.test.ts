@@ -112,8 +112,8 @@ test('stock refresh saves before publishing, preserves buybacks and survives a r
       LOOT_ITEM_IDS,
     );
     assert.equal(world.chat?.length, 2);
-    assert.equal(world.chat![0].playerId, '');
-    assert.match(world.chat![0].text, /Marta.*refreshed her stock/);
+    assert.equal(world.chat[0].playerId, '');
+    assert.match(world.chat[0].text, /Marta.*refreshed her stock/);
     world.merchant = store.merchant(world.id);
     assert.equal(world.merchant.refreshAt, refreshedAt + 30 * 60 * 1000);
     refreshMerchant(world, store, due + 1);

@@ -1,5 +1,5 @@
 export { ItemStat, Rarity } from './enums/items.ts';
-import { ItemStat, Rarity } from './enums/items.ts';
+import { type ItemStat, Rarity } from './enums/items.ts';
 export { rarityDropChance } from './configs/rarityDropChance.ts';
 import { rarityDropChance } from './configs/rarityDropChance.ts';
 export { rarityStatCount } from './configs/rarityStatCount.ts';

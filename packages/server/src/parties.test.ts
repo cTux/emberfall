@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Player, ChatMessage } from '@emberfall/common';
 import { nicknameSchema } from '@emberfall/common';
-import { LOBBY_PORTAL } from '@emberfall/core';
+import { LOBBY_PORTAL, resourceNodes, gatherResource } from '@emberfall/core';
 import { Parties } from './parties.ts';
 import { sceneAction } from './scenes.ts';
 const hero = (id: string): Player => ({
@@ -112,7 +112,6 @@ test('accepting another invitation invalidates an old party invitation without s
   assert.equal(c.partyId, d.partyId);
   assert.notEqual(c.partyId, a.partyId);
 });
-import { resourceNodes, gatherResource } from '@emberfall/core';
 test('forest members of another run still block the party vote until they return and ready', () => {
   const {
     players: [a, b],
@@ -153,9 +152,9 @@ test('forest depletion belongs to each run', () => {
   a.x = b.x = tree.x;
   a.y = b.y = tree.y - 15;
   gatherResource(a, (first.resources ??= {}), tree.id, 1000, () => 0);
-  assert.equal(first.resources![tree.id].remaining, 4);
+  assert.equal(first.resources[tree.id].remaining, 4);
   assert.equal(second.resources?.[tree.id], undefined);
   gatherResource(b, (second.resources ??= {}), tree.id, 1000, () => 0);
-  assert.equal(second.resources![tree.id].remaining, 4);
-  assert.equal(first.resources![tree.id].remaining, 4);
+  assert.equal(second.resources[tree.id].remaining, 4);
+  assert.equal(first.resources[tree.id].remaining, 4);
 });

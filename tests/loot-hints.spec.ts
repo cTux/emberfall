@@ -49,7 +49,7 @@ test('loot hints show an uncapped confirmed burst, expire, and persist their set
   await settings();
   await toggle.uncheck();
   await close();
-  player.backpack![0].quantity++;
+  player.backpack[0].quantity++;
   await expect(canvas).toHaveAttribute('data-loot-hint-count', '0');
   await page.reload();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();

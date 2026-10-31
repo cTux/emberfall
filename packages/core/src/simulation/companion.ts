@@ -1,8 +1,7 @@
 import { game, type createGame } from '../game.ts';
-import { DEFAULT_TACTICS } from '@emberfall/common';
+import { DEFAULT_TACTICS, wrappedDelta, wrap } from '@emberfall/common';
 import { talentNodeId, talentRank } from '../talent-tree.ts';
 import { BEAR_DEFINITION } from '../definitions/entities/companions.ts';
-import { wrappedDelta, wrap } from '@emberfall/common';
 import { FOREST, forestDistance } from '../scene.ts';
 import { ARENA, moveActor } from '../world.ts';
 import { ENEMY_STATS, moveEnemies } from '../enemies.ts';

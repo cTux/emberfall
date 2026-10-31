@@ -1,4 +1,4 @@
-import { ItemStat } from '../enums/items.ts';
+import type { ItemStat } from '../enums/items.ts';
 export const itemStatBaseValue: Readonly<Record<ItemStat, number>> = {
   attackSpeed: 2,
   dotSpeed: 2,

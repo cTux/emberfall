@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { type ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/common';
 import { BUILDINGS } from '@emberfall/core';
 
 import { createRuntime } from './runtime.ts';
