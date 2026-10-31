@@ -2,6 +2,15 @@
 
 A source-exported React component library used by the game client and Storybook. Storybook is the review surface; its screen examples use local demo state and never connect to a game server.
 
+## Guide navigation
+
+- [Run and verify](#run-and-verify)
+- [Visual contract](#visual-contract)
+- [Reuse first](#reuse-first)
+- [Game components](#game-components)
+- [Create a component](#create-a-component)
+- [Boundaries and acceptance](#boundaries-and-acceptance)
+
 ## Run and verify
 
 `Backpack` and `EquipmentPanel` accept host-supplied item `rarity` labels and
@@ -66,6 +75,9 @@ Cursor assets remain in the host.
 Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, Slider, Tabs, Alert, Chip, Tooltip, Paper and layout. Their shared style comes from the theme; do not create a renamed wrapper for every primitive. Use Font Awesome individual imports for UI icons; give icon-only buttons an accessible name and hide decorative icons from assistive technology.
 
 ## Game components
+
+- [Equipment and item tooltips](#equipment-and-item-tooltips)
+- [Talent tree and ability assignment](#talent-tree-and-ability-assignment)
 
 `TalentTree` keeps its three columns within the available width, stacking each
 icon above its text on narrow screens. Its host window owns vertical scrolling;
@@ -138,7 +150,7 @@ Party bars use 60% of their former width. Optional `PartyCard.coins` places a co
 
 All consumer-facing prop/data types are exported from `src/index.ts`. Screen stories demonstrate lobby, HUD, settings, wardrobe, Codex, portal vote, leave confirmation, death and building service placeholders by composing these components. Those compositions are examples, not duplicated application state machines. No network calls, persistence, gameplay calculations, authorization or game-package imports belong here.
 
-## Create a component
+### Equipment and item tooltips
 
 EquipmentPanel derives its grid dimensions from supplied slot positions, with a
 minimum of three columns and four rows. Additional rows/columns preserve the
@@ -190,6 +202,22 @@ price and action remain visible.
 Compose it inside `GameWindow` for dragging and focus management. Its Storybook
 stories cover starter and empty loadouts; gameplay rules remain in the host.
 
+### Talent tree and ability assignment
+
+`TalentTree` presents three independent talent columns in a native scrollable
+layout. The host supplies column labels, row/column positions, level requirements,
+ranks, learned/available state, descriptions and icons. Themed tooltips describe
+both active and passive talents. Only learned nodes have a visible card border;
+unlearned nodes reserve the same space with a transparent border, including when locked.
+Keyboard focus remains outlined. Optional `kind: 'ability'` adds a blue outline
+around the icon and an active-ability tooltip hint; passive styling is unchanged.
+Tooltips also describe both ranks and learning requirements. Buttons support keyboard and touch; the
+host owns point budgets, effects and learning callbacks. Right-click or F2 on an
+`ActionBar` slot invokes its optional `onChoose` callback, including during a
+cooldown. The host owns the learned-ability picker and saved assignments.
+
+## Create a component
+
 1. Search this package and MUI first. Reuse an existing component or compose primitives when that already covers the need.
 2. Add a game component only for repeated semantic markup, accessibility or behavior. Pass typed data and callbacks; keep fetching, storage, routing and server rules in the host.
 3. Keep component and private types together. Use a component directory only when multiple files are needed. Export the public component and props from `src/index.ts`.
@@ -212,15 +240,3 @@ XP; positive paragon is shown beside the normal level. The host owns XP requirem
 - `typecheck`, static build and browser checks must pass. Inspect desktop and narrow layouts before changing consumers.
 
 Sources: [MUI installation](https://mui.com/material-ui/getting-started/installation/), [MUI theming](https://mui.com/material-ui/customization/theming/), [Storybook React + Vite](https://storybook.js.org/docs/get-started/frameworks/react-vite/).
-
-`TalentTree` presents three independent talent columns in a native scrollable
-layout. The host supplies column labels, row/column positions, level requirements,
-ranks, learned/available state, descriptions and icons. Themed tooltips describe
-both active and passive talents. Only learned nodes have a visible card border;
-unlearned nodes reserve the same space with a transparent border, including when locked.
-Keyboard focus remains outlined. Optional `kind: 'ability'` adds a blue outline
-around the icon and an active-ability tooltip hint; passive styling is unchanged.
-Tooltips also describe both ranks and learning requirements. Buttons support keyboard and touch; the
-host owns point budgets, effects and learning callbacks. Right-click or F2 on an
-`ActionBar` slot invokes its optional `onChoose` callback, including during a
-cooldown. The host owns the learned-ability picker and saved assignments.

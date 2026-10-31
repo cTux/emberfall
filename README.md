@@ -1,59 +1,31 @@
 # Emberfall
 
-An online-only 2D cooperative bullet hell game built with TypeScript, React and PixiJS WebGL. Players meet in a village, choose one of four classes and enter a shared forest encounter with enemies, a boss and a Druid companion. The server owns combat and saved character progress.
+Emberfall is an online cooperative fantasy game you play in your desktop browser. Meet other adventurers in a lively village, gather supplies, and head into a forest full of enemies, flying spells and a boss waiting at the end of the encounter.
 
-Visual inspiration: [Asgard's Fall](https://store.steampowered.com/app/2780710/Asgards_Fall/). No assets are copied from that game.
+## Choose your way to fight
 
-## Run
+Switch between four classes at the village wardrobe. Fight up close as a Warrior, pierce enemies with a Ranger's arrows, unleash a Mage's fireballs, or play a Druid with bouncing roots and a loyal Bear companion. Each class keeps its own equipment, levels and talents.
 
-Requires Node 24, pnpm 11 and PowerShell 7 for local certificate setup.
+Move through enemy attacks while your basic attack fires automatically, or aim and attack yourself. Learn class talents, assign abilities to your action bar, and adjust targeting and companion tactics to suit your play.
 
-```sh
-pnpm install --frozen-lockfile
-pnpm dev
-```
+## Adventure together
 
-Open https://localhost:5174. Use a second browser profile to join as another character. The local certificate is self-signed. See [running and hosting](docs/operations.md) for HTTPS, internet access, configuration and save backups.
+Join a shared world, chat with other players, and form a party of up to four. Each party or solo adventurer has its own forest run. Pick Easy, Medium or Hard, ready up at the village portal, and fight toward the Hollow Warden. Enemy health and shared experience scale with the players taking part.
 
-Production:
+The village is a place to prepare between runs: practise against training dummies, trade with Marta and Bram, store items and gold in your account's Storehouse, gather resources, and talk to wandering residents. You can even stop to greet the cats.
 
-```sh
-pnpm build
-pnpm start
-```
+## Keep your progress
 
-Production serves the client and WebSocket endpoint at https://localhost:3003.
+Sign in with Steam to return to your saved character from another browser. Experience grants levels automatically, followed by paragon levels after level 20. Level-ups keep the action moving; spending talent points is optional. Gather equipment with random rarities and stats, and share your stored gold and supplies across classes.
 
-## Documentation
+Emberfall requires an internet connection. Regular worlds support up to eight players; the permanent Playtest Default world allows 32. Parties have up to four members. The current adventure centres on the village and forest; some village buildings are still service placeholders.
 
-- [Feature specifications and documentation map](docs/README.md)
-- [Technical architecture](docs/design/architecture.md)
-- [Implementation plan and delivered baseline](docs/plans/implementation.md)
-- [Development and verification commands](docs/development.md)
-- [Shared UI and Storybook guide](packages/ui/README.md)
-- [Asset sources and attribution](docs/assets.md)
-- [Agent instructions](AGENTS.md)
+## Learn more
 
-Current boundaries: online only, up to eight players per world, one Forest / Easy scene per world, building service placeholders, and automatic saved levels/paragon without stat growth or talent effects. Future progression must work [without required choices or gameplay interruption](docs/specs/progression.md).
-
-## Packages
-
-| Package           | Responsibility                                             |
-| ----------------- | ---------------------------------------------------------- |
-| `packages/common` | Shared contracts, structural schemas and pure geometry     |
-| `packages/core`   | Mod registries, game content, rules and shared simulation  |
-| `packages/server` | Authoritative worlds, Colyseus sessions and SQLite saves   |
-| `packages/client` | Browser connection, input, prediction and PixiJS rendering |
-| `packages/ui`     | Controlled MUI components, theme and Storybook             |
-
-## Checks
-
-```sh
-pnpm fmt:check
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-```
-
-Browser/UI commands and change-specific verification are in the [development guide](docs/development.md).
+- [Game rules and feature guide](docs/specs/README.md)
+- [Run locally or host a server](docs/operations.md)
+- [Development, checks and contributing](docs/development.md)
+- [Technical architecture and package guides](docs/design/architecture.md)
+- [Artwork, inspiration and credits](docs/assets.md)
+- [Documentation map](docs/README.md)
+- [Instructions for coding agents](AGENTS.md)

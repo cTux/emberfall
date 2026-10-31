@@ -8,7 +8,7 @@ files supply narrower implementation guidance. Read only affected sources.
 Update those sources for intentional behavior/design changes; a bug restoring
 documented behavior needs only correction of stale text. Keep specs, designs,
 tests and the feature map consistent. Mark unresolved product decisions explicitly.
-Do not choose a progression replacement while documenting it.
+Treat additional progression systems as unresolved unless an accepted specification selects them.
 
 Use existing game and runtime terminology. If a glossary or ADR already exists,
 consult it when relevant. Create a separate glossary or ADR only for a real gap

@@ -1,7 +1,7 @@
 # Steam accounts
 
-Status: implemented in the new runtime. Behavior: [CHAR-05](../specs/characters.md#char-05--steam-accounts-and-nickname)
-and [UI-04](../specs/interface-and-audio.md#ui-04--settings-and-music).
+Status: implemented in the new runtime. Behavior: [CHAR-05](../specs/characters/identity.md#char-05--steam-accounts-and-nickname)
+and [UI-04](../specs/interface/settings.md#ui-04--settings-and-music).
 Steam accounts start fresh; existing
 browser saves and their bearer keys are preserved without linking or merging.
 
@@ -101,7 +101,7 @@ For a separately hosted client, `CLIENT_URL` supplies its full landing URL; its
 origin replaces the backend origin for account CORS/CSRF and game admission.
 Success and failure redirect to that fixed URL. Cross-site cookie restrictions
 still apply; same-site custom domains are recommended for reliable browser login.
-See [operations](../operations.md#steam-login-new-runtime) for deployment and rollback.
+See [operations](../operations/steam.md#steam-login-new-runtime) for deployment and rollback.
 Vite proxies `/auth` and `/api` along with matchmaking and WebSockets. Tests use
 injected upstream responses; there is no test-login HTTP endpoint or environment
 switch that disables authentication. The server factory's omitted Steam option

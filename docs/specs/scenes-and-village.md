@@ -2,162 +2,36 @@
 
 Status: implemented baseline. Goal: Stage a party in the village and run independent cooperative Forest encounters with Easy, Medium or Hard difficulty per party or solo player. See [technical design](../design/simulation.md).
 
+Read only the topic needed for the current task. Each linked page owns its detailed guidance.
+
 ## SCENE-01 — Village and interactions
 
-The lobby is a five-building village with a connected path network and a central square. Each building has a distinct generated design in the same wardrobe style and front-facing camera, preserving source proportions, world widths and ground positions. Players can walk through buildings and tall torch posts; interactions still require proximity to their entrances. Building interiors remain unimplemented; Marta and Bram provide shared item trading.
-
-Seeded trees, mossy rocks and five plant kinds fill the surrounding village landscape.
-Paths, building approaches, the central square and training clearings stay open.
-Rocks and plants use the same wrapped scenery rendering as trees and remain pass-through
-for players.
-
-The create/join browser shows a forest backdrop; entering a world takes players to its village. E interacts within 68 units of a blue portal or building doorway. Buildings currently open service placeholders. All windows have a draggable title and close button; closed browser/death windows have a reopen control. Text selection is disabled throughout the game.
-
-Hovering a functional building, NPC or item shows a thin yellow sprite outline (1 world unit) both within and outside interaction range. Names and nameplate backgrounds stay unchanged, without an `(E)` prefix. E or a left click activates the hovered target while in range; outside range neither activates it. E without a hovered target retains the nearby interaction. Decorative scenery has no interaction outline. Completed-forest return portals use the same feedback and input, including across wrapped seams.
-
-In the new runtime, the Inn remains scenery without an interaction or nameplate. Marta the
-Innkeeper starts beside its right wall and walks between village stops with pauses.
-Oswin the Steward lives at the Hall, Bram the Craftsman at the Workshop, and Nell the
-Pathfinder at the Lodge. Storehouse already provides storage and gets no extra resident.
-Each resident has a name, personality and a home building. The server owns their
-positions, walking state and conversations. Nearby players do not interrupt walking.
-Marta and Bram pause while a living connected village player has their trading window open
-and remains in interaction range. Closing the window, leaving range or the village,
-dying or disconnecting releases that player's interaction; another active trader
-can keep that merchant paused. E within 68 units opens their compact shared trading window, titled
-with their name. Their names use the player's font, outline
-and placement above the sprite, unchanged by hover or range. Marta sells consumables and resources; Bram sells gear. Both buy collected items; see CHAR-04 for the shared
-stock, gold and transaction rules.
+See [Village interactions and residents](scenes/village.md#scene-01--village-and-interactions).
 
 ## SCENE-06 — Village life
 
-Village cats use the same yellow hover outline, proximity check, E key and left-click
-interaction as other functional objects. Petting a cat shows a local speech bubble
-above its moving sprite, cycling through `Purrr`, `Meow`, `Mrrp`, `Mew`, `Prrrt`
-and `Mrrrow`. Each cat responds at most
-once every two seconds; its bubble lasts two seconds. Living village players can
-also pet a nearby cat with E when nothing is hovered. Cat speech opens no window,
-also appears once as `Cat` in the petting player’s village chat log and resets
-when leaving the world. Replies stay local and share the chat panel’s ten-message limit.
-
-Residents walk at 38 world units/second between independently chosen shared village stops,
-avoiding their previous stop and preferring destinations not already chosen by another resident.
-They pause independently for 5–9 seconds initially and at stops, and stop walking while conversing. Movement uses wrapped
-geometry. Village life pauses when no living connected village players remain.
-NPCs never follow players into the forest. Positions, memory, speech and debuffs
-are temporary per-world state, reset when the world empties or the server restarts.
-Marta retains her original idle art and uses a directional walking sheet; the other
-residents reuse existing character art with distinct names.
-
-Each resident has two outdoor workstations beside their home: Marta cooks and brews,
-Oswin mixes remedies and keeps records, Bram forges and smelts, and Nell practices
-archery and works leather. After 25–45 seconds of wandering, residents return to
-their next workstation, alternating between their two jobs. On arrival they face
-the equipment and animate working for 60–90 seconds of active work before wandering
-again. Player trading and directed speech, pending conversations and visible replies
-replace the work pose with the regular talking/idle pose. Work resumes at the same
-station with its remaining duration when conversation ends. Empty-village time does
-not consume work time. Workstations are scenery and grant no items or combat damage.
-
-Work feedback uses distinct particles at each functional item: cooking steam,
-amber brewing bubbles, green/lilac alchemy motes, ink flecks at the records desk,
-impact sparks at the anvil, rising furnace embers, practice-shot motes and target
-straw dust, and falling leather shavings. Ambient particles controls these effects.
-They appear only during active work, inherit scenery fading, and stay anchored
-when the camera crosses a world seam; they never create combat projectiles.
-
-A resident can greet a living connected player within 120 units or start a short
-exchange with another resident within 160 units. Automatic starts wait at least
-90 seconds per village, 180 seconds per NPC, and 240 seconds per greeted player
-across residents, with the first start eligible ten seconds after world creation.
-Replies do not reset these automatic-start intervals. The prompt requests one short
-line of at most 120 characters, without quotation marks, grounded in Emberfall's fantasy
-setting and implemented game activities. Each resident has a distinct voice that
-shapes greetings, player replies and NPC banter: Marta uses affectionate teasing
-and food metaphors; Oswin treats tiny problems as solemn bureaucratic business;
-Bram offers overconfident fixes and terrible tool puns; Nell delivers deadpan
-woodland observations and tall tales. Humor is the default tone, with a playful
-twist in most lines, direct answers to questions and varied jokes rather than
-repeating catchphrases. Banter stays friendly and in the fantasy setting.
-References to residents use `@Name`. Replies to player mentions and NPC exchanges
-wait at least two seconds after the triggering message before generation starts,
-subject to model availability. NPC exchanges stop after at most five messages total. An automatic NPC-to-NPC
-greeting also receives one answer if it contains no mention. Continued exchanges
-require another mention. Distant residents do not answer across the village.
-Players can address a resident by mentioning their first name anywhere in chat,
-with or without `@`, such as `Hello, @Marta!` or `Any advice, Marta?`. Matching
-ignores case and requires a whole name. The first mentioned resident within 120
-wrapped units answers the player's full message; distant residents are skipped.
-Directed replies have a separate 10-second player cooldown and a five-second village reply interval. One request
-runs per world, with at most two across the server and no unbounded request queue.
-Each NPC remembers at most six recent spoken lines. No NPC dialogue grants items,
-changes gold, creates quests or implements services in placeholder buildings.
-
-Residents have consistent personal backgrounds covering their work, past experience,
-dreams, interests, relationships and worries. Automatic conversations select from
-32 topics, including work, childhood, mentors, travel, ambitions, hobbies, food,
-friendship, fears, achievements, nature and village traditions. Each resident uses
-every topic in a random order before starting a new rotation, with no immediate
-repeat between rotations. NPC follow-ups keep the opening topic; directed player
-replies answer the player's words first. Recent lines discourage repeated phrasing.
-Backgrounds and topics guide generated speech rather than supplying scripted lines.
+See [Village interactions and residents](scenes/village.md#scene-06--village-life).
 
 ## SCENE-02 — World geometry
 
-The lobby and generated forest are each 4800×2560 and wrap on all four edges. The lobby is 20 times its original area (five times the width and four times the height). Its camera always centers the local character, including while training or crossing an edge; terrain, scenery, players, companions, combat effects, cursor aim, and navigation use the nearest wrapped positions. The original village buildings, wardrobe, portal, and training dummies keep their positions, with extra terrain and vegetation around them. Both areas share the same dimensions so combat and interpolation use the same wrapped distances. Tree generation and nearby-cell collision queries are shared; combat distances and client interpolation also wrap.
-
-Players move through scenery in both areas; enemies and companions retain tree steering and collision. WASD or arrows move at 180 world units/second with normalized diagonal speed.
+See [Geometry, forest entry and completion](scenes/forest.md#scene-02--world-geometry).
 
 ## SCENE-03 — Voting and entry
 
-When the lobby's Forest portal is off-screen, a blue edge arrow labeled Forest portal points toward its nearest wrapped position, using the same navigation presentation as the Warden. The arrow hides while the portal is on-screen and is not shown in the forest.
-
-The village portal offers Forest with Easy (default), Medium and Hard difficulties. The registered difficulty multipliers (1×, 2× and 4× respectively) scale enemy health and damage, including elites and the boss, before party health scaling. The selected difficulty is submitted to the server and shown in the departure vote. Creating allocates a server-owned scene before entry. All current party members (or the solo player) must vote ready, including sessions retained during the disconnect grace period; unanimous readiness starts a five-second countdown. Retracting a vote cancels it. Joins invalidate unanimity; departures restart the countdown with the remaining electorate. At completion, the server teleports the party together and starts a 120-second run. Players may join a world at any time, subject to its password and capacity. Late joiners arrive in the village and can use its portal to join the active scene; players who return early can rejoin the same way. Joining uses the existing scene and deadline, including while the boss is alive. An unfinished scene stays joinable even when every participant returns to the village. Once the boss dies and return portals open, entry is closed; no living players may remain inside before a new scene can be created. Each party or solo player has an independent scene; world departure resets temporary parties. Party members in another dimension use 40% opacity (60% transparency); members in the same dimension remain fully opaque.
-
-Clicking I'm ready closes the portal dialog; the Portal vote button reopens it to retract. The five-second departure countdown displays large gold digits that grow and fade each second, with animation disabled for reduced-motion preferences. Regular enemy spawning continues through the boss encounter; boss death alone completes the scene and clears hostiles.
+See [Geometry, forest entry and completion](scenes/forest.md#scene-03--voting-and-entry).
 
 ## SCENE-04 — Pause and regeneration
 
-When no living players remain in a generated scene (everyone died or left; interrupted connections retain membership during the existing recovery window), combat and scene time pause. Enemies, projectiles, spawn warnings, debuffs, loot expiry, and companion actions wait; rejoining resumes their remaining durations and the boss timer. Living village players do not keep the forest running. The village portal still allows rejoining an unfinished scene and also offers Regenerate scene while no living players are inside. The active scene's Regenerate scene button preserves its difficulty. Regeneration replaces the old scene with a fresh departure vote and returns any dead participants to the village with restored stats. The server rejects regeneration during voting/countdown or while even one living player remains inside.
+See [Geometry, forest entry and completion](scenes/forest.md#scene-04--pause-and-regeneration).
 
 ## SCENE-05 — Boss and return
 
-At timer expiry, regular spawning continues and one Brute Boss with 300 Easy HP before party scaling with an orange health bar appears. The scene stays active until the boss dies; only then do remaining enemies disappear and a fixed blue return portal appears at each participant's feet, including players far from the original clearing. E near it returns a player to the village. A dead player can return immediately using their death window while teammates continue. The exit control opens a confirmation: leaving a scene returns to the village without removing party membership; leaving the village exits the world. Escape opens Settings, or closes the current window first.
+See [Geometry, forest entry and completion](scenes/forest.md#scene-05--boss-and-return).
 
 ## Acceptance
 
-- Every current party member must be ready; retracting cancels departure, joining invalidates unanimity and departures restart the five-second countdown.
-- Enter together, or join the active scene late without resetting its deadline. Boss defeat closes entry.
-- Cross all four seams in village and forest: player, camera, aim, scenery and navigation stay aligned.
-- Pause an empty/dead scene, advance the test clock, then rejoin: its remaining timers resume rather than expiring during the pause.
-- Regeneration rejects a scene with a living participant and rejects voting/countdown; eligible regeneration restores dead participants and starts a new vote.
-- After 120 seconds the boss spawns; regular spawning continues until boss death. Each participant receives a fixed nearby return portal.
-- Early scene exit retains world membership; village exit removes it. Buildings remain service placeholders.
-
-Evidence: [scene transitions](../../packages/server/src/scenes.test.ts), [voting](../../packages/server/src/scene-voting-lifecycle.test.ts), [pause/resume](../../packages/server/src/scene-pause-resume.test.ts), [difficulty](../../packages/server/src/scene-difficulty.test.ts), [pass-through.test.ts](../../packages/server/src/pass-through.test.ts), [village.test.ts](../../packages/server/src/village.test.ts).
+See [Geometry, forest entry and completion](scenes/forest.md#acceptance).
 
 ## VILLAGE-07 — Gathering
 
-Trees, plants, rocks and stones in both areas can be gathered by clicking them
-or pressing E within 65 world units of their roots. Starting a gather takes five
-seconds, with no cooldown between gathers. A thin yellow progress bar directly
-above the resource shows one small green zone and a moving vertical indicator,
-without text above or below the bar. Pressing E inside the zone subtracts two seconds from the
-remaining time and immediately replaces the zone. Misses have no penalty; the
-timer completes without input. Completion awards one gather, never before zero.
-Leaving range, dying, disconnecting or changing areas cancels the attempt without
-rewards or resource depletion. Simultaneous gathers revalidate availability at
-completion. The timed progress and skill-check mechanics are reusable for future
-professions and crafting; those systems are outside this change.
-Server validation owns timing, skill checks, range,
-area, rewards and inventory capacity. Each rock or stone gives one matching item;
-village plants give one matching plant item (fern, berry bush, meadow grass,
-violet wildflowers or flowering herb), while forest plants give one Plant.
-Plant inventory icons reuse the gathered node's artwork. Existing leaves remain
-valid inventory items. Each tree accepts five gathers, independently rolling one
-log (80%), one stick (40%) and one leaf (20%) per gather. A partially gathered tree
-shows a health bar; depleted nodes remain visible as stumps, rubble or cut stems.
-An exhausted node restores after one hour of wall time; partial trees also reset
-one hour after their first gather. Resource state is shared within the running
-world, including forest re-entry, and resets when that world is disposed.
-Inventory rejection leaves the resource and all rewards unchanged.
+See [Resource gathering](scenes/gathering.md#village-07--gathering).

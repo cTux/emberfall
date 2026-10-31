@@ -1,5 +1,7 @@
 # Assets and attribution
 
+Visual inspiration: [Asgard's Fall](https://store.steampowered.com/app/2780710/Asgards_Fall/). No assets are copied from that game.
+
 Use licensed project assets and preserve their original credits. Asgard’s Fall is visual inspiration; its assets are not copied. The adjacent Ninja Adventure gallery is an import source, not a runtime dependency or an editable part of this repository.
 
 ## Sprites and icons
@@ -26,7 +28,7 @@ Path lamps use Karsiori’s FREE Pixel Art Lantern Pack under CC0. Keep the orig
 
 ## Audio and fonts
 
-The six TimberwolfGames tracks and Ninja Adventure sampled effects are CC0. Preserve [audio credits](../packages/client/public/audio/CREDITS.txt) and [CC0 text](../packages/client/public/audio/CC0.txt). Playback rules are in [UI-04](specs/interface-and-audio.md#ui-04--settings-and-music).
+The six TimberwolfGames tracks and Ninja Adventure sampled effects are CC0. Preserve [audio credits](../packages/client/public/audio/CREDITS.txt) and [CC0 text](../packages/client/public/audio/CC0.txt). Playback rules are in [UI-04](specs/interface/settings.md#ui-04--settings-and-music).
 
 All interface and Canvas labels use bundled Alegreya Sans (regular, medium, bold and italic), distributed under the SIL Open Font License in `public/assets/fonts/OFL.txt`. [Font source](https://github.com/google/fonts/tree/main/ofl/alegreyasans).
 

@@ -55,4 +55,4 @@ Update a shared message schema, its server validation and client handling togeth
 
 The current limits are eight players per world and bounded combat collections with Colyseus schema deltas. There is no measured large-horde scalability guarantee. Profile a concrete target before adopting batching, sharding or changing renderers.
 
-The accepted [uninterrupted progression constraint](../specs/progression.md) introduces no new message or database field yet. A future feature must define its data, transitions and migration only after its behavior is selected.
+The [progression specification](../specs/progression.md) covers implemented automatic levels, paragon and voluntary talents. Further progression changes must define server-owned data, transitions and migration after their behavior is selected.
