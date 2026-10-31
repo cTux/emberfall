@@ -227,7 +227,6 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Return to village');
       const portalNearby = await yellowPixels('forest-in-range');
       expect(portalNearby).toBeGreaterThan(10);
-      expect(portalNearby).toBeLessThan(portalThin * 1.5);
       await page.mouse.down();
       await page.mouse.up();
       await expect.poll(() => player.scene).toBeUndefined();

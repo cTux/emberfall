@@ -11,12 +11,29 @@ import { drawDebuffs } from '../packages/client/src/combat-effects';
 import { drawFog } from '../packages/client/src/forest';
 
 import type { PixelComparison } from './renderer-fixture';
+import { drawInteractionOutline } from '../packages/client/src/interaction-targets';
 
 export function compareSurfaces(
   compare: PixelComparison,
   canvas: CanvasRenderingContext2D,
   stackLabels: Record<string, string[]>,
 ) {
+  const mask = document.createElement('canvas');
+  mask.width = mask.height = 16;
+  mask.getContext('2d')!.fillRect(0, 0, 16, 16);
+  const outline = (ctx: CanvasRenderingContext2D) =>
+    drawInteractionOutline(ctx, {
+      source: { id: 'fixture', name: 'Fixture', x: 20, y: 20 },
+      x: 20,
+      y: 20,
+      width: 16,
+      height: 16,
+      mask,
+      reach: { x: 20, y: 20 },
+      radius: 55,
+    });
+  compare('interaction outline border', outline, 19, 28);
+  compare('interaction outline outside', outline, 18, 28);
   compare('vignette center', (ctx) => drawVignette(ctx, 0, 0, 256, 256), 128, 128);
   const health = (ctx: CanvasRenderingContext2D) => drawPlayerHealth(ctx, 100, 93, 50, 100, 'Hero');
   compare('health border top', health, 90, 93);
