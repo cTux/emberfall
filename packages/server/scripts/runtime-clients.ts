@@ -30,7 +30,9 @@ export async function connectWorkload(port: number, worldCount: number) {
   const close = async () => {
     closing = true;
     clearInterval(input);
-    await Promise.allSettled(peers.map((peer) => peer.room.leave()));
+    await Promise.allSettled(
+      peers.filter((peer) => peer.room.connection.isOpen).map((peer) => peer.room.leave(false)),
+    );
   };
   try {
     for (let world = 0; world < worldCount; world++) {
@@ -65,12 +67,12 @@ export async function connectWorkload(port: number, worldCount: number) {
           if (measuring && message.type === 'saved') peer.saved++;
         });
         room.onStateChange((state) => {
-          const view = materializeState(state);
-          if (!view) return;
-          peer.latest = view;
-          peer.receivedAt = performance.now();
-          if (!measuring) return;
           try {
+            const view = materializeState(state);
+            if (!view) return;
+            peer.latest = view;
+            peer.receivedAt = performance.now();
+            if (!measuring) return;
             assert.equal(view.id, peer.worldId);
             assert.equal(view.scene?.id, scenes[peer.worldId]);
             assert.equal(view.players.length, BENCHMARK.playersPerWorld);
