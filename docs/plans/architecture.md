@@ -1,6 +1,6 @@
 # Architecture refactoring sequence
 
-Status: in progress. Each numbered batch is a separate reviewed PR, verified
+Status: implementation complete. Each numbered batch is delivered through reviewed PRs, verified
 before merging. The accepted scope is the architecture review of 2026-10-30.
 Refactors preserve gameplay, saved and wire IDs, authoritative server ownership,
 wrapped geometry, forest/training parity and existing public exports.
@@ -24,8 +24,8 @@ wrapped geometry, forest/training parity and existing public exports.
 | 13    | Forest/village layers, effects, equipment views and artwork descriptors          | Merged [#333](https://github.com/cTux/emberfall/pull/333)–[#337](https://github.com/cTux/emberfall/pull/337), [#340](https://github.com/cTux/emberfall/pull/340), [#344](https://github.com/cTux/emberfall/pull/344)–[#346](https://github.com/cTux/emberfall/pull/346) |
 | 14    | NPC routines/dialogue scheduling and account HTTP/cookie helpers                 | Merged [#348](https://github.com/cTux/emberfall/pull/348)–[#350](https://github.com/cTux/emberfall/pull/350)                                                                                                                                                            |
 | 15    | Settings/tactics descriptors, Codex chapters, village data and styles            | Merged [#339](https://github.com/cTux/emberfall/pull/339), [#342](https://github.com/cTux/emberfall/pull/342), [#343](https://github.com/cTux/emberfall/pull/343), [#347](https://github.com/cTux/emberfall/pull/347)                                                   |
-| 16    | Large test/fixture/story groups and art packaging responsibilities               | Merged [#355](https://github.com/cTux/emberfall/pull/355), [#356](https://github.com/cTux/emberfall/pull/356); browser/story split in [#357](https://github.com/cTux/emberfall/pull/357)                                                                                |
-| 17    | Production-path replication and multi-world load measurements                    | Pending                                                                                                                                                                                                                                                                 |
+| 16    | Large test/fixture/story groups and art packaging responsibilities               | Merged [#355](https://github.com/cTux/emberfall/pull/355), [#356](https://github.com/cTux/emberfall/pull/356), [#357](https://github.com/cTux/emberfall/pull/357)                                                                                                       |
+| 17    | Production-path replication and multi-world load measurements                    | Implemented; [methodology, raw results and chart](../benchmarks/runtime.md)                                                                                                                                                                                             |
 
 ## Verification and completion
 
@@ -48,13 +48,18 @@ forbidden workspace dependencies in manifests and source imports.
 
 Each linked PR records its own immutable-head review and checks. The original
 queued refactors are merged; subsequent work continues one PR at a time.
-Affected PR browser checks are enabled. Final completion still requires the load
-measurements and a manual full Verify run on the final `main` revision.
+Affected PR browser checks are enabled. Release candidates require a manual full
+Verify run on the final `main` revision; a successful current-main run gates Pages.
 
 - The Node suite split retained all 253 declarations/groups and 38 shared fixture
   declarations. Its final local run passed 414 root tests and 24 core tests.
 - The art packager split produced byte-identical PNG/JSON output for all four
   classes on disposable source copies; no shipped artwork changed.
+- The production-path benchmark passed 1/4/8-world workload, autosave,
+  acknowledgement and privacy checks. Its committed report distinguishes
+  configured cadence from observed delivery and records the clean measured
+  source revision. Native checks cover existing-database refusal and cleanup
+  after server loss. No capacity or file-splitting speedup is claimed.
 - Browser entry paths, all 127 game and 45 UI case IDs/titles, and all built
   Storybook IDs remain intact. Nine desktop screen compositions have
   pixel-identical before/after captures. Verification also corrected a stale

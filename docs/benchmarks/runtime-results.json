@@ -1,0 +1,126 @@
+{
+  "measuredAt": "2026-10-31T16:06:11.911Z",
+  "sourceRevision": "c04ee12b1d5865122b99a93c53212ef149eedcb6",
+  "sourceDirty": false,
+  "host": {
+    "node": "v24.22.1",
+    "platform": "win32",
+    "release": "10.0.26300",
+    "arch": "x64",
+    "cpu": "AMD Ryzen 9 9950X3D 16-Core Processor",
+    "logicalCpus": 32,
+    "memoryGiB": 63.64725112915039
+  },
+  "config": {
+    "worlds": [1, 4, 8],
+    "playersPerWorld": 4,
+    "enemiesPerWorld": 40,
+    "warmupMs": 5000,
+    "sampleMs": 35000,
+    "inputMs": 50,
+    "healMs": 250
+  },
+  "scope": "Production simulation, viewer projection, native SDK/schema transport and disk SQLite autosaves; localhost HTTP, fixture healing, no Steam/TLS/LLM workload",
+  "transport": "Server socket bytes written after warmup; includes WebSocket framing/heartbeats, excludes TCP/IP overhead",
+  "workloads": [
+    {
+      "occupiedWorlds": 1,
+      "server": {
+        "measuredMs": 35003.8349,
+        "cpuOneCorePercent": 7.007803593542832,
+        "rssMiB": 283.76171875,
+        "peakRssMiB": 287.04296875,
+        "loopDelayP95Ms": 18.104319,
+        "loopDelayMaxMs": 37.814271,
+        "socketBytes": 33086567,
+        "socketBytesPerSecond": 945226.9185511442,
+        "workload": {
+          "occupiedWorlds": 1,
+          "players": 4,
+          "enemies": 40,
+          "healedDamage": 87
+        }
+      },
+      "client": {
+        "connections": 4,
+        "meanStateHz": 16.156212167000824,
+        "minStateHz": 16.141927275606484,
+        "serverNowGapP95Ms": 100,
+        "serverNowGapMaxMs": 100,
+        "inputAcknowledgementP95Ms": 79.16300000000047,
+        "minSavedEvents": 7,
+        "savedEvents": 28,
+        "privacyChecks": 2262,
+        "errors": 0,
+        "measuredMs": 35002.0162,
+        "driverCpuOneCorePercent": 2.768411952223484
+      }
+    },
+    {
+      "occupiedWorlds": 4,
+      "server": {
+        "measuredMs": 35003.2937,
+        "cpuOneCorePercent": 19.281042686562948,
+        "rssMiB": 356.35546875,
+        "peakRssMiB": 358.76171875,
+        "loopDelayP95Ms": 22.544383,
+        "loopDelayMaxMs": 58.589183,
+        "socketBytes": 133178063,
+        "socketBytesPerSecond": 3804729.4675015113,
+        "workload": {
+          "occupiedWorlds": 4,
+          "players": 16,
+          "enemies": 160,
+          "healedDamage": 297
+        }
+      },
+      "client": {
+        "connections": 16,
+        "meanStateHz": 16.82288657588379,
+        "minStateHz": 16.79967274237498,
+        "serverNowGapP95Ms": 100,
+        "serverNowGapMaxMs": 100,
+        "inputAcknowledgementP95Ms": 67.22639999999956,
+        "minSavedEvents": 7,
+        "savedEvents": 112,
+        "privacyChecks": 9421,
+        "errors": 0,
+        "measuredMs": 35000.6818,
+        "driverCpuOneCorePercent": 9.68552561167537
+      }
+    },
+    {
+      "occupiedWorlds": 8,
+      "server": {
+        "measuredMs": 35017.919400000006,
+        "cpuOneCorePercent": 35.96444396408085,
+        "rssMiB": 376.90234375,
+        "peakRssMiB": 376.8984375,
+        "loopDelayP95Ms": 28.917759,
+        "loopDelayMaxMs": 86.507519,
+        "socketBytes": 264812926,
+        "socketBytesPerSecond": 7562211.877156813,
+        "workload": {
+          "occupiedWorlds": 8,
+          "players": 32,
+          "enemies": 320,
+          "healedDamage": 648
+        }
+      },
+      "client": {
+        "connections": 32,
+        "meanStateHz": 16.492375002502197,
+        "minStateHz": 16.364748527835935,
+        "serverNowGapP95Ms": 100,
+        "serverNowGapMaxMs": 150,
+        "inputAcknowledgementP95Ms": 96.08900000000722,
+        "minSavedEvents": 7,
+        "savedEvents": 224,
+        "privacyChecks": 18479,
+        "errors": 0,
+        "measuredMs": 35014.28689999999,
+        "driverCpuOneCorePercent": 17.355772566083594
+      }
+    }
+  ]
+}

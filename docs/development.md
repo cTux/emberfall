@@ -156,6 +156,10 @@ High. The [package guides](design/new-runtime.md) explain ownership and reuse.
 The old-runtime parity comparison was retired with the original packages.
 `pnpm benchmark` measures simulation and
 replication kernels; see the [verification record](plans/new-runtime.md) for scope.
+`pnpm benchmark:runtime` measures the production server through native SDK clients
+and disposable disk-backed SQLite at 1, 4 and 8 occupied worlds. See the
+[methodology and recorded results](benchmarks/runtime.md) for workload, metrics
+and limits; it does not use a live server or player database.
 `pnpm lint` checks source and styles. Use `pnpm import-save` only
 with an offline backup and a new destination, as described in the
 [server guide](../packages/server/README.md).

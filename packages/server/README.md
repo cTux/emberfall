@@ -172,6 +172,11 @@ own their server and database and may arrange scene state without shipping
 test-only HTTP endpoints. See [development](../../docs/development.md) and the
 [runtime design](../../docs/design/new-runtime.md).
 
+`pnpm benchmark:runtime` runs isolated multi-world SDK load measurements against
+the production server factory with temporary on-disk SQLite. Read the
+[methodology and results](../../docs/benchmarks/runtime.md) before interpreting
+CPU, transport output or observed state cadence as a capacity estimate.
+
 ## Village dialogue
 
 Village NPCs use a local [Ollama](https://docs.ollama.com/api/chat) service. The
