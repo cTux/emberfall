@@ -11,6 +11,7 @@ test('players opt into parties with nearby E and chat, vote together, join late 
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
   const other = await context.newPage();
   const errors: string[] = [];
+
   for (const p of [page, other]) {
     p.on('pageerror', (e) => {
       return errors.push(e.message);

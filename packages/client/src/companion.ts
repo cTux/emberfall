@@ -53,6 +53,7 @@ export function drawCompanion(
   ctx.translate(x, y + 15);
   ctx.scale(scale, scale);
   ctx.translate(-x, -y - 15);
+
   if (!shadows) {
     ctx.fillStyle = '#06181080';
     ctx.beginPath();
@@ -64,9 +65,11 @@ export function drawCompanion(
   const { column, left } = companionFrame(bear, now);
   const dead = bear.hitpoints <= 0;
   ctx.globalAlpha = opacity * (dead ? 0.3 : 1);
+
   if (image.naturalWidth) {
     ctx.save();
     ctx.translate(x, y);
+
     if (left) {
       ctx.scale(-1, 1);
     }
@@ -109,11 +112,13 @@ export function drawCompanion(
     showHealth,
   );
   const age = now - (bear.attackAt ?? -Infinity);
+
   if (!dead && !bear.returning && age >= 0 && age < PLAYER_ATTACK_DURATION) {
     ctx.translate(x, y);
     ctx.rotate(angle - Math.PI / 2 + (age / PLAYER_ATTACK_DURATION) * Math.PI);
     ctx.strokeStyle = `rgba(255,235,196,${1 - age / PLAYER_ATTACK_DURATION})`;
     ctx.lineWidth = 3;
+
     for (let i = 0; i < 3; i++) {
       ctx.beginPath();
       ctx.arc(0, 0, (bear.range ?? BEAR_DEFINITION.range) - 5 - i * 7, -0.65, 0);

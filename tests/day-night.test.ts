@@ -23,6 +23,7 @@ test('phase boundaries and the midnight seam are continuous', () => {
     const before = dayNight(time - 1),
       after = dayNight(time + 1);
     assert.ok(Math.abs(before.daylight - after.daylight) < 0.001);
+
     for (const shift of [0, 8, 16]) {
       assert.ok(Math.abs(((before.tint >> shift) & 255) - ((after.tint >> shift) & 255)) <= 1);
     }
@@ -40,6 +41,7 @@ test('phase boundaries and the midnight seam are continuous', () => {
 
 test('sun and weaker moon travel across the sky and change silhouette projections', () => {
   const caster = { x: 20, y: 30, height: 100 };
+
   for (const [start, duration, body] of [
     [0, 0.7, 'sun'],
     [0.7, 0.3, 'moon'],

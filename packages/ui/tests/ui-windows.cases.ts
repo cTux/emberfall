@@ -3,6 +3,7 @@ import { story } from './ui.fixture.ts';
 
 test('settings dropdowns share window surfaces and wood selection states', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 700 });
     await page.goto(story('screens-compositions--settings'));
@@ -68,6 +69,7 @@ test('external modal tabs scroll, navigate and stay with the window at viewport 
   await page.keyboard.press('Home');
   await page.keyboard.press('Enter');
   await expect(first).toBeFocused();
+
   for (const size of [
     { width: 1280, height: 800 },
     { width: 320, height: 240 },

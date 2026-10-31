@@ -22,6 +22,7 @@ test('each tree allows five independent rolls, shows remaining health and restor
   })!;
   const player = hero(node);
   const states: Record<string, ResourceState> = {};
+
   for (let i = 0; i < 5; i++) {
     const rolls = [0.79999, 0.39999, 0.19999];
     assert.deepEqual(
@@ -72,6 +73,7 @@ test('plants, rocks and stones grant one matching item and depletion is shared a
       })!;
     }),
   ];
+
   for (const node of nodes) {
     const states: Record<string, ResourceState> = {};
     const player = hero(node);

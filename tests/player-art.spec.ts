@@ -39,6 +39,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
         const nativeContext = native.getContext('2d')!;
         nativeContext.drawImage(image, col * 128, 0, 128, 128, 0, 0, 128, 128);
         const nativeIdle = nativeContext.getImageData(0, 0, 128, 128).data;
+
         for (let p = 0; p < nativeIdle.length; p += 4) {
           if (nativeIdle[p + 3] >= 128) {
             palette.push([nativeIdle[p], nativeIdle[p + 1], nativeIdle[p + 2]]);
@@ -47,6 +48,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
 
         const idleTone = [0, 0, 0];
         let idleCount = 0;
+
         for (let i = 0; i < idle.length; i += 4) {
           if (idle[i + 3] >= 128) {
             if (idle[i + 3] >= 200) {
@@ -64,11 +66,13 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
         const distinct = new Set<string>();
         const feet = new Set<string>();
         const contacts: number[] = [];
+
         for (let row = 0; row < 10; row++) {
           ctx.clearRect(0, 0, 64, 64);
           ctx.drawImage(image, col * 128, row * 128, 128, 128, 0, 0, 64, 64);
           const pixels = ctx.getImageData(0, 0, 64, 64).data;
           let count = 0;
+
           for (let y = 0; y < 64; y++) {
             for (let x = 0; x < 64; x++) {
               if (pixels[(y * 64 + x) * 4 + 3] === 0) {
@@ -76,6 +80,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
               }
 
               count++;
+
               if (x < 2 || x >= 62 || y < 2 || y >= 62) {
                 failures.push(`${names[i]} ${col},${row} border`);
               }
@@ -98,11 +103,13 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
                 return (walkTone[channel] += rgb[channel]);
               });
               const key = rgb.join(',');
+
               if (checked.has(key)) {
                 continue;
               }
 
               checked.add(key);
+
               // Allow canvas alpha round-trip rounding, but reject a new tone
               // introduced by a separately generated animation sheet.
               if (
@@ -120,6 +127,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
             // Alpha only: recoloring robes or animating a weapon must not hide
             // a frozen lower-leg silhouette. Inspect the bottom eight pixels.
             const silhouette: number[] = [];
+
             for (let y = 53; y < 61; y++) {
               for (let x = 16; x < 48; x++) {
                 silhouette.push(pixels[(y * 64 + x) * 4 + 3] > 128 ? 1 : 0);
@@ -129,6 +137,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
             feet.add(silhouette.join(''));
             let contactX = 0,
               contactPixels = 0;
+
             for (let y = 58; y < 61; y++) {
               for (let x = 16; x < 48; x++) {
                 if (pixels[(y * 64 + x) * 4 + 3] > 128) {
@@ -177,6 +186,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
 
             return occupied.length ? Math.max(...occupied) - Math.min(...occupied) : 0;
           });
+
           if (Math.max(...spans) - Math.min(...spans) < 4) {
             failures.push(`${names[i]} ${col} lacks a narrow passing pose`);
           }
@@ -190,6 +200,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
               });
             }),
           );
+
           // A side-on step must change at least one fifth of this small foot
           // region; tiny edge jitter is not a stride. Old mage/ranger art fails.
           if (changed < 52) {
@@ -204,6 +215,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
     const out = preview.getContext('2d')!;
     out.imageSmoothingEnabled = false;
     const frames: string[] = [];
+
     for (const row of [0, ...walks]) {
       out.fillStyle = '#202a25';
       out.fillRect(0, 0, 800, 760);
@@ -216,6 +228,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
       images.forEach((image, i) => {
         out.textAlign = 'left';
         out.fillText(names[i], 8, 125 + i * 175);
+
         for (let col = 0; col < 4; col++) {
           out.drawImage(
             image,
@@ -236,6 +249,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
     return { failures, frames };
   });
   expect(result.failures).toEqual([]);
+
   for (const [i, png] of result.frames.entries()) {
     await writeFile(`test-results/player-pose-${i}.png`, Buffer.from(png, 'base64'));
   }

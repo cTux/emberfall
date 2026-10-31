@@ -20,6 +20,7 @@ test('queued player mentions revalidate participants after the delay and cancel 
     life.hear(listener, '@Marta Hello!', 1000);
     life.tick(2999, 0);
     assert.equal(calls, 0);
+
     if (action === 'scene') {
       listener.scene = 'forest';
     }
@@ -57,6 +58,7 @@ test('busy mention replies retry promptly without losing the conversation or its
   const { world, life } = setup({
     generate: async () => {
       calls++;
+
       if (calls === 2) {
         return { status: 'busy' };
       }
@@ -88,6 +90,7 @@ test('player mentions wait for active speech and take priority over NPC continua
     const { world, life } = setup({
       generate: async (context) => {
         contexts.push(JSON.parse(context));
+
         if (contexts.length === 1) {
           return new Promise<DialogueResult>((resolve) => {
             return (finish = resolve);
@@ -100,6 +103,7 @@ test('player mentions wait for active speech and take priority over NPC continua
     try {
       Object.assign(world.npcs![1], { x: 350, y: 250 });
       life.tick(10_000, 0);
+
       if (pending === 'continuation') {
         finish({ status: 'ok', text: '@Oswin, goblins ate the ledger.' });
         await flush();
@@ -107,6 +111,7 @@ test('player mentions wait for active speech and take priority over NPC continua
 
       const question = '@Marta Any forest advice?';
       life.hear(world.players.get('p')!, question, 10_100);
+
       if (pending === 'generation') {
         // The generation lasts beyond the player's two-second reply delay.
         life.tick(13_000, 0);
@@ -140,6 +145,7 @@ test('a pending, generating or retrying player reply cannot be replaced by anoth
     const { world, life } = setup({
       generate: async (context) => {
         const question = JSON.parse(context).quotedSpeech;
+
         if (question) {
           questions.push(question);
         }
@@ -157,6 +163,7 @@ test('a pending, generating or retrying player reply cannot be replaced by anoth
       world.players.set('q', player('q'));
       life.tick(10_000, 0);
       life.hear(world.players.get('p')!, '@Marta First question?', 10_100);
+
       if (stage !== 'pending') {
         finish({ status: 'ok', text: 'Good morning!' });
         await flush();
@@ -165,6 +172,7 @@ test('a pending, generating or retrying player reply cannot be replaced by anoth
       }
 
       life.hear(world.players.get('q')!, '@Marta Second question?', 30_000);
+
       if (stage !== 'retrying') {
         finish({ status: 'ok', text: 'Good morning!' });
         await flush();
@@ -196,6 +204,7 @@ test('late answers are discarded after scene transfer, range exit or world dispo
       },
     });
     life.tick(10_000, 0);
+
     if (action === 'scene') {
       world.players.get('p')!.scene = 'forest';
     }

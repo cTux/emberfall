@@ -58,6 +58,7 @@ test('Bear dodges telegraphed attacks and sidesteps incoming projectiles', async
   assert(bear.y > p.y);
   p.x = 2280;
   p.attackAt = 1e6;
+
   for (let i = 1; i <= 8; i++) {
     stepCombat(s, [p], 12000 + i * 50, 0.05);
   }

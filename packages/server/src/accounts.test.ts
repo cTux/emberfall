@@ -30,6 +30,7 @@ test('Steam verifier rejects forged, wrong-site, unsigned, stale and replayed as
     ['openid.mode', 'cancel'],
     ['openid.response_nonce', '2000-01-01T00:00:00Zold'],
   ];
+
   for (const [key, value] of cases) {
     const query = callback();
     query.set(key, value);

@@ -68,9 +68,11 @@ test('hunter base arrows stop after four hits; two legendary pierce bonuses allo
   t.mock.method(Math, 'random', () => {
     return 0.5;
   });
+
   for (const bonus of [false, true]) {
     const player = hero('ranger');
     player.x = FOREST.width - 100;
+
     if (bonus) {
       equip(player, 'weapon', 'ranger-bow', ItemStat.ProjectilePierce);
       equip(player, 'offHand', 'loot-quiver', ItemStat.ProjectilePierce);

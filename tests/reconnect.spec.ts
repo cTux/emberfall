@@ -120,10 +120,12 @@ test('peers see a red reconnecting character in village and forest until recover
     const [host, remote] = [...world.players.values()];
     remote.x = host.x + 70;
     remote.y = host.y;
+
     for (const area of ['village', 'forest'] as const) {
       if (area === 'forest') {
         const { sceneAction } = await import('../packages/server/src/scenes.ts');
         const { LOBBY_PORTAL } = await import('../packages/core/src/index.ts');
+
         for (const p of world.players.values()) {
           p.x = LOBBY_PORTAL.x;
           p.y = LOBBY_PORTAL.y - 15;
@@ -135,6 +137,7 @@ test('peers see a red reconnecting character in village and forest until recover
         parties.accept(remote, host.id, now);
         const run = parties.run(host);
         sceneAction(run, host, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, now);
+
         for (const p of world.players.values()) {
           sceneAction(run, p, { type: 'ready', ready: true }, now);
         }

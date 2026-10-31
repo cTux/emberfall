@@ -48,12 +48,14 @@ export function drawPlayerAttack(
   }
 
   const age = now - (p.attackAt ?? -Infinity);
+
   if (!characterStats(p).hasWeapon) {
     return;
   }
 
   const attackRange = defaultSpellRange(p);
   const attacking = inCombat && age >= 0 && age < PLAYER_ATTACK_DURATION;
+
   // Class weapons are painted into the directional action frames.
   if (attacking && p.hitpoints > 0) {
     if (p.classId === 'ranger' || p.classId === 'mage' || p.classId === 'druid') {
@@ -66,6 +68,7 @@ export function drawPlayerAttack(
     ctx.globalAlpha = opacity;
     ctx.translate(x, y);
     ctx.rotate(angle);
+
     if (bloom) {
       ctx.shadowColor = '#c3edff';
       ctx.shadowBlur = 10;
@@ -77,6 +80,7 @@ export function drawPlayerAttack(
     ctx.arc(0, 0, Math.max(0, attackRange - 5), -0.65, 0);
     ctx.stroke();
     ctx.fillStyle = '#a8ffce';
+
     for (let i = 0; i < 10; i++) {
       ctx.globalAlpha = opacity * (1 - progress) * (1 - i / 14);
       ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);

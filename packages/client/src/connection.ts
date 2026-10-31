@@ -39,12 +39,14 @@ export class GameConnection {
             }
           : undefined;
       let ticket: string | undefined;
+
       if (this.steam) {
         const response = await fetch(apiUrl('/api/account/ticket'), {
           method: 'POST',
           credentials: 'include',
           signal: AbortSignal.timeout(10_000),
         });
+
         if (!response.ok) {
           throw new Error('Authentication required');
         }
@@ -59,6 +61,7 @@ export class GameConnection {
       );
       this.room = room;
       room.reconnection.enabled = false;
+
       if (this.closed) {
         await room.leave();
 
@@ -70,6 +73,7 @@ export class GameConnection {
       });
       room.onStateChange((state) => {
         const world = materializeState(state);
+
         if (world) {
           this.onmessage?.({ data: { type: 'state', world } });
         }
@@ -101,6 +105,7 @@ export class GameConnection {
 
   close(code = 1000, reason?: string) {
     this.closed = true;
+
     if (code === 1000) {
       void this.room?.leave();
     } else {

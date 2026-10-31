@@ -26,6 +26,7 @@ test('one root projectile bounces three times at full power without repeating ta
   for (const training of [false, true]) {
     const s = scene(),
       p = { ...hero(), classId: 'druid' as const };
+
     if (training) {
       s.training = true;
       delete p.scene;
@@ -43,6 +44,7 @@ test('one root projectile bounces three times at full power without repeating ta
     assert.equal(s.playerShots!.length, 1);
     const shot = s.playerShots![0];
     tickPlayerShots(s, [p], 10050, 0.05);
+
     for (let i = 1; i < 4; i++) {
       assert.equal(s.playerShots![0], shot, 'retain the same projectile through every bounce');
       assert.equal(shot.targetId, i + 1);
@@ -67,6 +69,7 @@ test('one root projectile bounces three times at full power without repeating ta
     assert.equal(target.hitpoints, 94);
     tickDebuffs(s, [p], 15750);
     assert.equal(target.debuffs!.length, 0);
+
     if (training) {
       assert.equal(p.experience, 0);
       assert.equal(s.drops?.length ?? 0, 0);
@@ -82,6 +85,7 @@ test('root bounce radius includes 250 units and excludes targets just beyond it'
     fireClassAttack(s, p, 1000);
     tickPlayerShots(s, [p], 1050, 0.05);
     assert.equal(s.playerShots!.length, distance === 250 ? 1 : 0);
+
     for (let i = 0; i < 20; i++) {
       tickPlayerShots(s, [p], 1100 + i * 50, 0.05);
     }

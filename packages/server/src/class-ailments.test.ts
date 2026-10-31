@@ -18,6 +18,7 @@ test('each ailment stacks, refreshes its timer, ticks once per second, and expir
   t.mock.method(Math, 'random', () => {
     return 0.09;
   });
+
   for (const kind of ['bleed', 'poison', 'burn'] as const) {
     const s = scene(),
       p = hero(),
@@ -39,6 +40,7 @@ test('each ailment stacks, refreshes its timer, ticks once per second, and expir
     assert.equal(e.debuffs!.length, 0);
     tickDebuffs(s, [p], 9000);
     assert.equal(e.hitpoints, before - 8);
+
     for (let i = 0; i < 100; i++) {
       hitEnemy(s, e, 1, p, 10000, kind);
     }

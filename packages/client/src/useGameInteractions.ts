@@ -27,6 +27,7 @@ export function useGameInteractions({
   }, []);
   const castTalent = (slot: number, automatic = false) => {
     const aim = cursorAim.current?.();
+
     if (!me || unavailable || !aim) {
       return;
     }

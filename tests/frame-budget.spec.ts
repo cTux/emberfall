@@ -35,6 +35,7 @@ test('profile village, training and forest frame budgets', async ({
   const player = [...world.players.values()][0];
   const session = await page.context().newCDPSession(page);
   await session.send('Profiler.enable');
+
   for (const scene of ['village', 'training', 'forest', 'crowded'] as const) {
     if (scene === 'training') {
       player.classId = 'mage';
@@ -79,6 +80,7 @@ test('profile village, training and forest frame budgets', async ({
     }
 
     await page.waitForTimeout(3000);
+
     if (profileCpu) {
       await session.send('Profiler.start');
     }
@@ -93,6 +95,7 @@ test('profile village, training and forest frame budgets', async ({
           }
 
           previous = now;
+
           if (samples.length < 1200) {
             requestAnimationFrame(frame);
           } else {
@@ -119,6 +122,7 @@ test('profile village, training and forest frame budgets', async ({
         requestAnimationFrame(frame);
       });
     });
+
     if (profileCpu) {
       const { profile } = await session.send('Profiler.stop');
       writeFileSync(testInfo.outputPath(`${scene}.cpuprofile`), JSON.stringify(profile));

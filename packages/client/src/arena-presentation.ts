@@ -58,6 +58,7 @@ export class ArenaPresentation {
     const cycle = dayNight(view?.serverNow ?? 0);
     const local = world ? this.movement.render(world, now) : undefined;
     let localSwing = false;
+
     if (view && local) {
       const width = viewport.width,
         height = viewport.height;
@@ -108,6 +109,7 @@ export class ArenaPresentation {
       now,
     );
     const warning = view?.scene?.spawns?.at(-1)?.id ?? 0;
+
     if (warning && warning !== this.lastWarning) {
       this.lastWarning = warning;
       this.audio.play('warning');
@@ -119,6 +121,7 @@ export class ArenaPresentation {
       }),
     );
     const hpKey = JSON.stringify(hp);
+
     if (hpKey !== this.previousHp) {
       this.previousHp = hpKey;
       this.onHitpoints(hp);
@@ -132,12 +135,14 @@ export class ArenaPresentation {
     now: number,
   ) {
     const { view, local, localSwing } = frame;
+
     if (localSwing && now - this.lastSlashAt >= 500) {
       this.lastSlashAt = now;
       this.audio.play('slash');
     }
 
     const hit = view?.scene?.damage.at(-1);
+
     if (local?.scene === 'forest' && hit && hit.id !== this.lastHit) {
       this.lastHit = hit.id;
       this.audio.play('hit');

@@ -114,6 +114,7 @@ test('storage-to-storage moves conserve stacks, validate tabs and reject full or
   assert.throws(() => {
     return moveStorageItem(player, 0, 1, player.storages![0].items[0].id);
   }, /full/);
+
   for (const [fromTab, toTab] of [
     [0, 0],
     [-1, 1],
@@ -126,6 +127,7 @@ test('storage-to-storage moves conserve stacks, validate tabs and reject full or
   }
 
   assert.deepEqual(player, before);
+
   for (const [fromTab, toTab] of [
     [-1, 1],
     [0, 3],

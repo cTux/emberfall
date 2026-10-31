@@ -55,6 +55,7 @@ export function woundBurst(cast: TalentCast) {
     stats,
     context,
   );
+
   if (learned === 2) {
     for (const enemy of effectArea(scene, primary, 150)) {
       if (enemy !== primary) {
@@ -77,6 +78,7 @@ export function woundBurst(cast: TalentCast) {
 
   const offering = rank(player, 1, 8);
   let orbConsumed = false;
+
   if (offering && consumedStacks >= 3) {
     schedule(scene, player, nodeId, now, 6000, 500, (_at, players) => {
       if (orbConsumed) {
@@ -89,6 +91,7 @@ export function woundBurst(cast: TalentCast) {
         primary,
         60 * (1 + stats.bonuses.areaOfEffect / 100),
       );
+
       if (ally) {
         heal(ally, offering === 2 ? 0.05 : 0.03);
         orbConsumed = true;

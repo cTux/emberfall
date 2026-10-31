@@ -80,6 +80,7 @@ test('interleaved event and RAF timestamps cannot manufacture movement time or i
   movement.render(initial, 0);
   movement.input(1, 0, 0);
   let current = initial;
+
   for (let tick = 1; tick <= 200; tick++) {
     const now = tick * 50;
     movement.input(1, 0, now);
@@ -113,6 +114,7 @@ test('small visual errors stay still, accumulated error converges, large correct
   const corrected = world({ ...hero, x: 414 }, 10150);
   const blended = movement.render(corrected, 150)!.x;
   assert(blended > 414 && blended < 420);
+
   for (let now = 200; now <= 600; now += 50) {
     movement.render(corrected, now);
   }
@@ -129,6 +131,7 @@ test('prediction passes through scenery and stops movement and animation on miss
   movement.render(initial, 0);
   movement.input(0, 1, 0);
   let player = start;
+
   for (let now = 50; now <= 2000; now += 50) {
     player = movement.render(initial, now)!;
   }
@@ -166,6 +169,7 @@ test('stale movement stops walking animation and fresh acknowledgements restore 
   const movement = new LocalMovement('p', () => {});
   movement.render(initial, 0);
   movement.input(1, 0, 0);
+
   for (let now = 50; now <= 1000; now += 50) {
     movement.render(initial, now);
   }
@@ -186,6 +190,7 @@ test('stale movement stops walking animation and fresh acknowledgements restore 
 test('diagonal facing keeps its current axis despite floating-point noise and follows real direction changes', async () => {
   for (const start of [1, 2]) {
     let facing = start;
+
     for (let i = 0; i < 100; i++) {
       facing = movementFacing(-1, -1 + (i % 2 ? 1e-10 : -1e-10), facing);
       assert.equal(facing, start);

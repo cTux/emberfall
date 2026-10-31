@@ -8,6 +8,7 @@ export function softenArtTones(pixels: Uint8ClampedArray, width: number, height:
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const offset = (y * width + x) * 4;
+
       if (!original[offset + 3]) {
         continue;
       }
@@ -15,6 +16,7 @@ export function softenArtTones(pixels: Uint8ClampedArray, width: number, height:
       const brightness = Math.max(original[offset], original[offset + 1], original[offset + 2]);
       const blend = 0.28 * Math.max(0, 1 - brightness / 100);
       let neighbor = offset;
+
       if (blend > 0) {
         for (let dy = -1; dy <= 1; dy++) {
           for (let dx = -1; dx <= 1; dx++) {
@@ -23,6 +25,7 @@ export function softenArtTones(pixels: Uint8ClampedArray, width: number, height:
             }
 
             const candidate = ((y + dy) * width + x + dx) * 4;
+
             if (original[candidate + 3] < 200) {
               continue;
             }

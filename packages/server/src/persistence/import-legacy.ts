@@ -10,6 +10,7 @@ import { CharacterStore, decodeProgress } from '../characters.ts';
 export async function importLegacy(sourcePath: string, destinationPath: string) {
   const source = resolve(sourcePath),
     destination = resolve(destinationPath);
+
   if (source.toLowerCase() === destination.toLowerCase()) {
     throw new Error('Source and destination must differ');
   }
@@ -26,6 +27,7 @@ export async function importLegacy(sourcePath: string, destinationPath: string) 
     const characters = legacy
       .prepare('SELECT id, token_hash, name, progress FROM characters')
       .all();
+
     for (const row of characters) {
       if (
         typeof row.id !== 'string' ||
@@ -51,6 +53,7 @@ export async function importLegacy(sourcePath: string, destinationPath: string) 
     mkdirSync(dirname(destination), { recursive: true });
     store = new CharacterStore(temporary);
     await store.ready;
+
     for (const row of characters) {
       store.importCharacter(
         String(row.id),
@@ -83,6 +86,7 @@ export async function importLegacy(sourcePath: string, destinationPath: string) 
   } finally {
     legacy.close();
     store?.close();
+
     for (const suffix of ['', '-wal', '-shm']) {
       rmSync(temporary + suffix, { force: true });
     }

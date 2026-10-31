@@ -94,6 +94,7 @@ test('overhead player and boss health match gathering thickness and borders with
     ['#695a31', 39, 101, 122, 5],
     ['#ebc34b', 39, 101, 61, 5],
   ]);
+
   for (const boss of [false, true]) {
     const health = recordingContext();
     const width = drawPlayerHealth(
@@ -128,6 +129,7 @@ test('gathering fill and indicator retain fractional motion between frames', () 
   };
   let previousFill = 0;
   let previousIndicator = 0;
+
   for (const now of [300, 300.5, 301]) {
     const context = recordingContext();
     drawTimedActivity(context.ctx, activity, 100, 98, now);

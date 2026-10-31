@@ -19,8 +19,10 @@ import { hero, target, scene } from './equipment.fixture.ts';
 test('Warrior and Bear use 75-unit melee geometry, including wrapped model boundaries', () => {
   const player = hero();
   const ranges = [defaultSpellRange(player), companionStats(hero('druid')).range];
+
   for (const range of ranges) {
     assert.equal(range, 75);
+
     for (const wrapped of [false, true]) {
       const actor = { x: wrapped ? 4790 : 2400, y: 1280, attackAngle: 0 };
       const enemy = target();
@@ -53,10 +55,12 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
   t.mock.method(Math, 'random', () => {
     return 0.5;
   });
+
   for (const training of [true, false]) {
     const player = hero('druid');
     player.equipment!.ring = gear.id;
     player.autoAttack = false;
+
     if (!training) {
       player.scene = 'forest';
     }
@@ -84,6 +88,7 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
     assert.equal(arena.damage.length, 1);
     tickCompanion(player, arena, 1500, 0, context);
     assert.equal(arena.damage.length, 2, 'inherits the 500ms gear cadence');
+
     if (!training) {
       arena.enemies[0].x = player.x - 100;
       player.bear!.x = player.x - 100;
@@ -112,6 +117,7 @@ test('Bear critical and 10% bleed boundaries work in forest and training across 
         return roll;
       });
       const player = hero('druid');
+
       if (!training) {
         player.scene = 'forest';
       }
@@ -124,6 +130,7 @@ test('Bear critical and 10% bleed boundaries work in forest and training across 
       assert.equal(arena.damage[0].amount, roll < 0.05 ? 4.5 : 3);
       assert.equal(arena.damage[0].damageType, 'physical');
       assert.equal(arena.enemies[0].debuffs?.length ?? 0, roll < 0.1 ? 1 : 0);
+
       if (roll < 0.1) {
         assert.equal(arena.enemies[0].debuffs![0].kind, 'bleed');
         tickDebuffs(arena, [player], 2000);

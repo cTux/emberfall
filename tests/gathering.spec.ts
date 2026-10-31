@@ -34,6 +34,7 @@ test('gathering indicator advances smoothly across snapshots', async ({ page, ga
 
       function sample(now: number) {
         const indicator = Number(canvas.dataset.gatheringIndicator);
+
         if (!start) {
           start = now;
         }
@@ -51,6 +52,7 @@ test('gathering indicator advances smoothly across snapshots', async ({ page, ga
 
         lastTime = now;
         lastIndicator = indicator;
+
         if (now - start < 2000) {
           requestAnimationFrame(sample);
         } else {
@@ -82,6 +84,7 @@ test('each village plant appears in inventory with its own name and artwork afte
   const player = [...world.players.values()][0];
   const canvas = page.locator('canvas');
   await page.mouse.move(-1, -1);
+
   for (const [variant, itemId] of PLANT_KINDS.entries()) {
     const node = VILLAGE_RESOURCES.find((n) => {
       return n.kind === 'plant' && n.variant === variant;

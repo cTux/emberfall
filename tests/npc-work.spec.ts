@@ -47,6 +47,7 @@ test('all eight NPC work items render particles in Pixi and respect the particle
   });
   expect(result.disabled).toEqual(Array(8).fill(0));
   expect(result.counts).toHaveLength(8);
+
   for (const count of result.counts) {
     expect(count).toBeGreaterThan(10);
   }

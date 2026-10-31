@@ -29,6 +29,7 @@ export class Parties {
   run(player: Player) {
     const key = this.key(player);
     let run = this.runs.get(key);
+
     if (!run) {
       run = { players: createPlayers(), skipTraining: true, runKey: key };
       this.runs.set(key, run);
@@ -44,6 +45,7 @@ export class Parties {
     run.voters = [...this.world.players.values()].filter((p) => {
       return this.home(p) === key;
     });
+
     for (const id of run.players.keys()) {
       if (!this.world.players.has(id) || this.key(this.world.players.get(id)!) !== key) {
         run.players.delete(id);
@@ -59,8 +61,10 @@ export class Parties {
 
   tick(now: number, dt: number) {
     this.expire(now);
+
     for (const [key, run] of this.runs) {
       this.sync(run, key);
+
       if (!run.players.size) {
         simulationFor(run.players)?.retain([]);
         this.runs.delete(key);
@@ -71,6 +75,7 @@ export class Parties {
       run.chat = this.world.chat;
       tickScene(run, now, dt);
       this.world.chat = run.chat;
+
       for (const p of run.players.values()) {
         if (p.scene) {
           p.runId = key;
@@ -91,6 +96,7 @@ export class Parties {
       const r = this.requests[i];
       const from = this.world.players.get(r.fromId);
       const to = this.world.players.get(r.toId);
+
       if (
         r.expiresAt <= now ||
         !from ||
@@ -118,6 +124,7 @@ export class Parties {
 
   request(from: Player, target: Player, now: number) {
     this.expire(now);
+
     if (from.id === target.id || (from.partyId && from.partyId === target.partyId)) {
       throw new Error('You are already together.');
     }
@@ -131,11 +138,13 @@ export class Parties {
     }
 
     const to = target.partyId ? this.world.players.get(target.partyLeaderId!)! : target;
+
     if (!to || to.reconnecting) {
       throw new Error('That player is unavailable.');
     }
 
     const partyId = from.partyId ?? to.partyId;
+
     if (partyId && this.parties.get(partyId)!.members.length >= 4) {
       throw new Error('Party is full (4 players).');
     }
@@ -171,6 +180,7 @@ export class Parties {
     const incoming = this.incoming(to, now).filter((r) => {
       return !fromId || r.fromId === fromId;
     });
+
     if (incoming.length !== 1) {
       throw new Error('Specify /accept @name for one pending request.');
     }
@@ -178,6 +188,7 @@ export class Parties {
     const r = incoming[0];
     const from = this.world.players.get(r.fromId)!;
     let party = r.partyId ? this.parties.get(r.partyId) : undefined;
+
     if (party && party.members.length >= 4) {
       throw new Error('Party is full (4 players).');
     }
@@ -190,6 +201,7 @@ export class Parties {
     }
 
     const leader = this.world.players.get(party.members[0])!;
+
     for (const id of party.members) {
       const p = this.world.players.get(id)!;
       p.partyId = party.id;
@@ -212,8 +224,10 @@ export class Parties {
   leave(player: Player, departing = false) {
     if (departing) {
       this.sentAt.delete(player.id);
+
       for (let i = this.requests.length - 1; i >= 0; i--) {
         const r = this.requests[i];
+
         if (r.fromId === player.id || r.toId === player.id) {
           this.requests.splice(i, 1);
         }
@@ -221,6 +235,7 @@ export class Parties {
     }
 
     const party = this.parties.get(player.partyId ?? '');
+
     if (!party) {
       if (!departing) {
         throw new Error('You are not in a party.');
@@ -230,6 +245,7 @@ export class Parties {
     }
 
     const members = [...party.members];
+
     if (player.scene) {
       const run = this.run(player);
       run.chat = this.world.chat;
@@ -245,9 +261,11 @@ export class Parties {
     party.members = party.members.filter((id) => {
       return id !== player.id;
     });
+
     for (const id of party.members) {
       const p = this.world.players.get(id)!;
       p.partyLeaderId = party.members[0];
+
       if (party.members.length === 1) {
         delete p.partyId;
         delete p.partyLeaderId;

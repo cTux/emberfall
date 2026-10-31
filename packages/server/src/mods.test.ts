@@ -176,6 +176,7 @@ test('an added class uses shared training/forest dispatch and respects its abili
     player.aimY = player.y;
     player.autoAttack = false;
     player.attackAt = 1000;
+
     if (!training) {
       player.scene = 'forest';
     }

@@ -19,6 +19,7 @@ export function PerformanceMonitor({
   showLatency = true,
 }: PerformanceMonitorProps) {
   const theme = useTheme();
+
   if (!showFps && !showLatency) {
     return null;
   }
@@ -48,6 +49,7 @@ export function PerformanceMonitor({
     return recent
       .map((sample, index) => {
         const value = sample[key];
+
         if (value == null || !Number.isFinite(value)) {
           connected = false;
 

@@ -47,6 +47,7 @@ export class LocalMovement {
     // rewind this clock or the next frame predicts/sends the same time twice.
     const elapsed = Math.max(0, now - this.at);
     this.at = Math.max(this.at, now);
+
     if (this.base) {
       const queued = this.pending.reduce((n, p) => {
         return n + p.durationMs;
@@ -91,6 +92,7 @@ export class LocalMovement {
 
   private predict() {
     const player = { ...this.base! };
+
     for (const command of this.pending) {
       const elapsed =
         command.seq === player.inputSeq ? (player.inputElapsed ?? command.durationMs) : 0;
@@ -111,11 +113,13 @@ export class LocalMovement {
     const authoritative = world.players.find((p) => {
       return p.id === this.id;
     });
+
     if (!authoritative) {
       return;
     }
 
     const epoch = authoritative.scene === 'forest' ? world.scene!.id : 'lobby';
+
     if (
       !this.base ||
       epoch !== this.epoch ||
@@ -141,6 +145,7 @@ export class LocalMovement {
       const acknowledged = this.pending.find((p) => {
         return p.seq === authoritative.inputSeq;
       });
+
       if (acknowledged) {
         this.acknowledgedDelay = Math.max(0, now - acknowledged.sentAt);
       }
@@ -156,6 +161,7 @@ export class LocalMovement {
       const error = this.difference(before, after);
       this.offset.x += error.x;
       this.offset.y += error.y;
+
       if (Math.hypot(this.offset.x, this.offset.y) > SNAP_DISTANCE) {
         this.offset = { x: 0, y: 0 };
       }
@@ -165,6 +171,7 @@ export class LocalMovement {
     const dt = Math.min(100, Math.max(0, now - this.drawnAt));
     this.drawnAt = now;
     const distance = Math.hypot(this.offset.x, this.offset.y);
+
     // Leave tiny errors visually alone; larger accumulated error converges smoothly.
     if (distance > TOLERANCE) {
       const decay = Math.exp(-dt / 120);
@@ -185,6 +192,7 @@ export class LocalMovement {
     };
     this.offset = this.difference(displayed, predicted);
     const probe = { ...predicted };
+
     if (now - this.sourceAt <= PREDICTION_LIMIT_MS) {
       movePlayer(probe, this.x, this.y, 1 / 60);
     }

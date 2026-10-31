@@ -22,6 +22,7 @@ export function drawLootHints(
       return sum + row.frame.height;
     }, 0) /
       2;
+
   for (const { hint, frame } of visible) {
     ctx.save();
     ctx.translate(player.x + 35, y + frame.offset);
@@ -38,6 +39,7 @@ export function drawLootHints(
     const plant = PLANT_KINDS.findIndex((kind) => {
       return kind === hint.itemId;
     });
+
     if (art) {
       drawArt(ctx, loadArt(art), 0, 0, 12, 0, 18, 18);
     } else if (plant >= 0) {
@@ -48,6 +50,7 @@ export function drawLootHints(
     const name = itemDefinition(hint.itemId).name;
     ctx.strokeText(name, 36, 9);
     ctx.fillText(name, 36, 9);
+
     if (hint.quantity >= 2) {
       ctx.font = 'bold 10px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'right';

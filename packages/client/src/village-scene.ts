@@ -90,6 +90,7 @@ export class VillageScene {
     const { preferences, cycle, highlightInteractions } = options;
     const playerId = this.playerId;
     ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
+
     if (background) {
       drawVillageBackground(ctx, background, cameraX, cameraY, viewWidth, viewHeight);
     } else {
@@ -109,6 +110,7 @@ export class VillageScene {
         }
       : undefined;
     const serverTime = view.serverNow ?? now;
+
     if (training) {
       drawClassProjectiles(
         ctx,
@@ -132,6 +134,7 @@ export class VillageScene {
           bear: p.bear ? { ...p.bear, ...project(p.bear.x, p.bear.y) } : undefined,
         };
       });
+
     for (const player of players) {
       drawPlayerAttack(
         ctx,
@@ -162,8 +165,10 @@ export class VillageScene {
     }
 
     const dynamic = this.players.prepare(ctx, players, playerId, now, serverTime);
+
     for (const critter of critters) {
       const caster = critterCaster(critter);
+
       if (caster) {
         dynamic.push(caster);
       }
@@ -204,8 +209,10 @@ export class VillageScene {
       wardrobeOpen: options.wardrobeOpen,
       wardrobeOpenedAt: options.wardrobeOpenedAt,
     };
+
     for (const layer of layers) {
       ctx.occlusion = !!local && layer.y > local.y + 15;
+
       if (!layer.player) {
         drawVillageLayer(ctx, layer, layerFrame);
         continue;
@@ -215,6 +222,7 @@ export class VillageScene {
     }
 
     ctx.occlusion = false;
+
     if (training) {
       if (preferences.damageNumbers) {
         drawDamageNumbers(

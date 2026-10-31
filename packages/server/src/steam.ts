@@ -28,6 +28,7 @@ export class SteamProvider {
 
   async verify(query: URLSearchParams, returnTo: string) {
     const now = Date.now();
+
     for (const [nonce, expires] of this.nonces) {
       if (expires <= now) {
         this.nonces.delete(nonce);
@@ -43,6 +44,7 @@ export class SteamProvider {
     const match = /^https?:\/\/steamcommunity\.com\/openid\/id\/(\d{17})$/.exec(identity);
     const nonce = get('response_nonce');
     const issued = Date.parse(nonce.slice(0, 20));
+
     if (
       [...query.keys()].some((key) => {
         return query.getAll(key).length !== 1;
@@ -91,6 +93,7 @@ export class SteamProvider {
       redirect: 'error',
       signal: AbortSignal.timeout(8000),
     });
+
     if (!response.ok || !(await response.text()).split(/\r?\n/).includes('is_valid:true')) {
       throw new Error('Steam login could not be verified. Please try again.');
     }
@@ -106,6 +109,7 @@ export class SteamProvider {
       redirect: 'error',
       signal: AbortSignal.timeout(8000),
     });
+
     if (!response.ok) {
       throw new Error('Steam profile unavailable');
     }
@@ -114,6 +118,7 @@ export class SteamProvider {
     const player = body?.response?.players?.find((value: { steamid?: string }) => {
       return value.steamid === steamId;
     });
+
     if (typeof player?.personaname !== 'string') {
       throw new Error('Steam profile unavailable');
     }

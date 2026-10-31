@@ -30,6 +30,7 @@ export function useGameHotkeys({
       const typing =
         event.target instanceof Element &&
         !!event.target.closest('input, textarea, select, [contenteditable=true]');
+
       if (
         event.code === 'KeyT' &&
         world &&
@@ -110,6 +111,7 @@ export function useGameHotkeys({
       ) {
         const option =
           event.code === 'KeyF' ? 'autoAttack' : event.code === 'KeyG' ? 'autoTarget' : null;
+
         if (option) {
           event.preventDefault();
           setPreferences((p) => {

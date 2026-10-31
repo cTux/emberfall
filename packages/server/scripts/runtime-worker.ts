@@ -92,10 +92,12 @@ process.once('disconnect', () => {
 
 async function command(type: unknown) {
   let reply: WorkerReply;
+
   switch (type) {
     case 'arrange': {
       assert(!workload);
       workload = arrangeWorkload(app.runtime.worlds, app.runtime.parties, count);
+
       for (const world of app.runtime.worlds.values()) {
         for (const player of world.players.values()) {
           (world.chat ??= []).push({
@@ -161,6 +163,7 @@ async function command(type: unknown) {
   }
 
   process.send!(reply);
+
   if (type === 'stop') {
     process.disconnect!();
   }

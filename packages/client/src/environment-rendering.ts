@@ -11,6 +11,7 @@ export function drawEnvironment(
   daylight: number,
 ) {
   const { x, y, width, height } = viewport;
+
   if (quality.particles) {
     drawParticles(ctx, x, y, width, height, now);
   }
@@ -20,6 +21,7 @@ export function drawEnvironment(
   }
 
   drawAtmosphere(ctx, x, y, width, height, now, quality, daylight);
+
   if (quality.vignette) {
     drawVignette(ctx, x, y, width, height);
   }

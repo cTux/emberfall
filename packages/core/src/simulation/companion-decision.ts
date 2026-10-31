@@ -27,6 +27,7 @@ export function decideCompanion(
   const tactics = player.tactics ?? DEFAULT_TACTICS;
   const forest = player.scene === 'forest';
   let decision = companionDecisions.get(bear);
+
   if (
     !decision ||
     now - decision.at >= BEAR_DEFINITION.decisionMs ||
@@ -64,6 +65,7 @@ export function decideCompanion(
       wrappedDelta(destination.x, bear.x, FOREST.width),
     );
     bear.attackAngle = heading;
+
     if (target) {
       // Keep claws in range while staying outside ordinary melee reach.
       const spacing = BEAR_DEFINITION.spacing;
@@ -85,6 +87,7 @@ export function decideCompanion(
             );
           })?.attack
         : undefined;
+
     if (danger) {
       const away =
         forestDistance(bear, danger) < 1
@@ -105,6 +108,7 @@ export function decideCompanion(
         const dx = wrappedDelta(bear.x, s.x, FOREST.width),
           dy = wrappedDelta(bear.y, s.y, FOREST.height);
         const speedSquared = s.vx * s.vx + s.vy * s.vy;
+
         if (s.expiresAt <= now || speedSquared === 0) {
           return false;
         }
@@ -117,6 +121,7 @@ export function decideCompanion(
           Math.hypot(dx - s.vx * time, dy - s.vy * time) < 30
         );
       });
+
       if (shot) {
         const speed = Math.hypot(shot.vx, shot.vy);
         const side =

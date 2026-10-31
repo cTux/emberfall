@@ -25,6 +25,7 @@ class PlayerIndex extends Map<string, Player> {
 
   override delete(id: string) {
     const entity = this.index.get(id);
+
     if (entity) {
       this.ecs.remove(entity);
     }
@@ -83,6 +84,7 @@ export class SimulationWorld {
 
     const cleanup: (() => void)[] = [];
     this.scenes.set(scene, cleanup);
+
     for (const key of SCENE_COLLECTIONS) {
       const query = this.ecs.with(key).where((entity) => {
         return entity.scene === scene;
@@ -106,6 +108,7 @@ export class SimulationWorld {
         }
 
         const next = new Set(values ?? []);
+
         for (const [value, entity] of index) {
           if (!next.has(value)) {
             this.ecs.remove(entity);
@@ -115,6 +118,7 @@ export class SimulationWorld {
 
         (values ?? []).forEach((value, order) => {
           let entity = index.get(value);
+
           if (!entity) {
             entity = this.ecs.add({ scene, order, [key]: value });
             index.set(value, entity);
@@ -152,6 +156,7 @@ export class SimulationWorld {
           writable: true,
           value: view ? [...view] : undefined,
         });
+
         for (const entity of index.values()) {
           this.ecs.remove(entity);
         }

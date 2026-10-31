@@ -120,6 +120,7 @@ export function Storehouse({
           spacing={1}
           onSubmit={(event) => {
             event.preventDefault();
+
             if (renaming === null || !validName.success) {
               return;
             }

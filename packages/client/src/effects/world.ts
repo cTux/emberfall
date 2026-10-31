@@ -49,6 +49,7 @@ export function drawParticles(
 ) {
   ctx.save();
   ctx.fillStyle = '#eed389';
+
   for (let row = Math.floor((y - 40) / 160); row <= Math.ceil((y + height + 40) / 160); row++) {
     for (let col = Math.floor((x - 40) / 160); col <= Math.ceil((x + width + 40) / 160); col++) {
       const seed = (((col % 30) + 30) % 30) * 179 + (((row % 16) + 16) % 16) * 83;
@@ -98,6 +99,7 @@ export function drawAtmosphere(
   daylight = 1,
 ) {
   ctx.save();
+
   if (settings.colorGrading) {
     ctx.globalCompositeOperation = 'soft-light';
     ctx.fillStyle = '#bea26f25';
@@ -112,6 +114,7 @@ export function drawAtmosphere(
     // Anchor parallel beams to the world, rather than restarting at the viewport top.
     const first = Math.floor((x - slope * (y + height) - beamWidth - 12) / 420);
     const last = Math.ceil((x + width - slope * y + 12) / 420);
+
     for (let col = first; col <= last; col++) {
       const base = col * 420 + Math.sin(now / 12000 + col) * 12 + slope * y;
       // Fade across the beam's perpendicular axis so both long edges are transparent.

@@ -126,6 +126,7 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
   );
   const output = lines.join('\n');
   assert(!output.includes('Private'));
+
   for (const message of messages) {
     if (message.type === 'joined' && message.characterToken) {
       assert(!output.includes(message.characterToken));

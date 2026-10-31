@@ -36,6 +36,7 @@ test('all twelve talent cast themes paint generated sprite pixels through Pixi',
     ).TalentRendererFixture.render();
   });
   expect(counts).toHaveLength(12);
+
   for (const count of counts) {
     expect(count).toBeGreaterThan(200);
   }

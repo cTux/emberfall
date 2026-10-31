@@ -146,6 +146,7 @@ test('invalid response diagnostics identify validation failures without exposing
       'control_characters',
     ],
   ];
+
   for (const [response, failure] of cases) {
     const pool = new OllamaNpcDialogue(
       async () => {
@@ -170,6 +171,7 @@ test('network diagnostics exclude arbitrary exception messages and codes', async
   t.mock.method(console, 'info', (line: string) => {
     return lines.push(line);
   });
+
   for (const code of ['ECONNREFUSED', 'private-key']) {
     const request: typeof fetch = async () => {
       throw new TypeError('private exception', { cause: { code } });

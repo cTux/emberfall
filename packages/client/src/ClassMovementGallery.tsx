@@ -41,6 +41,7 @@ export function ClassMovementGallery() {
         ctx.textAlign = 'left';
         ctx.fillStyle = '#eddfc1';
         ctx.fillText(classes[index], 12, 80 + index * 215);
+
         for (let col = 0; col < 4; col++) {
           const x = 65 + col * 260;
           const y = 45 + index * 215;

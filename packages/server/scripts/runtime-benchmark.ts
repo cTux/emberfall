@@ -109,6 +109,7 @@ async function measure(worlds: number) {
 const sourceRevision = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const sourceDirty = !!execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim();
 const workloads = [];
+
 for (const worlds of BENCHMARK.worlds) {
   console.error(
     `Measuring ${worlds} occupied worlds (${worlds * BENCHMARK.playersPerWorld} SDK clients)`,

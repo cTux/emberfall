@@ -63,6 +63,7 @@ export function weaponBadges(
       explanation: `Critical hits deal ${percent(stats.criticalMultiplier)} of normal damage.`,
     },
   ];
+
   if (attack === 'slash') {
     badges.push({
       label: 'Active swing',
@@ -84,6 +85,7 @@ export function weaponBadges(
       value: `${number(definition.speed)} units/sec`,
       explanation: `Projectiles travel at ${definition.speed} units per second.`,
     });
+
     if (attack === 'fireball') {
       const { splashRadius, splashDamage } = ATTACK_DEFINITIONS.fireball;
       badges.push({

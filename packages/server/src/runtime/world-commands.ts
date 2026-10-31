@@ -38,6 +38,7 @@ export function createWorldCommands({
 }) {
   const scene = (message: SceneMessage, { session, world, now, error }: CommandContext) => {
     const player = world?.players.get(session.id);
+
     if (!world || !player) {
       error('Join a world first.');
 
@@ -46,6 +47,7 @@ export function createWorldCommands({
 
     try {
       const previousArea = player.scene;
+
       if (message.type === 'createScene' && player.partyId && player.partyLeaderId !== player.id) {
         throw new Error('Only the party leader can create a dimension.');
       }
@@ -54,11 +56,13 @@ export function createWorldCommands({
       const key = parties(world).key(player);
       run.chat = world.chat;
       sceneAction(run, player, message, now);
+
       if (message.type === 'createScene') {
         run.resources = {};
       }
 
       world.chat = run.chat;
+
       if (player.scene) {
         player.runId = key;
       } else {
@@ -79,6 +83,7 @@ export function createWorldCommands({
   const handlers: Handlers = {
     chat: (message, { session, world, now, error }) => {
       const player = world?.players.get(session.id);
+
       if (!world || !player) {
         error('Join a world first.');
 
@@ -92,6 +97,7 @@ export function createWorldCommands({
       }
 
       session.chatAt = now;
+
       if (message.text.startsWith('/')) {
         try {
           parties(world).command(player, message.text, now);
@@ -111,6 +117,7 @@ export function createWorldCommands({
     },
     partyInteract: (message, { session, world, now, error }) => {
       const player = world?.players.get(session.id);
+
       if (!world || !player) {
         error('Join a world first.');
 
@@ -135,6 +142,7 @@ export function createWorldCommands({
     leave: (_message, { session, reply, error }) => {
       try {
         leave(session);
+
         if (session.characterId) {
           characters.forgetWorld(session.characterId);
         }
@@ -150,6 +158,7 @@ export function createWorldCommands({
     },
     selectClass: (message, { session, world, now, reply, error }) => {
       const player = world?.players.get(session.id);
+
       if (
         !player ||
         !session.characterId ||

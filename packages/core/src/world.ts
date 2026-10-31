@@ -45,6 +45,7 @@ export function onPath(x: number, y: number, margin = 28) {
   return PATHS.some((path) => {
     return path.some((point, index) => {
       const next = path[index + 1];
+
       if (!next) {
         return false;
       }
@@ -94,6 +95,7 @@ function sceneryClearing(x: number, y: number) {
 for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
   const x = 35 + random() * (ARENA.width - 70);
   const y = 55 + random() * (ARENA.height - 85);
+
   if (sceneryClearing(x, y)) {
     continue;
   }
@@ -139,9 +141,11 @@ function scatterScenery(
   };
 
   const decorations: VillageDecoration[] = [];
+
   for (let i = 0; i < attempts; i++) {
     const x = 35 + roll() * (ARENA.width - 70);
     const y = 55 + roll() * (ARENA.height - 85);
+
     if (sceneryClearing(x, y)) {
       continue;
     }
@@ -244,11 +248,13 @@ export function moveActor(
 
   for (let i = 0; i < steps; i++) {
     const nextX = wrap(x + dx / steps, ARENA.width);
+
     if (clear(nextX, y)) {
       x = nextX;
     }
 
     const nextY = wrap(y + dy / steps, ARENA.height);
+
     if (clear(x, nextY)) {
       y = nextY;
     }

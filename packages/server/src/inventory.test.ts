@@ -132,6 +132,7 @@ test('consumables stack, heal one at a time and remain unused at full health', (
   }, /healing/);
   assert.equal(player.backpack[0].quantity, 4);
   player.hitpoints = 1;
+
   for (let i = 0; i < 4; i++) {
     useBackpackItem(player, id);
   }

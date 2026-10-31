@@ -34,6 +34,7 @@ test('Mending Seed heals a party teammate through the server and shows its targe
     const patient = [...world.players.values()].find((player) => {
       return player.name === 'Patient';
     })!;
+
     for (const player of [healer, patient]) {
       Object.assign(player, {
         x: TRAINING_ZONES[0].x,

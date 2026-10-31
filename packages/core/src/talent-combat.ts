@@ -51,6 +51,7 @@ export function castTalentAbility(
   const baseAbility =
     node?.slot === undefined ? undefined : talentAbility(player, node.slot, context);
   const ability = baseAbility && effectiveAbility(player, baseAbility, context);
+
   if (
     !scene ||
     !node ||
@@ -96,6 +97,7 @@ export function castTalentAbility(
       node.slot === 9
         ? 200 * (1 + context.rules.characterStats(player).bonuses.areaOfEffect / 100)
         : ability.range;
+
     if (
       !healingTarget(players, player, player, radius, (player.tactics ?? DEFAULT_TACTICS).healBelow)
     ) {

@@ -22,6 +22,7 @@ function workingVillage(
   const life = new VillageLife(world, dialogue, 0, () => {
     return 0;
   });
+
   for (const npc of world.npcs!) {
     const station = VILLAGE_DEFINITION.workstations.find((s) => {
       return s.npcId === npc.id;
@@ -47,6 +48,7 @@ test('every resident works at two home stations, stays a full minute and alterna
     ).size,
     8,
   );
+
   for (const npc of world.npcs!) {
     const own = stations.filter((s) => {
       return s.npcId === npc.id;
@@ -83,6 +85,7 @@ test('every resident works at two home stations, stays a full minute and alterna
       return !n.workstationId;
     }),
   );
+
   for (const npc of world.npcs!) {
     const second = stations.filter((s) => {
       return s.npcId === npc.id;
@@ -92,6 +95,7 @@ test('every resident works at two home stations, stays a full minute and alterna
 
   life.tick(150_000, 0);
   life.tick(150_001, 0);
+
   for (const npc of world.npcs!) {
     assert.equal(
       npc.workstationId,

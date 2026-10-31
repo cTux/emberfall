@@ -29,6 +29,7 @@ test('backpack item tooltips share weapon details and compact resource cards', a
   await expect(comparison).toContainText('Exp increase+20%');
   await expect(comparison).toContainText('Gold increase-10%');
   await expect(comparison).not.toContainText('Bonus');
+
   for (const [name, quantity] of [
     ['Log', 12],
     ['Flowering herb', 8],

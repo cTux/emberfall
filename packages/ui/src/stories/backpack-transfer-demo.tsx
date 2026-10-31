@@ -7,6 +7,7 @@ export function BackpackTransferDemo(args: ComponentProps<typeof Backpack>) {
     const item = inventories[source].find((entry) => {
       return entry.id === id;
     });
+
     if (!item) {
       return;
     }

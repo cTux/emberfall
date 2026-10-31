@@ -43,6 +43,7 @@ export function createWorldMembership(
   const villageLives = new Map<World, VillageLife>();
   const villageLife = (world: World, now: number) => {
     let life = villageLives.get(world);
+
     if (!life) {
       life = new VillageLife(world, dialogue, now);
       villageLives.set(world, life);
@@ -54,6 +55,7 @@ export function createWorldMembership(
   const partyWorlds = new WeakMap<World, Parties>();
   const parties = (world: World) => {
     let value = partyWorlds.get(world);
+
     if (!value) {
       value = new Parties(world);
       partyWorlds.set(world, value);
@@ -68,14 +70,17 @@ export function createWorldMembership(
 
   function leave(session: Session, shuttingDown = false) {
     const world = worlds.get(session.worldId ?? '');
+
     if (world) {
       const player = world.players.get(session.id);
+
       if (player && session.characterId) {
         characters.save(session.characterId, player.name, player);
       }
 
       if (player) {
         addChat(world, `${player.name} disconnected.`, undefined, player.id);
+
         if (player.scene) {
           addChat(
             world,
@@ -91,6 +96,7 @@ export function createWorldMembership(
       }
 
       world.players.delete(session.id);
+
       if (player) {
         serverLog.info('Player left world', { sessionId: session.id, worldId: world.id });
       }

@@ -115,6 +115,7 @@ test('duplicates, bad references, values and unsupported mechanics fail with mod
 
 test('talent ability metadata rejects unknown classes, partial slots and duplicate slots', () => {
   const ability = game.registries.abilities.require('talent:mage:0');
+
   for (const [change, message] of [
     [{ classId: 'missing' }, /unknown classes reference/],
     [{ classId: undefined }, /class and slot must be specified together/],
@@ -125,6 +126,7 @@ test('talent ability metadata rejects unknown classes, partial slots and duplica
         id: 'bad-talent',
         register(r) {
           const invalid = { ...ability, ...change, id: 'bad-talent:ability' };
+
           if (invalid.classId === undefined) {
             delete invalid.classId;
           }
@@ -139,6 +141,7 @@ test('talent ability metadata rejects unknown classes, partial slots and duplica
 test('workstation content rejects unknown owners, wrong homes, duplicate IDs and unsupported art', () => {
   const valid = structuredClone(VILLAGE_DEFINITION);
   assert(worldShapes.village.safeParse(valid).success);
+
   for (const patch of [
     { npcId: 'missing' },
     { buildingId: 'hall' },

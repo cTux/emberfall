@@ -42,6 +42,7 @@ export function tickEnemyCombat(
         : target;
     const reduction = owner ? context.rules.characterStats(owner).damageReduction : 0;
     damage *= 1 - reduction;
+
     if (!('returning' in target)) {
       damage = talentIncomingDamage(scene, target, damage, now, context);
     } else if (damage > 0) {
@@ -51,6 +52,7 @@ export function tickEnemyCombat(
     damage = Math.min(target.hitpoints, damage);
     target.hitpoints = Math.max(0, target.hitpoints - damage);
     target.hurtAt = now;
+
     if ('returning' in target && target.hitpoints === 0) {
       target.resurrectAt = now + BEAR_DEFINITION.resurrectionMs;
     }
@@ -98,8 +100,10 @@ export function tickEnemyCombat(
         .reduce<Player | Bear | undefined>((best, p) => {
           return !best || forestDistance(p, enemy) < forestDistance(best, enemy) ? p : best;
         }, undefined);
+
     if (enemy.attack) {
       const attack = enemy.attack;
+
       if (now < attack.endsAt) {
         continue;
       }
@@ -107,6 +111,7 @@ export function tickEnemyCombat(
       enemy.attack = undefined;
       const inRange = target && forestDistance(enemy, target) <= stats.reach;
       enemy.cooldownUntil = now + (inRange ? stats.cooldown : 150);
+
       if (!inRange) {
         continue;
       }
@@ -116,6 +121,7 @@ export function tickEnemyCombat(
           wrappedDelta(attack.y, enemy.y, FOREST.height),
           wrappedDelta(attack.x, enemy.x, FOREST.width),
         );
+
         if (scene.projectiles.length < ENEMY_RULES.maxAlive) {
           appendSceneEntities(scene, 'projectiles', {
             id: ++scene.sequence,
@@ -157,9 +163,11 @@ export function tickEnemyCombat(
     }
 
     const steps = Math.max(1, Math.ceil((Math.hypot(shot.vx, shot.vy) * dt) / 6));
+
     for (let i = 0; i < steps; i++) {
       shot.x = wrap(shot.x + (shot.vx * dt) / steps, FOREST.width);
       shot.y = wrap(shot.y + (shot.vy * dt) / steps, FOREST.height);
+
       if (
         forestTrees(shot.x, shot.y + 15, 24).some((t) => {
           return Math.hypot(shot.x - t.x, shot.y + 15 - t.y) < 20;
@@ -173,6 +181,7 @@ export function tickEnemyCombat(
           p.hitpoints > 0 && overlapsBody(shot, COLLISION.enemyProjectileRadius, modelHitbox(p))
         );
       });
+
       if (hit) {
         hurt(
           hit,

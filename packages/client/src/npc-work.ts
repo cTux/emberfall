@@ -18,6 +18,7 @@ export function drawNpcWork(
   const station = VILLAGE_DEFINITION.workstations.find((s) => {
     return s.id === npc.workstationId;
   });
+
   if (!station) {
     return;
   }
@@ -28,6 +29,7 @@ export function drawNpcWork(
   const opacity = ctx.globalAlpha;
   ctx.save();
   ctx.translate(x + dx, y + dy);
+
   for (let i = 0; i < 8; i++) {
     const seed = Math.sin(i * 127.1 + station.art * 311.7) * 43758.5453;
     const spread = (seed - Math.floor(seed)) * 2 - 1;
@@ -36,6 +38,7 @@ export function drawNpcWork(
     let py = -24 - age * 20;
     let radius = 1;
     ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.8;
+
     switch (station.activity) {
       case 'cooking': {
         // Soft steam puffs widen as they rise from the pot.
@@ -79,6 +82,7 @@ export function drawNpcWork(
       case 'forging': {
         // A short fan of hot sparks follows each hammer strike.
         const strike = (phase % 1600) / 1600;
+
         if (strike < 0.45 || strike > 0.8) {
           continue;
         }
@@ -104,6 +108,7 @@ export function drawNpcWork(
       case 'archery': {
         // Pale motes trace the shot; straw dust scatters at the target.
         const shot = (phase % 1600) / 1600;
+
         if (shot < 0.4 || shot > 0.95) {
           continue;
         }
@@ -113,6 +118,7 @@ export function drawNpcWork(
         px = i < 4 ? -dx * (1 - flight) + i * 1.2 : spread * age * 10;
         py = i < 4 ? -26 - dy + (dy + 8) * flight : -18 + age * 8;
         radius = 0.8;
+
         if (i >= 4 && flight < 1) {
           continue;
         }

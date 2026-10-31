@@ -57,6 +57,7 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
     await expect(friend.getByRole('button', { name: 'Leave world' })).toBeVisible();
     const log = page.getByRole('log');
     await expect(page.locator('.party')).toHaveAttribute('aria-label', /2\/32 adventurers/);
+
     for (let count = 1; count <= 12; count++) {
       await expect(page.locator('canvas')).toHaveAttribute('data-gathering', '');
       await page.keyboard.press('e');

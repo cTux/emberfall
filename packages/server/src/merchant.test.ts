@@ -58,6 +58,7 @@ test('empty bottles cost one gold, exhaust shared stock, and stack to 200', () =
   })!;
   assert.equal(bottle.quantity, 200);
   assert.equal(itemDefinition(bottle.itemId).kind, 'resource');
+
   for (let i = 0; i < 200; i++) {
     tradeItem(player, merchant, bottle.id, true);
   }

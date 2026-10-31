@@ -15,6 +15,7 @@ test('latest input is coalesced, held between packets, timed out and rejected ac
   const samples: Player[] = [];
   ws.on('message', (raw) => {
     const m = JSON.parse(raw.toString()) as ServerMessage;
+
     if (m.type === 'state' || m.type === 'joined') {
       samples.push(m.world.players[0]);
     }
@@ -37,6 +38,7 @@ test('latest input is coalesced, held between packets, timed out and rejected ac
     await wait(() => {
       return samples.length > 0;
     });
+
     for (let seq = 1; seq <= 4; seq++) {
       ws.send(JSON.stringify({ type: 'move', seq, epoch: 'lobby', x: 1, y: 0 }));
     }
@@ -92,6 +94,7 @@ test('timed inputs acknowledge partial steps, reject stale areas and cannot acce
   const samples: (Player & { observedAt: number; isPatch: boolean })[] = [];
   ws.on('message', (raw) => {
     const m = JSON.parse(raw.toString()) as ServerMessage;
+
     if (m.type === 'state' || m.type === 'joined') {
       samples.push({
         ...m.world.players[0],
@@ -140,6 +143,7 @@ test('timed inputs acknowledge partial steps, reject stale areas and cannot acce
       });
     });
     assert.equal(samples.at(-1)!.x, stopped);
+
     for (let seq = 4; seq <= 13; seq++) {
       ws.send(JSON.stringify({ type: 'move', seq, epoch: 'lobby', x: 1, y: 0, durationMs: 50 }));
     }
@@ -149,6 +153,7 @@ test('timed inputs acknowledge partial steps, reject stale areas and cannot acce
         return p.inputSeq === 13;
       });
     });
+
     for (let i = 1; i < samples.length; i++) {
       if (samples[i].isPatch && samples[i - 1].isPatch) {
         assert(

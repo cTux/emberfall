@@ -52,6 +52,7 @@ export function villageSprites(
     frameCount = 1,
   ) {
     let frames = sprites.get(source);
+
     if (!frames) {
       sprites.set(source, (frames = new Map()));
     }
@@ -59,6 +60,7 @@ export function villageSprites(
     const animation = Array.from({ length: frameCount }, (_, i) => {
       const key = `${sx + i * sw}:${sy}:${sw}:${sh}`;
       let frame = frames.get(key);
+
       if (!frame) {
         const sprite = document.createElement('canvas');
         const resolution =
@@ -138,6 +140,7 @@ export function villageSprites(
     BUILDINGS.forEach((b, i) => {
       const additional = additionalBuildingArt[b.id];
       const image = additional ?? buildingArt;
+
       if (!image.complete || !image.naturalWidth) {
         return;
       }
@@ -160,6 +163,7 @@ export function villageSprites(
         frame.width,
         frame.height,
       );
+
       if (!additional) {
         const chimney = buildingFrames[i];
         objects.at(-1)!.chimney = {

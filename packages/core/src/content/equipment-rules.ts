@@ -87,6 +87,7 @@ export function createEquipmentRules(content: Registries) {
 
   function validateClassEquipment(equipment: Equipment, classId: ClassId) {
     const parsed = equipmentSchema.parse(equipment);
+
     if (
       !Object.entries(parsed).every(([slot, id]) => {
         return id === null || canEquip(slot, GEAR_DEFINITIONS[id], classId);
@@ -113,9 +114,11 @@ export function createEquipmentRules(content: Registries) {
     const equipment = equippedItems(player);
     const classId = player.classId ?? 'warrior';
     let weapon: GearDefinition | undefined;
+
     for (const slot of EQUIPMENT_SLOTS) {
       const id = equipment[slot];
       const gear = id ? GEAR_DEFINITIONS[id] : undefined;
+
       if (!gear || !canEquip(slot, gear, classId)) {
         continue;
       }
@@ -129,6 +132,7 @@ export function createEquipmentRules(content: Registries) {
       }
 
       const instance = player.equipmentItems?.[slot];
+
       if (instance?.itemId === id) {
         for (const [stat, value] of Object.entries(instance.stats ?? {})) {
           bonuses[stat as ItemStat] += value;

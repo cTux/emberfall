@@ -71,6 +71,7 @@ test('talent abilities share the base radial cooldown and countdown at every vie
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
+
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 700 });
     await page.goto(story('components-actionbar--talent-cooldowns'));

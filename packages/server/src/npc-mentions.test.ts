@@ -9,6 +9,7 @@ import { flush, player, setup } from './npcs.fixture.ts';
 test('players can mention any nearby resident anywhere in speech with or without @', async () => {
   for (const definition of VILLAGE_DEFINITION.villagers) {
     const name = definition.name.split(' ')[0];
+
     for (const text of [
       `@${name} Hello!`,
       `Hello, @${name}!`,
@@ -69,6 +70,7 @@ test('player mentions require a whole name, a live village player and wrapped ra
       const marta = world.npcs![0];
       Object.assign(listener, { x: marta.x, y: marta.y });
       let text = 'Hello, @Marta!';
+
       if (scenario === 'partial') {
         text = 'Hello, @Martabelle!';
       }

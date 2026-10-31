@@ -32,8 +32,10 @@ export class PlayerOcclusion {
     matrix: Matrix,
   ) {
     const runs = playerCutoutRuns(mask, width, height);
+
     if (runs !== this.runs) {
       this.cutout.clear();
+
       for (const [x, y, width] of runs) {
         this.cutout.rect(x, y, width, 1);
       }

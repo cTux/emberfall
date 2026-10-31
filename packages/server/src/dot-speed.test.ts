@@ -80,6 +80,7 @@ test('player, companion and talent DOTs use owner speed, keep cadence on refresh
   t.mock.method(Math, 'random', () => {
     return 0;
   });
+
   for (const training of [true, false]) {
     for (const kind of ['bleed', 'poison', 'burn'] as const) {
       for (const source of ['weapon', 'companion', 'talent'] as const) {
@@ -87,6 +88,7 @@ test('player, companion and talent DOTs use owner speed, keep cadence on refresh
         const scene = { ...createTrainingScene(0), training, enemies: [] as Enemy[] };
         const enemy: Enemy = { id: 1, x: 1000, y: 1000, hitpoints: 10000, angle: 0 };
         scene.enemies.push(enemy);
+
         if (source === 'talent') {
           applyTalentAilment(enemy, player, kind, 1, 0);
         } else {

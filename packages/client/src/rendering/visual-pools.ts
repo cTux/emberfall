@@ -43,6 +43,7 @@ export class VisualPools {
   begin() {
     this.childCursors.clear();
     this.childCursors.set(this.stage, 0);
+
     // Release previous clip ownership before pooled graphics take new roles.
     for (const group of this.maskGroups) {
       group.mask = null;
@@ -103,6 +104,7 @@ export class VisualPools {
   ): Visual {
     const index = this.cursors[kind]++;
     let entity = this.pools[kind][index];
+
     if (!entity) {
       const object =
         kind === 'sprite'
@@ -119,6 +121,7 @@ export class VisualPools {
     entity.active = true;
     object.visible = true;
     object.alpha = state.globalAlpha;
+
     // Sprites and text receive their final transform at the draw call below.
     if (kind === 'graphics') {
       object.setFromMatrix(state.matrix);
@@ -126,9 +129,11 @@ export class VisualPools {
 
     object.blendMode = blendModes[state.globalCompositeOperation] ?? 'normal';
     object.mask = null;
+
     if (shadowPass && shadowStrength > 0) {
       entity.blur ??= new BlurFilter({ quality: 2, resolution: 0.5 });
       entity.blur.strength = shadowStrength;
+
       if (object.filters?.[0] !== entity.blur) {
         object.filters = [entity.blur];
       }
@@ -161,6 +166,7 @@ export class VisualPools {
 
   place(parent: Container, object: Container) {
     const index = this.childCursors.get(parent) ?? 0;
+
     if (parent.children[index] !== object) {
       parent.addChildAt(object, index);
     }

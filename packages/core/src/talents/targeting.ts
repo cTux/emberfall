@@ -39,6 +39,7 @@ export function prepareTalentCast(
   const distance = forestDistance(player, aim);
   const maxRange =
     (talentCast.classRange[classId] ?? talentCast.range) * (1 + stats.bonuses.range / 100);
+
   if (distance > maxRange) {
     const dx = wrappedDelta(aim.x, player.x, FOREST.width),
       dy = wrappedDelta(aim.y, player.y, FOREST.height);
@@ -62,6 +63,7 @@ export function prepareTalentCast(
     wrappedDelta(aim.y, player.y, FOREST.height),
     wrappedDelta(aim.x, player.x, FOREST.width),
   );
+
   if (classId === 'warrior' && column === 0 && (tier === 0 || tier === 2)) {
     targets = scene.enemies.filter((enemy) => {
       if (enemy.hitpoints <= 0) {

@@ -56,6 +56,7 @@ test('Pages client uses credentialed accounts, client redirects and origin-bound
     const account = await call('/api/account', { headers });
     assert.equal(account.headers.get('access-control-allow-origin'), clientOrigin);
     assert.equal((await account.json()).authenticated, true);
+
     for (const untrusted of ['https://evil.example', origin]) {
       const denied = await call('/api/account', { headers: { ...headers, Origin: untrusted } });
       assert.equal(denied.status, 403);

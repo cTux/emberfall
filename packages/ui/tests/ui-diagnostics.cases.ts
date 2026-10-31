@@ -9,6 +9,7 @@ test('performance diagnostics stay compact with readable labels and all traces',
   await expect(monitor.getByLabel('Frame rate', { exact: true })).toHaveText('244 FPS');
   await expect(monitor.getByLabel('Server latency', { exact: true })).toHaveText('11 ms');
   await expect(monitor.getByLabel('Network scale')).toHaveText('0–145 ms');
+
   for (const label of ['Input ack', 'Snapshot (local)', 'Ping']) {
     await expect(monitor.getByText(label, { exact: true })).toBeVisible();
   }
@@ -37,6 +38,7 @@ test('performance diagnostics stay compact with readable labels and all traces',
 
 test('connection states use colored circles without visible text', async ({ page }) => {
   await page.goto(story('components-game-patterns--connection'));
+
   for (const [name, color] of [
     ['World server online', 'rgb(131, 203, 163)'],
     ['World server connecting', 'rgb(230, 190, 128)'],

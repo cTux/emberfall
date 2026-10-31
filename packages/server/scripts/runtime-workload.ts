@@ -28,10 +28,12 @@ export function arrangeWorkload(
   assert.equal(worlds.size, count + 1, 'Include the normal empty permanent world');
   const scenes: Record<string, string> = {};
   let healedDamage = 0;
+
   for (const world of occupied) {
     const players = [...world.players.values()];
     assert.equal(players.length, BENCHMARK.playersPerWorld);
     const group = parties(world);
+
     for (const [index, player] of players.slice(1).entries()) {
       const now = Date.now() + index * 1001;
       group.request(players[0], player, now);
@@ -39,6 +41,7 @@ export function arrangeWorkload(
     }
 
     const run = group.run(players[0]);
+
     for (const [index, player] of players.entries()) {
       const classId = (['warrior', 'ranger', 'mage', 'druid'] as const)[index];
       Object.assign(player, {

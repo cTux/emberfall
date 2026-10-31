@@ -95,6 +95,7 @@ export function PortalPanel({
             onVote={() => {
               const ready = !scene.ready.includes(playerId);
               send({ type: 'ready', ready });
+
               if (ready) {
                 onClose();
               }

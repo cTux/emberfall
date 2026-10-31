@@ -51,6 +51,7 @@ test('interactions validate live wrapped range and release invalid traders witho
     life.interact(trader, marta.id);
     life.tick(9000, 0.05);
     assert.equal(marta.moving, false, 'trading works across a wrapped seam');
+
     if (action === 'distance') {
       trader.x = 1000;
     }
@@ -123,6 +124,7 @@ test('residents choose separate destinations and leave the circuit with randomiz
     },
   );
   const npcs = world.npcs!;
+
   // Even identical random rolls give co-located residents different destinations.
   for (const npc of npcs) {
     Object.assign(npc, { x: 400, y: 400 });
@@ -148,6 +150,7 @@ test('residents choose separate destinations and leave the circuit with randomiz
     ).size,
     4,
   );
+
   // Keep conversations from interrupting the pause measurement.
   for (const [index, npc] of npcs.slice(1).entries()) {
     Object.assign(npc, { x: 1000 + index * 300, y: 1000 });

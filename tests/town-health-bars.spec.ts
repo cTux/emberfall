@@ -46,6 +46,7 @@ test('town health bars default hidden, toggle live, persist and stay visible in 
       ctx.drawImage(image, 0, 0);
       const pixels = ctx.getImageData(0, 0, capture.width, capture.height).data;
       let count = 0;
+
       for (let i = 0; i < pixels.length; i += 4) {
         if (pixels[i] === 134 && pixels[i + 1] === 217 && pixels[i + 2] === 162) {
           count++;

@@ -19,8 +19,10 @@ export class Paints {
 
   color(value: string) {
     let color = this.colors.get(value);
+
     if (!color) {
       color = new Color(value);
+
       if (this.colors.size >= 512) {
         this.colors.delete(this.colors.keys().next().value!);
       }
@@ -50,6 +52,7 @@ export class Paints {
     // Moving the camera or a light only changes its matrix, never allocates a ramp.
     let normalized: GradientOptions;
     let matrix: Matrix;
+
     if (options.type === 'radial') {
       const outer = options.outerCenter!,
         center = options.center!,
@@ -90,6 +93,7 @@ export class Paints {
 
     const key = JSON.stringify(normalized);
     let entry = this.entries.get(key);
+
     if (!entry) {
       // Bake only the reusable ramp, on a transparent surface. FillGradient's
       // radial builder pre-fills the outer stop, making transparent centers opaque.
@@ -108,6 +112,7 @@ export class Paints {
               128,
             )
           : ctx.createLinearGradient(0, 0, 256, 0);
+
       for (const stop of normalized.colorStops!) {
         ramp.addColorStop(stop.offset, new Color(stop.color).toRgbaString());
       }
@@ -136,6 +141,7 @@ export class Paints {
 
   destroy() {
     this.colors.clear();
+
     for (const entry of this.entries.values()) {
       entry.texture.destroy(true);
     }

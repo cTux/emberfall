@@ -74,6 +74,7 @@ test('a late server cast retains its in-flight position and remaining range with
   reply.serverNow = 10100;
   reply.players[0].attackAt = 10100;
   fireClassAttack(reply.scene!, reply.players[0]);
+
   for (const shot of reply.scene!.playerShots!) {
     shot.x += 80;
     shot.remaining -= 80;
@@ -90,6 +91,7 @@ test('a late server cast retains its in-flight position and remaining range with
     }),
   );
   assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 2);
+
   for (let now = 250; now <= 650; now += 50) {
     frame(movement, reply, now);
   }
@@ -106,6 +108,7 @@ test('newly confirmed moving casts attach once to the displayed pose in both are
       const movement = new LocalMovement('p', () => {});
       frame(movement, source, 0);
       movement.input(1, 0, 0);
+
       for (let t = 50; t < delay; t += 50) {
         frame(movement, source, t);
       }
@@ -119,6 +122,7 @@ test('newly confirmed moving casts attach once to the displayed pose in both are
       fireClassAttack((training ? reply.training : reply.scene)!, reply.players[0]);
       const result = frame(movement, reply, delay);
       assert.equal(result.scene.playerShots!.length, 2);
+
       for (const shot of result.scene.playerShots!) {
         assert(Math.abs(shot.x - result.player.x) < 1e-8);
         assert.equal(shot.y, result.player.y);

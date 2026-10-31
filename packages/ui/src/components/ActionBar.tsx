@@ -61,6 +61,7 @@ function AbilityCooldown({ ability }: { ability: ActionBarAbility }) {
   const y = 50 + 72 * Math.sin(angle);
   const seconds =
     remaining >= 1000 ? Math.ceil(remaining / 1000) : (Math.ceil(remaining / 100) / 10).toFixed(1);
+
   if (fraction <= 0) {
     return null;
   }
@@ -174,6 +175,7 @@ export function ActionBar({
       )}
       {[1, 2, 3, 4].map((slot) => {
         const ability = abilities[slot - 1];
+
         if (!ability) {
           return (
             <ActionSlotStyled

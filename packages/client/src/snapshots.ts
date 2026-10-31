@@ -26,6 +26,7 @@ export class SnapshotBuffer {
     });
     const epoch = `${world.id}:${me?.scene === 'forest' ? world.scene?.id : 'lobby'}`;
     const time = world.serverNow ?? 0;
+
     if (epoch !== this.epoch) {
       this.history = [];
       this.clock = time - 100;
@@ -37,12 +38,14 @@ export class SnapshotBuffer {
 
     this.latest = world;
     this.receivedAt = now;
+
     // Replace duplicate timestamps rather than creating a zero-length interpolation segment.
     if (this.history.at(-1)?.serverNow === world.serverNow) {
       this.history.pop();
     }
 
     this.history.push(world);
+
     if (this.history.length > 20) {
       this.history.shift();
     }
@@ -60,6 +63,7 @@ export class SnapshotBuffer {
     // Gently recover buffer depth instead of resetting the camera clock on each packet.
     const rate = lag > 150 ? 1.1 : lag < 50 ? 0.9 : 1;
     this.clock = Math.min(newest, this.clock + elapsed * rate);
+
     if (this.history.length === 20) {
       this.clock = Math.max(this.history[0].serverNow ?? 0, this.clock);
     }
@@ -83,6 +87,7 @@ export class SnapshotBuffer {
     ) => {
       const dx = wrappedDelta(b.x, a.x, FOREST.width);
       const dy = wrappedDelta(b.y, a.y, FOREST.height);
+
       if (Math.hypot(dx, dy) > 96) {
         return { ...b, dx: 0, dy: 0 };
       }
@@ -102,6 +107,7 @@ export class SnapshotBuffer {
       const b = newer.players.find((p) => {
         return p.id === a.id;
       });
+
       if (!b || a.scene !== b.scene) {
         return { ...a, inputX: 0, inputY: 0 };
       }
@@ -122,6 +128,7 @@ export class SnapshotBuffer {
       const a = older.npcs?.find((n) => {
         return n.id === b.id;
       });
+
       if (!a) {
         return { ...b };
       }
@@ -147,14 +154,17 @@ export class SnapshotBuffer {
           }),
         }
       : undefined;
+
     if (scene && scene.id === newer.scene?.id) {
       const enemies = new Map(
         newer.scene.enemies.map((e) => {
           return [e.id, e];
         }),
       );
+
       for (const enemy of scene.enemies) {
         const b = enemies.get(enemy.id);
+
         if (!b) {
           continue;
         }
@@ -167,6 +177,7 @@ export class SnapshotBuffer {
         );
         enemy.x = point.x;
         enemy.y = point.y;
+
         if (Math.hypot(point.dx, point.dy) > 0.001) {
           enemy.angle = Math.atan2(point.dy, point.dx);
         }
@@ -177,8 +188,10 @@ export class SnapshotBuffer {
           return [d.id, d];
         }),
       );
+
       for (const drop of scene.drops ?? []) {
         const next = drops.get(drop.id);
+
         if (!next) {
           continue;
         }
@@ -192,8 +205,10 @@ export class SnapshotBuffer {
           return [p.id, p];
         }),
       );
+
       for (const shot of scene.playerShots ?? []) {
         const next = friendlyShots.get(shot.id);
+
         if (!next) {
           continue;
         }
@@ -207,8 +222,10 @@ export class SnapshotBuffer {
           return [p.id, p];
         }),
       );
+
       for (const shot of scene.projectiles ?? []) {
         const b = shots.get(shot.id);
+
         if (!b) {
           continue;
         }
@@ -222,6 +239,7 @@ export class SnapshotBuffer {
       const next = newer.players.find((p) => {
         return p.id === player.id;
       })?.bear;
+
       if (!player.bear || !next || player.bear.hitpoints <= 0 || next.hitpoints <= 0) {
         continue;
       }

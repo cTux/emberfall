@@ -16,6 +16,7 @@ export async function sample() {
   paint.fillRect(0, 0, 32, 32);
   const ctx = renderer as unknown as CanvasRenderingContext2D;
   const results = [];
+
   for (const time of [600000, 2340000, 3000000, 4200000]) {
     renderer.begin();
     renderer.ambientTint = dayNight(time).tint;
@@ -65,6 +66,7 @@ export async function shadows() {
   const mask = makeMask(maskCanvas);
   renderer.begin();
   const frames = [];
+
   for (const [index, phase] of [0.1, 0.35, 0.6, 0.85].entries()) {
     const cycle = dayNight(phase * 3600000);
     renderer.ambientTint = cycle.tint;
@@ -86,10 +88,12 @@ export async function shadows() {
   capture.height = canvas.height;
   const pixels = capture.getContext('2d')!;
   pixels.drawImage(canvas, 0, 0);
+
   for (let i = 0; i < 4; i++) {
     const data = pixels.getImageData(i * 300, 210, 300, 100).data;
     let left = 0,
       right = 0;
+
     for (let y = 0; y < 100; y++) {
       for (let x = 0; x < 300; x++) {
         if (data[(y * 300 + x) * 4] < 95) {

@@ -7,6 +7,7 @@ test('HUD actions show hotkey badges and retain keyboard focus and disabled stat
   await page.goto(story('components-game-patterns--actions'));
   const controls = page.getByRole('navigation', { name: 'Game controls' });
   await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'F1', 'Esc']);
+
   for (const [name, key] of [
     ['Inventory', 'I'],
     ['Talents', 'N'],
@@ -26,6 +27,7 @@ test('HUD actions show hotkey badges and retain keyboard focus and disabled stat
 
 test('HUD tooltips show shortcuts while keeping accessible button names', async ({ page }) => {
   await page.goto(story('components-game-patterns--actions'));
+
   for (const [name, shortcut] of [
     ['Codex', 'F1'],
     ['Settings', 'Esc'],
@@ -51,6 +53,7 @@ test('action bar hotkeys stay in slot corners and automation respects reduced mo
     const fire = base.getByRole('img', { name: /^Left mouse button/ });
     const target = base.getByRole('img', { name: /^Auto-target/ });
     const bounds = (await base.boundingBox())!;
+
     for (const [indicator, right] of [
       [fire, true],
       [target, false],

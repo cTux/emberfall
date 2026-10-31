@@ -12,6 +12,7 @@ export const CRITICAL_TEXT_STYLE = { fill: '#ffffff', outline: '#d52b3f', width:
 /** Stateless animation survives snapshot replacement without replaying a hit. */
 export function damageTextFrame(hit: DamageEvent, now: number) {
   const age = now - hit.at;
+
   if (age < 0 || age >= 750) {
     return undefined;
   }
@@ -33,17 +34,20 @@ export function damageTextFrame(hit: DamageEvent, now: number) {
 export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[] {
   const totals: DamageEvent[] = [];
   const latest = new Map<string, DamageEvent>();
+
   for (const hit of [...hits].sort((a, b) => {
     return a.at - b.at;
   })) {
     const key = JSON.stringify([hit.ownerId, hit.target, hit.damageType ?? 'physical']);
     const previous = hit.ownerId ? latest.get(key) : undefined;
+
     if (previous && hit.at - previous.at <= 10) {
       previous.amount += hit.amount;
       previous.critical = previous.critical || hit.critical;
     } else {
       const total = { ...hit };
       totals.push(total);
+
       if (hit.ownerId) {
         latest.set(key, total);
       }
@@ -77,6 +81,7 @@ export function drawDamageNumber(
   now: number,
 ) {
   const frame = damageTextFrame(hit, now);
+
   if (!frame || hit.amount <= 0) {
     return;
   }
@@ -100,6 +105,7 @@ export function drawDamageNumber(
   ctx.lineWidth = hit.critical ? 7 : 3;
   ctx.lineJoin = 'round';
   ctx.strokeText(value, 0, 0);
+
   if (hit.critical) {
     ctx.strokeStyle = CRITICAL_TEXT_STYLE.outline;
     ctx.lineWidth = CRITICAL_TEXT_STYLE.width;

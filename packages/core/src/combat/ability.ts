@@ -29,6 +29,7 @@ export function defaultSpellRange(
   context: Game = game,
 ) {
   const stats = context.rules.characterStats(player);
+
   if (!stats.hasWeapon) {
     return 0;
   }

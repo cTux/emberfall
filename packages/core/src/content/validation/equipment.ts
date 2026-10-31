@@ -2,6 +2,7 @@ import type { ValidationContext } from './context.ts';
 
 export function validateEquipment(context: ValidationContext) {
   const { r, check, positive, nonnegative, reference } = context;
+
   for (const stat of r.stats.values()) {
     check(
       typeof stat.label === 'string' &&
@@ -26,6 +27,7 @@ export function validateEquipment(context: ValidationContext) {
       slot.id,
       'invalid label, layout or gearTypes',
     );
+
     for (const type of slot.gearTypes) {
       reference('slots', slot.id, 'gearTypes', type);
     }
@@ -44,6 +46,7 @@ export function validateEquipment(context: ValidationContext) {
       item.id,
       'unsupported kind',
     );
+
     if (item.kind === 'gear') {
       reference('items', item.id, 'gearTypes', item.gearType);
     } else if (item.kind === 'consumable') {

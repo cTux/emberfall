@@ -10,6 +10,7 @@ export function connectionLatency(ws: GameConnection, setLatency: (value: number
     }
 
     const now = performance.now();
+
     if (pendingProbe && now - pendingProbe.at < 5000) {
       return;
     }

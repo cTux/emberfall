@@ -31,6 +31,7 @@ export class DrawingPath {
     const dash = values.filter((n) => {
       return n > 0;
     });
+
     for (const { method, args } of this.commands) {
       if (method === 'ellipse') {
         const [x, y, rx, ry, rotation, start, end, ccw] = args;
@@ -39,12 +40,14 @@ export class DrawingPath {
           ? -((start - end + Math.PI * 2) % (Math.PI * 2) || Math.PI * 2)
           : (end - start) % (Math.PI * 2) || Math.PI * 2;
         const count = Math.max(12, Math.ceil((Math.abs(sweep) * Math.max(rx, ry)) / 4));
+
         for (let i = 0; i <= count; i++) {
           const angle = start + (sweep * i) / count;
           const px = Math.cos(angle) * rx,
             py = Math.sin(angle) * ry;
           const tx = x + px * Math.cos(rotation) - py * Math.sin(rotation),
             ty = y + px * Math.sin(rotation) + py * Math.cos(rotation);
+
           if (i === 0) {
             graphics.moveTo(tx, ty);
           } else {
@@ -66,6 +69,7 @@ export class DrawingPath {
           const cycle = dash.reduce((sum, n) => {
             return sum + n;
           }, 0);
+
           for (let at = 0; at < length;) {
             let offset = dashAt % cycle,
               index = 0;
@@ -79,6 +83,7 @@ export class DrawingPath {
             dashAt += step;
             const x = penX + (dx * at) / length,
               y = penY + (dy * at) / length;
+
             if (index % 2 === 0) {
               graphics.lineTo(x, y);
             } else {

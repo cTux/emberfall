@@ -18,6 +18,7 @@ test('automatic greetings are bounded across multiple players and explicit repli
   assert.equal(calls, 1);
   assert.equal(world.chat![0].dimension, 'village');
   assert.equal(world.chat![0].npcId, 'innkeeper');
+
   for (let time = 10_050; time < 45_000; time += 50) {
     life.tick(time, 0);
   }
@@ -96,6 +97,7 @@ test('mentions in a player greeting trigger delayed NPC replies capped at five l
   Object.assign(world.npcs![1], { x: world.npcs![0].x + 50, y: world.npcs![0].y });
   life.tick(10_000, 0);
   await flush();
+
   for (let i = 1; i < 5; i++) {
     life.tick(10_000 + i * 2000 - 1, 0);
     await flush();

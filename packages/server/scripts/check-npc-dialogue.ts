@@ -5,6 +5,7 @@ const result = await new OllamaNpcDialogue().generate(
   JSON.stringify({ character: 'Marta', task: 'Greet a traveller in one short sentence.' }),
   new AbortController().signal,
 );
+
 if (result.status === 'ok') {
   console.info('NPC dialogue check passed: received a valid spoken line.');
 } else {

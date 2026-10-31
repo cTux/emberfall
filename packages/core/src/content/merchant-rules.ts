@@ -113,6 +113,7 @@ export function createMerchantRules(
     const index = backpack.findIndex((item) => {
       return item.id === id;
     });
+
     if (index < 0) {
       throw new Error('Item is no longer available.');
     }
@@ -120,6 +121,7 @@ export function createMerchantRules(
     const item = backpack[index];
     const quantity = amount === 'stack' ? item.quantity : Math.min(amount, item.quantity);
     const price = itemPrice(item) * quantity;
+
     if (!Number.isSafeInteger(price)) {
       throw new Error('Trade price is too large.');
     }
@@ -133,6 +135,7 @@ export function createMerchantRules(
     }
 
     const transferred = { ...item, id: crypto.randomUUID(), quantity };
+
     if (buying) {
       addItem((player.backpack ??= []), transferred);
     } else {
@@ -141,6 +144,7 @@ export function createMerchantRules(
     }
 
     item.quantity -= quantity;
+
     if (item.quantity === 0) {
       backpack.splice(index, 1);
     }
@@ -155,6 +159,7 @@ export function createMerchantRules(
     const total = items.reduce((sum, item) => {
       return sum + itemPrice(item) * item.quantity;
     }, 0);
+
     if (!Number.isSafeInteger(total) || !Number.isSafeInteger((player.coins ?? 0) + total)) {
       throw new Error('Gold balance is too large.');
     }

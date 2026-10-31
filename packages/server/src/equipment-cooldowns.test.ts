@@ -33,6 +33,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
         },
       },
     ]);
+
     for (const training of [true, false]) {
       for (const classId of CLASS_IDS) {
         const player = hero(classId);
@@ -40,6 +41,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
         learnTalent(player, talentNodeId(classId, 0, 1));
         equipTalent(player, 0, talentNodeId(classId, 0, 1));
         player.equipment!.ring = 'speed-ring';
+
         if (!training) {
           player.scene = 'forest';
         } else {
@@ -51,6 +53,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
         const stats = context.rules.characterStats(player);
         const multiplier = 1 + gearSpeed;
         const interval = multiplier > 0 ? 1000 / multiplier : Infinity;
+
         if (Number.isFinite(interval)) {
           assert(Math.abs(stats.attackIntervalMs - interval) < 1e-9);
         } else {
@@ -60,6 +63,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
         assert.equal(context.rules.companionStats(player).attackIntervalMs, stats.attackIntervalMs);
         const ability = talentAbility(player, 0, context)!;
         const cooldown = talentCooldownMs(player, 0, context);
+
         if (multiplier > 0) {
           assert(Math.abs(cooldown - ability.intervalMs / multiplier) < 1e-9);
         } else {
@@ -75,6 +79,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
         };
         tickPlayerCombat(arena, [player], 1000, 0, context);
         assert.equal(castTalentAbility(arena, player, request, 1000, context), multiplier > 0);
+
         if (multiplier <= 0) {
           assert.equal(player.attackAt, undefined);
           assert.equal(player.talentCooldowns, undefined);
@@ -101,6 +106,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
           false,
         );
         assert.equal(castTalentAbility(arena, player, request, 1000 + cooldown, context), true);
+
         if (training) {
           assert.equal(player.experience, 0);
         }
@@ -113,6 +119,7 @@ test('all class base attacks wait a full second in training and forest', () => {
   for (const training of [true, false]) {
     for (const classId of CLASS_IDS) {
       const player = hero(classId);
+
       if (!training) {
         player.scene = 'forest';
       } else {
@@ -127,6 +134,7 @@ test('all class base attacks wait a full second in training and forest', () => {
       assert.equal(player.attackAt, 1000, `${classId} cannot attack early`);
       tickPlayerCombat(arena, [player], 2000, 0);
       assert.equal(player.attackAt, 2000, `${classId} attacks at the cooldown boundary`);
+
       if (training) {
         assert.equal(player.experience, 0);
       }

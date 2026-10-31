@@ -32,6 +32,7 @@ const enemy = (id: number, x: number, hp = 100, kind?: Enemy['kind']): Enemy => 
 
 test('tactics rejects duplicate, missing, unknown and unbounded preferences at command/save boundaries', () => {
   assert(tacticsSchema.safeParse(tactics()).success);
+
   for (const patch of [
     { offensive: ['nearest', 'nearest', 'elite'] },
     { offensive: ['nearest'] },
@@ -85,6 +86,7 @@ test('automatic weapon launch and replicated target use offensive priorities whi
   for (const training of [false, true]) {
     const p = hero('ranger');
     p.scene = training ? undefined : 'forest';
+
     if (training) {
       Object.assign(p, TRAINING_ZONES[0]);
     }
@@ -131,6 +133,7 @@ test('aimed talents choose the preferred enemy and companion hazard avoidance ca
   );
   assert.equal(p.bear!.x, 1350);
   assert.equal(s.enemies[0].hitpoints, nearbyHealth);
+
   for (const avoidHazards of [true, false]) {
     const owner = hero(),
       scene = arena([enemy(1, 1060)]);

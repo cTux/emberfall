@@ -24,6 +24,7 @@ export function staticHandler(staticRoot?: string): RequestListener {
       const pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname);
       const root = resolve(staticRoot);
       const file = resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
+
       if (!file.startsWith(root + sep)) {
         res.writeHead(403);
         res.end();
@@ -38,6 +39,7 @@ export function staticHandler(staticRoot?: string): RequestListener {
       // Negotiator 1.x supports preferred; @types/negotiator still describes the 0.x signature.
       // @ts-expect-error Missing second-argument declaration in upstream types.
       const accepted = new Negotiator(req).encodings(encodings, { preferred: encodings });
+
       for (const encoding of accepted) {
         if (encoding === 'identity') {
           selected = encoding;

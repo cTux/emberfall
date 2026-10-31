@@ -25,6 +25,7 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
       : characterImages[
           npc.id === 'hallkeeper' ? 'druid' : npc.id === 'craftsman' ? 'warrior' : 'ranger'
         ].walk;
+
     if (!image.complete || !image.naturalWidth) {
       return [];
     }
@@ -46,12 +47,14 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
           : 6
         : playerFrame(now, npc.moving, true);
     let atlas = frames.get(image);
+
     if (!atlas) {
       frames.set(image, (atlas = new Map()));
     }
 
     const key = `${column}:${row}`;
     let frame = atlas.get(key);
+
     if (!frame) {
       const sprite = document.createElement('canvas');
       const cell = 64 * Number(image.dataset.artResolution ?? 1);

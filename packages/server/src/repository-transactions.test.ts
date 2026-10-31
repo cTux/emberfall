@@ -29,6 +29,7 @@ test('account creation rolls nested character and cloud-save writes back on the 
   assert.throws(() => {
     return store.loginSteam('hero', 'Hero');
   }, /account blocked/);
+
   for (const table of [
     'characters',
     getTableName(store.database.tables.users),

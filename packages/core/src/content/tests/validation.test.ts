@@ -13,6 +13,7 @@ test('data-family validation rejects unknown IDs and malformed values with mod o
     pickups: 'experience',
     effects: 'damage',
   } as const;
+
   for (const group of Object.keys(families) as (keyof typeof families)[]) {
     for (const id of ['fixture:unknown', families[group]]) {
       const registries: Registries = {

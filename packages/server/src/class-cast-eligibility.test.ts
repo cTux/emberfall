@@ -16,6 +16,7 @@ beforeEach((t) => {
 
 test('manual cast eligibility rejects stale areas/classes, death and inactive combat', async () => {
   const { requestPlayerCast } = await import('@emberfall/core');
+
   for (const reason of [
     'area',
     'class',
@@ -36,6 +37,7 @@ test('manual cast eligibility rejects stale areas/classes, death and inactive co
       aimX: 2600,
       aimY: 1280,
     };
+
     if (reason === 'area') {
       request.epoch = 'expired';
     }
@@ -90,6 +92,7 @@ test('manual cast eligibility rejects stale areas/classes, death and inactive co
 
 test('untargeted spells follow cast aim past the cursor and expire after 1000px', async () => {
   const { advancePlayerShot, playerAimAngle } = await import('@emberfall/core');
+
   for (const classId of ['mage', 'ranger', 'druid'] as const) {
     for (const autoAttack of [false, true]) {
       const player: Player = {
@@ -137,6 +140,7 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
     arena.enemies = [enemy(1, 2480)];
     fireClassAttack(arena, player, 1000);
     tickPlayerShots(arena, [player], 1500, 0.5);
+
     if (classId === 'druid') {
       assert.equal(arena.enemies[0].debuffs?.[0].kind, 'roots');
       assert.equal(arena.playerShots!.length, 0);

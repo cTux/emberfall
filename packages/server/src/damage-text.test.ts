@@ -35,6 +35,7 @@ test('positive finishing hits display at least one and zero damage displays no n
       labels.push(value);
     },
   } as unknown as CanvasRenderingContext2D;
+
   for (const amount of [0, 0.01, 0.49, 1, 1.5]) {
     drawDamageNumber(ctx, hit({ amount }), { x: 0, y: 0 }, 1000);
   }
@@ -157,6 +158,7 @@ test('successive hits use stable lanes independent of snapshot order or other hi
     ).size,
     5,
   );
+
   for (const [index, event] of hits.entries()) {
     assert.deepEqual(damageTextFrame(structuredClone(event), 1200), frames[index]);
   }

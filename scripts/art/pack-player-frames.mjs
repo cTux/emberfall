@@ -3,6 +3,7 @@ export function packPlayerFrames({ isolated, name, config }) {
   let frames = allFrames.filter((f) => {
     return f.sourceIndex === 0;
   });
+
   if (name === 'warrior') {
     frames = frames
       .filter((f) => {
@@ -97,6 +98,7 @@ export function packPlayerFrames({ isolated, name, config }) {
   out.imageSmoothingEnabled = false;
   out.scale(2, 2);
   const rows = [0, 1, 2, 3, 4, 8, 9, 5, 6, 7];
+
   for (const f of frames) {
     const width = Math.round(f.width * f.unitScale * scale),
       height = Math.round(f.height * f.unitScale * scale);
@@ -159,6 +161,7 @@ export function packPlayerFrames({ isolated, name, config }) {
       ),
   );
   const walkRows = [1, 2, 3, 4, 8, 9];
+
   for (const f of strides) {
     const frameScale = f.sourceIndex === strideIndex ? strideScale : repairScale;
     const width = Math.round(f.width * frameScale);

@@ -36,6 +36,7 @@ export function instance(
 ): BackpackItem {
   const stats: Record<string, number> = {};
   const pool = [stat, ...itemTypeStats[GEAR_DEFINITIONS[itemId].gearType]];
+
   for (const key of pool) {
     if (Object.keys(stats).length === rarityStatCount[rarity]) {
       break;

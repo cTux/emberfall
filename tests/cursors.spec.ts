@@ -168,6 +168,7 @@ test('cursor enable and size settings apply immediately and persist across reloa
   await expect(body).toHaveAttribute('data-custom-cursor', 'false');
   await expect(body).toHaveAttribute('data-cursor-size', '64');
   await expect(body).toHaveCSS('cursor', 'default');
+
   // Check every canvas fallback, independently of the combat-state derivation above.
   for (const [state, keyword] of [
     ['default', 'default'],
@@ -206,10 +207,12 @@ test('cursor enable and size settings apply immediately and persist across reloa
 
 test('pointing hotspots stay on the visible artwork at every size', async ({ page }) => {
   await page.goto('/');
+
   for (const size of [32, 48, 64]) {
     await page.locator('body').evaluate((body, size) => {
       body.dataset.cursorSize = String(size);
     }, size);
+
     for (const state of ['default', 'pointer', 'attack', 'pressed']) {
       const alpha = await page.evaluate(async (state) => {
         const cursor = getComputedStyle(document.body).getPropertyValue(`--cursor-${state}`);
@@ -234,6 +237,7 @@ test('pointing hotspots stay on the visible artwork at every size', async ({ pag
 
 test('drag cursor anchors match the default cursor at every size', async ({ page }) => {
   await page.goto('/');
+
   for (const size of [32, 48, 64]) {
     const anchors = await page.locator('body').evaluate((body, size) => {
       body.dataset.cursorSize = String(size);

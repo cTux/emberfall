@@ -77,8 +77,10 @@ export function createArenaInput({
 
     pointerMove(event);
     const target = pickInteraction(targets, pointerPoint());
+
     if (target) {
       held = false;
+
       if (interactionInRange(target, confirmedPlayer())) {
         activate(target.source);
       }
@@ -119,6 +121,7 @@ export function createArenaInput({
         altKeys.add(event.code);
       } else {
         altKeys.delete(event.code);
+
         if (altKeys.size === 0) {
           altHeldAt = Infinity;
         }
@@ -140,6 +143,7 @@ export function createArenaInput({
     }
 
     const value = event.code;
+
     if (
       !['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'].includes(
         value,
@@ -153,6 +157,7 @@ export function createArenaInput({
     }
 
     const changed = keys.has(value) !== down;
+
     if (down) {
       keys.add(value);
     } else {
@@ -199,6 +204,7 @@ export function createArenaInput({
 
   function sendMovement() {
     const current = world();
+
     if (!current) {
       return;
     }

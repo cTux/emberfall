@@ -45,6 +45,7 @@ export class LocalAttacks {
       authoritative.scene === 'forest'
         ? frame.world.scene?.playerShots
         : frame.world.training?.playerShots;
+
     for (const id of this.casts.keys()) {
       if (
         id <= (authoritative.castSeq ?? 0) &&
@@ -55,6 +56,7 @@ export class LocalAttacks {
       ) {
         this.casts.delete(id);
         this.projectiles.reject(id);
+
         if (this.attackId === id) {
           this.attackId = authoritative.attackId;
           this.attackAt = authoritative.attackAt ?? -Infinity;
@@ -66,6 +68,7 @@ export class LocalAttacks {
   animateAttack(player: Player, world: WorldState, now: number) {
     const scene = player.scene === 'forest' ? world.scene : world.training;
     const stats = characterStats(player);
+
     if (
       !stats.hasWeapon ||
       player.hitpoints <= 0 ||
@@ -94,6 +97,7 @@ export class LocalAttacks {
     this.aimAt = now;
     const serverNow = (this.frame.world.serverNow ?? 0) + now - this.frame.receivedAt;
     let started = false;
+
     if (player.autoAttack === false) {
       if (!Number.isFinite(this.attackAt)) {
         this.attackAt = this.frame.player.attackAt ?? -Infinity;
@@ -105,11 +109,13 @@ export class LocalAttacks {
           ? -Infinity
           : now - (serverNow - this.frame.player.attackAt);
       const origin = Math.max(confirmedAt, this.requestAt);
+
       if (player.attacking && now - origin >= stats.attackIntervalMs) {
         this.attackAt = serverNow;
         this.requestAt = now;
         this.attackId = ++this.castSeq;
         this.casts.set(this.attackId, now);
+
         // Keep completed IDs briefly so delayed confirmation cannot replay an expired visual.
         if (this.casts.size > 32) {
           this.casts.delete(this.casts.keys().next().value!);
@@ -130,6 +136,7 @@ export class LocalAttacks {
       // Automatic attacks belong to the server clock. Entering a combat area
       // before its first attack snapshot must not invent a swing that confirmation restarts.
       const origin = this.frame.player.attackAt;
+
       if (origin === undefined) {
         player.attackAt = undefined;
         this.attackAt = -Infinity;

@@ -77,6 +77,7 @@ export class VillageLife {
           n.name.split(' ')[0].toLowerCase() === name && forestDistance(n, player) <= PLAYER_RANGE
         );
       });
+
       if (!npc) {
         continue;
       }
@@ -96,6 +97,7 @@ export class VillageLife {
 
   tick(now: number, dt: number) {
     this.lastTick = now;
+
     if (this.stopped) {
       return;
     }
@@ -103,6 +105,7 @@ export class VillageLife {
     const players = villagePlayers(this.world);
     const npcs = this.world.npcs ?? [];
     const liveIds = new Set(this.world.players.keys());
+
     for (const map of [this.playerAt, this.replyAt]) {
       for (const id of map.keys()) {
         if (!liveIds.has(id)) {
@@ -118,6 +121,7 @@ export class VillageLife {
     ]);
 
     this.routines.tick(now, dt, players, blocked);
+
     if (!players.length || this.inFlight || now < this.retryAt) {
       return;
     }
@@ -164,6 +168,7 @@ export class VillageLife {
           (npc.silenced || now >= (this.playerAt.get(p.id) ?? 0))
         );
       });
+
       if (player) {
         this.start({ speaker: npc.id, playerId: player.id }, now);
 
@@ -177,6 +182,7 @@ export class VillageLife {
           (npc.silenced || now >= (this.npcAt.get(n.id) ?? 0))
         );
       });
+
       if (other) {
         this.start({ speaker: npc.id, otherNpc: other.id }, now);
 
@@ -189,6 +195,7 @@ export class VillageLife {
 
   private start(conversation: Conversation, now: number) {
     const actors = conversationParticipants(this.world, conversation);
+
     if (!actors) {
       return;
     }
@@ -197,9 +204,11 @@ export class VillageLife {
 
     this.inFlight = true;
     this.activeConversation = conversation;
+
     if (!conversation.text) {
       this.nextTalk = now + 90_000;
       this.npcAt.set(actors.npc.id, now + 180_000);
+
       if (conversation.otherNpc) {
         this.npcAt.set(conversation.otherNpc, now + 180_000);
       }
@@ -219,6 +228,7 @@ export class VillageLife {
 
         // Completion uses the current simulation time, not request-start time.
         const at = this.lastTick;
+
         if (result.status === 'busy') {
           if (conversation.text) {
             this.continuation = { at: at + 500, conversation };
@@ -228,6 +238,7 @@ export class VillageLife {
 
           this.nextTalk = at + 5000;
           this.npcAt.set(actors.npc.id, at + 5000);
+
           if (conversation.otherNpc) {
             this.npcAt.set(conversation.otherNpc, at + 5000);
           }
@@ -250,6 +261,7 @@ export class VillageLife {
 
         this.speech.silence(false);
         const current = conversationParticipants(this.world, conversation);
+
         if (!current) {
           return;
         }
@@ -257,6 +269,7 @@ export class VillageLife {
         const { text, mentioned } = this.speech.publish(conversation, current.npc, result.text, at);
         const lines = (conversation.lines ?? 0) + 1;
         const responder = mentioned?.id ?? (!conversation.text ? conversation.otherNpc : undefined);
+
         if (responder && lines < 5) {
           this.continuation = {
             at: at + REPLY_DELAY,

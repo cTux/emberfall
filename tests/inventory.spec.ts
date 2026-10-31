@@ -42,6 +42,7 @@ test('item tooltips follow class equipment rules without hiding trade actions', 
       return item.id === 'bow';
     }),
   ).toBe(true);
+
   for (const id of ['helmet', 'potion', 'bottle']) {
     await backpack.locator(`[data-backpack-item="${id}"]`).hover();
     await expect(warning).toBeHidden();

@@ -80,6 +80,7 @@ test('smooth textures apply live in village and forest, follow presets and persi
   await settings.click();
   await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
   const smooth = page.getByLabel('Smooth textures', { exact: true });
+
   for (const preset of ['High', 'Balanced', 'Low']) {
     await page.getByRole('button', { name: preset, exact: true }).click();
     await expect(smooth).toBeChecked();

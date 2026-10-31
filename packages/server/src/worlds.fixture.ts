@@ -15,6 +15,7 @@ export async function connectWorldClient(port: number, clients: WebSocket[]) {
     const until = Date.now() + 3000;
     while (Date.now() < until) {
       const i = messages.findIndex(predicate);
+
       if (i >= 0) {
         return messages.splice(i, 1)[0];
       }

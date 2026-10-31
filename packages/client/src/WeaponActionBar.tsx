@@ -53,9 +53,11 @@ export function WeaponActionBar({
     }
 
     lastRequest.current = now;
+
     for (let slot = 0; slot < 4; slot++) {
       const node = equippedTalent(player, slot);
       const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot);
+
       if (
         node &&
         ability &&

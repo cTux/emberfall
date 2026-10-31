@@ -27,6 +27,7 @@ const terrainTiles = new Map<string, HTMLCanvasElement>();
 export function terrainTile(column: number, size = 320) {
   const key = `${column}:${size}`;
   const cached = terrainTiles.get(key);
+
   if (cached) {
     return cached;
   }
@@ -35,6 +36,7 @@ export function terrainTile(column: number, size = 320) {
   tile.width = tile.height = size;
   const ctx = tile.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
+
   // PNG dimensions are available before its pixels finish loading. Caching a
   // draw at that point permanently retains an empty tile, even after onload.
   if (terrainArt.complete && terrainArt.naturalWidth) {
@@ -60,14 +62,17 @@ export function terrainTile(column: number, size = 320) {
     );
     const pixels = sourceContext.getImageData(0, 0, source.width, source.height).data;
     const output = ctx.createImageData(size, size);
+
     for (let y = 0; y < size; y++) {
       const blendY = Math.max(0, 1 - y / overlap);
+
       for (let x = 0; x < size; x++) {
         const blendX = Math.max(0, 1 - x / overlap);
         const a = (y * source.width + x) * 4;
         const b = (y * source.width + x + (blendX ? span : 0)) * 4;
         const c = ((y + (blendY ? span : 0)) * source.width + x) * 4;
         const d = c + (blendX ? span * 4 : 0);
+
         for (let channel = 0; channel < 4; channel++) {
           output.data[(y * size + x) * 4 + channel] =
             (pixels[a + channel] * (1 - blendX) + pixels[b + channel] * blendX) * (1 - blendY) +

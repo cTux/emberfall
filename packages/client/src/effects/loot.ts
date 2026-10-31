@@ -15,6 +15,7 @@ const lootSprites = new Map<LootDrop['kind'], HTMLCanvasElement>();
 
 function lootSprite(kind: LootDrop['kind']) {
   let sprite = lootSprites.get(kind);
+
   if (sprite) {
     return sprite;
   }
@@ -33,6 +34,7 @@ function lootSprite(kind: LootDrop['kind']) {
   ctx.fill();
   ctx.fillStyle = kind === 'gold' ? '#fff0a5' : '#e7fff8';
   ctx.fillRect(18, 17, 2, 3);
+
   if (kind === 'gold') {
     ctx.strokeStyle = '#ad7420';
     ctx.strokeRect(19, 18, 2, 5);
@@ -60,8 +62,10 @@ export function drawLootAndBlood(
   };
 
   ctx.save();
+
   for (const drop of scene.drops ?? []) {
     const p = near(drop.x, drop.y + 15);
+
     if (!visible(p)) {
       continue;
     }
@@ -72,6 +76,7 @@ export function drawLootAndBlood(
     ctx.beginPath();
     ctx.ellipse(p.x, p.y + 2, 5, 2, 0, 0, Math.PI * 2);
     ctx.fill();
+
     if (drop.kind === 'item') {
       const beam = ctx.createLinearGradient(p.x, p.y - 36, p.x, p.y);
       const color = rarityColor[itemRarity(drop)];
@@ -104,16 +109,19 @@ export function drawLootAndBlood(
   // Bound bursts independently of ambient-particle settings, so hits remain readable on Low.
   for (const hit of scene.damage.slice(-80)) {
     const age = (now - hit.at) / 1000;
+
     if (age < 0 || age > 0.6) {
       continue;
     }
 
     const p = near(hit.x, hit.y);
+
     if (!visible(p)) {
       continue;
     }
 
     ctx.globalAlpha = 1 - age / 0.6;
+
     for (let i = 0; i < 12; i++) {
       const angle = i * 2.399963 + hit.id;
       const speed = 20 + ((i * 13) % 43);

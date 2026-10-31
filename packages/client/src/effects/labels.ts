@@ -11,9 +11,11 @@ export function drawChatBubble(ctx: DrawingContext, x: number, y: number, text?:
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const lines = [''];
+
   for (const word of text.trim().split(/\s+/u)) {
     const line = lines.at(-1)!;
     const next = line ? `${line} ${word}` : word;
+
     if (line && ctx.measureText(next).width > 200) {
       lines.push(word);
     } else {
@@ -168,6 +170,7 @@ export function drawPlayerHealth(
   const metrics = ctx.measureText(name);
   const width = Math.max(boss ? 64 : 40, Math.ceil(metrics.width) + 12);
   const bottom = y + (boss ? 9 : 7);
+
   // Grow upward to preserve the existing name and sprite clearance.
   if (showHealth) {
     drawWorldBar(

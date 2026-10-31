@@ -84,6 +84,7 @@ test('bulk trades reject invalid amounts, insufficient gold, full inventory and 
   rejectsUnchanged(() => {
     return tradeItem(player, merchant, bottle.id, true, 10);
   }, /balance/);
+
   for (const amount of [0, -1, 2, 1.5, 'all', null, Number.MAX_SAFE_INTEGER]) {
     assert.equal(
       clientMessage.safeParse({ type: 'trade', id: bottle.id, buying: true, amount }).success,
@@ -138,6 +139,7 @@ test('buyback keeps the latest 20 sales separate, migrates legacy gear, and reje
     return item('loot-helmet');
   });
   const ids: string[] = [];
+
   // Trading mutates the backpack; iterate a snapshot so every original item is sold.
   // oxlint-disable-next-line unicorn/no-useless-spread
   for (const entry of [...player.backpack]) {

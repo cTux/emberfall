@@ -21,6 +21,7 @@ test('save failure cannot publish learned points or equipped slots; bullseye res
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Talent hero', password: '' });
+
     for (let i = 0; i < 200 && !world.players.size; i++) {
       await new Promise((resolve) => {
         return setTimeout(resolve, 10);

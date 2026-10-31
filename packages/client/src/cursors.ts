@@ -24,6 +24,7 @@ export function combatCursor(
 
   const forest = player.scene === 'forest';
   const scene = forest ? world.scene : world.training;
+
   if (
     scene?.phase !== 'active' ||
     scene.pausedAt !== undefined ||

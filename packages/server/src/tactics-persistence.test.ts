@@ -41,6 +41,7 @@ test('failed saves, malformed commands and a mismatched class cannot publish tac
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Tactician', password: '' });
+
     for (let i = 0; i < 200 && !world.players.size; i++) {
       await new Promise((resolve) => {
         return setTimeout(resolve, 10);

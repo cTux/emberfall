@@ -14,6 +14,7 @@ export async function render() {
   preview.dataset.preview = 'talent-casts';
   const ctx = preview.getContext('2d')!;
   const counts: number[] = [];
+
   for (const [classIndex, classId] of ['warrior', 'ranger', 'mage', 'druid'].entries()) {
     for (let column = 0; column < 3; column++) {
       pixi.begin();
@@ -57,6 +58,7 @@ export async function render() {
       ctx.drawImage(gpu, column * 256, classIndex * 256);
       const pixels = ctx.getImageData(column * 256, classIndex * 256, 256, 256).data;
       let painted = 0;
+
       for (let index = 0; index < pixels.length; index += 4) {
         if (pixels[index] + pixels[index + 1] + pixels[index + 2] > 30) {
           painted++;

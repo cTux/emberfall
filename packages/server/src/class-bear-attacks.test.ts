@@ -140,6 +140,7 @@ test('Bear repositions on its reaction interval while continuing to damage melee
     const e = { ...enemy(1, 2480, 1000), archetype };
     s.enemies = [e];
     tickCompanion(p, s, 10000, 1);
+
     for (let i = 1; i <= 40; i++) {
       stepCombat(s, [p], 10000 + i * 50, 0.05);
     }

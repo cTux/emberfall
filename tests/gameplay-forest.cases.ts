@@ -95,6 +95,7 @@ for (const [difficulty, multiplier] of [
     await expect(portal).toBeVisible();
     await expect(portal.getByRole('combobox', { name: 'Difficulty' })).toHaveText('Easy');
     await portal.getByRole('combobox', { name: 'Difficulty' }).click();
+
     for (const name of ['Easy', 'Medium', 'Hard']) {
       await expect(page.getByRole('option', { name, exact: true })).toBeVisible();
     }

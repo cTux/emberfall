@@ -37,6 +37,7 @@ export function lightTexture(
       })
       .join(';');
   let entry = lightCanvases.get(key);
+
   if (
     entry?.signature === signature &&
     entry.base === base &&
@@ -57,6 +58,7 @@ export function lightTexture(
     base,
   };
   lightCanvases.set(key, entry);
+
   if (lightCanvases.size > 64) {
     lightCanvases.delete(lightCanvases.keys().next().value!);
   }
@@ -70,11 +72,13 @@ export function lightTexture(
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
+
   if (base) {
     ctx.drawImage(base, 0, 0);
   }
 
   ctx.translate(light.radius - light.x, light.radius - light.y);
+
   if (!base) {
     const glow = ctx.createRadialGradient(light.x, light.y, 4, light.x, light.y, light.radius);
     glow.addColorStop(0, `rgba(255, 190, 95, ${light.strength})`);
@@ -90,6 +94,7 @@ export function lightTexture(
 
   if (shadows) {
     ctx.globalCompositeOperation = 'destination-out';
+
     for (const caster of blockers) {
       castShadow(ctx, caster, light);
     }

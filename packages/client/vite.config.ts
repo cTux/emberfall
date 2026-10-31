@@ -64,6 +64,7 @@ export default defineConfig(({ command, mode }) => {
         }),
     ],
   };
+
   if (command === 'build') {
     return { ...shared, build: { manifest: true } };
   }

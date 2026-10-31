@@ -34,6 +34,7 @@ test('village paths and door approaches are walkable while buildings and torch p
     const result = moveActor({ x: building.doorX, y: building.y + 30 }, 0, -80, 12);
     assert(result.y >= building.y + 12);
     assert(result.y < building.y + 30);
+
     if (building.id === 'inn') {
       continue;
     }
@@ -63,8 +64,10 @@ test('village paths and door approaches are walkable while buildings and torch p
     for (let i = 0; i < path.length - 1; i++) {
       const a = path[i],
         b = path[i + 1];
+
       for (let step = 0; step <= 20; step++) {
         const point = { x: a.x + ((b.x - a.x) * step) / 20, y: a.y + ((b.y - a.y) * step) / 20 };
+
         // Dirt extends under each threshold, where the building itself remains solid.
         if (
           BUILDINGS.some((building) => {

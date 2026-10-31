@@ -19,6 +19,7 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
 
     let target: Player | undefined;
     let distance = PICKUP_RULES.attractionRadius;
+
     for (const player of collectors) {
       if (
         drop.kind === 'item' &&
@@ -28,6 +29,7 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
       }
 
       const next = forestDistance(player, drop);
+
       if (next < distance) {
         target = player;
         distance = next;
@@ -35,11 +37,13 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
     }
 
     drop.collectorId = target?.id;
+
     if (!target) {
       return true;
     }
 
     const travel = Math.min(distance, PICKUP_RULES.speed * Math.max(0, dt));
+
     if (distance <= PICKUP_RULES.collectRadius || distance - travel <= PICKUP_RULES.collectRadius) {
       if (drop.kind === 'experience') {
         for (const player of collectors) {

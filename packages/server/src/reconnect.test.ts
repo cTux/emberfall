@@ -37,6 +37,7 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
           const index = messages.findIndex((m) => {
             return m.type === type && predicate(m);
           });
+
           if (index >= 0) {
             return messages.splice(index, 1)[0];
           }
@@ -97,6 +98,7 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
     });
   } finally {
     await app.close();
+
     for (const ws of clients) {
       ws.terminate();
     }

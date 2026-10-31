@@ -35,6 +35,7 @@ function NicknameDialog({
         // oxlint-disable-next-line typescript/no-misused-promises
         onSubmit={async (event) => {
           event.preventDefault();
+
           if (!valid || pending) {
             return;
           }
@@ -49,6 +50,7 @@ function NicknameDialog({
               signal: AbortSignal.timeout(10_000),
             });
             const result = await response.json();
+
             if (!response.ok) {
               throw new Error(result.error ?? 'Could not save nickname.');
             }
@@ -116,6 +118,7 @@ export function AccountGate({
         cache: 'no-store',
         signal: AbortSignal.timeout(10_000),
       });
+
       if (!response.ok) {
         throw new Error('Account service unavailable. Please retry.');
       }
@@ -144,6 +147,7 @@ export function AccountGate({
         reportError('Account service unavailable. Please retry.');
         setFailed(true);
       });
+
     if (new URLSearchParams(location.search).has('login')) {
       reportError('Steam login was cancelled or could not be verified. Please try again.');
       history.replaceState(null, '', location.pathname);
@@ -156,6 +160,7 @@ export function AccountGate({
         method: 'POST',
         signal: AbortSignal.timeout(10_000),
       });
+
       if (!response.ok && response.status !== 401) {
         throw new Error();
       }

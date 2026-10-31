@@ -79,6 +79,7 @@ export function forestRenderer(
 
     ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
     ctx.imageSmoothingEnabled = false;
+
     for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++) {
       for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++) {
         ctx.drawImage(terrain, col * 320, row * 320);
@@ -94,6 +95,7 @@ export function forestRenderer(
       world?.players.filter((p) => {
         return p.scene === 'forest' && p.runId === me?.runId;
       }) ?? [];
+
     for (const player of players) {
       const point = near(player.x, player.y);
       drawPlayerAttack(
@@ -140,8 +142,10 @@ export function forestRenderer(
       width,
       height,
     });
+
     for (const critter of critters) {
       const caster = critterCaster(critter);
+
       if (caster) {
         casters.push(caster);
       }
@@ -157,6 +161,7 @@ export function forestRenderer(
 
     if (!quality.shadows) {
       ctx.fillStyle = '#07120955';
+
       for (const t of trees) {
         ctx.beginPath();
         ctx.ellipse(t.x, t.y, 23, 8, 0, 0, Math.PI * 2);
@@ -182,6 +187,7 @@ export function forestRenderer(
     const localActor = rendered.find((actor) => {
       return actor.id === playerId;
     });
+
     if (localActor && localActor.image.naturalWidth) {
       const breath = idleBreath(now, localActor.row);
       renderer.setPlayerCutout(
@@ -205,16 +211,19 @@ export function forestRenderer(
       outlines,
       damageByTarget,
     };
+
     for (const layer of layers) {
       renderer.occlusion = !!localActor && layer.y > localActor.y + 15;
       drawForestLayer(ctx, layer, actorFrame);
     }
 
     renderer.occlusion = false;
+
     if (quality.lighting) {
       ctx.save();
       ctx.globalAlpha = cycle.lightAlpha;
       ctx.globalCompositeOperation = 'screen';
+
       for (const p of rendered.filter((a) => {
         return a.player && a.player.hitpoints > 0;
       })) {
@@ -233,6 +242,7 @@ export function forestRenderer(
     }
 
     drawEnvironment(ctx, { x: cameraX, y: cameraY, width, height }, now, quality, cycle.daylight);
+
     if (prefs.damageNumbers) {
       drawDamageNumbers(
         ctx,
@@ -244,6 +254,7 @@ export function forestRenderer(
     }
 
     drawDamageFlash(ctx, world, playerId);
+
     if (world) {
       drawNavigation(ctx, world, playerId);
     }

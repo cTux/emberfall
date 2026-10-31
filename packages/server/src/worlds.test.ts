@@ -72,6 +72,7 @@ test('world lifecycle, passwords, movement, capacity and isolation over real soc
         m.type === 'state' && m.world.hostId === other.playerId && m.world.players.length === 1
       );
     });
+
     for (let i = 0; i < 7; i++) {
       const c = await connect();
       c.send({ type: 'join', worldId: id, playerName: `Player ${i}`, password: 'secret' });
@@ -101,6 +102,7 @@ test('world lifecycle, passwords, movement, capacity and isolation over real soc
         return m.type !== 'state' || m.world.id !== id;
       }),
     );
+
     for (const ws of clients) {
       if (ws !== excess.ws) {
         ws.send(JSON.stringify({ type: 'leave' }));
@@ -225,6 +227,7 @@ test('Playtest Default admits 32 players and rejects the 33rd', async () => {
           password: '',
         }),
       );
+
       if (i < 32) {
         const joined = await wait('joined');
         assert(joined.type === 'joined');

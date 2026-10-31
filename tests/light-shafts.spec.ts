@@ -18,6 +18,7 @@ test('sunlight shafts render in village and forest with live presets and narrow 
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
   const shafts = page.getByLabel('Sunlight shafts (2D)', { exact: true });
+
   for (const preset of ['Low', 'Balanced', 'High']) {
     await page.getByRole('button', { name: preset, exact: true }).click();
     await expect(shafts).toBeChecked({ checked: preset === 'High' });

@@ -48,6 +48,7 @@ const forest = (players: Player[]): SceneWorld => {
 
 test('shared XP pickups level every eligible player once and retain fractional XP', () => {
   const players = [hero('a'), hero('b')];
+
   for (const player of players) {
     player.experience = 49;
   }
@@ -57,6 +58,7 @@ test('shared XP pickups level every eligible player once and retain fractional X
   tickScene(world, 1000, 0);
   tickScene(world, 1050, 0);
   assert.equal(world.scene!.drops.length, 0);
+
   for (const player of players) {
     assert.equal(player.level, 2);
     assert.equal(player.experience, 0.5);

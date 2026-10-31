@@ -17,6 +17,7 @@ export async function compare() {
       pixi.begin();
       canvas.reset();
       const alphas: number[] = [];
+
       for (const ctx of [pixi as unknown as CanvasRenderingContext2D, canvas]) {
         ctx.fillStyle = '#809060';
         ctx.fillRect(0, 0, 32, 32);

@@ -19,6 +19,7 @@ export function prepareForestTick(
   const healthScale = ENEMY_RULES.healthPerMember ** additionalPlayers;
   const healthRatio =
     healthScale / ENEMY_RULES.healthPerMember ** Math.max(0, (scene.playerCount ?? 1) - 1);
+
   if (healthRatio !== 1) {
     for (const enemy of [...scene.enemies, ...(scene.spawns ?? [])]) {
       enemy.maxHitpoints = enemyMaxHealth(enemy, scene.difficulty, context) * healthRatio;
@@ -27,6 +28,7 @@ export function prepareForestTick(
   }
 
   scene.playerCount = playerCount;
+
   if (!hasLivingScenePlayers(players)) {
     scene.pausedAt ??= now;
 
@@ -62,8 +64,10 @@ export function prepareForestTick(
     };
 
     shift(scene);
+
     for (const enemy of [...scene.enemies, ...(scene.spawns ?? [])]) {
       shift(enemy);
+
       if (enemy.attack) {
         shift(enemy.attack);
       }
@@ -87,6 +91,7 @@ export function prepareForestTick(
     })) {
       // New arrivals already use the current server clock.
       shift(player);
+
       if (player.bear) {
         shift(player.bear);
       }

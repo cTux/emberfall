@@ -6,6 +6,7 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
   pixi.begin();
   pixi.fillStyle = '#17251d';
   pixi.fillRect(0, 0, 256, 256);
+
   for (const [index, damageType] of (['physical', 'fire', 'poison', 'nature'] as const).entries()) {
     for (const critical of [false, true]) {
       drawDamageNumber(
@@ -29,6 +30,7 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
     const pixels = damageContext.getImageData(index * 64, 50, 64, 50).data;
     let white = 0,
       red = 0;
+
     for (let i = 0; i < pixels.length; i += 4) {
       if (pixels[i] > 235 && pixels[i + 1] > 235 && pixels[i + 2] > 235) {
         white++;

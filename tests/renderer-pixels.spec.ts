@@ -68,6 +68,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   expect(errors).toEqual([]);
   expect(results['interaction outline border'].actual).toEqual([255, 223, 0, 255]);
   expect(results['interaction outline outside'].actual).toEqual([128, 144, 96, 255]);
+
   for (const sample of [
     'health border top',
     'health border bottom',
@@ -85,6 +86,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   expect(results['prompt face highlight'].actual[0]).toBeGreaterThan(
     results['prompt face shade'].actual[0] + 20,
   );
+
   for (const side of ['left', 'right', 'top', 'bottom']) {
     const [red, green, blue] = results[`prompt rim ${side}`].actual;
     expect(red).toBeGreaterThan(green);
@@ -93,12 +95,14 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
 
   const shaftCenter = results['shaft center'].actual[0];
   expect(shaftCenter).toBeGreaterThan(131);
+
   for (const edge of ['shaft left feather', 'shaft right feather']) {
     expect(results[edge].actual[0]).toBeLessThanOrEqual(129);
   }
 
   expect(results['shaft after camera move'].actual).toEqual(results['shaft center'].actual);
   expect(groupedLabels).toEqual(['8', '1']);
+
   for (const phases of battleTextPixels) {
     const [start, pop, settled, fading, expired] = phases;
     expect(pop.height).toBeGreaterThan(start.height);
@@ -110,6 +114,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
 
   expect(battleTextPixels[1][1].height).toBeGreaterThan(battleTextPixels[0][1].height);
   expect(lootPixels).toHaveLength(LOOT_ITEM_IDS.length + 1);
+
   for (const { itemId, colored, purple, beam, above, beside } of lootPixels) {
     expect(colored, `${itemId} visible icon`).toBeGreaterThan(30);
     expect(purple, `${itemId} has no placeholder square`).toBe(0);
@@ -119,6 +124,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
   }
 
   expect(projectilePixels).toHaveLength(20);
+
   for (const [index, count] of projectilePixels.entries()) {
     expect(count, `projectile frame ${index}: ${projectilePixels.join(', ')}`).toBeGreaterThan(8);
   }
@@ -138,6 +144,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
     }),
   ).toBe(true);
   expect(stackLabels.silence).toEqual([]);
+
   for (const kind of ['bleed', 'poison', 'burn', 'roots']) {
     expect(stackLabels[kind], `${kind} retains its stack count`).toEqual(['1']);
   }
@@ -160,6 +167,7 @@ test('Pixi preserves transparent vignette centers and SVG debuff pixels', async 
 
 test('Pixi renders all five item rarity beam colors', async ({ page }) => {
   const { rarityPixels } = await renderFixture(page);
+
   for (const { rarity, color } of rarityPixels) {
     const expected = [1, 3, 5].map((offset) => {
       return parseInt(rarityColor[rarity].slice(offset, offset + 2), 16);
@@ -168,6 +176,7 @@ test('Pixi renders all five item rarity beam colors', async ({ page }) => {
     const brightness = Math.max(...color.slice(0, 3));
     expect(brightness, `${rarity} visible beam`).toBeGreaterThan(5);
     const opacity = brightness / Math.max(...expected);
+
     for (let channel = 0; channel < 3; channel++) {
       expect(
         Math.abs(color[channel] - expected[channel] * opacity),

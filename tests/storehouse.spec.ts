@@ -40,6 +40,7 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
       });
     })
     .toBeLessThanOrEqual(1);
+
   for (let tab = 1; tab <= 3; tab++) {
     await dialog.getByRole('tab', { name: `Storage ${tab}`, exact: true }).click();
     await expect(
@@ -71,6 +72,7 @@ test('Storehouse has three renameable 40-slot tabs and transfers saved stacks', 
   await rename.getByRole('textbox').press('Enter');
   const longTab = dialog.getByRole('tab', { name: longName, exact: true });
   await expect(longTab).toBeVisible();
+
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     const label = longTab.locator('.MuiTypography-root');

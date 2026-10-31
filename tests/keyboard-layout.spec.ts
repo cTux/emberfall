@@ -18,6 +18,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
   });
   const codex = page.getByRole('dialog', { name: 'Codex', exact: true });
   const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
+
   for (const [name, shortcut] of [
     ['Codex', 'F1'],
     ['Settings', 'Esc'],
@@ -83,6 +84,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
     return world.players.size;
   })!;
   const player = [...world.players.values()][0];
+
   for (const scene of ['village', 'forest']) {
     for (const [name, shortcut] of [
       ['Codex', 'F1'],
@@ -106,6 +108,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
 
     await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'T', 'F1', 'Esc']);
     await page.screenshot({ path: `test-results/hud-toolbar-${scene}.png` });
+
     if (scene === 'village') {
       await controls.screenshot({ path: 'test-results/hud-toolbar.png' });
     }
@@ -116,6 +119,7 @@ test('menu hotkeys show in tooltips and open safely in lobby, village and forest
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toBeHidden();
     expect(world.players.has(player.id)).toBe(true);
+
     if (scene === 'village') {
       player.x = LOBBY_PORTAL.x;
       player.y = LOBBY_PORTAL.y - 15;
@@ -164,6 +168,7 @@ test('movement follows physical keys across layouts and layout changes', async (
     { x: 0, y: 1 },
     { x: 1, y: 0 },
   ];
+
   for (const keys of [
     ['w', 'a', 's', 'd'],
     ['ц', 'ф', 'і', 'в'],

@@ -10,6 +10,7 @@ test('Alt outlines party candidates without changing E interaction', async ({
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
   try {
     const other = await context.newPage();
+
     for (const [client, name] of [
       [page, 'Alpha'],
       [other, 'Bravo'],
@@ -42,6 +43,7 @@ test('Alt outlines party candidates without changing E interaction', async ({
       });
       const { data, info } = await sharp(image).raw().toBuffer({ resolveWithObject: true });
       let count = 0;
+
       for (let i = 0; i < data.length; i += info.channels) {
         if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.65 && data[i + 2] < data[i + 1] * 0.65) {
           count++;

@@ -141,6 +141,7 @@ export function compareSurfaces(
     10,
     5,
   );
+
   for (const [name, x] of [
     ['shaft left feather', 62],
     ['shaft center', 140],
@@ -165,6 +166,7 @@ export function compareSurfaces(
     90,
     30,
   );
+
   for (const shade of ['#101817', '#b4cfdc']) {
     compare(
       `grading ${shade}`,

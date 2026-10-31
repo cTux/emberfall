@@ -81,15 +81,18 @@ test('all gear pools include reward stats, distinct configured values and restri
   for (const [type, pool] of Object.entries(itemTypeStats)) {
     assert(pool.includes(ItemStat.GoldIncrease));
     assert(pool.includes(ItemStat.ExpIncrease));
+
     for (const rarity of Object.values(Rarity)) {
       for (const roll of [0, 0.3, 0.99999]) {
         const stats = rollItemStats(type, rarity, () => {
           return roll;
         });
         assert.equal(Object.keys(stats).length, rarityStatCount[rarity]);
+
         for (const [stat, value] of Object.entries(stats)) {
           assert(pool.includes(stat as ItemStat));
           assert.equal(value, statValue(stat as ItemStat, rarity));
+
           if (itemStatWeight[stat as ItemStat] < 1) {
             assert.equal(rarity, Rarity.Legendary);
             assert.equal(legendaryItemStat[type], stat);
@@ -103,6 +106,7 @@ test('all gear pools include reward stats, distinct configured values and restri
   assert.equal(statValue(ItemStat.AttackSpeed, Rarity.Uncommon), 2.4);
   assert.equal(statValue(ItemStat.MovementSpeed, Rarity.Epic), 3 * 1.7);
   let specials = 0;
+
   for (let index = 0; index < 820; index++) {
     if (
       ItemStat.AdditionalAttack in
@@ -151,6 +155,7 @@ test('every generated loot and merchant gear item validates; old items remain un
 test('semantic validation rejects forged rarity, stat value, class-exclusive stats and equipped mismatches', () => {
   const valid = instance('warrior-sword', ItemStat.AdditionalAttack);
   assert(backpackSchema.safeParse([valid]).success);
+
   for (const invalid of [
     { ...valid, rarity: 'mythic' },
     { ...valid, rarity: Rarity.Common },

@@ -9,6 +9,7 @@ import { hero } from './scenes.fixture.ts';
 test('forest and expanded lobby share dimensions; all edges wrap; indexed trunks stop players and enemies including seam copies', async () => {
   assert.equal(FOREST.width, ARENA.width);
   assert.equal(FOREST.height, ARENA.height);
+
   // Known clear crossing lines isolate wrapping from obstacle collisions.
   for (const [x, y, dx, dy] of [
     [2, 1280, -8, 0],
@@ -22,6 +23,7 @@ test('forest and expanded lobby share dimensions; all edges wrap; indexed trunks
   }
 
   const tree = forestTrees(400, 400, 100)[0];
+
   for (const radius of [10, 12]) {
     const moved = moveForestActor({ x: tree.x - 60, y: tree.y }, 120, 0, radius);
     assert(moved.x <= tree.x - tree.radius - radius);

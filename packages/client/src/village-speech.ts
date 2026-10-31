@@ -21,12 +21,14 @@ export class VillageSpeech {
 
   targets(critters: ReturnType<typeof crittersAt>) {
     const cats: InteractionTarget[] = [];
+
     for (const cat of critters) {
       if (cat.kind !== 'cat') {
         continue;
       }
 
       const caster = critterCaster(cat);
+
       if (!caster) {
         continue;
       }
@@ -39,6 +41,7 @@ export class VillageSpeech {
           y: cat.y,
           activate: () => {
             const text = this.speech.pet(cat.id, performance.now());
+
             if (text) {
               this.onSpeech(text);
             }
@@ -70,12 +73,14 @@ export class VillageSpeech {
     }
 
     const catMessages: string[] = [];
+
     for (const cat of critters) {
       if (cat.kind !== 'cat') {
         continue;
       }
 
       const message = this.speech.message(cat.id, now);
+
       if (message) {
         drawChatBubble(ctx, cat.x, cat.y + 20, message);
         catMessages.push(message);

@@ -15,6 +15,7 @@ test('untimed heartbeat movement includes age 250ms and stops immediately after 
       epoch: 'lobby',
       inputs: [],
     };
+
     for (let age = phase; age <= 250; age += 50) {
       stepMovement(input, player, undefined, 1000 + age);
     }
@@ -58,6 +59,7 @@ test('a fixed tick consumes partial commands once and bounds a queued burst', ()
       durationMs: 50,
     };
   });
+
   for (let tick = 0; tick < 10; tick++) {
     const before: number = player.x;
     stepMovement(input, player, undefined, 1150 + tick * 50);

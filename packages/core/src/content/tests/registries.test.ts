@@ -105,6 +105,7 @@ test('ready content is detached and deeply immutable; retained registration hand
   stats.armor = 99;
   const item = ready.registries.items.require('retained:ring');
   assert.equal(item.kind, 'gear');
+
   if (item.kind !== 'gear') {
     throw new Error('Expected gear');
   }

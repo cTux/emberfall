@@ -30,6 +30,7 @@ test('padded scenery shadows meet the visible base under sunlight and nearby lam
   });
   try {
     const mask = makeMask({ width: 16, height: 16 } as HTMLCanvasElement);
+
     for (const height of [64, 128]) {
       for (const light of [undefined, { x: 10, y: 10, height: 180, radius: 300, strength: 1 }]) {
         let tx = 0,

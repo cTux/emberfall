@@ -20,6 +20,7 @@ export function updateText(
     stroke,
   };
   const key = JSON.stringify(style);
+
   if (entity.styleKey !== key) {
     text.style = style;
     entity.styleKey = key;

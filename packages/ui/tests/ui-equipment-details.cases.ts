@@ -21,6 +21,7 @@ test('ability tooltips share window surfaces and support hover, keyboard and tou
       font: style.fontFamily,
     };
   });
+
   for (const width of [1280, 320]) {
     await page.setViewportSize({ width, height: 700 });
     await page.goto(story('components-actionbar--cooling-down'));
@@ -84,6 +85,7 @@ test('equipment rarity colors appear in slot borders and tooltip labels', async 
     ['epic', 'rgb(163, 53, 238)'],
     ['legendary', 'rgb(255, 128, 0)'],
   ];
+
   for (const [rarity, color] of colors) {
     const item = page.locator(`[data-rarity=${rarity}]`);
     await expect(item).toHaveCSS('border-top-color', color);
@@ -108,6 +110,7 @@ test('equipment exposes rarity borders, keyboard details and desktop stats', asy
   await expect(page.getByRole('tooltip')).toBeHidden();
   await page.getByRole('button', { name: 'Ring: Empty' }).focus();
   await expect(page.getByRole('tooltip')).toContainText('Accepts: Ring');
+
   for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 800 });
     await page.getByRole('button', { name: 'Close Equipment' }).focus();
@@ -141,6 +144,7 @@ test('wardrobe keeps one row and independent keyboard and touch details', async 
   await expect(page.getByRole('tooltip')).toContainText('Cooldown: 0.7 seconds');
   await spell.blur();
   await expect(page.getByRole('tooltip')).toBeHidden();
+
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     const tops = await page.getByRole('article').evaluateAll((cards) => {

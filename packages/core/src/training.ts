@@ -15,6 +15,7 @@ export function tickTraining(
   context: Game = game,
 ) {
   scene ??= createTrainingScene(now);
+
   if (now >= scene.nextSpawn) {
     for (const enemy of scene.enemies) {
       enemy.hitpoints = enemy.maxHitpoints!;
@@ -32,11 +33,13 @@ export function tickTraining(
     return !player.scene && player.hitpoints > 0 && !player.reconnecting;
   });
   tickDebuffs(scene, lobby, now, context);
+
   for (const player of lobby) {
     tickCompanion(player, inTrainingZone(player) ? scene : undefined, now, dt, context);
   }
 
   tickPlayerCombat(scene, lobby, now, dt, context);
+
   for (const player of players) {
     player.dps = damagePerSecond(player, now);
   }

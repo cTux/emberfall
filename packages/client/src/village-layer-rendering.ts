@@ -40,11 +40,14 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
     wardrobeOpen,
     wardrobeOpenedAt,
   } = frame;
+
   if (layer.dummy) {
     const dummy = layer.dummy;
+
     if (environmentArt.naturalWidth) {
       drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
       const hit = damageByTarget.get(`enemy:${dummy.id}`);
+
       if (hit) {
         drawTargetHit(
           ctx,
@@ -60,6 +63,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
 
     ctx.globalAlpha = 1;
     ctx.occlusion = false;
+
     if (!preferences.hideHealthBarsInTown) {
       drawWorldBar(
         ctx,
@@ -97,6 +101,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
     const outline = outlines.find((target) => {
       return target.source.id === layer.critter.id;
     });
+
     if (outline) {
       drawInteractionOutline(ctx, outline);
     }
@@ -126,6 +131,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
 
     const vegetation =
       !object.gathered && (object.id.startsWith('tree:') || object.id.startsWith('plant:'));
+
     if (vegetation) {
       drawVegetation(
         ctx,
@@ -172,6 +178,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
         target.source.id === `gather:${object.id}`
       );
     });
+
     if (outline) {
       drawInteractionOutline(ctx, outline);
     }
@@ -181,6 +188,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
     }
 
     ctx.globalAlpha = 1;
+
     if (object.id.startsWith('tree:') && !preferences.hideHealthBarsInTown) {
       drawResourceHealth(
         ctx,

@@ -58,6 +58,7 @@ export function requestPlayerCast(
 
   player.castSeq = request.id;
   const stats = context.rules.characterStats(player);
+
   if (
     !scene ||
     !stats.hasWeapon ||
@@ -92,6 +93,7 @@ export function tickPlayerCombat(
   context: Game = game,
 ) {
   tickTalentEffects(scene, alive, now);
+
   for (const player of alive) {
     const stats = context.rules.characterStats(player);
     player.attackTargetId =
@@ -101,6 +103,7 @@ export function tickPlayerCombat(
     const ability = context.registries.abilities.require(
       context.registries.classes.require(player.classId ?? 'warrior').attack,
     );
+
     if (
       !stats.hasWeapon ||
       !Number.isFinite(stats.attackIntervalMs) ||
@@ -117,6 +120,7 @@ export function tickPlayerCombat(
       ability.aimSmoothingSeconds,
     );
     const attacking = player.autoAttack !== false;
+
     if (
       attacking &&
       (ability.kind === 'slash' ||
@@ -136,12 +140,14 @@ export function tickPlayerCombat(
     }
 
     const age = now - player.attackAt;
+
     if (age < 0 || age >= ability.durationMs) {
       continue;
     }
 
     let swing = swordHits.get(player);
     const freshSwing = !swing || swing.at !== player.attackAt || swing.sceneId !== scene.id;
+
     if (freshSwing) {
       swing = { sceneId: scene.id, at: player.attackAt, enemies: new Set() };
       swordHits.set(player, swing);
@@ -170,6 +176,7 @@ export function tickPlayerCombat(
     }
 
     slash(scene, player, player, now, context);
+
     if (!scene.training) {
       scene.enemies = scene.enemies.filter((e) => {
         return e.hitpoints > 0;
@@ -178,6 +185,7 @@ export function tickPlayerCombat(
   }
 
   tickPlayerShots(scene, alive, now, dt, context);
+
   if (!scene.training) {
     scene.enemies = scene.enemies.filter((e) => {
       return e.hitpoints > 0;

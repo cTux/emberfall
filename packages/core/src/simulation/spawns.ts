@@ -24,6 +24,7 @@ export function tickSpawns(
   scene.damage = scene.damage.filter((d) => {
     return now - d.at < TRANSIENT_EFFECTS.damage.lifetimeMs;
   });
+
   if (
     alive.length &&
     (spawnBoss ||
@@ -33,6 +34,7 @@ export function tickSpawns(
   ) {
     scene.nextSpawn = now + FOREST_ENCOUNTER.spawnIntervalMs;
     const target = alive[scene.sequence % alive.length];
+
     // Reserve one slot for the boss. Search additional clear positions only for this mandatory spawn.
     for (
       let attempt = 0;
@@ -55,6 +57,7 @@ export function tickSpawns(
         [...scene.enemies, ...scene.spawns].every((e) => {
           return forestDistance(e, position) >= 32;
         });
+
       if (!clear) {
         continue;
       }
@@ -79,6 +82,7 @@ export function tickSpawns(
         warnedAt: now,
         spawnsAt: now + ENEMY_RULES.spawnWarningMs,
       });
+
       if (spawnBoss) {
         scene.bossId = id;
       }

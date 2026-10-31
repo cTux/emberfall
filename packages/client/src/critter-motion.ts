@@ -27,6 +27,7 @@ export function createCritterMotion() {
       }
 
       let state = chickens.get(index);
+
       if (!state) {
         state = { ...critter, now, panicking: false };
         chickens.set(index, state);
@@ -36,10 +37,12 @@ export function createCritterMotion() {
       state.now = now;
       let distance = state.panicking ? 100 : 70;
       let away: Point | undefined;
+
       for (const player of players) {
         const dx = wrappedDelta(state.x, player.x, ARENA.width);
         const dy = wrappedDelta(state.y, player.y, ARENA.height);
         const length = Math.hypot(dx, dy);
+
         if (length < distance) {
           distance = length;
           away = length > 0 ? { x: dx / length, y: dy / length } : { x: state.left ? -1 : 1, y: 0 };
@@ -51,9 +54,11 @@ export function createCritterMotion() {
       const dy = away?.y ?? wrappedDelta(critter.y, state.y, ARENA.height);
       const length = Math.hypot(dx, dy);
       const step = away ? 80 * dt : Math.min(length, 10 * dt);
+
       if (length > 0) {
         state.x = wrap(state.x + (dx / length) * step, ARENA.width);
         state.y = wrap(state.y + (dy / length) * step, ARENA.height);
+
         if (Math.abs(dx) > 1e-6) {
           state.left = dx < 0;
         }
@@ -96,6 +101,7 @@ function sampleCritters(
           };
         })
       : [];
+
   if (area === 'forest') {
     for (
       let row = Math.floor((bounds.y - 40) / 320);
@@ -109,12 +115,14 @@ function sampleCritters(
       ) {
         const c = wrap(col, FOREST.width / 320),
           r = wrap(row, FOREST.height / 320);
+
         if ((c + r * 3) % 2) {
           continue;
         }
 
         const x = col * 320 + 120,
           y = row * 320 + 180;
+
         if (
           forestTrees(x, y, 60).some((t) => {
             return Math.hypot(t.x - x, t.y - y) < 55;

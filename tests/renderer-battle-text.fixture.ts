@@ -8,6 +8,7 @@ export function compareBattleText(pixi: PixiContext, gpu: HTMLCanvasElement) {
   pixi.fillStyle = '#17251d';
   pixi.fillRect(0, 0, 850, 260);
   const ages = [0, 80, 220, 600, 750];
+
   for (const [index, age] of ages.entries()) {
     for (const critical of [false, true]) {
       drawDamageNumber(
@@ -33,9 +34,11 @@ export function compareBattleText(pixi: PixiContext, gpu: HTMLCanvasElement) {
       let count = 0,
         top = 130,
         bottom = 0;
+
       for (let y = 0; y < 130; y++) {
         for (let x = 0; x < 170; x++) {
           const offset = (y * 170 + x) * 4;
+
           if (
             Math.abs(pixels[offset] - 23) +
               Math.abs(pixels[offset + 1] - 37) +

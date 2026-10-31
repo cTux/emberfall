@@ -139,6 +139,7 @@ test('Sell all and buyback use the same rolled price without rounding drift', ()
   sellAll(player, merchant);
   assert.equal(player.coins, total);
   assert.equal(merchant.coins, 5000 - total);
+
   // Snapshot the queue because each purchase removes its entry.
   // oxlint-disable-next-line unicorn/no-useless-spread
   for (const entry of [...merchant.buyback]) {

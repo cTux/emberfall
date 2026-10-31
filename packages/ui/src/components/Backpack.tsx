@@ -143,6 +143,7 @@ export function Backpack({
                   const stat = tooltipId
                     ? document.getElementById(tooltipId)?.querySelector<HTMLButtonElement>('button')
                     : null;
+
                   if (stat) {
                     event.preventDefault();
                     stat.focus();

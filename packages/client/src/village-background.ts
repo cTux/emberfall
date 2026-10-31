@@ -68,11 +68,13 @@ export function villageBackground(graphics: GraphicsSettings) {
   }
 
   const key = `${graphics.shadows}:${graphics.ambientOcclusion}`;
+
   if (cached?.key === key) {
     return cached;
   }
 
   const background = cached?.background ?? document.createElement('canvas');
+
   if (background.width !== ARENA.width) {
     background.width = ARENA.width;
     background.height = ARENA.height;
@@ -142,6 +144,7 @@ export function villageBackground(graphics: GraphicsSettings) {
 
   drawVillagePaths(ctx, floor);
   const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
+
   for (const object of scenery.filter((object) => {
     return !/^(tree|plant|rock):/.test(object.id);
   })) {

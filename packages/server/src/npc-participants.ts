@@ -13,6 +13,7 @@ export function conversationParticipants(world: NpcWorld, conversation: Conversa
     : world.npcs?.find((n) => {
         return n.id === conversation.otherNpc;
       });
+
   if (
     !npc ||
     !target ||
@@ -39,6 +40,7 @@ export function faceConversation(
     wrappedDelta(actors.target.y, actors.npc.y, VILLAGE_DEFINITION.geometry.height),
     wrappedDelta(actors.target.x, actors.npc.x, VILLAGE_DEFINITION.geometry.width),
   );
+
   if (conversation.otherNpc) {
     const other = world.npcs!.find((n) => {
       return n.id === conversation.otherNpc;
@@ -51,12 +53,14 @@ export function faceConversation(
 
 export function conversationBlocks(conversations: (Conversation | undefined)[]) {
   const blocked = new Set<string>();
+
   for (const conversation of conversations) {
     if (!conversation) {
       continue;
     }
 
     blocked.add(conversation.speaker);
+
     if (conversation.otherNpc) {
       blocked.add(conversation.otherNpc);
     }

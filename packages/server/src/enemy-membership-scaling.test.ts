@@ -11,6 +11,7 @@ test('scene population compounds enemy HP and dropped XP, preserving fractions i
   t.mock.method(Math, 'random', () => {
     return 0.5;
   });
+
   for (const count of [1, 2, 3, 8]) {
     for (const kind of ['normal', 'elite', 'boss'] as const) {
       t.mock.method(Math, 'random', () => {
@@ -22,6 +23,7 @@ test('scene population compounds enemy HP and dropped XP, preserving fractions i
           id: `p${i}`,
         };
       });
+
       // Dead scene members count; village members and companions do not.
       if (count > 1) {
         players[count - 1].hitpoints = 0;
@@ -70,6 +72,7 @@ test('scene population compounds enemy HP and dropped XP, preserving fractions i
       assert.equal(players[0].experience, 1 + 1.2 ** (count - 1));
       assert.equal(newcomer.experience, 1.2 ** (count - 1));
       assert.equal(lobby.experience, 0);
+
       if (count > 1) {
         assert.equal(players[count - 1].experience, 0);
       }

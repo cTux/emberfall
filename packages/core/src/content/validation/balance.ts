@@ -2,6 +2,7 @@ import type { ValidationContext } from './context.ts';
 
 export function validateBalance(context: ValidationContext) {
   const { r, check, positive, nonnegative } = context;
+
   for (const type of r.enemyTypes.values()) {
     check(
       ['normal', 'elite', 'boss'].includes(type.id) &&

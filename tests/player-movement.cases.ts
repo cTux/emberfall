@@ -21,6 +21,7 @@ test('class movement page shows every direction and supports gait inspection', a
   await page.waitForTimeout(160);
   await expect(canvas).toHaveAttribute('data-frame', pausedFrame!);
   const seen = new Set<string>();
+
   for (let frame = 0; frame < 6; frame++) {
     const previous = await canvas.getAttribute('data-frame');
     await page.getByRole('button', { name: 'Next frame' }).click();

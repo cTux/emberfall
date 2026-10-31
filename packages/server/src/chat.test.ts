@@ -34,6 +34,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
     ws.on('message', (raw) => {
       const message = JSON.parse(raw.toString()) as ServerMessage;
       messages.push(message);
+
       if (message.type === 'joined' || message.type === 'state') {
         world = message.world;
       }
@@ -74,6 +75,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
     await wait(() => {
       return alice.world?.chat?.at(-1)?.text === 'Bob joined.';
     });
+
     for (const text of ['   ', 'x'.repeat(201), 'line\nbreak', 'hidden\u202econtrol']) {
       alice.send({ type: 'chat', text });
     }
@@ -96,6 +98,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
         return m.name === 'System' && m.playerId === '';
       }),
     );
+
     for (const message of alice.world!.chat!) {
       assert.equal(
         message.excludedPlayerId,
@@ -124,6 +127,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
         return m.type === 'error' && m.message.includes('before sending');
       });
     });
+
     for (let i = 0; i < 11; i++) {
       if (i) {
         await new Promise((resolve) => {

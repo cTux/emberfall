@@ -56,6 +56,7 @@ export class VillagePlayers {
         return p.id;
       }),
     );
+
     for (const id of this.positions.keys()) {
       if (!liveIds.has(id)) {
         this.positions.delete(id);
@@ -63,10 +64,12 @@ export class VillagePlayers {
     }
 
     const dynamic: Caster[] = [];
+
     for (const player of players) {
       const pos = this.positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
       const ix = player.inputX ?? 0,
         iy = player.inputY ?? 0;
+
       if (Math.hypot(ix, iy) > 0) {
         pos.facing = movementFacing(ix, iy, pos.facing);
       }
@@ -77,6 +80,7 @@ export class VillagePlayers {
         player.hitpoints > 0,
         player.attackAt,
       );
+
       if (frame === 5 || frame === 6) {
         pos.facing = movementFacing(
           Math.cos(player.attackAngle ?? 0),
@@ -94,6 +98,7 @@ export class VillagePlayers {
         false,
         ACTOR_CELL,
       );
+
       if (mask && player.id === playerId) {
         const breath = idleBreath(now, frame);
         ctx.setPlayerCutout(mask, player.x - 24, player.y + 18 - 48 * breath, 48, 48 * breath);
@@ -130,6 +135,7 @@ export class VillagePlayers {
       player.hitpoints > 0,
       player.attackAt,
     );
+
     // Four directions share the same idle, walk, action and fallen rows.
     if (moving) {
       pos.facing = movementFacing(ix, iy, pos.facing);
@@ -148,6 +154,7 @@ export class VillagePlayers {
     this.positions.set(player.id, pos);
     ctx.globalAlpha = 1;
     ctx.spriteTint = player.reconnecting ? '#ff5555' : '#ffffff';
+
     if (knight.complete && knight.naturalWidth) {
       if (quality.motionBlur && moving) {
         // Sprite-only temporal samples keep HUD text and the world sharp.
@@ -183,6 +190,7 @@ export class VillagePlayers {
     }
 
     const highlightPlayer = highlightInteractions && !!partyAction(view, local, player);
+
     if (
       highlightPlayer ||
       view?.partyRequests?.some((r) => {
@@ -191,6 +199,7 @@ export class VillagePlayers {
     ) {
       ctx.occlusion = false;
       const mask = spriteMask(knight, pos.facing, spriteRow, false, ACTOR_CELL, false, ACTOR_CELL);
+
       if (mask) {
         drawPartyOutline(
           ctx,

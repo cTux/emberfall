@@ -29,6 +29,7 @@ test('learned Pack Howl boosts Bear size, claw reach and health at either rank u
       bear.hitpoints = baseHealth - 20;
       assert.equal(bear.size, 48);
       assert.equal(companionStats(player).range, 75);
+
       for (let i = 0; i < learned; i++) {
         learnTalent(player, talentNodeId('druid', 1, 3));
       }
@@ -73,6 +74,7 @@ test('talent auto-target selects a living enemy in range across seams and preser
       player.autoTarget = autoTarget;
       player.x = training ? TRAINING_ZONES[0].x : 10;
       player.y = training ? TRAINING_ZONES[0].y : 1000;
+
       if (training) {
         player.scene = undefined;
       }

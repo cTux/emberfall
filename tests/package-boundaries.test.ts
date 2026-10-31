@@ -19,6 +19,7 @@ test('workspace packages preserve their documented dependency direction', () => 
   for (const [pkg, forbidden] of Object.entries(forbiddenPackages)) {
     const root = path.join(packages, pkg);
     const manifest = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
+
     for (const section of [
       'dependencies',
       'devDependencies',
@@ -41,6 +42,7 @@ test('workspace packages preserve their documented dependency direction', () => 
 
       const filename = path.join(root, 'src', file);
       const source = readFileSync(filename, 'utf8');
+
       for (const [, specifier] of source.matchAll(
         /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]([^'"]+)['"]/g,
       )) {
@@ -50,6 +52,7 @@ test('workspace packages preserve their documented dependency direction', () => 
               specifier !== `@emberfall/${dependency}`,
             `${filename}: ${specifier}`,
           );
+
           if (specifier.startsWith('.')) {
             const target = path.resolve(path.dirname(filename), specifier);
             const forbiddenRoot = path.join(packages, dependency);
@@ -66,6 +69,7 @@ test('workspace packages preserve their documented dependency direction', () => 
 
 test('common cannot depend on core, and TypeScript enums belong in common', () => {
   const manifest = JSON.parse(readFileSync(path.join(common, 'package.json'), 'utf8'));
+
   for (const section of [
     'dependencies',
     'devDependencies',
@@ -77,6 +81,7 @@ test('common cannot depend on core, and TypeScript enums belong in common', () =
 
   for (const pkg of readdirSync(packages)) {
     const sourceRoot = path.join(packages, pkg, 'src');
+
     for (const file of readdirSync(sourceRoot, { recursive: true, encoding: 'utf8' })) {
       if (!/\.tsx?$/.test(file)) {
         continue;
@@ -84,6 +89,7 @@ test('common cannot depend on core, and TypeScript enums belong in common', () =
 
       const filename = path.join(sourceRoot, file);
       const source = readFileSync(filename, 'utf8');
+
       if (/\benum\s+\w+\s*\{/.test(source)) {
         assert.equal(pkg, 'common', filename);
       }
@@ -96,6 +102,7 @@ test('common cannot depend on core, and TypeScript enums belong in common', () =
         /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]([^'"]+)['"]/g,
       )) {
         assert.ok(!/^@emberfall\/core(?:\/|$)/.test(specifier), filename);
+
         if (specifier.startsWith('.')) {
           const target = path.resolve(path.dirname(filename), specifier);
           assert.ok(target !== core && !target.startsWith(`${core}${path.sep}`), filename);

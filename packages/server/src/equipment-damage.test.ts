@@ -55,17 +55,20 @@ test('armor cannot reduce incoming player or Bear damage below one', () => {
       },
     },
   ]);
+
   for (const bear of [false, true]) {
     const player = hero(bear ? 'druid' : 'warrior');
     player.scene = 'forest';
     player.autoAttack = false;
     player.equipment!.ring = 'minimum-damage-ring';
     const arena = scene(false);
+
     if (bear) {
       tickCompanion(player, arena, 1000, 0, context);
     }
 
     const target = bear ? player.bear! : player;
+
     if (bear) {
       target.x = player.x - 100;
     }
@@ -92,6 +95,7 @@ test('critical boundary is exactly five percent, with fractional 150% power in b
   for (const training of [true, false]) {
     for (const classId of CLASS_IDS) {
       const player = hero(classId);
+
       for (const roll of [0, 0.049999, 0.05, 0.99]) {
         const random = t.mock.method(Math, 'random', () => {
           return roll;
@@ -102,6 +106,7 @@ test('critical boundary is exactly five percent, with fractional 150% power in b
         assert.equal(hit.critical, roll < 0.05);
         assert.equal(hit.amount, characterStats(player).power * (roll < 0.05 ? 1.5 : 1));
         assert.equal(hit.damageType, characterStats(player).damageType);
+
         if (training) {
           assert.equal(player.experience, 0);
         }
@@ -116,6 +121,7 @@ test('projectile and splash hits carry weapon metadata; ailments never criticall
   t.mock.method(Math, 'random', () => {
     return 0;
   });
+
   for (const classId of ['ranger', 'mage', 'druid'] as const) {
     const player = hero(classId);
     const arena = scene();
@@ -132,6 +138,7 @@ test('projectile and splash hits carry weapon metadata; ailments never criticall
         );
       }),
     );
+
     if (classId === 'mage') {
       assert(
         arena.damage.some((hit) => {
@@ -168,6 +175,7 @@ test('damage text uses type colors, with white fill over a thick red critical ou
       calls.push({ operation: 'stroke', color: this.strokeStyle, width: this.lineWidth });
     },
   } as unknown as CanvasRenderingContext2D;
+
   for (const damageType of ['physical', 'fire', 'poison', 'nature'] as const) {
     const hit = { id: 1, amount: 4.5, x: 0, y: 0, at: 1000, target: 'enemy:1', damageType };
     calls.length = 0;

@@ -12,12 +12,14 @@ export function alignLocalPickups(view: WorldState, local: Player) {
   const buffered = view.players.find((p) => {
     return p.id === local.id;
   });
+
   if (!buffered || buffered.scene !== local.scene) {
     return;
   }
 
   const dx = wrappedDelta(local.x, buffered.x, FOREST.width);
   const dy = wrappedDelta(local.y, buffered.y, FOREST.height);
+
   for (const drop of view.scene?.drops ?? []) {
     if (drop.collectorId !== local.id) {
       continue;

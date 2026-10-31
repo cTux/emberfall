@@ -63,6 +63,7 @@ export function Equipment({
             return item.id === itemId;
           });
           const definition = item && GEAR_DEFINITIONS[item.itemId];
+
           if (definition && canEquip(id, definition, classId)) {
             send({ type: 'useItem', id: itemId });
           }

@@ -37,6 +37,10 @@ Use one blank line to separate functions and logical steps:
 - Put a blank line before `return` and `throw` when another statement precedes
   them in the same block or switch case. A sole return or throw, including a
   compact guard, needs no extra padding.
+- Put a blank line before `for` (including `for...in`, `for...of` and
+  `for await...of`), `switch` and `if` when another statement precedes them in
+  the same block or switch case. Keep `else if` chains together; add no padding
+  at the start of a block.
 - Put a blank line after control-flow blocks before the next statement.
   Keep related assignments and declarations together; use judgement to separate
   other logical steps, including arrow-function bindings and object methods.
@@ -53,13 +57,17 @@ function finish() {
 }
 
 function trim() {
-  if (!active) return;
+  prepare();
+
+  if (!active) {
+    return;
+  }
 
   compact();
 }
 ```
 
-![Concept preview: blank lines separate functions and the returned result.](../images/code-spacing.svg)
+![Concept preview: blank lines before for, switch and if statements.](../images/code-spacing.svg)
 
 The examples illustrate source layout; they are not gameplay captures.
 

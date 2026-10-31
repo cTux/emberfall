@@ -25,6 +25,7 @@ test('cat identities survive motion and wrapped camera projection', () => {
     return c.kind === 'cat';
   });
   const moved = crittersAt('village', 2000, { ...bounds, x: 4800 });
+
   for (const cat of first) {
     const copy = moved.find((c) => {
       return c.id === cat.id;
@@ -41,6 +42,7 @@ test('cat replies vary, start with capitals and cycle without consecutive repeat
     return speech.pet('cat:a', index * 2000);
   });
   assert.equal(new Set(lines).size, 6);
+
   for (const line of lines) {
     assert.match(line!, /^[A-Z]/);
   }

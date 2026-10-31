@@ -10,6 +10,7 @@ test('ambient critters wander, stay bounded, cull and repeat across forest seams
   assert.equal(first.length, 6);
   assert.deepEqual(first, crittersAt('village', 12000, lobby));
   assert.notDeepEqual(first, crittersAt('village', 2000, lobby));
+
   for (let now = 0; now < 12000; now += 100) {
     const critters = crittersAt('village', now, lobby);
     critters.forEach((p, i) => {
@@ -55,6 +56,7 @@ test('chickens flee in every direction at eight times walking speed and animate 
     const distance = Math.hypot(dx, dy);
     assert.ok(Math.abs(end.x - start.x + (dx / distance) * 8) < 1e-9);
     assert.ok(Math.abs(end.y - start.y + (dy / distance) * 8) < 1e-9);
+
     if (dx) {
       assert.equal(end.left, dx > 0);
     }
@@ -95,6 +97,7 @@ test('chickens react to the nearest player, keep a safety margin, and return wit
   assert.equal(margin.x, fled.x - 8);
   const settled = chicken(motion(300, village, []));
   assert.ok(Math.hypot(settled.x - margin.x, settled.y - margin.y) <= 1.000001);
+
   for (let now = 400; now <= 12000; now += 100) {
     motion(now, village, []);
   }
@@ -130,6 +133,7 @@ test('a chased chicken travels continuously across both world edges', () => {
   for (const axis of ['x', 'y'] as const) {
     const motion = createCritterMotion();
     let previous = chicken(motion(0, village, []));
+
     for (let now = 100; now <= 14000; now += 100) {
       const player = { x: previous.x, y: previous.y, [axis]: previous[axis] + 30 };
       const current = chicken(motion(now, village, [player]));

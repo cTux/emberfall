@@ -55,6 +55,7 @@ export class LocalProjectiles {
 
     const dt = Math.min(100, Math.max(0, now - this.shotsAt)) / 1000;
     this.shotsAt = now;
+
     if (!scene) {
       this.shots = [];
 
@@ -80,6 +81,7 @@ export class LocalProjectiles {
             ? (frame.player.castSeq ?? 0) >= shot.castId &&
               (frame.world.serverNow ?? 0) >= (frame.player.attackAt ?? 0)
             : (frame.player.attackAt ?? -Infinity) >= shot.castAt!;
+
         if (acknowledged) {
           const candidates = confirmed?.playerShots?.filter((s) => {
             return (
@@ -97,6 +99,7 @@ export class LocalProjectiles {
               : (candidates?.find((s) => {
                   return s.targetId === shot.targetId;
                 }) ?? candidates?.[0]);
+
           if (!serverShot) {
             return false;
           }
@@ -104,6 +107,7 @@ export class LocalProjectiles {
           matched.add(serverShot.id);
           shot.id = serverShot.id;
           shot.confirmedId = serverShot.id;
+
           // Keep the same visual through every server-confirmed turn.
           if (serverShot.kind === 'roots' && serverShot.hitIds.length > shot.hitIds.length) {
             Object.assign(shot, serverShot, { hitIds: [...serverShot.hitIds] });
@@ -122,6 +126,7 @@ export class LocalProjectiles {
 
         return shot.remaining > 0.001;
       });
+
       if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
         const known =
           confirmed?.playerShots?.filter((shot) => {
@@ -131,6 +136,7 @@ export class LocalProjectiles {
               (attack.id !== undefined ? shot.castId === attack.id : shot.castAt === attack.at)
             );
           }) ?? [];
+
         if (known.length) {
           this.shots.push(
             ...known
@@ -146,6 +152,7 @@ export class LocalProjectiles {
           const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
           fireClassAttack(cast, { ...player, attackAt: attack.at });
           this.shots.push(...cast.playerShots);
+
           if (cast.playerShots.length) {
             this.shotCastAt = attack.at;
           }
@@ -163,6 +170,7 @@ export class LocalProjectiles {
             (s.castId === undefined || !attack.casts.has(s.castId))
           );
         }) ?? [];
+
       for (const shot of missed) {
         // Late discoveries are already in flight. Moving them back to the
         // player while keeping the server's remaining range truncates the shot.

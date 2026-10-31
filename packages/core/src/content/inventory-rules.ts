@@ -15,6 +15,7 @@ export function createInventoryRules(
 
   function addItem(backpack: BackpackItem[], item: BackpackItem, capacity = INVENTORY_SLOTS) {
     const definition = itemDefinition(item.itemId);
+
     if (
       !Number.isSafeInteger(item.quantity) ||
       item.quantity <= 0 ||
@@ -27,6 +28,7 @@ export function createInventoryRules(
       const stack = backpack.find((entry) => {
         return entry.itemId === item.itemId;
       });
+
       if (stack) {
         if (!Number.isSafeInteger(stack.quantity + item.quantity)) {
           throw new Error('Stack is too large.');
@@ -58,6 +60,7 @@ export function createInventoryRules(
       return { stack, quantity };
     });
     const slots = Math.ceil(remaining / limit);
+
     if (slots && backpack.length + slots > capacity) {
       throw new Error('The destination inventory is full.');
     }
@@ -78,6 +81,7 @@ export function createInventoryRules(
   /** Move the whole entry only after the destination has accepted it. */
   function transferStoredItem(player: Player, tab: number, id: string, depositing: boolean) {
     const storage = player.storages?.[tab];
+
     if (!storage || !Number.isInteger(tab)) {
       throw new Error('Invalid storage tab.');
     }
@@ -91,6 +95,7 @@ export function createInventoryRules(
   function moveStorageItem(player: Player, fromTab: number, toTab: number, id: string) {
     const source = player.storages?.[fromTab];
     const target = player.storages?.[toTab];
+
     if (
       !Number.isInteger(fromTab) ||
       !Number.isInteger(toTab) ||
@@ -113,6 +118,7 @@ export function createInventoryRules(
     const index = source.findIndex((item) => {
       return item.id === id;
     });
+
     if (index < 0) {
       throw new Error('Item is no longer available.');
     }
@@ -126,18 +132,21 @@ export function createInventoryRules(
     const index = backpack.findIndex((item) => {
       return item.id === id;
     });
+
     if (index < 0) {
       throw new Error('Item is no longer in your backpack.');
     }
 
     const item = backpack[index];
     const consumable = CONSUMABLES[item.itemId as keyof typeof CONSUMABLES];
+
     if (consumable) {
       if (player.hitpoints <= 0 || player.hitpoints >= player.maxHitpoints) {
         throw new Error('You do not need healing.');
       }
 
       player.hitpoints = Math.min(player.maxHitpoints, player.hitpoints + consumable.healing);
+
       if (--item.quantity === 0) {
         backpack.splice(index, 1);
       }
@@ -149,12 +158,14 @@ export function createInventoryRules(
     const slot = EQUIPMENT_SLOTS.find((slot) => {
       return canEquip(slot, gear, player.classId ?? 'warrior');
     });
+
     if (!slot) {
       throw new Error('Your class cannot equip this item.');
     }
 
     player.equipment = { ...equippedItems(player) };
     const previous = player.equipment[slot];
+
     if (previous) {
       backpack[index] = player.equipmentItems?.[slot] ?? {
         id: crypto.randomUUID(),
@@ -173,6 +184,7 @@ export function createInventoryRules(
   function unequipItem(player: Player, slot: EquipmentSlot) {
     player.equipment = { ...equippedItems(player) };
     const itemId = player.equipment[slot];
+
     if (!itemId) {
       throw new Error('This equipment slot is empty.');
     }
@@ -182,6 +194,7 @@ export function createInventoryRules(
       player.equipmentItems?.[slot] ?? { id: crypto.randomUUID(), itemId, quantity: 1 },
     );
     player.equipment[slot] = null;
+
     if (player.equipmentItems) {
       delete player.equipmentItems[slot];
     }

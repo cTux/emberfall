@@ -52,6 +52,7 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
     return b.id === id && b.id !== 'inn';
   });
   const bullseye = !!BULLSEYE && object.id === `workstation:${BULLSEYE.id}`;
+
   if (
     !building &&
     !bullseye &&
@@ -114,11 +115,13 @@ export function pickInteraction(
     const target = targets[i];
     const x = Math.floor(((point.x - target.x) * target.mask.width) / target.width);
     const y = Math.floor(((point.y - target.y) * target.mask.height) / target.height);
+
     if (x < 0 || y < 0 || x >= target.mask.width || y >= target.mask.height) {
       continue;
     }
 
     let data = pixels.get(target.mask);
+
     if (!data) {
       data = target.mask
         .getContext('2d')!
@@ -143,11 +146,13 @@ export function drawInteractionOutline(ctx: DrawingContext, target: InteractionT
   const color = target.highlighted ? '#00ff00' : '#ffdf00';
   const key = `${width}:${height}:${color}`;
   let cache = outlines.get(target.mask);
+
   if (!cache) {
     outlines.set(target.mask, (cache = new Map()));
   }
 
   let outline = cache.get(key);
+
   if (!outline) {
     const mask = document.createElement('canvas');
     mask.width = width;
@@ -184,8 +189,10 @@ export function partyInteraction(
   candidates.sort((a, b) => {
     return forestDistance(player, a) - forestDistance(player, b);
   });
+
   for (const target of candidates) {
     const name = partyAction(world, player, target);
+
     if (name) {
       return { id: `party:${target.id}`, name, x: target.x, y: target.y };
     }

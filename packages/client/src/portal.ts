@@ -58,6 +58,7 @@ export function drawPortal(
 
     ctx.save();
     ctx.globalAlpha = opacity;
+
     if (bloom) {
       ctx.shadowBlur = 12;
       ctx.shadowColor = '#53c9ff';
@@ -65,6 +66,7 @@ export function drawPortal(
 
     drawStonePortal(ctx, x - 32, y - 72, 64, 80, now);
     ctx.restore();
+
     if (outline) {
       drawInteractionOutline(ctx, outline);
     }
@@ -84,6 +86,7 @@ export function drawPortal(
   ctx.globalAlpha = opacity;
   ctx.translate(x, y);
   ctx.lineWidth = 4;
+
   if (!shadows) {
     ctx.fillStyle = '#162e4d';
     ctx.beginPath();
@@ -92,6 +95,7 @@ export function drawPortal(
   }
 
   ctx.save();
+
   if (bloom) {
     ctx.shadowBlur = 20;
     ctx.shadowColor = '#53c9ff';
@@ -106,6 +110,7 @@ export function drawPortal(
   ctx.shadowBlur = 0;
   const colors = ['#101e68', '#182c86', '#2042a6', '#285ac5', '#347fe0', '#52b4f5', '#8cddff'];
   const time = now / 1600;
+
   for (let py = -68; py < 8; py += 3) {
     for (let px = -25; px < 25; px += 3) {
       const u = px / 12,
@@ -121,6 +126,7 @@ export function drawPortal(
   ctx.strokeStyle = '#8cddff';
   ctx.lineWidth = 2;
   ctx.stroke();
+
   for (let i = 0; i < 24; i++) {
     const age = ((now + i * 137) % 1800) / 1800,
       angle = i * 2.399963;
@@ -136,6 +142,7 @@ export function drawPortal(
 
   ctx.restore();
   ctx.restore();
+
   if (outline) {
     drawInteractionOutline(ctx, outline);
   }

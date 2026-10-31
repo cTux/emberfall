@@ -43,6 +43,7 @@ function PlantIcon({ variant }: { variant: number }) {
 
 export function itemIcon(itemId: string) {
   const art = itemArtName(itemId);
+
   if (art) {
     return <img src={clientAsset(`/assets/wardrobe-style/${art}.png`)} alt='' />;
   }
@@ -50,6 +51,7 @@ export function itemIcon(itemId: string) {
   const plantVariant = PLANT_KINDS.findIndex((kind) => {
     return kind === itemId;
   });
+
   if (plantVariant !== -1 || itemId === 'plant') {
     return <PlantIcon variant={plantVariant} />;
   }

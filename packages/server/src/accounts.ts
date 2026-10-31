@@ -56,6 +56,7 @@ export class Accounts {
 
   private sweep() {
     const now = Date.now();
+
     for (const map of [this.attempts, this.tickets, this.limits]) {
       for (const [key, value] of map) {
         if (value.expires <= now) {
@@ -78,11 +79,13 @@ export class Accounts {
   private limit(key: string, max: number) {
     this.sweep();
     const value = this.limits.get(key) ?? { count: 0, expires: Date.now() + 60_000 };
+
     if (this.limits.size >= 5000 && !this.limits.has(key)) {
       throw new Error('Too many requests. Try again shortly.');
     }
 
     this.limits.set(key, value);
+
     if (++value.count > max) {
       throw new Error('Too many requests. Try again shortly.');
     }
@@ -96,6 +99,7 @@ export class Accounts {
     const key = hash(ticket),
       saved = this.tickets.get(key);
     this.tickets.delete(key);
+
     if (!saved || saved.expires <= Date.now() || !this.store.session(saved.token)?.nickname) {
       return undefined;
     }
@@ -121,11 +125,13 @@ export class Accounts {
 
   async handle(req: IncomingMessage & { body?: unknown }, res: ServerResponse) {
     const url = new URL(req.url ?? '/', this.origin);
+
     if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/account')) {
       return false;
     }
 
     const response = accountResponse(req, res, this.clientOrigin);
+
     if (!response) {
       return true;
     }
@@ -135,6 +141,7 @@ export class Accounts {
     try {
       if (req.method === 'GET' && url.pathname === '/auth/steam') {
         this.limit(`login:${req.socket.remoteAddress}`, 20);
+
         if (this.attempts.size >= 5000) {
           throw new Error('Login is busy. Try again shortly.');
         }
@@ -151,6 +158,7 @@ export class Accounts {
       if (req.method === 'GET' && url.pathname === '/auth/steam/callback') {
         const state = url.searchParams.get('state') ?? '';
         const attempt = this.attempts.get(state);
+
         if (
           !attempt ||
           attempt.expires <= Date.now() ||
@@ -191,6 +199,7 @@ export class Accounts {
       }
 
       const account = this.store.session(token);
+
       if (req.method === 'GET' && url.pathname === '/api/account') {
         const view: AccountView = {
           mode: 'steam',
@@ -219,6 +228,7 @@ export class Accounts {
       }
 
       this.limit(`account:${account.steamId}`, 30);
+
       if (req.method === 'POST' && url.pathname === '/api/account/ticket') {
         if (!nicknameSchema.safeParse(account.nickname).success) {
           json(409, { error: 'Choose your nickname first.' });
@@ -250,6 +260,7 @@ export class Accounts {
         const parsed = nicknameSchema.safeParse(
           body && typeof body === 'object' && 'nickname' in body ? body.nickname : undefined,
         );
+
         if (!parsed.success) {
           json(400, { error: 'Use 1–24 characters without invisible or control characters.' });
 

@@ -39,6 +39,7 @@ export function createValidationRules(
         return storage.items;
       }),
     ];
+
     if (
       new Set(
         instances.map((item) => {
@@ -59,6 +60,7 @@ export function createValidationRules(
       }
 
       const parsed = schema.safeParse(progress[key]);
+
       if (!parsed.success) {
         ctx.addIssue({ code: 'custom', path: [key], message: parsed.error.message });
       }
@@ -76,6 +78,7 @@ export function createValidationRules(
     const geometry = content.worlds.require('forest').value as {
       geometry: { width: number; height: number };
     };
+
     if (
       'aimX' in message &&
       (message.aimX < 0 ||

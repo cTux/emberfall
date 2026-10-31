@@ -169,6 +169,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                           .getElementById(tooltipId)
                           ?.querySelector<HTMLButtonElement>('button')
                       : null;
+
                     if (badge) {
                       event.preventDefault();
                       badge.focus();
