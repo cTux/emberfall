@@ -1,4 +1,4 @@
-import { game } from '../game.ts';
+import { game, type createGame } from '../game.ts';
 import { appendSceneEntities, wrap } from '@emberfall/common';
 import type { DebuffKind, Enemy, SceneState, Player, DamageType } from '@emberfall/common';
 import { LOOT_ITEM_IDS } from '../definitions/equipment.ts';
@@ -16,6 +16,7 @@ import { isMultiChanced } from '../utils/isMultiChanced.ts';
 import { talentAilmentChance, talentEnemyDeath } from '../talent-ailments.ts';
 
 const rewardPlayers = new WeakMap<SceneState, Player[]>();
+type Game = ReturnType<typeof createGame>;
 export function setRewardPlayers(scene: SceneState, players: Player[]) {
   rewardPlayers.set(scene, players);
 }
@@ -43,6 +44,7 @@ export function hitEnemy(
   critical = false,
   ability = 'Attack',
   stats?: CharacterStats,
+  context: Game = game,
 ) {
   if (enemy.hitpoints <= 0 || amount <= 0) return;
   amount = Math.max(1, amount);
@@ -84,7 +86,10 @@ export function hitEnemy(
     ailment &&
     ailment !== 'roots' &&
     owner &&
-    isChanced((AILMENT_DEFINITIONS[ailment].chance + talentAilmentChance(owner, ailment)) * 100)
+    isChanced(
+      (AILMENT_DEFINITIONS[ailment].chance + talentAilmentChance(owner, ailment)) * 100,
+      context.random,
+    )
   ) {
     enemy.debuffs ??= [];
     let debuff = enemy.debuffs.find(
@@ -120,7 +125,11 @@ export function hitEnemy(
   );
   const bonuses = [...members.values()].map((player) => characterStats(player).bonuses);
   const experienceCopies =
-    1 + isMultiChanced(bonuses.reduce((sum, stats) => sum + stats.expIncrease, 0));
+    1 +
+    isMultiChanced(
+      bonuses.reduce((sum, stats) => sum + stats.expIncrease, 0),
+      context.random,
+    );
   scene.drops ??= [];
   for (let copy = 0; copy < experienceCopies; copy++)
     appendSceneEntities(scene, 'drops', {
@@ -131,9 +140,13 @@ export function hitEnemy(
       y: enemy.y,
       at: now,
     });
-  if (isChanced(PICKUP_DEFINITIONS.gold.chance * 100)) {
+  if (isChanced(PICKUP_DEFINITIONS.gold.chance * 100, context.random)) {
     const goldCopies =
-      1 + isMultiChanced(bonuses.reduce((sum, stats) => sum + stats.goldIncrease, 0));
+      1 +
+      isMultiChanced(
+        bonuses.reduce((sum, stats) => sum + stats.goldIncrease, 0),
+        context.random,
+      );
     for (let copy = 0; copy < goldCopies; copy++)
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,
@@ -144,11 +157,11 @@ export function hitEnemy(
       });
   }
   const type = enemy.kind ?? EnemyType.Normal;
-  if (shouldDropItem(type)) {
-    const count = itemDropCount(type);
+  if (shouldDropItem(type, context.random)) {
+    const count = itemDropCount(type, context.random);
     for (let i = 0; i < count; i++) {
-      const item = game.rules.rollItem(
-        LOOT_ITEM_IDS[Math.floor(Math.random() * LOOT_ITEM_IDS.length)],
+      const item = context.rules.rollItem(
+        LOOT_ITEM_IDS[Math.floor(context.random() * LOOT_ITEM_IDS.length)],
       );
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,

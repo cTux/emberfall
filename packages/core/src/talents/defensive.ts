@@ -8,6 +8,7 @@ import { control, strike, heal, shield } from './effects.ts';
 
 export function defensive(cast: TalentCast) {
   const {
+    context,
     scene,
     player,
     nodeId,
@@ -28,7 +29,7 @@ export function defensive(cast: TalentCast) {
       if (recipient) heal(recipient, learned === 2 ? 0.2 : 0.12);
     } else
       for (const enemy of effectArea(scene, origin, 150)) {
-        strike(scene, player, enemy, learned === 2 ? 1.4 : 0.9, now, ability);
+        strike(scene, player, enemy, learned === 2 ? 1.4 : 0.9, now, ability, context);
         applyTalentAilment(enemy, player, 'roots', 1, now, learned === 2 ? 1000 : 600);
         enemy.attack = undefined;
         control(enemy, now, learned === 2 ? 1000 : 600);
@@ -43,6 +44,7 @@ export function defensive(cast: TalentCast) {
           fragments === 2 ? 0.5 : 0.35,
           now,
           TALENT_NAMES[player.classId ?? 'warrior'][2][2],
+          context,
         );
   } else if (tier === 1) {
     schedule(scene, player, nodeId, now, 5000, 1000, (at, players) => {
@@ -110,6 +112,7 @@ export function defensive(cast: TalentCast) {
         unbroken === 2 ? 1.12 : 0.45,
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][2][9],
+        context,
       );
   }
 }

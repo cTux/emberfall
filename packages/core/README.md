@@ -25,6 +25,14 @@ references/values, seals content and returns a ready context with `registries`,
 The default `game` uses the explicit `GAME_MODS` list in `src/mods/index.ts`, with
 `baseMod` first. Both server and browser initialize that list before gameplay.
 
+`createGame(mods, random)` optionally binds a random function to that context.
+Combat criticals, ailments, rewards, item rolls, enemy spawns and scheduled talent
+hits use it; training forwards the same context through the shared combat path.
+The default reads `Math.random()` at each draw. Probability helpers and item rolls
+also retain explicit per-call overrides. Seeded sources support isolated outcome
+fixtures without switching global state; item UUIDs remain cryptographically
+generated, so this is not a complete replay or deterministic identity API.
+
 `src/mods/base/worlds/village-residents.ts` holds resident identities, workstations
 and conversation topics. `village.ts` composes those with geometry and scenery;
 its compatibility exports and definition values stay stable.

@@ -52,11 +52,11 @@ export function tickSpawns(
         ) && [...scene.enemies, ...scene.spawns].every((e) => forestDistance(e, position) >= 32);
       if (!clear) continue;
       scene.spawnCount = (scene.spawnCount ?? 0) + 1;
-      const kind = spawnBoss ? EnemyType.Boss : spawnEnemyType();
+      const kind = spawnBoss ? EnemyType.Boss : spawnEnemyType(context.random);
       const id = ++scene.sequence;
       const archetype = spawnBoss
         ? BOSS_DEFINITIONS[FOREST_ENCOUNTER.boss].archetype
-        : spawnArchetype(Math.random(), scene.spawnCount, context);
+        : spawnArchetype(context.random(), scene.spawnCount, context);
       const hitpoints =
         enemyMaxHealth({ kind, archetype }, scene.difficulty, context) * healthScale;
       appendSceneEntities(scene, 'spawns', {

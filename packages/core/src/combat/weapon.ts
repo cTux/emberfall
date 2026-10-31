@@ -26,7 +26,7 @@ export function hitWithWeapon(
       ? 1 + stats.bonuses.additionalAttack
       : 1;
   for (let attack = 0; attack < attacks && enemy.hitpoints > 0; attack++) {
-    const critical = isChanced(stats.criticalChance * 100);
+    const critical = isChanced(stats.criticalChance * 100, context.random);
     hitEnemy(
       scene,
       enemy,
@@ -40,7 +40,8 @@ export function hitWithWeapon(
         ? 'Bear'
         : (context.registries.classes.get(owner.classId ?? 'warrior')?.details?.spell ?? 'Attack'),
       stats,
+      context,
     );
-    talentWeaponHit(scene, owner, enemy, now, companion, stats);
+    talentWeaponHit(scene, owner, enemy, now, companion, stats, context);
   }
 }

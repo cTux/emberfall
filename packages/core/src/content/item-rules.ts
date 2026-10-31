@@ -15,7 +15,7 @@ import {
 } from '../item-stats.ts';
 import type { Registries } from './contracts.ts';
 
-export function createItemRules(content: Registries) {
+export function createItemRules(content: Registries, roll = () => Math.random()) {
   const CONSUMABLES = Object.freeze(
     Object.fromEntries(
       content.items
@@ -61,7 +61,7 @@ export function createItemRules(content: Registries) {
       'Duplicate item identity',
     );
   type BackpackItem = z.infer<typeof backpackSchema>[number];
-  function rollItem(itemId: string, random = Math.random): BackpackItem {
+  function rollItem(itemId: string, random = roll): BackpackItem {
     const definition = itemDefinition(itemId);
     if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType])
       return { id: crypto.randomUUID(), itemId, quantity: 1 };

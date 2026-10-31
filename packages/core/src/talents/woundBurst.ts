@@ -6,8 +6,19 @@ import { schedule } from './state.ts';
 import { heal } from './effects.ts';
 
 export function woundBurst(cast: TalentCast) {
-  const { scene, player, nodeId, learned, now, stats, effectArea, ability, primary, ailment } =
-    cast;
+  const {
+    context,
+    scene,
+    player,
+    nodeId,
+    learned,
+    now,
+    stats,
+    effectArea,
+    ability,
+    primary,
+    ailment,
+  } = cast;
 
   if (!primary) return;
   const wounds =
@@ -24,7 +35,19 @@ export function woundBurst(cast: TalentCast) {
     ) * (learned === 2 ? 2 : 1.5);
   const consumedStacks = wounds.reduce((sum, entry) => sum + entry.stacks, 0);
   primary.debuffs = primary.debuffs?.filter((entry) => !wounds.includes(entry));
-  hitEnemy(scene, primary, burst, player, now, undefined, 'physical', false, ability, stats);
+  hitEnemy(
+    scene,
+    primary,
+    burst,
+    player,
+    now,
+    undefined,
+    'physical',
+    false,
+    ability,
+    stats,
+    context,
+  );
   if (learned === 2)
     for (const enemy of effectArea(scene, primary, 150))
       if (enemy !== primary)
@@ -39,6 +62,7 @@ export function woundBurst(cast: TalentCast) {
           false,
           ability,
           stats,
+          context,
         );
   const offering = rank(player, 1, 8);
   let orbConsumed = false;

@@ -4,14 +4,26 @@ import { schedule } from './state.ts';
 import { strike } from './effects.ts';
 
 export function companion(cast: TalentCast) {
-  const { scene, player, nodeId, learned, now, stats, effectArea, tier, ability, primary } = cast;
+  const {
+    context,
+    scene,
+    player,
+    nodeId,
+    learned,
+    now,
+    stats,
+    effectArea,
+    tier,
+    ability,
+    primary,
+  } = cast;
 
   const bear = player.bear;
   if (!bear || bear.hitpoints <= 0) return;
   if (tier === 0 && primary) {
     bear.x = primary.x;
     bear.y = primary.y;
-    strike(scene, player, primary, learned === 2 ? 2.1 : 1.5, now, ability);
+    strike(scene, player, primary, learned === 2 ? 2.1 : 1.5, now, ability, context);
   } else if (tier === 1) {
     bear.hitpoints = Math.min(
       bear.maxHitpoints,
@@ -21,14 +33,14 @@ export function companion(cast: TalentCast) {
       applyTalentAilment(enemy, player, 'roots', 1, now, 1500);
   } else if (tier === 2)
     for (const enemy of effectArea(scene, bear, 250)) {
-      strike(scene, player, enemy, learned === 2 ? 2.5 : 1.8, now, ability);
+      strike(scene, player, enemy, learned === 2 ? 2.5 : 1.8, now, ability, context);
       applyTalentAilment(enemy, player, 'bleed', learned, now, undefined, stats);
     }
   else
     schedule(scene, player, nodeId, now, 4000, 1000, (at) => {
       if (bear.hitpoints <= 0) return;
       for (const enemy of effectArea(scene, bear, 180))
-        strike(scene, player, enemy, learned === 2 ? 1 : 0.6, at, ability);
+        strike(scene, player, enemy, learned === 2 ? 1 : 0.6, at, ability, context);
     });
   const hunting = rank(player, 1, 4);
   if (hunting && tier === 1)

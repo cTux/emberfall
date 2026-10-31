@@ -116,6 +116,7 @@ export function castTalentAbility(
     players,
     ability.range,
     request.automatic ? (player.tactics ?? DEFAULT_TACTICS).healBelow : 1,
+    context,
   );
   return true;
 }

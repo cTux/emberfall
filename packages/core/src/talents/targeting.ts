@@ -1,3 +1,4 @@
+import { game, type createGame } from '../game.ts';
 import type { DebuffKind, Player, SceneState } from '@emberfall/common';
 import { wrap, wrappedDelta } from '@emberfall/common';
 import { forestDistance, FOREST } from '../scene.ts';
@@ -10,6 +11,7 @@ import { state } from './state.ts';
 import { talentVisual } from './effects.ts';
 import { talentCast } from '../configs/talentCast.ts';
 
+type Game = ReturnType<typeof createGame>;
 export function prepareTalentCast(
   scene: SceneState,
   player: Player,
@@ -22,6 +24,7 @@ export function prepareTalentCast(
   players: Player[] = [player],
   healingRadius = 700,
   healBelow = 1,
+  context: Game = game,
 ) {
   const effectArea = (scene: SceneState, point: { x: number; y: number }, radius: number) =>
     area(scene, point, radius * (1 + stats.bonuses.areaOfEffect / 100));
@@ -88,6 +91,7 @@ export function prepareTalentCast(
           ? 'burn'
           : 'roots';
   return {
+    context,
     scene,
     player,
     slot,

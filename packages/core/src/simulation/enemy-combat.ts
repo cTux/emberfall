@@ -32,7 +32,8 @@ export function tickEnemyCombat(
     const owner = 'returning' in target ? alive.find((p) => p.bear === target) : target;
     const reduction = owner ? context.rules.characterStats(owner).damageReduction : 0;
     damage *= 1 - reduction;
-    if (!('returning' in target)) damage = talentIncomingDamage(scene, target, damage, now);
+    if (!('returning' in target))
+      damage = talentIncomingDamage(scene, target, damage, now, context);
     else if (damage > 0) damage = Math.max(1, damage);
     damage = Math.min(target.hitpoints, damage);
     target.hitpoints = Math.max(0, target.hitpoints - damage);

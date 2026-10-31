@@ -10,6 +10,7 @@ import { talentWeaponHit } from './passives.ts';
 
 export function offensive(cast: TalentCast) {
   const {
+    context,
     scene,
     player,
     slot,
@@ -40,11 +41,11 @@ export function offensive(cast: TalentCast) {
           ? stats.bonuses.moreProjectiles
           : 0);
     for (let copy = 0; copy < copies && enemy.hitpoints > 0; copy++) {
-      strike(scene, player, enemy, scale, at, ability);
+      strike(scene, player, enemy, scale, at, ability, context);
       if (classId === 'warrior' && stats.bonuses.additionalAttack > 0)
-        talentWeaponHit(scene, player, enemy, at, false, stats);
+        talentWeaponHit(scene, player, enemy, at, false, stats, context);
       const serrated = rank(player, 1, 2);
-      if (column === 0 && serrated && Math.random() < (serrated === 2 ? 0.45 : 0.25))
+      if (column === 0 && serrated && context.random() < (serrated === 2 ? 0.45 : 0.25))
         applyTalentAilment(enemy, player, ailment, 1, at, undefined, stats);
       if (column === 1)
         applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at, undefined, stats);
@@ -54,7 +55,7 @@ export function offensive(cast: TalentCast) {
         enemy.debuffs?.some(
           (entry) => entry.ownerId === player.id && entry.stacks >= 5 && entry.expiresAt > at,
         ) &&
-        Math.random() < (deep === 2 ? 0.35 : 0.2) &&
+        context.random() < (deep === 2 ? 0.35 : 0.2) &&
         at >= (deepCuts.get(enemy)?.get(player) ?? 0)
       ) {
         const timers = deepCuts.get(enemy) ?? new WeakMap<Player, number>();
@@ -67,6 +68,7 @@ export function offensive(cast: TalentCast) {
           deep === 2 ? 1.3 : 0.8,
           at,
           TALENT_NAMES[player.classId ?? 'warrior'][1][9],
+          context,
         );
       }
     }
@@ -103,6 +105,7 @@ export function offensive(cast: TalentCast) {
             advancing === 2 ? 1.1 : 0.7,
             at,
             TALENT_NAMES[player.classId ?? 'warrior'][0][4],
+            context,
           );
     });
   } else
@@ -147,7 +150,7 @@ export function offensive(cast: TalentCast) {
     }
   }
   const second = column === 0 ? rank(player, column, 2) : 0;
-  if (second && tier === 0 && Math.random() < (second === 2 ? 0.5 : 0.25))
+  if (second && tier === 0 && context.random() < (second === 2 ? 0.5 : 0.25))
     schedule(scene, player, nodeId, now + 300, 0, 1, (at) => {
       for (const enemy of effectArea(scene, aim, 125)) hit(enemy, at, learned === 2 ? 1.05 : 0.75);
     });
@@ -163,6 +166,7 @@ export function offensive(cast: TalentCast) {
         rank(player, 0, 6) === 2 ? 1.5 : 0.9,
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][0][6],
+        context,
       );
     value.fissure = undefined;
   }
@@ -185,6 +189,7 @@ export function offensive(cast: TalentCast) {
         momentum === 2 ? 0.75 : 0.5,
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][0][8],
+        context,
       );
   }
   value.sequence = value.sequence.filter((entry) => now - entry.at <= 6000 && entry.slot !== slot);
@@ -201,6 +206,7 @@ export function offensive(cast: TalentCast) {
         rhythm === 2 ? 1.6 : 1,
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][0][9],
+        context,
       );
   }
 }
