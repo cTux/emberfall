@@ -4,7 +4,13 @@ import { VILLAGE_RESOURCES } from '../packages/core/src/index.ts';
 test('account and login failures appear only in chat before joining and Retry recovers', async ({
   page,
 }) => {
-  await page.route('**/api/account', (route) => route.fulfill({ status: 503 }), { times: 1 });
+  await page.route(
+    '**/api/account',
+    (route) => {
+      return route.fulfill({ status: 503 });
+    },
+    { times: 1 },
+  );
   await page.goto('/?login=failed');
   const log = page.getByRole('log');
   await expect(log).toContainText('System: Steam login was cancelled');
@@ -26,16 +32,22 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((entry) => {
+    return entry.players.size;
+  })!;
   const player = [...world.players.values()][0];
-  const tree = VILLAGE_RESOURCES.find((entry) => entry.kind === 'plant')!;
+  const tree = VILLAGE_RESOURCES.find((entry) => {
+    return entry.kind === 'plant';
+  })!;
   player.x = tree.x;
   player.y = tree.y + 5;
-  player.backpack = Array.from({ length: 20 }, () => ({
-    id: crypto.randomUUID(),
-    itemId: 'warrior-sword',
-    quantity: 1,
-  }));
+  player.backpack = Array.from({ length: 20 }, () => {
+    return {
+      id: crypto.randomUUID(),
+      itemId: 'warrior-sword',
+      quantity: 1,
+    };
+  });
   await expect(page.locator('canvas')).toHaveAttribute('data-resource', tree.id);
   const peer = await browser.newContext({ baseURL, ignoreHTTPSErrors: true });
   try {
@@ -48,10 +60,16 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
     for (let count = 1; count <= 12; count++) {
       await expect(page.locator('canvas')).toHaveAttribute('data-gathering', '');
       await page.keyboard.press('e');
-      await expect.poll(() => !!player.gathering).toBe(true);
+      await expect
+        .poll(() => {
+          return !!player.gathering;
+        })
+        .toBe(true);
       player.gathering!.endsAt = Date.now() - 1;
       await expect
-        .poll(() => log.locator('.chat-danger').count())
+        .poll(() => {
+          return log.locator('.chat-danger').count();
+        })
         .toBeGreaterThanOrEqual(Math.min(count, 8));
     }
 
@@ -60,7 +78,9 @@ test('gameplay errors are private system chat, capped at ten and visible beside 
     await expect(page.locator('.notice')).toHaveCount(0);
     await expect(friend.getByRole('log')).not.toContainText('The destination inventory is full.');
     expect(
-      world.chat?.some((message) => message.text === 'The destination inventory is full.'),
+      world.chat?.some((message) => {
+        return message.text === 'The destination inventory is full.';
+      }),
     ).toBe(false);
     await page.getByRole('button', { name: 'Inventory' }).click();
     await expect(page.getByRole('dialog', { name: 'Inventory', exact: true })).toBeVisible();
@@ -85,12 +105,14 @@ test('unavailable browser storage reports a system message after joining', async
   game,
 }) => {
   const world = [...game.runtime.worlds.values()][0];
-  world.chat = Array.from({ length: 10 }, (_, index) => ({
-    id: `history-${index}`,
-    playerId: '',
-    name: 'System',
-    text: `Older message ${index}`,
-  }));
+  world.chat = Array.from({ length: 10 }, (_, index) => {
+    return {
+      id: `history-${index}`,
+      playerId: '',
+      name: 'System',
+      text: `Older message ${index}`,
+    };
+  });
   await page.addInitScript(() => {
     const nativeSet = Object.getOwnPropertyDescriptor(Storage.prototype, 'setItem')!.value as (
       this: Storage,
@@ -98,7 +120,10 @@ test('unavailable browser storage reports a system message after joining', async
       value: string,
     ) => void;
     Storage.prototype.setItem = function (key: string, value: string) {
-      if (key === 'emberfall-new.character') throw new Error('Storage disabled');
+      if (key === 'emberfall-new.character') {
+        throw new Error('Storage disabled');
+      }
+
       nativeSet.call(this, key, value);
     };
   });
@@ -118,7 +143,9 @@ test('renderer startup failure is reported only as system chat', async ({ page }
       this: HTMLCanvasElement,
       ...args: Parameters<typeof getContext>
     ) {
-      if (String(args[0]).startsWith('webgl')) return null;
+      if (String(args[0]).startsWith('webgl')) {
+        return null;
+      }
 
       return getContext.apply(this, args);
     } as typeof getContext;
@@ -136,7 +163,9 @@ test('scene changes retain server order when older NPC speech becomes visible', 
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((entry) => {
+    return entry.players.size;
+  })!;
   const player = [...world.players.values()][0];
   world.chat = [
     {

@@ -27,14 +27,19 @@ test('boar leaves its wardrobe spawn, follows its owner and attacks training tar
   const s = tickTraining(undefined, [p], 10000, 0);
   p.x = 480;
   p.y = 360;
-  for (let now = 10050; now <= 12000; now += 50) tickTraining(s, [p], now, 0.05);
+  for (let now = 10050; now <= 12000; now += 50) {
+    tickTraining(s, [p], now, 0.05);
+  }
+
   assert(forestDistance(p.bear!, p) <= 20.01, 'boar must escape the wardrobe and follow');
   p.x = TRAINING_ZONES[0].x + 35;
   p.y = 355;
   let bearHit = false;
   for (let now = 12050; now <= 16000; now += 50) {
     tickTraining(s, [p], now, 0.05);
-    bearHit ||= s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5);
+    bearHit ||= s.damage.some((hit) => {
+      return hit.amount === 3 || hit.amount === 4.5;
+    });
   }
 
   assert(bearHit, 'boar must chase and hit the dummy');
@@ -42,18 +47,37 @@ test('boar leaves its wardrobe spawn, follows its owner and attacks training tar
 });
 
 test('training has one and six stationary, harmless targets and regenerates every second', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const p = hero();
   let s = tickTraining(undefined, [], 10000, 0);
-  const positions = s.enemies.map(({ x, y }) => ({ x, y }));
+  const positions = s.enemies.map(({ x, y }) => {
+    return { x, y };
+  });
   assert.equal(s.enemies.length, 7);
-  assert.equal(s.enemies.filter((e) => e.x === TRAINING_ZONES[0].x).length, 1);
+  assert.equal(
+    s.enemies.filter((e) => {
+      return e.x === TRAINING_ZONES[0].x;
+    }).length,
+    1,
+  );
   assert.deepEqual(
-    s.enemies.slice(1).map((e) => e.y),
+    s.enemies.slice(1).map((e) => {
+      return e.y;
+    }),
     [315, 355, 355, 395, 395, 395],
   );
-  assert(s.enemies.every((e) => e.hitpoints === 1e9 && e.maxHitpoints === 1e9));
-  assert(s.enemies.every((e) => e.archetype === 'skeleton'));
+  assert(
+    s.enemies.every((e) => {
+      return e.hitpoints === 1e9 && e.maxHitpoints === 1e9;
+    }),
+  );
+  assert(
+    s.enemies.every((e) => {
+      return e.archetype === 'skeleton';
+    }),
+  );
   tickPlayerCombat(s, [p], 10000, 0);
   assert.equal(s.enemies[0].hitpoints, 1e9 - 5);
   hitEnemy(s, s.enemies[1], 1e9 + 50, p, 10000);
@@ -62,9 +86,15 @@ test('training has one and six stationary, harmless targets and regenerates ever
   s = tickTraining(s, [], 10999, 0.05);
   assert.equal(s.enemies[0].hitpoints, 1e9 - 5);
   s = tickTraining(s, [], 11000, 0.05);
-  assert(s.enemies.every((e) => e.hitpoints === 1e9 && !e.attack));
+  assert(
+    s.enemies.every((e) => {
+      return e.hitpoints === 1e9 && !e.attack;
+    }),
+  );
   assert.deepEqual(
-    s.enemies.map(({ x, y }) => ({ x, y })),
+    s.enemies.map(({ x, y }) => {
+      return { x, y };
+    }),
     positions,
   );
   assert.equal(p.hitpoints, p.maxHitpoints);
@@ -119,15 +149,24 @@ test('all lobby classes damage dummies, Bear contributes, and forest players can
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'] as const) {
     const p = { ...hero(), classId, x: TRAINING_ZONES[0].x + 35 };
     const s = tickTraining(undefined, [p], 10000, 0.05);
-    for (let now = 10050; now < 11000; now += 50) tickTraining(s, [p], now, 0.05);
+    for (let now = 10050; now < 11000; now += 50) {
+      tickTraining(s, [p], now, 0.05);
+    }
+
     assert(s.enemies[0].hitpoints < 1e9, classId);
     assert(p.dps! > 0, classId);
-    if (classId === 'druid') assert(p.bear?.attackAt !== undefined);
+    if (classId === 'druid') {
+      assert(p.bear?.attackAt !== undefined);
+    }
   }
 
   const p = { ...hero(), scene: 'forest' as const };
   const s = tickTraining(undefined, [p], 10000, 0.05);
-  assert(s.enemies.every((e) => e.hitpoints === 1e9));
+  assert(
+    s.enemies.every((e) => {
+      return e.hitpoints === 1e9;
+    }),
+  );
 });
 
 test('boar reaches a stationary dummy from every side and keeps landing tusk attacks', async () => {
@@ -148,7 +187,10 @@ test('boar reaches a stationary dummy from every side and keeps landing tusk att
     };
     assert(inTrainingZone(p));
     const s = tickTraining(undefined, [p], 10000, 0.05);
-    for (let now = 10050; now <= 12500; now += 50) tickTraining(s, [p], now, 0.05);
+    for (let now = 10050; now <= 12500; now += 50) {
+      tickTraining(s, [p], now, 0.05);
+    }
+
     const bear = p.bear!,
       dummy = s.enemies[0];
     assert(
@@ -161,7 +203,11 @@ test('boar reaches a stationary dummy from every side and keeps landing tusk att
     );
     assert.equal(bear.moving, false);
     assert(p.dps! >= 1.2, 'at least three boar hits, with player roots disabled');
-    assert(s.damage.some((hit) => hit.amount === 3 || hit.amount === 4.5));
+    assert(
+      s.damage.some((hit) => {
+        return hit.amount === 3 || hit.amount === 4.5;
+      }),
+    );
     assert.equal(dummy.x, TRAINING_ZONES[0].x);
     assert.equal(dummy.y, TRAINING_ZONES[0].y);
   }

@@ -14,18 +14,26 @@ export function createStorageRules(items: ReturnType<typeof createItemRules>) {
     .array(
       z.object({
         name: storageNameSchema,
-        items: backpackSchema.refine((items) => items.length <= STORAGE_SLOTS),
+        items: backpackSchema.refine((items) => {
+          return items.length <= STORAGE_SLOTS;
+        }),
       }),
     )
     .length(3)
     .refine((storages) => {
-      const ids = storages.flatMap((storage) => storage.items.map((item) => item.id));
+      const ids = storages.flatMap((storage) => {
+        return storage.items.map((item) => {
+          return item.id;
+        });
+      });
 
       return new Set(ids).size === ids.length;
     }, 'Duplicate stored item identity');
 
   function freshStorages(): z.infer<typeof storagesSchema> {
-    return Array.from({ length: 3 }, (_, index) => ({ name: `Storage ${index + 1}`, items: [] }));
+    return Array.from({ length: 3 }, (_, index) => {
+      return { name: `Storage ${index + 1}`, items: [] };
+    });
   }
 
   const storehouseSchema = z.object({

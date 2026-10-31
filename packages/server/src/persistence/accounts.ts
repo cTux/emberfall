@@ -8,7 +8,9 @@ export function createAccountRepository(
 ) {
   function steamAccount(steamId: string) {
     const row = db.prepare('SELECT * FROM steam_accounts WHERE steam_id=?').get(steamId);
-    if (!row) return undefined;
+    if (!row) {
+      return undefined;
+    }
 
     return {
       steamId,
@@ -41,7 +43,10 @@ export function createAccountRepository(
   function renameSteam(steamId: string, nickname: string) {
     return transaction(() => {
       const account = steamAccount(steamId);
-      if (!account) throw new Error('Account not found');
+      if (!account) {
+        throw new Error('Account not found');
+      }
+
       db.prepare('UPDATE steam_accounts SET nickname=? WHERE steam_id=?').run(nickname, steamId);
       db.prepare('UPDATE characters SET name=?, updated_at=? WHERE id=?').run(
         nickname,

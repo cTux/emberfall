@@ -34,7 +34,9 @@ export function drawVegetation(
     ctx.transform(1, 0, sway, 1, -sway * y, 0);
     ctx.drawImage(sprite, x - width / 2, y - height, width, height);
     ctx.restore();
-  } else ctx.drawImage(sprite, x - width / 2, y - height, width, height);
+  } else {
+    ctx.drawImage(sprite, x - width / 2, y - height, width, height);
+  }
 }
 
 export function drawParticles(
@@ -47,7 +49,7 @@ export function drawParticles(
 ) {
   ctx.save();
   ctx.fillStyle = '#eed389';
-  for (let row = Math.floor((y - 40) / 160); row <= Math.ceil((y + height + 40) / 160); row++)
+  for (let row = Math.floor((y - 40) / 160); row <= Math.ceil((y + height + 40) / 160); row++) {
     for (let col = Math.floor((x - 40) / 160); col <= Math.ceil((x + width + 40) / 160); col++) {
       const seed = (((col % 30) + 30) % 30) * 179 + (((row % 16) + 16) % 16) * 83;
       ctx.globalAlpha = 0.25 + Math.sin(now / 900 + seed) * 0.2;
@@ -58,6 +60,7 @@ export function drawParticles(
         2,
       );
     }
+  }
 
   ctx.restore();
 }

@@ -18,15 +18,17 @@ import {
 
 import { tactics, hero, arena } from './tactics.fixture.ts';
 
-const enemy = (id: number, x: number, hp = 100, kind?: Enemy['kind']): Enemy => ({
-  id,
-  x,
-  y: 1000,
-  hitpoints: hp,
-  maxHitpoints: 100,
-  kind,
-  angle: 0,
-});
+const enemy = (id: number, x: number, hp = 100, kind?: Enemy['kind']): Enemy => {
+  return {
+    id,
+    x,
+    y: 1000,
+    hitpoints: hp,
+    maxHitpoints: 100,
+    kind,
+    angle: 0,
+  };
+};
 
 test('tactics rejects duplicate, missing, unknown and unbounded preferences at command/save boundaries', () => {
   assert(tacticsSchema.safeParse(tactics()).success);
@@ -83,14 +85,23 @@ test('automatic weapon launch and replicated target use offensive priorities whi
   for (const training of [false, true]) {
     const p = hero('ranger');
     p.scene = training ? undefined : 'forest';
-    if (training) Object.assign(p, TRAINING_ZONES[0]);
+    if (training) {
+      Object.assign(p, TRAINING_ZONES[0]);
+    }
+
     p.tactics!.offensive = ['lowestHealth', 'nearest', 'elite'];
     const s = arena([enemy(1, p.x + 30), enemy(2, p.x + 70, 10)]);
     s.training = training;
-    s.enemies.forEach((e) => (e.y = p.y));
+    s.enemies.forEach((e) => {
+      return (e.y = p.y);
+    });
     tickPlayerCombat(s, [p], 10000, 0.05);
     assert.equal(p.attackTargetId, 2);
-    assert(s.playerShots!.every((shot) => shot.targetId === 2));
+    assert(
+      s.playerShots!.every((shot) => {
+        return shot.targetId === 2;
+      }),
+    );
     p.autoTarget = false;
     p.aimX = p.x - 100;
     p.aimY = p.y;

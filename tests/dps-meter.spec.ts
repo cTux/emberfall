@@ -13,9 +13,14 @@ test('DPS meter uses custom cursors and respects cursor preferences', async ({ p
   for (const size of [32, 48, 64, null]) {
     await page.locator('body').evaluate((body, size) => {
       body.dataset.customCursor = String(size !== null);
-      if (size !== null) body.dataset.cursorSize = String(size);
+      if (size !== null) {
+        body.dataset.cursorSize = String(size);
+      }
     }, size);
-    const cursor = (name: string) => (size === null ? name : new RegExp(`/${size}/${name}\\.png`));
+    const cursor = (name: string) => {
+      return size === null ? name : new RegExp(`/${size}/${name}\\.png`);
+    };
+
     await expect(meter).toHaveCSS('cursor', cursor('default'));
     await expect(header).toHaveCSS('cursor', cursor('grab'));
     const box = (await header.boundingBox())!;
@@ -44,13 +49,21 @@ test('DPS meter toggles independently of performance graphs and persists across 
   const meter = page.getByLabel('Damage per second', { exact: true });
   await expect(meter).toHaveCount(0);
   await expect(page.getByLabel('Performance monitor', { exact: true })).toHaveCount(0);
-  const openSettings = () => page.getByRole('button', { name: 'Settings', exact: true }).click();
-  const closeSettings = () => page.getByRole('button', { name: 'Close Settings' }).click();
+  const openSettings = () => {
+    return page.getByRole('button', { name: 'Settings', exact: true }).click();
+  };
+
+  const closeSettings = () => {
+    return page.getByRole('button', { name: 'Close Settings' }).click();
+  };
+
   const toggle = page.getByRole('switch', { name: 'DPS meter', exact: true });
   await openSettings();
   await expect(toggle).not.toBeChecked();
-  for (const name of ['FPS graph', 'Latency graph'])
+  for (const name of ['FPS graph', 'Latency graph']) {
     await expect(page.getByRole('switch', { name, exact: true })).not.toBeChecked();
+  }
+
   await toggle.check();
   await closeSettings();
   await expect(meter).toBeVisible();
@@ -83,7 +96,9 @@ test('party damage bars drill into abilities and return with right click anywher
   await page.getByLabel('Your adventurer name').fill('Blade');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size === 1)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size === 1;
+  })!;
   const player = [...world.players.values()][0];
   player.autoAttack = false;
   player.partyId = randomUUID();
@@ -92,7 +107,10 @@ test('party damage bars drill into abilities and return with right click anywher
   const druid = { ...player, id: randomUUID(), name: 'Willow', classId: 'druid' };
   const ranger = { ...player, id: randomUUID(), name: 'Arrow', classId: 'ranger' };
   const outsider = { ...player, id: randomUUID(), name: 'Outsider', partyId: undefined };
-  for (const member of [mage, druid, ranger, outsider]) world.players.set(member.id, member);
+  for (const member of [mage, druid, ranger, outsider]) {
+    world.players.set(member.id, member);
+  }
+
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('switch', { name: 'DPS meter', exact: true }).check();
   await page.getByRole('button', { name: 'Close Settings' }).click();

@@ -49,7 +49,11 @@ test('talent columns fit narrow screens without spending points', async ({ page 
   await page.setViewportSize({ width: 320, height: 700 });
   await page.goto(story('components-talenttree--interactive'));
   const canvas = page.locator('[data-talent-map]');
-  expect(await canvas.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  expect(
+    await canvas.evaluate((element) => {
+      return element.scrollWidth <= element.clientWidth;
+    }),
+  ).toBe(true);
   await expect(page.getByRole('status')).toHaveText('2 talent points available');
   await page.locator('[data-talent-node="node-2"]').focus();
   await page.keyboard.press('Enter');

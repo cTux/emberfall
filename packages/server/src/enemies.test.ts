@@ -61,15 +61,18 @@ test('enemies detour around a trunk from both sides and keep solid bodies', asyn
     assert(forestDistance(e, target) < 10, `enemy ${id} must get past the tree`);
   }
 
-  const enemies = Array.from({ length: 16 }, (_, i) =>
-    enemy(i, 2300 + (i % 4) * 24, 1200 + Math.floor(i / 4) * 24),
-  );
+  const enemies = Array.from({ length: 16 }, (_, i) => {
+    return enemy(i, 2300 + (i % 4) * 24, 1200 + Math.floor(i / 4) * 24);
+  });
   for (let tick = 0; tick < 120; tick++) {
     moveEnemies(enemies, [player(2400, 1280)], 0.05);
-    for (const a of enemies)
-      for (const b of enemies)
-        if (a.id !== b.id)
+    for (const a of enemies) {
+      for (const b of enemies) {
+        if (a.id !== b.id) {
           assert(forestDistance(a, b) >= 20 - 1e-8, 'crowd bodies must not overlap');
+        }
+      }
+    }
   }
 });
 

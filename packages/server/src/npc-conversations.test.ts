@@ -18,7 +18,10 @@ test('automatic greetings are bounded across multiple players and explicit repli
   assert.equal(calls, 1);
   assert.equal(world.chat![0].dimension, 'village');
   assert.equal(world.chat![0].npcId, 'innkeeper');
-  for (let time = 10_050; time < 45_000; time += 50) life.tick(time, 0);
+  for (let time = 10_050; time < 45_000; time += 50) {
+    life.tick(time, 0);
+  }
+
   assert.equal(calls, 1);
   life.hear(world.players.get('p')!, '@Marta How are you?', 45_000);
   life.tick(45_000, 0);
@@ -104,11 +107,17 @@ test('mentions in a player greeting trigger delayed NPC replies capped at five l
 
   assert.equal(world.chat!.length, 5);
   assert.deepEqual(
-    world.chat!.map((line) => line.npcId),
+    world.chat!.map((line) => {
+      return line.npcId;
+    }),
     ['innkeeper', 'hallkeeper', 'innkeeper', 'hallkeeper', 'innkeeper'],
   );
   assert.match(world.chat![0].text, /^@Oswin the Steward/);
-  assert(world.chat!.every((line) => !/["“”]/u.test(line.text) && line.text.length <= 120));
+  assert(
+    world.chat!.every((line) => {
+      return !/["“”]/u.test(line.text) && line.text.length <= 120;
+    }),
+  );
   assert.equal(contexts[1].listenerMention, '@Marta');
   assert(contexts[0].residents.includes('@Nell: Nell the Pathfinder'));
   assert.match(contexts[0].setting, /Brute Boss/);

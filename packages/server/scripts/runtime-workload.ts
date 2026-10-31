@@ -21,7 +21,9 @@ export function arrangeWorkload(
   parties: Runtime['parties'],
   count: number,
 ) {
-  const occupied = [...worlds.values()].filter((world) => world.players.size);
+  const occupied = [...worlds.values()].filter((world) => {
+    return world.players.size;
+  });
   assert.equal(occupied.length, count);
   assert.equal(worlds.size, count + 1, 'Include the normal empty permanent world');
   const scenes: Record<string, string> = {};
@@ -69,25 +71,28 @@ export function arrangeWorkload(
       electorate: '',
       portals: [],
       damage: [],
-      enemies: Array.from({ length: BENCHMARK.enemiesPerWorld }, (_, index) => ({
-        id: index + 1,
-        x: 2200 + (index % 8) * 35,
-        y: 1160 + Math.floor(index / 8) * 35,
-        hitpoints: 1e8,
-        maxHitpoints: 1e8,
-        angle: 0,
-        archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[index % 4],
-      })),
+      enemies: Array.from({ length: BENCHMARK.enemiesPerWorld }, (_, index) => {
+        return {
+          id: index + 1,
+          x: 2200 + (index % 8) * 35,
+          y: 1160 + Math.floor(index / 8) * 35,
+          hitpoints: 1e8,
+          maxHitpoints: 1e8,
+          angle: 0,
+          archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[index % 4],
+        };
+      }),
     };
   }
 
   const healing = setInterval(() => {
-    for (const world of occupied)
+    for (const world of occupied) {
       for (const player of world.players.values()) {
         assert(player.hitpoints > 0, 'A benchmark player died; workload is no longer steady');
         healedDamage += Math.max(0, player.maxHitpoints - player.hitpoints);
         player.hitpoints = player.maxHitpoints;
       }
+    }
   }, BENCHMARK.healMs);
 
   return {
@@ -102,7 +107,9 @@ export function arrangeWorkload(
         assert.equal(scene.phase, 'active');
         assert.equal(scene.enemies.length, BENCHMARK.enemiesPerWorld);
         assert(
-          scene.enemies.some((enemy) => enemy.hitpoints < 1e8),
+          scene.enemies.some((enemy) => {
+            return enemy.hitpoints < 1e8;
+          }),
           'Combat must actually run',
         );
       }
@@ -111,6 +118,8 @@ export function arrangeWorkload(
 
       return { occupiedWorlds: count, players: count * 4, enemies: count * 40, healedDamage };
     },
-    close: () => clearInterval(healing),
+    close: () => {
+      return clearInterval(healing);
+    },
   };
 }

@@ -8,9 +8,13 @@ test('clicking the unlabelled Storehouse opens storage rather than the services 
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
-  const building = BUILDINGS.find((building) => building.id === 'storehouse')!;
+  const building = BUILDINGS.find((building) => {
+    return building.id === 'storehouse';
+  })!;
   player.x = building.doorX;
   player.y = building.y + 9;
   const canvas = page.locator('canvas');

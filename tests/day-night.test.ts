@@ -23,15 +23,18 @@ test('phase boundaries and the midnight seam are continuous', () => {
     const before = dayNight(time - 1),
       after = dayNight(time + 1);
     assert.ok(Math.abs(before.daylight - after.daylight) < 0.001);
-    for (const shift of [0, 8, 16])
+    for (const shift of [0, 8, 16]) {
       assert.ok(Math.abs(((before.tint >> shift) & 255) - ((after.tint >> shift) & 255)) <= 1);
+    }
+
     // The direction resets only while both shadows are invisible at the horizon.
-    for (const axis of ['x', 'y'] as const)
+    for (const axis of ['x', 'y'] as const) {
       assert.ok(
         Math.abs(
           before.shadow[axis] * before.shadow.opacity - after.shadow[axis] * after.shadow.opacity,
         ) < 0.001,
       );
+    }
   }
 });
 
@@ -41,7 +44,10 @@ test('sun and weaker moon travel across the sky and change silhouette projection
     [0, 0.7, 'sun'],
     [0.7, 0.3, 'moon'],
   ] as const) {
-    const sample = (progress: number) => dayNight((start + duration * progress) * DAY_MS);
+    const sample = (progress: number) => {
+      return dayNight((start + duration * progress) * DAY_MS);
+    };
+
     const morning = sample(0.15),
       noon = sample(0.5),
       evening = sample(0.85);

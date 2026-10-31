@@ -23,8 +23,10 @@ test('Pages client uses credentialed accounts, client redirects and origin-bound
   const address = app.server.address();
   assert(address && typeof address !== 'string');
   const base = `http://127.0.0.1:${address.port}`;
-  const call = (path: string, init: RequestInit = {}) =>
-    fetch(base + path, { redirect: 'manual', ...init });
+  const call = (path: string, init: RequestInit = {}) => {
+    return fetch(base + path, { redirect: 'manual', ...init });
+  };
+
   try {
     const preflight = await call('/api/account/nickname', {
       method: 'OPTIONS',

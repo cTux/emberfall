@@ -73,88 +73,100 @@ export function Backpack({
           mt: 0.5,
         }}
       >
-        {items.map((item) => (
-          <GearTooltipStyled
-            key={item.id}
-            disableInteractive={!item.stats?.length}
-            arrow
-            describeChild
-            enterTouchDelay={0}
-            slotProps={{
-              popper: {
-                container: () => panelRef.current?.closest('.MuiDialog-container') ?? document.body,
-              },
-            }}
-            title={
-              <ItemTooltip
-                item={item}
-                quantity={item.stackable ? item.quantity : undefined}
-                stats={item.stats}
-                onBack={() =>
-                  panelRef.current
-                    ?.querySelector<HTMLButtonElement>(
-                      `[data-backpack-item="${CSS.escape(item.id)}"]`,
-                    )
-                    ?.focus()
-                }
-                action={action === 'Use' ? item.useAction : action}
-              />
-            }
-          >
-            <BackpackSlotStyled
-              aria-label={`${action} ${item.name}${item.quantity > 1 ? ` (${item.quantity})` : ''}`}
-              data-backpack-item={item.id}
-              data-rarity={item.rarity?.toLowerCase()}
-              sx={{
-                border: '1px solid',
-                borderColor: item.rarityColor ?? 'divider',
-                '&:hover': { borderColor: item.rarityColor ?? 'primary.main' },
+        {items.map((item) => {
+          return (
+            <GearTooltipStyled
+              key={item.id}
+              disableInteractive={!item.stats?.length}
+              arrow
+              describeChild
+              enterTouchDelay={0}
+              slotProps={{
+                popper: {
+                  container: () => {
+                    return panelRef.current?.closest('.MuiDialog-container') ?? document.body;
+                  },
+                },
               }}
-              draggable={!!inventory}
-              onDragStart={(event) => {
-                if (!inventory) return;
-                event.dataTransfer.clearData();
-                event.dataTransfer.setData(`${INVENTORY_DRAG_PREFIX}${inventory}`, item.id);
-                event.dataTransfer.effectAllowed = 'move';
-              }}
-              onContextMenu={(event) => {
-                event.preventDefault();
-                onUse(item.id, event);
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
+              title={
+                <ItemTooltip
+                  item={item}
+                  quantity={item.stackable ? item.quantity : undefined}
+                  stats={item.stats}
+                  onBack={() => {
+                    return panelRef.current
+                      ?.querySelector<HTMLButtonElement>(
+                        `[data-backpack-item="${CSS.escape(item.id)}"]`,
+                      )
+                      ?.focus();
+                  }}
+                  action={action === 'Use' ? item.useAction : action}
+                />
+              }
+            >
+              <BackpackSlotStyled
+                aria-label={`${action} ${item.name}${item.quantity > 1 ? ` (${item.quantity})` : ''}`}
+                data-backpack-item={item.id}
+                data-rarity={item.rarity?.toLowerCase()}
+                sx={{
+                  border: '1px solid',
+                  borderColor: item.rarityColor ?? 'divider',
+                  '&:hover': { borderColor: item.rarityColor ?? 'primary.main' },
+                }}
+                draggable={!!inventory}
+                onDragStart={(event) => {
+                  if (!inventory) {
+                    return;
+                  }
+
+                  event.dataTransfer.clearData();
+                  event.dataTransfer.setData(`${INVENTORY_DRAG_PREFIX}${inventory}`, item.id);
+                  event.dataTransfer.effectAllowed = 'move';
+                }}
+                onContextMenu={(event) => {
                   event.preventDefault();
                   onUse(item.id, event);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onUse(item.id, event);
 
-                  return;
-                }
+                    return;
+                  }
 
-                if (event.key !== 'Tab' || event.shiftKey) return;
-                const tooltipId = event.currentTarget.getAttribute('aria-describedby');
-                const stat = tooltipId
-                  ? document.getElementById(tooltipId)?.querySelector<HTMLButtonElement>('button')
-                  : null;
-                if (stat) {
-                  event.preventDefault();
-                  stat.focus();
-                }
-              }}
-            >
-              <Box
-                aria-hidden='true'
-                sx={{ display: 'grid', placeItems: 'center', pointerEvents: 'none' }}
+                  if (event.key !== 'Tab' || event.shiftKey) {
+                    return;
+                  }
+
+                  const tooltipId = event.currentTarget.getAttribute('aria-describedby');
+                  const stat = tooltipId
+                    ? document.getElementById(tooltipId)?.querySelector<HTMLButtonElement>('button')
+                    : null;
+                  if (stat) {
+                    event.preventDefault();
+                    stat.focus();
+                  }
+                }}
               >
-                {item.icon}
-              </Box>
-              {item.quantity > 1 && (
-                <GearBadgeValueStyled aria-hidden='true'>{item.quantity}</GearBadgeValueStyled>
-              )}
-            </BackpackSlotStyled>
-          </GearTooltipStyled>
-        ))}
-        {Array.from({ length: Math.max(0, slots - items.length) }, (_, index) => (
-          <BackpackSlotStyled key={`empty-${index}`} disabled tabIndex={-1} aria-hidden='true' />
-        ))}
+                <Box
+                  aria-hidden='true'
+                  sx={{ display: 'grid', placeItems: 'center', pointerEvents: 'none' }}
+                >
+                  {item.icon}
+                </Box>
+                {item.quantity > 1 && (
+                  <GearBadgeValueStyled aria-hidden='true'>{item.quantity}</GearBadgeValueStyled>
+                )}
+              </BackpackSlotStyled>
+            </GearTooltipStyled>
+          );
+        })}
+        {Array.from({ length: Math.max(0, slots - items.length) }, (_, index) => {
+          return (
+            <BackpackSlotStyled key={`empty-${index}`} disabled tabIndex={-1} aria-hidden='true' />
+          );
+        })}
       </Box>
     </Box>
   );

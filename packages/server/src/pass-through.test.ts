@@ -25,8 +25,12 @@ test('server movement, prediction and interpolation pass through every scenery k
     ...BUILDINGS,
     ...TORCHES,
     WARDROBE,
-    ...TREES.map((tree) => ({ ...tree, y: tree.y - 8 })),
-    ...forestTrees(400, 400, 100).map((tree) => ({ ...tree, scene: 'forest' })),
+    ...TREES.map((tree) => {
+      return { ...tree, y: tree.y - 8 };
+    }),
+    ...forestTrees(400, 400, 100).map((tree) => {
+      return { ...tree, scene: 'forest' };
+    }),
   ];
   for (const obstacle of obstacles) {
     for (const [dx, dy] of [
@@ -48,8 +52,10 @@ test('server movement, prediction and interpolation pass through every scenery k
           Math.max(player.x, player.x + dx) > ARENA.width - 12 ||
           Math.min(player.y, player.y + dy) + 15 < 12 ||
           Math.max(player.y, player.y + dy) + 15 > ARENA.height - 12)
-      )
+      ) {
         continue;
+      }
+
       const world: WorldState = {
         id: 'room',
         name: 'Pass-through',
@@ -84,7 +90,10 @@ test('server movement, prediction and interpolation pass through every scenery k
       const local = new LocalMovement('p', () => {});
       local.render(world, 0);
       local.input(dx / 90, dy / 90, 0);
-      for (let now = 50; now <= 500; now += 50) local.render(world, now);
+      for (let now = 50; now <= 500; now += 50) {
+        local.render(world, now);
+      }
+
       const predicted = local.render(world, 500)!;
       assert(Math.abs(predicted.x - expected.x) < 1e-9);
       assert(Math.abs(predicted.y - expected.y) < 1e-9);
@@ -173,7 +182,10 @@ test('companion escapes owner-position spawns inside trees without disabling tre
     tickCompanion(p, undefined, 10100, 0);
     assert.equal(p.bear!.x, center.x, 'teleport must use the owner position');
     p.x += 60;
-    for (let now = 10150; now <= 14100; now += 50) tickCompanion(p, undefined, now, 0.05);
+    for (let now = 10150; now <= 14100; now += 50) {
+      tickCompanion(p, undefined, now, 0.05);
+    }
+
     assert(forestDistance(p.bear!, p) <= 20.01, 'teleported companion must resume following');
   }
 });

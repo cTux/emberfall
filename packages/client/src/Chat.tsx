@@ -31,8 +31,10 @@ export function Chat({
         (event.target as HTMLElement)?.closest(
           'input, textarea, select, button, a, [contenteditable=true]',
         )
-      )
+      ) {
         return;
+      }
+
       event.preventDefault();
       input.current?.closest<HTMLElement>('.chat')?.focus();
       input.current?.focus();
@@ -40,10 +42,14 @@ export function Chat({
 
     window.addEventListener('keydown', key);
 
-    return () => window.removeEventListener('keydown', key);
+    return () => {
+      return window.removeEventListener('keydown', key);
+    };
   }, [disabled]);
   useEffect(() => {
-    if (log.current) log.current.scrollTop = log.current.scrollHeight;
+    if (log.current) {
+      log.current.scrollTop = log.current.scrollHeight;
+    }
   }, [latestId]);
 
   return (
@@ -65,34 +71,40 @@ export function Chat({
       }}
     >
       <div className='chat-log' role='log' aria-label='Latest chat messages' ref={log}>
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={
-              message.tone
-                ? `chat-${message.tone}`
-                : message.playerId === ''
-                  ? 'chat-system'
-                  : undefined
-            }
-          >
-            <b>{message.name}:</b> {message.text}
-          </div>
-        ))}
+        {messages.map((message) => {
+          return (
+            <div
+              key={message.id}
+              className={
+                message.tone
+                  ? `chat-${message.tone}`
+                  : message.playerId === ''
+                    ? 'chat-system'
+                    : undefined
+              }
+            >
+              <b>{message.name}:</b> {message.text}
+            </div>
+          );
+        })}
       </div>
       <form
         className='chat-input'
         onSubmit={(event) => {
           event.preventDefault();
-          if (disabled || !text.trim()) return;
+          if (disabled || !text.trim()) {
+            return;
+          }
+
           send({ type: 'chat', text: text.trim() });
           setText('');
           if (
             !event.currentTarget.closest('.chat')?.matches(':hover') &&
             document.activeElement instanceof HTMLElement &&
             event.currentTarget.contains(document.activeElement)
-          )
+          ) {
             document.activeElement.blur();
+          }
         }}
       >
         <TextField
@@ -101,11 +113,15 @@ export function Chat({
           sx={{ minWidth: 0, '& input': { userSelect: 'text' } }}
           placeholder='Enter to chat · @Marta to talk'
           value={text}
-          onChange={(event) => setText(event.target.value)}
+          onChange={(event) => {
+            return setText(event.target.value);
+          }}
           disabled={disabled}
           onKeyDown={(event) => {
             event.stopPropagation();
-            if (event.key === 'Escape') input.current?.blur();
+            if (event.key === 'Escape') {
+              input.current?.blur();
+            }
           }}
         />
         <Button type='submit' variant='contained' disabled={disabled || !text.trim()}>

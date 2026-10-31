@@ -4,7 +4,7 @@ const fogTexture = document.createElement('canvas');
 fogTexture.width = fogTexture.height = 512;
 const fogContext = fogTexture.getContext('2d')!;
 for (let i = 0; i < 36; i++) {
-  for (const offsetX of [-512, 0, 512])
+  for (const offsetX of [-512, 0, 512]) {
     for (const offsetY of [-512, 0, 512]) {
       const x = ((i * 137) % 512) + offsetX,
         y = ((i * 211) % 512) + offsetY;
@@ -14,6 +14,7 @@ for (let i = 0; i < 36; i++) {
       fogContext.fillStyle = gradient;
       fogContext.fillRect(x - 100, y - 100, 200, 200);
     }
+  }
 }
 
 export function drawFog(
@@ -36,12 +37,12 @@ export function drawFog(
       let row = Math.floor((y - offsetY) / tileHeight);
       row <= Math.ceil((y + height - offsetY) / tileHeight);
       row++
-    )
+    ) {
       for (
         let col = Math.floor((x - offsetX) / tileWidth);
         col <= Math.ceil((x + width - offsetX) / tileWidth);
         col++
-      )
+      ) {
         ctx.drawImage(
           fogTexture,
           col * tileWidth + offsetX,
@@ -49,6 +50,8 @@ export function drawFog(
           tileWidth,
           tileHeight,
         );
+      }
+    }
   }
 
   ctx.restore();

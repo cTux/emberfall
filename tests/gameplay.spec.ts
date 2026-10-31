@@ -10,7 +10,9 @@ test('mage auto-cast waits outside spell range and damages the dummy after appro
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.classId = 'mage';
   player.equipment = starterEquipment('mage');
@@ -19,19 +21,37 @@ test('mage auto-cast waits outside spell range and damages the dummy after appro
   player.x = zone.x + 260;
   player.y = zone.y;
   const settledAt = Date.now();
-  await expect.poll(() => world.training!.nextSpawn).toBeGreaterThan(settledAt + 1000);
+  await expect
+    .poll(() => {
+      return world.training!.nextSpawn;
+    })
+    .toBeGreaterThan(settledAt + 1000);
   expect(player.attackAt).toBeUndefined();
   expect(world.training!.playerShots?.length ?? 0).toBe(0);
   expect(player.dps ?? 0).toBe(0);
   await page.screenshot({ path: 'test-results/mage-waiting-outside-range.png' });
   player.x = zone.x + 220;
   await expect
-    .poll(() => world.training!.playerShots?.some((shot) => shot.ownerId === player.id), {
-      intervals: [20],
-    })
+    .poll(
+      () => {
+        return world.training!.playerShots?.some((shot) => {
+          return shot.ownerId === player.id;
+        });
+      },
+      {
+        intervals: [20],
+      },
+    )
     .toBe(true);
   await page.screenshot({ path: 'test-results/mage-projectiles-in-range.png' });
-  await expect.poll(() => player.dps ?? 0, { intervals: [50] }).toBeGreaterThan(0);
+  await expect
+    .poll(
+      () => {
+        return player.dps ?? 0;
+      },
+      { intervals: [50] },
+    )
+    .toBeGreaterThan(0);
   expect(player.experience).toBe(0);
   expect(player.hitpoints).toBe(player.maxHitpoints);
 });
@@ -44,7 +64,9 @@ test('druid roots visibly bounce through authoritative training with one refresh
   await page.getByLabel('Your adventurer name').fill('Root tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.classId = 'druid';
   player.equipment = starterEquipment('druid');
@@ -58,29 +80,38 @@ test('druid roots visibly bounce through authoritative training with one refresh
 
   await expect
     .poll(
-      () =>
-        world.training!.playerShots!.some(
-          (shot) => shot.kind === 'roots' && shot.hitIds.length === 3,
-        ),
+      () => {
+        return world.training!.playerShots!.some((shot) => {
+          return shot.kind === 'roots' && shot.hitIds.length === 3;
+        });
+      },
       { intervals: [20] },
     )
     .toBe(true);
   await page.screenshot({ path: 'test-results/druid-bounce-in-flight.png' });
   await expect
     .poll(
-      () =>
-        world.training!.enemies.filter((enemy) => enemy.debuffs?.some((d) => d.kind === 'roots'))
-          .length,
+      () => {
+        return world.training!.enemies.filter((enemy) => {
+          return enemy.debuffs?.some((d) => {
+            return d.kind === 'roots';
+          });
+        }).length;
+      },
       { intervals: [50] },
     )
     .toBeGreaterThanOrEqual(4);
-  for (const enemy of world.training!.enemies)
+  for (const enemy of world.training!.enemies) {
     for (const debuff of enemy.debuffs ?? []) {
-      if (debuff.kind !== 'roots') continue;
+      if (debuff.kind !== 'roots') {
+        continue;
+      }
+
       expect(debuff.stacks).toBe(1);
       expect(debuff.expiresAt - Date.now()).toBeGreaterThan(3500);
       expect(debuff.expiresAt - Date.now()).toBeLessThanOrEqual(5000);
     }
+  }
 
   expect(player.experience).toBe(0);
   expect(world.training!.drops?.length ?? 0).toBe(0);

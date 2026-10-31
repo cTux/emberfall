@@ -8,9 +8,23 @@ test('weapon comparison uses only the active range and never exposes attack-spee
   const weapon = { id: 'staff', itemId: 'mage-staff', quantity: 1 };
   for (const autoTarget of [true, false]) {
     const rows = itemComparison(weapon, { classId: 'mage', equipment: {}, autoTarget })!.rows;
-    assert.equal(rows.filter((row) => row.label === 'Range').length, 1);
-    assert.equal(rows.find((row) => row.label === 'Range')?.value, autoTarget ? '+250' : '+1,000');
-    assert(!rows.some((row) => /second|manual/i.test(row.label)));
+    assert.equal(
+      rows.filter((row) => {
+        return row.label === 'Range';
+      }).length,
+      1,
+    );
+    assert.equal(
+      rows.find((row) => {
+        return row.label === 'Range';
+      })?.value,
+      autoTarget ? '+250' : '+1,000',
+    );
+    assert(
+      !rows.some((row) => {
+        return /second|manual/i.test(row.label);
+      }),
+    );
   }
 });
 

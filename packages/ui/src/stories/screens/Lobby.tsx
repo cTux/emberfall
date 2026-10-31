@@ -42,7 +42,9 @@ export function Lobby() {
             type='password'
             autoComplete='current-password'
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => {
+              return setPassword(event.target.value);
+            }}
           />
           <Button type='submit' variant='contained' disabled={!name.trim()}>
             Join world
@@ -56,14 +58,22 @@ export function Lobby() {
     <Box sx={stage}>
       <Box sx={panel}>
         {open ? (
-          <GameWindow title='Emberfall' modal={false} onClose={() => setOpen(false)}>
+          <GameWindow
+            title='Emberfall'
+            modal={false}
+            onClose={() => {
+              return setOpen(false);
+            }}
+          >
             <Stack spacing={3}>
               <TextField
                 label='Your adventurer name'
                 autoComplete='nickname'
                 required
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(event) => {
+                  return setName(event.target.value);
+                }}
                 slotProps={{ htmlInput: { maxLength: 24 } }}
               />
               <ChapterTabs
@@ -77,14 +87,25 @@ export function Lobby() {
                 ]}
               />
               {notice && (
-                <Alert severity='info' onClose={() => setNotice('')}>
+                <Alert
+                  severity='info'
+                  onClose={() => {
+                    return setNotice('');
+                  }}
+                >
                   {notice}
                 </Alert>
               )}
             </Stack>
           </GameWindow>
         ) : (
-          <Button onClick={() => setOpen(true)}>Open world browser</Button>
+          <Button
+            onClick={() => {
+              return setOpen(true);
+            }}
+          >
+            Open world browser
+          </Button>
         )}
       </Box>
     </Box>

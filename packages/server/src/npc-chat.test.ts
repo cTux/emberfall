@@ -3,18 +3,27 @@ import assert from 'node:assert/strict';
 import type { ServerMessage, WorldState } from '@emberfall/common';
 import { createRuntime } from './runtime.ts';
 import { Peer } from './network/peer.ts';
-const flush = () => new Promise<void>((resolve) => setImmediate(resolve));
+const flush = () => {
+  return new Promise<void>((resolve) => {
+    return setImmediate(resolve);
+  });
+};
 
 test('server filters NPC speech and silence announcements by dimension while player chat stays world-wide', async () => {
-  const app = await createRuntime(':memory:', { generate: async () => ({ status: 'busy' }) });
+  const app = await createRuntime(':memory:', {
+    generate: async () => {
+      return { status: 'busy' };
+    },
+  });
   const peers: Peer[] = [];
 
   function connect() {
     let world: WorldState | undefined;
     const peer = new Peer(
       (message: ServerMessage) => {
-        if (message.type === 'joined' || message.type === 'state')
+        if (message.type === 'joined' || message.type === 'state') {
           world = structuredClone(message.world);
+        }
       },
       () => {},
     );
@@ -39,7 +48,11 @@ test('server filters NPC speech and silence announcements by dimension while pla
     b.peer.receive({ type: 'join', worldId: a.world!.id, playerName: 'Bob', password: '' });
     await flush();
     const world = app.worlds.get(a.world!.id)!;
-    world.players.get(b.world!.players.find((p) => p.name === 'Bob')!.id)!.scene = 'forest';
+    world.players.get(
+      b.world!.players.find((p) => {
+        return p.name === 'Bob';
+      })!.id,
+    )!.scene = 'forest';
     world.chat = [
       {
         id: 'npc',
@@ -60,16 +73,44 @@ test('server filters NPC speech and silence announcements by dimension while pla
     ];
     a.peer.receive({ type: 'chat', text: 'Hello world' });
     await flush();
-    assert(a.world!.chat!.some((m) => m.id === 'npc'));
-    assert(a.world!.chat!.some((m) => m.id === 'silence'));
-    assert(!b.world!.chat!.some((m) => m.dimension === 'village'));
-    assert(b.world!.chat!.some((m) => m.text === 'Hello world'));
-    assert(!c.world!.chat!.some((m) => m.id === 'npc'));
+    assert(
+      a.world!.chat!.some((m) => {
+        return m.id === 'npc';
+      }),
+    );
+    assert(
+      a.world!.chat!.some((m) => {
+        return m.id === 'silence';
+      }),
+    );
+    assert(
+      !b.world!.chat!.some((m) => {
+        return m.dimension === 'village';
+      }),
+    );
+    assert(
+      b.world!.chat!.some((m) => {
+        return m.text === 'Hello world';
+      }),
+    );
+    assert(
+      !c.world!.chat!.some((m) => {
+        return m.id === 'npc';
+      }),
+    );
     // Entering the village receives its retained messages on the next update.
-    world.players.get(b.world!.players.find((p) => p.name === 'Bob')!.id)!.scene = undefined;
+    world.players.get(
+      b.world!.players.find((p) => {
+        return p.name === 'Bob';
+      })!.id,
+    )!.scene = undefined;
     b.peer.receive({ type: 'chat', text: 'Back in village' });
     await flush();
-    assert(b.world!.chat!.some((m) => m.id === 'npc'));
+    assert(
+      b.world!.chat!.some((m) => {
+        return m.id === 'npc';
+      }),
+    );
   } finally {
     await app.close();
   }

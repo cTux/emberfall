@@ -4,7 +4,10 @@ import { terrainTile } from './art';
 
 /** Plain dirt at the buildings' 2x pixel scale, with continuous rounded joins. */
 export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
-  if (!floor.naturalWidth) return;
+  if (!floor.naturalWidth) {
+    return;
+  }
+
   const paths = document.createElement('canvas');
   paths.width = ARENA.width / 2;
   paths.height = ARENA.height / 2;
@@ -19,7 +22,10 @@ export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
   for (const path of PATHS) {
     mask.beginPath();
     mask.moveTo(path[0].x, path[0].y);
-    for (const point of path.slice(1)) mask.lineTo(point.x, point.y);
+    for (const point of path.slice(1)) {
+      mask.lineTo(point.x, point.y);
+    }
+
     mask.stroke();
   }
 

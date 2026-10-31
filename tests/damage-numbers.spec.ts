@@ -6,8 +6,14 @@ test('hide other players damage numbers defaults on and persists independently o
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const open = () => page.getByRole('button', { name: 'Settings', exact: true }).click();
-  const close = () => page.getByRole('button', { name: 'Close Settings' }).click();
+  const open = () => {
+    return page.getByRole('button', { name: 'Settings', exact: true }).click();
+  };
+
+  const close = () => {
+    return page.getByRole('button', { name: 'Close Settings' }).click();
+  };
+
   const hideOthers = page.getByRole('switch', {
     name: "Hide other players' damage numbers",
     exact: true,

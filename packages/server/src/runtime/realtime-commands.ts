@@ -30,19 +30,30 @@ export function createRealtimeCommands({
   const handlers: Handlers = {
     gather: (message, { session, world, now, error }) => {
       const player = world?.players.get(session.id);
-      if (!world || !player) return;
+      if (!world || !player) {
+        return;
+      }
+
       const epoch = player.scene === 'forest' ? parties(world).run(player).scene?.id : 'lobby';
-      if (message.epoch !== epoch) return;
+      if (message.epoch !== epoch) {
+        return;
+      }
+
       try {
         const activity = player.gathering;
         if (message.checkId) {
-          if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) return;
+          if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) {
+            return;
+          }
+
           gatheringNode(player, resourceOwner(world, player).resources, message.nodeId, now);
           if (
             message.at === undefined ||
             !checkTimedActivity(activity, message.checkId, message.at, now)
-          )
+          ) {
             return;
+          }
+
           tickGathering(player, (resourceOwner(world, player).resources ??= {}), epoch, now);
         } else if (!activity || activity.nodeId !== message.nodeId || activity.epoch !== epoch) {
           startGathering(
@@ -61,7 +72,9 @@ export function createRealtimeCommands({
     },
     npcInteraction: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);
-      if (world && player) villageLife(world, now).interact(player, message.npcId);
+      if (world && player) {
+        villageLife(world, now).interact(player, message.npcId);
+      }
     },
     ping: (message, { reply }) => {
       reply({ type: 'pong', id: message.id });
@@ -75,7 +88,7 @@ export function createRealtimeCommands({
     },
     talentCast: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);
-      if (player)
+      if (player) {
         castTalentAbility(
           player.scene === 'forest' ? parties(world!).run(player).scene : world!.training,
           player,
@@ -84,24 +97,35 @@ export function createRealtimeCommands({
           undefined,
           [...world!.players.values()],
         );
+      }
     },
     cast: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);
-      if (player)
+      if (player) {
         requestPlayerCast(
           player.scene === 'forest' ? parties(world!).run(player).scene : world!.training,
           player,
           message,
           now,
         );
+      }
     },
     move: (message, { session, now }) => {
       if (session.worldId) {
         if (message.seq !== undefined) {
-          if (message.seq <= session.lastSeq) return;
+          if (message.seq <= session.lastSeq) {
+            return;
+          }
+
           const timed = message.durationMs !== undefined;
-          if (session.timed !== undefined && session.timed !== timed) return;
-          if (timed && session.inputs.length >= 40) return;
+          if (session.timed !== undefined && session.timed !== timed) {
+            return;
+          }
+
+          if (timed && session.inputs.length >= 40) {
+            return;
+          }
+
           session.timed = timed;
           session.lastSeq = message.seq;
           // Inputs are held directions, not movement impulses. Coalesce delayed heartbeats.
@@ -112,8 +136,11 @@ export function createRealtimeCommands({
             epoch: message.epoch,
             durationMs: message.durationMs,
           };
-          if (timed) session.inputs.push(command);
-          else session.inputs = [command];
+          if (timed) {
+            session.inputs.push(command);
+          } else {
+            session.inputs = [command];
+          }
         } else if (session.lastSeq === 0) {
           session.x = message.x;
           session.y = message.y;

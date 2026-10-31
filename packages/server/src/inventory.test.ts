@@ -24,10 +24,16 @@ test('twenty slots reject purchases and unequipping without losing items or gold
   const player = hero();
   const merchant = freshMerchant();
   player.coins = 100;
-  player.backpack = Array.from({ length: INVENTORY_SLOTS }, () => item('loot-helmet'));
+  player.backpack = Array.from({ length: INVENTORY_SLOTS }, () => {
+    return item('loot-helmet');
+  });
   const before = structuredClone({ player, merchant });
-  assert.throws(() => tradeItem(player, merchant, merchant.backpack[0].id, true), /full/);
-  assert.throws(() => unequipItem(player, 'weapon'), /full/);
+  assert.throws(() => {
+    return tradeItem(player, merchant, merchant.backpack[0].id, true);
+  }, /full/);
+  assert.throws(() => {
+    return unequipItem(player, 'weapon');
+  }, /full/);
   assert.deepEqual({ player, merchant }, before);
   useBackpackItem(player, player.backpack[0].id);
   addItem(player.backpack, item('health-potion'));
@@ -36,7 +42,12 @@ test('twenty slots reject purchases and unequipping without losing items or gold
   assert.equal(player.backpack.at(-1)!.quantity, 2);
   useBackpackItem(player, player.backpack[0].id);
   assert.equal(player.backpack.length, INVENTORY_SLOTS);
-  const legacy = { ...hero(), backpack: Array.from({ length: 24 }, () => item('loot-helmet')) };
+  const legacy = {
+    ...hero(),
+    backpack: Array.from({ length: 24 }, () => {
+      return item('loot-helmet');
+    }),
+  };
   useBackpackItem(legacy, legacy.backpack[0].id);
   useBackpackItem(legacy, legacy.backpack[0].id);
   assert.equal(legacy.backpack.length, 23);
@@ -46,7 +57,9 @@ test('twenty slots reject purchases and unequipping without losing items or gold
 test('gear exchange updates totals and weapon removal rejects casts in every class', () => {
   for (const classId of CLASS_IDS) {
     const player = { ...hero(), ...freshProgress(classId), classId };
-    player.backpack = Array.from({ length: 18 }, () => item('loot-helmet'));
+    player.backpack = Array.from({ length: 18 }, () => {
+      return item('loot-helmet');
+    });
     useBackpackItem(player, player.backpack[0].id);
     assert.equal(characterStats(player).armor, 1);
     useBackpackItem(player, player.backpack[0].id);
@@ -66,7 +79,9 @@ test('gear exchange updates totals and weapon removal rejects casts in every cla
       1000,
     );
     assert.equal(player.attackAt, undefined);
-    const backpackWeapon = player.backpack.find((item) => item.itemId === weapon)!;
+    const backpackWeapon = player.backpack.find((item) => {
+      return item.itemId === weapon;
+    })!;
     useBackpackItem(player, backpackWeapon.id);
     assert.equal(characterStats(player).hasWeapon, true);
     assert.equal(
@@ -89,7 +104,9 @@ test('gear exchange updates totals and weapon removal rejects casts in every cla
     const incompatible = item(classId === 'warrior' ? 'loot-orb' : 'loot-shield');
     player.backpack.push(incompatible);
     const before = structuredClone(player);
-    assert.throws(() => useBackpackItem(player, incompatible.id), /cannot equip/);
+    assert.throws(() => {
+      return useBackpackItem(player, incompatible.id);
+    }, /cannot equip/);
     assert.deepEqual(player, before);
   }
 });
@@ -102,16 +119,23 @@ test('consumables stack, heal one at a time and remain unused at full health', (
   assert.equal(player.backpack.length, 1);
   assert.equal(player.backpack[0].quantity, 5);
   const id = player.backpack[0].id;
-  assert.throws(() => useBackpackItem(player, id), /healing/);
+  assert.throws(() => {
+    return useBackpackItem(player, id);
+  }, /healing/);
   player.hitpoints = 80;
   useBackpackItem(player, id);
   assert.equal(player.hitpoints, 100);
   assert.equal(player.backpack[0].quantity, 4);
   player.hitpoints = 0;
-  assert.throws(() => useBackpackItem(player, id), /healing/);
+  assert.throws(() => {
+    return useBackpackItem(player, id);
+  }, /healing/);
   assert.equal(player.backpack[0].quantity, 4);
   player.hitpoints = 1;
-  for (let i = 0; i < 4; i++) useBackpackItem(player, id);
+  for (let i = 0; i < 4; i++) {
+    useBackpackItem(player, id);
+  }
+
   assert.equal(player.backpack.length, 0);
 });
 

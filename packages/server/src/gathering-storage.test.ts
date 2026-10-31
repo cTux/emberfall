@@ -20,41 +20,74 @@ test('resource stacks split at 200, fill partial stacks and reject overflow atom
   const backpack = [item('log', 199)];
   addItem(backpack, item('log', 402));
   assert.deepEqual(
-    backpack.map((i) => i.quantity),
+    backpack.map((i) => {
+      return i.quantity;
+    }),
     [200, 200, 200, 1],
   );
-  assert.equal(new Set(backpack.map((i) => i.id)).size, 4);
+  assert.equal(
+    new Set(
+      backpack.map((i) => {
+        return i.id;
+      }),
+    ).size,
+    4,
+  );
   assert(backpackSchema.safeParse(backpack).success);
   assert(!backpackSchema.safeParse([item('log', 201)]).success);
   const before = structuredClone(backpack);
-  assert.throws(() => addItem(backpack, item('log', 200), 4), /full/);
+  assert.throws(() => {
+    return addItem(backpack, item('log', 200), 4);
+  }, /full/);
   assert.deepEqual(backpack, before);
   addItem(backpack, item('warrior-sword'));
   addItem(backpack, item('warrior-sword'));
-  assert.equal(backpack.filter((i) => i.itemId === 'warrior-sword').length, 2);
-  assert.throws(() => addItem(backpack, item('warrior-sword', 2)), /quantity/);
+  assert.equal(
+    backpack.filter((i) => {
+      return i.itemId === 'warrior-sword';
+    }).length,
+    2,
+  );
+  assert.throws(() => {
+    return addItem(backpack, item('warrior-sword', 2));
+  }, /quantity/);
   assert(!backpackSchema.safeParse([item('warrior-sword', 2)]).success);
 });
 
 test('a full backpack cannot partly award a multi-drop tree; storage, saves and protocol retain resource state', () => {
   const node = VILLAGE_RESOURCES[0];
   const player = hero(node);
-  player.backpack = [item('log', 199), ...Array.from({ length: 19 }, () => item('warrior-sword'))];
+  player.backpack = [
+    item('log', 199),
+    ...Array.from({ length: 19 }, () => {
+      return item('warrior-sword');
+    }),
+  ];
   const before = structuredClone(player.backpack);
   const states: Record<string, ResourceState> = {};
-  assert.throws(() => gatherResource(player, states, node.id, 1000, () => 0), /full/);
+  assert.throws(() => {
+    return gatherResource(player, states, node.id, 1000, () => {
+      return 0;
+    });
+  }, /full/);
   assert.deepEqual(player.backpack, before);
   assert.deepEqual(states, {});
   // A single matching drop can fill a partial stack even with every slot occupied.
   const rolls = [0, 1, 1];
-  gatherResource(player, states, node.id, 1000, () => rolls.shift()!);
+  gatherResource(player, states, node.id, 1000, () => {
+    return rolls.shift()!;
+  });
   assert.equal(player.backpack[0].quantity, 200);
-  assert.throws(() => useBackpackItem(player, player.backpack![0].id), /cannot equip/);
+  assert.throws(() => {
+    return useBackpackItem(player, player.backpack![0].id);
+  }, /cannot equip/);
   player.storages = freshStorages();
   player.storages[0].items = [item('log', 199)];
   transferStoredItem(player, 0, player.backpack[0].id, true);
   assert.deepEqual(
-    player.storages[0].items.map((i) => i.quantity),
+    player.storages[0].items.map((i) => {
+      return i.quantity;
+    }),
     [200, 199],
   );
   assert.deepEqual(decodeProgress(JSON.stringify(player)).progress.backpack, player.backpack);
@@ -83,7 +116,9 @@ test('resource definitions work in isolated catalogs and validate saved stack li
   const backpack = [item('ore', 200)];
   context.rules.addItem(backpack, item('ore', 1));
   assert.deepEqual(
-    backpack.map((i) => i.quantity),
+    backpack.map((i) => {
+      return i.quantity;
+    }),
     [200, 1],
   );
   assert(context.rules.backpackSchema.safeParse(backpack).success);

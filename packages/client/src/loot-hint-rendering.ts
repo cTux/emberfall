@@ -15,7 +15,13 @@ export function drawLootHints(
 
     return frame ? [{ hint, frame }] : [];
   });
-  let y = player.y - 30 - visible.reduce((sum, row) => sum + row.frame.height, 0) / 2;
+  let y =
+    player.y -
+    30 -
+    visible.reduce((sum, row) => {
+      return sum + row.frame.height;
+    }, 0) /
+      2;
   for (const { hint, frame } of visible) {
     ctx.save();
     ctx.translate(player.x + 35, y + frame.offset);
@@ -29,9 +35,15 @@ export function drawLootHints(
     ctx.strokeText('+', 0, 9);
     ctx.fillText('+', 0, 9);
     const art = itemArtName(hint.itemId);
-    const plant = PLANT_KINDS.findIndex((kind) => kind === hint.itemId);
-    if (art) drawArt(ctx, loadArt(art), 0, 0, 12, 0, 18, 18);
-    else if (plant >= 0) drawArt(ctx, plantArt, plant, 0, 12, 0, 18, 18);
+    const plant = PLANT_KINDS.findIndex((kind) => {
+      return kind === hint.itemId;
+    });
+    if (art) {
+      drawArt(ctx, loadArt(art), 0, 0, 12, 0, 18, 18);
+    } else if (plant >= 0) {
+      drawArt(ctx, plantArt, plant, 0, 12, 0, 18, 18);
+    }
+
     ctx.fillStyle = '#fff5dc';
     const name = itemDefinition(hint.itemId).name;
     ctx.strokeText(name, 36, 9);

@@ -7,24 +7,33 @@ export interface InventoryDrop {
 }
 
 export function inventoryDropProps(drop?: InventoryDrop) {
-  const source = (event: DragEvent) =>
-    drop?.accepts.find((inventory) =>
-      event.dataTransfer.types.includes(`${INVENTORY_DRAG_PREFIX}${inventory}`),
-    );
+  const source = (event: DragEvent) => {
+    return drop?.accepts.find((inventory) => {
+      return event.dataTransfer.types.includes(`${INVENTORY_DRAG_PREFIX}${inventory}`);
+    });
+  };
 
   return {
     onDragOver(event: DragEvent) {
-      if (!source(event)) return;
+      if (!source(event)) {
+        return;
+      }
+
       event.preventDefault();
       event.dataTransfer.dropEffect = 'move';
     },
     onDrop(event: DragEvent) {
       const inventory = source(event);
-      if (!inventory) return;
+      if (!inventory) {
+        return;
+      }
+
       event.preventDefault();
       event.stopPropagation();
       const id = event.dataTransfer.getData(`${INVENTORY_DRAG_PREFIX}${inventory}`);
-      if (id && id.length <= 64) drop?.onDrop(inventory, id, event);
+      if (id && id.length <= 64) {
+        drop?.onDrop(inventory, id, event);
+      }
     },
   };
 }

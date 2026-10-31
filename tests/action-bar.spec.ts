@@ -13,7 +13,9 @@ test('action bar slots follow custom cursor size and native fallback', async ({ 
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.level = 20;
   const nodeId = talentNodeId('warrior', 0, 1);
@@ -25,7 +27,9 @@ test('action bar slots follow custom cursor size and native fallback', async ({ 
   for (const size of [32, 48, 64, null]) {
     await page.locator('body').evaluate((body, size) => {
       body.dataset.customCursor = String(size !== null);
-      if (size !== null) body.dataset.cursorSize = String(size);
+      if (size !== null) {
+        body.dataset.cursorSize = String(size);
+      }
     }, size);
     for (const slot of [ability, bar.getByRole('button', { name: 'Empty ability slot 2' })]) {
       await slot.hover();
@@ -79,7 +83,9 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   await expect(fire).toHaveAttribute('data-active', 'false');
   await page.keyboard.press('f');
   await expect(fire).toHaveAttribute('data-active', 'true');
-  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((entry) => {
+    return entry.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const names = { warrior: 'Slash', ranger: 'Piercing arrows', mage: 'Fireball', druid: 'Roots' };
   for (const classId of CLASS_IDS) {
@@ -98,7 +104,11 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
       `/assets/wardrobe-style/${classId}-spell.png`,
     );
     await expect
-      .poll(() => bar.locator('img').evaluate((image: HTMLImageElement) => image.naturalWidth))
+      .poll(() => {
+        return bar.locator('img').evaluate((image: HTMLImageElement) => {
+          return image.naturalWidth;
+        });
+      })
       .toBeGreaterThan(0);
     await bar.screenshot({ path: `test-results/action-bar-${classId}.png` });
   }
@@ -112,14 +122,22 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   expect(player.attackAt).toBeDefined();
   await expect(cooldown).toHaveAttribute('aria-valuemax', '1000');
   await page.keyboard.press('f');
-  await expect.poll(() => player.autoAttack).toBe(false);
+  await expect
+    .poll(() => {
+      return player.autoAttack;
+    })
+    .toBe(false);
   await expect(fire).toHaveAttribute('data-active', 'false');
   await expect(cooldown).toHaveCount(0);
   // A manual cast traverses the real SDK/server path and restarts the display.
   const previousAttack = player.attackAt!;
   await page.mouse.move(850, 500);
   await page.mouse.down();
-  await expect.poll(() => player.attackAt!).toBeGreaterThan(previousAttack);
+  await expect
+    .poll(() => {
+      return player.attackAt!;
+    })
+    .toBeGreaterThan(previousAttack);
   await expect(cooldown).toBeVisible();
   await page.mouse.up();
   await expect(cooldown).toHaveCount(0);
@@ -164,7 +182,11 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
   };
   player.scene = 'forest';
   await page.keyboard.press('f');
-  await expect.poll(() => player.autoAttack).toBe(true);
+  await expect
+    .poll(() => {
+      return player.autoAttack;
+    })
+    .toBe(true);
   await expect(fire).toHaveAttribute('data-active', 'true');
   await expect(cooldown).toBeVisible();
   await page.screenshot({ path: 'test-results/action-bar-forest.png' });

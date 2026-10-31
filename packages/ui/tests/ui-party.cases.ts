@@ -16,15 +16,17 @@ test('party bars use sixty percent of their old width with compact coins immedia
       const coins = page.getByLabel(`Astrid: ${amount} coins`, { exact: true });
       await expect(coins).toHaveText(compact);
       const bar = (await meter.boundingBox())!;
-      const available = await meter
-        .locator('../../..')
-        .evaluate((element) => element.getBoundingClientRect().width);
+      const available = await meter.locator('../../..').evaluate((element) => {
+        return element.getBoundingClientRect().width;
+      });
       expect(bar.width).toBeCloseTo(available * 0.6, 0);
       const balance = (await coins.boundingBox())!;
       expect(balance.x).toBeCloseTo(bar.x + bar.width + 8, 0);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-        true,
-      );
+      expect(
+        await page.evaluate(() => {
+          return document.documentElement.scrollWidth <= innerWidth;
+        }),
+      ).toBe(true);
       await page.screenshot({ path: testInfo.outputPath(`coins-${variant}-${width}.png`) });
     }
   }
@@ -45,9 +47,11 @@ test('companion health sits beneath the player at desktop and narrow widths', as
     expect(c.y).toBeGreaterThanOrEqual(p.y + p.height);
     expect(c.height).toBeLessThan(p.height);
     expect(c.width).toBeLessThan(p.width);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-      true,
-    );
+    expect(
+      await page.evaluate(() => {
+        return document.documentElement.scrollWidth <= innerWidth;
+      }),
+    ).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`companion-${width}.png`) });
   }
 
@@ -87,9 +91,11 @@ test('party keeps portrait corner icons beside health with a thinner XP row belo
     expect(d.y).toBe(p.y);
     expect(d.x).toBe(p.x);
     expect(h.x + h.width).toBeCloseTo(p.x + p.width, 0);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-      true,
-    );
+    expect(
+      await page.evaluate(() => {
+        return document.documentElement.scrollWidth <= innerWidth;
+      }),
+    ).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`party-${width}.png`) });
   }
 });

@@ -7,7 +7,11 @@ import { hero } from './snapshots.fixture.ts';
 
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('boss defeat puts fixed return portals within reach of all scattered players', async () => {
@@ -42,7 +46,9 @@ test('boss defeat puts fixed return portals within reach of all scattered player
 
 test('kills drop experience and 10-percent coins; experience pickups reward players and expire', (t) => {
   let roll = 0.099;
-  t.mock.method(Math, 'random', () => roll);
+  t.mock.method(Math, 'random', () => {
+    return roll;
+  });
   const player = { ...hero, scene: 'forest' as const, x: 2400, y: 1280 };
   const scene: SceneState = {
     id: 'loot',
@@ -60,7 +66,9 @@ test('kills drop experience and 10-percent coins; experience pickups reward play
   };
   stepCombat(scene, [player], 10000, 0);
   assert.deepEqual(
-    scene.drops!.map((d) => d.kind),
+    scene.drops!.map((d) => {
+      return d.kind;
+    }),
     ['experience', 'gold'],
   );
   const experience = player.experience;
@@ -75,7 +83,9 @@ test('kills drop experience and 10-percent coins; experience pickups reward play
   scene.enemies = [{ id: 2, x: 2480, y: 1280, hitpoints: 5, angle: 0 }];
   stepCombat(scene, [player], 11000, 0);
   assert.deepEqual(
-    scene.drops!.map((d) => d.kind),
+    scene.drops!.map((d) => {
+      return d.kind;
+    }),
     ['experience'],
   );
   scene.phase = 'ended';
@@ -112,20 +122,29 @@ test('loot attracts across the seam and rewards every living scene player exactl
   assert.equal(scene.drops![0].x, FOREST.width - 66);
   assert.equal(scene.drops![0].collectorId, player.id);
   assert.equal(scene.drops![1].x, FOREST.width - 66);
-  for (let i = 0; i < 10; i++) stepCombat(scene, players, 450 + i * 50, 0.05);
+  for (let i = 0; i < 10; i++) {
+    stepCombat(scene, players, 450 + i * 50, 0.05);
+  }
+
   assert.equal(scene.drops!.length, 0);
   assert.deepEqual(
-    players.map((p) => p.coins ?? 0),
+    players.map((p) => {
+      return p.coins ?? 0;
+    }),
     [0, 0, 1, 0, 0],
   );
   assert.deepEqual(
-    players.map((p) => p.experience),
+    players.map((p) => {
+      return p.experience;
+    }),
     [0, 0, 1, 8, 1],
   );
   scene.drops = [{ id: 4, kind: 'experience', x: player.x, y: player.y, at: 700 }];
   stepCombat(scene, players, 999, 0);
   assert.deepEqual(
-    players.map((p) => p.experience),
+    players.map((p) => {
+      return p.experience;
+    }),
     [0, 0, 1, 8, 1],
     'hop grants no XP',
   );
@@ -134,14 +153,18 @@ test('loot attracts across the seam and rewards every living scene player exactl
   assert.equal(player.coins, 1, 'removed coins cannot reward twice');
   assert.equal(scene.drops.length, 0);
   assert.deepEqual(
-    players.map((p) => p.experience),
+    players.map((p) => {
+      return p.experience;
+    }),
     [0, 0, 2, 9, 2],
   );
   scene.drops = [{ id: 5, kind: 'experience', x: player.x, y: player.y, at: 0 }];
   stepCombat(scene, players, 60000, 0);
   assert.equal(scene.drops.length, 0);
   assert.deepEqual(
-    players.map((p) => p.experience),
+    players.map((p) => {
+      return p.experience;
+    }),
     [0, 0, 2, 9, 2],
     'expiry grants no XP',
   );

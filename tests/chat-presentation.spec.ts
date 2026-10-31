@@ -84,7 +84,9 @@ test('fog is opt-in and player messages sit above health in village and forest',
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
@@ -104,13 +106,19 @@ test('fog is opt-in and player messages sit above health in village and forest',
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const send = async (text: string) => {
     await page.getByRole('complementary', { name: 'World chat', exact: true }).hover();
     await page.getByLabel('Chat message', { exact: true }).fill(text);
     await page.keyboard.press('Enter');
-    await expect.poll(() => player.chat).toBe(text);
+    await expect
+      .poll(() => {
+        return player.chat;
+      })
+      .toBe(text);
     await expect(page.getByRole('log')).toContainText(text);
     await page.keyboard.press('Escape');
     await page.mouse.move(700, 400);

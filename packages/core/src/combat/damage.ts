@@ -28,12 +28,23 @@ export function damagePerSecond(player: Player, now: number) {
     damageHistory.delete(player);
   }
 
-  const recent = (damageHistory.get(player) ?? []).filter((hit) => now - hit.at < 5000);
+  const recent = (damageHistory.get(player) ?? []).filter((hit) => {
+    return now - hit.at < 5000;
+  });
   damageHistory.set(player, recent);
-  for (const value of Object.values(player.damageMeter?.abilities ?? {})) value.dps = 0;
-  for (const hit of recent) player.damageMeter!.abilities[hit.ability].dps += hit.amount / 5;
+  for (const value of Object.values(player.damageMeter?.abilities ?? {})) {
+    value.dps = 0;
+  }
 
-  return recent.reduce((sum, hit) => sum + hit.amount, 0) / 5;
+  for (const hit of recent) {
+    player.damageMeter!.abilities[hit.ability].dps += hit.amount / 5;
+  }
+
+  return (
+    recent.reduce((sum, hit) => {
+      return sum + hit.amount;
+    }, 0) / 5
+  );
 }
 
 export function hitEnemy(
@@ -49,13 +60,18 @@ export function hitEnemy(
   stats?: CharacterStats,
   context: Game = game,
 ) {
-  if (enemy.hitpoints <= 0 || amount <= 0) return;
+  if (enemy.hitpoints <= 0 || amount <= 0) {
+    return;
+  }
+
   amount = Math.max(1, amount);
   const dealt = Math.min(enemy.hitpoints, amount);
   enemy.hitpoints = Math.max(0, enemy.hitpoints - amount);
   if (owner) {
-    if (owner.damageMeter && owner.damageMeter.classId !== (owner.classId ?? 'warrior'))
+    if (owner.damageMeter && owner.damageMeter.classId !== (owner.classId ?? 'warrior')) {
       damagePerSecond(owner, now);
+    }
+
     const meter = (owner.damageMeter ??= {
       classId: owner.classId ?? 'warrior',
       total: 0,
@@ -96,9 +112,9 @@ export function hitEnemy(
     )
   ) {
     enemy.debuffs ??= [];
-    let debuff = enemy.debuffs.find(
-      (d) => d.kind === ailment && d.ownerId === owner.id && d.expiresAt >= now,
-    );
+    let debuff = enemy.debuffs.find((d) => {
+      return d.kind === ailment && d.ownerId === owner.id && d.expiresAt >= now;
+    });
     if (!debuff) {
       const tickIntervalMs = dotTickIntervalMs(owner, AILMENT_DEFINITIONS[ailment].tickMs, stats);
       debuff = {
@@ -109,7 +125,9 @@ export function hitEnemy(
         tickIntervalMs,
         ownerId: owner.id,
       };
-      enemy.debuffs = enemy.debuffs.filter((d) => d.kind !== ailment || d.ownerId !== owner.id);
+      enemy.debuffs = enemy.debuffs.filter((d) => {
+        return d.kind !== ailment || d.ownerId !== owner.id;
+      });
       enemy.debuffs.push(debuff);
     }
 
@@ -118,26 +136,44 @@ export function hitEnemy(
     debuff.ownerId = owner.id;
   }
 
-  if (enemy.hitpoints > 0) return;
-  if (owner) talentEnemyDeath(scene, owner, enemy, now, stats);
-  if (scene.training) return;
-  if (owner) owner.experience++;
+  if (enemy.hitpoints > 0) {
+    return;
+  }
+
+  if (owner) {
+    talentEnemyDeath(scene, owner, enemy, now, stats);
+  }
+
+  if (scene.training) {
+    return;
+  }
+
+  if (owner) {
+    owner.experience++;
+  }
+
   const members = new Map(
     (rewardPlayers.get(scene) ?? (owner ? [owner] : []))
-      .filter(
-        (player) => player.id === owner?.id || (owner?.partyId && player.partyId === owner.partyId),
-      )
-      .map((player) => [player.id, player]),
+      .filter((player) => {
+        return player.id === owner?.id || (owner?.partyId && player.partyId === owner.partyId);
+      })
+      .map((player) => {
+        return [player.id, player];
+      }),
   );
-  const bonuses = [...members.values()].map((player) => characterStats(player).bonuses);
+  const bonuses = [...members.values()].map((player) => {
+    return characterStats(player).bonuses;
+  });
   const experienceCopies =
     1 +
     isMultiChanced(
-      bonuses.reduce((sum, stats) => sum + stats.expIncrease, 0),
+      bonuses.reduce((sum, stats) => {
+        return sum + stats.expIncrease;
+      }, 0),
       context.random,
     );
   scene.drops ??= [];
-  for (let copy = 0; copy < experienceCopies; copy++)
+  for (let copy = 0; copy < experienceCopies; copy++) {
     appendSceneEntities(scene, 'drops', {
       id: ++scene.sequence,
       kind: 'experience',
@@ -146,14 +182,18 @@ export function hitEnemy(
       y: enemy.y,
       at: now,
     });
+  }
+
   if (isChanced(PICKUP_DEFINITIONS.gold.chance * 100, context.random)) {
     const goldCopies =
       1 +
       isMultiChanced(
-        bonuses.reduce((sum, stats) => sum + stats.goldIncrease, 0),
+        bonuses.reduce((sum, stats) => {
+          return sum + stats.goldIncrease;
+        }, 0),
         context.random,
       );
-    for (let copy = 0; copy < goldCopies; copy++)
+    for (let copy = 0; copy < goldCopies; copy++) {
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,
         kind: 'gold',
@@ -161,6 +201,7 @@ export function hitEnemy(
         y: enemy.y,
         at: now,
       });
+    }
   }
 
   const type = enemy.kind ?? EnemyType.Normal;
@@ -183,6 +224,7 @@ export function hitEnemy(
     }
   }
 
-  if (scene.drops.length > PICKUP_RULES.capacity)
+  if (scene.drops.length > PICKUP_RULES.capacity) {
     scene.drops = scene.drops.slice(-PICKUP_RULES.capacity);
+  }
 }

@@ -2,7 +2,7 @@ import type { ValidationContext } from './context.ts';
 
 export function validateBalance(context: ValidationContext) {
   const { r, check, positive, nonnegative } = context;
-  for (const type of r.enemyTypes.values())
+  for (const type of r.enemyTypes.values()) {
     check(
       ['normal', 'elite', 'boss'].includes(type.id) &&
         positive(type.multiplier) &&
@@ -17,7 +17,9 @@ export function validateBalance(context: ValidationContext) {
       type.id,
       'unsupported type or invalid balance',
     );
-  for (const difficulty of r.difficulties.values())
+  }
+
+  for (const difficulty of r.difficulties.values()) {
     check(
       ['Easy', 'Medium', 'Hard'].includes(difficulty.id) &&
         positive(difficulty.multiplier) &&
@@ -26,4 +28,5 @@ export function validateBalance(context: ValidationContext) {
       difficulty.id,
       'unsupported difficulty or invalid multiplier',
     );
+  }
 }

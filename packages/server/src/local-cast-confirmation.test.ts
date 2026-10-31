@@ -22,13 +22,22 @@ test('confirmation preserves launch trajectory, suppresses duplicates and retire
     id: 90,
   });
   const result = frame(movement, confirmed, 150);
-  const local = result.scene.playerShots!.filter((s) => s.ownerId === 'p');
+  const local = result.scene.playerShots!.filter((s) => {
+    return s.ownerId === 'p';
+  });
   assert.equal(local.length, 2);
   assert(
-    local.every((s) => s.x > cast.player.x),
+    local.every((s) => {
+      return s.x > cast.player.x;
+    }),
     'confirmation cannot snap shots back to the server origin',
   );
-  assert.equal(result.scene.playerShots!.filter((s) => s.ownerId === 'remote').length, 1);
+  assert.equal(
+    result.scene.playerShots!.filter((s) => {
+      return s.ownerId === 'remote';
+    }).length,
+    1,
+  );
   confirmed.scene!.playerShots = [];
   const completed = structuredClone(confirmed);
   completed.serverNow = 10150;
@@ -73,20 +82,23 @@ test('a late server cast retains its in-flight position and remaining range with
   const result = frame(movement, reply, 150);
   assert.equal(result.scene.playerShots!.length, 2);
   assert.deepEqual(
-    result.scene.playerShots!.map((s) => [s.x, s.y, s.remaining]),
-    reply.scene!.playerShots!.map((s) => [
-      s.x + result.player.x - reply.players[0].x,
-      s.y,
-      s.remaining,
-    ]),
+    result.scene.playerShots!.map((s) => {
+      return [s.x, s.y, s.remaining];
+    }),
+    reply.scene!.playerShots!.map((s) => {
+      return [s.x + result.player.x - reply.players[0].x, s.y, s.remaining];
+    }),
   );
   assert.equal(frame(movement, reply, 200).scene.playerShots!.length, 2);
-  for (let now = 250; now <= 650; now += 50) frame(movement, reply, now);
+  for (let now = 250; now <= 650; now += 50) {
+    frame(movement, reply, now);
+  }
+
   assert.equal(frame(movement, reply, 650).scene.playerShots!.length, 0);
 });
 
 test('newly confirmed moving casts attach once to the displayed pose in both areas and across seams', () => {
-  for (const training of [false, true])
+  for (const training of [false, true]) {
     for (const delay of [50, 200, 700]) {
       const source = fixture('mage', training);
       source.players[0].x = FOREST.width - 5;
@@ -94,7 +106,10 @@ test('newly confirmed moving casts attach once to the displayed pose in both are
       const movement = new LocalMovement('p', () => {});
       frame(movement, source, 0);
       movement.input(1, 0, 0);
-      for (let t = 50; t < delay; t += 50) frame(movement, source, t);
+      for (let t = 50; t < delay; t += 50) {
+        frame(movement, source, t);
+      }
+
       const reply = structuredClone(source);
       reply.serverNow! += delay;
       reply.players[0].attackAt = reply.serverNow;
@@ -114,6 +129,7 @@ test('newly confirmed moving casts attach once to the displayed pose in both are
       assert(next.scene.playerShots![0].remaining < result.scene.playerShots![0].remaining);
       assert.equal((training ? reply.training : reply.scene)!.playerShots![0].x, FOREST.width - 5);
     }
+  }
 });
 
 test('confirmation cannot bend a moving cast or rebind its surviving projectile to a sibling', () => {
@@ -123,7 +139,9 @@ test('confirmation cannot bend a moving cast or rebind its surviving projectile 
     frame(movement, source, 0);
     movement.input(0, 1, 0);
     const cast = frame(movement, source, 100);
-    const angles = cast.scene.playerShots!.map((s) => s.angle);
+    const angles = cast.scene.playerShots!.map((s) => {
+      return s.angle;
+    });
     const reply = structuredClone(source);
     reply.serverNow = 10100;
     reply.players[0].attackAt = 10100;
@@ -131,7 +149,9 @@ test('confirmation cannot bend a moving cast or rebind its surviving projectile 
     fireClassAttack(scene, reply.players[0]);
     assert.notEqual(scene.playerShots![0].angle, angles[0]);
     assert.deepEqual(
-      frame(movement, reply, 150).scene.playerShots!.map((s) => s.angle),
+      frame(movement, reply, 150).scene.playerShots!.map((s) => {
+        return s.angle;
+      }),
       angles,
     );
     const next = structuredClone(reply);

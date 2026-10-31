@@ -11,13 +11,17 @@ test('pet cats with clicks and E, respect range and cooldown, and keep speech ab
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((w) => {
+    return w.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const canvas = page.locator('canvas');
-  const catAt = () =>
-    crittersAt('village', Date.now(), { x: 0, y: 0, width: 960, height: 640 }).find(
-      (c) => c.id === 'cat:590:470',
-    )!;
+  const catAt = () => {
+    return crittersAt('village', Date.now(), { x: 0, y: 0, width: 960, height: 640 }).find((c) => {
+      return c.id === 'cat:590:470';
+    })!;
+  };
+
   const hoverCat = async (inRange: boolean) => {
     await expect(async () => {
       const cat = catAt();

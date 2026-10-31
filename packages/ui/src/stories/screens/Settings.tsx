@@ -15,15 +15,20 @@ export function Settings() {
   const [volume, setVolume] = useState(0.6);
   const [musicVolume, setMusicVolume] = useState(0.4);
   const [preset, setPreset] = useState('High');
-  const toggles = (labels: string[]) =>
-    labels.map((label) => (
-      <SettingToggle
-        key={label}
-        label={label}
-        checked={!!values[label]}
-        onChange={(checked) => setValues({ ...values, [label]: checked })}
-      />
-    ));
+  const toggles = (labels: string[]) => {
+    return labels.map((label) => {
+      return (
+        <SettingToggle
+          key={label}
+          label={label}
+          checked={!!values[label]}
+          onChange={(checked) => {
+            return setValues({ ...values, [label]: checked });
+          }}
+        />
+      );
+    });
+  };
 
   return (
     <Box sx={stage}>
@@ -54,33 +59,37 @@ export function Settings() {
                 content: (
                   <Stack spacing={2}>
                     <Stack direction='row' spacing={1}>
-                      {['Low', 'Balanced', 'High'].map((name) => (
-                        <Button
-                          key={name}
-                          variant={preset === name ? 'contained' : 'outlined'}
-                          aria-pressed={preset === name}
-                          onClick={() => {
-                            setPreset(name);
-                            setValues({
-                              ...values,
-                              'Soft shadows': name !== 'Low',
-                              Bloom: name === 'High',
-                              'Ambient particles': name !== 'Low',
-                              Fog: name !== 'Low',
-                            });
-                          }}
-                        >
-                          {name}
-                        </Button>
-                      ))}
+                      {['Low', 'Balanced', 'High'].map((name) => {
+                        return (
+                          <Button
+                            key={name}
+                            variant={preset === name ? 'contained' : 'outlined'}
+                            aria-pressed={preset === name}
+                            onClick={() => {
+                              setPreset(name);
+                              setValues({
+                                ...values,
+                                'Soft shadows': name !== 'Low',
+                                Bloom: name === 'High',
+                                'Ambient particles': name !== 'Low',
+                                Fog: name !== 'Low',
+                              });
+                            }}
+                          >
+                            {name}
+                          </Button>
+                        );
+                      })}
                     </Stack>
                     {toggles(['Soft shadows', 'Bloom', 'Ambient particles', 'Fog'])}
                     <TextField select label='Frame rate limit' defaultValue='0'>
-                      {[0, 30, 60, 120, 144].map((fps) => (
-                        <MenuItem key={fps} value={String(fps)}>
-                          {fps ? `${fps} FPS` : 'Display refresh rate'}
-                        </MenuItem>
-                      ))}
+                      {[0, 30, 60, 120, 144].map((fps) => {
+                        return (
+                          <MenuItem key={fps} value={String(fps)}>
+                            {fps ? `${fps} FPS` : 'Display refresh rate'}
+                          </MenuItem>
+                        );
+                      })}
                     </TextField>
                     <TextField select label='Render resolution' defaultValue='1'>
                       <MenuItem value='0.75'>75% · Performance</MenuItem>

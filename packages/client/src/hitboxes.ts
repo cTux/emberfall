@@ -43,8 +43,10 @@ export function worldHitboxes(
   view: { x: number; y: number; width: number; height: number },
 ): Hitbox[] {
   const shapes: Hitbox[] = [];
-  const circle = (x: number, y: number, radius: number, color: string, label?: string) =>
-    shapes.push({ x, y, radius, color, label });
+  const circle = (x: number, y: number, radius: number, color: string, label?: string) => {
+    return shapes.push({ x, y, radius, color, label });
+  };
+
   const scene = forest ? world.scene : world.training;
   const now = scene?.pausedAt ?? world.serverNow ?? 0;
   const swing = (
@@ -55,7 +57,7 @@ export function worldHitboxes(
       actor.attackAt !== undefined &&
       now >= actor.attackAt &&
       now - actor.attackAt < PLAYER_ATTACK_DURATION
-    )
+    ) {
       shapes.push({
         x: actor.x,
         y: actor.y,
@@ -64,18 +66,24 @@ export function worldHitboxes(
         color: HITBOX_COLORS.range,
         label: 'melee',
       });
+    }
   };
 
   for (const player of world.players) {
-    if ((player.scene === 'forest') !== forest || player.hitpoints <= 0) continue;
+    if ((player.scene === 'forest') !== forest || player.hitpoints <= 0) {
+      continue;
+    }
+
     const body = modelHitbox(player);
     circle(body.x, body.y, body.radius, HITBOX_COLORS.body, 'body');
     if (
       game.registries.abilities.require(
         game.registries.classes.require(player.classId ?? 'warrior').attack,
       ).kind === 'slash'
-    )
+    ) {
       swing(player, defaultSpellRange(player));
+    }
+
     const bear = player.bear;
     if (bear && bear.hitpoints > 0) {
       const body = modelHitbox(bear);
@@ -85,22 +93,30 @@ export function worldHitboxes(
   }
 
   for (const enemy of scene?.enemies ?? []) {
-    if (enemy.hitpoints <= 0) continue;
+    if (enemy.hitpoints <= 0) {
+      continue;
+    }
+
     const body = enemyHitbox(enemy);
     circle(body.x, body.y, body.radius, HITBOX_COLORS.body, 'body');
-    if (enemy.attack)
+    if (enemy.attack) {
       circle(enemy.attack.x, enemy.attack.y, enemy.attack.radius, HITBOX_COLORS.range, 'attack');
+    }
   }
 
-  for (const shot of scene?.playerShots ?? [])
+  for (const shot of scene?.playerShots ?? []) {
     circle(shot.x, shot.y, COLLISION.playerProjectileRadius, HITBOX_COLORS.projectile);
+  }
+
   for (const shot of scene?.projectiles ?? []) {
     circle(shot.x, shot.y, COLLISION.enemyProjectileRadius, HITBOX_COLORS.projectile);
   }
 
-  for (const drop of scene?.drops ?? [])
+  for (const drop of scene?.drops ?? []) {
     circle(drop.x, drop.y, PICKUP_RULES.collectRadius, HITBOX_COLORS.range, 'collect');
-  for (const explosion of scene?.explosions ?? [])
+  }
+
+  for (const explosion of scene?.explosions ?? []) {
     circle(
       explosion.x,
       explosion.y,
@@ -108,8 +124,10 @@ export function worldHitboxes(
       HITBOX_COLORS.range,
       'splash',
     );
+  }
+
   if (forest) {
-    for (const spawn of scene?.spawns ?? [])
+    for (const spawn of scene?.spawns ?? []) {
       circle(
         spawn.x,
         spawn.y,
@@ -117,17 +135,28 @@ export function worldHitboxes(
         HITBOX_COLORS.body,
         'spawn',
       );
-    for (const portal of scene?.portals ?? [])
+    }
+
+    for (const portal of scene?.portals ?? []) {
       circle(portal.x, portal.y, INTERACTION_RADIUS, HITBOX_COLORS.range, 'interact');
+    }
+
     for (const tree of forestTrees(
       view.x + view.width / 2,
       view.y + view.height / 2,
       Math.max(view.width, view.height) / 2 + 150,
-    ))
+    )) {
       circle(tree.x, tree.y, tree.radius, HITBOX_COLORS.scenery);
+    }
   } else {
-    for (const tree of TREES) circle(tree.x, tree.y - 8, tree.radius, HITBOX_COLORS.scenery);
-    for (const torch of TORCHES) circle(torch.x, torch.y, 5, HITBOX_COLORS.scenery);
+    for (const tree of TREES) {
+      circle(tree.x, tree.y - 8, tree.radius, HITBOX_COLORS.scenery);
+    }
+
+    for (const torch of TORCHES) {
+      circle(torch.x, torch.y, 5, HITBOX_COLORS.scenery);
+    }
+
     circle(WARDROBE.x, WARDROBE.y, 18, HITBOX_COLORS.scenery);
     // Interaction checks use player.y + 15; shift these ranges into the body coordinate frame.
     circle(WARDROBE.x, WARDROBE.y - COLLISION.feetOffset, 55, HITBOX_COLORS.range, 'interact');
@@ -146,7 +175,7 @@ export function worldHitboxes(
         height: 40,
         color: HITBOX_COLORS.scenery,
       });
-      if (building.id !== 'inn')
+      if (building.id !== 'inn') {
         circle(
           building.doorX,
           building.y + 24 - COLLISION.feetOffset,
@@ -154,11 +183,20 @@ export function worldHitboxes(
           HITBOX_COLORS.range,
           'interact',
         );
+      }
     }
 
     circle(
-      (world.npcs?.find((n) => n.id === INNKEEPER.id) ?? INNKEEPER).x,
-      (world.npcs?.find((n) => n.id === INNKEEPER.id) ?? INNKEEPER).y - COLLISION.feetOffset,
+      (
+        world.npcs?.find((n) => {
+          return n.id === INNKEEPER.id;
+        }) ?? INNKEEPER
+      ).x,
+      (
+        world.npcs?.find((n) => {
+          return n.id === INNKEEPER.id;
+        }) ?? INNKEEPER
+      ).y - COLLISION.feetOffset,
       INTERACTION_RADIUS,
       HITBOX_COLORS.range,
       'interact',
@@ -195,8 +233,10 @@ export function drawHitboxes(
       x - width / 2 > view.x + view.width ||
       y + height / 2 < view.y ||
       y - height / 2 > view.y + view.height
-    )
+    ) {
       continue;
+    }
+
     ctx.strokeStyle = shape.color;
     ctx.beginPath();
     if ('radius' in shape) {
@@ -204,9 +244,15 @@ export function drawHitboxes(
         ctx.moveTo(x, y);
         ctx.arc(x, y, shape.radius, shape.angle - Math.PI / 2, shape.angle + Math.PI / 2);
         ctx.closePath();
-      } else ctx.arc(x, y, shape.radius, 0, Math.PI * 2);
+      } else {
+        ctx.arc(x, y, shape.radius, 0, Math.PI * 2);
+      }
+
       ctx.stroke();
-    } else ctx.strokeRect(x - width / 2, y - height / 2, width, height);
+    } else {
+      ctx.strokeRect(x - width / 2, y - height / 2, width, height);
+    }
+
     if (shape.label) {
       ctx.fillStyle = shape.color;
       ctx.fillText(shape.label, x, y - height / 2 - 3);

@@ -5,13 +5,15 @@ export function createWorldRepository(db: DatabaseSync, transaction: <T>(operati
     return db
       .prepare('SELECT * FROM worlds')
       .all()
-      .map((row) => ({
-        id: String(row.id),
-        name: String(row.name),
-        salt: String(row.salt),
-        hash: row.hash ? Buffer.from(String(row.hash), 'hex') : undefined,
-        permanent: !!row.permanent,
-      }));
+      .map((row) => {
+        return {
+          id: String(row.id),
+          name: String(row.name),
+          salt: String(row.salt),
+          hash: row.hash ? Buffer.from(String(row.hash), 'hex') : undefined,
+          permanent: !!row.permanent,
+        };
+      });
   }
 
   function saveWorld(

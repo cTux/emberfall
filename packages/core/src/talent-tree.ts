@@ -13,10 +13,10 @@ export interface TalentNode {
   slot?: number;
 }
 export const TALENT_TREE: readonly Readonly<TalentNode>[] = Object.freeze(
-  Object.entries(TALENT_NAMES).flatMap(([classId, columns]) =>
-    columns.flatMap((names, column) =>
-      names.map((name, row) =>
-        Object.freeze({
+  Object.entries(TALENT_NAMES).flatMap(([classId, columns]) => {
+    return columns.flatMap((names, column) => {
+      return names.map((name, row) => {
+        return Object.freeze({
           id: talentNodeId(classId, column, row),
           classId,
           column,
@@ -25,12 +25,16 @@ export const TALENT_TREE: readonly Readonly<TalentNode>[] = Object.freeze(
           level: TALENT_LEVELS[row],
           kind: [1, 3, 5, 7].includes(row) ? ('ability' as const) : ('extension' as const),
           ...([1, 3, 5, 7].includes(row) ? { slot: column * 4 + (row - 1) / 2 } : {}),
-        }),
-      ),
-    ),
-  ),
+        });
+      });
+    });
+  }),
 );
-const nodesById = new Map(TALENT_TREE.map((node) => [node.id, node]));
+const nodesById = new Map(
+  TALENT_TREE.map((node) => {
+    return [node.id, node];
+  }),
+);
 type Progress = Pick<CharacterProgress, 'level' | 'talents'> & { classId?: string };
 export function talentRank(progress: Pick<CharacterProgress, 'talents'>, id: string) {
   const value = progress.talents?.[id];
@@ -43,7 +47,9 @@ export function isTalentLearned(progress: Pick<CharacterProgress, 'talents'>, id
 }
 
 export function availableTalentPoints(progress: Progress) {
-  const spent = TALENT_TREE.reduce((sum, node) => sum + talentRank(progress, node.id), 0);
+  const spent = TALENT_TREE.reduce((sum, node) => {
+    return sum + talentRank(progress, node.id);
+  }, 0);
 
   return Math.max(0, Math.min(20, progress.level) - spent);
 }
@@ -61,8 +67,10 @@ export function canLearnTalent(progress: Progress, id: string) {
 }
 
 export function learnTalent(progress: Progress, id: string) {
-  if (!canLearnTalent(progress, id))
+  if (!canLearnTalent(progress, id)) {
     throw new Error('Talent is locked, fully ranked, or no points remain.');
+  }
+
   progress.talents = { ...progress.talents, [id]: talentRank(progress, id) + 1 };
 }
 
@@ -70,10 +78,18 @@ export const TALENT_RESET_COST = 50;
 export function resetTalents(
   progress: Pick<CharacterProgress, 'talents' | 'coins' | 'talentSlots'>,
 ) {
-  if (!TALENT_TREE.some((node) => isTalentLearned(progress, node.id)))
+  if (
+    !TALENT_TREE.some((node) => {
+      return isTalentLearned(progress, node.id);
+    })
+  ) {
     throw new Error('You have no talent points to reset.');
-  if ((progress.coins ?? 0) < TALENT_RESET_COST)
+  }
+
+  if ((progress.coins ?? 0) < TALENT_RESET_COST) {
     throw new Error(`You need ${TALENT_RESET_COST} coins to reset your talent points.`);
+  }
+
   progress.talents = {};
   progress.talentSlots = [null, null, null, null];
   progress.coins = (progress.coins ?? 0) - TALENT_RESET_COST;
@@ -95,8 +111,9 @@ export function normalizeTalents(progress: CharacterProgress, classId: string) {
         rank <= 2
       );
     }) &&
-    TALENT_TREE.reduce((sum, node) => sum + talentRank(progress, node.id), 0) <=
-      Math.min(20, progress.level);
+    TALENT_TREE.reduce((sum, node) => {
+      return sum + talentRank(progress, node.id);
+    }, 0) <= Math.min(20, progress.level);
   if (!valid) {
     progress.talents = {};
     progress.talentSlots = [null, null, null, null];
@@ -128,9 +145,11 @@ export function equipTalent(
         node.kind !== 'ability' ||
         node.classId !== (progress.classId ?? 'warrior') ||
         !isTalentLearned(progress, nodeId)))
-  )
+  ) {
     throw new Error('Choose a learned ability for this slot.');
-  progress.talentSlots = Array.from({ length: 4 }, (_, index) =>
-    index === slot ? nodeId : (progress.talentSlots?.[index] ?? null),
-  );
+  }
+
+  progress.talentSlots = Array.from({ length: 4 }, (_, index) => {
+    return index === slot ? nodeId : (progress.talentSlots?.[index] ?? null);
+  });
 }

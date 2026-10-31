@@ -77,28 +77,36 @@ const attributes: Record<string, number[]> = {
 export const baseMod: GameMod = {
   id: 'base',
   register(r) {
-    for (const id of new Set(Object.values(SLOT_GEAR_TYPES).flat()))
+    for (const id of new Set(Object.values(SLOT_GEAR_TYPES).flat())) {
       r.gearTypes.register({ id, label: gearLabels[id] });
-    EQUIPMENT_SLOTS.forEach((id, index) =>
-      r.slots.register({
+    }
+
+    EQUIPMENT_SLOTS.forEach((id, index) => {
+      return r.slots.register({
         id,
         label: slotLabels[index],
         gearTypes: SLOT_GEAR_TYPES[id],
         classRestricted: id === 'weapon' || id === 'offHand',
         column: slotPositions[index][0],
         row: slotPositions[index][1],
-      }),
-    );
-    for (const [id, value] of Object.entries(INNATE_STATS))
+      });
+    });
+    for (const [id, value] of Object.entries(INNATE_STATS)) {
       r.stats.register({
         id,
-        label: id.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()),
+        label: id.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => {
+          return c.toUpperCase();
+        }),
         default: value,
         aggregation: 'sum',
         format: id === 'criticalChance' || id === 'criticalMultiplier' ? 'percent' : 'number',
       });
-    for (const item of Object.values(GEAR_DEFINITIONS))
+    }
+
+    for (const item of Object.values(GEAR_DEFINITIONS)) {
       r.items.register({ ...item, kind: 'gear', loot: LOOT_ITEM_IDS.includes(item.id) });
+    }
+
     r.items.register({
       id: 'health-potion',
       name: 'Health potion',
@@ -119,9 +127,11 @@ export const baseMod: GameMod = {
       'meadow-grass': 'Meadow grass',
       'violet-wildflowers': 'Violet wildflowers',
       'flowering-herb': 'Flowering herb',
-    }))
+    })) {
       r.items.register({ id, name, kind: 'resource', price: 1 });
-    for (const player of Object.values(PLAYER_DEFINITIONS))
+    }
+
+    for (const player of Object.values(PLAYER_DEFINITIONS)) {
       r.classes.register({
         ...player,
         details: BASE_CLASS_DETAILS[player.id],
@@ -129,7 +139,9 @@ export const baseMod: GameMod = {
         starterWeapon: STARTER_WEAPONS[player.id],
         gearTypes: CLASS_GEAR_TYPES[player.id],
       });
-    for (const [id, ability] of Object.entries(ATTACK_DEFINITIONS))
+    }
+
+    for (const [id, ability] of Object.entries(ATTACK_DEFINITIONS)) {
       r.abilities.register({
         intervalMs: 1000,
         durationMs: 260,
@@ -146,8 +158,13 @@ export const baseMod: GameMod = {
         ...ability,
         kind: id,
       } as AbilityDefinition);
-    for (const ability of TALENT_ABILITIES) r.abilities.register(ability);
-    for (const [id, enemy] of Object.entries(ENEMY_STATS))
+    }
+
+    for (const ability of TALENT_ABILITIES) {
+      r.abilities.register(ability);
+    }
+
+    for (const [id, enemy] of Object.entries(ENEMY_STATS)) {
       r.enemies.register({
         ...enemy,
         id,
@@ -156,12 +173,17 @@ export const baseMod: GameMod = {
         hitPoints: attributes[id][0],
         damage: attributes[id][1],
       } as Parameters<typeof r.enemies.register>[0]);
+    }
+
     r.spawnRules.register({ id: 'brute', enemy: 'brute', chance: ENEMY_RULES.bruteChance });
     r.spawnRules.register({ id: 'caster', enemy: 'caster', chance: ENEMY_RULES.casterChance });
     r.settings.register({ id: 'spawnFallbacks', value: ['runner', 'skeleton'] });
-    for (const boss of Object.values(BOSS_DEFINITIONS)) r.bosses.register(boss);
+    for (const boss of Object.values(BOSS_DEFINITIONS)) {
+      r.bosses.register(boss);
+    }
+
     r.companions.register(BEAR_DEFINITION);
-    for (const [id, ailment] of Object.entries(AILMENT_DEFINITIONS))
+    for (const [id, ailment] of Object.entries(AILMENT_DEFINITIONS)) {
       r.ailments.register({
         chance: 0,
         tickMs: 1000,
@@ -170,9 +192,20 @@ export const baseMod: GameMod = {
         id,
         kind: id,
       } as AilmentDefinition);
-    for (const [id, value] of Object.entries(PICKUP_DEFINITIONS)) r.pickups.register({ id, value });
-    for (const critter of Object.values(CRITTER_DEFINITIONS)) r.critters.register(critter);
-    for (const [id, value] of Object.entries(TRANSIENT_EFFECTS)) r.effects.register({ id, value });
+    }
+
+    for (const [id, value] of Object.entries(PICKUP_DEFINITIONS)) {
+      r.pickups.register({ id, value });
+    }
+
+    for (const critter of Object.values(CRITTER_DEFINITIONS)) {
+      r.critters.register(critter);
+    }
+
+    for (const [id, value] of Object.entries(TRANSIENT_EFFECTS)) {
+      r.effects.register({ id, value });
+    }
+
     r.encounters.register({ id: 'forest', value: FOREST_ENCOUNTER });
     r.encounters.register({ id: 'training', value: TRAINING_DEFINITION });
     r.worlds.register({ id: 'village', value: VILLAGE_DEFINITION });
@@ -187,8 +220,10 @@ export const baseMod: GameMod = {
       villageCritters: VILLAGE_CRITTERS,
       lobbyPortal: LOBBY_PORTAL,
       interactionRadius: INTERACTION_RADIUS,
-    }))
+    })) {
       r.settings.register({ id, value });
+    }
+
     r.enemyTypes.register({
       id: 'normal',
       multiplier: 1,
@@ -213,7 +248,8 @@ export const baseMod: GameMod = {
       Easy: { multiplier: 1, speedMultiplier: 1 },
       Medium: { multiplier: 2, speedMultiplier: 1.05 },
       Hard: { multiplier: 4, speedMultiplier: 1.15 },
-    }))
+    })) {
       r.difficulties.register({ id, ...balance });
+    }
   },
 };

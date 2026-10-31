@@ -5,20 +5,28 @@ import { addItem, INVENTORY_SLOTS } from '../inventory.ts';
 import type { Player, SceneState } from '@emberfall/common';
 
 export function tickPickups(scene: SceneState, players: Player[], now: number, dt: number) {
-  const collectors = players.filter(
-    (p) => p.scene === 'forest' && p.hitpoints > 0 && !p.reconnecting,
-  );
+  const collectors = players.filter((p) => {
+    return p.scene === 'forest' && p.hitpoints > 0 && !p.reconnecting;
+  });
   scene.drops = (scene.drops ?? []).filter((drop) => {
-    if (now - drop.at >= PICKUP_RULES.lifetimeMs) return false;
-    if (now - drop.at < PICKUP_RULES.initialHopMs) return true;
+    if (now - drop.at >= PICKUP_RULES.lifetimeMs) {
+      return false;
+    }
+
+    if (now - drop.at < PICKUP_RULES.initialHopMs) {
+      return true;
+    }
+
     let target: Player | undefined;
     let distance = PICKUP_RULES.attractionRadius;
     for (const player of collectors) {
       if (
         drop.kind === 'item' &&
         (player.autoLoot === false || (player.backpack?.length ?? 0) >= INVENTORY_SLOTS)
-      )
+      ) {
         continue;
+      }
+
       const next = forestDistance(player, drop);
       if (next < distance) {
         target = player;
@@ -27,12 +35,17 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
     }
 
     drop.collectorId = target?.id;
-    if (!target) return true;
+    if (!target) {
+      return true;
+    }
+
     const travel = Math.min(distance, PICKUP_RULES.speed * Math.max(0, dt));
     if (distance <= PICKUP_RULES.collectRadius || distance - travel <= PICKUP_RULES.collectRadius) {
-      if (drop.kind === 'experience')
-        for (const player of collectors) player.experience += drop.amount ?? 1;
-      else if (drop.kind === 'item' && drop.itemId)
+      if (drop.kind === 'experience') {
+        for (const player of collectors) {
+          player.experience += drop.amount ?? 1;
+        }
+      } else if (drop.kind === 'item' && drop.itemId) {
         addItem((target.backpack ??= []), {
           id: `${scene.id}:${drop.id}`,
           itemId: drop.itemId,
@@ -40,11 +53,12 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
           rarity: drop.rarity,
           stats: drop.stats,
         });
-      else
+      } else {
         target.coins = Math.min(
           Number.MAX_SAFE_INTEGER,
           (target.coins ?? 0) + PICKUP_DEFINITIONS.gold.baseAmount,
         );
+      }
 
       return false;
     }

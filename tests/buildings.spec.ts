@@ -22,7 +22,9 @@ test('buildings retain native crops, source proportions and matching grounded sh
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
   let release: () => void = () => {};
 
   const gate = new Promise<void>((done) => {
@@ -40,12 +42,21 @@ test('buildings retain native crops, source proportions and matching grounded sh
     ).VillageScenery;
     while (
       fixture.artImages
-        .filter((image) => image !== fixture.buildingArt)
-        .some((image) => !image.complete || image.dataset.artReady !== 'true') ||
+        .filter((image) => {
+          return image !== fixture.buildingArt;
+        })
+        .some((image) => {
+          return !image.complete || image.dataset.artReady !== 'true';
+        }) ||
       !fixture.terrainArt.complete ||
-      Object.values(fixture.villageImages).some((image) => !image.complete)
-    )
-      await new Promise((done) => setTimeout(done, 20));
+      Object.values(fixture.villageImages).some((image) => {
+        return !image.complete;
+      })
+    ) {
+      await new Promise((done) => {
+        return setTimeout(done, 20);
+      });
+    }
 
     return fixture.villageBackground(fixture.GRAPHICS_PRESETS.High) === undefined;
   });
@@ -57,9 +68,9 @@ test('buildings retain native crops, source proportions and matching grounded sh
     ).VillageScenery;
     await fixture.buildingArt.decode();
     const prepared = fixture.villageBackground(fixture.GRAPHICS_PRESETS.High)!;
-    const buildings = prepared.scenery.filter(
-      (object) => object.id.startsWith('building:') && object.id !== 'building:wardrobe',
-    );
+    const buildings = prepared.scenery.filter((object) => {
+      return object.id.startsWith('building:') && object.id !== 'building:wardrobe';
+    });
     const preview = document.createElement('canvas');
     preview.id = 'building-shadows';
     preview.width = 1800;
@@ -94,7 +105,9 @@ test('buildings retain native crops, source proportions and matching grounded sh
       const image = additional ?? fixture.buildingArt;
       const frame = additional
         ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
-        : fixture.buildingFrames.find((frame) => frame.width === object.sprite.width)!;
+        : fixture.buildingFrames.find((frame) => {
+            return frame.width === object.sprite.width;
+          })!;
       const crop = document.createElement('canvas');
       crop.width = frame.width;
       crop.height = frame.height;
@@ -120,21 +133,28 @@ test('buildings retain native crops, source proportions and matching grounded sh
       let bottom = crop.height;
       while (
         bottom > 0 &&
-        !sprite
-          .slice((bottom - 1) * crop.width * 4, bottom * crop.width * 4)
-          .some((value, i) => i % 4 === 3 && value >= 32)
-      )
+        !sprite.slice((bottom - 1) * crop.width * 4, bottom * crop.width * 4).some((value, i) => {
+          return i % 4 === 3 && value >= 32;
+        })
+      ) {
         bottom--;
+      }
 
       return {
         id: object.id,
         width: object.width,
         height: object.height,
         ratio: frame.width / frame.height,
-        native: sprite.every((value, i) => value === source[i]),
-        matchingMask: mask.every((value, i) => i % 4 !== 3 || value === sprite[i]),
+        native: sprite.every((value, i) => {
+          return value === source[i];
+        }),
+        matchingMask: mask.every((value, i) => {
+          return i % 4 !== 3 || value === sprite[i];
+        }),
         groundGap: ((crop.height - bottom) / crop.height) * object.height,
-        opaque: sprite.filter((value, i) => i % 4 === 3 && value >= 128).length,
+        opaque: sprite.filter((value, i) => {
+          return i % 4 === 3 && value >= 128;
+        }).length,
         pixels: frame.width * frame.height,
         groundY: object.y,
       };
@@ -142,7 +162,9 @@ test('buildings retain native crops, source proportions and matching grounded sh
   });
   expect(buildings).toHaveLength(BUILDINGS.length);
   for (const building of BUILDINGS) {
-    const rendered = buildings.find((object) => object.id === `building:${building.id}`)!;
+    const rendered = buildings.find((object) => {
+      return object.id === `building:${building.id}`;
+    })!;
     expect(rendered.width).toBe(building.sourceWidth * 2);
     expect(rendered.groundY).toBe(building.y);
     expect(rendered.width / rendered.height).toBeCloseTo(rendered.ratio, 12);
@@ -165,11 +187,15 @@ for (const graphicsPreset of ['High', 'Low'] as const) {
       game,
     }) => {
       const errors: string[] = [];
-      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('pageerror', (error) => {
+        return errors.push(error.message);
+      });
       await page.goto('/');
       await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
       await expect(page.locator('canvas')).toHaveAttribute('data-renderer', 'pixijs-webgl');
-      const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+      const world = [...game.runtime.worlds.values()].find((world) => {
+        return world.players.size;
+      })!;
       const player = [...world.players.values()][0];
       player.x = 485;
       player.y = 300;

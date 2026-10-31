@@ -9,12 +9,16 @@ test('HUD surfaces match and draggable panels and windows persist across session
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Panel hero');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  for (const name of ['DPS meter', 'FPS graph', 'Latency graph'])
+  for (const name of ['DPS meter', 'FPS graph', 'Latency graph']) {
     await page.getByRole('switch', { name, exact: true }).check();
+  }
+
   await page.getByRole('button', { name: 'Close Settings' }).click();
   const lobby = page.getByRole('region', { name: 'Emberfall', exact: true });
   await drag(page, lobby.getByRole('heading', { name: 'Emberfall' }), 90, 30);
-  const lobbyTransform = await lobby.evaluate((element) => element.style.transform);
+  const lobbyTransform = await lobby.evaluate((element) => {
+    return element.style.transform;
+  });
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const dps = page.getByLabel('Damage per second', { exact: true });
   await expect(dps).toBeVisible();
@@ -29,21 +33,27 @@ test('HUD surfaces match and draggable panels and windows persist across session
   const hp = page.getByRole('progressbar', { name: 'Panel hero, lvl 1' });
   await expect(hp).toHaveCSS('background-color', 'rgb(25, 40, 32)');
   await expect(hp.locator('.MuiLinearProgress-bar')).toHaveCSS('opacity', '1');
-  const fill = await hp
-    .locator('.MuiLinearProgress-bar')
-    .evaluate((element) => getComputedStyle(element).backgroundColor);
+  const fill = await hp.locator('.MuiLinearProgress-bar').evaluate((element) => {
+    return getComputedStyle(element).backgroundColor;
+  });
   expect(fill).not.toMatch(/rgba|\/\s*0\./);
   await expect(page.getByRole('progressbar', { name: 'Panel hero MP' })).toHaveCount(0);
   await drag(page, fps, 430, 70);
   await drag(page, dps, 410, 100);
-  const fpsTransform = await fps.evaluate((element) => element.style.transform);
-  const dpsTransform = await dps.evaluate((element) => element.style.transform);
+  const fpsTransform = await fps.evaluate((element) => {
+    return element.style.transform;
+  });
+  const dpsTransform = await dps.evaluate((element) => {
+    return element.style.transform;
+  });
   expect(fpsTransform).toBe('translate(430px, 70px)');
   expect(dpsTransform).toBe('translate(410px, 100px)');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
   await drag(page, settings.getByRole('heading', { name: 'Settings' }), 120, 60);
-  const settingsTransform = await settings.evaluate((element) => element.style.transform);
+  const settingsTransform = await settings.evaluate((element) => {
+    return element.style.transform;
+  });
   await page.getByRole('button', { name: 'Close Settings' }).click();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect(settings).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 120, 60)');
@@ -56,31 +66,35 @@ test('HUD surfaces match and draggable panels and windows persist across session
   const next = await context.newPage();
   await next.goto('/');
   await expect
-    .poll(() =>
-      next
-        .getByRole('region', { name: 'Emberfall', exact: true })
-        .evaluate((element) => element.style.transform),
-    )
+    .poll(() => {
+      return next.getByRole('region', { name: 'Emberfall', exact: true }).evaluate((element) => {
+        return element.style.transform;
+      });
+    })
     .toBe(lobbyTransform);
   await next.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect
-    .poll(() => next.locator('.performance-stats').evaluate((element) => element.style.transform))
+    .poll(() => {
+      return next.locator('.performance-stats').evaluate((element) => {
+        return element.style.transform;
+      });
+    })
     .toBe(fpsTransform);
   await expect(next.getByLabel('Damage per second', { exact: true })).toBeVisible();
   await expect
-    .poll(() =>
-      next
-        .getByLabel('Damage per second', { exact: true })
-        .evaluate((element) => element.style.transform),
-    )
+    .poll(() => {
+      return next.getByLabel('Damage per second', { exact: true }).evaluate((element) => {
+        return element.style.transform;
+      });
+    })
     .toBe(dpsTransform);
   await next.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect
-    .poll(() =>
-      next
-        .getByRole('dialog', { name: 'Settings', exact: true })
-        .evaluate((element) => element.style.transform),
-    )
+    .poll(() => {
+      return next.getByRole('dialog', { name: 'Settings', exact: true }).evaluate((element) => {
+        return element.style.transform;
+      });
+    })
     .toBe(settingsTransform);
   await next.getByRole('button', { name: 'Close Settings' }).click();
   await next.setViewportSize({ width: 390, height: 844 });
@@ -113,8 +127,10 @@ test('nickname persists in a new session, viewport is full, party bars and contr
   await next.goto('/');
   await expect(next.getByLabel('Your adventurer name')).toHaveValue('Persistent hero');
   await next.getByRole('button', { name: 'Settings', exact: true }).click();
-  for (const name of ['DPS meter', 'FPS graph', 'Latency graph'])
+  for (const name of ['DPS meter', 'FPS graph', 'Latency graph']) {
     await next.getByRole('switch', { name, exact: true }).check();
+  }
+
   await next.getByRole('button', { name: 'Close Settings' }).click();
   await next.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(next.getByRole('progressbar', { name: 'Persistent hero, lvl 1' })).toHaveAttribute(

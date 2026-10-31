@@ -21,10 +21,14 @@ test('cats respond immediately, ignore repeated pets and respond again at exactl
 
 test('cat identities survive motion and wrapped camera projection', () => {
   const bounds = { x: 0, y: 0, width: 960, height: 640 };
-  const first = crittersAt('village', 0, bounds).filter((c) => c.kind === 'cat');
+  const first = crittersAt('village', 0, bounds).filter((c) => {
+    return c.kind === 'cat';
+  });
   const moved = crittersAt('village', 2000, { ...bounds, x: 4800 });
   for (const cat of first) {
-    const copy = moved.find((c) => c.id === cat.id);
+    const copy = moved.find((c) => {
+      return c.id === cat.id;
+    });
     assert.ok(copy);
     assert.equal(copy.y, cat.y);
     assert.ok(Math.abs(copy.x - 4800 - cat.x) <= 40);
@@ -33,8 +37,13 @@ test('cat identities survive motion and wrapped camera projection', () => {
 
 test('cat replies vary, start with capitals and cycle without consecutive repeats', () => {
   const speech = new CatSpeech();
-  const lines = Array.from({ length: 6 }, (_, index) => speech.pet('cat:a', index * 2000));
+  const lines = Array.from({ length: 6 }, (_, index) => {
+    return speech.pet('cat:a', index * 2000);
+  });
   assert.equal(new Set(lines).size, 6);
-  for (const line of lines) assert.match(line!, /^[A-Z]/);
+  for (const line of lines) {
+    assert.match(line!, /^[A-Z]/);
+  }
+
   assert.equal(speech.pet('cat:a', 12000), lines[0]);
 });

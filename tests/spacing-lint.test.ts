@@ -11,11 +11,16 @@ const cli = path.join(root, 'node_modules/oxlint/bin/oxlint');
 test('spacing lint rejects dense code, fixes it and preserves compact guards', () => {
   const directory = mkdtempSync(path.join(tmpdir(), 'emberfall-spacing-'));
   const file = path.join(directory, 'spacing.ts');
-  const lint = (...args: string[]) =>
-    spawnSync(process.execPath, [cli, '-c', path.join(root, '.oxlintrc.json'), file, ...args], {
-      cwd: root,
-      encoding: 'utf8',
-    });
+  const lint = (...args: string[]) => {
+    return spawnSync(
+      process.execPath,
+      [cli, '-c', path.join(root, '.oxlintrc.json'), file, ...args],
+      {
+        cwd: root,
+        encoding: 'utf8',
+      },
+    );
+  };
 
   try {
     writeFileSync(

@@ -11,7 +11,13 @@ export function SettingToggle({ label, checked, disabled, onChange }: SettingTog
     <FormControlLabel
       label={label}
       control={
-        <Switch checked={checked} disabled={disabled} onChange={(_, value) => onChange(value)} />
+        <Switch
+          checked={checked}
+          disabled={disabled}
+          onChange={(_, value) => {
+            return onChange(value);
+          }}
+        />
       }
     />
   );
@@ -35,9 +41,15 @@ export function VolumeControl({ label, value, disabled, onChange }: VolumeContro
         step={0.05}
         disabled={disabled}
         valueLabelDisplay='auto'
-        valueLabelFormat={(volume) => `${Math.round(volume * 100)}%`}
-        getAriaValueText={(volume) => `${Math.round(volume * 100)}%`}
-        onChange={(_, next) => onChange(next)}
+        valueLabelFormat={(volume) => {
+          return `${Math.round(volume * 100)}%`;
+        }}
+        getAriaValueText={(volume) => {
+          return `${Math.round(volume * 100)}%`;
+        }}
+        onChange={(_, next) => {
+          return onChange(next);
+        }}
       />
     </Stack>
   );

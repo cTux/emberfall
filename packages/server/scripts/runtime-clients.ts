@@ -31,7 +31,13 @@ export async function connectWorkload(port: number, worldCount: number) {
     closing = true;
     clearInterval(input);
     await Promise.allSettled(
-      peers.filter((peer) => peer.room.connection.isOpen).map((peer) => peer.room.leave(false)),
+      peers
+        .filter((peer) => {
+          return peer.room.connection.isOpen;
+        })
+        .map((peer) => {
+          return peer.room.leave(false);
+        }),
     );
   };
 
@@ -57,58 +63,95 @@ export async function connectWorkload(port: number, worldCount: number) {
           sent: new Map(),
         };
         peers.push(peer);
-        room.onError((code, message) => errors.push(`${code}: ${message}`));
+        room.onError((code, message) => {
+          return errors.push(`${code}: ${message}`);
+        });
         room.onLeave((code) => {
-          if (!closing) errors.push(`Unexpected disconnect: ${code}`);
+          if (!closing) {
+            errors.push(`Unexpected disconnect: ${code}`);
+          }
         });
         let joined: ((message: Extract<ServerMessage, { type: 'joined' }>) => void) | undefined;
         room.onMessage('event', (message: ServerMessage) => {
-          if (message.type === 'joined') joined?.(message);
-          if (message.type === 'error') errors.push(message.message);
-          if (measuring && message.type === 'saved') peer.saved++;
+          if (message.type === 'joined') {
+            joined?.(message);
+          }
+
+          if (message.type === 'error') {
+            errors.push(message.message);
+          }
+
+          if (measuring && message.type === 'saved') {
+            peer.saved++;
+          }
         });
         room.onStateChange((state) => {
           try {
             const view = materializeState(state);
-            if (!view) return;
+            if (!view) {
+              return;
+            }
+
             peer.latest = view;
             peer.receivedAt = performance.now();
-            if (!measuring) return;
+            if (!measuring) {
+              return;
+            }
+
             assert.equal(view.id, peer.worldId);
             assert.equal(view.scene?.id, scenes[peer.worldId]);
             assert.equal(view.players.length, BENCHMARK.playersPerWorld);
             assert(
-              view.players.every((actor) =>
-                peers.some((p) => p.worldId === view.id && p.playerId === actor.id),
-              ),
+              view.players.every((actor) => {
+                return peers.some((p) => {
+                  return p.worldId === view.id && p.playerId === actor.id;
+                });
+              }),
             );
-            const privateLines = view.chat?.filter((line) =>
-              line.text.startsWith('benchmark-private:'),
-            );
+            const privateLines = view.chat?.filter((line) => {
+              return line.text.startsWith('benchmark-private:');
+            });
             assert.deepEqual(
-              privateLines?.map((line) => line.text),
+              privateLines?.map((line) => {
+                return line.text;
+              }),
               [`benchmark-private:${peer.playerId}`],
             );
-            if (peer.lastServerNow) gaps.push(view.serverNow! - peer.lastServerNow);
+            if (peer.lastServerNow) {
+              gaps.push(view.serverNow! - peer.lastServerNow);
+            }
+
             peer.lastServerNow = view.serverNow!;
             peer.states++;
-            const ack = view.players.find((actor) => actor.id === peer.playerId)!.inputSeq ?? 0;
+            const ack =
+              view.players.find((actor) => {
+                return actor.id === peer.playerId;
+              })!.inputSeq ?? 0;
             if (ack > peer.lastAck) {
               const sent = peer.sent.get(ack);
-              if (sent !== undefined) acknowledgements.push(performance.now() - sent);
-              for (const seq of peer.sent.keys()) if (seq <= ack) peer.sent.delete(seq);
+              if (sent !== undefined) {
+                acknowledgements.push(performance.now() - sent);
+              }
+
+              for (const seq of peer.sent.keys()) {
+                if (seq <= ack) {
+                  peer.sent.delete(seq);
+                }
+              }
+
               peer.lastAck = ack;
             }
           } catch (error) {
-            if (errors.length < 20) errors.push(String(error));
+            if (errors.length < 20) {
+              errors.push(String(error));
+            }
           }
         });
         const admission = new Promise<Extract<ServerMessage, { type: 'joined' }>>(
           (resolve, reject) => {
-            const timer = setTimeout(
-              () => reject(new Error('Benchmark admission timed out')),
-              15000,
-            );
+            const timer = setTimeout(() => {
+              return reject(new Error('Benchmark admission timed out'));
+            }, 15000);
             joined = (message) => {
               clearTimeout(timer);
               resolve(message);
@@ -142,7 +185,10 @@ export async function connectWorkload(port: number, worldCount: number) {
       input = setInterval(() => {
         sequence++;
         for (const [index, peer] of peers.entries()) {
-          if (measuring) peer.sent.set(sequence, performance.now());
+          if (measuring) {
+            peer.sent.set(sequence, performance.now());
+          }
+
           peer.room.send('command', {
             type: 'move',
             seq: sequence,
@@ -174,20 +220,41 @@ export async function connectWorkload(port: number, worldCount: number) {
       }
 
       assert(gaps.length && acknowledgements.length);
-      const p95 = (values: number[]) =>
-        [...values].sort((a, b) => a - b)[Math.floor(values.length * 0.95)];
+      const p95 = (values: number[]) => {
+        return [...values].sort((a, b) => {
+          return a - b;
+        })[Math.floor(values.length * 0.95)];
+      };
 
       return {
         connections: peers.length,
         meanStateHz:
-          peers.reduce((sum, peer) => sum + peer.states, 0) / peers.length / (measuredMs / 1000),
-        minStateHz: Math.min(...peers.map((peer) => peer.states)) / (measuredMs / 1000),
+          peers.reduce((sum, peer) => {
+            return sum + peer.states;
+          }, 0) /
+          peers.length /
+          (measuredMs / 1000),
+        minStateHz:
+          Math.min(
+            ...peers.map((peer) => {
+              return peer.states;
+            }),
+          ) /
+          (measuredMs / 1000),
         serverNowGapP95Ms: p95(gaps),
         serverNowGapMaxMs: Math.max(...gaps),
         inputAcknowledgementP95Ms: p95(acknowledgements),
-        minSavedEvents: Math.min(...peers.map((peer) => peer.saved)),
-        savedEvents: peers.reduce((sum, peer) => sum + peer.saved, 0),
-        privacyChecks: peers.reduce((sum, peer) => sum + peer.states, 0),
+        minSavedEvents: Math.min(
+          ...peers.map((peer) => {
+            return peer.saved;
+          }),
+        ),
+        savedEvents: peers.reduce((sum, peer) => {
+          return sum + peer.saved;
+        }, 0),
+        privacyChecks: peers.reduce((sum, peer) => {
+          return sum + peer.states;
+        }, 0),
         errors: errors.length,
       };
     },

@@ -11,7 +11,9 @@ test('XP bar follows authoritative leveling and saved paragon after rejoining', 
   const card = page.getByRole('article', { name: 'XP hero', exact: true });
   const xp = card.getByRole('progressbar', { name: 'XP hero XP', exact: true });
   await expect(xp).toHaveAttribute('aria-valuetext', '0 / 50');
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;

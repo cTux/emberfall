@@ -20,12 +20,30 @@ test('queued player mentions revalidate participants after the delay and cancel 
     life.hear(listener, '@Marta Hello!', 1000);
     life.tick(2999, 0);
     assert.equal(calls, 0);
-    if (action === 'scene') listener.scene = 'forest';
-    if (action === 'distance') listener.x += 1000;
-    if (action === 'death') listener.hitpoints = 0;
-    if (action === 'disconnect') listener.reconnecting = true;
-    if (action === 'leave') world.players.delete(listener.id);
-    if (action === 'close') life.close();
+    if (action === 'scene') {
+      listener.scene = 'forest';
+    }
+
+    if (action === 'distance') {
+      listener.x += 1000;
+    }
+
+    if (action === 'death') {
+      listener.hitpoints = 0;
+    }
+
+    if (action === 'disconnect') {
+      listener.reconnecting = true;
+    }
+
+    if (action === 'leave') {
+      world.players.delete(listener.id);
+    }
+
+    if (action === 'close') {
+      life.close();
+    }
+
     life.tick(3000, 0);
     await flush();
     assert.equal(calls, 0, action);
@@ -39,7 +57,9 @@ test('busy mention replies retry promptly without losing the conversation or its
   const { world, life } = setup({
     generate: async () => {
       calls++;
-      if (calls === 2) return { status: 'busy' };
+      if (calls === 2) {
+        return { status: 'busy' };
+      }
 
       return {
         status: 'ok',
@@ -68,8 +88,11 @@ test('player mentions wait for active speech and take priority over NPC continua
     const { world, life } = setup({
       generate: async (context) => {
         contexts.push(JSON.parse(context));
-        if (contexts.length === 1)
-          return new Promise<DialogueResult>((resolve) => (finish = resolve));
+        if (contexts.length === 1) {
+          return new Promise<DialogueResult>((resolve) => {
+            return (finish = resolve);
+          });
+        }
 
         return { status: 'ok', text: 'Pack a spare pair of boots.' };
       },
@@ -117,9 +140,15 @@ test('a pending, generating or retrying player reply cannot be replaced by anoth
     const { world, life } = setup({
       generate: async (context) => {
         const question = JSON.parse(context).quotedSpeech;
-        if (question) questions.push(question);
-        if (!question || stage === 'generating')
-          return new Promise<DialogueResult>((resolve) => (finish = resolve));
+        if (question) {
+          questions.push(question);
+        }
+
+        if (!question || stage === 'generating') {
+          return new Promise<DialogueResult>((resolve) => {
+            return (finish = resolve);
+          });
+        }
 
         return { status: 'busy' };
       },
@@ -145,7 +174,9 @@ test('a pending, generating or retrying player reply cannot be replaced by anoth
       await flush();
       assert(questions.length > 0, stage);
       assert(
-        questions.every((question) => question === '@Marta First question?'),
+        questions.every((question) => {
+          return question === '@Marta First question?';
+        }),
         stage,
       );
     } finally {
@@ -158,15 +189,25 @@ test('late answers are discarded after scene transfer, range exit or world dispo
   for (const action of ['scene', 'distance', 'close'] as const) {
     let finish!: (result: DialogueResult) => void;
     const { world, life } = setup({
-      generate: () =>
-        new Promise((resolve) => {
+      generate: () => {
+        return new Promise((resolve) => {
           finish = resolve;
-        }),
+        });
+      },
     });
     life.tick(10_000, 0);
-    if (action === 'scene') world.players.get('p')!.scene = 'forest';
-    if (action === 'distance') world.players.get('p')!.x += 1000;
-    if (action === 'close') life.close();
+    if (action === 'scene') {
+      world.players.get('p')!.scene = 'forest';
+    }
+
+    if (action === 'distance') {
+      world.players.get('p')!.x += 1000;
+    }
+
+    if (action === 'close') {
+      life.close();
+    }
+
     finish({ status: 'ok', text: 'Too late!' });
     await flush();
     assert.equal(world.chat, undefined);

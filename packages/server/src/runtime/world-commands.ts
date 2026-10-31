@@ -46,17 +46,29 @@ export function createWorldCommands({
 
     try {
       const previousArea = player.scene;
-      if (message.type === 'createScene' && player.partyId && player.partyLeaderId !== player.id)
+      if (message.type === 'createScene' && player.partyId && player.partyLeaderId !== player.id) {
         throw new Error('Only the party leader can create a dimension.');
+      }
+
       const run = parties(world).run(player);
       const key = parties(world).key(player);
       run.chat = world.chat;
       sceneAction(run, player, message, now);
-      if (message.type === 'createScene') run.resources = {};
+      if (message.type === 'createScene') {
+        run.resources = {};
+      }
+
       world.chat = run.chat;
-      if (player.scene) player.runId = key;
-      else delete player.runId;
-      if (player.scene !== previousArea) delete player.gathering;
+      if (player.scene) {
+        player.runId = key;
+      } else {
+        delete player.runId;
+      }
+
+      if (player.scene !== previousArea) {
+        delete player.gathering;
+      }
+
       session.x = 0;
       session.y = 0;
     } catch (cause) {
@@ -123,7 +135,9 @@ export function createWorldCommands({
     leave: (_message, { session, reply, error }) => {
       try {
         leave(session);
-        if (session.characterId) characters.forgetWorld(session.characterId);
+        if (session.characterId) {
+          characters.forgetWorld(session.characterId);
+        }
       } catch {
         error('Save failed. Your character is still in this world; please retry.');
 

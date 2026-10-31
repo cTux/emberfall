@@ -45,29 +45,49 @@ const handlers: Handlers = {
   moveTacticsPriority: (message, next) => {
     next.tactics = { ...DEFAULT_TACTICS, ...next.tactics };
     const order = [...next.tactics[message.list]];
-    const from = order.findIndex((rule) => rule === message.rule);
-    if (from < 0) throw new Error('Priority does not belong to this list.');
+    const from = order.findIndex((rule) => {
+      return rule === message.rule;
+    });
+    if (from < 0) {
+      throw new Error('Priority does not belong to this list.');
+    }
+
     const to = from + message.direction;
     if (to >= 0 && to < order.length) {
       [order[from], order[to]] = [order[to], order[from]];
       next.tactics = { ...next.tactics, [message.list]: order };
     }
   },
-  learnTalent: (message, next) => learnTalent(next, message.nodeId),
-  equipTalent: (message, next) => equipTalent(next, message.slot, message.nodeId),
-  resetTalents: (_message, next) => resetTalents(next),
-  trade: (message, next, trader) =>
-    tradeItem(next, trader, message.id, message.buying, message.amount),
-  storeItem: (message, next) =>
-    transferStoredItem(next, message.tab, message.id, message.depositing),
-  moveStorageItem: (message, next) =>
-    moveStorageItem(next, message.fromTab, message.toTab, message.id),
+  learnTalent: (message, next) => {
+    return learnTalent(next, message.nodeId);
+  },
+  equipTalent: (message, next) => {
+    return equipTalent(next, message.slot, message.nodeId);
+  },
+  resetTalents: (_message, next) => {
+    return resetTalents(next);
+  },
+  trade: (message, next, trader) => {
+    return tradeItem(next, trader, message.id, message.buying, message.amount);
+  },
+  storeItem: (message, next) => {
+    return transferStoredItem(next, message.tab, message.id, message.depositing);
+  },
+  moveStorageItem: (message, next) => {
+    return moveStorageItem(next, message.fromTab, message.toTab, message.id);
+  },
   renameStorage: (message, next) => {
     next.storages![message.tab].name = message.name;
   },
-  sellAll: (_message, next, trader) => sellAll(next, trader),
-  unequip: (message, next) => unequipItem(next, message.slot),
-  useItem: (message, next) => useBackpackItem(next, message.id),
+  sellAll: (_message, next, trader) => {
+    return sellAll(next, trader);
+  },
+  unequip: (message, next) => {
+    return unequipItem(next, message.slot);
+  },
+  useItem: (message, next) => {
+    return useBackpackItem(next, message.id);
+  },
 };
 
 export function isCharacterCommand(message: ClientMessage): message is Messages[CommandType] {
@@ -109,10 +129,17 @@ export function commitCharacterCommand<K extends CommandType>(
       hitpoints: next.hitpoints,
       maxHitpoints: next.maxHitpoints,
     });
-    if (message.type === 'setTactics' || message.type === 'moveTacticsPriority')
+    if (message.type === 'setTactics' || message.type === 'moveTacticsPriority') {
       player.attackTargetId = undefined;
-    if (message.type === 'resetTalents') clearTalentEffects(player);
-    if (trading) world.merchant = merchant;
+    }
+
+    if (message.type === 'resetTalents') {
+      clearTalentEffects(player);
+    }
+
+    if (trading) {
+      world.merchant = merchant;
+    }
   } catch (failure) {
     throw new Error(
       !saving && failure instanceof Error

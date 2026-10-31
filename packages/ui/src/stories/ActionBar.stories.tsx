@@ -58,14 +58,20 @@ export const Interactive: Story = {
       <>
         <ActionBar
           {...args}
-          onChoose={() => setChosen(true)}
+          onChoose={() => {
+            return setChosen(true);
+          }}
           abilities={[
             {
               ...meta.args.baseAbility,
               name: 'Whirlwind',
               remainingMs: 5000,
               autoCast,
-              onToggleAutoCast: () => setAutoCast((value) => !value),
+              onToggleAutoCast: () => {
+                return setAutoCast((value) => {
+                  return !value;
+                });
+              },
             },
           ]}
         />

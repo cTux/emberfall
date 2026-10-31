@@ -19,8 +19,14 @@ export function hitWithWeapon(
   companion = false,
   context: Game = game,
 ) {
-  if (enemy.hitpoints <= 0) return;
-  if (!stats.hasWeapon) return;
+  if (enemy.hitpoints <= 0) {
+    return;
+  }
+
+  if (!stats.hasWeapon) {
+    return;
+  }
+
   const attacks =
     !companion && context.registries.classes.require(owner.classId ?? 'warrior').art === 'warrior'
       ? 1 + stats.bonuses.additionalAttack

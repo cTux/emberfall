@@ -37,7 +37,9 @@ test('exact rolls survive equip replacement, storage, sale, buyback, class switc
     player.backpack.push(replacement);
     useBackpackItem(player, replacement.id);
     assert.deepEqual(
-      player.backpack.find((entry) => entry.id === item.id),
+      player.backpack.find((entry) => {
+        return entry.id === item.id;
+      }),
       item,
     );
     transferStoredItem(player, 0, item.id, true);
@@ -52,7 +54,12 @@ test('exact rolls survive equip replacement, storage, sale, buyback, class switc
     tradeItem(player, merchant, merchant.buyback[0].id, true);
     assert.deepEqual(player.backpack.at(-1)!.stats, item.stats);
     unequipItem(player, 'weapon');
-    useBackpackItem(player, player.backpack.find((entry) => entry.rarity === Rarity.Legendary)!.id);
+    useBackpackItem(
+      player,
+      player.backpack.find((entry) => {
+        return entry.rarity === Rarity.Legendary;
+      })!.id,
+    );
     sellAll(player, merchant);
     assert.deepEqual(player.equipmentItems!.weapon.stats, item.stats);
     store.save(saved.id, saved.name, player, { worldId: world.id, state: merchant });

@@ -49,7 +49,9 @@ export class LocalAttacks {
       if (
         id <= (authoritative.castSeq ?? 0) &&
         id !== authoritative.attackId &&
-        !shots?.some((s) => s.ownerId === authoritative.id && s.castId === id)
+        !shots?.some((s) => {
+          return s.ownerId === authoritative.id && s.castId === id;
+        })
       ) {
         this.casts.delete(id);
         this.projectiles.reject(id);
@@ -109,7 +111,10 @@ export class LocalAttacks {
         this.attackId = ++this.castSeq;
         this.casts.set(this.attackId, now);
         // Keep completed IDs briefly so delayed confirmation cannot replay an expired visual.
-        if (this.casts.size > 32) this.casts.delete(this.casts.keys().next().value!);
+        if (this.casts.size > 32) {
+          this.casts.delete(this.casts.keys().next().value!);
+        }
+
         this.send({
           type: 'cast',
           id: this.attackId,

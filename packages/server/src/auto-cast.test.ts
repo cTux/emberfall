@@ -11,9 +11,11 @@ import { LocalMovement } from '../../client/src/local-movement.ts';
 import type { Player, WorldState } from '@emberfall/common';
 
 test('ranged auto-casts wait for a living target in range, then launch and damage it', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
-  for (const training of [false, true])
-    for (const classId of ['ranger', 'mage', 'druid'])
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
+  for (const training of [false, true]) {
+    for (const classId of ['ranger', 'mage', 'druid']) {
       for (const axis of ['x', 'y'] as const) {
         const player: Player = {
           id: 'p',
@@ -43,10 +45,17 @@ test('ranged auto-casts wait for a living target in range, then launch and damag
         tickPlayerCombat(scene, [player], 10550, 0);
         assert.equal(player.attackAt, 10550, 'entering range starts a fresh cast immediately');
         assert.equal(scene.playerShots?.length, classId === 'druid' ? 1 : 2);
-        assert(scene.playerShots.every((shot) => shot.targetId === target.id));
+        assert(
+          scene.playerShots.every((shot) => {
+            return shot.targetId === target.id;
+          }),
+        );
         // At maximum bow range its spread can legitimately pass beside a small body.
         target[axis] = (player[axis] - 100 + boundary) % boundary;
-        for (let now = 10600; now <= 11450; now += 50) tickPlayerCombat(scene, [player], now, 0.05);
+        for (let now = 10600; now <= 11450; now += 50) {
+          tickPlayerCombat(scene, [player], now, 0.05);
+        }
+
         assert(target.hitpoints < 100, 'authoritative projectile hits deal damage');
         scene.enemies = [];
         tickPlayerCombat(scene, [player], 12000, 0);
@@ -66,10 +75,12 @@ test('ranged auto-casts wait for a living target in range, then launch and damag
         );
         assert.notDeepEqual({ x: shot.x, y: shot.y }, position);
       }
+    }
+  }
 });
 
 test('automatic projectile prediction stops empty cycles without mutating snapshots', () => {
-  for (const training of [false, true])
+  for (const training of [false, true]) {
     for (const classId of ['ranger', 'mage', 'druid']) {
       const scene = createTrainingScene(10000);
       scene.training = training;
@@ -105,4 +116,5 @@ test('automatic projectile prediction stops empty cycles without mutating snapsh
       assert.equal(player.attackAt, -900, 'keep the expired confirmed cast, without a new pulse');
       assert.deepEqual(source.players[0].attackAt, 9100, 'never mutate the snapshot');
     }
+  }
 });

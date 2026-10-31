@@ -39,13 +39,18 @@ export function tickCompanion(
   bear.range = stats.range;
   bear.size = talentRank(player, talentNodeId('druid', 1, 3)) > 0 ? 96 : 48;
   const max = stats.maxHitpoints;
-  if (bear.hitpoints > 0)
+  if (bear.hitpoints > 0) {
     bear.hitpoints = Math.min(max, bear.hitpoints + Math.max(0, max - bear.maxHitpoints));
+  }
+
   bear.maxHitpoints = max;
   if (bear.hitpoints <= 0) {
     companionDecisions.delete(bear);
     bear.resurrectAt ??= now + BEAR_DEFINITION.resurrectionMs;
-    if (now < bear.resurrectAt) return;
+    if (now < bear.resurrectAt) {
+      return;
+    }
+
     bear.hitpoints = max;
     bear.x = player.x;
     bear.y = player.y;
@@ -55,7 +60,10 @@ export function tickCompanion(
     bear.returning = false;
   }
 
-  if (player.hitpoints <= 0) return;
+  if (player.hitpoints <= 0) {
+    return;
+  }
+
   const forest = player.scene === 'forest';
   const tactics = player.tactics ?? DEFAULT_TACTICS;
   const preferredRadius = { close: 100, medium: 200, far: 300 }[tactics.distance];
@@ -76,8 +84,14 @@ export function tickCompanion(
     return;
   }
 
-  if (distance > huntRadius) bear.returning = true;
-  if (bear.returning && distance <= BEAR_DEFINITION.returnRadius) bear.returning = false;
+  if (distance > huntRadius) {
+    bear.returning = true;
+  }
+
+  if (bear.returning && distance <= BEAR_DEFINITION.returnRadius) {
+    bear.returning = false;
+  }
+
   const decision = decideCompanion(bear, player, scene, now, huntRadius);
   const target =
     decision.target &&
@@ -136,9 +150,18 @@ export function tickCompanion(
   }
 
   bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > 0.001;
-  if (bear.moving) bear.attackAngle = heading;
-  if (target) bear.attackAngle = nearestEnemyAngle(bear, [target], heading);
-  if (forestDistance(bear, player) > huntRadius && forest) bear.returning = true;
+  if (bear.moving) {
+    bear.attackAngle = heading;
+  }
+
+  if (target) {
+    bear.attackAngle = nearestEnemyAngle(bear, [target], heading);
+  }
+
+  if (forestDistance(bear, player) > huntRadius && forest) {
+    bear.returning = true;
+  }
+
   if (!target || bear.returning || !scene) {
     bear.attackAt = undefined;
 
@@ -151,7 +174,11 @@ export function tickCompanion(
     return;
   }
 
-  if (bear.attackAt === undefined || now - bear.attackAt >= stats.attackIntervalMs)
+  if (bear.attackAt === undefined || now - bear.attackAt >= stats.attackIntervalMs) {
     bear.attackAt = now;
-  if (now - bear.attackAt < PLAYER_ATTACK_DURATION) slash(scene, bear, player, now, context);
+  }
+
+  if (now - bear.attackAt < PLAYER_ATTACK_DURATION) {
+    slash(scene, bear, player, now, context);
+  }
 }

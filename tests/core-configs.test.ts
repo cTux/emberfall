@@ -17,7 +17,9 @@ test('ordered spawn chances select elite first and fall back to normal', (t) => 
     [0.049, EnemyType.Elite],
     [0.05, EnemyType.Normal],
   ] as const) {
-    t.mock.method(Math, 'random', () => roll);
+    t.mock.method(Math, 'random', () => {
+      return roll;
+    });
     assert.equal(spawnEnemyType(), expected);
     t.mock.restoreAll();
   }
@@ -26,9 +28,13 @@ test('ordered spawn chances select elite first and fall back to normal', (t) => 
 test('drop counts support 350 percent as three guaranteed items and a chance of a fourth', (t) => {
   assert.ok((itemCountDropPercent[EnemyType.Boss] as { min: number; max: number }).min <= 350);
   assert.ok((itemCountDropPercent[EnemyType.Boss] as { min: number; max: number }).max >= 350);
-  t.mock.method(Math, 'random', () => 0.499);
+  t.mock.method(Math, 'random', () => {
+    return 0.499;
+  });
   assert.equal(isMultiChanced(350), 4);
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   assert.equal(isMultiChanced(350), 3);
 });
 
@@ -37,8 +43,11 @@ test('balance tables cover every shared enum value with valid attributes and per
     assert.ok(itemDropChance[type] >= 0 && itemDropChance[type] <= 100);
     assert.ok(enemyTypeAttributesMultiplier[type] > 0);
     const count = itemCountDropPercent[type];
-    if (typeof count === 'number') assert.ok(count >= 0);
-    else assert.ok(count.min >= 0 && count.max >= count.min);
+    if (typeof count === 'number') {
+      assert.ok(count >= 0);
+    } else {
+      assert.ok(count.min >= 0 && count.max >= count.min);
+    }
   }
 
   for (const kind of Object.values(EnemyKind)) {

@@ -3,7 +3,10 @@ import { TALENT_NAMES } from './talent-catalog.ts';
 /** Tooltips describe total effects at each rank, never an extra permanent stat. */
 export function talentDescription(node: Readonly<TalentNode>) {
   const names = TALENT_NAMES[node.classId];
-  const ability = (column: number, tier: number) => names[column][tier * 2 + 1];
+  const ability = (column: number, tier: number) => {
+    return names[column][tier * 2 + 1];
+  };
+
   const wound =
     node.classId === 'warrior'
       ? 'Bleed'
@@ -12,7 +15,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
         : node.classId === 'mage'
           ? 'Burn'
           : 'Roots';
-  if (node.classId === 'druid' && node.column === 1)
+  if (node.classId === 'druid' && node.column === 1) {
     return [
       'Every third Bear hit deals an additional 40% / 70% weapon damage.',
       'Command Bear to pounce at your target for 150% / 210% weapon damage. Requires a living Bear. 6s base cooldown.',
@@ -25,7 +28,9 @@ export function talentDescription(node: Readonly<TalentNode>) {
       'Every fifth Bear hit heals you for 2% / 4% of maximum health.',
       'Every fifth Bear hit cleaves nearby enemies for 60% / 100% weapon damage.',
     ][node.row];
-  if (node.column === 0)
+  }
+
+  if (node.column === 0) {
     return [
       'Every third basic weapon hit cleaves other nearby enemies for 40% / 70% weapon damage.',
       `Strike enemies around the aimed location for 150% / 210% weapon damage. Rank 2 expands the radius from 125 to 170 units. 6s base cooldown.`,
@@ -38,7 +43,9 @@ export function talentDescription(node: Readonly<TalentNode>) {
       `A kill with ${ability(0, 3)} refunds 6s / 12s of its cooldown and empowers your next first-tier ability within six seconds with a 50% / 75% weapon-damage follow-up.`,
       'Hit with three different offensive abilities within six seconds to release a 100% / 160% weapon-damage shockwave. Can trigger once every eight seconds.',
     ][node.row];
-  if (node.column === 1)
+  }
+
+  if (node.column === 1) {
     return [
       node.classId === 'warrior'
         ? 'Add 20 / 35 percentage points to the existing weapon Bleed chance. A weapon with 10% Bleed chance becomes 30% / 45%.'
@@ -53,6 +60,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
       `${ability(1, 2)} consuming at least three stacks leaves a six-second healing opportunity. The injured party member or Bear selected by Defensive Tactics (lowest health percentage by default) within 60 units heals for 3% / 5% maximum health, including you.`,
       'Your direct offensive ability hits against enemies with five of your ailment stacks have a 20% / 35% chance to deal 80% / 130% additional weapon damage. Two-second cooldown per target.',
     ][node.row];
+  }
 
   return [
     node.classId === 'druid'

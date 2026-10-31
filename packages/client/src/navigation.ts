@@ -4,7 +4,10 @@ import { FOREST, LOBBY_PORTAL } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
 
 export function edgeArrow(x: number, y: number, width: number, height: number) {
-  if (x >= 0 && x <= width && y >= 0 && y <= height) return null;
+  if (x >= 0 && x <= width && y >= 0 && y <= height) {
+    return null;
+  }
+
   const dx = x - width / 2,
     dy = y - height / 2;
   const ratio = Math.min((width / 2 - 28) / Math.abs(dx), (height / 2 - 28) / Math.abs(dy));
@@ -13,33 +16,49 @@ export function edgeArrow(x: number, y: number, width: number, height: number) {
 }
 
 export function drawNavigation(ctx: DrawingContext, world: WorldState, id: string) {
-  const me = world.players.find((p) => p.id === id);
-  if (!me) return;
+  const me = world.players.find((p) => {
+    return p.id === id;
+  });
+  if (!me) {
+    return;
+  }
+
   const targets = world.players
-    .filter(
-      (p) =>
+    .filter((p) => {
+      return (
         p.id !== id &&
         !!me.partyId &&
         p.partyId === me.partyId &&
         p.scene === me.scene &&
         p.runId === me.runId &&
-        p.hitpoints > 0,
-    )
-    .map((p) => ({ x: p.x, y: p.y, name: p.name, color: '#89e5c5' }));
-  if (me.scene !== 'forest')
+        p.hitpoints > 0
+      );
+    })
+    .map((p) => {
+      return { x: p.x, y: p.y, name: p.name, color: '#89e5c5' };
+    });
+  if (me.scene !== 'forest') {
     targets.push({ ...LOBBY_PORTAL, name: 'Forest portal', color: '#70d8ff' });
+  }
+
   if (me.scene === 'forest') {
-    const boss = world.scene?.enemies.find((e) => e.kind === 'boss' && e.hitpoints > 0);
-    if (boss)
+    const boss = world.scene?.enemies.find((e) => {
+      return e.kind === 'boss' && e.hitpoints > 0;
+    });
+    if (boss) {
       targets.push({
         x: boss.x,
         y: boss.y,
         name: boss.name ?? 'The Hollow Warden',
         color: '#ffae58',
       });
-    if (world.scene?.phase === 'ended')
-      for (const portal of world.scene.portals)
+    }
+
+    if (world.scene?.phase === 'ended') {
+      for (const portal of world.scene.portals) {
         targets.push({ ...portal, name: 'Return portal', color: '#70d8ff' });
+      }
+    }
   }
 
   const matrix = ctx.getTransform();
@@ -54,7 +73,10 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
     const y = me.y + wrappedDelta(target.y, me.y, FOREST.height);
     const point = new DOMPoint(x, y).matrixTransform(matrix);
     const arrow = edgeArrow(point.x / sx, point.y / sy, width, height);
-    if (!arrow) continue;
+    if (!arrow) {
+      continue;
+    }
+
     ctx.save();
     ctx.translate(arrow.x, arrow.y);
     ctx.rotate(arrow.angle);

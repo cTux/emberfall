@@ -18,11 +18,24 @@ import { hero, ability } from './talents.fixture.ts';
 test('all classes have thirty independent talents and twelve abilities, with a defensive third column', () => {
   assert.equal(TALENT_TREE.length, 120);
   for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
-    const nodes = TALENT_TREE.filter((node) => node.classId === classId);
+    const nodes = TALENT_TREE.filter((node) => {
+      return node.classId === classId;
+    });
     assert.equal(nodes.length, 30);
-    assert.equal(nodes.filter((node) => node.kind === 'ability').length, 12);
+    assert.equal(
+      nodes.filter((node) => {
+        return node.kind === 'ability';
+      }).length,
+      12,
+    );
     assert.deepEqual(
-      nodes.filter((node) => node.column === 0).map((node) => node.level),
+      nodes
+        .filter((node) => {
+          return node.column === 0;
+        })
+        .map((node) => {
+          return node.level;
+        }),
       TALENT_LEVELS,
     );
   }
@@ -37,16 +50,22 @@ test('one starting point, two ranks, level-only gates, no stat bonuses and no pa
   assert.equal(canLearnTalent(player, high), false);
   learnTalent(player, first);
   assert.equal(availableTalentPoints(player), 0);
-  assert.throws(() => learnTalent(player, first));
+  assert.throws(() => {
+    return learnTalent(player, first);
+  });
   player.level = 2;
   learnTalent(player, first);
   assert.equal(talentRank(player, first), 2);
-  assert.throws(() => learnTalent(player, first));
+  assert.throws(() => {
+    return learnTalent(player, first);
+  });
   player.level = 20;
   player.paragon = 999;
   learnTalent(player, high);
   assert.equal(availableTalentPoints(player), 17);
-  assert.throws(() => learnTalent(player, talentNodeId('mage', 0, 0)));
+  assert.throws(() => {
+    return learnTalent(player, talentNodeId('mage', 0, 0));
+  });
   const learned = characterStats(player);
   assert.deepEqual(learned, characterStats({ ...player, talents: {} }));
 });
@@ -54,10 +73,16 @@ test('one starting point, two ranks, level-only gates, no stat bonuses and no pa
 test('a whole column costs exactly twenty points; mixing columns and inactive extensions is allowed', () => {
   for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
     const player = hero(classId);
-    for (let row = 0; row < 10; row++)
-      for (let n = 0; n < 2; n++) learnTalent(player, talentNodeId(classId, 0, row));
+    for (let row = 0; row < 10; row++) {
+      for (let n = 0; n < 2; n++) {
+        learnTalent(player, talentNodeId(classId, 0, row));
+      }
+    }
+
     assert.equal(availableTalentPoints(player), 0);
-    assert.throws(() => learnTalent(player, talentNodeId(classId, 1, 0)));
+    assert.throws(() => {
+      return learnTalent(player, talentNodeId(classId, 1, 0));
+    });
   }
 
   const player = hero();

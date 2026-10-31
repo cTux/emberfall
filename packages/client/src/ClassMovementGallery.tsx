@@ -21,7 +21,10 @@ export function ClassMovementGallery() {
     let previous = performance.now();
 
     function draw(now: number) {
-      if (!paused) elapsed.current += (now - previous) * speed;
+      if (!paused) {
+        elapsed.current += (now - previous) * speed;
+      }
+
       previous = now;
       const clock = paused ? step * 80 : elapsed.current;
       const row = playerFrame(clock, true, true);
@@ -31,7 +34,9 @@ export function ClassMovementGallery() {
       ctx.font = '18px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#eddfc1';
-      directions.forEach((label, col) => ctx.fillText(label, 190 + col * 260, 30));
+      directions.forEach((label, col) => {
+        return ctx.fillText(label, 190 + col * 260, 30);
+      });
       images.forEach((image, index) => {
         ctx.textAlign = 'left';
         ctx.fillStyle = '#eddfc1';
@@ -49,7 +54,9 @@ export function ClassMovementGallery() {
         }
       });
       element.dataset.ready = String(
-        images.every((image) => image.complete && image.naturalWidth > 0),
+        images.every((image) => {
+          return image.complete && image.naturalWidth > 0;
+        }),
       );
       element.dataset.frame = String(row);
       element.dataset.travel = String(travel);
@@ -58,7 +65,9 @@ export function ClassMovementGallery() {
 
     request = requestAnimationFrame(draw);
 
-    return () => cancelAnimationFrame(request);
+    return () => {
+      return cancelAnimationFrame(request);
+    };
   }, [paused, travel, speed, step]);
 
   return (
@@ -85,8 +94,12 @@ export function ClassMovementGallery() {
       >
         <button
           onClick={() => {
-            if (paused) elapsed.current = step * 80;
-            else setStep(Math.floor(elapsed.current / 80) % 6);
+            if (paused) {
+              elapsed.current = step * 80;
+            } else {
+              setStep(Math.floor(elapsed.current / 80) % 6);
+            }
+
             setPaused(!paused);
           }}
         >
@@ -105,7 +118,9 @@ export function ClassMovementGallery() {
           <input
             type='checkbox'
             checked={travel}
-            onChange={(event) => setTravel(event.target.checked)}
+            onChange={(event) => {
+              return setTravel(event.target.checked);
+            }}
           />{' '}
           Travel
         </label>
@@ -114,7 +129,9 @@ export function ClassMovementGallery() {
           <select
             aria-label='Speed'
             value={speed}
-            onChange={(event) => setSpeed(Number(event.target.value))}
+            onChange={(event) => {
+              return setSpeed(Number(event.target.value));
+            }}
           >
             <option value={0.25}>¼ speed</option>
             <option value={0.5}>½ speed</option>

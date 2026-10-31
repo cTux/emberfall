@@ -13,11 +13,15 @@ import {
 import { hero, item } from './inventory.fixture.ts';
 
 test('full players leave item drops for nearby players while still collecting gold', (t) => {
-  t.mock.method(Math, 'random', () => 0);
+  t.mock.method(Math, 'random', () => {
+    return 0;
+  });
   const player = {
     ...hero(),
     scene: 'forest' as const,
-    backpack: Array.from({ length: INVENTORY_SLOTS }, () => item('loot-boots')),
+    backpack: Array.from({ length: INVENTORY_SLOTS }, () => {
+      return item('loot-boots');
+    }),
   };
   const scene = {
     ...createTrainingScene(0),
@@ -29,16 +33,28 @@ test('full players leave item drops for nearby players while still collecting go
   hitEnemy(scene, { id: 1, x: player.x, y: player.y, hitpoints: 1, angle: 0 }, 2, player, 1000);
   stepCombat(scene, [player], 1400, 0.05);
   assert.equal(player.backpack.length, INVENTORY_SLOTS);
-  assert.equal(scene.drops!.filter((drop) => drop.kind === 'item').length, 1);
+  assert.equal(
+    scene.drops!.filter((drop) => {
+      return drop.kind === 'item';
+    }).length,
+    1,
+  );
   assert((player.coins ?? 0) > 0);
   const second = { ...hero(), id: 'second', scene: 'forest' as const };
   stepCombat(scene, [player, second], 1450, 0.05);
   assert.equal(second.backpack!.length, 1);
-  assert.equal(scene.drops!.filter((drop) => drop.kind === 'item').length, 0);
+  assert.equal(
+    scene.drops!.filter((drop) => {
+      return drop.kind === 'item';
+    }).length,
+    0,
+  );
 });
 
 test('auto-loot off leaves items for others without blocking shared XP or gold', (t) => {
-  t.mock.method(Math, 'random', () => 0);
+  t.mock.method(Math, 'random', () => {
+    return 0;
+  });
   const player = { ...hero(), scene: 'forest' as const, autoLoot: false };
   const scene = {
     ...createTrainingScene(0),
@@ -63,7 +79,9 @@ test('auto-loot off leaves items for others without blocking shared XP or gold',
 test('successful item rolls include weapons and preserve rolls across a wrapped pickup; training drops none', (t) => {
   for (const [index, id] of LOOT_ITEM_IDS.entries()) {
     const rolls = [0.5, 0, 0, (index + 0.5) / LOOT_ITEM_IDS.length];
-    t.mock.method(Math, 'random', () => rolls.shift() ?? 0.5);
+    t.mock.method(Math, 'random', () => {
+      return rolls.shift() ?? 0.5;
+    });
     const player = hero();
     player.scene = 'forest';
     player.x = 4798;
@@ -76,7 +94,9 @@ test('successful item rolls include weapons and preserve rolls across a wrapped 
       nextSpawn: 1e9,
     };
     hitEnemy(scene, { id: 1, x: 8, y: 1280, hitpoints: 1, angle: 0 }, 2, player, 1000);
-    const drop = scene.drops!.find((drop) => drop.kind === 'item')!;
+    const drop = scene.drops!.find((drop) => {
+      return drop.kind === 'item';
+    })!;
     assert.equal(drop.itemId, id);
     assert(GEAR_DEFINITIONS[id]);
     assert.equal(drop.rarity, 'common');

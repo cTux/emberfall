@@ -61,9 +61,15 @@ test('armor cannot reduce incoming player or Bear damage below one', () => {
     player.autoAttack = false;
     player.equipment!.ring = 'minimum-damage-ring';
     const arena = scene(false);
-    if (bear) tickCompanion(player, arena, 1000, 0, context);
+    if (bear) {
+      tickCompanion(player, arena, 1000, 0, context);
+    }
+
     const target = bear ? player.bear! : player;
-    if (bear) target.x = player.x - 100;
+    if (bear) {
+      target.x = player.x - 100;
+    }
+
     const enemy = arena.enemies[0];
     enemy.x = target.x;
     enemy.attack = {
@@ -83,25 +89,33 @@ test('armor cannot reduce incoming player or Bear damage below one', () => {
 });
 
 test('critical boundary is exactly five percent, with fractional 150% power in both areas', (t) => {
-  for (const training of [true, false])
+  for (const training of [true, false]) {
     for (const classId of CLASS_IDS) {
       const player = hero(classId);
       for (const roll of [0, 0.049999, 0.05, 0.99]) {
-        const random = t.mock.method(Math, 'random', () => roll);
+        const random = t.mock.method(Math, 'random', () => {
+          return roll;
+        });
         const arena = scene(training);
         hitWithWeapon(arena, arena.enemies[0], player, 1000);
         const hit = arena.damage[0];
         assert.equal(hit.critical, roll < 0.05);
         assert.equal(hit.amount, characterStats(player).power * (roll < 0.05 ? 1.5 : 1));
         assert.equal(hit.damageType, characterStats(player).damageType);
-        if (training) assert.equal(player.experience, 0);
+        if (training) {
+          assert.equal(player.experience, 0);
+        }
+
         random.mock.restore();
       }
     }
+  }
 });
 
 test('projectile and splash hits carry weapon metadata; ailments never critically hit', (t) => {
-  t.mock.method(Math, 'random', () => 0);
+  t.mock.method(Math, 'random', () => {
+    return 0;
+  });
   for (const classId of ['ranger', 'mage', 'druid'] as const) {
     const player = hero(classId);
     const arena = scene();
@@ -110,17 +124,29 @@ test('projectile and splash hits carry weapon metadata; ailments never criticall
     tickPlayerShots(arena, [player], 1050, 0.05);
     assert(arena.damage.length > 0);
     assert(
-      arena.damage.every(
-        (hit) =>
+      arena.damage.every((hit) => {
+        return (
           hit.ownerId === player.id &&
           hit.critical &&
-          hit.damageType === characterStats(player).damageType,
-      ),
+          hit.damageType === characterStats(player).damageType
+        );
+      }),
     );
-    if (classId === 'mage') assert(arena.damage.some((hit) => hit.amount === 1.5));
+    if (classId === 'mage') {
+      assert(
+        arena.damage.some((hit) => {
+          return hit.amount === 1.5;
+        }),
+      );
+    }
+
     const before = arena.damage.length;
     tickDebuffs(arena, [player], 2050);
-    assert(arena.damage.slice(before).every((hit) => hit.critical === false));
+    assert(
+      arena.damage.slice(before).every((hit) => {
+        return hit.critical === false;
+      }),
+    );
   }
 });
 

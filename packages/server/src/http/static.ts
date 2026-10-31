@@ -49,7 +49,9 @@ export function staticHandler(staticRoot?: string): RequestListener {
           selected = encoding;
           break;
         } catch (error) {
-          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+          if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+            throw error;
+          }
         }
       }
 

@@ -6,11 +6,15 @@ test('bear chases and defeats a forest boss after portal entry, opening the retu
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.classId = 'druid';
   player.equipment = starterEquipment('druid');
@@ -48,7 +52,11 @@ test('bear chases and defeats a forest boss after portal entry, opening the retu
       maxHitpoints: 200,
     },
   ];
-  await expect.poll(() => scene.phase).toBe('ended');
+  await expect
+    .poll(() => {
+      return scene.phase;
+    })
+    .toBe('ended');
   await expect(page.getByText('Scene complete · Return portal open')).toBeVisible();
   expect(scene.portals.length).toBeGreaterThan(0);
   await page.screenshot({ path: 'test-results/new-forest-return.png' });
@@ -72,7 +80,9 @@ for (const [difficulty, multiplier] of [
     await page.goto('/');
     await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
     await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-    const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+    const world = [...game.runtime.worlds.values()].find((world) => {
+      return world.players.size;
+    })!;
     const player = [...world.players.values()][0];
     player.autoAttack = false;
     player.x = LOBBY_PORTAL.x;
@@ -85,14 +95,18 @@ for (const [difficulty, multiplier] of [
     await expect(portal).toBeVisible();
     await expect(portal.getByRole('combobox', { name: 'Difficulty' })).toHaveText('Easy');
     await portal.getByRole('combobox', { name: 'Difficulty' }).click();
-    for (const name of ['Easy', 'Medium', 'Hard'])
+    for (const name of ['Easy', 'Medium', 'Hard']) {
       await expect(page.getByRole('option', { name, exact: true })).toBeVisible();
+    }
+
     await page.getByRole('option', { name: difficulty, exact: true }).click();
     await expect(portal.getByText(`${multiplier}× enemy health and damage`)).toBeVisible();
     await page.screenshot({ path: `test-results/portal-${difficulty.toLowerCase()}.png` });
     await portal.getByRole('button', { name: 'Create', exact: true }).click();
     await expect
-      .poll(() => game.runtime.parties(world).run([...world.players.values()][0]).scene?.difficulty)
+      .poll(() => {
+        return game.runtime.parties(world).run([...world.players.values()][0]).scene?.difficulty;
+      })
       .toBe(difficulty);
     await expect(
       portal.getByRole('heading', { name: new RegExp(`^Forest · ${difficulty}`) }),
@@ -110,7 +124,9 @@ for (const [difficulty, multiplier] of [
     await expect(portal.getByRole('button', { name: 'Regenerate scene' })).toBeVisible();
     await portal.getByRole('button', { name: 'Regenerate scene' }).click();
     await expect
-      .poll(() => game.runtime.parties(world).run([...world.players.values()][0]).scene!.id)
+      .poll(() => {
+        return game.runtime.parties(world).run([...world.players.values()][0]).scene!.id;
+      })
       .not.toBe(sceneId);
     expect(game.runtime.parties(world).run([...world.players.values()][0]).scene!.difficulty).toBe(
       difficulty,

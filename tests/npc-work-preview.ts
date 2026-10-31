@@ -59,7 +59,12 @@ export async function preview() {
         240,
       ).data;
       let count = 0;
-      for (let i = 0; i < data.length; i += 4) if (data[i] || data[i + 1] || data[i + 2]) count++;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i] || data[i + 1] || data[i + 2]) {
+          count++;
+        }
+      }
+
       (enabled ? counts : disabled).push(count);
     }
   }

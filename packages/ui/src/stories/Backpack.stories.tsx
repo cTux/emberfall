@@ -112,7 +112,13 @@ export const InventoryStats: StoryObj<typeof meta> = {
 
     return (
       <>
-        <Button onClick={() => setExtraStats(!extraStats)}>Toggle extra stats</Button>
+        <Button
+          onClick={() => {
+            return setExtraStats(!extraStats);
+          }}
+        >
+          Toggle extra stats
+        </Button>
         <GameWindow title='Inventory' width={520} height={300} modal={false} onClose={() => {}}>
           <Box
             sx={{
@@ -126,10 +132,12 @@ export const InventoryStats: StoryObj<typeof meta> = {
               stats={[
                 { label: 'Armor', value: '9.4' },
                 ...(extraStats
-                  ? Array.from({ length: 15 }, (_, index) => ({
-                      label: `Bonus stat ${index + 1}`,
-                      value: '14%',
-                    }))
+                  ? Array.from({ length: 15 }, (_, index) => {
+                      return {
+                        label: `Bonus stat ${index + 1}`,
+                        value: '14%',
+                      };
+                    })
                   : []),
               ]}
             />
@@ -148,9 +156,9 @@ export const Modifiers: StoryObj<typeof meta> = {
       <>
         <Backpack
           {...args}
-          onUse={(id, modifiers) =>
-            setLastAction(`${id}: Shift=${modifiers.shiftKey}, Ctrl=${modifiers.ctrlKey}`)
-          }
+          onUse={(id, modifiers) => {
+            return setLastAction(`${id}: Shift=${modifiers.shiftKey}, Ctrl=${modifiers.ctrlKey}`);
+          }}
         />
         <output>{lastAction}</output>
       </>
@@ -164,12 +172,21 @@ export const DragAndDrop: StoryObj<typeof meta> = {
   render: function DragAndDrop(args) {
     const [inventories, setInventories] = useState([args.items, [] as typeof args.items]);
     const transfer = (source: number, id: string) => {
-      const item = inventories[source].find((entry) => entry.id === id);
-      if (!item) return;
+      const item = inventories[source].find((entry) => {
+        return entry.id === id;
+      });
+      if (!item) {
+        return;
+      }
+
       setInventories(
-        inventories.map((items, index) =>
-          index === source ? items.filter((entry) => entry.id !== id) : [...items, item],
-        ),
+        inventories.map((items, index) => {
+          return index === source
+            ? items.filter((entry) => {
+                return entry.id !== id;
+              })
+            : [...items, item];
+        }),
       );
     };
 
@@ -183,19 +200,28 @@ export const DragAndDrop: StoryObj<typeof meta> = {
           maxWidth: '100%',
         }}
       >
-        {inventories.map((items, index) => (
-          <Backpack
-            {...args}
-            key={index}
-            items={items}
-            label={index === 0 ? 'Your backpack' : 'Storage'}
-            coins={undefined}
-            slots={index === 0 ? 20 : 40}
-            inventory={String(index)}
-            drop={{ accepts: [String(1 - index)], onDrop: (_, id) => transfer(1 - index, id) }}
-            onUse={(id) => transfer(index, id)}
-          />
-        ))}
+        {inventories.map((items, index) => {
+          return (
+            <Backpack
+              {...args}
+              key={index}
+              items={items}
+              label={index === 0 ? 'Your backpack' : 'Storage'}
+              coins={undefined}
+              slots={index === 0 ? 20 : 40}
+              inventory={String(index)}
+              drop={{
+                accepts: [String(1 - index)],
+                onDrop: (_, id) => {
+                  return transfer(1 - index, id);
+                },
+              }}
+              onUse={(id) => {
+                return transfer(index, id);
+              }}
+            />
+          );
+        })}
       </Box>
     );
   },
@@ -214,7 +240,9 @@ export const Selling: StoryObj<typeof meta> = {
               <IconButton
                 aria-label='Sell all'
                 disabled={!items.length}
-                onClick={() => setItems([])}
+                onClick={() => {
+                  return setItems([]);
+                }}
                 sx={{ color: 'primary.main', fontSize: '0.75rem', p: 0.5 }}
               >
                 <FontAwesomeIcon icon={faSackDollar} aria-hidden='true' />
@@ -228,6 +256,8 @@ export const Selling: StoryObj<typeof meta> = {
 };
 export const Full: StoryObj<typeof meta> = {
   args: {
-    items: Array.from({ length: 20 }, (_, index) => ({ ...meta.args.items[0], id: String(index) })),
+    items: Array.from({ length: 20 }, (_, index) => {
+      return { ...meta.args.items[0], id: String(index) };
+    }),
   },
 };

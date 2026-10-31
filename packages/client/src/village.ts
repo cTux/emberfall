@@ -52,7 +52,10 @@ export function villageSprites(
     frameCount = 1,
   ) {
     let frames = sprites.get(source);
-    if (!frames) sprites.set(source, (frames = new Map()));
+    if (!frames) {
+      sprites.set(source, (frames = new Map()));
+    }
+
     const animation = Array.from({ length: frameCount }, (_, i) => {
       const key = `${sx + i * sw}:${sy}:${sw}:${sh}`;
       let frame = frames.get(key);
@@ -93,17 +96,30 @@ export function villageSprites(
   }
 
   if (environmentArt.naturalWidth) {
-    TREES.forEach((t, i) =>
-      add(`tree:${i}`, t.x, t.y - 8, t.size, t.size, environmentArt, (i % 2) * 128, 128, 128, 128),
-    );
-    ROCKS.forEach((rock, i) =>
-      objects.push(resourceScenery({ ...rock, id: `rock:${i}`, kind: i % 2 ? 'stone' : 'rock' })),
-    );
+    TREES.forEach((t, i) => {
+      return add(
+        `tree:${i}`,
+        t.x,
+        t.y - 8,
+        t.size,
+        t.size,
+        environmentArt,
+        (i % 2) * 128,
+        128,
+        128,
+        128,
+      );
+    });
+    ROCKS.forEach((rock, i) => {
+      return objects.push(
+        resourceScenery({ ...rock, id: `rock:${i}`, kind: i % 2 ? 'stone' : 'rock' }),
+      );
+    });
   }
 
-  if (plantArt.naturalWidth)
-    PLANTS.forEach((plant, i) =>
-      add(
+  if (plantArt.naturalWidth) {
+    PLANTS.forEach((plant, i) => {
+      return add(
         `plant:${i}`,
         plant.x,
         plant.y,
@@ -114,13 +130,18 @@ export function villageSprites(
         0,
         64,
         64,
-      ),
-    );
-  if (buildingArt.complete && buildingArt.naturalWidth)
+      );
+    });
+  }
+
+  if (buildingArt.complete && buildingArt.naturalWidth) {
     BUILDINGS.forEach((b, i) => {
       const additional = additionalBuildingArt[b.id];
       const image = additional ?? buildingArt;
-      if (!image.complete || !image.naturalWidth) return;
+      if (!image.complete || !image.naturalWidth) {
+        return;
+      }
+
       const frame = additional
         ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
         : buildingFrames[i];
@@ -149,8 +170,10 @@ export function villageSprites(
         objects.at(-1)!.chimney = { x: 585 * scale - width / 2, y: 18 * scale - height };
       }
     });
-  if (workstationArt.naturalWidth)
-    for (const station of VILLAGE_DEFINITION.workstations)
+  }
+
+  if (workstationArt.naturalWidth) {
+    for (const station of VILLAGE_DEFINITION.workstations) {
       add(
         `workstation:${station.id}`,
         station.x,
@@ -163,23 +186,33 @@ export function villageSprites(
         128,
         128,
       );
-  if (wardrobeArt.naturalWidth)
-    add('building:wardrobe', WARDROBE.x, WARDROBE.y, 60, 64, wardrobeArt, 0, 0, 128, 128);
-  if (environmentArt.naturalWidth)
-    TORCHES.forEach((t, i) =>
-      add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128),
-    );
+    }
+  }
 
-  return objects.sort((a, b) => a.y - b.y);
+  if (wardrobeArt.naturalWidth) {
+    add('building:wardrobe', WARDROBE.x, WARDROBE.y, 60, 64, wardrobeArt, 0, 0, 128, 128);
+  }
+
+  if (environmentArt.naturalWidth) {
+    TORCHES.forEach((t, i) => {
+      return add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128);
+    });
+  }
+
+  return objects.sort((a, b) => {
+    return a.y - b.y;
+  });
 }
 
-export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => ({
-  ...t,
-  height: 85,
-  radius: 145,
-  strength: 0.24,
-  owner: `torch:${i}`,
-}));
+export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => {
+  return {
+    ...t,
+    height: 85,
+    radius: 145,
+    strength: 0.24,
+    owner: `torch:${i}`,
+  };
+});
 
 export { drawTorchFire } from './torch-rendering';
 export { lightTexture } from './light-texture';

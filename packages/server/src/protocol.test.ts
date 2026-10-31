@@ -75,7 +75,9 @@ test('native patches preserve positions, membership, ordering and detached snaps
   decoder.decode(encoder.encode());
   encoder.discardChanges();
   assert.deepEqual(
-    materializeState(received)!.players.map((p) => p.id),
+    materializeState(received)!.players.map((p) => {
+      return p.id;
+    }),
     ['q', 'p'],
   );
   assert.equal(materializeState(received)!.training!.enemies.length, 4);

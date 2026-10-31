@@ -25,17 +25,25 @@ export function useDraggable(key: string, active = true) {
     setElement(node);
   }, []);
   const drag = useRef<PanelPosition | null>(null);
-  const [offset, setOffset] = useState(() => storage?.load(key) ?? { x: 0, y: 0 });
+  const [offset, setOffset] = useState(() => {
+    return storage?.load(key) ?? { x: 0, y: 0 };
+  });
   const position = useRef(offset);
   const update = (next: PanelPosition) => {
-    if (next.x === position.current.x && next.y === position.current.y) return;
+    if (next.x === position.current.x && next.y === position.current.y) {
+      return;
+    }
+
     position.current = next;
     setOffset(next);
   };
 
   const move = (dx: number, dy: number) => {
     const box = ref.current?.getBoundingClientRect();
-    if (!box) return;
+    if (!box) {
+      return;
+    }
+
     // Resize and ResizeObserver may run before React commits the previous move.
     // Clamp against the measured base position, not a second additive correction.
     const transform = new DOMMatrixReadOnly(getComputedStyle(ref.current!).transform);
@@ -51,8 +59,14 @@ export function useDraggable(key: string, active = true) {
   };
 
   useLayoutEffect(() => {
-    if (!active || !element) return;
-    const clamp = () => move(0, 0);
+    if (!active || !element) {
+      return;
+    }
+
+    const clamp = () => {
+      return move(0, 0);
+    };
+
     const observer = new ResizeObserver(clamp);
     observer.observe(element);
     window.addEventListener('resize', clamp);
@@ -63,7 +77,10 @@ export function useDraggable(key: string, active = true) {
     };
   }, [active, key, element]);
   const finish = () => {
-    if (!drag.current) return;
+    if (!drag.current) {
+      return;
+    }
+
     drag.current = null;
     storage?.save(key, position.current);
   };
@@ -74,13 +91,19 @@ export function useDraggable(key: string, active = true) {
     handleProps: {
       'data-drag-handle': true,
       onPointerDown(event: PointerEvent<HTMLElement>) {
-        if (event.button !== 0 || (event.target as HTMLElement).closest('button, input, a')) return;
+        if (event.button !== 0 || (event.target as HTMLElement).closest('button, input, a')) {
+          return;
+        }
+
         event.stopPropagation();
         drag.current = { x: event.clientX, y: event.clientY };
         event.currentTarget.setPointerCapture(event.pointerId);
       },
       onPointerMove(event: PointerEvent<HTMLElement>) {
-        if (!drag.current) return;
+        if (!drag.current) {
+          return;
+        }
+
         move(event.clientX - drag.current.x, event.clientY - drag.current.y);
         drag.current = { x: event.clientX, y: event.clientY };
       },

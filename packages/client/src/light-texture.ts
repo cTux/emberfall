@@ -19,11 +19,12 @@ export function lightTexture(
 ) {
   const key = `${base ? 'occlusion' : 'glow'}:${light.owner ?? `${light.x}:${light.y}`}`;
   const blockers = shadows
-    ? casters.filter(
-        (caster) =>
+    ? casters.filter((caster) => {
+        return (
           caster.id !== light.owner &&
-          Math.hypot(caster.x - light.x, caster.y - light.y) < light.radius,
-      )
+          Math.hypot(caster.x - light.x, caster.y - light.y) < light.radius
+        );
+      })
     : [];
   // Camera translation cancels out. Only silhouettes inside the light radius
   // can change this texture; flicker is applied to the resulting sprite.
@@ -31,28 +32,48 @@ export function lightTexture(
   const signature =
     `${light.radius}:${light.height}:${light.strength}:${revision}:` +
     blockers
-      .map(
-        (caster) => `${caster.x - light.x},${caster.y - light.y},${caster.width},${caster.height}`,
-      )
+      .map((caster) => {
+        return `${caster.x - light.x},${caster.y - light.y},${caster.width},${caster.height}`;
+      })
       .join(';');
   let entry = lightCanvases.get(key);
   if (
     entry?.signature === signature &&
     entry.base === base &&
-    blockers.every((caster, index) => caster.mask === entry!.masks[index])
-  )
+    blockers.every((caster, index) => {
+      return caster.mask === entry!.masks[index];
+    })
+  ) {
     return entry.canvas;
+  }
+
   const canvas = entry?.canvas ?? document.createElement('canvas');
-  entry = { canvas, signature, masks: blockers.map((caster) => caster.mask), base };
+  entry = {
+    canvas,
+    signature,
+    masks: blockers.map((caster) => {
+      return caster.mask;
+    }),
+    base,
+  };
   lightCanvases.set(key, entry);
-  if (lightCanvases.size > 64) lightCanvases.delete(lightCanvases.keys().next().value!);
-  if (canvas.width !== light.radius * 2) canvas.width = canvas.height = light.radius * 2;
+  if (lightCanvases.size > 64) {
+    lightCanvases.delete(lightCanvases.keys().next().value!);
+  }
+
+  if (canvas.width !== light.radius * 2) {
+    canvas.width = canvas.height = light.radius * 2;
+  }
+
   const ctx = canvas.getContext('2d')!;
   ctx.resetTransform();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
-  if (base) ctx.drawImage(base, 0, 0);
+  if (base) {
+    ctx.drawImage(base, 0, 0);
+  }
+
   ctx.translate(light.radius - light.x, light.radius - light.y);
   if (!base) {
     const glow = ctx.createRadialGradient(light.x, light.y, 4, light.x, light.y, light.radius);
@@ -69,7 +90,9 @@ export function lightTexture(
 
   if (shadows) {
     ctx.globalCompositeOperation = 'destination-out';
-    for (const caster of blockers) castShadow(ctx, caster, light);
+    for (const caster of blockers) {
+      castShadow(ctx, caster, light);
+    }
   }
 
   const dynamic = canvas as HTMLCanvasElement & { textureRevision?: number };

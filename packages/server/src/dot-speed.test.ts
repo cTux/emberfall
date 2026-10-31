@@ -51,16 +51,20 @@ function hero(id = 'hero'): Player {
 }
 
 test('DOT Speed is a regular offensive roll, validates exact values and leaves attacks/casts unchanged', () => {
-  for (const pool of Object.values(itemTypeStats))
+  for (const pool of Object.values(itemTypeStats)) {
     assert.equal(pool.includes(ItemStat.DotSpeed), pool.includes(ItemStat.AttackSpeed));
+  }
+
   for (const [rarity, value] of [
     [Rarity.Common, 2],
     [Rarity.Uncommon, 2.4],
     [Rarity.Rare, 2.8],
     [Rarity.Epic, 3.4],
     [Rarity.Legendary, 4],
-  ] as const)
+  ] as const) {
     assert.equal(statValue(ItemStat.DotSpeed, rarity), value);
+  }
+
   const player = hero();
   assert.equal(characterStats(player).bonuses.dotSpeed, 2);
   assert.equal(companionStats(player).bonuses.dotSpeed, 2);
@@ -73,16 +77,19 @@ test('DOT Speed is a regular offensive roll, validates exact values and leaves a
 });
 
 test('player, companion and talent DOTs use owner speed, keep cadence on refresh and catch up through expiry', (t) => {
-  t.mock.method(Math, 'random', () => 0);
-  for (const training of [true, false])
-    for (const kind of ['bleed', 'poison', 'burn'] as const)
+  t.mock.method(Math, 'random', () => {
+    return 0;
+  });
+  for (const training of [true, false]) {
+    for (const kind of ['bleed', 'poison', 'burn'] as const) {
       for (const source of ['weapon', 'companion', 'talent'] as const) {
         const player = hero();
         const scene = { ...createTrainingScene(0), training, enemies: [] as Enemy[] };
         const enemy: Enemy = { id: 1, x: 1000, y: 1000, hitpoints: 10000, angle: 0 };
         scene.enemies.push(enemy);
-        if (source === 'talent') applyTalentAilment(enemy, player, kind, 1, 0);
-        else
+        if (source === 'talent') {
+          applyTalentAilment(enemy, player, kind, 1, 0);
+        } else {
           hitWithWeapon(
             scene,
             enemy,
@@ -93,6 +100,8 @@ test('player, companion and talent DOTs use owner speed, keep cadence on refresh
             characterStats(player),
             source === 'companion',
           );
+        }
+
         const interval = 1000 / 1.02;
         const debuff = enemy.debuffs![0];
         assert.equal(debuff.tickIntervalMs, interval);
@@ -113,6 +122,8 @@ test('player, companion and talent DOTs use owner speed, keep cadence on refresh
         assert.equal(enemy.hitpoints, afterRefresh - 10);
         assert.equal(enemy.debuffs!.length, 0);
       }
+    }
+  }
 });
 
 test('each owner retains a separate interval and roots/silence keep their timers', () => {
@@ -125,7 +136,9 @@ test('each owner retains a separate interval and roots/silence keep their timers
   applyTalentAilment(enemy, fast, 'roots', 1, 0);
   applyTalentAilment(enemy, fast, 'silence', 1, 0);
   assert.deepEqual(
-    enemy.debuffs!.map((entry) => entry.tickIntervalMs),
+    enemy.debuffs!.map((entry) => {
+      return entry.tickIntervalMs;
+    }),
     [1000 / 1.02, 1000, 1000, 1000],
   );
   const scene = { ...createTrainingScene(0), enemies: [enemy] };
@@ -135,7 +148,9 @@ test('each owner retains a separate interval and roots/silence keep their timers
 });
 
 test('mod weapon and talent ailments use supplied context stats', (t) => {
-  t.mock.method(Math, 'random', () => 0);
+  t.mock.method(Math, 'random', () => {
+    return 0;
+  });
   const context = createGame([
     baseMod,
     {
@@ -156,7 +171,9 @@ test('mod weapon and talent ailments use supplied context stats', (t) => {
   hitWithWeapon(scene, enemy, player, 0, 'bleed', 1, stats, false, context);
   applyTalentAilment(enemy, player, 'burn', 1, 0, undefined, stats);
   assert.deepEqual(
-    enemy.debuffs!.map((entry) => entry.tickIntervalMs),
+    enemy.debuffs!.map((entry) => {
+      return entry.tickIntervalMs;
+    }),
     [1000 / 1.02, 1000 / 1.02],
   );
   player.level = 20;

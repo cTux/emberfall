@@ -83,30 +83,45 @@ export const worldShapes = {
       returnSpawn: point,
     })
     .superRefine((village, ctx) => {
-      if (!village.workstations) return;
+      if (!village.workstations) {
+        return;
+      }
+
       const ids = new Set<string>();
       for (const [index, station] of village.workstations.entries()) {
-        const resident = village.villagers?.find((npc) => npc.id === station.npcId);
+        const resident = village.villagers?.find((npc) => {
+          return npc.id === station.npcId;
+        });
         if (
           ids.has(station.id) ||
           !resident ||
           resident.buildingId !== station.buildingId ||
-          !village.buildings.some((building) => building.id === station.buildingId)
-        )
+          !village.buildings.some((building) => {
+            return building.id === station.buildingId;
+          })
+        ) {
           ctx.addIssue({
             code: 'custom',
             path: ['workstations', index],
             message: 'Workstation needs a unique ID and its resident home building',
           });
+        }
+
         ids.add(station.id);
       }
 
-      for (const npc of village.villagers ?? [])
-        if (village.workstations.filter((station) => station.npcId === npc.id).length !== 2)
+      for (const npc of village.villagers ?? []) {
+        if (
+          village.workstations.filter((station) => {
+            return station.npcId === npc.id;
+          }).length !== 2
+        ) {
           ctx.addIssue({
             code: 'custom',
             path: ['workstations'],
             message: `Resident '${npc.id}' needs two workstations`,
           });
+        }
+      }
     }),
 };

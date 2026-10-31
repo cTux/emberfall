@@ -4,7 +4,9 @@ import { OllamaNpcDialogue, DEFAULT_NPC_MODEL, spokenLine } from './npc-models.t
 import { signal, answer, defaults } from './npc-models.fixture.ts';
 
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(console, 'info', () => {});
+  if ('mock' in t) {
+    t.mock.method(console, 'info', () => {});
+  }
 });
 
 test('native Ollama requests use local generation without API credentials', async () => {
@@ -31,7 +33,13 @@ test('native Ollama requests use local generation without API credentials', asyn
   };
 
   assert.deepEqual(
-    await new OllamaNpcDialogue(request, () => 0, defaults).generate('fictional context', signal()),
+    await new OllamaNpcDialogue(
+      request,
+      () => {
+        return 0;
+      },
+      defaults,
+    ).generate('fictional context', signal()),
     { status: 'ok', text: 'Good morning!' },
   );
 });
@@ -39,10 +47,17 @@ test('native Ollama requests use local generation without API credentials', asyn
 test('server environment configures the provider used by runtime and diagnostic', async (t) => {
   const previous = { baseUrl: process.env.OLLAMA_BASE_URL, model: process.env.OLLAMA_MODEL };
   t.after(() => {
-    if (previous.baseUrl === undefined) delete process.env.OLLAMA_BASE_URL;
-    else process.env.OLLAMA_BASE_URL = previous.baseUrl;
-    if (previous.model === undefined) delete process.env.OLLAMA_MODEL;
-    else process.env.OLLAMA_MODEL = previous.model;
+    if (previous.baseUrl === undefined) {
+      delete process.env.OLLAMA_BASE_URL;
+    } else {
+      process.env.OLLAMA_BASE_URL = previous.baseUrl;
+    }
+
+    if (previous.model === undefined) {
+      delete process.env.OLLAMA_MODEL;
+    } else {
+      process.env.OLLAMA_MODEL = previous.model;
+    }
   });
   process.env.OLLAMA_BASE_URL = 'http://127.0.0.1:12345/';
   process.env.OLLAMA_MODEL = 'llama3.2:1b';
@@ -74,7 +89,9 @@ test('usable model speech is folded to one complete line without cooling down', 
 
         return answer(content);
       },
-      () => 0,
+      () => {
+        return 0;
+      },
       defaults,
     );
     assert.deepEqual(await pool.generate('{}', signal()), { status: 'ok', text: expected });
@@ -86,7 +103,9 @@ test('usable model speech is folded to one complete line without cooling down', 
 });
 
 test('spoken text remains bounded even for injected dialogue providers', () => {
-  assert.throws(() => spokenLine('x'.repeat(32_769)));
+  assert.throws(() => {
+    return spokenLine('x'.repeat(32_769));
+  });
 });
 
 test('invalid endpoints and cloud models are rejected before any request', () => {
@@ -94,8 +113,15 @@ test('invalid endpoints and cloud models are rejected before any request', () =>
     'file:///tmp',
     'https://user:secret@example.com',
     'http://localhost?secret=1',
-  ])
-    assert.throws(() => new OllamaNpcDialogue(fetch, Date.now, { ...defaults, baseUrl }));
-  for (const model of ['', 'gemma4:cloud', 'model-cloud'])
-    assert.throws(() => new OllamaNpcDialogue(fetch, Date.now, { ...defaults, model }));
+  ]) {
+    assert.throws(() => {
+      return new OllamaNpcDialogue(fetch, Date.now, { ...defaults, baseUrl });
+    });
+  }
+
+  for (const model of ['', 'gemma4:cloud', 'model-cloud']) {
+    assert.throws(() => {
+      return new OllamaNpcDialogue(fetch, Date.now, { ...defaults, model });
+    });
+  }
 });

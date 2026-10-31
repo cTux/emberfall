@@ -16,18 +16,34 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
     const ws = new WebSocket(`ws://127.0.0.1:${address.port}/ws`);
     clients.push(ws);
     const messages: ServerMessage[] = [];
-    ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
+    ws.on('message', (raw) => {
+      return messages.push(JSON.parse(raw.toString()));
+    });
     await once(ws, 'open');
 
     return {
       ws,
-      send: (message: unknown) => ws.send(JSON.stringify(message)),
-      wait: async (type: ServerMessage['type'], predicate = (_message: ServerMessage) => true) => {
+      send: (message: unknown) => {
+        return ws.send(JSON.stringify(message));
+      },
+      wait: async (
+        type: ServerMessage['type'],
+        predicate = (_message: ServerMessage) => {
+          return true;
+        },
+      ) => {
         const until = performance.now() + 7000;
         while (performance.now() < until) {
-          const index = messages.findIndex((m) => m.type === type && predicate(m));
-          if (index >= 0) return messages.splice(index, 1)[0];
-          await new Promise((resolve) => setTimeout(resolve, 10));
+          const index = messages.findIndex((m) => {
+            return m.type === type && predicate(m);
+          });
+          if (index >= 0) {
+            return messages.splice(index, 1)[0];
+          }
+
+          await new Promise((resolve) => {
+            return setTimeout(resolve, 10);
+          });
         }
 
         throw new Error(`Missing ${type}`);
@@ -60,7 +76,9 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
     assert.equal(restored.world.hostId, joined.playerId);
     assert.deepEqual(
       restored.world.players,
-      joined.world.players.map((p) => ({ ...p, inputX: 0, inputY: 0 })),
+      joined.world.players.map((p) => {
+        return { ...p, inputX: 0, inputY: 0 };
+      }),
     );
     next.ws.terminate();
     await once(next.ws, 'close');
@@ -69,13 +87,19 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
     observer.send(resume);
     const expired = await observer.wait('error');
     assert(expired.type === 'error' && expired.message.includes('no longer available'));
-    await observer.wait(
-      'worlds',
-      (m) => m.type === 'worlds' && !m.worlds.some((w) => w.id === joined.world.id),
-    );
+    await observer.wait('worlds', (m) => {
+      return (
+        m.type === 'worlds' &&
+        !m.worlds.some((w) => {
+          return w.id === joined.world.id;
+        })
+      );
+    });
   } finally {
     await app.close();
-    for (const ws of clients) ws.terminate();
+    for (const ws of clients) {
+      ws.terminate();
+    }
   }
 });
 
@@ -85,12 +109,16 @@ test('normal transport close retains a reconnecting player for exactly ten secon
   const app = await createRuntime();
   const messages: ServerMessage[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   app.connect(peer);
   peer.receive({ type: 'create', name: 'Grace', playerName: 'Owner', password: '' });
-  const joined = messages.find((m) => m.type === 'joined');
+  const joined = messages.find((m) => {
+    return m.type === 'joined';
+  });
   assert(joined?.type === 'joined');
   const world = app.worlds.get(joined.world.id)!;
   const player = world.players.get(joined.playerId)!;
@@ -115,12 +143,16 @@ test('resume cancels expiry and clears reconnecting; explicit leave remains imme
   const app = await createRuntime();
   const messages: ServerMessage[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   app.connect(peer);
   peer.receive({ type: 'create', name: 'Grace', playerName: 'Owner', password: '' });
-  const joined = messages.find((m) => m.type === 'joined');
+  const joined = messages.find((m) => {
+    return m.type === 'joined';
+  });
   assert(joined?.type === 'joined');
   const world = app.worlds.get(joined.world.id)!;
   const player = world.players.get(joined.playerId)!;
@@ -129,7 +161,9 @@ test('resume cancels expiry and clears reconnecting; explicit leave remains imme
     peer.detached(1005);
     t.mock.timers.tick(9000);
     const next = new Peer(
-      (message) => messages.push(message),
+      (message) => {
+        return messages.push(message);
+      },
       () => {},
     );
     app.connect(next);

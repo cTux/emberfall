@@ -21,7 +21,9 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
   const png = await readFile('packages/client/public/assets/wardrobe-style/terrain.png');
   let finishImage: (() => void) | undefined;
   const server = createServer((request, response) => {
@@ -29,28 +31,32 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
       response.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': png.length });
       const split = Math.floor(png.length / 2);
       response.write(png.subarray(0, split));
-      finishImage = () => response.end(png.subarray(split));
+      finishImage = () => {
+        return response.end(png.subarray(split));
+      };
     } else if (request.url === '/') {
       response.end('<html><body></body></html>');
     } else {
       response.writeHead(404).end();
     }
   });
-  await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
+  await new Promise<void>((done) => {
+    return server.listen(0, '127.0.0.1', done);
+  });
   try {
     const address = server.address() as { port: number };
     await page.goto(`http://127.0.0.1:${address.port}/`);
     await page.addScriptTag({ content: code });
     await expect
-      .poll(() =>
-        page.evaluate(() => {
+      .poll(() => {
+        return page.evaluate(() => {
           const fixture = (
             window as unknown as { TerrainFixture: typeof import('./terrain-fixture') }
           ).TerrainFixture;
 
           return fixture.terrainArt.naturalWidth;
-        }),
-      )
+        });
+      })
       .toBeGreaterThan(0);
     const during = await page.evaluate(() => {
       const fixture = (window as unknown as { TerrainFixture: typeof import('./terrain-fixture') })
@@ -72,9 +78,14 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
         (tile, column) => {
           const pixels = tile.getContext('2d')!.getImageData(0, 0, tile.width, tile.height).data;
           let opaque = 0;
-          for (let i = 3; i < pixels.length; i += 4) if (pixels[i] === 255) opaque++;
+          for (let i = 3; i < pixels.length; i += 4) {
+            if (pixels[i] === 255) {
+              opaque++;
+            }
+          }
+
           let edgeDifference = 0;
-          for (let i = 0; i < tile.width; i++)
+          for (let i = 0; i < tile.width; i++) {
             for (let channel = 0; channel < 4; channel++) {
               edgeDifference += Math.abs(
                 pixels[i * 4 + channel] -
@@ -85,6 +96,7 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
                   pixels[(i * tile.width + tile.width - 1) * 4 + channel],
               );
             }
+          }
 
           const preview = document.createElement('canvas');
           preview.width = preview.height = tile.width * 3;
@@ -111,6 +123,10 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
   } finally {
     finishImage?.();
     server.closeAllConnections();
-    await new Promise<void>((done) => server.close(() => done()));
+    await new Promise<void>((done) => {
+      return server.close(() => {
+        return done();
+      });
+    });
   }
 });

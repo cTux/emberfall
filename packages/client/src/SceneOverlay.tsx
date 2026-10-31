@@ -64,7 +64,13 @@ export function SceneOverlay({
         (displayedHp[playerId] ?? me.hitpoints) <= 0 &&
         (deathWindow ? (
           <Box className='death-panel'>
-            <GameWindow title='You have fallen' modal={false} onClose={() => setDeathWindow(false)}>
+            <GameWindow
+              title='You have fallen'
+              modal={false}
+              onClose={() => {
+                return setDeathWindow(false);
+              }}
+            >
               <Stack spacing={2}>
                 <Typography>Your party can continue fighting.</Typography>
                 <Button variant='contained' disabled={unavailable} onClick={onReturnLobby}>
@@ -74,7 +80,12 @@ export function SceneOverlay({
             </GameWindow>
           </Box>
         ) : (
-          <Button className='interact' onClick={() => setDeathWindow(true)}>
+          <Button
+            className='interact'
+            onClick={() => {
+              return setDeathWindow(true);
+            }}
+          >
             You have fallen · Return options
           </Button>
         ))}

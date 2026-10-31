@@ -29,14 +29,20 @@ export function Settings({
   onRename: () => void;
   onLogout: () => void;
 }) {
-  const toggle = (key: BooleanPreference, label: string) => (
-    <SettingToggle
-      key={key}
-      label={label}
-      checked={preferences[key]}
-      onChange={(checked) => setPreferences((p) => ({ ...p, [key]: checked }))}
-    />
-  );
+  const toggle = (key: BooleanPreference, label: string) => {
+    return (
+      <SettingToggle
+        key={key}
+        label={label}
+        checked={preferences[key]}
+        onChange={(checked) => {
+          return setPreferences((p) => {
+            return { ...p, [key]: checked };
+          });
+        }}
+      />
+    );
+  };
 
   return (
     <ChapterTabs
@@ -71,28 +77,32 @@ export function Settings({
                 label='Cursor size'
                 value={preferences.cursorSize}
                 disabled={!preferences.customCursor}
-                onChange={(e) =>
-                  setPreferences((p) => ({
-                    ...p,
-                    cursorSize: Number(e.target.value) as Preferences['cursorSize'],
-                  }))
-                }
+                onChange={(e) => {
+                  return setPreferences((p) => {
+                    return {
+                      ...p,
+                      cursorSize: Number(e.target.value) as Preferences['cursorSize'],
+                    };
+                  });
+                }}
                 sx={{ my: 1 }}
               >
                 <MenuItem value={32}>Small · 32 px</MenuItem>
                 <MenuItem value={48}>Medium · 48 px</MenuItem>
                 <MenuItem value={64}>Large · 64 px</MenuItem>
               </TextField>
-              {GAMEPLAY_CONTROLS.map(({ key, label, description }) => (
-                <Fragment key={key}>
-                  {toggle(key, label)}
-                  {description && (
-                    <Typography variant='caption' color='text.secondary'>
-                      {description}
-                    </Typography>
-                  )}
-                </Fragment>
-              ))}
+              {GAMEPLAY_CONTROLS.map(({ key, label, description }) => {
+                return (
+                  <Fragment key={key}>
+                    {toggle(key, label)}
+                    {description && (
+                      <Typography variant='caption' color='text.secondary'>
+                        {description}
+                      </Typography>
+                    )}
+                  </Fragment>
+                );
+              })}
             </Stack>
           ),
         },
@@ -113,17 +123,23 @@ export function Settings({
           title: 'Sound',
           content: (
             <Stack spacing={2}>
-              {SOUND_CONTROLS.map(({ key, label, volume, volumeLabel }) => (
-                <Fragment key={key}>
-                  {toggle(key, label)}
-                  <VolumeControl
-                    label={volumeLabel}
-                    value={preferences[volume]}
-                    disabled={!preferences[key]}
-                    onChange={(value) => setPreferences((p) => ({ ...p, [volume]: value }))}
-                  />
-                </Fragment>
-              ))}
+              {SOUND_CONTROLS.map(({ key, label, volume, volumeLabel }) => {
+                return (
+                  <Fragment key={key}>
+                    {toggle(key, label)}
+                    <VolumeControl
+                      label={volumeLabel}
+                      value={preferences[volume]}
+                      disabled={!preferences[key]}
+                      onChange={(value) => {
+                        return setPreferences((p) => {
+                          return { ...p, [volume]: value };
+                        });
+                      }}
+                    />
+                  </Fragment>
+                );
+              })}
               <Typography variant='caption' color='text.secondary'>
                 Music: TimberwolfGames · Sound effects: Ninja Adventure.{' '}
                 <Link href={clientAsset('/audio/CREDITS.txt')} target='_blank' rel='noreferrer'>

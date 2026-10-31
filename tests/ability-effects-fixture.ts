@@ -60,12 +60,14 @@ export async function compare() {
         pixi,
         scene,
         150,
-        (x, y) => ({ x, y }),
+        (x, y) => {
+          return { x, y };
+        },
         kind === 'talent-particles',
         preferences,
         'me',
       );
-      if (kind === 'swing')
+      if (kind === 'swing') {
         drawPlayerAttack(
           pixi,
           {
@@ -82,12 +84,16 @@ export async function compare() {
           true,
           abilityEffectOpacity(preferences, 'me', owner),
         );
+      }
+
       pixi.present();
       ctx.drawImage(canvas, 0, 0);
       const pixels = ctx.getImageData(0, 0, 256, 256).data;
       let brightness = 0;
-      for (let i = 0; i < pixels.length; i += 4)
+      for (let i = 0; i < pixels.length; i += 4) {
         brightness += pixels[i] + pixels[i + 1] + pixels[i + 2];
+      }
+
       results[kind].push(brightness);
     }
   }

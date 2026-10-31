@@ -18,7 +18,11 @@ test('font preferences accept only bundled families and preserve legacy defaults
     ]) {
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
-        value: { getItem: () => JSON.stringify({ font }) },
+        value: {
+          getItem: () => {
+            return JSON.stringify({ font });
+          },
+        },
       });
       assert.equal(
         loadPreferences().font,
@@ -32,13 +36,20 @@ test('font preferences accept only bundled families and preserve legacy defaults
     for (const saved of ['{}', 'null', 'invalid']) {
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
-        value: { getItem: () => saved },
+        value: {
+          getItem: () => {
+            return saved;
+          },
+        },
       });
       assert.equal(loadPreferences().font, 'Alegreya Sans');
     }
   } finally {
-    if (original) Object.defineProperty(globalThis, 'localStorage', original);
-    else Reflect.deleteProperty(globalThis, 'localStorage');
+    if (original) {
+      Object.defineProperty(globalThis, 'localStorage', original);
+    } else {
+      Reflect.deleteProperty(globalThis, 'localStorage');
+    }
   }
 });
 
@@ -49,7 +60,7 @@ for (const key of [
   'hideHealthBarsInTown',
   'hideOtherPlayerEffects',
   'hideOtherPlayerDamageNumbers',
-] as const)
+] as const) {
   test(`${key} defaults on and accepts only saved booleans`, () => {
     const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
     try {
@@ -63,15 +74,23 @@ for (const key of [
       ] as const) {
         Object.defineProperty(globalThis, 'localStorage', {
           configurable: true,
-          value: { getItem: () => saved },
+          value: {
+            getItem: () => {
+              return saved;
+            },
+          },
         });
         assert.equal(loadPreferences()[key], expected);
       }
     } finally {
-      if (original) Object.defineProperty(globalThis, 'localStorage', original);
-      else Reflect.deleteProperty(globalThis, 'localStorage');
+      if (original) {
+        Object.defineProperty(globalThis, 'localStorage', original);
+      } else {
+        Reflect.deleteProperty(globalThis, 'localStorage');
+      }
     }
   });
+}
 
 for (const key of ['dps', 'fps', 'latency'] as const) {
   test(`${key} defaults off and accepts only saved booleans`, () => {
@@ -89,7 +108,11 @@ for (const key of ['dps', 'fps', 'latency'] as const) {
       ] as const) {
         Object.defineProperty(globalThis, 'localStorage', {
           configurable: true,
-          value: { getItem: () => saved },
+          value: {
+            getItem: () => {
+              return saved;
+            },
+          },
         });
         assert.equal(loadPreferences()[key], expected);
       }
@@ -102,8 +125,11 @@ for (const key of ['dps', 'fps', 'latency'] as const) {
       });
       assert.equal(loadPreferences()[key], false);
     } finally {
-      if (original) Object.defineProperty(globalThis, 'localStorage', original);
-      else Reflect.deleteProperty(globalThis, 'localStorage');
+      if (original) {
+        Object.defineProperty(globalThis, 'localStorage', original);
+      } else {
+        Reflect.deleteProperty(globalThis, 'localStorage');
+      }
     }
   });
 }
@@ -137,7 +163,11 @@ test('custom cursor preferences accept only supported sizes and booleans', () =>
     ] as const) {
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
-        value: { getItem: () => saved },
+        value: {
+          getItem: () => {
+            return saved;
+          },
+        },
       });
       const preferences = loadPreferences();
       assert.equal(preferences.customCursor, enabled);
@@ -153,8 +183,11 @@ test('custom cursor preferences accept only supported sizes and booleans', () =>
     assert.equal(loadPreferences().customCursor, true);
     assert.equal(loadPreferences().cursorSize, 48);
   } finally {
-    if (original) Object.defineProperty(globalThis, 'localStorage', original);
-    else Reflect.deleteProperty(globalThis, 'localStorage');
+    if (original) {
+      Object.defineProperty(globalThis, 'localStorage', original);
+    } else {
+      Reflect.deleteProperty(globalThis, 'localStorage');
+    }
   }
 });
 
@@ -173,7 +206,11 @@ test('ability transparency validates saved values and combines with owner visibi
     ] as const) {
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
-        value: { getItem: () => JSON.stringify({ abilityEffectTransparency: value }) },
+        value: {
+          getItem: () => {
+            return JSON.stringify({ abilityEffectTransparency: value });
+          },
+        },
       });
       const prefs = loadPreferences();
       assert.equal(prefs.abilityEffectTransparency, expected);
@@ -186,7 +223,10 @@ test('ability transparency validates saved values and combines with owner visibi
       );
     }
   } finally {
-    if (original) Object.defineProperty(globalThis, 'localStorage', original);
-    else Reflect.deleteProperty(globalThis, 'localStorage');
+    if (original) {
+      Object.defineProperty(globalThis, 'localStorage', original);
+    } else {
+      Reflect.deleteProperty(globalThis, 'localStorage');
+    }
   }
 });

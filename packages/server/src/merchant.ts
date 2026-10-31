@@ -11,8 +11,10 @@ export function refreshMerchant(
   characters: Pick<CharacterStore, 'saveMerchant'>,
   now: number,
 ) {
-  if (!world.merchant || now < (world.merchant.refreshAt ?? 0) || now < (retryAt.get(world) ?? 0))
+  if (!world.merchant || now < (world.merchant.refreshAt ?? 0) || now < (retryAt.get(world) ?? 0)) {
     return;
+  }
+
   const merchant = freshMerchant(now);
   merchant.buyback = world.merchant.buyback;
   merchant.craftsman.buyback = world.merchant.craftsman?.buyback ?? [];

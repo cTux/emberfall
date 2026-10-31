@@ -22,9 +22,15 @@ export class VillageSpeech {
   targets(critters: ReturnType<typeof crittersAt>) {
     const cats: InteractionTarget[] = [];
     for (const cat of critters) {
-      if (cat.kind !== 'cat') continue;
+      if (cat.kind !== 'cat') {
+        continue;
+      }
+
       const caster = critterCaster(cat);
-      if (!caster) continue;
+      if (!caster) {
+        continue;
+      }
+
       cats.push({
         source: {
           id: cat.id,
@@ -33,7 +39,9 @@ export class VillageSpeech {
           y: cat.y,
           activate: () => {
             const text = this.speech.pet(cat.id, performance.now());
-            if (text) this.onSpeech(text);
+            if (text) {
+              this.onSpeech(text);
+            }
           },
         },
         x: cat.x - 12,
@@ -57,10 +65,16 @@ export class VillageSpeech {
     now: number,
     serverTime: number,
   ) {
-    for (const player of players) drawChatBubble(ctx, player.x, player.y, player.chat);
+    for (const player of players) {
+      drawChatBubble(ctx, player.x, player.y, player.chat);
+    }
+
     const catMessages: string[] = [];
     for (const cat of critters) {
-      if (cat.kind !== 'cat') continue;
+      if (cat.kind !== 'cat') {
+        continue;
+      }
+
       const message = this.speech.message(cat.id, now);
       if (message) {
         drawChatBubble(ctx, cat.x, cat.y + 20, message);
@@ -70,10 +84,11 @@ export class VillageSpeech {
 
     for (const object of visibleScenery) {
       // NPC positions are feet anchors; this matches the 40-unit actor health/status row.
-      if (object.npc?.silenced)
+      if (object.npc?.silenced) {
         drawDebuffs(ctx, NPC_SILENCE, object.x - 20, object.y - 61, serverTime);
-      else if (object.npc && (object.npc.chatUntil ?? 0) > serverTime)
+      } else if (object.npc && (object.npc.chatUntil ?? 0) > serverTime) {
         drawChatBubble(ctx, object.x, object.y - 24, object.npc.chat);
+      }
     }
 
     return catMessages.join(',');

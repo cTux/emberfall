@@ -7,7 +7,11 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('bear swipes once per enemy per cycle for owner power, leashes, returns and resumes', async () => {
@@ -19,22 +23,30 @@ test('bear swipes once per enemy per cycle for owner power, leashes, returns and
   assert.equal(bear.name, 'Bear');
   assert.equal(bear.maxHitpoints, 150);
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [97, 97],
   );
   tickCompanion(p, s, 10050, 0);
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [97, 97],
   );
   tickCompanion(p, s, 10999, 0);
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [97, 97],
   );
   tickCompanion(p, s, 11000, 0);
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [94, 94],
   );
   bear.x = p.x + 220;
@@ -50,7 +62,9 @@ test('bear swipes once per enemy per cycle for owner power, leashes, returns and
   assert(!bear.returning);
   tickCompanion(p, s, 12400, 0);
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [91, 91],
   );
 });
@@ -126,7 +140,10 @@ test('Bear repositions on its reaction interval while continuing to damage melee
     const e = { ...enemy(1, 2480, 1000), archetype };
     s.enemies = [e];
     tickCompanion(p, s, 10000, 1);
-    for (let i = 1; i <= 40; i++) stepCombat(s, [p], 10000 + i * 50, 0.05);
+    for (let i = 1; i <= 40; i++) {
+      stepCombat(s, [p], 10000 + i * 50, 0.05);
+    }
+
     assert(p.bear!.hitpoints > 0, archetype);
     assert(e.hitpoints < 998, archetype);
     tickCompanion(p, s, 13000, 0.5);

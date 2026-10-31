@@ -24,17 +24,19 @@ test('ability images, particles and swings apply opacity and owner filtering in 
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
-  await page.route('**/ability-test', (route) =>
-    route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-  );
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
+  await page.route('**/ability-test', (route) => {
+    return route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' });
+  });
   await page.goto('/ability-test');
   await page.addScriptTag({ content: code });
-  const results = await page.evaluate(() =>
-    (
+  const results = await page.evaluate(() => {
+    return (
       window as unknown as { AbilityFixture: typeof import('./ability-effects-fixture') }
-    ).AbilityFixture.compare(),
-  );
+    ).AbilityFixture.compare();
+  });
   for (const [kind, [full, half, invisible, otherHidden, ownVisible]] of Object.entries(results)) {
     expect(full, kind).toBeGreaterThan(0);
     expect(half, kind).toBeGreaterThan(full * 0.35);
@@ -64,7 +66,10 @@ test('ability settings default, update, survive presets and reload in village an
   await expect(slider).toHaveAttribute('aria-valuenow', '0');
   await slider.focus();
   await page.keyboard.press('Home');
-  for (let i = 0; i < 10; i++) await page.keyboard.press('ArrowRight');
+  for (let i = 0; i < 10; i++) {
+    await page.keyboard.press('ArrowRight');
+  }
+
   await expect(slider).toHaveAttribute('aria-valuetext', '50%');
   await toggle.uncheck();
   await page.getByRole('button', { name: 'Low', exact: true }).click();
@@ -81,7 +86,9 @@ test('ability settings default, update, survive presets and reload in village an
   await page.keyboard.press('End');
   await expect(slider).toHaveAttribute('aria-valuetext', '100%');
   await page.getByRole('button', { name: 'Close Settings' }).click();
-  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((w) => {
+    return w.players.size;
+  })!;
   const player = [...world.players.values()][0];
   await page.setViewportSize({ width: 960, height: 640 });
   player.x = LOBBY_PORTAL.x - 35;

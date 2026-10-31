@@ -20,7 +20,10 @@ export class FrameBudget {
 
   begin(now: number, settings: GraphicsSettings): number | undefined {
     const limit = settings.frameLimit;
-    if (limit && now - this.previous + 0.5 < 1000 / limit) return;
+    if (limit && now - this.previous + 0.5 < 1000 / limit) {
+      return;
+    }
+
     if (now - this.previous < 200) {
       this.frameTotal += now - this.previous;
       this.frameCount++;
@@ -61,7 +64,10 @@ export class FrameBudget {
 
   sample(now: number): number | undefined {
     this.fpsFrames++;
-    if (now - this.fpsAt < 500) return;
+    if (now - this.fpsAt < 500) {
+      return;
+    }
+
     const fps = Math.round((this.fpsFrames * 1000) / (now - this.fpsAt));
     this.fpsFrames = 0;
     this.fpsAt = now;

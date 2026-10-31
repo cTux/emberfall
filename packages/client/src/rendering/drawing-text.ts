@@ -25,7 +25,10 @@ export function updateText(
     entity.styleKey = key;
   }
 
-  if (text.text !== value) text.text = value;
+  if (text.text !== value) {
+    text.text = value;
+  }
+
   text.anchor.set(
     settings.textAlign === 'center' ? 0.5 : ['right', 'end'].includes(settings.textAlign) ? 1 : 0,
     settings.textBaseline === 'middle'

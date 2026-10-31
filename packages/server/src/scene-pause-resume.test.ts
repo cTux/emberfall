@@ -16,7 +16,10 @@ test('empty and dead scenes freeze combat deadlines, resume on entry, and can re
     ]),
   };
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 0);
-  for (const player of [a, b]) sceneAction(world, player, { type: 'ready', ready: true }, 0);
+  for (const player of [a, b]) {
+    sceneAction(world, player, { type: 'ready', ready: true }, 0);
+  }
+
   tickScene(world, 5000, 0);
   const scene = world.scene!;
   scene.nextSpawn = 6000;
@@ -78,9 +81,14 @@ test('empty and dead scenes freeze combat deadlines, resume on entry, and can re
   assert.equal(b.attackAt, 65000, 'joining attacks use the current server clock');
   const c = hero('c');
   world.players.set(c.id, c);
-  assert.throws(() =>
-    sceneAction(world, c, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 65000),
-  );
+  assert.throws(() => {
+    return sceneAction(
+      world,
+      c,
+      { type: 'createScene', scene: 'Forest', difficulty: 'Easy' },
+      65000,
+    );
+  });
   sceneAction(world, b, { type: 'leaveScene' }, 65000);
   a.hitpoints = 0;
   sceneAction(world, c, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 66000);
@@ -90,9 +98,15 @@ test('empty and dead scenes freeze combat deadlines, resume on entry, and can re
   assert.deepEqual(world.scene!.ready, []);
   assert.equal(a.scene, undefined);
   assert.equal(a.hitpoints, a.maxHitpoints);
-  for (const player of [a, b, c]) sceneAction(world, player, { type: 'ready', ready: true }, 66000);
+  for (const player of [a, b, c]) {
+    sceneAction(world, player, { type: 'ready', ready: true }, 66000);
+  }
+
   tickScene(world, 71000, 0);
-  for (const player of [a, b, c]) sceneAction(world, player, { type: 'leaveScene' }, 71000);
+  for (const player of [a, b, c]) {
+    sceneAction(world, player, { type: 'leaveScene' }, 71000);
+  }
+
   tickScene(world, 71000, 0);
   const empty = structuredClone(world.scene);
   tickScene(world, 200000, 1);

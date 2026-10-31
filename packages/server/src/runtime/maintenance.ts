@@ -21,7 +21,10 @@ export function startMaintenance({
 }) {
   const heartbeat = setInterval(() => {
     for (const [ws, session] of sessions) {
-      if (ws.readyState !== WebSocket.OPEN) continue;
+      if (ws.readyState !== WebSocket.OPEN) {
+        continue;
+      }
+
       if (!session.alive) {
         ws.terminate();
         continue;
@@ -34,13 +37,18 @@ export function startMaintenance({
   const progressTick = setInterval(() => {
     for (const [ws, session] of sessions) {
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
-      if (player && ws.readyState === WebSocket.OPEN) player.playtimeSeconds++;
+      if (player && ws.readyState === WebSocket.OPEN) {
+        player.playtimeSeconds++;
+      }
     }
   }, 1000);
   const autosave = setInterval(() => {
     for (const [ws, session] of sessions) {
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
-      if (!player || !session.characterId) continue;
+      if (!player || !session.characterId) {
+        continue;
+      }
+
       try {
         characters.save(session.characterId, player.name, player);
         send(ws, { type: 'saved', savedAt: Date.now() });

@@ -17,7 +17,9 @@ export function advancePlayerShot(
 ) {
   let travelLimit = shot.remaining;
   if (shot.kind === 'roots' && shot.hitIds.length > 0) {
-    const target = enemies.find((enemy) => enemy.id === shot.targetId && enemy.hitpoints > 0);
+    const target = enemies.find((enemy) => {
+      return enemy.id === shot.targetId && enemy.hitpoints > 0;
+    });
     if (!target) {
       shot.remaining = 0;
 
@@ -40,19 +42,23 @@ export function advancePlayerShot(
   );
   const steps = Math.max(1, Math.ceil(distance / 6));
   for (let i = 0; i < steps; i++) {
-    if (shot.remaining <= 0) break;
+    if (shot.remaining <= 0) {
+      break;
+    }
+
     shot.x = wrap(shot.x + (Math.cos(shot.angle) * distance) / steps, FOREST.width);
     shot.y = wrap(shot.y + (Math.sin(shot.angle) * distance) / steps, FOREST.height);
     shot.remaining -= distance / steps;
     onStep?.();
     if (detectHits && shot.kind !== 'arrow') {
-      const hit = enemies.find(
-        (enemy) =>
+      const hit = enemies.find((enemy) => {
+        return (
           enemy.hitpoints > 0 &&
           !shot.hitIds.includes(enemy.id) &&
           (shot.kind !== 'roots' || shot.hitIds.length === 0 || enemy.id === shot.targetId) &&
-          overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy, context)),
-      );
+          overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy, context))
+        );
+      });
       if (hit) {
         shot.hitIds.push(hit.id);
 

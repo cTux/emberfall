@@ -42,8 +42,9 @@ export function steamCallback(loginUrl: string, steamId = heroId) {
     assoc_handle: 'test-association',
     sig: 'test-signature',
     signed: 'op_endpoint,claimed_id,identity,return_to,response_nonce,assoc_handle',
-  }))
+  })) {
     callback.searchParams.set(`openid.${key}`, value);
+  }
 
   return callback;
 }

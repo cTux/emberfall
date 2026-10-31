@@ -22,7 +22,9 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
   let release: () => void = () => {};
 
   const gate = new Promise<void>((done) => {
@@ -32,12 +34,12 @@ test('village waits for plant art and packages five distinct silhouettes with sh
     await gate;
     await route.continue();
   });
-  await page.route('**/village-scenery-preview', (route) =>
-    route.fulfill({
+  await page.route('**/village-scenery-preview', (route) => {
+    return route.fulfill({
       contentType: 'text/html',
       body: '<body style="margin:0;background:#323b2d"></body>',
-    }),
-  );
+    });
+  });
   await page.goto('/village-scenery-preview');
   await page.addScriptTag({ content: code });
   const pending = await page.evaluate(async () => {
@@ -46,12 +48,21 @@ test('village waits for plant art and packages five distinct silhouettes with sh
     ).VillageScenery;
     while (
       fixture.artImages
-        .filter((image) => image !== fixture.plantArt)
-        .some((image) => !image.complete || image.dataset.artReady !== 'true') ||
+        .filter((image) => {
+          return image !== fixture.plantArt;
+        })
+        .some((image) => {
+          return !image.complete || image.dataset.artReady !== 'true';
+        }) ||
       !fixture.terrainArt.complete ||
-      Object.values(fixture.villageImages).some((image) => !image.complete)
-    )
-      await new Promise((done) => setTimeout(done, 20));
+      Object.values(fixture.villageImages).some((image) => {
+        return !image.complete;
+      })
+    ) {
+      await new Promise((done) => {
+        return setTimeout(done, 20);
+      });
+    }
 
     return fixture.villageBackground(fixture.GRAPHICS_PRESETS.High) === undefined;
   });
@@ -61,8 +72,16 @@ test('village waits for plant art and packages five distinct silhouettes with sh
     const fixture = (
       window as unknown as { VillageScenery: typeof import('./village-scenery-fixture') }
     ).VillageScenery;
-    while (fixture.artImages.some((image) => !image.complete || image.dataset.artReady !== 'true'))
-      await new Promise((done) => setTimeout(done, 20));
+    while (
+      fixture.artImages.some((image) => {
+        return !image.complete || image.dataset.artReady !== 'true';
+      })
+    ) {
+      await new Promise((done) => {
+        return setTimeout(done, 20);
+      });
+    }
+
     const scenery = fixture.villageSprites(
       ...(Array<HTMLImageElement>(5).fill(new Image()) as [
         HTMLImageElement,
@@ -72,9 +91,19 @@ test('village waits for plant art and packages five distinct silhouettes with sh
         HTMLImageElement,
       ]),
     );
-    const plants = scenery.filter((object) => object.id.startsWith('plant:'));
-    const rocks = scenery.filter((object) => object.id.startsWith('rock:'));
-    const sprites = [...new Set(plants.map((plant) => plant.sprite))];
+    const plants = scenery.filter((object) => {
+      return object.id.startsWith('plant:');
+    });
+    const rocks = scenery.filter((object) => {
+      return object.id.startsWith('rock:');
+    });
+    const sprites = [
+      ...new Set(
+        plants.map((plant) => {
+          return plant.sprite;
+        }),
+      ),
+    ];
     const canvas = document.createElement('canvas');
     canvas.width = 900;
     canvas.height = 240;
@@ -98,9 +127,14 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       const { sprite } = object;
       const pixels = sprite.getContext('2d')!.getImageData(0, 0, sprite.width, sprite.height).data;
       let bottom = 0;
-      for (let y = 0; y < sprite.height; y++)
-        for (let x = 0; x < sprite.width; x++)
-          if (pixels[(y * sprite.width + x) * 4 + 3] >= 128) bottom = y + 1;
+      for (let y = 0; y < sprite.height; y++) {
+        for (let x = 0; x < sprite.width; x++) {
+          if (pixels[(y * sprite.width + x) * 4 + 3] >= 128) {
+            bottom = y + 1;
+          }
+        }
+      }
+
       ctx.drawImage(sprite, 260 + index * 150, 240 - object.height, object.width, object.height);
 
       return ((sprite.height - bottom) / sprite.height) * object.height;
@@ -111,21 +145,35 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       sizes: [
         ...new Set(
           scenery
-            .filter((object) => object.id.startsWith('tree:') || object.id === 'building:wardrobe')
-            .map((object) => object.sprite.width),
+            .filter((object) => {
+              return object.id.startsWith('tree:') || object.id === 'building:wardrobe';
+            })
+            .map((object) => {
+              return object.sprite.width;
+            }),
         ),
       ],
       plants: plants.length,
       rocks: rocks.length,
       signatures: new Set(signatures).size,
-      masks: new Set(plants.map((plant) => plant.mask)).size,
-      sorted: scenery.every((object, index) => index === 0 || scenery[index - 1].y <= object.y),
+      masks: new Set(
+        plants.map((plant) => {
+          return plant.mask;
+        }),
+      ).size,
+      sorted: scenery.every((object, index) => {
+        return index === 0 || scenery[index - 1].y <= object.y;
+      }),
       opaque: sprites.map((sprite) => {
         const pixels = sprite
           .getContext('2d')!
           .getImageData(0, 0, sprite.width, sprite.height).data;
         let count = 0;
-        for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) count++;
+        for (let i = 3; i < pixels.length; i += 4) {
+          if (pixels[i]) {
+            count++;
+          }
+        }
 
         return count;
       }),
@@ -137,21 +185,33 @@ test('village waits for plant art and packages five distinct silhouettes with sh
   expect(result.signatures).toBe(5);
   expect(result.masks).toBe(5);
   expect(result.sorted).toBe(true);
-  for (const gap of result.gatheredGroundGaps) expect(gap).toBeLessThanOrEqual(4);
-  for (const count of result.opaque) expect(count).toBeGreaterThan(300);
+  for (const gap of result.gatheredGroundGaps) {
+    expect(gap).toBeLessThanOrEqual(4);
+  }
+
+  for (const count of result.opaque) {
+    expect(count).toBeGreaterThan(300);
+  }
+
   await page.locator('canvas').screenshot({ path: 'test-results/village-plants-rocks-atlas.png' });
 });
 
 test('rocks and plants render in the village and across wrapped seams', async ({ page, game }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const canvas = page.locator('canvas');
   await expect(canvas).toHaveAttribute('data-renderer', 'pixijs-webgl');
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
-  const plant = PLANTS.find((object) => object.x > 1300 && object.x < 2000)!;
+  const plant = PLANTS.find((object) => {
+    return object.x > 1300 && object.x < 2000;
+  })!;
   player.x = plant.x;
   player.y = plant.y;
   await page.waitForTimeout(1000);

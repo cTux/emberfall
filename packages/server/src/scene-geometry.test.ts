@@ -31,14 +31,20 @@ test('forest and expanded lobby share dimensions; all edges wrap; indexed trunks
   const left = forestTrees(0, 200, 200),
     right = forestTrees(FOREST.width, 200, 200);
   assert.deepEqual(
-    left.map((t) => t.id),
-    right.map((t) => t.id),
+    left.map((t) => {
+      return t.id;
+    }),
+    right.map((t) => {
+      return t.id;
+    }),
   );
 });
 
 test('combat uses wrapped distances and warned melee damage respects its cooldown', async (t) => {
   // This geometry/cooldown scenario asserts base damage; critical boundaries have separate coverage.
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const a = hero('a');
   const world: SceneWorld = { players: new Map([[a.id, a]]) };
   sceneAction(world, a, { type: 'createScene', scene: 'Forest', difficulty: 'Easy' }, 10000);

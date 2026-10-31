@@ -28,16 +28,21 @@ export function shadowProjection(
   bottomInset = 0,
   directional: DirectionalShadow = { x: 0.6, y: 0.8, opacity: 0.26 },
 ) {
-  if (!light)
+  if (!light) {
     return {
       x: directional.x * caster.height,
       y: directional.y * caster.height,
       opacity: directional.opacity,
     };
+  }
+
   const dx = caster.x - light.x,
     dy = caster.y - bottomInset - light.y;
   const distance = Math.hypot(dx, dy);
-  if (distance >= light.radius || distance < 1) return null;
+  if (distance >= light.radius || distance < 1) {
+    return null;
+  }
+
   const length = Math.min(
     light.radius * 0.8,
     (distance * caster.height) / Math.max(20, light.height - caster.height),
@@ -51,10 +56,16 @@ export function shadowProjection(
 }
 
 export function castShadow(ctx: DrawingContext, caster: Caster, light?: Light) {
-  if (light?.owner === caster.id) return;
+  if (light?.owner === caster.id) {
+    return;
+  }
+
   const bottomInset = (maskBottomInsets.get(caster.mask) ?? 0) * caster.height;
   const projection = shadowProjection(caster, light, bottomInset, ctx.directionalShadow);
-  if (!projection || projection.opacity <= 0) return;
+  if (!projection || projection.opacity <= 0) {
+    return;
+  }
+
   ctx.save();
   ctx.occlusion = false;
   ctx.globalAlpha = projection.opacity;
@@ -92,7 +103,10 @@ export function makeMask(sprite: HTMLCanvasElement) {
       }
     }
 
-    if (occupied) break;
+    if (occupied) {
+      break;
+    }
+
     bottom--;
   }
 
@@ -111,9 +125,15 @@ export function spriteMask(
   trimBottom = false,
   frameHeight = 16,
 ) {
-  if (!image.naturalWidth) return null;
+  if (!image.naturalWidth) {
+    return null;
+  }
+
   let masks = spriteMasks.get(image);
-  if (!masks) spriteMasks.set(image, (masks = new Map()));
+  if (!masks) {
+    spriteMasks.set(image, (masks = new Map()));
+  }
+
   const key = `${column}:${row}:${flip}:${frameWidth}:${trimBottom}:${frameHeight}`;
   if (!masks.has(key)) {
     const tile = document.createElement('canvas');
@@ -143,17 +163,21 @@ export function spriteMask(
       let bottom = tile.height;
       while (
         bottom > 1 &&
-        !pixels
-          .slice((bottom - 1) * tile.width * 4, bottom * tile.width * 4)
-          .some((a, i) => i % 4 === 3 && a > 0)
-      )
+        !pixels.slice((bottom - 1) * tile.width * 4, bottom * tile.width * 4).some((a, i) => {
+          return i % 4 === 3 && a > 0;
+        })
+      ) {
         bottom--;
+      }
+
       const cropped = document.createElement('canvas');
       cropped.width = tile.width;
       cropped.height = bottom;
       cropped.getContext('2d')!.drawImage(mask, 0, 0);
       masks.set(key, cropped);
-    } else masks.set(key, mask);
+    } else {
+      masks.set(key, mask);
+    }
   }
 
   return masks.get(key)!;

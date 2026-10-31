@@ -18,7 +18,9 @@ test('failed first merchant save rejects admission safely and a later join retri
   const runtime = await createRuntime();
   const messages: ServerMessage[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   try {
@@ -32,7 +34,9 @@ test('failed first merchant save rejects admission safely and a later join retri
     assert.equal(world.players.size, 0);
     assert.equal(world.merchant, undefined);
     assert.equal(messages.at(-1)?.type, 'error');
-    await new Promise((resolve) => setTimeout(resolve, 75));
+    await new Promise((resolve) => {
+      return setTimeout(resolve, 75);
+    });
     assert.equal(failure.mock.callCount(), 1, 'broadcast ticks do not retry admission writes');
     failure.mock.restore();
     peer.receive(join);
@@ -49,18 +53,27 @@ test('empty bottles cost one gold, exhaust shared stock, and stack to 200', () =
   const player = { ...freshProgress(), id: 'p', name: 'Buyer', x: 0, y: 0, color: 0 } as Player;
   player.coins = 201;
   player.backpack = [{ id: 'bottle', itemId: 'empty-bottle', quantity: 1 }];
-  const bottle = merchant.backpack.find((item) => item.itemId === 'empty-bottle')!;
+  const bottle = merchant.backpack.find((item) => {
+    return item.itemId === 'empty-bottle';
+  })!;
   assert.equal(bottle.quantity, 200);
   assert.equal(itemDefinition(bottle.itemId).kind, 'resource');
-  for (let i = 0; i < 200; i++) tradeItem(player, merchant, bottle.id, true);
+  for (let i = 0; i < 200; i++) {
+    tradeItem(player, merchant, bottle.id, true);
+  }
+
   assert.equal(player.coins, 1);
   assert.equal(merchant.coins, 5200);
   assert.deepEqual(
-    player.backpack.map((item) => item.quantity),
+    player.backpack.map((item) => {
+      return item.quantity;
+    }),
     [200, 1],
   );
   assert(backpackSchema.safeParse(player.backpack).success);
-  assert.throws(() => tradeItem(player, merchant, bottle.id, true), /available/);
+  assert.throws(() => {
+    return tradeItem(player, merchant, bottle.id, true);
+  }, /available/);
 });
 
 test('stock refresh saves before publishing, preserves buybacks and survives a reload', async (t) => {
@@ -89,7 +102,9 @@ test('stock refresh saves before publishing, preserves buybacks and survives a r
     const failure = t.mock.method(store, 'saveMerchant', () => {
       throw new Error('disk full');
     });
-    assert.throws(() => refreshMerchant(world, store, due), /disk full/);
+    assert.throws(() => {
+      return refreshMerchant(world, store, due);
+    }, /disk full/);
     assert.deepEqual(world, before);
     failure.mock.restore();
     refreshMerchant(world, store, due + RUNTIME.autosaveMs - 1);
@@ -98,7 +113,9 @@ test('stock refresh saves before publishing, preserves buybacks and survives a r
     refreshMerchant(world, store, refreshedAt);
     assert.equal(world.merchant.coins, 5000);
     assert.deepEqual(
-      world.merchant.backpack.map((item) => [item.itemId, item.quantity]),
+      world.merchant.backpack.map((item) => {
+        return [item.itemId, item.quantity];
+      }),
       [
         ['health-potion', 5],
         ['empty-bottle', 200],
@@ -108,7 +125,9 @@ test('stock refresh saves before publishing, preserves buybacks and survives a r
     assert.equal(world.merchant.craftsman!.coins, 5000);
     assert.deepEqual(world.merchant.craftsman!.buyback, before.merchant.craftsman!.buyback);
     assert.deepEqual(
-      world.merchant.craftsman!.backpack.map((item) => item.itemId),
+      world.merchant.craftsman!.backpack.map((item) => {
+        return item.itemId;
+      }),
       LOOT_ITEM_IDS,
     );
     assert.equal(world.chat?.length, 2);

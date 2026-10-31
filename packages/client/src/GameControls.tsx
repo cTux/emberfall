@@ -39,21 +39,27 @@ export function GameControls({
                     label: 'Inventory',
                     shortcut: 'I',
                     icon: faBagShopping,
-                    onClick: () => onMenu('equipment'),
+                    onClick: () => {
+                      return onMenu('equipment');
+                    },
                   },
                   {
                     id: 'talents',
                     label: 'Talents',
                     shortcut: 'N',
                     icon: faWandMagicSparkles,
-                    onClick: () => onMenu('talents'),
+                    onClick: () => {
+                      return onMenu('talents');
+                    },
                   },
                   {
                     id: 'tactics',
                     label: 'Tactics',
                     shortcut: 'T',
                     icon: faChessKnight,
-                    onClick: () => onMenu('tactics'),
+                    onClick: () => {
+                      return onMenu('tactics');
+                    },
                   },
                 ]
               : []),
@@ -62,7 +68,9 @@ export function GameControls({
               label: 'Codex',
               shortcut: 'F1',
               icon: faBookOpen,
-              onClick: () => onMenu('codex'),
+              onClick: () => {
+                return onMenu('codex');
+              },
             },
             ...(canVote
               ? [
@@ -70,7 +78,9 @@ export function GameControls({
                     id: 'portal',
                     label: 'Portal vote',
                     icon: faDoorOpen,
-                    onClick: () => onMenu('portal'),
+                    onClick: () => {
+                      return onMenu('portal');
+                    },
                   },
                 ]
               : []),
@@ -79,7 +89,9 @@ export function GameControls({
               label: 'Settings',
               shortcut: 'Esc',
               icon: faGear,
-              onClick: () => onMenu('settings'),
+              onClick: () => {
+                return onMenu('settings');
+              },
             },
             ...(hasWorld
               ? [
@@ -88,7 +100,9 @@ export function GameControls({
                     label: 'Leave world',
                     icon: faRightFromBracket,
                     disabled: unavailable,
-                    onClick: () => onMenu('exit'),
+                    onClick: () => {
+                      return onMenu('exit');
+                    },
                   },
                 ]
               : []),

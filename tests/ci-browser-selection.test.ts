@@ -64,7 +64,12 @@ test('manual release runs always select the original complete desktop baseline',
   assert.equal(selection.ui, true);
   const commands = gameCommands(selection);
   assert.equal(commands.length, 1);
-  assert.equal(commands[0].filter((arg) => arg.endsWith('.spec.ts')).length, 11);
+  assert.equal(
+    commands[0].filter((arg) => {
+      return arg.endsWith('.spec.ts');
+    }).length,
+    11,
+  );
 });
 
 test('PR selection uses the merge-base range and fails closed for absent history or payloads', () => {
@@ -85,7 +90,12 @@ test('PR selection uses the merge-base range and fails closed for absent history
     }).full,
     true,
   );
-  assert.equal(selectionForEvent('pull_request', {}, () => []).full, true);
+  assert.equal(
+    selectionForEvent('pull_request', {}, () => {
+      return [];
+    }).full,
+    true,
+  );
 });
 
 test('host styles include shared UI checks', () => {

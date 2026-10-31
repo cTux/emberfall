@@ -12,9 +12,14 @@ export function tickDebuffs(
 ) {
   for (const enemy of scene.enemies) {
     for (const debuff of enemy.debuffs ?? []) {
-      if (AILMENT_DEFINITIONS[debuff.kind].damagePerStack === 0) continue;
+      if (AILMENT_DEFINITIONS[debuff.kind].damagePerStack === 0) {
+        continue;
+      }
+
       while (debuff.nextTick <= Math.min(now, debuff.expiresAt) && enemy.hitpoints > 0) {
-        const owner = players.find((p) => p.id === debuff.ownerId);
+        const owner = players.find((p) => {
+          return p.id === debuff.ownerId;
+        });
         hitEnemy(
           scene,
           enemy,
@@ -32,6 +37,8 @@ export function tickDebuffs(
       }
     }
 
-    enemy.debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now);
+    enemy.debuffs = enemy.debuffs?.filter((d) => {
+      return d.expiresAt > now;
+    });
   }
 }

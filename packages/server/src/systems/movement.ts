@@ -26,7 +26,10 @@ export function stepMovement(
   now: number,
   wallTime = now,
 ) {
-  if (player.chat && wallTime - (session.chatAt ?? 0) >= 10_000) player.chat = undefined;
+  if (player.chat && wallTime - (session.chatAt ?? 0) >= 10_000) {
+    player.chat = undefined;
+  }
+
   if (session.timed) {
     let budget = TICK_MS;
     player.inputX = player.inputY = 0;
@@ -45,14 +48,19 @@ export function stepMovement(
       player.inputSeq = command.seq;
       player.inputElapsed = command.elapsed;
       budget -= dt;
-      if (command.elapsed >= command.durationMs! - 0.0001) session.inputs.shift();
+      if (command.elapsed >= command.durationMs! - 0.0001) {
+        session.inputs.shift();
+      }
     }
 
     return;
   }
 
   const command = session.inputs.shift();
-  if (command) player.inputSeq = command.seq;
+  if (command) {
+    player.inputSeq = command.seq;
+  }
+
   const epoch = player.scene === 'forest' ? sceneId : 'lobby';
   if (command) {
     session.epoch = command.epoch;

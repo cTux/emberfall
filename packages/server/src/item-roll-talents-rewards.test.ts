@@ -21,7 +21,9 @@ import { executeTalent } from '../../core/src/talent-effects.ts';
 import { hero, instance, equip, arena } from './item-rolls.fixture.ts';
 
 test('compatible offensive talents repeat attacks and extend pierces/bounces, and scale area/range', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   for (const [classId, weapon, stat] of [
     ['warrior', 'warrior-sword', ItemStat.AdditionalAttack],
     ['mage', 'mage-staff', ItemStat.MoreProjectiles],
@@ -37,8 +39,9 @@ test('compatible offensive talents repeat attacks and extend pierces/bounces, an
     ];
     executeTalent(scene, player, 0, talentNodeId(classId, 0, 1), 1, scene.enemies[0], 1000);
     assert.equal(scene.damage.length, 2, classId);
-    if (classId === 'ranger' || classId === 'druid')
+    if (classId === 'ranger' || classId === 'druid') {
       assert.equal(scene.damage[1].target, 'enemy:2');
+    }
   }
 
   const player = hero('mage');
@@ -62,17 +65,29 @@ test('compatible offensive talents repeat attacks and extend pierces/bounces, an
 });
 
 test('passive talent areas scale and extra talent attacks independently apply on-hit procs', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const player = hero();
   equip(player, 'amulet', 'loot-amulet', ItemStat.AreaOfEffect);
   learnTalent(player, talentNodeId('warrior', 0, 0));
   const scene = arena();
   const target: Enemy = { id: 1, x: player.x + 30, y: player.y, hitpoints: 1000, angle: 0 };
   scene.enemies = [target, { ...target, id: 2, x: target.x + 110 }];
-  for (let hit = 0; hit < 3; hit++) hitWithWeapon(scene, target, player, 1000 + hit);
-  assert.equal(scene.damage.filter((hit) => hit.target === 'enemy:2').length, 1);
+  for (let hit = 0; hit < 3; hit++) {
+    hitWithWeapon(scene, target, player, 1000 + hit);
+  }
+
+  assert.equal(
+    scene.damage.filter((hit) => {
+      return hit.target === 'enemy:2';
+    }).length,
+    1,
+  );
   t.mock.restoreAll();
-  t.mock.method(Math, 'random', () => 0.1);
+  t.mock.method(Math, 'random', () => {
+    return 0.1;
+  });
   const warrior = hero();
   equip(warrior, 'weapon', 'warrior-sword', ItemStat.AdditionalAttack);
   learnTalent(warrior, talentNodeId('warrior', 1, 2));
@@ -80,7 +95,12 @@ test('passive talent areas scale and extra talent attacks independently apply on
   other.enemies = [{ ...target }];
   executeTalent(other, warrior, 0, talentNodeId('warrior', 0, 1), 1, other.enemies[0], 1000);
   assert.equal(other.damage.length, 2);
-  assert.equal(other.enemies[0].debuffs?.find((entry) => entry.kind === 'bleed')?.stacks, 2);
+  assert.equal(
+    other.enemies[0].debuffs?.find((entry) => {
+      return entry.kind === 'bleed';
+    })?.stacks,
+    2,
+  );
 });
 
 test('whole party bonuses add once at drop generation, with guaranteed extras and fractional chance; training stays reward-free', (t) => {
@@ -121,11 +141,23 @@ test('whole party bonuses add once at drop generation, with guaranteed extras an
     setRewardPlayers(scene, [killer, member, member, stranger]);
     // Gold gate succeeds, then the two independent bonus remainder rolls use the selected value.
     const values = [roll, 0, roll, 0.99];
-    t.mock.method(Math, 'random', () => values.shift() ?? 0.99);
+    t.mock.method(Math, 'random', () => {
+      return values.shift() ?? 0.99;
+    });
     const target = { id: 1, x: 2400, y: 1280, hitpoints: 1, angle: 0 };
     hitEnemy(scene, target, 1, killer, 1000);
-    assert.equal(scene.drops!.filter((drop) => drop.kind === 'gold').length, expectedGold);
-    assert.equal(scene.drops!.filter((drop) => drop.kind === 'experience').length, expectedXp);
+    assert.equal(
+      scene.drops!.filter((drop) => {
+        return drop.kind === 'gold';
+      }).length,
+      expectedGold,
+    );
+    assert.equal(
+      scene.drops!.filter((drop) => {
+        return drop.kind === 'experience';
+      }).length,
+      expectedXp,
+    );
     hitEnemy(scene, target, 1, killer, 1000);
     assert.equal(scene.drops!.length, expectedGold + expectedXp);
     t.mock.restoreAll();

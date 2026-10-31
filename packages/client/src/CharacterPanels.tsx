@@ -87,7 +87,9 @@ export function WardrobePanel({
             title={CLASS_LABELS[id]}
             selected={selected}
             disabled={unavailable || selected || scene?.phase === 'countdown'}
-            onSelect={() => send({ type: 'selectClass', classId: id })}
+            onSelect={() => {
+              return send({ type: 'selectClass', classId: id });
+            }}
             portrait={<img src={classSprite(id)} alt={`${CLASS_LABELS[id]} portrait`} />}
             weapon={{
               name: details.weapon,

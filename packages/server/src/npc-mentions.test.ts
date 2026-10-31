@@ -24,7 +24,9 @@ test('players can mention any nearby resident anywhere in speech with or without
         },
       });
       try {
-        const resident = world.npcs!.find((npc) => npc.id === definition.id)!;
+        const resident = world.npcs!.find((npc) => {
+          return npc.id === definition.id;
+        })!;
         Object.assign(world.players.get('p')!, { x: resident.x, y: resident.y });
         life.hear(world.players.get('p')!, text, 1000);
         life.tick(2999, 0);
@@ -67,14 +69,38 @@ test('player mentions require a whole name, a live village player and wrapped ra
       const marta = world.npcs![0];
       Object.assign(listener, { x: marta.x, y: marta.y });
       let text = 'Hello, @Marta!';
-      if (scenario === 'partial') text = 'Hello, @Martabelle!';
-      if (scenario === 'prefix') text = 'Hello, xMarta!';
-      if (scenario === 'unicode') text = 'Hello, éMarta!';
-      if (scenario === 'distance') listener.x += 121;
-      if (scenario === 'scene') listener.scene = 'forest';
-      if (scenario === 'death') listener.hitpoints = 0;
-      if (scenario === 'disconnect') listener.reconnecting = true;
-      if (scenario === 'boundary') listener.x += 120;
+      if (scenario === 'partial') {
+        text = 'Hello, @Martabelle!';
+      }
+
+      if (scenario === 'prefix') {
+        text = 'Hello, xMarta!';
+      }
+
+      if (scenario === 'unicode') {
+        text = 'Hello, éMarta!';
+      }
+
+      if (scenario === 'distance') {
+        listener.x += 121;
+      }
+
+      if (scenario === 'scene') {
+        listener.scene = 'forest';
+      }
+
+      if (scenario === 'death') {
+        listener.hitpoints = 0;
+      }
+
+      if (scenario === 'disconnect') {
+        listener.reconnecting = true;
+      }
+
+      if (scenario === 'boundary') {
+        listener.x += 120;
+      }
+
       if (scenario === 'wrapped') {
         marta.x = ARENA.width - 5;
         listener.x = 5;

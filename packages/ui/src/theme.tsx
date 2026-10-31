@@ -20,42 +20,50 @@ declare module '@mui/material/LinearProgress' {
 }
 
 // One source of truth: forest surfaces, parchment text, ember actions.
-const fontFaces = (fontBaseUrl: string) => [
-  ...Object.entries(GAME_FONTS)
-    .filter(([family]) => family !== 'Alegreya Sans')
-    .flatMap(([family, file]) =>
-      ['normal', 'italic'].map((style) => ({
+const fontFaces = (fontBaseUrl: string) => {
+  return [
+    ...Object.entries(GAME_FONTS)
+      .filter(([family]) => {
+        return family !== 'Alegreya Sans';
+      })
+      .flatMap(([family, file]) => {
+        return ['normal', 'italic'].map((style) => {
+          return {
+            '@font-face': {
+              fontFamily: family,
+              fontStyle: style,
+              fontWeight: '400 700',
+              fontDisplay: 'swap' as const,
+              src: `url('${fontBaseUrl}${file}-${style === 'italic' ? 'Italic' : 'Variable'}.ttf') format('truetype')`,
+            },
+          };
+        });
+      }),
+    ...[400, 500, 700].map((weight) => {
+      return {
         '@font-face': {
-          fontFamily: family,
-          fontStyle: style,
-          fontWeight: '400 700',
+          fontFamily: 'Alegreya Sans',
+          fontStyle: 'normal' as const,
+          fontWeight: weight,
           fontDisplay: 'swap' as const,
-          src: `url('${fontBaseUrl}${file}-${style === 'italic' ? 'Italic' : 'Variable'}.ttf') format('truetype')`,
+          src: `url('${fontBaseUrl}AlegreyaSans-${weight === 400 ? 'Regular' : weight === 500 ? 'Medium' : 'Bold'}.ttf') format('truetype')`,
         },
-      })),
-    ),
-  ...[400, 500, 700].map((weight) => ({
-    '@font-face': {
-      fontFamily: 'Alegreya Sans',
-      fontStyle: 'normal' as const,
-      fontWeight: weight,
-      fontDisplay: 'swap' as const,
-      src: `url('${fontBaseUrl}AlegreyaSans-${weight === 400 ? 'Regular' : weight === 500 ? 'Medium' : 'Bold'}.ttf') format('truetype')`,
+      };
+    }),
+    {
+      '@font-face': {
+        fontFamily: 'Alegreya Sans',
+        fontStyle: 'italic' as const,
+        fontWeight: 400,
+        fontDisplay: 'swap' as const,
+        src: `url('${fontBaseUrl}AlegreyaSans-Italic.ttf') format('truetype')`,
+      },
     },
-  })),
-  {
-    '@font-face': {
-      fontFamily: 'Alegreya Sans',
-      fontStyle: 'italic' as const,
-      fontWeight: 400,
-      fontDisplay: 'swap' as const,
-      src: `url('${fontBaseUrl}AlegreyaSans-Italic.ttf') format('truetype')`,
-    },
-  },
-];
+  ];
+};
 
-const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') =>
-  createTheme({
+const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') => {
+  return createTheme({
     palette: {
       mode: 'dark',
       primary: { main: '#e6be80', contrastText: '#17221c' },
@@ -81,29 +89,31 @@ const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') =>
     shape: { borderRadius: 5 },
     components: {
       MuiCssBaseline: {
-        styleOverrides: (theme) => [
-          {
-            '*, *::before, *::after': { userSelect: 'none' },
-            '*': {
-              scrollbarWidth: 'thin',
-              scrollbarColor: `${theme.palette.divider} ${theme.palette.background.default}`,
-            },
-            '*::-webkit-scrollbar': { width: 8, height: 8 },
-            '*::-webkit-scrollbar-track': { backgroundColor: theme.palette.background.default },
-            '*::-webkit-scrollbar-thumb': {
-              backgroundColor: theme.palette.divider,
-              borderRadius: 5,
-            },
-            '*::-webkit-scrollbar-thumb:hover': { backgroundColor: theme.palette.secondary.main },
-            ':focus-visible': { outline: '2px solid #e6be80', outlineOffset: 3 },
-            '@media (prefers-reduced-motion: reduce)': {
-              '*, *::before, *::after': {
-                animation: 'none !important',
-                transition: 'none !important',
+        styleOverrides: (theme) => {
+          return [
+            {
+              '*, *::before, *::after': { userSelect: 'none' },
+              '*': {
+                scrollbarWidth: 'thin',
+                scrollbarColor: `${theme.palette.divider} ${theme.palette.background.default}`,
+              },
+              '*::-webkit-scrollbar': { width: 8, height: 8 },
+              '*::-webkit-scrollbar-track': { backgroundColor: theme.palette.background.default },
+              '*::-webkit-scrollbar-thumb': {
+                backgroundColor: theme.palette.divider,
+                borderRadius: 5,
+              },
+              '*::-webkit-scrollbar-thumb:hover': { backgroundColor: theme.palette.secondary.main },
+              ':focus-visible': { outline: '2px solid #e6be80', outlineOffset: 3 },
+              '@media (prefers-reduced-motion: reduce)': {
+                '*, *::before, *::after': {
+                  animation: 'none !important',
+                  transition: 'none !important',
+                },
               },
             },
-          },
-        ],
+          ];
+        },
       },
       MuiButton: { defaultProps: { size: 'small', disableElevation: true } },
       MuiButtonBase: { styleOverrides: { root: { fontFamily: 'inherit' } } },
@@ -112,78 +122,90 @@ const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') =>
       MuiDialogTitle: { styleOverrides: { root: { padding: 12 } } },
       MuiTab: {
         styleOverrides: {
-          root: ({ theme }) => ({
-            minHeight: 30,
-            minWidth: 64,
-            padding: '4px 12px',
-            marginBottom: 4,
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: '3px 0 0 3px',
-            textAlign: 'left',
-            alignItems: 'flex-start',
-            color: theme.palette.text.primary,
-            backgroundColor: theme.palette.wood.dark,
-            '&:hover': { backgroundColor: theme.palette.wood.light },
-            '&.Mui-selected': {
-              color: theme.palette.primary.main,
-              backgroundColor: theme.palette.wood.light,
-              borderColor: theme.palette.primary.main,
-            },
-            '&.Mui-focusVisible': {
-              outline: `2px solid ${theme.palette.primary.main}`,
-              outlineOffset: -3,
-            },
-          }),
+          root: ({ theme }) => {
+            return {
+              minHeight: 30,
+              minWidth: 64,
+              padding: '4px 12px',
+              marginBottom: 4,
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: '3px 0 0 3px',
+              textAlign: 'left',
+              alignItems: 'flex-start',
+              color: theme.palette.text.primary,
+              backgroundColor: theme.palette.wood.dark,
+              '&:hover': { backgroundColor: theme.palette.wood.light },
+              '&.Mui-selected': {
+                color: theme.palette.primary.main,
+                backgroundColor: theme.palette.wood.light,
+                borderColor: theme.palette.primary.main,
+              },
+              '&.Mui-focusVisible': {
+                outline: `2px solid ${theme.palette.primary.main}`,
+                outlineOffset: -3,
+              },
+            };
+          },
         },
       },
       MuiTextField: { defaultProps: { size: 'small', fullWidth: true } },
       MuiFormControl: { defaultProps: { size: 'small' } },
       MuiMenu: {
         styleOverrides: {
-          paper: ({ theme }) => ({
-            ...windowSurface(theme),
-            backgroundColor: theme.palette.wood.dark,
-          }),
+          paper: ({ theme }) => {
+            return {
+              ...windowSurface(theme),
+              backgroundColor: theme.palette.wood.dark,
+            };
+          },
         },
       },
       MuiMenuItem: {
         styleOverrides: {
-          root: ({ theme }) => ({
-            '&:hover, &.Mui-focusVisible': { backgroundColor: theme.palette.wood.light },
-            '&.Mui-selected': {
-              color: theme.palette.primary.main,
-              backgroundColor: theme.palette.wood.light,
+          root: ({ theme }) => {
+            return {
               '&:hover, &.Mui-focusVisible': { backgroundColor: theme.palette.wood.light },
-            },
-            '&.Mui-focusVisible': {
-              outline: `2px solid ${theme.palette.primary.main}`,
-              outlineOffset: -3,
-            },
-          }),
+              '&.Mui-selected': {
+                color: theme.palette.primary.main,
+                backgroundColor: theme.palette.wood.light,
+                '&:hover, &.Mui-focusVisible': { backgroundColor: theme.palette.wood.light },
+              },
+              '&.Mui-focusVisible': {
+                outline: `2px solid ${theme.palette.primary.main}`,
+                outlineOffset: -3,
+              },
+            };
+          },
         },
       },
       MuiPaper: {
         defaultProps: { variant: 'outlined' },
         styleOverrides: {
-          root: ({ theme }) => ({
-            backgroundImage: 'none',
-            '&.game-window-surface': windowSurface(theme),
-          }),
+          root: ({ theme }) => {
+            return {
+              backgroundImage: 'none',
+              '&.game-window-surface': windowSurface(theme),
+            };
+          },
         },
       },
       MuiTooltip: {
         styleOverrides: {
-          tooltip: ({ theme }) => ({
-            ...windowSurface(theme),
-            fontFamily: theme.typography.fontFamily,
-            fontSize: theme.typography.pxToRem(14),
-            padding: theme.spacing(1.25),
-            maxWidth: 'min(300px, calc(100vw - 32px))',
-          }),
-          arrow: ({ theme }) => ({
-            color: windowSurface(theme).backgroundColor,
-            '&::before': { border: `1px solid ${theme.palette.divider}` },
-          }),
+          tooltip: ({ theme }) => {
+            return {
+              ...windowSurface(theme),
+              fontFamily: theme.typography.fontFamily,
+              fontSize: theme.typography.pxToRem(14),
+              padding: theme.spacing(1.25),
+              maxWidth: 'min(300px, calc(100vw - 32px))',
+            };
+          },
+          arrow: ({ theme }) => {
+            return {
+              color: windowSurface(theme).backgroundColor,
+              '&::before': { border: `1px solid ${theme.palette.divider}` },
+            };
+          },
         },
       },
       MuiDialog: { defaultProps: { fullWidth: true, maxWidth: 'sm' } },
@@ -198,6 +220,7 @@ const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') =>
       MuiLinearProgress: { styleOverrides: { root: { height: 6, borderRadius: 5 } } },
     },
   });
+};
 
 export const gameTheme = createGameTheme();
 
@@ -212,17 +235,21 @@ export function GameUiProvider({
   font?: GameFont;
 }) {
   const [loadedFont, setLoadedFont] = useState('sans-serif');
-  const faces = useMemo(() => fontFaces(fontBaseUrl), [fontBaseUrl]);
+  const faces = useMemo(() => {
+    return fontFaces(fontBaseUrl);
+  }, [fontBaseUrl]);
   useEffect(() => {
     let active = true;
     // Load before switching: Pixi caches rasterized text, including fallback glyphs.
     void Promise.all(
-      ['400', '500', '700', 'italic 400'].map((weight) =>
-        document.fonts.load(`${weight} 16px "${font}"`),
-      ),
+      ['400', '500', '700', 'italic 400'].map((weight) => {
+        return document.fonts.load(`${weight} 16px "${font}"`);
+      }),
     ).then(
       () => {
-        if (active) setLoadedFont(`"${font}", sans-serif`);
+        if (active) {
+          setLoadedFont(`"${font}", sans-serif`);
+        }
       },
       () => {
         /* Retain the working font when an asset cannot load. */
@@ -233,7 +260,9 @@ export function GameUiProvider({
       active = false;
     };
   }, [font, fontBaseUrl]);
-  const theme = useMemo(() => createGameTheme(loadedFont), [loadedFont]);
+  const theme = useMemo(() => {
+    return createGameTheme(loadedFont);
+  }, [loadedFont]);
 
   return (
     <ThemeProvider theme={theme}>

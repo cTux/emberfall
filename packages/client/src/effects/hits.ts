@@ -15,8 +15,10 @@ export function hitOutline(mask: HTMLCanvasElement, color = '#ff3737', radius = 
     [3, 3],
     [1, 3],
     [3, 1],
-  ])
+  ]) {
     c.drawImage(mask, (x * radius) / 2, (y * radius) / 2);
+  }
+
   c.globalCompositeOperation = 'source-in';
   c.fillStyle = color;
   c.fillRect(0, 0, outline.width, outline.height);
@@ -39,7 +41,10 @@ export function drawTargetHit(
   height: number,
   age: number,
 ) {
-  if (age < 0 || age >= 220) return;
+  if (age < 0 || age >= 220) {
+    return;
+  }
+
   let sprites = hitSprites.get(mask);
   if (!sprites) {
     const tint = document.createElement('canvas');
@@ -64,9 +69,16 @@ export function drawTargetHit(
 }
 
 export function drawDamageFlash(ctx: DrawingContext, world: WorldState | null, id: string) {
-  const hit = world?.scene?.damage.filter((d) => d.target === id).at(-1);
+  const hit = world?.scene?.damage
+    .filter((d) => {
+      return d.target === id;
+    })
+    .at(-1);
   const age = (world?.serverNow ?? 0) - (hit?.at ?? -10000);
-  if (age < 0 || age > 280) return;
+  if (age < 0 || age > 280) {
+    return;
+  }
+
   ctx.save();
   ctx.resetTransform();
   ctx.globalAlpha *= 0.22 * (1 - age / 280);
@@ -86,7 +98,10 @@ export function drawPartyOutline(
   highlighted = false,
 ) {
   let cache = partyOutlines.get(mask);
-  if (!cache) partyOutlines.set(mask, (cache = new Map()));
+  if (!cache) {
+    partyOutlines.set(mask, (cache = new Map()));
+  }
+
   let outline = cache.get(highlighted);
   if (!outline) {
     const silhouette = document.createElement('canvas');

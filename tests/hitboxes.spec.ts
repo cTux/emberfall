@@ -6,11 +6,15 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('pageerror', (e) => {
+    return errors.push(e.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   let player = [...world.players.values()][0];
   const canvas = page.locator('canvas');
   await expect(canvas).toHaveAttribute('data-debug-hitboxes', '0');
@@ -32,8 +36,15 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
     player.x = dummy.x - 40;
     player.y = dummy.y;
     player.attackAt = undefined;
-    for (const enemy of world.training!.enemies) enemy.hitpoints = enemy.maxHitpoints!;
-    await expect.poll(() => world.training?.damage.length ?? 0).toBeGreaterThan(0);
+    for (const enemy of world.training!.enemies) {
+      enemy.hitpoints = enemy.maxHitpoints!;
+    }
+
+    await expect
+      .poll(() => {
+        return world.training?.damage.length ?? 0;
+      })
+      .toBeGreaterThan(0);
     await page.waitForTimeout(350);
     await page.screenshot({ path: `test-results/hitboxes-training-${classId}.png` });
     world.training!.damage = [];

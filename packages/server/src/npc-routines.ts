@@ -47,10 +47,20 @@ export class NpcRoutines {
 
   private chooseStop(previous = -1) {
     const stops = VILLAGE_DEFINITION.npcStops
-      .map((_, index) => index)
-      .filter((index) => index !== previous);
-    const claimed = new Set([...this.walks.values()].map((walk) => walk.stop));
-    const free = stops.filter((index) => !claimed.has(index));
+      .map((_, index) => {
+        return index;
+      })
+      .filter((index) => {
+        return index !== previous;
+      });
+    const claimed = new Set(
+      [...this.walks.values()].map((walk) => {
+        return walk.stop;
+      }),
+    );
+    const free = stops.filter((index) => {
+      return !claimed.has(index);
+    });
     const candidates = free.length ? free : stops;
 
     return candidates[Math.floor(this.random() * candidates.length)];
@@ -66,12 +76,18 @@ export class NpcRoutines {
     if (
       !npcId ||
       !villagePlayers(this.world).includes(player) ||
-      !this.world.npcs?.some((npc) => npc.id === npcId) ||
+      !this.world.npcs?.some((npc) => {
+        return npc.id === npcId;
+      }) ||
       !traderInRange(player, npcId, this.world.npcs)
-    )
+    ) {
       return;
+    }
+
     this.interactions.set(player.id, npcId);
-    const npc = this.world.npcs.find((npc) => npc.id === npcId)!;
+    const npc = this.world.npcs.find((npc) => {
+      return npc.id === npcId;
+    })!;
     npc.moving = false;
     npc.workstationId = npc.workStartedAt = undefined;
     npc.angle = Math.atan2(
@@ -83,13 +99,20 @@ export class NpcRoutines {
   tick(now: number, dt: number, players: readonly Player[], blocked: ReadonlySet<string>) {
     const npcs = this.world.npcs ?? [];
     for (const [playerId, npcId] of this.interactions) {
-      const player = players.find((p) => p.id === playerId);
-      if (!player || !traderInRange(player, npcId, npcs)) this.interactions.delete(playerId);
+      const player = players.find((p) => {
+        return p.id === playerId;
+      });
+      if (!player || !traderInRange(player, npcId, npcs)) {
+        this.interactions.delete(playerId);
+      }
     }
 
     const interacting = new Set(this.interactions.values());
     for (const npc of npcs) {
-      if ((npc.chatUntil ?? 0) < now) npc.chat = undefined;
+      if ((npc.chatUntil ?? 0) < now) {
+        npc.chat = undefined;
+      }
+
       const walk = this.walks.get(npc.id)!;
       npc.workstationId = npc.workStartedAt = undefined;
       if (
@@ -103,7 +126,9 @@ export class NpcRoutines {
       }
 
       const returning = now >= walk.returnAt;
-      const stations = VILLAGE_DEFINITION.workstations.filter((s) => s.npcId === npc.id);
+      const stations = VILLAGE_DEFINITION.workstations.filter((s) => {
+        return s.npcId === npc.id;
+      });
       const station = stations[walk.station % stations.length];
       if (walk.work && station) {
         npc.moving = false;

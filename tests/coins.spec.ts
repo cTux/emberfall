@@ -10,7 +10,9 @@ test('collected gold credits the account Storehouse across classes and rejoining
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const card = page.getByRole('article', { name: 'Coin hero', exact: true });
   await expect(card.getByLabel('Coin hero: 0 coins', { exact: true })).toHaveText('0');
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
@@ -55,16 +57,24 @@ test('collected gold credits the account Storehouse across classes and rejoining
     await expect(wardrobe).toBeVisible();
   }).toPass({ intervals: [200], timeout: 6000 });
   await wardrobe.getByRole('button', { name: /^Ranger/ }).click();
-  await expect.poll(() => player.classId).toBe('ranger');
+  await expect
+    .poll(() => {
+      return player.classId;
+    })
+    .toBe('ranger');
   await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
   await expect(card.getByLabel('Coin hero: 1000 coins', { exact: true })).toHaveText('1k');
-  const building = BUILDINGS.find((building) => building.id === 'storehouse')!;
+  const building = BUILDINGS.find((building) => {
+    return building.id === 'storehouse';
+  })!;
   player.x = building.doorX;
   player.y = building.y + 9;
   const storehouse = page.getByRole('dialog', { name: 'Storehouse', exact: true });
   await expect(async () => {
-    if (await wardrobe.isVisible())
+    if (await wardrobe.isVisible()) {
       await wardrobe.getByRole('button', { name: 'Close Wardrobe' }).click();
+    }
+
     await page.keyboard.press('e');
     await expect(storehouse).toBeVisible({ timeout: 400 });
   }).toPass({ intervals: [200], timeout: 6000 });

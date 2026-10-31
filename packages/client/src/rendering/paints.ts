@@ -21,7 +21,10 @@ export class Paints {
     let color = this.colors.get(value);
     if (!color) {
       color = new Color(value);
-      if (this.colors.size >= 512) this.colors.delete(this.colors.keys().next().value!);
+      if (this.colors.size >= 512) {
+        this.colors.delete(this.colors.keys().next().value!);
+      }
+
       this.colors.set(value, color);
     }
 
@@ -38,7 +41,10 @@ export class Paints {
     value: Paint,
     frame: number,
   ): string | { texture: Texture; matrix: Matrix; textureSpace: 'global' } {
-    if (typeof value === 'string') return value;
+    if (typeof value === 'string') {
+      return value;
+    }
+
     const options = value.options;
     // Texture ramps depend on color stops and relative shape, not world position.
     // Moving the camera or a light only changes its matrix, never allocates a ramp.
@@ -102,8 +108,10 @@ export class Paints {
               128,
             )
           : ctx.createLinearGradient(0, 0, 256, 0);
-      for (const stop of normalized.colorStops!)
+      for (const stop of normalized.colorStops!) {
         ramp.addColorStop(stop.offset, new Color(stop.color).toRgbaString());
+      }
+
       ctx.fillStyle = ramp;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       const texture = Texture.from(canvas, true);
@@ -118,16 +126,20 @@ export class Paints {
   }
 
   trim(frame: number) {
-    for (const [key, entry] of this.entries)
+    for (const [key, entry] of this.entries) {
       if (frame - entry.used > 120) {
         entry.texture.destroy(true);
         this.entries.delete(key);
       }
+    }
   }
 
   destroy() {
     this.colors.clear();
-    for (const entry of this.entries.values()) entry.texture.destroy(true);
+    for (const entry of this.entries.values()) {
+      entry.texture.destroy(true);
+    }
+
     this.entries.clear();
   }
 }

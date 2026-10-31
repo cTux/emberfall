@@ -51,26 +51,40 @@ export class VillagePlayers {
     now: number,
     serverTime: number,
   ) {
-    const liveIds = new Set(players.map((p) => p.id));
-    for (const id of this.positions.keys()) if (!liveIds.has(id)) this.positions.delete(id);
+    const liveIds = new Set(
+      players.map((p) => {
+        return p.id;
+      }),
+    );
+    for (const id of this.positions.keys()) {
+      if (!liveIds.has(id)) {
+        this.positions.delete(id);
+      }
+    }
+
     const dynamic: Caster[] = [];
     for (const player of players) {
       const pos = this.positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
       const ix = player.inputX ?? 0,
         iy = player.inputY ?? 0;
-      if (Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
+      if (Math.hypot(ix, iy) > 0) {
+        pos.facing = movementFacing(ix, iy, pos.facing);
+      }
+
       const frame = playerFrame(
         player.id === playerId ? now : serverTime,
         Math.hypot(ix, iy) > 0,
         player.hitpoints > 0,
         player.attackAt,
       );
-      if (frame === 5 || frame === 6)
+      if (frame === 5 || frame === 6) {
         pos.facing = movementFacing(
           Math.cos(player.attackAngle ?? 0),
           Math.sin(player.attackAngle ?? 0),
           pos.facing,
         );
+      }
+
       const mask = spriteMask(
         characterImages[player.classId ?? 'warrior'].walk,
         pos.facing,
@@ -85,7 +99,7 @@ export class VillagePlayers {
         ctx.setPlayerCutout(mask, player.x - 24, player.y + 18 - 48 * breath, 48, 48 * breath);
       }
 
-      if (mask)
+      if (mask) {
         dynamic.push({
           id: player.id,
           x: player.x,
@@ -94,6 +108,7 @@ export class VillagePlayers {
           height: 48,
           mask,
         });
+      }
     }
 
     return dynamic;
@@ -116,13 +131,18 @@ export class VillagePlayers {
       player.attackAt,
     );
     // Four directions share the same idle, walk, action and fallen rows.
-    if (moving) pos.facing = movementFacing(ix, iy, pos.facing);
-    if (spriteRow === 5 || spriteRow === 6)
+    if (moving) {
+      pos.facing = movementFacing(ix, iy, pos.facing);
+    }
+
+    if (spriteRow === 5 || spriteRow === 6) {
       pos.facing = movementFacing(
         Math.cos(player.attackAngle ?? 0),
         Math.sin(player.attackAngle ?? 0),
         pos.facing,
       );
+    }
+
     pos.x = player.x;
     pos.y = player.y;
     this.positions.set(player.id, pos);
@@ -163,10 +183,15 @@ export class VillagePlayers {
     }
 
     const highlightPlayer = highlightInteractions && !!partyAction(view, local, player);
-    if (highlightPlayer || view?.partyRequests?.some((r) => r.fromId === player.id)) {
+    if (
+      highlightPlayer ||
+      view?.partyRequests?.some((r) => {
+        return r.fromId === player.id;
+      })
+    ) {
       ctx.occlusion = false;
       const mask = spriteMask(knight, pos.facing, spriteRow, false, ACTOR_CELL, false, ACTOR_CELL);
-      if (mask)
+      if (mask) {
         drawPartyOutline(
           ctx,
           mask,
@@ -176,6 +201,7 @@ export class VillagePlayers {
           48 * idleBreath(now, spriteRow),
           highlightPlayer,
         );
+      }
     }
 
     ctx.spriteTint = '#ffffff';

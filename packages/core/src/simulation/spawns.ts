@@ -21,7 +21,9 @@ export function tickSpawns(
 ) {
   scene.spawns ??= [];
   const spawnBoss = now >= scene.endsAt! && scene.bossId === undefined;
-  scene.damage = scene.damage.filter((d) => now - d.at < TRANSIENT_EFFECTS.damage.lifetimeMs);
+  scene.damage = scene.damage.filter((d) => {
+    return now - d.at < TRANSIENT_EFFECTS.damage.lifetimeMs;
+  });
   if (
     alive.length &&
     (spawnBoss ||
@@ -47,10 +49,16 @@ export function tickSpawns(
         y: wrap(target.y + Math.sin(angle) * radius, FOREST.height),
       };
       const clear =
-        forestTrees(position.x, position.y + 15, 40).every(
-          (t) => Math.hypot(position.x - t.x, position.y + 15 - t.y) >= 31,
-        ) && [...scene.enemies, ...scene.spawns].every((e) => forestDistance(e, position) >= 32);
-      if (!clear) continue;
+        forestTrees(position.x, position.y + 15, 40).every((t) => {
+          return Math.hypot(position.x - t.x, position.y + 15 - t.y) >= 31;
+        }) &&
+        [...scene.enemies, ...scene.spawns].every((e) => {
+          return forestDistance(e, position) >= 32;
+        });
+      if (!clear) {
+        continue;
+      }
+
       scene.spawnCount = (scene.spawnCount ?? 0) + 1;
       const kind = spawnBoss ? EnemyType.Boss : spawnEnemyType(context.random);
       const id = ++scene.sequence;
@@ -71,7 +79,10 @@ export function tickSpawns(
         warnedAt: now,
         spawnsAt: now + ENEMY_RULES.spawnWarningMs,
       });
-      if (spawnBoss) scene.bossId = id;
+      if (spawnBoss) {
+        scene.bossId = id;
+      }
+
       break;
     }
 
@@ -80,14 +91,18 @@ export function tickSpawns(
   }
 
   scene.spawns = scene.spawns.filter((spawn) => {
-    if (now < spawn.spawnsAt) return true;
+    if (now < spawn.spawnsAt) {
+      return true;
+    }
+
     if (
-      scene.enemies.some(
-        (e) =>
+      scene.enemies.some((e) => {
+        return (
           forestDistance(e, spawn) <
           ENEMY_STATS[e.archetype ?? 'skeleton'].radius +
-            ENEMY_STATS[spawn.archetype ?? 'skeleton'].radius,
-      )
+            ENEMY_STATS[spawn.archetype ?? 'skeleton'].radius
+        );
+      })
     ) {
       spawn.spawnsAt = now + FOREST_ENCOUNTER.blockedSpawnRetryMs;
 

@@ -15,33 +15,47 @@ const classColors: Record<string, string> = {
   mage: '#69ccf0',
   druid: '#ff7d0a',
 };
-const number = (value: number) => value.toLocaleString('en', { maximumFractionDigits: 1 });
+const number = (value: number) => {
+  return value.toLocaleString('en', { maximumFractionDigits: 1 });
+};
 
 export function DamageMeter({ players, playerId }: { players: Player[]; playerId: string }) {
   const [selectedId, select] = useState<string | null>(null);
   const { ref, style, handleProps } = useDraggable('panel.dps');
-  const me = players.find((player) => player.id === playerId);
-  const party = players.filter(
-    (player) => player.id === playerId || (!!me?.partyId && player.partyId === me.partyId),
-  );
-  const selected = party.find((player) => player.id === selectedId);
-  const total = party.reduce((sum, player) => sum + (player.damageMeter?.total ?? 0), 0);
+  const me = players.find((player) => {
+    return player.id === playerId;
+  });
+  const party = players.filter((player) => {
+    return player.id === playerId || (!!me?.partyId && player.partyId === me.partyId);
+  });
+  const selected = party.find((player) => {
+    return player.id === selectedId;
+  });
+  const total = party.reduce((sum, player) => {
+    return sum + (player.damageMeter?.total ?? 0);
+  }, 0);
   const rows = selected
-    ? Object.entries(selected.damageMeter?.abilities ?? {}).map(([name, value]) => ({
-        id: name,
-        name,
-        damage: value.damage,
-        dps: value.dps,
-        classId: selected.classId,
-      }))
-    : party.map((player) => ({
-        id: player.id,
-        name: player.name,
-        damage: player.damageMeter?.total ?? 0,
-        dps: player.dps ?? 0,
-        classId: player.classId,
-      }));
-  rows.sort((a, b) => b.damage - a.damage || a.name.localeCompare(b.name));
+    ? Object.entries(selected.damageMeter?.abilities ?? {}).map(([name, value]) => {
+        return {
+          id: name,
+          name,
+          damage: value.damage,
+          dps: value.dps,
+          classId: selected.classId,
+        };
+      })
+    : party.map((player) => {
+        return {
+          id: player.id,
+          name: player.name,
+          damage: player.damageMeter?.total ?? 0,
+          dps: player.dps ?? 0,
+          classId: player.classId,
+        };
+      });
+  rows.sort((a, b) => {
+    return b.damage - a.damage || a.name.localeCompare(b.name);
+  });
   const denominator = selected ? (selected.damageMeter?.total ?? 0) : total;
 
   return (
@@ -55,12 +69,20 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
         event.preventDefault();
         select(null);
       }}
-      onPointerDown={(event) => event.stopPropagation()}
+      onPointerDown={(event) => {
+        return event.stopPropagation();
+      }}
     >
       <header {...handleProps}>
         <strong>{selected ? `${selected.name} — Abilities` : 'Damage done'}</strong>
         {selected && (
-          <IconButton size='small' onClick={() => select(null)} aria-label='Back to party'>
+          <IconButton
+            size='small'
+            onClick={() => {
+              return select(null);
+            }}
+            aria-label='Back to party'
+          >
             <FontAwesomeIcon icon={faArrowLeft} />
           </IconButton>
         )}
@@ -70,7 +92,9 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
           const percent = denominator > 0 ? (row.damage / denominator) * 100 : 0;
           const classId = row.classId ?? 'warrior';
           const talent = selected
-            ? TALENT_TREE.find((node) => node.classId === classId && node.name === row.name)
+            ? TALENT_TREE.find((node) => {
+                return node.classId === classId && node.name === row.name;
+              })
             : undefined;
           const ailment = row.name.toLowerCase();
           const content = (
@@ -121,7 +145,9 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
               key={row.id}
               className='damage-meter-row'
               style={rowStyle}
-              onClick={() => select(row.id)}
+              onClick={() => {
+                return select(row.id);
+              }}
             >
               {content}
             </ButtonBase>

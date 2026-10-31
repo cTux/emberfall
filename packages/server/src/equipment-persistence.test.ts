@@ -13,10 +13,17 @@ test('legacy saves acquire class-specific equipment; empty loadouts and class sw
   const legacy = decodeProgress(
     JSON.stringify({
       classId: 'mage',
-      classes: Object.fromEntries(CLASS_IDS.map((id) => [id, freshProgress()])),
+      classes: Object.fromEntries(
+        CLASS_IDS.map((id) => {
+          return [id, freshProgress()];
+        }),
+      ),
     }),
   );
-  for (const id of CLASS_IDS) assert.deepEqual(legacy.classes[id].equipment, starterEquipment(id));
+  for (const id of CLASS_IDS) {
+    assert.deepEqual(legacy.classes[id].equipment, starterEquipment(id));
+  }
+
   const store = new CharacterStore(':memory:');
   await store.ready;
   try {
@@ -29,9 +36,12 @@ test('legacy saves acquire class-specific equipment; empty loadouts and class sw
     store.selectClass(created.id, player, 'warrior');
     assert.deepEqual(player.equipment, {});
     assert.deepEqual(store.load(created.token).progress.equipment, {});
-    assert.throws(() =>
-      store.save(created.id, player.name, { ...player, equipment: { weapon: 'mage-staff' } }),
-    );
+    assert.throws(() => {
+      return store.save(created.id, player.name, {
+        ...player,
+        equipment: { weapon: 'mage-staff' },
+      });
+    });
     assert.deepEqual(store.load(created.token).progress.equipment, {});
   } finally {
     store.close();

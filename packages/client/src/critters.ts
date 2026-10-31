@@ -33,7 +33,10 @@ export function drawCritter(
   shadows = false,
 ) {
   const image = animalArt;
-  if (!image.naturalWidth) return;
+  if (!image.naturalWidth) {
+    return;
+  }
+
   ctx.save();
   ctx.translate(critter.x, critter.y);
   if (!shadows) {
@@ -43,7 +46,10 @@ export function drawCritter(
     ctx.fill();
   }
 
-  if (critter.left) ctx.scale(-1, 1);
+  if (critter.left) {
+    ctx.scale(-1, 1);
+  }
+
   ctx.drawImage(
     image,
     animalColumn[critter.kind] * 64,

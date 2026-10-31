@@ -9,7 +9,9 @@ test('Tactics uses external left tabs, saves priorities and companion controls, 
   await page.getByLabel('Your adventurer name').fill('Tactician');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((entry) => entry.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((entry) => {
+    return entry.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const controls = page.getByRole('navigation', { name: 'Game controls' });
   await expect(controls.locator('kbd')).toHaveText(['I', 'N', 'T', 'F1', 'Esc']);
@@ -41,8 +43,16 @@ test('Tactics uses external left tabs, saves priorities and companion controls, 
       .querySelector<HTMLButtonElement>('button[aria-label="Move Elite / boss first up"]')!
       .click();
   });
-  await expect.poll(() => player.tactics?.offensive).toEqual(['elite', 'nearest', 'lowestHealth']);
-  await expect.poll(() => player.tactics?.keepTarget).toBe(true);
+  await expect
+    .poll(() => {
+      return player.tactics?.offensive;
+    })
+    .toEqual(['elite', 'nearest', 'lowestHealth']);
+  await expect
+    .poll(() => {
+      return player.tactics?.keepTarget;
+    })
+    .toBe(true);
   await expect(
     window.getByRole('switch', { name: 'Keep target until defeated or invalid' }),
   ).toBeChecked();
@@ -50,7 +60,11 @@ test('Tactics uses external left tabs, saves priorities and companion controls, 
   await window.getByRole('tab', { name: 'Defensive' }).click();
   await window.getByRole('combobox', { name: 'Auto-heal below' }).click();
   await page.getByRole('option', { name: '50% HP' }).click();
-  await expect.poll(() => player.tactics?.healBelow).toBe(0.5);
+  await expect
+    .poll(() => {
+      return player.tactics?.healBelow;
+    })
+    .toBe(0.5);
   await page.screenshot({ path: 'test-results/tactics-defensive.png' });
   await window.getByRole('tab', { name: 'Positioning' }).click();
   await expect(window.getByRole('combobox', { name: 'Combat stance' })).toHaveAttribute(
@@ -69,10 +83,18 @@ test('Tactics uses external left tabs, saves priorities and companion controls, 
   );
   await window.getByRole('combobox', { name: 'Combat stance' }).click();
   await page.getByRole('option', { name: 'Passive', exact: true }).click();
-  await expect.poll(() => player.tactics?.stance).toBe('passive');
+  await expect
+    .poll(() => {
+      return player.tactics?.stance;
+    })
+    .toBe('passive');
   await window.getByRole('combobox', { name: 'Stay near owner' }).click();
   await page.getByRole('option', { name: 'Far · 300 units' }).click();
-  await expect.poll(() => player.tactics?.distance).toBe('far');
+  await expect
+    .poll(() => {
+      return player.tactics?.distance;
+    })
+    .toBe('far');
   await page.screenshot({ path: 'test-results/tactics-positioning.png' });
   await page.keyboard.press('Escape');
   await expect(window).toBeHidden();

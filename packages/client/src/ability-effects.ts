@@ -5,7 +5,9 @@ export function abilityEffectOpacity(
   playerId: string,
   ownerId: string | undefined,
 ) {
-  if (preferences.hideOtherPlayerEffects && ownerId !== undefined && ownerId !== playerId) return 0;
+  if (preferences.hideOtherPlayerEffects && ownerId !== undefined && ownerId !== playerId) {
+    return 0;
+  }
 
   return 1 - preferences.abilityEffectTransparency;
 }

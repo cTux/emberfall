@@ -25,16 +25,24 @@ test('Mending Seed heals a party teammate through the server and shows its targe
       await expect(client.getByRole('button', { name: 'Leave world' })).toBeVisible();
     }
 
-    const world = [...game.runtime.worlds.values()].find((world) => world.players.size === 2)!;
-    const healer = [...world.players.values()].find((player) => player.name === 'Healer')!;
-    const patient = [...world.players.values()].find((player) => player.name === 'Patient')!;
-    for (const player of [healer, patient])
+    const world = [...game.runtime.worlds.values()].find((world) => {
+      return world.players.size === 2;
+    })!;
+    const healer = [...world.players.values()].find((player) => {
+      return player.name === 'Healer';
+    })!;
+    const patient = [...world.players.values()].find((player) => {
+      return player.name === 'Patient';
+    })!;
+    for (const player of [healer, patient]) {
       Object.assign(player, {
         x: TRAINING_ZONES[0].x,
         y: TRAINING_ZONES[0].y,
         partyId: 'healing-test',
         autoAttack: false,
       });
+    }
+
     Object.assign(healer, {
       classId: 'druid',
       level: 20,
@@ -52,15 +60,25 @@ test('Mending Seed heals a party teammate through the server and shows its targe
     patient.hitpoints = patient.maxHitpoints * 0.2;
     const before = patient.hitpoints;
     await page.keyboard.press('1');
-    await expect.poll(() => patient.hitpoints).toBe(before + patient.maxHitpoints * 0.12);
+    await expect
+      .poll(() => {
+        return patient.hitpoints;
+      })
+      .toBe(before + patient.maxHitpoints * 0.12);
     expect(healer.hitpoints).toBe(healer.maxHitpoints * 0.8);
-    await expect.poll(() => healer.bear).toBeTruthy();
+    await expect
+      .poll(() => {
+        return healer.bear;
+      })
+      .toBeTruthy();
     healer.bear!.hitpoints = healer.bear!.maxHitpoints * 0.1;
     const bearBefore = healer.bear!.hitpoints;
     healer.talentCooldowns = {};
     await page.keyboard.press('1');
     await expect
-      .poll(() => healer.bear!.hitpoints)
+      .poll(() => {
+        return healer.bear!.hitpoints;
+      })
       .toBe(bearBefore + healer.bear!.maxHitpoints * 0.12);
     expect(patient.hitpoints).toBe(before + patient.maxHitpoints * 0.12);
     await expect(other.locator('.party')).toContainText('Healer');

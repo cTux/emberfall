@@ -23,5 +23,7 @@ export const progressSchema = z
     maxHitpoints: z.number().finite().positive(),
     playtimeSeconds: z.number().finite().nonnegative(),
   })
-  .refine((p) => p.hitpoints <= p.maxHitpoints);
+  .refine((p) => {
+    return p.hitpoints <= p.maxHitpoints;
+  });
 export type CharacterProgress = z.infer<typeof progressSchema>;

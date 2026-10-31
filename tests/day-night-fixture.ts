@@ -32,7 +32,11 @@ export async function sample() {
     capture.height = 120;
     const pixels = capture.getContext('2d')!;
     pixels.drawImage(canvas, 0, 0);
-    results.push([0, 40, 80].map((x) => [...pixels.getImageData(x + 10, 10, 1, 1).data]));
+    results.push(
+      [0, 40, 80].map((x) => {
+        return [...pixels.getImageData(x + 10, 10, 1, 1).data];
+      }),
+    );
   }
 
   renderer.destroy();
@@ -41,7 +45,12 @@ export async function sample() {
 }
 
 export async function shadows() {
-  while (wardrobeArt.dataset.artReady !== 'true') await new Promise((done) => setTimeout(done, 20));
+  while (wardrobeArt.dataset.artReady !== 'true') {
+    await new Promise((done) => {
+      return setTimeout(done, 20);
+    });
+  }
+
   await wardrobeArt.decode();
   const canvas = document.createElement('canvas');
   document.body.replaceChildren(canvas);
@@ -81,12 +90,19 @@ export async function shadows() {
     const data = pixels.getImageData(i * 300, 210, 300, 100).data;
     let left = 0,
       right = 0;
-    for (let y = 0; y < 100; y++)
-      for (let x = 0; x < 300; x++)
+    for (let y = 0; y < 100; y++) {
+      for (let x = 0; x < 300; x++) {
         if (data[(y * 300 + x) * 4] < 95) {
-          if (x < 110) left++;
-          if (x > 190) right++;
+          if (x < 110) {
+            left++;
+          }
+
+          if (x > 190) {
+            right++;
+          }
         }
+      }
+    }
 
     frames.push({ left, right });
   }

@@ -20,7 +20,9 @@ export class LocalProjectiles {
   }
 
   reject(id: number) {
-    this.shots = this.shots.filter((shot) => shot.castId !== id);
+    this.shots = this.shots.filter((shot) => {
+      return shot.castId !== id;
+    });
   }
 
   animate(
@@ -35,19 +37,22 @@ export class LocalProjectiles {
     const confirmed = player.scene === 'forest' ? frame.world.scene : frame.world.training;
     // Apply the prediction offset once at adoption, never every frame. Retain
     // distance already flown, remaining range, heading and authoritative identity.
-    const adopt = (shot: PlayerShot) => ({
-      ...shot,
-      x:
-        shot.kind === 'roots' && shot.hitIds.length
-          ? shot.x
-          : wrap(shot.x + wrappedDelta(player.x, frame.player.x, FOREST.width), FOREST.width),
-      y:
-        shot.kind === 'roots' && shot.hitIds.length
-          ? shot.y
-          : wrap(shot.y + wrappedDelta(player.y, frame.player.y, FOREST.height), FOREST.height),
-      confirmedId: shot.id,
-      hitIds: [...shot.hitIds],
-    });
+    const adopt = (shot: PlayerShot) => {
+      return {
+        ...shot,
+        x:
+          shot.kind === 'roots' && shot.hitIds.length
+            ? shot.x
+            : wrap(shot.x + wrappedDelta(player.x, frame.player.x, FOREST.width), FOREST.width),
+        y:
+          shot.kind === 'roots' && shot.hitIds.length
+            ? shot.y
+            : wrap(shot.y + wrappedDelta(player.y, frame.player.y, FOREST.height), FOREST.height),
+        confirmedId: shot.id,
+        hitIds: [...shot.hitIds],
+      };
+    };
+
     const dt = Math.min(100, Math.max(0, now - this.shotsAt)) / 1000;
     this.shotsAt = now;
     if (!scene) {
@@ -76,18 +81,26 @@ export class LocalProjectiles {
               (frame.world.serverNow ?? 0) >= (frame.player.attackAt ?? 0)
             : (frame.player.attackAt ?? -Infinity) >= shot.castAt!;
         if (acknowledged) {
-          const candidates = confirmed?.playerShots?.filter(
-            (s) =>
+          const candidates = confirmed?.playerShots?.filter((s) => {
+            return (
               s.ownerId === player.id &&
               !s.abilityId?.startsWith('talent:') &&
               (shot.castId !== undefined ? s.castId === shot.castId : s.castAt === shot.castAt) &&
-              !matched.has(s.id),
-          );
+              !matched.has(s.id)
+            );
+          });
           const serverShot =
             shot.confirmedId !== undefined
-              ? candidates?.find((s) => s.id === shot.confirmedId)
-              : (candidates?.find((s) => s.targetId === shot.targetId) ?? candidates?.[0]);
-          if (!serverShot) return false;
+              ? candidates?.find((s) => {
+                  return s.id === shot.confirmedId;
+                })
+              : (candidates?.find((s) => {
+                  return s.targetId === shot.targetId;
+                }) ?? candidates?.[0]);
+          if (!serverShot) {
+            return false;
+          }
+
           matched.add(serverShot.id);
           shot.id = serverShot.id;
           shot.confirmedId = serverShot.id;
@@ -111,16 +124,21 @@ export class LocalProjectiles {
       });
       if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
         const known =
-          confirmed?.playerShots?.filter(
-            (shot) =>
+          confirmed?.playerShots?.filter((shot) => {
+            return (
               shot.ownerId === player.id &&
               !shot.abilityId?.startsWith('talent:') &&
-              (attack.id !== undefined ? shot.castId === attack.id : shot.castAt === attack.at),
-          ) ?? [];
+              (attack.id !== undefined ? shot.castId === attack.id : shot.castAt === attack.at)
+            );
+          }) ?? [];
         if (known.length) {
           this.shots.push(
             ...known
-              .filter((shot) => !this.shots.some((existing) => existing.confirmedId === shot.id))
+              .filter((shot) => {
+                return !this.shots.some((existing) => {
+                  return existing.confirmedId === shot.id;
+                });
+              })
               .map(adopt),
           );
           this.shotCastAt = attack.at;
@@ -128,33 +146,46 @@ export class LocalProjectiles {
           const cast = { ...scene, sequence: 0, playerShots: [] as PlayerShot[] };
           fireClassAttack(cast, { ...player, attackAt: attack.at });
           this.shots.push(...cast.playerShots);
-          if (cast.playerShots.length) this.shotCastAt = attack.at;
+          if (cast.playerShots.length) {
+            this.shotCastAt = attack.at;
+          }
         }
       }
 
       // A target absent from our snapshots cannot be predicted. Launch that server cast here too.
       const missed =
-        confirmed?.playerShots?.filter(
-          (s) =>
+        confirmed?.playerShots?.filter((s) => {
+          return (
             s.ownerId === player.id &&
             !s.abilityId?.startsWith('talent:') &&
             s.castAt !== undefined &&
             s.castAt > this.shotCastAt &&
-            (s.castId === undefined || !attack.casts.has(s.castId)),
-        ) ?? [];
-      for (const shot of missed)
+            (s.castId === undefined || !attack.casts.has(s.castId))
+          );
+        }) ?? [];
+      for (const shot of missed) {
         // Late discoveries are already in flight. Moving them back to the
         // player while keeping the server's remaining range truncates the shot.
         this.shots.push(adopt(shot));
-      if (missed.length) this.shotCastAt = Math.max(...missed.map((s) => s.castAt!));
+      }
+
+      if (missed.length) {
+        this.shotCastAt = Math.max(
+          ...missed.map((s) => {
+            return s.castAt!;
+          }),
+        );
+      }
     }
 
     // Only replace our projectiles; other players retain snapshot interpolation.
     scene.playerShots = [
-      ...(scene.playerShots ?? []).filter(
-        (s) => s.ownerId !== player.id || s.abilityId?.startsWith('talent:'),
-      ),
-      ...this.shots.map((s) => ({ ...s })),
+      ...(scene.playerShots ?? []).filter((s) => {
+        return s.ownerId !== player.id || s.abilityId?.startsWith('talent:');
+      }),
+      ...this.shots.map((s) => {
+        return { ...s };
+      }),
     ];
   }
 }

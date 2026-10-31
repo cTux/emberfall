@@ -47,7 +47,9 @@ export function connectSession(
   sessions.set(ws, session);
   serverLog.info('Client connected', { sessionId: session.id });
   sendWorldList(ws);
-  ws.on('error', () => ws.terminate());
+  ws.on('error', () => {
+    return ws.terminate();
+  });
   ws.on('pong', () => {
     session.alive = true;
   });
@@ -85,10 +87,14 @@ export function connectSession(
           serverLog.error('Character save failed on reconnect expiry; autosave will retry:', error);
         }
       }, RUNTIME.reconnectMs);
-      if (player?.attacking) player.attacking = false;
+      if (player?.attacking) {
+        player.attacking = false;
+      }
+
       try {
-        if (player && session.characterId)
+        if (player && session.characterId) {
           characters.save(session.characterId, player.name, player);
+        }
       } catch (error) {
         serverLog.error('Character save failed on disconnect; autosave will retry:', error);
       }

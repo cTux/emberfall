@@ -14,7 +14,11 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('projectile spread centers odd and even counts with six-degree spacing', async () => {
@@ -43,7 +47,9 @@ test('ranged classes launch their configured straight projectiles in both aiming
       fireClassAttack(s, p, 1000);
       assert.equal(s.playerShots!.length, classId === 'druid' ? 1 : 2);
       assert.deepEqual(
-        s.playerShots!.map((shot) => shot.angle),
+        s.playerShots!.map((shot) => {
+          return shot.angle;
+        }),
         classId === 'druid' ? [0] : [-Math.PI / 60, Math.PI / 60],
       );
       s.enemies[0].y += 100;
@@ -71,19 +77,28 @@ test('Druid launches roots without instant melee damage, with zero or one target
   assert.equal(s.enemies[0].hitpoints, 97);
   assert.equal(s.enemies[0].debuffs![0].expiresAt, 15100);
   s.enemies = [];
-  assert.doesNotThrow(() => fireClassAttack(s, p, 10700));
+  assert.doesNotThrow(() => {
+    return fireClassAttack(s, p, 10700);
+  });
 });
 
 test('ranger arrows hit each of the first four targets once, wrap, and expire at 1000 units', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const s = scene(),
     p = { ...hero(), classId: 'ranger' as const, x: FOREST.width - 60 };
   s.enemies = [enemy(1, FOREST.width - 20, 10), enemy(2, 30, 10), enemy(3, 960, 10)];
   fireClassAttack(s, p);
   assert.equal(s.playerShots!.length, 2);
-  for (let i = 1; i <= 40; i++) tickPlayerShots(s, [p], i * 50, 0.05);
+  for (let i = 1; i <= 40; i++) {
+    tickPlayerShots(s, [p], i * 50, 0.05);
+  }
+
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [0, 0, 10],
   );
   assert.equal(s.playerShots!.length, 0);
@@ -95,21 +110,33 @@ test('mage fireballs target and travel up to 250 units, including wrapped edges'
   s.enemies = [enemy(1, p.x + 250), enemy(2, p.x + 250.01), enemy(3, p.x + 249)];
   fireClassAttack(s, p);
   assert.deepEqual(
-    s.playerShots!.map((shot) => shot.targetId),
+    s.playerShots!.map((shot) => {
+      return shot.targetId;
+    }),
     [3, 3],
   );
-  assert(s.playerShots!.every((shot) => shot.remaining === 250));
+  assert(
+    s.playerShots!.every((shot) => {
+      return shot.remaining === 250;
+    }),
+  );
   s.enemies.forEach((e) => {
     e.x = p.x + 500;
   });
   tickPlayerShots(s, [p], 1000, 1);
   assert.equal(s.playerShots!.length, 0);
-  assert(s.enemies.every((e) => e.hitpoints === 100));
+  assert(
+    s.enemies.every((e) => {
+      return e.hitpoints === 100;
+    }),
+  );
   p.x = 5;
   s.enemies = [enemy(4, FOREST.width - 245), enemy(5, FOREST.width - 245.01)];
   fireClassAttack(s, p);
   assert.deepEqual(
-    s.playerShots!.map((shot) => shot.targetId),
+    s.playerShots!.map((shot) => {
+      return shot.targetId;
+    }),
     [4, 4],
   );
   s.playerShots = [];
@@ -118,18 +145,27 @@ test('mage fireballs target and travel up to 250 units, including wrapped edges'
 });
 
 test('mage aims at the nearest target; each impact deals three direct and one splash damage', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const s = scene(),
     p = { ...hero(), classId: 'mage' as const };
   s.enemies = [enemy(1, 2480), enemy(2, 2510), enemy(3, 2650)];
   fireClassAttack(s, p);
   assert.deepEqual(
-    s.playerShots!.map((shot) => shot.targetId),
+    s.playerShots!.map((shot) => {
+      return shot.targetId;
+    }),
     [1, 1],
   );
-  for (let i = 1; i <= 10; i++) tickPlayerShots(s, [p], i * 50, 0.05);
+  for (let i = 1; i <= 10; i++) {
+    tickPlayerShots(s, [p], i * 50, 0.05);
+  }
+
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [94, 98, 100],
   );
   assert.equal(s.playerShots!.length, 0);
@@ -139,23 +175,32 @@ test('mage aims at the nearest target; each impact deals three direct and one sp
 });
 
 test('fireball damages the actual collision target only once and splashes across wrapped edges', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   const s = scene(),
     p = { ...hero(), classId: 'mage' as const, x: 5 };
   const direct = enemy(1, FOREST.width - 5);
   s.enemies = [direct, enemy(2, 119), enemy(3, 119.01), enemy(4, FOREST.width - 200)];
-  for (const target of s.enemies) target.y += 6; // Model centers align with the explosion.
+  for (const target of s.enemies) {
+    target.y += 6;
+  } // Model centers align with the explosion.
+
   fireClassAttack(s, p, 1000);
   s.playerShots!.splice(1);
   s.playerShots![0].x = direct.x;
   s.playerShots![0].targetId = 4;
   tickPlayerShots(s, [p], 1000, 0);
   assert.deepEqual(
-    s.enemies.map((e) => e.hitpoints),
+    s.enemies.map((e) => {
+      return e.hitpoints;
+    }),
     [97, 99, 100, 100],
   );
   assert.deepEqual(
-    s.damage.map((hit) => hit.amount),
+    s.damage.map((hit) => {
+      return hit.amount;
+    }),
     [3, 1],
   );
   assert.equal(s.explosions!.length, 1);
@@ -163,7 +208,9 @@ test('fireball damages the actual collision target only once and splashes across
 });
 
 test('class attacks fire once per cycle and ranged classes never deal a melee slash', (t) => {
-  t.mock.method(Math, 'random', () => 0.5);
+  t.mock.method(Math, 'random', () => {
+    return 0.5;
+  });
   for (const classId of ['ranger', 'mage'] as const) {
     const s = scene(),
       p = { ...hero(), classId };
@@ -171,10 +218,14 @@ test('class attacks fire once per cycle and ranged classes never deal a melee sl
     stepCombat(s, [p], 10000, 0);
     assert.equal(s.enemies[0].hitpoints, 100);
     assert.equal(s.playerShots!.length, 2);
-    const ids = s.playerShots!.map((shot) => shot.id);
+    const ids = s.playerShots!.map((shot) => {
+      return shot.id;
+    });
     stepCombat(s, [p], 10050, 0);
     assert.deepEqual(
-      s.playerShots!.map((shot) => shot.id),
+      s.playerShots!.map((shot) => {
+        return shot.id;
+      }),
       ids,
     );
     stepCombat(s, [p], 10999, 0);

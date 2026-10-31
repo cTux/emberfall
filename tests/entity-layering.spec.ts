@@ -7,12 +7,16 @@ test('dummies, remote players and forest enemies layer around the local player',
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Layer tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   player.attackAt = Date.now() + 600000;
   const dummy = world.training!.enemies[0];
@@ -27,15 +31,17 @@ test('dummies, remote players and forest enemies layer around the local player',
 
   const captureAbilities = async (scene: SceneState, area: string, x: number, y: number) => {
     for (const talentClass of CLASS_IDS) {
-      scene.explosions = [0, 1, 2].map((talentColumn) => ({
-        id: ++scene.sequence,
-        x: x + (talentColumn - 1) * 80,
-        y,
-        at: Date.now(),
-        durationMs: 600000,
-        talentClass,
-        talentColumn,
-      }));
+      scene.explosions = [0, 1, 2].map((talentColumn) => {
+        return {
+          id: ++scene.sequence,
+          x: x + (talentColumn - 1) * 80,
+          y,
+          at: Date.now(),
+          durationMs: 600000,
+          talentClass,
+          talentColumn,
+        };
+      });
       await capture(`${area}-${talentClass}-abilities`, x, y + 12);
     }
 

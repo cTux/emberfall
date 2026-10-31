@@ -88,7 +88,10 @@ export function schedule(
 }
 
 export function tickTalentEffects(scene: SceneState, players: Player[], now: number) {
-  if (scene.pausedAt !== undefined || scene.phase !== 'active') return;
+  if (scene.pausedAt !== undefined || scene.phase !== 'active') {
+    return;
+  }
+
   const entries = scheduled.get(scene) ?? [];
   scheduled.set(
     scene,
@@ -99,8 +102,10 @@ export function tickTalentEffects(scene: SceneState, players: Player[], now: num
         !players.includes(entry.owner) ||
         entry.classId !== (entry.owner.classId ?? 'warrior') ||
         !talentRank(entry.owner, entry.nodeId)
-      )
+      ) {
         return false;
+      }
+
       while (entry.at <= now && entry.at <= entry.until) {
         entry.run(entry.at, players);
         entry.at += entry.interval;
@@ -119,7 +124,10 @@ export function shiftTalentEffects(scene: SceneState, players: Player[], delay: 
 
   for (const player of players) {
     const value = fighters.get(player);
-    if (!value || value.scene !== scene) continue;
+    if (!value || value.scene !== scene) {
+      continue;
+    }
+
     for (const key of [
       'guardUntil',
       'guardReadyAt',
@@ -127,10 +135,20 @@ export function shiftTalentEffects(scene: SceneState, players: Player[], delay: 
       'wallUntil',
       'reprisalAt',
       'rhythmAt',
-    ] as const)
+    ] as const) {
       value[key] += delay;
-    if (value.fissure) value.fissure.until += delay;
-    if (value.empoweredUntil) value.empoweredUntil += delay;
-    for (const entry of value.sequence) entry.at += delay;
+    }
+
+    if (value.fissure) {
+      value.fissure.until += delay;
+    }
+
+    if (value.empoweredUntil) {
+      value.empoweredUntil += delay;
+    }
+
+    for (const entry of value.sequence) {
+      entry.at += delay;
+    }
   }
 }

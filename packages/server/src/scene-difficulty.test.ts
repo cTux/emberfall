@@ -24,7 +24,9 @@ for (const [difficulty, multiplier] of [
     const scene = world.scene!;
     scene.endsAt = 5000;
     tickScene(world, 5000, 0);
-    const boss = scene.spawns!.find((spawn) => spawn.kind === 'boss')!;
+    const boss = scene.spawns!.find((spawn) => {
+      return spawn.kind === 'boss';
+    })!;
     assert.ok(boss);
     assert.equal(boss.hitpoints, 300 * multiplier);
     assert.equal(boss.maxHitpoints, 300 * multiplier);

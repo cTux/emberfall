@@ -12,7 +12,9 @@ export function prepareForestTick(
   now: number,
   context: Game = game,
 ) {
-  const playerCount = players.filter((p) => p.scene === 'forest').length;
+  const playerCount = players.filter((p) => {
+    return p.scene === 'forest';
+  }).length;
   const additionalPlayers = Math.max(0, playerCount - 1);
   const healthScale = ENEMY_RULES.healthPerMember ** additionalPlayers;
   const healthRatio =
@@ -52,14 +54,23 @@ export function prepareForestTick(
       'challengedUntil',
     ] as const;
     const shift = (value: Partial<Record<(typeof keys)[number], number | null>>) => {
-      for (const key of keys) if (typeof value[key] === 'number') value[key] += delay;
+      for (const key of keys) {
+        if (typeof value[key] === 'number') {
+          value[key] += delay;
+        }
+      }
     };
 
     shift(scene);
     for (const enemy of [...scene.enemies, ...(scene.spawns ?? [])]) {
       shift(enemy);
-      if (enemy.attack) shift(enemy.attack);
-      for (const debuff of enemy.debuffs ?? []) shift(debuff);
+      if (enemy.attack) {
+        shift(enemy.attack);
+      }
+
+      for (const debuff of enemy.debuffs ?? []) {
+        shift(debuff);
+      }
     }
 
     for (const event of [
@@ -67,12 +78,18 @@ export function prepareForestTick(
       ...(scene.drops ?? []),
       ...(scene.projectiles ?? []),
       ...(scene.explosions ?? []),
-    ])
+    ]) {
       shift(event);
-    for (const player of players.filter((p) => p.scene === 'forest' && p.hitpoints <= 0)) {
+    }
+
+    for (const player of players.filter((p) => {
+      return p.scene === 'forest' && p.hitpoints <= 0;
+    })) {
       // New arrivals already use the current server clock.
       shift(player);
-      if (player.bear) shift(player.bear);
+      if (player.bear) {
+        shift(player.bear);
+      }
     }
 
     scene.pausedAt = undefined;

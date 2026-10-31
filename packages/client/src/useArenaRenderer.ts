@@ -58,8 +58,13 @@ export function useArenaRenderer({
     lootHints.current = new LootHints();
   }, [playerId]);
   useEffect(() => {
-    if (latest.current !== world) receivedAt.current = performance.now();
-    const confirmedPlayer = world?.players.find((player) => player.id === playerId);
+    if (latest.current !== world) {
+      receivedAt.current = performance.now();
+    }
+
+    const confirmedPlayer = world?.players.find((player) => {
+      return player.id === playerId;
+    });
     lootHints.current.observe(
       confirmedPlayer ? (confirmedPlayer.backpack ?? []) : undefined,
       preferences.lootHints,
@@ -78,15 +83,20 @@ export function useArenaRenderer({
     const renderer = new PixiContext(element);
     let disposed = false;
     void renderer.ready.catch(() => {
-      if (!disposed)
+      if (!disposed) {
         reportError(
           'The game renderer could not start. Enable browser hardware acceleration and reload.',
         );
+      }
     });
     const presentation = new ArenaPresentation(
       playerId,
-      (message) => sender.current(message),
-      () => prefs.current,
+      (message) => {
+        return sender.current(message);
+      },
+      () => {
+        return prefs.current;
+      },
       onHitpoints,
     );
     const ctx = renderer;
@@ -96,21 +106,39 @@ export function useArenaRenderer({
     const drawForest = forestRenderer(nature, knight, skeleton);
     const input = createArenaInput({
       element,
-      world: () => latest.current,
-      player: () => latest.current?.players.find((p) => p.id === playerId),
-      preferences: () => prefs.current,
-      send: (message) => sender.current(message),
-      activate: (source) => activate.current(source),
-      move: (x, y, now) => presentation.input(x, y, now),
+      world: () => {
+        return latest.current;
+      },
+      player: () => {
+        return latest.current?.players.find((p) => {
+          return p.id === playerId;
+        });
+      },
+      preferences: () => {
+        return prefs.current;
+      },
+      send: (message) => {
+        return sender.current(message);
+      },
+      activate: (source) => {
+        return activate.current(source);
+      },
+      move: (x, y, now) => {
+        return presentation.input(x, y, now);
+      },
     });
     onCursorAim(input.currentAim);
-    const village = new VillageScene(playerId, (text) => catSpoke.current(text));
+    const village = new VillageScene(playerId, (text) => {
+      return catSpoke.current(text);
+    });
     let frame = 0;
     const prompts = new InteractionPresentation({
       element,
       signal: interaction,
       playerId,
-      send: (message) => sender.current(message),
+      send: (message) => {
+        return sender.current(message);
+      },
       blocked: input.blocked,
     });
     let wardrobeOpenedAt = 0;
@@ -127,7 +155,10 @@ export function useArenaRenderer({
 
     function draw(now: number) {
       const openWardrobe = interaction.current?.id === 'wardrobe';
-      if (openWardrobe && !wardrobeActive) wardrobeOpenedAt = now;
+      if (openWardrobe && !wardrobeActive) {
+        wardrobeOpenedAt = now;
+      }
+
       wardrobeActive = openWardrobe;
       if (!renderer.initialized) {
         frame = requestAnimationFrame(draw);
@@ -148,12 +179,17 @@ export function useArenaRenderer({
       ctx.imageSmoothingEnabled = quality.current.smoothTextures;
       // Sprite filtering is independent; CSS resampling must preserve smooth text.
       const imageRendering = 'auto';
-      if (element.style.imageRendering !== imageRendering)
+      if (element.style.imageRendering !== imageRendering) {
         element.style.imageRendering = imageRendering;
+      }
+
       const el = element;
       // Keep the original view scale independent of the walkable map size.
       const scale = Math.max(el.width / 960, el.height / 640);
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) input.clearKeys();
+      if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
+        input.clearKeys();
+      }
+
       const presented = presentation.render(
         latest.current,
         now,
@@ -167,8 +203,16 @@ export function useArenaRenderer({
       element.dataset.daylight = cycle.daylight.toFixed(3);
       element.dataset.celestial = cycle.celestial;
       element.dataset.shadowDirection = `${cycle.shadow.x.toFixed(3)},${cycle.shadow.y.toFixed(3)}`;
-      element.dataset.partyRequests = view?.partyRequests?.map((r) => r.fromId).join(',') ?? '';
-      if (element.dataset.cursor !== cursor) element.dataset.cursor = cursor;
+      element.dataset.partyRequests =
+        view?.partyRequests
+          ?.map((r) => {
+            return r.fromId;
+          })
+          .join(',') ?? '';
+      if (element.dataset.cursor !== cursor) {
+        element.dataset.cursor = cursor;
+      }
+
       networkTiming.current = presented.timing;
       const highlightInteractions = now - input.altHeldAt > 500 && !input.blocked();
       const interactionFrame = prompts.frame({
@@ -189,7 +233,10 @@ export function useArenaRenderer({
       }
 
       const fps = budget.sample(now);
-      if (fps !== undefined) frameRate.current = fps;
+      if (fps !== undefined) {
+        frameRate.current = fps;
+      }
+
       presentation.effects(presented, now);
       if (!view || local?.scene === 'forest') {
         element.dataset.catSpeech = '';
@@ -205,8 +252,10 @@ export function useArenaRenderer({
           highlightInteractions,
         );
         interactionFrame.draw();
-        if (local && prefs.current.lootHints)
+        if (local && prefs.current.lootHints) {
           drawLootHints(ctx, lootHints.current.hints, local, now);
+        }
+
         renderer.present();
         frame = requestAnimationFrame(draw);
 
@@ -221,10 +270,14 @@ export function useArenaRenderer({
       const { visibleScenery, portalTarget, cats } = villageFrame;
       Object.assign(element.dataset, villageFrame.diagnostics);
       input.targets = [
-        ...visibleScenery.map(sceneryInteraction).filter((target) => target !== null),
+        ...visibleScenery.map(sceneryInteraction).filter((target) => {
+          return target !== null;
+        }),
         ...cats,
         portalTarget,
-      ].sort((a, b) => a.y + a.height - b.y - b.height);
+      ].sort((a, b) => {
+        return a.y + a.height - b.y - b.height;
+      });
       interactionFrame.select(input.targets, input.pointerPoint(), cats);
       const drawn = village.draw(ctx, villageFrame, {
         preferences: prefs.current,
@@ -236,7 +289,10 @@ export function useArenaRenderer({
       });
       interactionFrame.draw();
       Object.assign(element.dataset, village.overlays(ctx, villageFrame, drawn, prefs.current));
-      if (local && prefs.current.lootHints) drawLootHints(ctx, lootHints.current.hints, local, now);
+      if (local && prefs.current.lootHints) {
+        drawLootHints(ctx, lootHints.current.hints, local, now);
+      }
+
       renderer.present();
       frame = requestAnimationFrame(draw);
     }

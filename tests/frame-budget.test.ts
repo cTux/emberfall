@@ -6,10 +6,15 @@ import { GRAPHICS_PRESETS } from '../packages/client/src/graphics.ts';
 test('drawing budget retains capped cadence, adaptive thresholds and settings reset', () => {
   const settings = { ...GRAPHICS_PRESETS.Balanced, frameLimit: 30 };
   let resizes = 0;
-  const budget = new FrameBudget(settings, 0, () => resizes++);
+  const budget = new FrameBudget(settings, 0, () => {
+    return resizes++;
+  });
   assert.equal(budget.begin(10, settings), undefined);
   assert.equal(budget.begin(34, settings), 0.034);
-  for (let now = 84; now < 2050; now += 50) budget.begin(now, settings);
+  for (let now = 84; now < 2050; now += 50) {
+    budget.begin(now, settings);
+  }
+
   assert.equal(budget.scale, 0.9);
   assert.equal(resizes, 1);
   assert.equal(budget.begin(4000, settings), 0.1);

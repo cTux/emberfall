@@ -6,12 +6,16 @@ test('lobby portal navigation renders in the village and across a wrapped edge',
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const canvas = page.getByLabel('Shared village. Move with WASD or arrow keys.');
   await expect(canvas).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   for (const [name, x] of [
     ['offscreen', 1800],
@@ -22,8 +26,8 @@ test('lobby portal navigation renders in the village and across a wrapped edge',
     player.y = LOBBY_PORTAL.y;
     await expect(canvas).toHaveAttribute('data-renderer', 'pixijs-webgl');
     await expect
-      .poll(() =>
-        canvas.evaluate(async (element) => {
+      .poll(() => {
+        return canvas.evaluate(async (element) => {
           await new Promise(requestAnimationFrame);
           const source = element as HTMLCanvasElement;
           const sample = document.createElement('canvas');
@@ -35,14 +39,16 @@ test('lobby portal navigation renders in the village and across a wrapped edge',
           return [28, sample.width - 28].map((x) => {
             const pixels = context.getImageData(x - 8, sample.height / 2 - 8, 16, 16).data;
             let blue = 0;
-            for (let i = 0; i < pixels.length; i += 4)
-              if (pixels[i] > 80 && pixels[i] < 150 && pixels[i + 1] > 180 && pixels[i + 2] > 220)
+            for (let i = 0; i < pixels.length; i += 4) {
+              if (pixels[i] > 80 && pixels[i] < 150 && pixels[i + 1] > 180 && pixels[i + 2] > 220) {
                 blue++;
+              }
+            }
 
             return blue > 10;
           });
-        }),
-      )
+        });
+      })
       .toEqual(
         name === 'offscreen' ? [true, false] : name === 'wrapped' ? [false, true] : [false, false],
       );
@@ -58,7 +64,9 @@ test('portal navigation labels stay clear of edge arrows', async ({ page, game }
   await page.getByLabel('Your adventurer name').fill('Navigation tester');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   for (const [name, dx, dy] of [
     ['left', 1500, 0],

@@ -8,38 +8,50 @@ import type { Player } from '@emberfall/common';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 import { tickScene, type SceneWorld } from './scenes.ts';
 
-const hero = (id: string): Player => ({
-  ...freshProgress(),
-  id,
-  name: id,
-  x: 2400,
-  y: 1280,
-  color: 0,
-  scene: 'forest',
-  attackAt: 1e9,
-});
-const forest = (players: Player[]): SceneWorld => ({
-  players: new Map(players.map((player) => [player.id, player])),
-  scene: {
-    id: 'forest',
-    type: 'Forest',
-    difficulty: 'Easy',
-    phase: 'active',
-    ready: [],
-    electorate: '',
-    countdownAt: null,
-    endsAt: 1e9,
-    nextSpawn: 1e9,
-    sequence: 0,
-    enemies: [],
-    damage: [],
-    portals: [],
-  },
-});
+const hero = (id: string): Player => {
+  return {
+    ...freshProgress(),
+    id,
+    name: id,
+    x: 2400,
+    y: 1280,
+    color: 0,
+    scene: 'forest',
+    attackAt: 1e9,
+  };
+};
+
+const forest = (players: Player[]): SceneWorld => {
+  return {
+    players: new Map(
+      players.map((player) => {
+        return [player.id, player];
+      }),
+    ),
+    scene: {
+      id: 'forest',
+      type: 'Forest',
+      difficulty: 'Easy',
+      phase: 'active',
+      ready: [],
+      electorate: '',
+      countdownAt: null,
+      endsAt: 1e9,
+      nextSpawn: 1e9,
+      sequence: 0,
+      enemies: [],
+      damage: [],
+      portals: [],
+    },
+  };
+};
 
 test('shared XP pickups level every eligible player once and retain fractional XP', () => {
   const players = [hero('a'), hero('b')];
-  for (const player of players) player.experience = 49;
+  for (const player of players) {
+    player.experience = 49;
+  }
+
   const world = forest(players);
   world.scene!.drops = [{ id: 1, kind: 'experience', amount: 1.5, x: 2400, y: 1280, at: 0 }];
   tickScene(world, 1000, 0);
@@ -111,5 +123,7 @@ test('old saves default paragon to zero and retain levels above 20 as paragon', 
   assert.equal(migrated.level, 20);
   assert.equal(migrated.paragon, 2);
   assert.equal(migrated.experience, 7);
-  assert.throws(() => decodeProgress(JSON.stringify({ ...legacy, paragon: -1 })));
+  assert.throws(() => {
+    return decodeProgress(JSON.stringify({ ...legacy, paragon: -1 }));
+  });
 });

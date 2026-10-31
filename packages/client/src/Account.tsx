@@ -23,7 +23,9 @@ function NicknameDialog({
     <GameWindow
       title={account.nickname === null ? 'Choose your nickname' : 'Change nickname'}
       onClose={() => {
-        if (!pending) onClose();
+        if (!pending) {
+          onClose();
+        }
       }}
     >
       <Stack
@@ -33,7 +35,10 @@ function NicknameDialog({
         // oxlint-disable-next-line typescript/no-misused-promises
         onSubmit={async (event) => {
           event.preventDefault();
-          if (!valid || pending) return;
+          if (!valid || pending) {
+            return;
+          }
+
           setPending(true);
           try {
             const response = await fetch(apiUrl('/api/account/nickname'), {
@@ -44,7 +49,10 @@ function NicknameDialog({
               signal: AbortSignal.timeout(10_000),
             });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error ?? 'Could not save nickname.');
+            if (!response.ok) {
+              throw new Error(result.error ?? 'Could not save nickname.');
+            }
+
             onSaved(result);
           } catch (cause) {
             reportError(
@@ -62,7 +70,9 @@ function NicknameDialog({
           required
           value={value}
           disabled={pending}
-          onChange={(event) => setValue(event.target.value)}
+          onChange={(event) => {
+            return setValue(event.target.value);
+          }}
           error={!valid && value.length > 0}
           helperText='3–12 ASCII letters, digits or underscores.'
         />
@@ -95,7 +105,9 @@ export function AccountGate({
   const [account, setAccount] = useState<AccountView>();
   const [editing, setEditing] = useState(false);
   const { reportError } = useChat();
-  const [failed, setFailed] = useState(() => new URLSearchParams(location.search).has('login'));
+  const [failed, setFailed] = useState(() => {
+    return new URLSearchParams(location.search).has('login');
+  });
   const refresh = useCallback(async () => {
     setFailed(false);
     try {
@@ -104,7 +116,10 @@ export function AccountGate({
         cache: 'no-store',
         signal: AbortSignal.timeout(10_000),
       });
-      if (!response.ok) throw new Error('Account service unavailable. Please retry.');
+      if (!response.ok) {
+        throw new Error('Account service unavailable. Please retry.');
+      }
+
       setAccount(await response.json());
     } catch {
       reportError('Account service unavailable. Please retry.');
@@ -119,7 +134,10 @@ export function AccountGate({
     });
     void request
       .then(async (response) => {
-        if (!response.ok) throw new Error('Account service unavailable');
+        if (!response.ok) {
+          throw new Error('Account service unavailable');
+        }
+
         setAccount(await response.json());
       })
       .catch(() => {
@@ -138,7 +156,10 @@ export function AccountGate({
         method: 'POST',
         signal: AbortSignal.timeout(10_000),
       });
-      if (!response.ok && response.status !== 401) throw new Error();
+      if (!response.ok && response.status !== 401) {
+        throw new Error();
+      }
+
       setEditing(false);
       setAccount({ mode: 'steam', authenticated: false, nickname: null, steamName: '' });
       try {
@@ -151,7 +172,7 @@ export function AccountGate({
     }
   };
 
-  if (!account || (account.mode === 'steam' && !account.authenticated))
+  if (!account || (account.mode === 'steam' && !account.authenticated)) {
     return (
       <main className='lobby'>
         <GameWindow title='Emberfall' modal={false} onClose={() => {}}>
@@ -177,17 +198,28 @@ export function AccountGate({
         </GameWindow>
       </main>
     );
+  }
 
   return (
     <>
       {(account.mode === 'legacy' || account.nickname !== null) &&
-        children({ account, rename: () => setEditing(true), logout, refresh })}
+        children({
+          account,
+          rename: () => {
+            return setEditing(true);
+          },
+          logout,
+          refresh,
+        })}
       {account.mode === 'steam' && (account.nickname === null || editing) && (
         <NicknameDialog
           account={account}
           onClose={() => {
-            if (account.nickname === null) void logout();
-            else setEditing(false);
+            if (account.nickname === null) {
+              void logout();
+            } else {
+              setEditing(false);
+            }
           }}
           onSaved={(updated) => {
             setAccount(updated);

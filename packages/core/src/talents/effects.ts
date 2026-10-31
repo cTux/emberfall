@@ -27,7 +27,10 @@ export function talentVisual(
 }
 
 export function control(enemy: Enemy, now: number, duration: number) {
-  if (enemy.kind === 'boss') return;
+  if (enemy.kind === 'boss') {
+    return;
+  }
+
   enemy.controlledUntil = Math.max(enemy.controlledUntil ?? 0, now + duration);
   enemy.attack = undefined;
 }

@@ -47,7 +47,10 @@ export function createAdmission({
     authenticated: ReturnType<RuntimeModels.AccountIdentity>,
     account?: RuntimeModels.AccountIdentity,
   ) => {
-    const error = (message: string) => send(ws, { type: 'error', message });
+    const error = (message: string) => {
+      return send(ws, { type: 'error', message });
+    };
+
     if (session.worldId) {
       error('Leave your current world first.');
 
@@ -73,9 +76,15 @@ export function createAdmission({
         : message.characterToken
           ? characters.load(message.characterToken)
           : undefined;
-      const active = () =>
-        existingCharacter &&
-        [...sessions.values()].some((s) => s.worldId && s.characterId === existingCharacter.id);
+      const active = () => {
+        return (
+          existingCharacter &&
+          [...sessions.values()].some((s) => {
+            return s.worldId && s.characterId === existingCharacter.id;
+          })
+        );
+      };
+
       if (message.type !== 'resume' && active()) {
         error('This character is already playing in another tab. Leave that world first.');
 
@@ -83,13 +92,14 @@ export function createAdmission({
       }
 
       if (message.type === 'resume') {
-        const retained = [...sessions.entries()].find(
-          ([oldWs, old]) =>
+        const retained = [...sessions.entries()].find(([oldWs, old]) => {
+          return (
             oldWs.readyState === WebSocket.CLOSED &&
             old.characterId === existingCharacter?.id &&
             old.worldId === message.worldId &&
-            (old.reconnectUntil ?? 0) > now,
-        );
+            (old.reconnectUntil ?? 0) > now
+          );
+        });
         const world = worlds.get(message.worldId);
         if (
           !world ||
@@ -140,7 +150,10 @@ export function createAdmission({
           hash = await passwords.hash(message.password, salt);
         }
 
-        if (ws.readyState !== WebSocket.OPEN) return;
+        if (ws.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
         if (worlds.size >= 64) {
           error('The server is full.');
 
@@ -176,7 +189,10 @@ export function createAdmission({
           }
         }
 
-        if (ws.readyState !== WebSocket.OPEN) return;
+        if (ws.readyState !== WebSocket.OPEN) {
+          return;
+        }
+
         if (!worlds.has(world.id)) {
           error('This world has closed.');
 
@@ -198,7 +214,10 @@ export function createAdmission({
       }
 
       // Password hashing yields; refresh after it so a recent save cannot be overwritten.
-      if (ws.readyState !== WebSocket.OPEN || (account && !account()?.nickname)) return;
+      if (ws.readyState !== WebSocket.OPEN || (account && !account()?.nickname)) {
+        return;
+      }
+
       let character = authenticated
         ? characters.loadById(authenticated.characterId)
         : message.characterToken
@@ -226,9 +245,16 @@ export function createAdmission({
       session.characterId = character.id;
       characters.rememberWorld(character.id, world.id);
       session.worldId = world.id;
-      const used = new Set([...world.players.values()].map((p) => p.color));
+      const used = new Set(
+        [...world.players.values()].map((p) => {
+          return p.color;
+        }),
+      );
       let color = 0;
-      while (used.has(color)) color++;
+      while (used.has(color)) {
+        color++;
+      }
+
       world.players.set(session.id, {
         id: session.id,
         name: playerName,
@@ -241,13 +267,19 @@ export function createAdmission({
         hitpoints: character.progress.hitpoints || character.progress.maxHitpoints,
       });
       villageLife(world, now);
-      if (createdWorld) serverLog.info('World created', { worldId: world.id });
+      if (createdWorld) {
+        serverLog.info('World created', { worldId: world.id });
+      }
+
       serverLog.info(message.type === 'resume' ? 'Player resumed world' : 'Player joined world', {
         sessionId: session.id,
         worldId: world.id,
         players: world.players.size,
       });
-      if (!world.hostId) world.hostId = session.id;
+      if (!world.hostId) {
+        world.hostId = session.id;
+      }
+
       addChat(world, `${playerName} joined.`, undefined, session.id);
       send(ws, {
         type: 'joined',

@@ -9,6 +9,19 @@ It enables correctness rules from TypeScript, Oxc, Unicorn, React and JSX
 accessibility, plus selected suspicious checks (`no-debugger`, `no-eval` and
 `no-implied-eval`). Review new suspicious rules individually before enforcing
 them; pedantic, restriction and nursery categories are not enabled wholesale.
+Require curly braces even when JavaScript permits omitting them:
+
+- `eslint/curly: [error, all]` covers `if`, `else`, `for`, `for...in`,
+  `for...of`, `while` and `do...while` bodies, including single statements.
+  Conventional `else if` chains remain supported.
+- `eslint/arrow-body-style: [error, always]` requires arrow-function block
+  bodies; return values explicitly, including object literals and JSX.
+- `unicorn/switch-case-braces: [error, always]` scopes nonempty `case` and
+  `default` bodies. Empty labels may remain grouped for shared handling.
+
+Function, class, `try`/`catch`/`finally` and `switch` bodies already require
+braces in JavaScript syntax. These rules apply across source, scripts and tests;
+run `pnpm exec oxlint . --fix` to migrate supported cases, then `pnpm fmt`.
 Formatting belongs to Oxfmt: single quotes, JSX single quotes, consistent
 indentation and wrapping. Oxlint loads `@stylistic/eslint-plugin` for the
 blank-line rules below; Oxfmt preserves their spacing. Run `pnpm fmt:check`

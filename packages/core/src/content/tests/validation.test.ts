@@ -19,13 +19,22 @@ test('data-family validation rejects unknown IDs and malformed values with mod o
         ...game.registries,
         [group]: {
           ...game.registries[group],
-          values: () => [{ id, value: null }],
+          values: () => {
+            return [{ id, value: null }];
+          },
         },
       };
       assert.throws(
-        () => validateStructure(createValidationContext(registries, () => 'fixture')),
-        (error: unknown) =>
-          error instanceof Error && error.message.includes(`Mod 'fixture' ${group} '${id}'`),
+        () => {
+          return validateStructure(
+            createValidationContext(registries, () => {
+              return 'fixture';
+            }),
+          );
+        },
+        (error: unknown) => {
+          return error instanceof Error && error.message.includes(`Mod 'fixture' ${group} '${id}'`);
+        },
         `${group}: ${id}`,
       );
     }

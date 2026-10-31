@@ -8,10 +8,14 @@ test('combat gathering hint defaults hidden, toggles immediately and persists', 
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((w) => {
+    return w.players.size;
+  })!;
   const player = [...world.players.values()][0];
   const canvas = page.locator('canvas');
-  const rock = VILLAGE_RESOURCES.find((node) => node.kind === 'rock')!;
+  const rock = VILLAGE_RESOURCES.find((node) => {
+    return node.kind === 'rock';
+  })!;
   Object.assign(player, { x: rock.x, y: rock.y - 15 });
   await page.mouse.move(-1, -1);
   await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather rock');
@@ -25,9 +29,9 @@ test('combat gathering hint defaults hidden, toggles immediately and persists', 
     endsAt: Date.now() + 60000,
     nextSpawn: Date.now() + 60000,
   };
-  const plant = resourceNodes({ x: 1, y: 1, scene: 'forest' }, 300).find(
-    (node) => node.kind === 'plant',
-  )!;
+  const plant = resourceNodes({ x: 1, y: 1, scene: 'forest' }, 300).find((node) => {
+    return node.kind === 'plant';
+  })!;
   Object.assign(player, {
     scene: 'forest',
     x: wrap(plant.x, FOREST.width),

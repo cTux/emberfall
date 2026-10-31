@@ -20,7 +20,9 @@ export function forestActorMask(image: HTMLImageElement, column: number, row: nu
 
 export function createForestActors(skeleton: HTMLImageElement) {
   const enemyImages = Object.fromEntries(
-    ['runner', 'brute', 'caster', 'warden'].map((name) => [name, actorArt(name)]),
+    ['runner', 'brute', 'caster', 'warden'].map((name) => {
+      return [name, actorArt(name)];
+    }),
   );
   const positions = new Map<string, { x: number; y: number; facing: number }>();
   let lastScene: string | undefined;
@@ -41,48 +43,68 @@ export function createForestActors(skeleton: HTMLImageElement) {
 
     const casters: Caster[] = [];
     const actors = [
-      ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
-      ...(world?.scene?.enemies ?? []).map((e) => ({
-        id: `enemy:${e.id}`,
-        x: e.x,
-        y: e.y,
-        player: null,
-        enemy: e,
-      })),
+      ...players.map((p) => {
+        return { id: p.id, x: p.x, y: p.y, player: p, enemy: null };
+      }),
+      ...(world?.scene?.enemies ?? []).map((e) => {
+        return {
+          id: `enemy:${e.id}`,
+          x: e.x,
+          y: e.y,
+          player: null,
+          enemy: e,
+        };
+      }),
       ...(
-        world?.scene?.damage.filter(
-          (d) => d.killed && d.target.startsWith('enemy:') && serverTime - d.at < 700,
-        ) ?? []
-      ).map((d) => ({
-        id: d.target,
-        x: d.x,
-        y: d.y,
-        player: null,
-        enemy: {
-          name: undefined,
-          debuffs: undefined,
-          attack: undefined,
-          cooldownUntil: undefined,
-          archetype: 'skeleton' as const,
-          id: 0,
+        world?.scene?.damage.filter((d) => {
+          return d.killed && d.target.startsWith('enemy:') && serverTime - d.at < 700;
+        }) ?? []
+      ).map((d) => {
+        return {
+          id: d.target,
           x: d.x,
           y: d.y,
-          hitpoints: 0,
-          angle: 0,
-          kind: 'normal' as const,
-          ...d.enemy,
-        },
-      })),
+          player: null,
+          enemy: {
+            name: undefined,
+            debuffs: undefined,
+            attack: undefined,
+            cooldownUntil: undefined,
+            archetype: 'skeleton' as const,
+            id: 0,
+            x: d.x,
+            y: d.y,
+            hitpoints: 0,
+            angle: 0,
+            kind: 'normal' as const,
+            ...d.enemy,
+          },
+        };
+      }),
     ];
-    const live = new Set(actors.map((a) => a.id));
-    for (const id of positions.keys()) if (!live.has(id)) positions.delete(id);
-    const damageByTarget = new Map(world?.scene?.damage.map((d) => [d.target, d]));
+    const live = new Set(
+      actors.map((a) => {
+        return a.id;
+      }),
+    );
+    for (const id of positions.keys()) {
+      if (!live.has(id)) {
+        positions.delete(id);
+      }
+    }
+
+    const damageByTarget = new Map(
+      world?.scene?.damage.map((d) => {
+        return [d.target, d];
+      }),
+    );
     const rendered = actors
-      .filter(
-        (a) =>
+      .filter((a) => {
+        return (
           Math.abs(wrappedDelta(a.x, cx, FOREST.width)) < width / 2 + 100 &&
-          Math.abs(wrappedDelta(a.y, cy, FOREST.height)) < height / 2 + 100,
-      )
+          Math.abs(wrappedDelta(a.y, cy, FOREST.height)) < height / 2 + 100
+        );
+      })
       .map((actor) => {
         const pos = positions.get(actor.id) ?? { x: actor.x, y: actor.y, facing: 0 };
         const dx = wrappedDelta(actor.x, pos.x, FOREST.width),
@@ -90,7 +112,10 @@ export function createForestActors(skeleton: HTMLImageElement) {
         const ix = actor.player ? (actor.player.inputX ?? 0) : Math.cos(actor.enemy.angle),
           iy = actor.player ? (actor.player.inputY ?? 0) : Math.sin(actor.enemy.angle);
         const moving = actor.player ? Math.hypot(ix, iy) > 0 : Math.hypot(dx, dy) > 0.05;
-        if (moving && Math.hypot(ix, iy) > 0) pos.facing = movementFacing(ix, iy, pos.facing);
+        if (moving && Math.hypot(ix, iy) > 0) {
+          pos.facing = movementFacing(ix, iy, pos.facing);
+        }
+
         pos.x = actor.x;
         pos.y = actor.y;
         positions.set(actor.id, pos);
@@ -119,7 +144,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
           pos.facing = movementFacing(Math.cos(angle), Math.sin(angle), pos.facing);
         }
 
-        if (image.naturalWidth)
+        if (image.naturalWidth) {
           casters.push({
             id: actor.id,
             x: point.x,
@@ -128,10 +153,13 @@ export function createForestActors(skeleton: HTMLImageElement) {
             height: size,
             mask: forestActorMask(image, pos.facing, row),
           });
+        }
 
         return { ...actor, ...point, facing: pos.facing, row, image, size, moving, dx, dy };
       })
-      .filter((a) => Math.abs(a.x - cx) < width / 2 + 80 && Math.abs(a.y - cy) < height / 2 + 80);
+      .filter((a) => {
+        return Math.abs(a.x - cx) < width / 2 + 80 && Math.abs(a.y - cy) < height / 2 + 80;
+      });
 
     return { rendered, casters, damageByTarget };
   };

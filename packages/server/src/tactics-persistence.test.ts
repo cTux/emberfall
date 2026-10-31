@@ -32,15 +32,21 @@ test('failed saves, malformed commands and a mismatched class cannot publish tac
   const runtime = await createRuntime();
   const messages: { type: string; message?: string; characterToken?: string }[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   try {
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Tactician', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    for (let i = 0; i < 200 && !world.players.size; i++) {
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 10);
+      });
+    }
+
     const p = [...world.players.values()][0];
     const command = {
       type: 'setTactics',
@@ -75,7 +81,9 @@ test('failed saves, malformed commands and a mismatched class cannot publish tac
     assert.deepEqual(p.tactics!.offensive, ['lowestHealth', 'elite', 'nearest']);
     peer.receive({ ...move, rule: 'self' });
     assert.deepEqual(p.tactics!.offensive, ['lowestHealth', 'elite', 'nearest']);
-    const token = messages.find((message) => message.type === 'joined')!.characterToken!;
+    const token = messages.find((message) => {
+      return message.type === 'joined';
+    })!.characterToken!;
     assert.equal(runtime.characters.load(token).progress.tactics!.keepTarget, true);
   } finally {
     t.mock.restoreAll();

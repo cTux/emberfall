@@ -23,27 +23,31 @@ const slots: EquipmentSlotView[] = [
   ['Amulet', 3, 1, amuletSlot],
   ['Off-hand', 3, 2, offHandSlot],
   ['Ring', 3, 3, ringSlot],
-].map(([label, column, row, image]) => ({
-  id: String(label),
-  label: String(label),
-  position: { column: Number(column), row: Number(row) },
-  fallback: <img src={String(image)} alt='' className='equipment-slot-placeholder' />,
-  accepts: label === 'Off-hand' ? 'Shield' : String(label),
-}));
+].map(([label, column, row, image]) => {
+  return {
+    id: String(label),
+    label: String(label),
+    position: { column: Number(column), row: Number(row) },
+    fallback: <img src={String(image)} alt='' className='equipment-slot-placeholder' />,
+    accepts: label === 'Off-hand' ? 'Shield' : String(label),
+  };
+});
 const meta = {
   title: 'Components/EquipmentPanel',
   component: EquipmentPanel,
   tags: ['autodocs'],
   decorators: [
-    (Story) => (
-      <GameWindow title='Equipment' width={600} modal={false} onClose={() => {}}>
-        <Story />
-      </GameWindow>
-    ),
+    (Story) => {
+      return (
+        <GameWindow title='Equipment' width={600} modal={false} onClose={() => {}}>
+          <Story />
+        </GameWindow>
+      );
+    },
   ],
   args: {
-    slots: slots.map((slot) =>
-      slot.id === 'Weapon'
+    slots: slots.map((slot) => {
+      return slot.id === 'Weapon'
         ? {
             ...slot,
             item: {
@@ -102,8 +106,8 @@ const meta = {
               ],
             },
           }
-        : slot,
-    ),
+        : slot;
+    }),
     stats: [
       { label: 'Power', value: '5' },
       { label: 'Damage type', value: 'Physical' },
@@ -168,17 +172,19 @@ export const Rarities: StoryObj<typeof meta> = {
         action='Inspect'
         slots={5}
         onUse={() => {}}
-        items={colors.map(([rarity, rarityColor]) => ({
-          id: rarity,
-          name: 'Example weapon',
-          icon: <img src={warriorWeapon} alt='' />,
-          rarity,
-          rarityColor,
-          quantity: 1,
-          stackable: false,
-          details: 'Rarity is supplied by the host.',
-          price: 1,
-        }))}
+        items={colors.map(([rarity, rarityColor]) => {
+          return {
+            id: rarity,
+            name: 'Example weapon',
+            icon: <img src={warriorWeapon} alt='' />,
+            rarity,
+            rarityColor,
+            quantity: 1,
+            stackable: false,
+            details: 'Rarity is supplied by the host.',
+            price: 1,
+          };
+        })}
       />
     );
   },
@@ -188,23 +194,32 @@ export const DragToEquip: StoryObj<typeof meta> = {
   render: function DragToEquip(args) {
     const [equipped, setEquipped] = useState(false);
     const equip = (id: string) => {
-      if (id === 'helmet') setEquipped(true);
+      if (id === 'helmet') {
+        setEquipped(true);
+      }
     };
 
     return (
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <EquipmentPanel
           {...args}
-          slots={slots.map((slot) =>
-            slot.id === 'Helmet'
+          slots={slots.map((slot) => {
+            return slot.id === 'Helmet'
               ? {
                   ...slot,
-                  drop: { accepts: ['backpack'], onDrop: (_, id) => equip(id) },
-                  onUnequip: () => setEquipped(false),
+                  drop: {
+                    accepts: ['backpack'],
+                    onDrop: (_, id) => {
+                      return equip(id);
+                    },
+                  },
+                  onUnequip: () => {
+                    return setEquipped(false);
+                  },
                   item: equipped ? { name: 'Helmet', icon: slot.fallback, badges: [] } : undefined,
                 }
-              : slot,
-          )}
+              : slot;
+          })}
           stats={[{ label: 'Armor', value: equipped ? '1' : '0' }]}
         />
         <Backpack

@@ -7,7 +7,12 @@ import { createInventoryRules } from './inventory-rules.ts';
 import { createMerchantRules } from './merchant-rules.ts';
 import { createValidationRules } from './validation-rules.ts';
 
-export function createRules(content: Registries, random = () => Math.random()) {
+export function createRules(
+  content: Registries,
+  random = () => {
+    return Math.random();
+  },
+) {
   const equipment = createEquipmentRules(content);
   const items = createItemRules(content, random);
   const storage = createStorageRules(items);

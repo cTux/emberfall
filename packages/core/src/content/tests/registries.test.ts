@@ -14,7 +14,9 @@ test('base loads through the same registries with stable IDs, ordering and balan
   assert.equal(ready.status, 'ready');
   assert.deepEqual(ready.modIds, ['base']);
   assert.deepEqual(
-    ready.registries.classes.values().map((player) => player.id),
+    ready.registries.classes.values().map((player) => {
+      return player.id;
+    }),
     ['warrior', 'ranger', 'mage', 'druid'],
   );
   assert.equal(ready.registries.items.size, 28);
@@ -103,21 +105,22 @@ test('ready content is detached and deeply immutable; retained registration hand
   stats.armor = 99;
   const item = ready.registries.items.require('retained:ring');
   assert.equal(item.kind, 'gear');
-  if (item.kind !== 'gear') throw new Error('Expected gear');
+  if (item.kind !== 'gear') {
+    throw new Error('Expected gear');
+  }
+
   assert.equal(item.stats.armor, 3);
   assert.throws(() => {
     item.stats.armor = 5;
   }, TypeError);
-  assert.throws(
-    () =>
-      registration.stats.register({
-        id: 'late',
-        label: 'Late',
-        default: 0,
-        aggregation: 'sum',
-        format: 'number',
-      }),
-    /after initialization/,
-  );
+  assert.throws(() => {
+    return registration.stats.register({
+      id: 'late',
+      label: 'Late',
+      default: 0,
+      aggregation: 'sum',
+      format: 'number',
+    });
+  }, /after initialization/);
   assert.equal('register' in ready.registries.items, false);
 });

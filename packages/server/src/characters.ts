@@ -42,13 +42,17 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
     constructor(path: string) {
       this.db = openCharacterDatabase(path);
-      this.worldRepository = createWorldRepository(this.db, (operation) =>
-        this.transaction(operation),
-      );
+      this.worldRepository = createWorldRepository(this.db, (operation) => {
+        return this.transaction(operation);
+      });
       this.accountRepository = createAccountRepository(
         this.db,
-        (operation) => this.transaction(operation),
-        (name) => this.create(name),
+        (operation) => {
+          return this.transaction(operation);
+        },
+        (name) => {
+          return this.create(name);
+        },
       );
       this.database = new GameDatabase({ db: drizzle({ client: this.db }), dialect: 'sqlite' });
       this.ready = this.database
@@ -90,7 +94,9 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     load(token: string) {
       const hash = createHash('sha256').update(token).digest('hex');
       const identity = this.db.prepare('SELECT id FROM characters WHERE token_hash=?').get(hash);
-      if (!identity) throw new Error('Character save not found.');
+      if (!identity) {
+        throw new Error('Character save not found.');
+      }
 
       return this.loadById(String(identity.id));
     }
@@ -101,10 +107,12 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
           `SELECT c.id, c.name, s.data, s.version FROM characters c JOIN ${this.savesTable} s ON s.user_id=c.id AND s.slot=0 WHERE c.id=?`,
         )
         .get(id);
-      if (!row)
+      if (!row) {
         throw new Error(
           'Character save not found. Check that you are connected to the correct server.',
         );
+      }
+
       const result = decodeProgress(String(row.data));
       this.versions.set(String(row.id), Number(row.version));
 
@@ -126,8 +134,12 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
     importCharacter(id: string, tokenHash: string, name: string, raw: string) {
       const { classId, classes, storehouse } = decodeProgress(raw);
-      if (this.db.prepare('SELECT 1 FROM characters WHERE id=? OR token_hash=?').get(id, tokenHash))
+      if (
+        this.db.prepare('SELECT 1 FROM characters WHERE id=? OR token_hash=?').get(id, tokenHash)
+      ) {
         throw new Error('Character already exists; refusing to overwrite progress');
+      }
+
       this.transaction(() => {
         const now = Math.floor(Date.now() / 1000);
         this.db
@@ -147,7 +159,10 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
 
     merchant(worldId: string): Merchant {
       const row = this.db.prepare('SELECT data FROM merchants WHERE world_id=?').get(worldId);
-      if (row) return merchantSchema.parse(JSON.parse(String(row.data)));
+      if (row) {
+        return merchantSchema.parse(JSON.parse(String(row.data)));
+      }
+
       const merchant = freshMerchant();
       this.saveMerchant(worldId, merchant);
 
@@ -171,7 +186,10 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       const row = this.db
         .prepare(`SELECT data, version FROM ${this.savesTable} WHERE user_id=? AND slot=0`)
         .get(id);
-      if (!row) throw new Error('Character save is missing.');
+      if (!row) {
+        throw new Error('Character save is missing.');
+      }
+
       const previous = decodeProgress(String(row.data));
       const classId = classSchema.parse(progress.classId ?? previous.classId);
       const classes = {
@@ -201,8 +219,14 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
             id,
             version,
           );
-        if (!result.changes) throw new VersionConflictError(id, 0, version);
-        if (merchant) this.saveMerchant(merchant.worldId, merchant.state);
+        if (!result.changes) {
+          throw new VersionConflictError(id, 0, version);
+        }
+
+        if (merchant) {
+          this.saveMerchant(merchant.worldId, merchant.state);
+        }
+
         this.db
           .prepare(
             'UPDATE characters SET name=COALESCE((SELECT nickname FROM steam_accounts WHERE character_id=characters.id), ?), updated_at=? WHERE id=?',
@@ -260,7 +284,9 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     }
 
     close() {
-      if (this.db.isOpen) this.db.close();
+      if (this.db.isOpen) {
+        this.db.close();
+      }
     }
   }
 

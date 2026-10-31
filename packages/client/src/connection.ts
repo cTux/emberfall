@@ -30,7 +30,9 @@ export class GameConnection {
         typeof location !== 'undefined' && import.meta.env?.DEV && endpoint.host === location.host
           ? {
               urlBuilder: (url: URL) => {
-                if (url.protocol.startsWith('ws')) url.pathname = `/colyseus${url.pathname}`;
+                if (url.protocol.startsWith('ws')) {
+                  url.pathname = `/colyseus${url.pathname}`;
+                }
 
                 return url.toString();
               },
@@ -43,7 +45,10 @@ export class GameConnection {
           credentials: 'include',
           signal: AbortSignal.timeout(10_000),
         });
-        if (!response.ok) throw new Error('Authentication required');
+        if (!response.ok) {
+          throw new Error('Authentication required');
+        }
+
         ticket = (await response.json()).ticket;
       }
 
@@ -60,16 +65,22 @@ export class GameConnection {
         return;
       }
 
-      room.onMessage('event', (message: ServerMessage) => this.onmessage?.({ data: message }));
+      room.onMessage('event', (message: ServerMessage) => {
+        return this.onmessage?.({ data: message });
+      });
       room.onStateChange((state) => {
         const world = materializeState(state);
-        if (world) this.onmessage?.({ data: { type: 'state', world } });
+        if (world) {
+          this.onmessage?.({ data: { type: 'state', world } });
+        }
       });
       room.onLeave(() => {
         this.readyState = GameConnection.CLOSED;
         this.onclose?.();
       });
-      room.onError(() => this.onerror?.());
+      room.onError(() => {
+        return this.onerror?.();
+      });
       this.readyState = GameConnection.OPEN;
       this.onopen?.();
       room.send('command', { type: 'ping', id: 1 });
@@ -83,13 +94,19 @@ export class GameConnection {
   }
 
   send(data: ClientMessage) {
-    if (this.readyState === GameConnection.OPEN) this.room?.send('command', data);
+    if (this.readyState === GameConnection.OPEN) {
+      this.room?.send('command', data);
+    }
   }
 
   close(code = 1000, reason?: string) {
     this.closed = true;
-    if (code === 1000) void this.room?.leave();
-    else this.room?.connection.close(code, reason);
+    if (code === 1000) {
+      void this.room?.leave();
+    } else {
+      this.room?.connection.close(code, reason);
+    }
+
     this.readyState = GameConnection.CLOSED;
   }
 }

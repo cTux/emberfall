@@ -2,7 +2,7 @@ import type { ValidationContext } from './context.ts';
 
 export function validateEquipment(context: ValidationContext) {
   const { r, check, positive, nonnegative, reference } = context;
-  for (const stat of r.stats.values())
+  for (const stat of r.stats.values()) {
     check(
       typeof stat.label === 'string' &&
         Number.isFinite(stat.default) &&
@@ -12,6 +12,8 @@ export function validateEquipment(context: ValidationContext) {
       stat.id,
       'invalid default, aggregation or format',
     );
+  }
+
   for (const slot of r.slots.values()) {
     check(
       typeof slot.label === 'string' &&
@@ -24,7 +26,9 @@ export function validateEquipment(context: ValidationContext) {
       slot.id,
       'invalid label, layout or gearTypes',
     );
-    for (const type of slot.gearTypes) reference('slots', slot.id, 'gearTypes', type);
+    for (const type of slot.gearTypes) {
+      reference('slots', slot.id, 'gearTypes', type);
+    }
   }
 
   for (const item of r.items.values()) {
@@ -40,16 +44,21 @@ export function validateEquipment(context: ValidationContext) {
       item.id,
       'unsupported kind',
     );
-    if (item.kind === 'gear') reference('items', item.id, 'gearTypes', item.gearType);
-    else if (item.kind === 'consumable')
+    if (item.kind === 'gear') {
+      reference('items', item.id, 'gearTypes', item.gearType);
+    } else if (item.kind === 'consumable') {
       check(positive(item.healing), 'items', item.id, 'invalid healing');
-    if (item.kind === 'gear' && item.damageType !== undefined)
+    }
+
+    if (item.kind === 'gear' && item.damageType !== undefined) {
       check(
         ['physical', 'fire', 'poison', 'nature'].includes(item.damageType),
         'items',
         item.id,
         'unsupported damageType',
       );
+    }
+
     for (const [key, value] of Object.entries(item.kind === 'gear' ? item.stats : {})) {
       reference('items', item.id, 'stats', key);
       check(Number.isFinite(value), 'items', item.id, `invalid stat '${key}'`);

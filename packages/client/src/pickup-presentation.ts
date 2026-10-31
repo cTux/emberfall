@@ -5,13 +5,24 @@ import type { Player, WorldState } from '@emberfall/common';
 
 /** Adjust detached render drops only. Selection, removal and rewards stay authoritative. */
 export function alignLocalPickups(view: WorldState, local: Player) {
-  if (local.scene !== 'forest' || local.hitpoints <= 0) return;
-  const buffered = view.players.find((p) => p.id === local.id);
-  if (!buffered || buffered.scene !== local.scene) return;
+  if (local.scene !== 'forest' || local.hitpoints <= 0) {
+    return;
+  }
+
+  const buffered = view.players.find((p) => {
+    return p.id === local.id;
+  });
+  if (!buffered || buffered.scene !== local.scene) {
+    return;
+  }
+
   const dx = wrappedDelta(local.x, buffered.x, FOREST.width);
   const dy = wrappedDelta(local.y, buffered.y, FOREST.height);
   for (const drop of view.scene?.drops ?? []) {
-    if (drop.collectorId !== local.id) continue;
+    if (drop.collectorId !== local.id) {
+      continue;
+    }
+
     const distance = Math.hypot(
       wrappedDelta(drop.x, buffered.x, FOREST.width),
       wrappedDelta(drop.y, buffered.y, FOREST.height),

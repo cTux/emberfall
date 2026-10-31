@@ -16,24 +16,33 @@ export function Storehouse({
   const [renaming, setRenaming] = useState<number | null>(null);
   const [name, setName] = useState('');
   const validName = storageNameSchema.safeParse(name);
-  const storageInventories = (player.storages ?? []).map((_, index) => `storage-${index}`);
-  const storageDrop = (index: number) => ({
-    accepts: [
-      'backpack',
-      ...storageInventories.filter((inventory) => inventory !== `storage-${index}`),
-    ],
-    onDrop(inventory: string, id: string) {
-      if (inventory === 'backpack') send({ type: 'storeItem', tab: index, id, depositing: true });
-      else
-        send({
-          type: 'moveStorageItem',
-          fromTab: Number(inventory.slice('storage-'.length)),
-          toTab: index,
-          id,
-        });
-      setTab(String(index));
-    },
+  const storageInventories = (player.storages ?? []).map((_, index) => {
+    return `storage-${index}`;
   });
+  const storageDrop = (index: number) => {
+    return {
+      accepts: [
+        'backpack',
+        ...storageInventories.filter((inventory) => {
+          return inventory !== `storage-${index}`;
+        }),
+      ],
+      onDrop(inventory: string, id: string) {
+        if (inventory === 'backpack') {
+          send({ type: 'storeItem', tab: index, id, depositing: true });
+        } else {
+          send({
+            type: 'moveStorageItem',
+            fromTab: Number(inventory.slice('storage-'.length)),
+            toTab: index,
+            id,
+          });
+        }
+
+        setTab(String(index));
+      },
+    };
+  };
 
   return (
     <Stack spacing={0.5}>
@@ -43,57 +52,66 @@ export function Storehouse({
         value={tab}
         onChange={setTab}
         showHeading={false}
-        chapters={(player.storages ?? []).map((storage, index) => ({
-          id: String(index),
-          title: storage.name,
-          drop: storageDrop(index),
-          onRename: () => {
-            setRenaming(index);
-            setName(storage.name);
-          },
-          content: (
-            <>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-                  gap: 1.5,
-                }}
-              >
-                <Backpack
-                  label={storage.name}
-                  slots={STORAGE_SLOTS}
-                  items={backpackViews(storage.items, player)}
-                  action='Withdraw'
-                  inventory={`storage-${index}`}
-                  drop={storageDrop(index)}
-                  onUse={(id) => send({ type: 'storeItem', tab: index, id, depositing: false })}
-                />
-                <Backpack
-                  label='Your backpack'
-                  items={backpackViews(player.backpack ?? [], player)}
-                  action='Deposit'
-                  inventory='backpack'
-                  drop={{
-                    accepts: storageInventories,
-                    onDrop: (inventory, id) =>
-                      send({
-                        type: 'storeItem',
-                        tab: Number(inventory.slice('storage-'.length)),
-                        id,
-                        depositing: false,
-                      }),
+        chapters={(player.storages ?? []).map((storage, index) => {
+          return {
+            id: String(index),
+            title: storage.name,
+            drop: storageDrop(index),
+            onRename: () => {
+              setRenaming(index);
+              setName(storage.name);
+            },
+            content: (
+              <>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+                    gap: 1.5,
                   }}
-                  onUse={(id) => send({ type: 'storeItem', tab: index, id, depositing: true })}
-                />
-              </Box>
-            </>
-          ),
-        }))}
+                >
+                  <Backpack
+                    label={storage.name}
+                    slots={STORAGE_SLOTS}
+                    items={backpackViews(storage.items, player)}
+                    action='Withdraw'
+                    inventory={`storage-${index}`}
+                    drop={storageDrop(index)}
+                    onUse={(id) => {
+                      return send({ type: 'storeItem', tab: index, id, depositing: false });
+                    }}
+                  />
+                  <Backpack
+                    label='Your backpack'
+                    items={backpackViews(player.backpack ?? [], player)}
+                    action='Deposit'
+                    inventory='backpack'
+                    drop={{
+                      accepts: storageInventories,
+                      onDrop: (inventory, id) => {
+                        return send({
+                          type: 'storeItem',
+                          tab: Number(inventory.slice('storage-'.length)),
+                          id,
+                          depositing: false,
+                        });
+                      },
+                    }}
+                    onUse={(id) => {
+                      return send({ type: 'storeItem', tab: index, id, depositing: true });
+                    }}
+                  />
+                </Box>
+              </>
+            ),
+          };
+        })}
       />
       <GameWindow
         open={renaming !== null}
-        onClose={() => setRenaming(null)}
+        onClose={() => {
+          return setRenaming(null);
+        }}
         title='Rename storage'
         width={280}
       >
@@ -102,7 +120,10 @@ export function Storehouse({
           spacing={1}
           onSubmit={(event) => {
             event.preventDefault();
-            if (renaming === null || !validName.success) return;
+            if (renaming === null || !validName.success) {
+              return;
+            }
+
             send({ type: 'renameStorage', tab: renaming, name: validName.data });
             setRenaming(null);
           }}
@@ -111,11 +132,19 @@ export function Storehouse({
             autoFocus
             placeholder='Storage name'
             value={name}
-            onChange={(event) => setName(event.target.value)}
+            onChange={(event) => {
+              return setName(event.target.value);
+            }}
             slotProps={{ htmlInput: { 'aria-label': 'Storage name' } }}
           />
           <Stack direction='row' spacing={1} sx={{ justifyContent: 'flex-end' }}>
-            <Button onClick={() => setRenaming(null)}>Cancel</Button>
+            <Button
+              onClick={() => {
+                return setRenaming(null);
+              }}
+            >
+              Cancel
+            </Button>
             <Button type='submit' variant='contained' disabled={!validName.success}>
               Save
             </Button>

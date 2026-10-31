@@ -16,7 +16,11 @@ export type PixelComparison = (
 ) => void;
 
 export async function compare() {
-  await Promise.all(Object.values(statusImages).map((image) => image.decode()));
+  await Promise.all(
+    Object.values(statusImages).map((image) => {
+      return image.decode();
+    }),
+  );
   const gpu = document.createElement('canvas'),
     reference = document.createElement('canvas');
   document.body.append(gpu, reference);
@@ -58,7 +62,9 @@ export async function compare() {
       icons[name] = 0;
       for (let i = 0; i < pixels.length; i += 4) {
         const channels = [pixels[i], pixels[i + 1], pixels[i + 2]];
-        if (Math.max(...channels) - Math.min(...channels) > 40) icons[name]++;
+        if (Math.max(...channels) - Math.min(...channels) > 40) {
+          icons[name]++;
+        }
       }
 
       delete results[name];
@@ -71,8 +77,10 @@ export async function compare() {
   compare(
     'composite',
     (ctx) => {
-      for (const [i, image] of Object.values(statusImages).entries())
+      for (const [i, image] of Object.values(statusImages).entries()) {
         ctx.drawImage(image, 20 + i * 55, 100, 40, 40);
+      }
+
       drawVignette(ctx, 0, 0, 256, 256);
     },
     128,

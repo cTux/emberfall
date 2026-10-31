@@ -6,16 +6,26 @@ test('loot hints show an uncapped confirmed burst, expire, and persist their set
   game,
 }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   let player = [...world.players.values()][0];
   const canvas = page.locator('canvas');
   await expect(canvas).toHaveAttribute('data-loot-hint-count', '0');
-  const settings = () => page.getByRole('button', { name: 'Settings', exact: true }).click();
-  const close = () => page.getByRole('button', { name: 'Close Settings' }).click();
+  const settings = () => {
+    return page.getByRole('button', { name: 'Settings', exact: true }).click();
+  };
+
+  const close = () => {
+    return page.getByRole('button', { name: 'Close Settings' }).click();
+  };
+
   const toggle = page.getByRole('switch', { name: 'Loot hints', exact: true });
   await settings();
   await expect(toggle).toBeChecked();
@@ -42,7 +52,9 @@ test('loot hints show an uncapped confirmed burst, expire, and persist their set
     'fern',
     'berry-bush',
   ];
-  player.backpack = ids.map((itemId, i) => ({ id: `hint-${i}`, itemId, quantity: i < 7 ? 3 : 1 }));
+  player.backpack = ids.map((itemId, i) => {
+    return { id: `hint-${i}`, itemId, quantity: i < 7 ? 3 : 1 };
+  });
   await expect(canvas).toHaveAttribute('data-loot-hint-count', '20');
   await page.screenshot({ path: 'test-results/loot-hints-village.png' });
   await expect(canvas).toHaveAttribute('data-loot-hint-count', '0');

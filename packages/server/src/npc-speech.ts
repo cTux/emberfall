@@ -33,10 +33,15 @@ export class NpcSpeech {
       this.topics.set(npcId, rotation);
     }
 
-    if (!rotation.remaining.length) rotation.remaining = [...VILLAGE_DEFINITION.dialogueTopics];
+    if (!rotation.remaining.length) {
+      rotation.remaining = [...VILLAGE_DEFINITION.dialogueTopics];
+    }
+
     let index = Math.floor(this.random() * rotation.remaining.length);
-    if (rotation.remaining[index] === rotation.last && rotation.remaining.length > 1)
+    if (rotation.remaining[index] === rotation.last && rotation.remaining.length > 1) {
       index = (index + 1) % rotation.remaining.length;
+    }
+
     const [topic] = rotation.remaining.splice(index, 1);
     rotation.last = topic;
 
@@ -44,8 +49,12 @@ export class NpcSpeech {
   }
 
   context(conversation: Conversation, npc: VillageNpc, target: { name: string }) {
-    const definition = VILLAGE_DEFINITION.villagers.find((n) => n.id === npc.id)!;
-    if (!conversation.text) conversation.topic = this.chooseTopic(npc.id);
+    const definition = VILLAGE_DEFINITION.villagers.find((n) => {
+      return n.id === npc.id;
+    })!;
+    if (!conversation.text) {
+      conversation.topic = this.chooseTopic(npc.id);
+    }
 
     return JSON.stringify({
       character: definition.name,
@@ -53,9 +62,9 @@ export class NpcSpeech {
       background: definition.background,
       setting:
         'Emberfall is a cooperative medieval fantasy game. Adventurers prepare in the village, fight monsters and a Brute Boss in the forest, and return with loot. Marta sells consumables and resources; Bram sells gear. Both buy collected items and offer buyback. The Storehouse stores items. The Inn is scenery; Hall and Lodge have no services yet. Do not invent active festivals, quests or services.',
-      residents: VILLAGE_DEFINITION.villagers.map(
-        (npc) => `@${npc.name.split(' ')[0]}: ${npc.name}`,
-      ),
+      residents: VILLAGE_DEFINITION.villagers.map((npc) => {
+        return `@${npc.name.split(' ')[0]}: ${npc.name}`;
+      }),
       listener: target.name,
       listenerMention: conversation.otherNpc ? `@${target.name.split(' ')[0]}` : undefined,
       task: conversation.text
@@ -89,23 +98,41 @@ export class NpcSpeech {
       },
     ].slice(-30);
     const mentioned = [...text.matchAll(/@([\p{L}]+)/gu)]
-      .map((match) => this.world.npcs?.find((npc) => npc.name.split(' ')[0] === match[1]))
-      .find((candidate) => candidate && candidate.id !== npc.id);
+      .map((match) => {
+        return this.world.npcs?.find((npc) => {
+          return npc.name.split(' ')[0] === match[1];
+        });
+      })
+      .find((candidate) => {
+        return candidate && candidate.id !== npc.id;
+      });
     const line = `${npc.name}: ${text}`;
     for (const id of new Set(
-      [npc.id, conversation.otherNpc, mentioned?.id].filter((id): id is string => !!id),
-    ))
+      [npc.id, conversation.otherNpc, mentioned?.id].filter((id): id is string => {
+        return !!id;
+      }),
+    )) {
       this.memories.set(id, [...(this.memories.get(id) ?? []), line].slice(-6));
+    }
 
     return { text, mentioned };
   }
 
   silence(value: boolean) {
     const npcs = this.world.npcs ?? [];
-    if (npcs.every((npc) => npc.silenced === value)) return;
+    if (
+      npcs.every((npc) => {
+        return npc.silenced === value;
+      })
+    ) {
+      return;
+    }
+
     for (const npc of npcs) {
       npc.silenced = value;
-      if (value) npc.chat = undefined;
+      if (value) {
+        npc.chat = undefined;
+      }
     }
 
     this.world.chat = [

@@ -19,8 +19,14 @@ export function useGameHotkeys({
 }) {
   useEffect(() => {
     const key = (event: KeyboardEvent) => {
-      if (event.code === 'F1') event.preventDefault();
-      if (event.repeat) return;
+      if (event.code === 'F1') {
+        event.preventDefault();
+      }
+
+      if (event.repeat) {
+        return;
+      }
+
       const typing =
         event.target instanceof Element &&
         !!event.target.closest('input, textarea, select, [contenteditable=true]');
@@ -106,7 +112,9 @@ export function useGameHotkeys({
           event.code === 'KeyF' ? 'autoAttack' : event.code === 'KeyG' ? 'autoTarget' : null;
         if (option) {
           event.preventDefault();
-          setPreferences((p) => ({ ...p, [option]: !p[option] }));
+          setPreferences((p) => {
+            return { ...p, [option]: !p[option] };
+          });
         }
       }
 
@@ -131,12 +139,15 @@ export function useGameHotkeys({
         !menu &&
         !document.querySelector('[role="dialog"][aria-modal="true"]') &&
         !typing
-      )
+      ) {
         interact();
+      }
     };
 
     window.addEventListener('keydown', key);
 
-    return () => window.removeEventListener('keydown', key);
+    return () => {
+      return window.removeEventListener('keydown', key);
+    };
   });
 }

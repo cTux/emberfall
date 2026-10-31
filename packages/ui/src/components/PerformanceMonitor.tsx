@@ -19,24 +19,29 @@ export function PerformanceMonitor({
   showLatency = true,
 }: PerformanceMonitorProps) {
   const theme = useTheme();
-  if (!showFps && !showLatency) return null;
+  if (!showFps && !showLatency) {
+    return null;
+  }
+
   const recent = samples.slice(-60);
   const current = recent.at(-1);
-  const diagnostics = recent.some(
-    (sample) => sample.inputDelay !== undefined || sample.snapshotAge !== undefined,
-  );
+  const diagnostics = recent.some((sample) => {
+    return sample.inputDelay !== undefined || sample.snapshotAge !== undefined;
+  });
   const networkMax = Math.max(
     100,
-    ...recent.flatMap((sample) =>
-      [sample.latency, sample.inputDelay, sample.snapshotAge].map((value) =>
-        Number.isFinite(value) ? value! : 0,
-      ),
-    ),
+    ...recent.flatMap((sample) => {
+      return [sample.latency, sample.inputDelay, sample.snapshotAge].map((value) => {
+        return Number.isFinite(value) ? value! : 0;
+      });
+    }),
   );
   const series = (key: 'fps' | 'latency' | 'inputDelay' | 'snapshotAge') => {
     const max = Math.max(
       key === 'fps' ? 60 : networkMax,
-      ...recent.map((sample) => (Number.isFinite(sample[key]) ? sample[key]! : 0)),
+      ...recent.map((sample) => {
+        return Number.isFinite(sample[key]) ? sample[key]! : 0;
+      }),
     );
     let connected = false;
 

@@ -59,7 +59,10 @@
       }
     ],
     "eslint/no-eval": "error",
-    "eslint/no-implied-eval": "error"
+    "eslint/no-implied-eval": "error",
+    "eslint/curly": ["error", "all"],
+    "eslint/arrow-body-style": ["error", "always"],
+    "unicorn/switch-case-braces": ["error", "always"]
   },
   "ignorePatterns": ["**/dist/**", "**/build/**", "**/coverage/**"],
   "overrides": [

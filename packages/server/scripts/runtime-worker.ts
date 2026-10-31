@@ -33,9 +33,15 @@ assert(basename(root).startsWith('emberfall-runtime-benchmark-'));
 assert.equal(basename(savePath), 'characters.sqlite');
 assert(!existsSync(savePath), 'Never open an existing save database');
 const count = Number(process.argv[3]);
-assert(BENCHMARK.worlds.some((value) => value === count));
+assert(
+  BENCHMARK.worlds.some((value) => {
+    return value === count;
+  }),
+);
 const app = await createGameServer(undefined, savePath, undefined, undefined, {
-  generate: async () => ({ status: 'busy' }),
+  generate: async () => {
+    return { status: 'busy' };
+  },
 });
 const sockets = new Set<Socket>();
 let closedBytes = 0;
@@ -46,8 +52,15 @@ app.server.on('connection', (socket) => {
     sockets.delete(socket);
   });
 });
-const bytes = () =>
-  closedBytes + [...sockets].reduce((sum, socket) => sum + socket.bytesWritten, 0);
+const bytes = () => {
+  return (
+    closedBytes +
+    [...sockets].reduce((sum, socket) => {
+      return sum + socket.bytesWritten;
+    }, 0)
+  );
+};
+
 const delay = monitorEventLoopDelay({ resolution: 10 });
 let workload: ReturnType<typeof arrangeWorkload> | undefined;
 let started = 0;
@@ -60,7 +73,10 @@ const memory = setInterval(() => {
 let closing = false;
 
 async function close() {
-  if (closing) return;
+  if (closing) {
+    return;
+  }
+
   closing = true;
   clearInterval(memory);
   workload?.close();
@@ -69,17 +85,19 @@ async function close() {
 }
 
 process.once('disconnect', () => {
-  void close().catch(() => process.exit(1));
+  void close().catch(() => {
+    return process.exit(1);
+  });
 });
 
 async function command(type: unknown) {
   let reply: WorkerReply;
   switch (type) {
-    case 'arrange':
+    case 'arrange': {
       assert(!workload);
       workload = arrangeWorkload(app.runtime.worlds, app.runtime.parties, count);
-      for (const world of app.runtime.worlds.values())
-        for (const player of world.players.values())
+      for (const world of app.runtime.worlds.values()) {
+        for (const player of world.players.values()) {
           (world.chat ??= []).push({
             id: `private:${player.id}`,
             playerId: '',
@@ -88,9 +106,14 @@ async function command(type: unknown) {
             recipientIds: [player.id],
             dimension: 'forest',
           });
+        }
+      }
+
       reply = { type, scenes: workload.scenes };
       break;
-    case 'measure':
+    }
+
+    case 'measure': {
       assert(workload);
       workload.reset();
       peakRss = process.memoryUsage().rss;
@@ -101,6 +124,8 @@ async function command(type: unknown) {
       started = performance.now();
       reply = { type };
       break;
+    }
+
     case 'finish': {
       assert(workload && started);
       const measuredMs = performance.now() - started;
@@ -124,16 +149,21 @@ async function command(type: unknown) {
       break;
     }
 
-    case 'stop':
+    case 'stop': {
       await close();
       reply = { type };
       break;
-    default:
+    }
+
+    default: {
       throw new Error('Unknown benchmark command');
+    }
   }
 
   process.send!(reply);
-  if (type === 'stop') process.disconnect!();
+  if (type === 'stop') {
+    process.disconnect!();
+  }
 }
 
 process.on('message', (type) => {

@@ -7,16 +7,30 @@ test('padded scenery shadows meet the visible base under sunlight and nearby lam
   const pixels = new Uint8ClampedArray(16 * 16 * 4);
   // Visible building/root edge ends at row 12, leaving four transparent rows.
   pixels[(11 * 16 + 8) * 4 + 3] = 255;
-  const maskContext = { drawImage() {}, fillRect() {}, getImageData: () => ({ data: pixels }) };
+  const maskContext = {
+    drawImage() {},
+    fillRect() {},
+    getImageData: () => {
+      return { data: pixels };
+    },
+  };
   Object.defineProperty(globalThis, 'document', {
     configurable: true,
     value: {
-      createElement: () => ({ width: 0, height: 0, getContext: () => maskContext }),
+      createElement: () => {
+        return {
+          width: 0,
+          height: 0,
+          getContext: () => {
+            return maskContext;
+          },
+        };
+      },
     },
   });
   try {
     const mask = makeMask({ width: 16, height: 16 } as HTMLCanvasElement);
-    for (const height of [64, 128])
+    for (const height of [64, 128]) {
       for (const light of [undefined, { x: 10, y: 10, height: 180, radius: 300, strength: 1 }]) {
         let tx = 0,
           ty = 0,
@@ -47,8 +61,12 @@ test('padded scenery shadows meet the visible base under sunlight and nearby lam
           'shadow and visible base must touch',
         );
       }
+    }
   } finally {
-    if (previous) Object.defineProperty(globalThis, 'document', previous);
-    else Reflect.deleteProperty(globalThis, 'document');
+    if (previous) {
+      Object.defineProperty(globalThis, 'document', previous);
+    } else {
+      Reflect.deleteProperty(globalThis, 'document');
+    }
   }
 });

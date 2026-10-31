@@ -5,31 +5,39 @@ import { Difficulty, EnemyType, type Enemy, type Player, type SceneState } from 
 import { createTrainingScene, hitEnemy, stepCombat } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 
-const hero = (): Player => ({
-  ...freshProgress(),
-  id: 'p',
-  name: 'Player',
-  color: 0,
-  x: 2400,
-  y: 1280,
-  scene: 'forest',
-  autoAttack: false,
-});
-const scene = (): SceneState => ({
-  ...createTrainingScene(0),
-  training: false,
-  enemies: [],
-  nextSpawn: 1e9,
-  endsAt: 1e9,
-});
-const enemy = (kind: EnemyType): Enemy => ({
-  id: 20,
-  kind,
-  x: 2400,
-  y: 1280,
-  hitpoints: 1,
-  angle: 0,
-});
+const hero = (): Player => {
+  return {
+    ...freshProgress(),
+    id: 'p',
+    name: 'Player',
+    color: 0,
+    x: 2400,
+    y: 1280,
+    scene: 'forest',
+    autoAttack: false,
+  };
+};
+
+const scene = (): SceneState => {
+  return {
+    ...createTrainingScene(0),
+    training: false,
+    enemies: [],
+    nextSpawn: 1e9,
+    endsAt: 1e9,
+  };
+};
+
+const enemy = (kind: EnemyType): Enemy => {
+  return {
+    id: 20,
+    kind,
+    x: 2400,
+    y: 1280,
+    hitpoints: 1,
+    angle: 0,
+  };
+};
 
 test('failed item chance skips count rolls; successful normal chance can still yield zero items', (t) => {
   for (const [type, boundary] of [
@@ -38,11 +46,15 @@ test('failed item chance skips count rolls; successful normal chance can still y
     [EnemyType.Boss, 0.5],
   ] as const) {
     const rolls = [0.5, boundary];
-    const random = t.mock.method(Math, 'random', () => rolls.shift()!);
+    const random = t.mock.method(Math, 'random', () => {
+      return rolls.shift()!;
+    });
     const arena = scene();
     hitEnemy(arena, enemy(type), 1, hero(), 1000);
     assert.deepEqual(
-      arena.drops?.map((drop) => drop.kind),
+      arena.drops?.map((drop) => {
+        return drop.kind;
+      }),
       ['experience'],
     );
     assert.equal(random.mock.callCount(), 2, 'failed gate must not roll a count or item');
@@ -50,11 +62,15 @@ test('failed item chance skips count rolls; successful normal chance can still y
   }
 
   const rolls = [0.5, 0, 0.01];
-  t.mock.method(Math, 'random', () => rolls.shift()!);
+  t.mock.method(Math, 'random', () => {
+    return rolls.shift()!;
+  });
   const arena = scene();
   hitEnemy(arena, enemy(EnemyType.Normal), 1, hero(), 1000);
   assert.deepEqual(
-    arena.drops?.map((drop) => drop.kind),
+    arena.drops?.map((drop) => {
+      return drop.kind;
+    }),
     ['experience'],
   );
 });
@@ -85,20 +101,35 @@ test('a successful 350 percent boss roll drops four independent items once and r
       return rolls.shift()!;
     });
     const arena = scene();
-    arena.drops = Array.from({ length: existing }, (_, id) => ({
-      id: -id,
-      kind: 'experience',
-      x: 0,
-      y: 0,
-      at: 0,
-    }));
+    arena.drops = Array.from({ length: existing }, (_, id) => {
+      return {
+        id: -id,
+        kind: 'experience',
+        x: 0,
+        y: 0,
+        at: 0,
+      };
+    });
     const boss = enemy(EnemyType.Boss);
     const player = hero();
     hitEnemy(arena, boss, 1, player, 1000);
     hitEnemy(arena, boss, 1, player, 1000);
-    assert.equal(arena.drops.filter((drop) => drop.kind === 'item').length, 4);
     assert.equal(
-      new Set(arena.drops.filter((drop) => drop.kind === 'item').map((drop) => drop.itemId)).size,
+      arena.drops.filter((drop) => {
+        return drop.kind === 'item';
+      }).length,
+      4,
+    );
+    assert.equal(
+      new Set(
+        arena.drops
+          .filter((drop) => {
+            return drop.kind === 'item';
+          })
+          .map((drop) => {
+            return drop.itemId;
+          }),
+      ).size,
       4,
     );
     assert.equal(arena.drops.length, existing ? 512 : 5);

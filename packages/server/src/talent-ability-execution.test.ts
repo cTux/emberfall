@@ -23,7 +23,9 @@ test('abilities require learning and equipment, keep cooldown across slot change
   const player = hero(),
     scene = arena();
   assert.equal(cast(player, scene), false);
-  assert.throws(() => equipTalent(player, 0, talentNodeId('warrior', 0, 1)));
+  assert.throws(() => {
+    return equipTalent(player, 0, talentNodeId('warrior', 0, 1));
+  });
   ability(player, 0, 1);
   assert.equal(cast(player, scene), true);
   assert(scene.enemies[0].hitpoints < 1000);
@@ -65,9 +67,9 @@ test('abilities require learning and equipment, keep cooldown across slot change
 });
 
 test('all twelve ability entries execute for every class and both ranks without non-finite damage', () => {
-  for (const classId of ['warrior', 'ranger', 'mage', 'druid'])
-    for (let column = 0; column < 3; column++)
-      for (const row of [1, 3, 5, 7])
+  for (const classId of ['warrior', 'ranger', 'mage', 'druid']) {
+    for (let column = 0; column < 3; column++) {
+      for (const row of [1, 3, 5, 7]) {
         for (const learned of [1, 2]) {
           const player = hero(classId),
             scene = arena();
@@ -82,9 +84,19 @@ test('all twelve ability entries execute for every class and both ranks without 
           };
           ability(player, column, row, learned);
           assert.equal(cast(player, scene), true, `${classId}:${column}:${row}:${learned}`);
-          for (let now = 1000; now <= 7000; now += 500) tickTalentEffects(scene, [player], now);
-          assert(scene.damage.every((event) => Number.isFinite(event.amount) && event.amount >= 0));
+          for (let now = 1000; now <= 7000; now += 500) {
+            tickTalentEffects(scene, [player], now);
+          }
+
+          assert(
+            scene.damage.every((event) => {
+              return Number.isFinite(event.amount) && event.amount >= 0;
+            }),
+          );
         }
+      }
+    }
+  }
 });
 
 test('Open Wounds adds percentage points to existing bleed chance', () => {

@@ -7,7 +7,11 @@ export async function checkWeaponBadges(page: Page, dialog: Locator) {
   await sword.focus();
   const itemTooltip = page.getByRole('tooltip').filter({ hasText: "Warrior's sword" });
   await expect(itemTooltip).toBeVisible();
-  expect(await itemTooltip.evaluate((node) => node.closest('[role="dialog"]') === null)).toBe(true);
+  expect(
+    await itemTooltip.evaluate((node) => {
+      return node.closest('[role="dialog"]') === null;
+    }),
+  ).toBe(true);
   await expect(dialog.locator('.game-window-surface')).toHaveCSS('border-top-width', '1px');
   await expect(dialog.locator('.game-window-surface')).toHaveCSS('border-top-style', 'solid');
   await expect(dialog.locator('.game-window-surface')).toHaveCSS('border-image-source', 'none');
@@ -16,7 +20,11 @@ export async function checkWeaponBadges(page: Page, dialog: Locator) {
     '0px',
   );
   const content = dialog.locator('.MuiDialogContent-root');
-  expect(await content.evaluate((node) => node.scrollHeight <= node.clientHeight)).toBe(true);
+  expect(
+    await content.evaluate((node) => {
+      return node.scrollHeight <= node.clientHeight;
+    }),
+  ).toBe(true);
   await expect(itemTooltip.locator('.MuiTooltip-tooltip').first()).toHaveCSS(
     'background-color',
     'rgba(0, 0, 0, 0.94)',

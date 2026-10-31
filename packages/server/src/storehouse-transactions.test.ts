@@ -12,22 +12,33 @@ test('session commands require Storehouse proximity and commit before publishing
   const runtime = await createRuntime();
   const messages: ServerMessage[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   try {
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Keeper', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    for (let i = 0; i < 200 && !world.players.size; i++) {
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 10);
+      });
+    }
+
     const player = [...world.players.values()][0];
     player.backpack = [item()];
     const command = { type: 'storeItem', tab: 0, id: player.backpack[0].id, depositing: true };
-    const error = () => (messages.at(-1) as { message: string }).message;
+    const error = () => {
+      return (messages.at(-1) as { message: string }).message;
+    };
+
     peer.receive(command);
     assert.match(error(), /Storehouse/);
-    const building = BUILDINGS.find((building) => building.id === 'storehouse')!;
+    const building = BUILDINGS.find((building) => {
+      return building.id === 'storehouse';
+    })!;
     player.x = building.doorX;
     player.y = building.y + 9;
     player.scene = 'forest';

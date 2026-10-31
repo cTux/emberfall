@@ -14,7 +14,10 @@ export function drawTorchFire(
   width = 42,
   height = 64,
 ) {
-  if (!environmentArt.naturalWidth) return;
+  if (!environmentArt.naturalWidth) {
+    return;
+  }
+
   if (!hangingLamp) {
     const post = document.createElement('canvas');
     post.width = post.height = 128;

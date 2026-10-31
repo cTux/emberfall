@@ -22,19 +22,24 @@ test('player shadow masks sample complete high-resolution frames in every facing
         this.canvas.width === 64 &&
         this.canvas.height === 64 &&
         rect.length === 8
-      )
+      ) {
         crops.push(rect);
+      }
 
       return Reflect.apply(drawImage, this, [source, ...rect]);
     };
   });
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.setViewportSize({ width: 960, height: 640 });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   await expect(page.locator('canvas')).toHaveAttribute('data-renderer', 'pixijs-webgl');
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   for (const classId of ['warrior', 'ranger', 'mage', 'druid'] as const) {
     player.classId = classId;
@@ -48,10 +53,14 @@ test('player shadow masks sample complete high-resolution frames in every facing
     await page.screenshot({ path: `test-results/shadows-village-${classId}.png` });
   }
 
-  const crops = await page.evaluate(
-    () => (window as unknown as { shadowCrops: number[][] }).shadowCrops,
-  );
+  const crops = await page.evaluate(() => {
+    return (window as unknown as { shadowCrops: number[][] }).shadowCrops;
+  });
   expect(crops.length).toBeGreaterThan(16);
-  expect(crops.filter((rect) => rect[2] !== 128 || rect[3] !== 128)).toHaveLength(0);
+  expect(
+    crops.filter((rect) => {
+      return rect[2] !== 128 || rect[3] !== 128;
+    }),
+  ).toHaveLength(0);
   expect(errors).toEqual([]);
 });

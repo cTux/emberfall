@@ -29,7 +29,10 @@ export function defaultSpellRange(
   context: Game = game,
 ) {
   const stats = context.rules.characterStats(player);
-  if (!stats.hasWeapon) return 0;
+  if (!stats.hasWeapon) {
+    return 0;
+  }
+
   const range = player.autoTarget === false ? stats.manualRange : stats.range;
   const attack = context.registries.abilities.require(
     context.registries.classes.require(player.classId ?? 'warrior').attack,

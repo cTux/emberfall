@@ -4,7 +4,9 @@ test('lobby window drags across the viewport without outer scrollbars', async ({
   await page.setViewportSize({ width: 960, height: 700 });
   await page.goto('/');
   await expect(page.getByRole('tab', { name: 'Join a world' })).toBeVisible();
-  await page.evaluate(() => document.fonts.ready);
+  await page.evaluate(() => {
+    return document.fonts.ready;
+  });
   const panel = page.getByRole('region', { name: 'Emberfall' });
   await expect(panel).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(panel.locator('.game-window-surface')).toHaveCSS(
@@ -49,9 +51,11 @@ test('lobby window drags across the viewport without outer scrollbars', async ({
   expect(short.y + short.height).toBeLessThanOrEqual(160);
   const content = panel.locator('.MuiDialogContent-root');
   await expect(content).toHaveCSS('overflow-y', 'auto');
-  expect(await content.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(
-    true,
-  );
+  expect(
+    await content.evaluate((element) => {
+      return element.scrollHeight > element.clientHeight;
+    }),
+  ).toBe(true);
   await expect(panel.getByRole('button', { name: 'Close Emberfall' })).toBeVisible();
   await page.screenshot({ path: 'test-results/lobby-short-screen.png' });
   await panel.getByRole('button', { name: 'Close Emberfall' }).click();
@@ -63,15 +67,19 @@ test('server browser shows columns and disables creation', async ({ page }) => {
   await expect(page.getByRole('status', { name: 'World server online' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Create a world' })).toBeDisabled();
   await expect(page.getByText(/^Playing as /)).toHaveCount(0);
-  for (const name of ['Name', 'Latency', 'Players'])
+  for (const name of ['Name', 'Latency', 'Players']) {
     await expect(page.getByRole('columnheader', { name, exact: true })).toBeVisible();
+  }
+
   await expect(page.getByRole('table')).toContainText('0/32');
   await expect(page.getByRole('table')).toContainText(/\d+ ms/);
   for (const width of [960, 390, 320]) {
     await page.setViewportSize({ width, height: 800 });
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-      true,
-    );
+    expect(
+      await page.evaluate(() => {
+        return document.documentElement.scrollWidth <= innerWidth;
+      }),
+    ).toBe(true);
   }
 
   await page.screenshot({ path: 'test-results/server-browser-narrow.png' });

@@ -29,19 +29,32 @@ export function PerformanceGraph({
   }, [latency]);
   const visible = showFps || showLatency;
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      return;
+    }
+
     let first = true;
     const timer = setInterval(() => {
       const reset = first;
       first = false;
       const at = performance.now();
-      setSamples((previous) => [
-        ...(reset ? [] : previous.filter((sample) => at - sample.at < 30000).slice(-59)),
-        { at, fps: frameRate.current, latency: roundTrip.current, ...networkTiming.current },
-      ]);
+      setSamples((previous) => {
+        return [
+          ...(reset
+            ? []
+            : previous
+                .filter((sample) => {
+                  return at - sample.at < 30000;
+                })
+                .slice(-59)),
+          { at, fps: frameRate.current, latency: roundTrip.current, ...networkTiming.current },
+        ];
+      });
     }, 500);
 
-    return () => clearInterval(timer);
+    return () => {
+      return clearInterval(timer);
+    };
   }, [visible, frameRate, networkTiming]);
 
   return (

@@ -12,8 +12,13 @@ import { advancePlayerShot } from './projectile-motion.ts';
 import { hitWithWeapon } from './weapon.ts';
 
 function applyRoots(target: Enemy, ownerId: string, now: number) {
-  if (target.kind === 'boss') return;
-  target.debuffs = (target.debuffs ?? []).filter((d) => d.kind !== 'roots');
+  if (target.kind === 'boss') {
+    return;
+  }
+
+  target.debuffs = (target.debuffs ?? []).filter((d) => {
+    return d.kind !== 'roots';
+  });
   target.debuffs.push({
     kind: 'roots',
     stacks: 1,
@@ -31,7 +36,10 @@ export function fireClassAttack(
   abilityId?: string,
 ) {
   const stats = context.rules.characterStats(player);
-  if (!stats.hasWeapon) return;
+  if (!stats.hasWeapon) {
+    return;
+  }
+
   const selected = abilityId
     ? effectiveAbility(player, context.registries.abilities.require(abilityId), context)
     : undefined;
@@ -93,17 +101,21 @@ export function tickPlayerShots(
   dt: number,
   context: Game = game,
 ) {
-  scene.explosions = (scene.explosions ?? []).filter(
-    (e) => now - e.at < (e.durationMs ?? TRANSIENT_EFFECTS.explosion.lifetimeMs),
-  );
+  scene.explosions = (scene.explosions ?? []).filter((e) => {
+    return now - e.at < (e.durationMs ?? TRANSIENT_EFFECTS.explosion.lifetimeMs);
+  });
   scene.playerShots = (scene.playerShots ?? []).filter((shot) => {
-    const owner = players.find(
-      (p) =>
+    const owner = players.find((p) => {
+      return (
         p.id === shot.ownerId &&
         (scene.training ? !p.scene : p.scene === 'forest') &&
-        p.hitpoints > 0,
-    );
-    if (!owner) return false;
+        p.hitpoints > 0
+      );
+    });
+    if (!owner) {
+      return false;
+    }
+
     const ability = effectiveAbility(
       owner,
       context.registries.abilities.require(shot.abilityId ?? shot.kind),
@@ -126,8 +138,10 @@ export function tickPlayerShots(
               enemy.hitpoints <= 0 ||
               shot.hitIds.includes(enemy.id) ||
               !overlapsBody(shot, COLLISION.playerProjectileRadius, enemyHitbox(enemy, context))
-            )
+            ) {
               continue;
+            }
+
             shot.hitIds.push(enemy.id);
             hitWithWeapon(
               scene,
@@ -140,7 +154,9 @@ export function tickPlayerShots(
               false,
               context,
             );
-            if (shot.hitIds.length >= 1 + ability.pierce) shot.remaining = 0;
+            if (shot.hitIds.length >= 1 + ability.pierce) {
+              shot.remaining = 0;
+            }
           }
         }
       },
@@ -149,7 +165,9 @@ export function tickPlayerShots(
     );
     if (impacted) {
       if (shot.kind === 'roots') {
-        const target = scene.enemies.find((enemy) => enemy.id === shot.hitIds.at(-1));
+        const target = scene.enemies.find((enemy) => {
+          return enemy.id === shot.hitIds.at(-1);
+        });
         if (target) {
           hitWithWeapon(
             scene,
@@ -162,22 +180,24 @@ export function tickPlayerShots(
             false,
             context,
           );
-          if (target.hitpoints > 0) applyRoots(target, owner.id, now);
+          if (target.hitpoints > 0) {
+            applyRoots(target, owner.id, now);
+          }
+
           if (shot.hitIds.length <= ability.bounces) {
             const next = scene.enemies
-              .filter(
-                (enemy) =>
+              .filter((enemy) => {
+                return (
                   enemy.hitpoints > 0 &&
                   !shot.hitIds.includes(enemy.id) &&
-                  forestDistance(target, enemy) <= ability.bounceRadius,
-              )
-              .reduce<Enemy | undefined>(
-                (best, enemy) =>
-                  !best || forestDistance(target, enemy) < forestDistance(target, best)
-                    ? enemy
-                    : best,
-                undefined,
-              );
+                  forestDistance(target, enemy) <= ability.bounceRadius
+                );
+              })
+              .reduce<Enemy | undefined>((best, enemy) => {
+                return !best || forestDistance(target, enemy) < forestDistance(target, best)
+                  ? enemy
+                  : best;
+              }, undefined);
             if (next) {
               shot.targetId = next.id;
               shot.targetX = next.x;
@@ -199,8 +219,8 @@ export function tickPlayerShots(
         at: now,
         radius: ability.splashRadius,
       });
-      for (const enemy of scene.enemies)
-        if (enemy.id === shot.hitIds[0])
+      for (const enemy of scene.enemies) {
+        if (enemy.id === shot.hitIds[0]) {
           hitWithWeapon(
             scene,
             enemy,
@@ -212,7 +232,7 @@ export function tickPlayerShots(
             false,
             context,
           );
-        else if (overlapsBody(shot, ability.splashRadius, enemyHitbox(enemy, context)))
+        } else if (overlapsBody(shot, ability.splashRadius, enemyHitbox(enemy, context))) {
           hitWithWeapon(
             scene,
             enemy,
@@ -226,6 +246,8 @@ export function tickPlayerShots(
             false,
             context,
           );
+        }
+      }
 
       return false;
     }

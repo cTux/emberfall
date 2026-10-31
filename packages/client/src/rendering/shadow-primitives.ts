@@ -17,7 +17,10 @@ export class ShadowPrimitives {
       ctx.shadowOffsetX = canvas.width * 2;
       ctx.globalAlpha = opacity;
       ctx.fillRect(padding - canvas.width * 2, padding, Math.abs(width), Math.abs(height));
-      if (this.entries.size >= 128) this.entries.delete(this.entries.keys().next().value!);
+      if (this.entries.size >= 128) {
+        this.entries.delete(this.entries.keys().next().value!);
+      }
+
       this.entries.set(key, canvas);
     }
 

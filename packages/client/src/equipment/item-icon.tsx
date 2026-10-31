@@ -33,7 +33,9 @@ function PlantIcon({ variant }: { variant: number }) {
     image.addEventListener('load', draw);
     draw();
 
-    return () => image.removeEventListener('load', draw);
+    return () => {
+      return image.removeEventListener('load', draw);
+    };
   }, [variant]);
 
   return <canvas ref={canvas} width={32} height={32} aria-hidden='true' />;
@@ -41,18 +43,32 @@ function PlantIcon({ variant }: { variant: number }) {
 
 export function itemIcon(itemId: string) {
   const art = itemArtName(itemId);
-  if (art) return <img src={clientAsset(`/assets/wardrobe-style/${art}.png`)} alt='' />;
-  const plantVariant = PLANT_KINDS.findIndex((kind) => kind === itemId);
-  if (plantVariant !== -1 || itemId === 'plant') return <PlantIcon variant={plantVariant} />;
-  if (itemDefinition(itemId).kind === 'resource') return <span aria-hidden='true'>◆</span>;
+  if (art) {
+    return <img src={clientAsset(`/assets/wardrobe-style/${art}.png`)} alt='' />;
+  }
+
+  const plantVariant = PLANT_KINDS.findIndex((kind) => {
+    return kind === itemId;
+  });
+  if (plantVariant !== -1 || itemId === 'plant') {
+    return <PlantIcon variant={plantVariant} />;
+  }
+
+  if (itemDefinition(itemId).kind === 'resource') {
+    return <span aria-hidden='true'>◆</span>;
+  }
+
   const gear = GEAR_DEFINITIONS[itemId];
   const itemClass = ITEM_CLASSES[itemId];
   const slot = gear
-    ? EQUIPMENT_SLOTS.find((slot) => SLOT_GEAR_TYPES[slot].includes(gear.gearType))
+    ? EQUIPMENT_SLOTS.find((slot) => {
+        return SLOT_GEAR_TYPES[slot].includes(gear.gearType);
+      })
     : 'amulet';
   const fallback =
-    slotViews.find((view) => view.id === slot)?.icon ??
-    clientAsset('/assets/wardrobe-style/slot-offHand.png');
+    slotViews.find((view) => {
+      return view.id === slot;
+    })?.icon ?? clientAsset('/assets/wardrobe-style/slot-offHand.png');
 
   return (
     <img
@@ -65,7 +81,9 @@ export function itemIcon(itemId: string) {
       }
       alt=''
       onError={(event) => {
-        if (!event.currentTarget.src.endsWith(fallback)) event.currentTarget.src = fallback;
+        if (!event.currentTarget.src.endsWith(fallback)) {
+          event.currentTarget.src = fallback;
+        }
       }}
     />
   );

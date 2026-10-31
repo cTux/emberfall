@@ -26,9 +26,9 @@ test('trade save survives restart and rolls both owners back on failed validatio
     tradeItem(player, merchant, player.backpack[0].id, false);
     store.save(saved.id, player.name, player, { worldId, state: merchant });
     const bad = { ...player, coins: 999 };
-    assert.throws(() =>
-      store.save(saved.id, player.name, bad, { worldId, state: { ...merchant, coins: -1 } }),
-    );
+    assert.throws(() => {
+      return store.save(saved.id, player.name, bad, { worldId, state: { ...merchant, coins: -1 } });
+    });
     assert.equal(store.load(saved.token).progress.coins, 1);
     assert.equal(store.merchant(worldId).coins, 4999);
     store.close();
@@ -36,7 +36,9 @@ test('trade save survives restart and rolls both owners back on failed validatio
     await store.ready;
     assert.equal(store.load(saved.token).progress.coins, 1);
     assert.equal(
-      store.merchant(worldId).buyback.find((entry) => entry.itemId === 'loot-helmet')?.quantity,
+      store.merchant(worldId).buyback.find((entry) => {
+        return entry.itemId === 'loot-helmet';
+      })?.quantity,
       1,
     );
     assert.equal(store.merchant(worldId).coins, 4999);
@@ -50,15 +52,21 @@ test('session-owned commands reject remote trading and retain live items after a
   const runtime = await createRuntime();
   const messages: ServerMessage[] = [];
   const peer = new Peer(
-    (message) => messages.push(message),
+    (message) => {
+      return messages.push(message);
+    },
     () => {},
   );
   try {
     runtime.connect(peer);
     const world = [...runtime.worlds.values()][0];
     peer.receive({ type: 'join', worldId: world.id, playerName: 'Trader', password: '' });
-    for (let i = 0; i < 200 && !world.players.size; i++)
-      await new Promise((resolve) => setTimeout(resolve, 10));
+    for (let i = 0; i < 200 && !world.players.size; i++) {
+      await new Promise((resolve) => {
+        return setTimeout(resolve, 10);
+      });
+    }
+
     assert.equal(world.players.size, 1);
     const player = [...world.players.values()][0];
     player.backpack = [item('loot-helmet')];
@@ -80,7 +88,9 @@ test('session-owned commands reject remote trading and retain live items after a
     peer.receive({ type: 'trade', id: player.backpack[0].id, buying: false, coins: 99999 });
     assert.equal(player.backpack.length, 0);
     assert.equal(player.coins, 1, 'wire currency cannot override the server calculation');
-    const soldId = world.merchant!.buyback.find((entry) => entry.itemId === 'loot-helmet')!.id;
+    const soldId = world.merchant!.buyback.find((entry) => {
+      return entry.itemId === 'loot-helmet';
+    })!.id;
     peer.receive({ type: 'trade', id: soldId, buying: true });
     peer.receive({ type: 'trade', id: soldId, buying: true });
     assert.match((messages.at(-1) as { message: string }).message, /no longer available/);

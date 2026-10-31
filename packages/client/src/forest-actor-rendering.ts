@@ -26,7 +26,10 @@ export function drawForestActor(
   frame: ActorFrame,
 ) {
   const { world, players, playerId, now, serverTime, quality, highlightInteractions } = frame;
-  if (!a.image.naturalWidth) return;
+  if (!a.image.naturalWidth) {
+    return;
+  }
+
   if (a.enemy?.hitpoints === 0 && hit?.killed) {
     const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / 700));
     ctx.save();
@@ -96,10 +99,18 @@ export function drawForestActor(
     !!a.player &&
     !!partyAction(
       world,
-      players.find((player) => player.id === playerId),
+      players.find((player) => {
+        return player.id === playerId;
+      }),
       a.player,
     );
-  if (highlightPlayer || (a.player && world?.partyRequests?.some((r) => r.fromId === a.player.id)))
+  if (
+    highlightPlayer ||
+    (a.player &&
+      world?.partyRequests?.some((r) => {
+        return r.fromId === a.player.id;
+      }))
+  ) {
     drawPartyOutline(
       ctx,
       forestActorMask(a.image, a.facing, a.row),
@@ -109,7 +120,9 @@ export function drawForestActor(
       a.size * breath,
       highlightPlayer,
     );
-  if (hit && (a.enemy || a.player?.id === playerId))
+  }
+
+  if (hit && (a.enemy || a.player?.id === playerId)) {
     drawTargetHit(
       ctx,
       forestActorMask(a.image, a.facing, a.row),
@@ -119,6 +132,8 @@ export function drawForestActor(
       a.size,
       serverTime - hit.at,
     );
+  }
+
   ctx.globalAlpha = 1;
   ctx.occlusion = false;
   if (a.enemy) {
@@ -147,5 +162,7 @@ export function drawForestActor(
     }
   }
 
-  if (a.player) drawPlayerDetails(ctx, a.player, a.x, a.y);
+  if (a.player) {
+    drawPlayerDetails(ctx, a.player, a.x, a.y);
+  }
 }

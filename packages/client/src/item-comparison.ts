@@ -15,9 +15,17 @@ export function itemComparison(
   player: Pick<Player, 'classId' | 'equipment' | 'equipmentItems' | 'autoTarget'>,
 ) {
   const gear = GEAR_DEFINITIONS[item.itemId];
-  if (!gear) return undefined;
-  const slot = EQUIPMENT_SLOTS.find((slot) => canEquip(slot, gear, player.classId ?? 'warrior'));
-  if (!slot) return undefined;
+  if (!gear) {
+    return undefined;
+  }
+
+  const slot = EQUIPMENT_SLOTS.find((slot) => {
+    return canEquip(slot, gear, player.classId ?? 'warrior');
+  });
+  if (!slot) {
+    return undefined;
+  }
+
   const equippedId = equippedItems(player)[slot];
   const equipped = GEAR_DEFINITIONS[equippedId ?? ''];
   const instance = player.equipmentItems?.[slot];
@@ -32,10 +40,15 @@ export function itemComparison(
         !bonus &&
         (stat === 'attacksPerSecond' ||
           stat === (player.autoTarget === false ? 'range' : 'manualRange'))
-      )
+      ) {
         continue;
+      }
+
       const delta = (next[stat] ?? 0) - (previous[stat] ?? 0);
-      if (!delta) continue;
+      if (!delta) {
+        continue;
+      }
+
       const metadata = game.registries.stats.get(stat);
       const percentage = bonus
         ? ![ItemStat.Power, ItemStat.Armor, ItemStat.MaximumHealth].includes(

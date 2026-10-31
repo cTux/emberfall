@@ -7,7 +7,11 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('manual cast eligibility rejects stale areas/classes, death and inactive combat', async () => {
@@ -32,11 +36,26 @@ test('manual cast eligibility rejects stale areas/classes, death and inactive co
       aimX: 2600,
       aimY: 1280,
     };
-    if (reason === 'area') request.epoch = 'expired';
-    if (reason === 'class') player.classId = 'ranger';
-    if (reason === 'dead') player.hitpoints = 0;
-    if (reason === 'paused') arena.pausedAt = 1000;
-    if (reason === 'ended') arena.phase = 'ended';
+    if (reason === 'area') {
+      request.epoch = 'expired';
+    }
+
+    if (reason === 'class') {
+      player.classId = 'ranger';
+    }
+
+    if (reason === 'dead') {
+      player.hitpoints = 0;
+    }
+
+    if (reason === 'paused') {
+      arena.pausedAt = 1000;
+    }
+
+    if (reason === 'ended') {
+      arena.phase = 'ended';
+    }
+
     if (reason === 'outside') {
       player.scene = undefined;
       request.epoch = 'lobby';
@@ -89,7 +108,11 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
       assert.equal(shot.targetId, undefined);
       assert.equal(shot.angle, Math.PI / 2 - (classId === 'druid' ? 0 : Math.PI / 60));
       assert.equal(shot.remaining, 1000);
-      assert(arena.enemies.every((e) => e.debuffs === undefined));
+      assert(
+        arena.enemies.every((e) => {
+          return e.debuffs === undefined;
+        }),
+      );
       player.aimX = 2600;
       player.aimY = 1280;
       assert.equal(advancePlayerShot(shot, arena.enemies, 1), false);
@@ -102,7 +125,11 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
           0.001,
       );
       assert.equal(arena.explosions?.length, 0);
-      assert(arena.enemies.every((e) => e.hitpoints === 100 && e.debuffs === undefined));
+      assert(
+        arena.enemies.every((e) => {
+          return e.hitpoints === 100 && e.debuffs === undefined;
+        }),
+      );
     }
 
     const player: Player = { ...hero(), classId, autoTarget: false, aimX: 2600, aimY: 1280 };
@@ -113,7 +140,10 @@ test('untargeted spells follow cast aim past the cursor and expire after 1000px'
     if (classId === 'druid') {
       assert.equal(arena.enemies[0].debuffs?.[0].kind, 'roots');
       assert.equal(arena.playerShots!.length, 0);
-    } else assert(arena.enemies[0].hitpoints < 100);
+    } else {
+      assert(arena.enemies[0].hitpoints < 100);
+    }
+
     player.x = FOREST.width - 10;
     player.aimX = 10;
     assert.equal(playerAimAngle(player, []), 0);

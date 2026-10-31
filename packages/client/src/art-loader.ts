@@ -2,7 +2,10 @@ import { clientAsset } from './urls.ts';
 import { ACTOR_CELL } from './animation';
 import { softenArtTones } from './art-tones';
 
-export const artUrl = (name: string) => clientAsset(`/assets/wardrobe-style/${name}.png`);
+export const artUrl = (name: string) => {
+  return clientAsset(`/assets/wardrobe-style/${name}.png`);
+};
+
 export const artImages: HTMLImageElement[] = [];
 const loadedArt = new Map<string, HTMLImageElement>();
 
@@ -30,7 +33,10 @@ function actorOrientation(name: string, row: number, col: number) {
 export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = false) {
   const key = `${name}:${columns}:${rows}:${cell}:${actor}`;
   const cached = loadedArt.get(key);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
+
   const result = new Image();
   const resolution = actor ? 2 : 1;
   result.dataset.artResolution = String(resolution);
@@ -64,9 +70,11 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
     const rowMap =
       boundaries?.length === 8 && rows === 8
         ? [0, 1, 2, 3, 2, 4, 5, 6]
-        : Array.from({ length: rows }, (_, i) => i);
-    const frames = rowMap.flatMap((row) =>
-      Array.from({ length: columns }, (_, col) => {
+        : Array.from({ length: rows }, (_, i) => {
+            return i;
+          });
+    const frames = rowMap.flatMap((row) => {
+      return Array.from({ length: columns }, (_, col) => {
         const sourceColumns =
           name === 'plants' ? [0, 440, 845, 1230, 1615, 2048] : [0, 309, 535, 735, 1024];
         const sourceWidth = sourceColumns.at(-1)!;
@@ -86,20 +94,32 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
           top = y1,
           right = x0,
           bottom = y0;
-        for (let y = Math.floor(y0); y < Math.floor(y1); y++)
+        for (let y = Math.floor(y0); y < Math.floor(y1); y++) {
           for (let x = x0; x < x1; x++) {
-            if (pixels[(y * input.width + x) * 4 + 3] < 32) continue;
+            if (pixels[(y * input.width + x) * 4 + 3] < 32) {
+              continue;
+            }
+
             left = Math.min(left, x);
             right = Math.max(right, x + 1);
             top = Math.min(top, y);
             bottom = Math.max(bottom, y + 1);
           }
+        }
 
         return { left, top, width: Math.max(1, right - left), height: Math.max(1, bottom - top) };
+      });
+    });
+    const maxHeight = Math.max(
+      ...frames.map((f) => {
+        return f.height;
       }),
     );
-    const maxHeight = Math.max(...frames.map((f) => f.height));
-    const maxWidth = Math.max(...frames.map((f) => f.width));
+    const maxWidth = Math.max(
+      ...frames.map((f) => {
+        return f.width;
+      }),
+    );
     const scale = Math.min((cell - 4) / maxWidth, (cell - 6) / maxHeight);
     const output = document.createElement('canvas');
     output.width = columns * cell * resolution;
@@ -120,14 +140,21 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
             ? Math.min(
                 (cell - 4) / f.width,
                 (name === 'druid' ? 58 : 52) /
-                  Math.max(...frames.slice(0, columns * 5).map((f) => f.height)),
+                  Math.max(
+                    ...frames.slice(0, columns * 5).map((f) => {
+                      return f.height;
+                    }),
+                  ),
               )
             : scale;
       const width = Math.max(1, Math.round(f.width * frameScale));
       const height = Math.max(1, Math.round(f.height * frameScale));
       ctx.save();
       ctx.translate(col * cell + cell / 2, row * cell);
-      if (orientation.flip) ctx.scale(-1, 1);
+      if (orientation.flip) {
+        ctx.scale(-1, 1);
+      }
+
       ctx.drawImage(
         source,
         f.left,
@@ -141,7 +168,10 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
       );
       ctx.restore();
     });
-    if (actor) softenAtlas(output);
+    if (actor) {
+      softenAtlas(output);
+    }
+
     result.src = output.toDataURL();
     result.dataset.artReady = 'true';
   };
@@ -152,11 +182,16 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
 }
 
 export const actorArt = (name: string) => {
-  if (!['warrior', 'ranger', 'mage', 'druid'].includes(name))
+  if (!['warrior', 'ranger', 'mage', 'druid'].includes(name)) {
     return loadArt(name, 4, 8, ACTOR_CELL, true);
+  }
+
   const key = `${name}:player-atlas`;
   const cached = loadedArt.get(key);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
+
   const image = new Image();
   image.dataset.artResolution = '2';
   loadedArt.set(key, image);

@@ -23,15 +23,21 @@ export function Talents({
     <TalentTree
       columns={TALENT_COLUMNS[classId]}
       points={availableTalentPoints(player)}
-      onLearn={(nodeId) => send({ type: 'learnTalent', nodeId })}
-      nodes={TALENT_TREE.filter((node) => node.classId === classId).map((node) => ({
-        ...node,
-        description: talentDescription(node),
-        icon: <TalentIcon classId={classId} index={node.column * 10 + node.row} />,
-        rank: talentRank(player, node.id),
-        learned: isTalentLearned(player, node.id),
-        available: canLearnTalent(player, node.id),
-      }))}
+      onLearn={(nodeId) => {
+        return send({ type: 'learnTalent', nodeId });
+      }}
+      nodes={TALENT_TREE.filter((node) => {
+        return node.classId === classId;
+      }).map((node) => {
+        return {
+          ...node,
+          description: talentDescription(node),
+          icon: <TalentIcon classId={classId} index={node.column * 10 + node.row} />,
+          rank: talentRank(player, node.id),
+          learned: isTalentLearned(player, node.id),
+          available: canLearnTalent(player, node.id),
+        };
+      })}
     />
   );
 }

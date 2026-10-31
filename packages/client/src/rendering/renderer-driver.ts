@@ -29,12 +29,16 @@ export class RendererDriver {
       width: 1,
       height: 1,
     }).then((renderer) => {
-      if (this.disposed) renderer.destroy();
-      else {
+      if (this.disposed) {
+        renderer.destroy();
+      } else {
         this.renderer = renderer;
         // Arena owns native cursor feedback. Pixi's default inline `inherit`
         // would otherwise override the canvas's data-cursor stylesheet rules.
-        renderer.events.cursorStyles.default = () => canvas.style.removeProperty('cursor');
+        renderer.events.cursorStyles.default = () => {
+          return canvas.style.removeProperty('cursor');
+        };
+
         canvas.style.removeProperty('cursor');
         renderer.resize(this.width, this.height);
         this.canvas.dataset.renderer = 'pixijs-webgl';
@@ -53,9 +57,14 @@ export class RendererDriver {
   }
 
   render(stage: Container) {
-    if (!this.renderer) return;
-    if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height)
+    if (!this.renderer) {
+      return;
+    }
+
+    if (this.renderer.width !== this.canvas.width || this.renderer.height !== this.canvas.height) {
       this.renderer.resize(this.canvas.width, this.canvas.height);
+    }
+
     try {
       this.renderer.render(stage);
     } finally {

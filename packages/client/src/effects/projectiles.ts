@@ -14,7 +14,10 @@ const projectileOutlines = new Map<string, HTMLCanvasElement>();
 function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'roots', now: number) {
   const arrow = kind === 'arrow';
   const image = arrow ? pickupArt : effectsArt;
-  if (!image.naturalWidth || image.dataset.artReady !== 'true') return false;
+  if (!image.naturalWidth || image.dataset.artReady !== 'true') {
+    return false;
+  }
+
   const column = Math.floor(now / 100) % (arrow ? 4 : 3);
   const size = arrow ? 44 : kind === 'roots' ? 24 : 48;
   const key = `${kind}:${column}`;
@@ -62,7 +65,10 @@ export function drawClassProjectiles(
   ctx.save();
   for (const shot of scene.playerShots ?? []) {
     const opacity = abilityEffectOpacity(preferences, playerId, shot.ownerId);
-    if (opacity === 0) continue;
+    if (opacity === 0) {
+      continue;
+    }
+
     ctx.globalAlpha = opacity;
     const p = near(shot.x, shot.y);
     ctx.save();
@@ -73,7 +79,10 @@ export function drawClassProjectiles(
       continue;
     }
 
-    if (shot.kind === 'roots') ctx.scale(0.5, 0.5);
+    if (shot.kind === 'roots') {
+      ctx.scale(0.5, 0.5);
+    }
+
     ctx.strokeStyle = '#baffaa';
     ctx.lineWidth = shot.kind === 'roots' ? 2 : 1;
     if (shot.kind === 'arrow') {
@@ -116,9 +125,15 @@ export function drawClassProjectiles(
 
   for (const explosion of scene.explosions ?? []) {
     const opacity = abilityEffectOpacity(preferences, playerId, explosion.ownerId);
-    if (opacity === 0) continue;
+    if (opacity === 0) {
+      continue;
+    }
+
     const age = Math.max(0, (now - explosion.at) / (explosion.durationMs ?? 350));
-    if (age >= 1) continue;
+    if (age >= 1) {
+      continue;
+    }
+
     const p = near(explosion.x, explosion.y);
     if (explosion.talentClass) {
       const classIndex = ['warrior', 'ranger', 'mage', 'druid'].indexOf(explosion.talentClass);

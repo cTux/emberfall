@@ -34,10 +34,15 @@ export function decideCompanion(
     decision.forest !== forest ||
     decision.tactics !== tactics
   ) {
-    const candidates = scene?.enemies.filter((e) => forestDistance(e, player) <= huntRadius) ?? [];
+    const candidates =
+      scene?.enemies.filter((e) => {
+        return forestDistance(e, player) <= huntRadius;
+      }) ?? [];
     const assist =
       tactics.companionTarget === 'assist'
-        ? candidates.find((e) => e.id === player.attackTargetId && e.hitpoints > 0)
+        ? candidates.find((e) => {
+            return e.id === player.attackTargetId && e.hitpoints > 0;
+          })
         : undefined;
     const target =
       tactics.stance !== 'passive' &&
@@ -71,13 +76,14 @@ export function decideCompanion(
 
     const danger =
       tactics.avoidHazards && forest && scene?.phase === 'active'
-        ? scene.enemies.find(
-            (e) =>
+        ? scene.enemies.find((e) => {
+            return (
               e.hitpoints > 0 &&
               e.attack &&
               e.attack.endsAt >= now &&
-              forestDistance(bear, e.attack) < e.attack.radius + 12,
-          )?.attack
+              forestDistance(bear, e.attack) < e.attack.radius + 12
+            );
+          })?.attack
         : undefined;
     if (danger) {
       const away =
@@ -99,7 +105,10 @@ export function decideCompanion(
         const dx = wrappedDelta(bear.x, s.x, FOREST.width),
           dy = wrappedDelta(bear.y, s.y, FOREST.height);
         const speedSquared = s.vx * s.vx + s.vy * s.vy;
-        if (s.expiresAt <= now || speedSquared === 0) return false;
+        if (s.expiresAt <= now || speedSquared === 0) {
+          return false;
+        }
+
         const time = (dx * s.vx + dy * s.vy) / speedSquared;
 
         return (

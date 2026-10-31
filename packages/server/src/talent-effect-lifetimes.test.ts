@@ -45,7 +45,9 @@ test('Rupture includes DOT Speed in the remaining wound damage', () => {
 });
 
 test('Second Impact repeats once, and clearing a reset invalidates queued effects even after relearning', async (t) => {
-  t.mock.method(Math, 'random', () => 0);
+  t.mock.method(Math, 'random', () => {
+    return 0;
+  });
   const { clearTalentEffects } = await import('@emberfall/core');
   const player = hero(),
     scene = arena();

@@ -23,10 +23,12 @@ test('damage flash fades through fractional expiry without a Pixi color crash', 
       },
     },
   });
-  const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
-  await page.route('**/damage-flash', (route) =>
-    route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-  );
+  const code = bundle[0].output.find((item: { type: string }) => {
+    return item.type === 'chunk';
+  }).code;
+  await page.route('**/damage-flash', (route) => {
+    return route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' });
+  });
   await page.goto('/damage-flash');
   await page.addScriptTag({ content: code });
   const results = await page.evaluate(async () => {
@@ -40,12 +42,17 @@ test('damage flash fades through fractional expiry without a Pixi color crash', 
   });
   for (const { age, alphas, actual, expected } of results) {
     expect(alphas, `restored opacity at ${age}`).toEqual([0.5, 0.5]);
-    for (let channel = 0; channel < 4; channel++)
+    for (let channel = 0; channel < 4; channel++) {
       expect(
         Math.abs(actual[channel] - expected[channel]),
         `age ${age}, channel ${channel}`,
       ).toBeLessThanOrEqual(1);
-    if (age === 0 || age === 140) expect(actual[0]).toBeGreaterThan(128);
-    else expect(actual).toEqual([128, 144, 96, 255]);
+    }
+
+    if (age === 0 || age === 140) {
+      expect(actual[0]).toBeGreaterThan(128);
+    } else {
+      expect(actual).toEqual([128, 144, 96, 255]);
+    }
   }
 });

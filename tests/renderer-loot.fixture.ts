@@ -7,15 +7,26 @@ import type { SceneState } from '../packages/common/src/index';
 
 export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
   while (
-    [pickupArt, effectsArt].some((image) => !image.complete || image.dataset.artReady !== 'true')
-  )
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    [pickupArt, effectsArt].some((image) => {
+      return !image.complete || image.dataset.artReady !== 'true';
+    })
+  ) {
+    await new Promise((resolve) => {
+      return setTimeout(resolve, 20);
+    });
+  }
+
   const projectilePixels: number[] = [];
   for (const fallback of [false, true]) {
     pixi.begin();
     pixi.fillStyle = '#17251d';
     pixi.fillRect(0, 0, 256, 256);
-    if (fallback) for (const image of [pickupArt, effectsArt]) image.dataset.artReady = 'false';
+    if (fallback) {
+      for (const image of [pickupArt, effectsArt]) {
+        image.dataset.artReady = 'false';
+      }
+    }
+
     for (const [row, kind] of (['arrow', 'fireball', 'roots'] as const).entries()) {
       for (let frame = 0; frame < (kind === 'arrow' ? 4 : 3); frame++) {
         const x = 32 + frame * 64,
@@ -27,7 +38,9 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
             explosions: [],
           } as unknown as SceneState,
           frame * 100,
-          (x, y) => ({ x, y }),
+          (x, y) => {
+            return { x, y };
+          },
         );
       }
     }
@@ -40,47 +53,67 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     const c = preview.getContext('2d')!;
     c.drawImage(gpu, 0, 0);
     document.body.append(preview);
-    for (const [row, kind] of (['arrow', 'fireball', 'roots'] as const).entries())
+    for (const [row, kind] of (['arrow', 'fireball', 'roots'] as const).entries()) {
       for (let frame = 0; frame < (kind === 'arrow' ? 4 : 3); frame++) {
         const pixels = c.getImageData(frame * 64, row * 80 + 8, 64, 64).data;
         let green = 0;
-        for (let i = 0; i < pixels.length; i += 4)
+        for (let i = 0; i < pixels.length; i += 4) {
           if (
             pixels[i] >= 175 &&
             pixels[i + 1] >= 245 &&
             pixels[i + 2] >= 155 &&
             pixels[i + 2] <= 185
-          )
+          ) {
             green++;
+          }
+        }
+
         projectilePixels.push(green);
       }
+    }
 
-    if (fallback) for (const image of [pickupArt, effectsArt]) image.dataset.artReady = 'true';
+    if (fallback) {
+      for (const image of [pickupArt, effectsArt]) {
+        image.dataset.artReady = 'true';
+      }
+    }
   }
 
-  const drops = [...LOOT_ITEM_IDS, 'health-potion'].map((itemId, id) => ({
-    id,
-    itemId,
-    kind: 'item' as const,
-    x: 32 + (id % 4) * 64,
-    y: 40 + Math.floor(id / 4) * 64,
-    at: 1000,
-  }));
+  const drops = [...LOOT_ITEM_IDS, 'health-potion'].map((itemId, id) => {
+    return {
+      id,
+      itemId,
+      kind: 'item' as const,
+      x: 32 + (id % 4) * 64,
+      y: 40 + Math.floor(id / 4) * 64,
+      at: 1000,
+    };
+  });
   const drawDrops = () => {
     pixi.begin();
     drawLootAndBlood(
       pixi,
       { drops, damage: [] } as unknown as SceneState,
       1000,
-      (x, y) => ({ x, y }),
+      (x, y) => {
+        return { x, y };
+      },
       { x: 0, y: 0, width: 256, height: 256 },
     );
     pixi.present();
   };
 
   drawDrops();
-  while (artImages.some((image) => !image.complete || image.dataset.artReady !== 'true'))
-    await new Promise((resolve) => setTimeout(resolve, 20));
+  while (
+    artImages.some((image) => {
+      return !image.complete || image.dataset.artReady !== 'true';
+    })
+  ) {
+    await new Promise((resolve) => {
+      return setTimeout(resolve, 20);
+    });
+  }
+
   drawDrops();
   const lootPreview = document.createElement('canvas');
   lootPreview.width = lootPreview.height = 256;
@@ -94,11 +127,18 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     let colored = 0,
       purple = 0;
     for (let i = 0; i < pixels.length; i += 4) {
-      if (pixels[i + 3] > 128) colored++;
-      if (pixels[i] === 195 && pixels[i + 1] === 166 && pixels[i + 2] === 232) purple++;
+      if (pixels[i + 3] > 128) {
+        colored++;
+      }
+
+      if (pixels[i] === 195 && pixels[i + 1] === 166 && pixels[i + 2] === 232) {
+        purple++;
+      }
     }
 
-    const red = (dx: number, dy: number) => lootContext.getImageData(x + dx, y + dy, 1, 1).data[0];
+    const red = (dx: number, dy: number) => {
+      return lootContext.getImageData(x + dx, y + dy, 1, 1).data[0];
+    };
 
     return {
       itemId,
@@ -114,28 +154,34 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
   drawLootAndBlood(
     pixi,
     {
-      drops: rarities.map((rarity, id) => ({
-        id,
-        itemId: 'warrior-sword',
-        rarity,
-        kind: 'item',
-        x: 24 + id * 48,
-        y: 60,
-        at: 1000,
-      })),
+      drops: rarities.map((rarity, id) => {
+        return {
+          id,
+          itemId: 'warrior-sword',
+          rarity,
+          kind: 'item',
+          x: 24 + id * 48,
+          y: 60,
+          at: 1000,
+        };
+      }),
       damage: [],
     } as unknown as SceneState,
     1000,
-    (x, y) => ({ x, y }),
+    (x, y) => {
+      return { x, y };
+    },
     { x: 0, y: 0, width: 256, height: 256 },
   );
   pixi.present();
   lootContext.clearRect(0, 0, 256, 256);
   lootContext.drawImage(gpu, 0, 0);
-  const rarityPixels = rarities.map((rarity, index) => ({
-    rarity,
-    color: [...lootContext.getImageData(24 + index * 48, 43, 1, 1).data],
-  }));
+  const rarityPixels = rarities.map((rarity, index) => {
+    return {
+      rarity,
+      color: [...lootContext.getImageData(24 + index * 48, 43, 1, 1).data],
+    };
+  });
 
   return { projectilePixels, lootPixels, rarityPixels };
 }

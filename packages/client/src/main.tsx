@@ -9,15 +9,29 @@ import { clientAsset } from './urls';
 import './style.scss';
 import { loadPreferences } from './preferences';
 
-const Game = lazy(() => import('./Game').then((module) => ({ default: module.Game })));
-const AssetGallery = lazy(() =>
-  import('./AssetGallery').then((module) => ({ default: module.AssetGallery })),
-);
-const ClassMovementGallery = lazy(() =>
-  import('./ClassMovementGallery').then((module) => ({ default: module.ClassMovementGallery })),
-);
+const Game = lazy(() => {
+  return import('./Game').then((module) => {
+    return { default: module.Game };
+  });
+});
+const AssetGallery = lazy(() => {
+  return import('./AssetGallery').then((module) => {
+    return { default: module.AssetGallery };
+  });
+});
+const ClassMovementGallery = lazy(() => {
+  return import('./ClassMovementGallery').then((module) => {
+    return { default: module.ClassMovementGallery };
+  });
+});
 
-window.addEventListener('contextmenu', (event) => event.preventDefault(), { capture: true });
+window.addEventListener(
+  'contextmenu',
+  (event) => {
+    return event.preventDefault();
+  },
+  { capture: true },
+);
 
 function App() {
   const [preferences, setPreferences] = useState(loadPreferences);
@@ -33,9 +47,11 @@ function App() {
               <AssetGallery />
             ) : (
               <AccountGate>
-                {(props) => (
-                  <Game {...props} preferences={preferences} setPreferences={setPreferences} />
-                )}
+                {(props) => {
+                  return (
+                    <Game {...props} preferences={preferences} setPreferences={setPreferences} />
+                  );
+                }}
               </AccountGate>
             )}
           </DeferredContent>

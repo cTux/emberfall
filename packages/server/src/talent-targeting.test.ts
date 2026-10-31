@@ -16,7 +16,7 @@ import { modelHitbox } from '../../core/src/hitboxes.ts';
 import { hero, arena, ability } from './talents.fixture.ts';
 
 test('learned Pack Howl boosts Bear size, claw reach and health at either rank until reset', () => {
-  for (const training of [false, true])
+  for (const training of [false, true]) {
     for (const learned of [1, 2]) {
       const player = hero('druid'),
         scene = arena();
@@ -29,7 +29,10 @@ test('learned Pack Howl boosts Bear size, claw reach and health at either rank u
       bear.hitpoints = baseHealth - 20;
       assert.equal(bear.size, 48);
       assert.equal(companionStats(player).range, 75);
-      for (let i = 0; i < learned; i++) learnTalent(player, talentNodeId('druid', 1, 3));
+      for (let i = 0; i < learned; i++) {
+        learnTalent(player, talentNodeId('druid', 1, 3));
+      }
+
       // No cast or action-bar assignment is needed; test the wrapped outer edge.
       player.x = bear.x = FOREST.width - 40;
       scene.enemies = [{ id: 1, x: 72, y: bear.y + 6, angle: 0, hitpoints: 1000 }];
@@ -59,17 +62,21 @@ test('learned Pack Howl boosts Bear size, claw reach and health at either rank u
       assert.equal(modelHitbox(bear).radius, 24);
       assert.equal(scene.enemies[0].hitpoints, 1000, 'reset removes the extended claw reach');
     }
+  }
 });
 
 test('talent auto-target selects a living enemy in range across seams and preserves manual aim', () => {
-  for (const training of [false, true])
+  for (const training of [false, true]) {
     for (const autoTarget of [false, true]) {
       const player = hero('mage'),
         scene = arena();
       player.autoTarget = autoTarget;
       player.x = training ? TRAINING_ZONES[0].x : 10;
       player.y = training ? TRAINING_ZONES[0].y : 1000;
-      if (training) player.scene = undefined;
+      if (training) {
+        player.scene = undefined;
+      }
+
       scene.training = training;
       ability(player, 0, 1);
       const target = {
@@ -100,6 +107,7 @@ test('talent auto-target selects a living enemy in range across seams and preser
       assert.equal(target.hitpoints < 1000, autoTarget);
       assert.equal(scene.enemies[2].hitpoints, 1000);
     }
+  }
 });
 
 test('talent auto-target falls back to cursor aim when no living enemy is in range', () => {

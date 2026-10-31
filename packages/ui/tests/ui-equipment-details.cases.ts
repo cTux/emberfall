@@ -113,9 +113,11 @@ test('equipment exposes rarity borders, keyboard details and desktop stats', asy
     await page.getByRole('button', { name: 'Close Equipment' }).focus();
     await page.getByText('Armor', { exact: true }).scrollIntoViewIfNeeded();
     await expect(page.getByText('Armor', { exact: true })).toBeVisible();
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-      true,
-    );
+    expect(
+      await page.evaluate(() => {
+        return document.documentElement.scrollWidth <= innerWidth;
+      }),
+    ).toBe(true);
   }
 
   await page.goto(story('components-equipmentpanel--empty'));
@@ -141,13 +143,17 @@ test('wardrobe keeps one row and independent keyboard and touch details', async 
   await expect(page.getByRole('tooltip')).toBeHidden();
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
-    const tops = await page
-      .getByRole('article')
-      .evaluateAll((cards) => cards.map((card) => Math.round(card.getBoundingClientRect().top)));
+    const tops = await page.getByRole('article').evaluateAll((cards) => {
+      return cards.map((card) => {
+        return Math.round(card.getBoundingClientRect().top);
+      });
+    });
     expect(new Set(tops).size).toBe(1);
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
-      true,
-    );
+    expect(
+      await page.evaluate(() => {
+        return document.documentElement.scrollWidth <= innerWidth;
+      }),
+    ).toBe(true);
   }
 
   await spell.dispatchEvent('touchstart', { touches: [{ identifier: 1 }] });

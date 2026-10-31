@@ -18,16 +18,18 @@ test('day-night tint changes sprites, preserves warnings and lights, and repeats
       lib: { entry: resolve('tests/day-night-fixture.ts'), name: 'Cycle', formats: ['iife'] },
     },
   });
-  await page.route('**/cycle-test', (route) =>
-    route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' }),
-  );
+  await page.route('**/cycle-test', (route) => {
+    return route.fulfill({ contentType: 'text/html', body: '<html><body></body></html>' });
+  });
   await page.goto('/cycle-test');
   await page.addScriptTag({
-    content: bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code,
+    content: bundle[0].output.find((item: { type: string }) => {
+      return item.type === 'chunk';
+    }).code,
   });
-  const samples = await page.evaluate(() =>
-    (window as unknown as { Cycle: { sample(): Promise<number[][][]> } }).Cycle.sample(),
-  );
+  const samples = await page.evaluate(() => {
+    return (window as unknown as { Cycle: { sample(): Promise<number[][][]> } }).Cycle.sample();
+  });
   expect(samples[0][0]).toEqual([255, 255, 255, 255]);
   expect(samples[2][0][2]).toBeGreaterThan(samples[2][0][0]);
   expect(samples[2][0][0]).toBeGreaterThan(120);
@@ -37,9 +39,9 @@ test('day-night tint changes sprites, preserves warnings and lights, and repeats
   }
 
   expect(samples[3]).toEqual(samples[0]);
-  const shadows = await page.evaluate(() =>
-    (window as unknown as { Cycle: typeof import('./day-night-fixture') }).Cycle.shadows(),
-  );
+  const shadows = await page.evaluate(() => {
+    return (window as unknown as { Cycle: typeof import('./day-night-fixture') }).Cycle.shadows();
+  });
   expect(shadows[0].right).toBeGreaterThan(shadows[0].left);
   expect(shadows[2].left).toBeGreaterThan(shadows[2].right);
   expect(shadows[1].left + shadows[1].right).toBeLessThan(shadows[0].right);
@@ -48,7 +50,9 @@ test('day-night tint changes sprites, preserves warnings and lights, and repeats
 
 test('cycle renders in village and forest through a real session', async ({ page, game }) => {
   const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('pageerror', (error) => {
+    return errors.push(error.message);
+  });
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const canvas = page.locator('canvas');
@@ -56,7 +60,9 @@ test('cycle renders in village and forest through a real session', async ({ page
   await expect(canvas).toHaveAttribute('data-celestial', /sun|moon/);
   await expect(canvas).toHaveAttribute('data-shadow-direction', /-?\d\.\d{3},\d\.\d{3}/);
   await page.screenshot({ path: 'test-results/day-night-village.png' });
-  const world = [...game.runtime.worlds.values()].find((world) => world.players.size)!;
+  const world = [...game.runtime.worlds.values()].find((world) => {
+    return world.players.size;
+  })!;
   const player = [...world.players.values()][0];
   game.runtime.parties(world).run(player).scene = {
     ...world.training!,
@@ -73,6 +79,10 @@ test('cycle renders in village and forest through a real session', async ({ page
   await expect(canvas).toHaveAttribute('aria-label', 'Forest combat scene.');
   await page.screenshot({ path: 'test-results/day-night-forest.png' });
   await page.keyboard.press('d');
-  await expect.poll(() => player.x).toBeGreaterThan(12);
+  await expect
+    .poll(() => {
+      return player.x;
+    })
+    .toBeGreaterThan(12);
   expect(errors).toEqual([]);
 });

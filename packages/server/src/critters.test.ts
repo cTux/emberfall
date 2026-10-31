@@ -32,8 +32,11 @@ test('ambient critters wander, stay bounded, cull and repeat across forest seams
 });
 
 const village = { x: 0, y: 0, width: ARENA.width, height: ARENA.height };
-const chicken = (critters: ReturnType<typeof crittersAt>) =>
-  critters.find((p) => p.kind === 'chicken')!;
+const chicken = (critters: ReturnType<typeof crittersAt>) => {
+  return critters.find((p) => {
+    return p.kind === 'chicken';
+  })!;
+};
 
 test('chickens flee in every direction at eight times walking speed and animate faster', () => {
   for (const [dx, dy] of [
@@ -52,15 +55,26 @@ test('chickens flee in every direction at eight times walking speed and animate 
     const distance = Math.hypot(dx, dy);
     assert.ok(Math.abs(end.x - start.x + (dx / distance) * 8) < 1e-9);
     assert.ok(Math.abs(end.y - start.y + (dy / distance) * 8) < 1e-9);
-    if (dx) assert.equal(end.left, dx > 0);
+    if (dx) {
+      assert.equal(end.left, dx > 0);
+    }
+
     assert.equal(chicken(motion(140, village, [player])).frame, 3);
     assert.deepEqual(
-      after.filter((p) => p.kind === 'cat'),
-      crittersAt('village', 100, village).filter((p) => p.kind === 'cat'),
+      after.filter((p) => {
+        return p.kind === 'cat';
+      }),
+      crittersAt('village', 100, village).filter((p) => {
+        return p.kind === 'cat';
+      }),
     );
     assert.deepEqual(
-      before.map(({ x, y }) => ({ x, y })),
-      crittersAt('village', 0, village).map(({ x, y }) => ({ x, y })),
+      before.map(({ x, y }) => {
+        return { x, y };
+      }),
+      crittersAt('village', 0, village).map(({ x, y }) => {
+        return { x, y };
+      }),
     );
     assert.ok(chicken(before).frame >= 1 && chicken(before).frame <= 3);
   }
@@ -81,7 +95,10 @@ test('chickens react to the nearest player, keep a safety margin, and return wit
   assert.equal(margin.x, fled.x - 8);
   const settled = chicken(motion(300, village, []));
   assert.ok(Math.hypot(settled.x - margin.x, settled.y - margin.y) <= 1.000001);
-  for (let now = 400; now <= 12000; now += 100) motion(now, village, []);
+  for (let now = 400; now <= 12000; now += 100) {
+    motion(now, village, []);
+  }
+
   assert.ok(
     Math.abs(
       chicken(motion(12000, village, [])).x - chicken(crittersAt('village', 12000, village)).x,
@@ -125,8 +142,12 @@ test('a chased chicken travels continuously across both world edges', () => {
 
 test('reactive motion preserves server-time cat positions for pet interactions', () => {
   const motion = createCritterMotion();
-  const cats = (critters: ReturnType<typeof crittersAt>) =>
-    critters.filter((c) => c.kind === 'cat');
+  const cats = (critters: ReturnType<typeof crittersAt>) => {
+    return critters.filter((c) => {
+      return c.kind === 'cat';
+    });
+  };
+
   assert.deepEqual(
     cats(motion(100, village, [], 1700000000000)),
     cats(crittersAt('village', 1700000000000, village)),

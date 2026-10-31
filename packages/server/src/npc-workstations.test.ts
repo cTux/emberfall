@@ -10,12 +10,22 @@ import { SessionState, projectState, materializeState } from '@emberfall/common/
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { flush, player } from './npcs.fixture.ts';
 
-function workingVillage(dialogue: NpcDialogue = { generate: async () => ({ status: 'busy' }) }) {
+function workingVillage(
+  dialogue: NpcDialogue = {
+    generate: async () => {
+      return { status: 'busy' };
+    },
+  },
+) {
   const world: NpcWorld = { players: createPlayers() };
   world.players.set('p', player('p', 2000, 2000));
-  const life = new VillageLife(world, dialogue, 0, () => 0);
+  const life = new VillageLife(world, dialogue, 0, () => {
+    return 0;
+  });
   for (const npc of world.npcs!) {
-    const station = VILLAGE_DEFINITION.workstations.find((s) => s.npcId === npc.id)!;
+    const station = VILLAGE_DEFINITION.workstations.find((s) => {
+      return s.npcId === npc.id;
+    })!;
     Object.assign(npc, station.worker);
   }
 
@@ -29,13 +39,32 @@ test('every resident works at two home stations, stays a full minute and alterna
   const { world, life } = workingVillage();
   const stations = VILLAGE_DEFINITION.workstations;
   assert.equal(stations.length, 8);
-  assert.equal(new Set(stations.map((s) => s.id)).size, 8);
+  assert.equal(
+    new Set(
+      stations.map((s) => {
+        return s.id;
+      }),
+    ).size,
+    8,
+  );
   for (const npc of world.npcs!) {
-    const own = stations.filter((s) => s.npcId === npc.id);
+    const own = stations.filter((s) => {
+      return s.npcId === npc.id;
+    });
     assert.equal(own.length, 2);
-    assert(own.every((s) => s.buildingId === npc.buildingId));
-    const building = VILLAGE_DEFINITION.buildings.find((b) => b.id === npc.buildingId)!;
-    assert(own.every((s) => Math.hypot(s.x - building.x, s.y - building.y) < 100));
+    assert(
+      own.every((s) => {
+        return s.buildingId === npc.buildingId;
+      }),
+    );
+    const building = VILLAGE_DEFINITION.buildings.find((b) => {
+      return b.id === npc.buildingId;
+    })!;
+    assert(
+      own.every((s) => {
+        return Math.hypot(s.x - building.x, s.y - building.y) < 100;
+      }),
+    );
     assert.equal(npc.workstationId, own[0].id);
     assert.equal(npc.moving, false);
     assert.deepEqual({ x: npc.x, y: npc.y }, own[0].worker);
@@ -43,20 +72,35 @@ test('every resident works at two home stations, stays a full minute and alterna
 
   life.tick(105_000, 59.999);
   assert(
-    world.npcs!.every((n) => n.workstationId),
+    world.npcs!.every((n) => {
+      return n.workstationId;
+    }),
     'no job ends before 60 active seconds',
   );
   life.tick(105_001, 0.001);
-  assert(world.npcs!.every((n) => !n.workstationId));
+  assert(
+    world.npcs!.every((n) => {
+      return !n.workstationId;
+    }),
+  );
   for (const npc of world.npcs!) {
-    const second = stations.filter((s) => s.npcId === npc.id)[1];
+    const second = stations.filter((s) => {
+      return s.npcId === npc.id;
+    })[1];
     Object.assign(npc, second.worker);
   }
 
   life.tick(150_000, 0);
   life.tick(150_001, 0);
-  for (const npc of world.npcs!)
-    assert.equal(npc.workstationId, stations.filter((s) => s.npcId === npc.id)[1].id);
+  for (const npc of world.npcs!) {
+    assert.equal(
+      npc.workstationId,
+      stations.filter((s) => {
+        return s.npcId === npc.id;
+      })[1].id,
+    );
+  }
+
   life.close();
 });
 
@@ -104,10 +148,11 @@ test('trading and empty-village time suspend work without consuming its remainin
 test('directed speech suspends work through reply delay, generation and visible speech, then resumes', async () => {
   let finish!: (result: DialogueResult) => void;
   const { world, life } = workingVillage({
-    generate: () =>
-      new Promise((resolve) => {
+    generate: () => {
+      return new Promise((resolve) => {
         finish = resolve;
-      }),
+      });
+    },
   });
   const npc = world.npcs![0];
   const station = npc.workstationId;

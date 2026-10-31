@@ -62,28 +62,38 @@ export function forestRenderer(
     const scale = Math.max(ctx.canvas.width / 960, ctx.canvas.height / 640),
       width = ctx.canvas.width / scale,
       height = ctx.canvas.height / scale;
-    const me = world?.players.find((p) => p.id === playerId);
+    const me = world?.players.find((p) => {
+      return p.id === playerId;
+    });
     const focus = me ?? { x: 2400 + Math.sin(now / 25000) * 70, y: 1280 };
     const cx = focus.x,
       cy = focus.y;
     const cameraX = cx - width / 2,
       cameraY = cy - height / 2;
-    const near = (x: number, y: number) => ({
-      x: cx + wrappedDelta(x, cx, FOREST.width),
-      y: cy + wrappedDelta(y, cy, FOREST.height),
-    });
+    const near = (x: number, y: number) => {
+      return {
+        x: cx + wrappedDelta(x, cx, FOREST.width),
+        y: cy + wrappedDelta(y, cy, FOREST.height),
+      };
+    };
+
     ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
     ctx.imageSmoothingEnabled = false;
-    for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++)
-      for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++)
+    for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++) {
+      for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++) {
         ctx.drawImage(terrain, col * 320, row * 320);
+      }
+    }
+
     if (world?.scene) {
       drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles, prefs, playerId);
       drawDanger(ctx, world.scene, serverTime, near, true);
     }
 
     const players =
-      world?.players.filter((p) => p.scene === 'forest' && p.runId === me?.runId) ?? [];
+      world?.players.filter((p) => {
+        return p.scene === 'forest' && p.runId === me?.runId;
+      }) ?? [];
     for (const player of players) {
       const point = near(player.x, player.y);
       drawPlayerAttack(
@@ -107,16 +117,17 @@ export function forestRenderer(
     const trees = resourceNodes(
       { x: cx, y: cy, scene: 'forest' },
       Math.hypot(width, height) / 2 + 300,
-    ).filter(
-      (t) =>
+    ).filter((t) => {
+      return (
         t.x > cameraX - 300 &&
         t.x < cameraX + width + 300 &&
         t.y > cameraY - 300 &&
-        t.y < cameraY + height + 300,
-    );
-    const casters: Caster[] = trees.map((node) =>
-      resourceScenery(node, resourceState(world?.resources, node, serverTime)),
-    );
+        t.y < cameraY + height + 300
+      );
+    });
+    const casters: Caster[] = trees.map((node) => {
+      return resourceScenery(node, resourceState(world?.resources, node, serverTime));
+    });
     const {
       rendered,
       casters: actorCasters,
@@ -131,11 +142,16 @@ export function forestRenderer(
     });
     for (const critter of critters) {
       const caster = critterCaster(critter);
-      if (caster) casters.push(caster);
+      if (caster) {
+        casters.push(caster);
+      }
     }
 
     for (const player of players) {
-      if (!player.bear) continue;
+      if (!player.bear) {
+        continue;
+      }
+
       const point = near(player.bear.x, player.bear.y);
       const caster = companionCaster(
         player.bear,
@@ -144,10 +160,17 @@ export function forestRenderer(
         serverTime,
         `bear:${player.id}`,
       );
-      if (caster) casters.push(caster);
+      if (caster) {
+        casters.push(caster);
+      }
     }
 
-    if (quality.shadows) for (const caster of casters) castShadow(ctx, caster);
+    if (quality.shadows) {
+      for (const caster of casters) {
+        castShadow(ctx, caster);
+      }
+    }
+
     if (!quality.shadows) {
       ctx.fillStyle = '#07120955';
       for (const t of trees) {
@@ -157,17 +180,24 @@ export function forestRenderer(
       }
     }
 
-    if (world?.scene) drawDanger(ctx, world.scene, serverTime, near);
-    if (world?.scene)
+    if (world?.scene) {
+      drawDanger(ctx, world.scene, serverTime, near);
+    }
+
+    if (world?.scene) {
       drawLootAndBlood(ctx, world.scene, serverTime, near, {
         x: cameraX,
         y: cameraY,
         width,
         height,
       });
+    }
+
     const layers = forestLayers(world, trees, rendered, players, critters, near);
     const renderer = ctx;
-    const localActor = rendered.find((actor) => actor.id === playerId);
+    const localActor = rendered.find((actor) => {
+      return actor.id === playerId;
+    });
     if (localActor && localActor.image.naturalWidth) {
       const breath = idleBreath(now, localActor.row);
       renderer.setPlayerCutout(
@@ -201,7 +231,9 @@ export function forestRenderer(
       ctx.save();
       ctx.globalAlpha = cycle.lightAlpha;
       ctx.globalCompositeOperation = 'screen';
-      for (const p of rendered.filter((a) => a.player && a.player.hitpoints > 0)) {
+      for (const p of rendered.filter((a) => {
+        return a.player && a.player.hitpoints > 0;
+      })) {
         const light = {
           x: p.x + (p.facing === 2 ? -15 : 12),
           y: p.y + 15,
@@ -217,7 +249,7 @@ export function forestRenderer(
     }
 
     drawEnvironment(ctx, { x: cameraX, y: cameraY, width, height }, now, quality, cycle.daylight);
-    if (prefs.damageNumbers)
+    if (prefs.damageNumbers) {
       drawDamageNumbers(
         ctx,
         world?.scene?.damage ?? [],
@@ -225,8 +257,13 @@ export function forestRenderer(
         serverTime,
         prefs.hideOtherPlayerDamageNumbers ? playerId : undefined,
       );
+    }
+
     drawDamageFlash(ctx, world, playerId);
-    if (world) drawNavigation(ctx, world, playerId);
+    if (world) {
+      drawNavigation(ctx, world, playerId);
+    }
+
     for (const player of players) {
       const point = near(player.x, player.y);
       drawChatBubble(ctx, point.x, point.y, player.chat);

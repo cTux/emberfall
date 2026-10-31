@@ -30,7 +30,10 @@ export function drawStonePortal(
   now: number,
 ) {
   drawArt(ctx, portalArt, 0, 0, x, y, width, height, 128);
-  if (!portalArt.naturalWidth) return;
+  if (!portalArt.naturalWidth) {
+    return;
+  }
+
   ctx.save();
   ctx.beginPath();
   ctx.ellipse(x + width * 0.5, y + height * 0.58, width * 0.22, height * 0.3, 0, 0, Math.PI * 2);

@@ -53,31 +53,48 @@ export async function createGameServer(
     private peer?: Peer;
 
     override onAuth(_client: Client, options: { ticket?: string }, context: { headers: Headers }) {
-      if (!accounts) return true;
-      if (context.headers.get('origin') !== accounts.clientOrigin)
+      if (!accounts) {
+        return true;
+      }
+
+      if (context.headers.get('origin') !== accounts.clientOrigin) {
         throw new ServerError(401, 'Invalid origin');
+      }
+
       const token = accounts.consumeTicket(options.ticket);
-      if (!token) throw new ServerError(401, 'Please sign in again');
+      if (!token) {
+        throw new ServerError(401, 'Please sign in again');
+      }
 
       return token;
     }
 
     override async onCreate(options: { protocolVersion?: number }) {
-      if (options.protocolVersion !== RUNTIME.protocolVersion)
+      if (options.protocolVersion !== RUNTIME.protocolVersion) {
         throw new ServerError(4002, 'Client protocol version is incompatible. Reload the game.');
+      }
+
       await this.setPrivate(true);
       this.setPatchRate(50);
-      this.onMessage('command', (_client, command) => this.peer?.receive(command));
+      this.onMessage('command', (_client, command) => {
+        return this.peer?.receive(command);
+      });
     }
 
     override onJoin(client: Client) {
-      if (accounts && (typeof client.auth !== 'string' || !accounts.valid(client.auth)))
+      if (accounts && (typeof client.auth !== 'string' || !accounts.valid(client.auth))) {
         throw new ServerError(401, 'Please sign in again');
+      }
+
       this.peer = new Peer(
         (message) => {
-          if (message.type === 'state') replicate(this.state, message);
-          else {
-            if (message.type === 'joined') replicate(this.state, message);
+          if (message.type === 'state') {
+            replicate(this.state, message);
+          } else {
+            if (message.type === 'joined') {
+              replicate(this.state, message);
+            }
+
             if (message.type === 'left') {
               this.state.header = '';
               this.state.entities.clear();
@@ -86,8 +103,12 @@ export async function createGameServer(
             client.send('event', message);
           }
         },
-        (code) => client.leave(code === 1006 ? 4001 : code),
-        () => (client as WebSocketClient).ref.bufferedAmount,
+        (code) => {
+          return client.leave(code === 1006 ? 4001 : code);
+        },
+        () => {
+          return (client as WebSocketClient).ref.bufferedAmount;
+        },
       );
       runtime.connect(
         this.peer,
@@ -109,10 +130,13 @@ export async function createGameServer(
     beforeUpgrade: (request) => {
       const origin = request.headers.get('origin');
       try {
-        if (accounts && origin !== accounts.clientOrigin)
+        if (accounts && origin !== accounts.clientOrigin) {
           return new Response('Forbidden', { status: 403 });
-        if (!accounts && origin && new URL(origin).host !== request.headers.get('host'))
+        }
+
+        if (!accounts && origin && new URL(origin).host !== request.headers.get('host')) {
           return new Response('Forbidden', { status: 403 });
+        }
       } catch {
         return new Response('Forbidden', { status: 403 });
       }
@@ -126,19 +150,23 @@ export async function createGameServer(
     gracefullyShutdown: false,
     express: (app) => {
       app.use((req: IncomingMessage, res: ServerResponse, next: (error?: unknown) => void) => {
-        if (accounts)
+        if (accounts) {
           void accounts
             .handle(req, res)
             .then((handled) => {
-              if (!handled) next();
+              if (!handled) {
+                next();
+              }
             })
             .catch(next);
-        else if (req.url === '/api/account') {
+        } else if (req.url === '/api/account') {
           res.setHeader('Content-Type', 'application/json');
           res.end(
             JSON.stringify({ mode: 'legacy', authenticated: false, nickname: null, steamName: '' }),
           );
-        } else next();
+        } else {
+          next();
+        }
       });
       app.get('/', handler);
       app.use(handler);
@@ -150,7 +178,10 @@ export async function createGameServer(
     server,
     runtime,
     async listen(port: number, host = '127.0.0.1') {
-      if (port !== 0) return game.listen(port, host);
+      if (port !== 0) {
+        return game.listen(port, host);
+      }
+
       // The ws transport treats zero as its default port. Bind through the public
       // externally-hosted-server API so tests get a real OS-assigned free port.
       await game.serverless();

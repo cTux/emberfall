@@ -81,7 +81,9 @@ export class DrawingState {
   }
 
   restore() {
-    if (this.stackDepth) this.copyState(this.state, this.stack[--this.stackDepth]);
+    if (this.stackDepth) {
+      this.copyState(this.state, this.stack[--this.stackDepth]);
+    }
   }
 
   private copyState(target: State, source: State) {

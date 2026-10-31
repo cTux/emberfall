@@ -21,7 +21,9 @@ test('character commands publish only after a successful detached save', () => {
     { id: 'world' },
     'character',
     {
-      merchant: () => freshMerchant(),
+      merchant: () => {
+        return freshMerchant();
+      },
       save: (_id, _name, next) => {
         assert.equal(current.storages![0].name, previousName);
         assert.equal(next.storages![0].name, 'Supplies');
@@ -37,22 +39,22 @@ test('failed saves retain live inventory and shared merchant state', () => {
   const current = player();
   const world = { id: 'world', merchant: freshMerchant() };
   const before = structuredClone({ current, world });
-  assert.throws(
-    () =>
-      commitCharacterCommand(
-        { type: 'renameStorage', tab: 0, name: 'Supplies' },
-        current,
-        world,
-        'character',
-        {
-          merchant: () => freshMerchant(),
-          save: () => {
-            throw new Error('disk failed');
-          },
+  assert.throws(() => {
+    return commitCharacterCommand(
+      { type: 'renameStorage', tab: 0, name: 'Supplies' },
+      current,
+      world,
+      'character',
+      {
+        merchant: () => {
+          return freshMerchant();
         },
-      ),
-    /Unable to save item action/,
-  );
+        save: () => {
+          throw new Error('disk failed');
+        },
+      },
+    );
+  }, /Unable to save item action/);
   assert.deepEqual({ current, world }, before);
 });
 
@@ -67,7 +69,9 @@ test(
   { timeout: 5000 },
   async (t) => {
     const runtime = await createRuntime();
-    t.after(() => runtime.close());
+    t.after(() => {
+      return runtime.close();
+    });
     const errors: string[] = [];
     let failState = false;
     let joined!: (message: Extract<ServerMessage, { type: 'joined' }>) => void;
@@ -82,15 +86,22 @@ test(
           throw new Error('private delivery detail');
         }
 
-        if (message.type === 'joined') joined(message);
-        if (message.type === 'error') errors.push(message.message);
+        if (message.type === 'joined') {
+          joined(message);
+        }
+
+        if (message.type === 'error') {
+          errors.push(message.message);
+        }
       },
       () => {},
     );
     runtime.connect(peer);
     peer.receive({ type: 'create', name: 'World', playerName: 'Player', password: '' });
     const message = await ready;
-    const current = message.world.players.find((entry) => entry.id === message.playerId)!;
+    const current = message.world.players.find((entry) => {
+      return entry.id === message.playerId;
+    })!;
     failState = true;
     peer.receive({ type: 'setTactics', classId: current.classId ?? 'warrior', tactics: {} });
     assert.deepEqual(errors, ['Unable to save item action. Please retry.']);

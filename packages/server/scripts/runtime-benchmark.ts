@@ -18,10 +18,18 @@ async function measure(worlds: number) {
     [join(directory, 'characters.sqlite'), String(worlds)],
     { windowsHide: true, execArgv: [], stdio: ['ignore', 'ignore', 'pipe', 'ipc'] },
   );
-  const stopped = new Promise<void>((resolve) => child.once('close', () => resolve()));
+  const stopped = new Promise<void>((resolve) => {
+    return child.once('close', () => {
+      return resolve();
+    });
+  });
   const exited = new AbortController();
-  child.once('error', (error) => exited.abort(error));
-  child.once('exit', (code) => exited.abort(new Error(`Benchmark server exited: ${code}`)));
+  child.once('error', (error) => {
+    return exited.abort(error);
+  });
+  child.once('exit', (code) => {
+    return exited.abort(new Error(`Benchmark server exited: ${code}`));
+  });
   let stderr = '';
   child.stderr!.on('data', (chunk: Buffer) => {
     stderr = (stderr + chunk.toString()).slice(-8000);
@@ -85,7 +93,10 @@ async function measure(worlds: number) {
   } catch (error) {
     throw new Error(`Workload ${worlds} failed. ${stderr}`, { cause: error });
   } finally {
-    if (child.exitCode === null && child.signalCode === null) child.kill();
+    if (child.exitCode === null && child.signalCode === null) {
+      child.kill();
+    }
+
     await stopped;
     await clients?.close();
     const target = realpathSync(directory);

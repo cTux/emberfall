@@ -20,18 +20,29 @@ async function start(root?: string, savePath?: string) {
 async function connect(url: string) {
   const ws = new WebSocket(url.replace('http:', 'ws:') + '/ws');
   const messages: ServerMessage[] = [];
-  ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
+  ws.on('message', (raw) => {
+    return messages.push(JSON.parse(raw.toString()));
+  });
   await once(ws, 'open');
 
   return {
     ws,
-    send: (message: unknown) => ws.send(JSON.stringify(message)),
+    send: (message: unknown) => {
+      return ws.send(JSON.stringify(message));
+    },
     async wait<T extends ServerMessage['type']>(type: T) {
       const deadline = performance.now() + 3000;
       while (performance.now() < deadline) {
-        const index = messages.findIndex((message) => message.type === type);
-        if (index >= 0) return messages.splice(index, 1)[0] as Extract<ServerMessage, { type: T }>;
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        const index = messages.findIndex((message) => {
+          return message.type === type;
+        });
+        if (index >= 0) {
+          return messages.splice(index, 1)[0] as Extract<ServerMessage, { type: T }>;
+        }
+
+        await new Promise((resolve) => {
+          return setTimeout(resolve, 10);
+        });
       }
 
       throw new Error(`Missing ${type}`);
@@ -57,8 +68,16 @@ test('world identities and authorized password-free recovery survive a server re
     app = await start(undefined, savePath);
     const returning = await connect(app.url);
     const listing = await returning.wait('worlds');
-    assert(listing.worlds.some((world) => world.id === permanentId));
-    assert(listing.worlds.some((world) => world.id === joined.world.id && world.locked));
+    assert(
+      listing.worlds.some((world) => {
+        return world.id === permanentId;
+      }),
+    );
+    assert(
+      listing.worlds.some((world) => {
+        return world.id === joined.world.id && world.locked;
+      }),
+    );
     const stranger = await connect(app.url);
     stranger.send({ type: 'join', worldId: permanentId, playerName: 'Stranger', password: '' });
     const other = await stranger.wait('joined');

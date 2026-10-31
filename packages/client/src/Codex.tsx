@@ -45,7 +45,9 @@ export function Codex() {
         label='Codex chapters'
         value={chapter}
         onChange={setChapter}
-        chapters={CODEX_CHAPTERS.map((entry) => ({ ...entry, id: entry.title }))}
+        chapters={CODEX_CHAPTERS.map((entry) => {
+          return { ...entry, id: entry.title };
+        })}
       />
     </Box>
   );

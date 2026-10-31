@@ -10,8 +10,10 @@ test('performance overlay stays compact and draggable with both traces enabled',
   await page.goto('/');
   await page.getByLabel('Your adventurer name').fill('Compact hero');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  for (const name of ['FPS graph', 'Latency graph'])
+  for (const name of ['FPS graph', 'Latency graph']) {
     await page.getByRole('switch', { name, exact: true }).check();
+  }
+
   await page.getByRole('button', { name: 'Close Settings' }).click();
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const panel = page.locator('.performance-stats');
@@ -55,7 +57,11 @@ test('optional HUD widgets start centered without moving party frames', async ({
           ? page.getByLabel('Damage per second', { exact: true })
           : page.locator('.performance-stats');
       await expect(panel).toBeVisible();
-      await expect.poll(() => party.boundingBox()).toEqual(original);
+      await expect
+        .poll(() => {
+          return party.boundingBox();
+        })
+        .toEqual(original);
       await expect
         .poll(async () => {
           const box = (await panel.boundingBox())!;
@@ -67,7 +73,11 @@ test('optional HUD widgets start centered without moving party frames', async ({
       await page.keyboard.press('Escape');
       await page.getByRole('switch', { name, exact: true }).uncheck();
       await page.getByRole('button', { name: 'Close Settings' }).click();
-      await expect.poll(() => party.boundingBox()).toEqual(original);
+      await expect
+        .poll(() => {
+          return party.boundingBox();
+        })
+        .toEqual(original);
     }
   }
 });

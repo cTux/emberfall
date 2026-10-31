@@ -28,7 +28,9 @@ export class DrawingPath {
     let penX = 0,
       penY = 0,
       dashAt = 0;
-    const dash = values.filter((n) => n > 0);
+    const dash = values.filter((n) => {
+      return n > 0;
+    });
     for (const { method, args } of this.commands) {
       if (method === 'ellipse') {
         const [x, y, rx, ry, rotation, start, end, ccw] = args;
@@ -43,12 +45,15 @@ export class DrawingPath {
             py = Math.sin(angle) * ry;
           const tx = x + px * Math.cos(rotation) - py * Math.sin(rotation),
             ty = y + px * Math.sin(rotation) + py * Math.cos(rotation);
-          if (i === 0) graphics.moveTo(tx, ty);
-          else graphics.lineTo(tx, ty);
+          if (i === 0) {
+            graphics.moveTo(tx, ty);
+          } else {
+            graphics.lineTo(tx, ty);
+          }
         }
-      } else if (method === 'arc')
+      } else if (method === 'arc') {
         graphics.arc(args[0], args[1], args[2], args[3], args[4], !!args[5]);
-      else if (method === 'moveTo') {
+      } else if (method === 'moveTo') {
         graphics.moveTo(args[0], args[1]);
         penX = args[0];
         penY = args[1];
@@ -58,7 +63,9 @@ export class DrawingPath {
           const dx = args[0] - penX,
             dy = args[1] - penY,
             length = Math.hypot(dx, dy);
-          const cycle = dash.reduce((sum, n) => sum + n, 0);
+          const cycle = dash.reduce((sum, n) => {
+            return sum + n;
+          }, 0);
           for (let at = 0; at < length;) {
             let offset = dashAt % cycle,
               index = 0;
@@ -72,17 +79,25 @@ export class DrawingPath {
             dashAt += step;
             const x = penX + (dx * at) / length,
               y = penY + (dy * at) / length;
-            if (index % 2 === 0) graphics.lineTo(x, y);
-            else graphics.moveTo(x, y);
+            if (index % 2 === 0) {
+              graphics.lineTo(x, y);
+            } else {
+              graphics.moveTo(x, y);
+            }
           }
-        } else graphics.lineTo(args[0], args[1]);
+        } else {
+          graphics.lineTo(args[0], args[1]);
+        }
+
         penX = args[0];
         penY = args[1];
-      } else if (method === 'quadraticCurveTo')
+      } else if (method === 'quadraticCurveTo') {
         graphics.quadraticCurveTo(args[0], args[1], args[2], args[3]);
-      else if (method === 'bezierCurveTo')
+      } else if (method === 'bezierCurveTo') {
         graphics.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
-      else graphics.closePath();
+      } else {
+        graphics.closePath();
+      }
     }
 
     return graphics;

@@ -27,7 +27,10 @@ const terrainTiles = new Map<string, HTMLCanvasElement>();
 export function terrainTile(column: number, size = 320) {
   const key = `${column}:${size}`;
   const cached = terrainTiles.get(key);
-  if (cached) return cached;
+  if (cached) {
+    return cached;
+  }
+
   const tile = document.createElement('canvas');
   tile.width = tile.height = size;
   const ctx = tile.getContext('2d')!;
@@ -65,10 +68,11 @@ export function terrainTile(column: number, size = 320) {
         const b = (y * source.width + x + (blendX ? span : 0)) * 4;
         const c = ((y + (blendY ? span : 0)) * source.width + x) * 4;
         const d = c + (blendX ? span * 4 : 0);
-        for (let channel = 0; channel < 4; channel++)
+        for (let channel = 0; channel < 4; channel++) {
           output.data[(y * size + x) * 4 + channel] =
             (pixels[a + channel] * (1 - blendX) + pixels[b + channel] * blendX) * (1 - blendY) +
             (pixels[c + channel] * (1 - blendX) + pixels[d + channel] * blendX) * blendY;
+        }
       }
     }
 
@@ -90,7 +94,10 @@ export function drawArt(
   height: number,
   cell = 64,
 ) {
-  if (!image.naturalWidth || image.dataset.artReady !== 'true') return;
+  if (!image.naturalWidth || image.dataset.artReady !== 'true') {
+    return;
+  }
+
   // PixiContext translates logical atlas coordinates itself; Canvas 2D does not.
   const sourceCell =
     cell * (ctx instanceof CanvasRenderingContext2D ? Number(image.dataset.artResolution ?? 1) : 1);

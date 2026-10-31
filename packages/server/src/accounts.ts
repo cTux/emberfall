@@ -12,8 +12,14 @@ import { SteamProvider } from './steam.ts';
 const sessionCookie = '__Host-emberfall-session';
 const loginCookie = '__Host-emberfall-login';
 const lifetime = 7 * 24 * 60 * 60 * 1000;
-const random = () => randomBytes(32).toString('hex');
-const hash = (value: string) => createHash('sha256').update(value).digest('hex');
+const random = () => {
+  return randomBytes(32).toString('hex');
+};
+
+const hash = (value: string) => {
+  return createHash('sha256').update(value).digest('hex');
+};
+
 export class Accounts {
   readonly origin: string;
   readonly clientOrigin: string;
@@ -40,36 +46,57 @@ export class Accounts {
     this.clientOrigin = origins.clientOrigin;
     this.clientUrl = origins.clientUrl;
     this.steam = new SteamProvider(options.apiKey, options.request);
-    this.timer = setInterval(() => this.sweep(), 1000);
+    this.timer = setInterval(() => {
+      return this.sweep();
+    }, 1000);
     this.timer.unref();
   }
 
   private sweep() {
     const now = Date.now();
-    for (const map of [this.attempts, this.tickets, this.limits])
-      for (const [key, value] of map) if (value.expires <= now) map.delete(key);
+    for (const map of [this.attempts, this.tickets, this.limits]) {
+      for (const [key, value] of map) {
+        if (value.expires <= now) {
+          map.delete(key);
+        }
+      }
+    }
+
     for (const [peer, token] of this.peers) {
-      if (!this.store.session(token)) peer.close(1008, 'Session expired');
-      if (peer.readyState === 3) this.peers.delete(peer);
+      if (!this.store.session(token)) {
+        peer.close(1008, 'Session expired');
+      }
+
+      if (peer.readyState === 3) {
+        this.peers.delete(peer);
+      }
     }
   }
 
   private limit(key: string, max: number) {
     this.sweep();
     const value = this.limits.get(key) ?? { count: 0, expires: Date.now() + 60_000 };
-    if (this.limits.size >= 5000 && !this.limits.has(key))
+    if (this.limits.size >= 5000 && !this.limits.has(key)) {
       throw new Error('Too many requests. Try again shortly.');
+    }
+
     this.limits.set(key, value);
-    if (++value.count > max) throw new Error('Too many requests. Try again shortly.');
+    if (++value.count > max) {
+      throw new Error('Too many requests. Try again shortly.');
+    }
   }
 
   consumeTicket(ticket: unknown) {
-    if (typeof ticket !== 'string') return undefined;
+    if (typeof ticket !== 'string') {
+      return undefined;
+    }
+
     const key = hash(ticket),
       saved = this.tickets.get(key);
     this.tickets.delete(key);
-    if (!saved || saved.expires <= Date.now() || !this.store.session(saved.token)?.nickname)
+    if (!saved || saved.expires <= Date.now() || !this.store.session(saved.token)?.nickname) {
       return undefined;
+    }
 
     return saved.token;
   }
@@ -77,7 +104,9 @@ export class Accounts {
   attach(peer: Peer, token: string) {
     this.peers.set(peer, token);
 
-    return () => this.store.session(token);
+    return () => {
+      return this.store.session(token);
+    };
   }
 
   valid(token: string) {
@@ -90,8 +119,10 @@ export class Accounts {
 
   async handle(req: IncomingMessage & { body?: unknown }, res: ServerResponse) {
     const url = new URL(req.url ?? '/', this.origin);
-    if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/account'))
+    if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/account')) {
       return false;
+    }
+
     res.setHeader('Vary', 'Origin');
     if (req.headers.origin && req.headers.origin !== this.clientOrigin) {
       res.removeHeader('Access-Control-Allow-Origin');
@@ -119,7 +150,10 @@ export class Accounts {
     try {
       if (req.method === 'GET' && url.pathname === '/auth/steam') {
         this.limit(`login:${req.socket.remoteAddress}`, 20);
-        if (this.attempts.size >= 5000) throw new Error('Login is busy. Try again shortly.');
+        if (this.attempts.size >= 5000) {
+          throw new Error('Login is busy. Try again shortly.');
+        }
+
         const state = random(),
           browser = random();
         this.attempts.set(state, { cookieHash: hash(browser), expires: Date.now() + 300_000 });
@@ -137,8 +171,10 @@ export class Accounts {
           attempt.expires <= Date.now() ||
           attempt.cookieHash !== hash(cookie(req.headers.cookie, loginCookie)) ||
           this.pending >= 8
-        )
+        ) {
           throw new Error('Login expired. Please try again.');
+        }
+
         this.attempts.delete(state);
         this.pending++;
         try {
@@ -205,7 +241,10 @@ export class Accounts {
           return true;
         }
 
-        if (this.tickets.size >= 5000) throw new Error('Server is busy. Try again shortly.');
+        if (this.tickets.size >= 5000) {
+          throw new Error('Server is busy. Try again shortly.');
+        }
+
         const ticket = random();
         this.tickets.set(hash(ticket), { token, expires: Date.now() + 30_000 });
         json(200, { ticket });
@@ -218,16 +257,22 @@ export class Accounts {
         );
         json(200, { ok: true });
       } else if (req.method === 'PATCH' && url.pathname === '/api/account/nickname') {
-        if (!req.headers['content-type']?.startsWith('application/json'))
+        if (!req.headers['content-type']?.startsWith('application/json')) {
           throw new Error('Expected JSON.');
+        }
+
         let body = req.body;
-        if (body !== undefined && Buffer.byteLength(JSON.stringify(body)) > 2048)
+        if (body !== undefined && Buffer.byteLength(JSON.stringify(body)) > 2048) {
           throw new Error('Request too large.');
+        }
+
         if (body === undefined) {
           let raw = '';
           for await (const chunk of req) {
             raw += chunk;
-            if (Buffer.byteLength(raw) > 2048) throw new Error('Request too large.');
+            if (Buffer.byteLength(raw) > 2048) {
+              throw new Error('Request too large.');
+            }
           }
 
           body = JSON.parse(raw);
@@ -257,11 +302,15 @@ export class Accounts {
           nickname: updated.nickname,
           steamName: updated.steamName,
         } satisfies AccountView);
-      } else json(404, { error: 'Not found' });
+      } else {
+        json(404, { error: 'Not found' });
+      }
     } catch {
-      if (url.pathname === '/auth/steam/callback')
+      if (url.pathname === '/auth/steam/callback') {
         redirect(this.clientUrl ? `${this.clientUrl}?login=failed` : '/?login=failed');
-      else json(400, { error: 'Unable to complete the request. Please try again.' });
+      } else {
+        json(400, { error: 'Unable to complete the request. Please try again.' });
+      }
     }
 
     return true;

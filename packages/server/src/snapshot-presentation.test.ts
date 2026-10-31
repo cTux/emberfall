@@ -8,7 +8,11 @@ import { hero, snapshot } from './snapshots.fixture.ts';
 
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
-  if ('mock' in t) t.mock.method(Math, 'random', () => 0.5);
+  if ('mock' in t) {
+    t.mock.method(Math, 'random', () => {
+      return 0.5;
+    });
+  }
 });
 
 test('edge indicators stay inset, point toward offscreen targets, and hide onscreen', async () => {

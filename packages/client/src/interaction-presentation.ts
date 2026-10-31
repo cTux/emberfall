@@ -62,15 +62,22 @@ export class InteractionPresentation {
     } = frame;
     let targets: InteractionTarget[] = [];
     let hovered: InteractionTarget | null = null;
-    const authoritativePlayer = authoritative?.players.find((p) => p.id === playerId);
+    const authoritativePlayer = authoritative?.players.find((p) => {
+      return p.id === playerId;
+    });
     const drawPrompt = () => {
       const activity = authoritativePlayer?.gathering;
-      if (!activity) this.clock = undefined;
+      if (!activity) {
+        this.clock = undefined;
+      }
+
       element.dataset.gathering = activity?.nodeId ?? '';
       element.dataset.gatheringCheck = activity?.checkId ?? '';
       if (activity && local) {
         element.dataset.interactionPrompt = '';
-        const node = resourceNodes(local, 250).find((node) => node.id === activity.nodeId);
+        const node = resourceNodes(local, 250).find((node) => {
+          return node.id === activity.nodeId;
+        });
         if (node) {
           if (
             !this.clock ||
@@ -95,7 +102,10 @@ export class InteractionPresentation {
             x: node.x,
             y: node.y,
             activate: () => {
-              if (blocked()) return;
+              if (blocked()) {
+                return;
+              }
+
               send({
                 type: 'gather',
                 nodeId: node.id,
@@ -126,8 +136,13 @@ export class InteractionPresentation {
         !hideGatheringHint
           ? (signal.current?.name ?? '')
           : '';
-      if (element.dataset.interactionPrompt !== label) element.dataset.interactionPrompt = label;
-      if (local && label) drawInteractionPrompt(ctx, local.x, local.y, label);
+      if (element.dataset.interactionPrompt !== label) {
+        element.dataset.interactionPrompt = label;
+      }
+
+      if (local && label) {
+        drawInteractionPrompt(ctx, local.x, local.y, label);
+      }
     };
 
     let nearby = authoritativePlayer
@@ -145,8 +160,9 @@ export class InteractionPresentation {
         authoritative?.resources,
         authoritative?.serverNow ?? 0,
       );
-      if (node)
+      if (node) {
         nearby = { id: `gather:${node.id}`, name: `Gather ${node.kind}`, x: node.x, y: node.y };
+      }
     }
 
     const updateGatherDiagnostics = () => {
@@ -154,7 +170,9 @@ export class InteractionPresentation {
         ? signal.current.id.slice(7)
         : '';
       element.dataset.depletedResources = String(
-        Object.values(view?.resources ?? {}).filter((state) => state.remaining === 0).length,
+        Object.values(view?.resources ?? {}).filter((state) => {
+          return state.remaining === 0;
+        }).length,
       );
       element.dataset.resourceHealth = String(
         view?.resources?.[element.dataset.resource]?.remaining ?? '',
@@ -163,7 +181,9 @@ export class InteractionPresentation {
 
     const outlines = () => {
       const highlighted = highlightInteractions;
-      for (const target of targets) target.highlighted = highlighted;
+      for (const target of targets) {
+        target.highlighted = highlighted;
+      }
 
       return highlighted ? targets : hovered ? [hovered] : [];
     };
@@ -185,10 +205,18 @@ export class InteractionPresentation {
               ? nearby
               : null
           : (nearby ??
-            cats?.find((cat) => interactionInRange(cat, authoritativePlayer))?.source ??
+            cats?.find((cat) => {
+              return interactionInRange(cat, authoritativePlayer);
+            })?.source ??
             null);
-        if (nearby && !nearby.id.startsWith('gather:') && signal.current?.id.startsWith('gather:'))
+        if (
+          nearby &&
+          !nearby.id.startsWith('gather:') &&
+          signal.current?.id.startsWith('gather:')
+        ) {
           signal.current = nearby;
+        }
+
         updateGatherDiagnostics();
         element.dataset.interactionTarget = hovered?.source.id ?? '';
         element.dataset.interactionRange = hovered
@@ -206,25 +234,31 @@ export function forestInteractionTargets(
 ) {
   let targets: InteractionTarget[] = [];
   if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
-    targets = view.scene.portals.map((portal) =>
-      portalInteraction(
+    targets = view.scene.portals.map((portal) => {
+      return portalInteraction(
         { id: 'return', name: 'Return to village', ...portal },
         local.x + wrappedDelta(portal.x, local.x, FOREST.width),
         local.y + wrappedDelta(portal.y, local.y, FOREST.height),
-      ),
-    );
+      );
+    });
   }
 
   if (local?.scene === 'forest') {
     targets.push(
       ...resourceNodes(local, Math.hypot(camera.width, camera.height) / 2 + 150)
-        .filter(
-          (node) => resourceState(view?.resources, node, view?.serverNow ?? 0)?.remaining !== 0,
-        )
-        .map((node) => sceneryInteraction(resourceScenery(node)))
-        .filter((target) => target !== null),
+        .filter((node) => {
+          return resourceState(view?.resources, node, view?.serverNow ?? 0)?.remaining !== 0;
+        })
+        .map((node) => {
+          return sceneryInteraction(resourceScenery(node));
+        })
+        .filter((target) => {
+          return target !== null;
+        }),
     );
-    targets.sort((a, b) => a.y + a.height - b.y - b.height);
+    targets.sort((a, b) => {
+      return a.y + a.height - b.y - b.height;
+    });
   }
 
   return targets;

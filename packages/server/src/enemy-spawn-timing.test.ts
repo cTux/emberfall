@@ -39,7 +39,9 @@ test('spawn warnings last a full second and small enemies move faster than brute
 });
 
 test('successful elite rolls use configured HP; timer spawns only one configured boss', async (t) => {
-  t.mock.method(Math, 'random', () => 0.04);
+  t.mock.method(Math, 'random', () => {
+    return 0.04;
+  });
   const scene: SceneState = {
     id: 's',
     type: 'Forest',
@@ -60,21 +62,44 @@ test('successful elite rolls use configured HP; timer spawns only one configured
   }
 
   assert.equal(scene.spawnCount, 20);
-  const elites = [...scene.enemies, ...scene.spawns!].filter((e) => e.kind === 'elite');
+  const elites = [...scene.enemies, ...scene.spawns!].filter((e) => {
+    return e.kind === 'elite';
+  });
   assert.equal(elites.length, 20);
-  assert(elites.every((e) => e.hitpoints === 90));
+  assert(
+    elites.every((e) => {
+      return e.hitpoints === 90;
+    }),
+  );
   stepCombat(scene, [p], 120000, 0);
   assert.equal(
-    scene.enemies.some((e) => e.kind === 'boss'),
+    scene.enemies.some((e) => {
+      return e.kind === 'boss';
+    }),
     false,
   );
-  assert.equal(scene.spawns!.find((e) => e.kind === 'boss')?.hitpoints, 300);
+  assert.equal(
+    scene.spawns!.find((e) => {
+      return e.kind === 'boss';
+    })?.hitpoints,
+    300,
+  );
   stepCombat(scene, [p], 121000, 0);
   const count = scene.enemies.length;
-  assert.equal(scene.enemies.find((e) => e.kind === 'boss')?.hitpoints, 300);
+  assert.equal(
+    scene.enemies.find((e) => {
+      return e.kind === 'boss';
+    })?.hitpoints,
+    300,
+  );
   stepCombat(scene, [p], 122000, 0);
   assert(scene.enemies.length > count, 'regular enemies keep spawning while the boss is alive');
-  assert.equal([...scene.enemies, ...scene.spawns!].filter((e) => e.kind === 'boss').length, 1);
+  assert.equal(
+    [...scene.enemies, ...scene.spawns!].filter((e) => {
+      return e.kind === 'boss';
+    }).length,
+    1,
+  );
   assert.equal(scene.phase, 'active');
   assert.equal(scene.portals.length, 0);
 });
