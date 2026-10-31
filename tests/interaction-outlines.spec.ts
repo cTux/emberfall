@@ -21,6 +21,8 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(page.getByRole('button', { name: 'Leave world' })).toBeVisible();
       const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
       const player = [...world.players.values()][0];
+      // Ambient walkers must not enter unrelated E-key checks or move pointer targets.
+      for (const npc of world.npcs!) npc.chatUntil = Date.now() + 180_000;
       const canvas = page.locator('canvas');
       const scale = Math.max(1440 / 960, 1000 / 640);
       const closeDialog = async () => {
@@ -173,8 +175,6 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await closeDialog();
 
       const marta = world.npcs!.find((npc) => npc.id === 'innkeeper')!;
-      // Keep the pointer target still while snapshots and hover retries catch up.
-      marta.chatUntil = Date.now() + 180_000;
       await expect(async () => {
         player.x = marta.x - 35;
         player.y = marta.y + 9;
