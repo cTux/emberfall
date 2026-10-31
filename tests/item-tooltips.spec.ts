@@ -43,6 +43,7 @@ test('backpack item tooltips share weapon details and compact resource cards', a
       path: `test-results/item-tooltip-${name.toLowerCase().replaceAll(' ', '-')}.png`,
     });
   }
+
   const sword = backpack.getByRole('button', { name: "Use Warrior's sword", exact: true });
   await page.keyboard.press('Tab');
   await sword.focus();

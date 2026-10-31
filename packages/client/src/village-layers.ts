@@ -72,4 +72,5 @@ export function villageLayers(
     })),
   ].sort((a, b) => a.y - b.y);
 }
+
 export type VillageLayer = ReturnType<typeof villageLayers>[number];

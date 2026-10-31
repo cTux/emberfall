@@ -31,6 +31,7 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
         );
       }
     }
+
     pixi.present();
     const preview = document.createElement('canvas');
     preview.width = preview.height = 256;
@@ -53,8 +54,10 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
             green++;
         projectilePixels.push(green);
       }
+
     if (fallback) for (const image of [pickupArt, effectsArt]) image.dataset.artReady = 'true';
   }
+
   const drops = [...LOOT_ITEM_IDS, 'health-potion'].map((itemId, id) => ({
     id,
     itemId,
@@ -74,6 +77,7 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     );
     pixi.present();
   };
+
   drawDrops();
   while (artImages.some((image) => !image.complete || image.dataset.artReady !== 'true'))
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -93,7 +97,9 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
       if (pixels[i + 3] > 128) colored++;
       if (pixels[i] === 195 && pixels[i + 1] === 166 && pixels[i + 2] === 232) purple++;
     }
+
     const red = (dx: number, dy: number) => lootContext.getImageData(x + dx, y + dy, 1, 1).data[0];
+
     return {
       itemId,
       colored,
@@ -130,5 +136,6 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     rarity,
     color: [...lootContext.getImageData(24 + index * 48, 43, 1, 1).data],
   }));
+
   return { projectilePixels, lootPixels, rarityPixels };
 }

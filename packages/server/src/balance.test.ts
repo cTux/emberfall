@@ -48,6 +48,7 @@ test('failed item chance skips count rolls; successful normal chance can still y
     assert.equal(random.mock.callCount(), 2, 'failed gate must not roll a count or item');
     t.mock.restoreAll();
   }
+
   const rolls = [0.5, 0, 0.01];
   t.mock.method(Math, 'random', () => rolls.shift()!);
   const arena = scene();
@@ -80,6 +81,7 @@ test('a successful 350 percent boss roll drops four independent items once and r
     ];
     t.mock.method(Math, 'random', () => {
       assert.ok(rolls.length, 'unexpected random roll');
+
       return rolls.shift()!;
     });
     const arena = scene();

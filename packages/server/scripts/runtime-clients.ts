@@ -34,6 +34,7 @@ export async function connectWorkload(port: number, worldCount: number) {
       peers.filter((peer) => peer.room.connection.isOpen).map((peer) => peer.room.leave(false)),
     );
   };
+
   try {
     for (let world = 0; world < worldCount; world++) {
       let worldId = '';
@@ -131,8 +132,10 @@ export async function connectWorkload(port: number, worldCount: number) {
     }
   } catch (error) {
     await close();
+
     throw error;
   }
+
   return {
     startInputs(epochs: Record<string, string>) {
       scenes = epochs;
@@ -157,6 +160,7 @@ export async function connectWorkload(port: number, worldCount: number) {
         peer.states = peer.saved = peer.lastServerNow = peer.lastAck = 0;
         peer.sent.clear();
       }
+
       measuring = true;
     },
     finish(measuredMs: number) {
@@ -168,9 +172,11 @@ export async function connectWorkload(port: number, worldCount: number) {
         assert(peer.saved >= 5, 'Measure multiple real autosave cycles per player');
         assert(performance.now() - peer.receivedAt < 1000, 'Every client must remain live');
       }
+
       assert(gaps.length && acknowledgements.length);
       const p95 = (values: number[]) =>
         [...values].sort((a, b) => a - b)[Math.floor(values.length * 0.95)];
+
       return {
         connections: peers.length,
         meanStateHz:

@@ -36,6 +36,7 @@ test('all bundled items render dedicated artwork in inventory', async ({ page, g
       );
     }
   }
+
   await page.screenshot({ path: 'test-results/all-item-artwork.png' });
 });
 
@@ -95,6 +96,7 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
           size: 90,
         })),
       ];
+
       return nodes.map((node, index) => {
         const live = fixture.resourceScenery(node);
         const depleted = fixture.resourceScenery(node, {
@@ -110,6 +112,7 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
           const mask = (state.mask as HTMLCanvasElement)
             .getContext('2d')!
             .getImageData(0, 0, state.sprite.width, state.sprite.height).data;
+
           return (
             sprite.some((value, i) => i % 4 === 3 && value > 128) &&
             mask.every((value, i) => i % 4 !== 3 || value === sprite[i])
@@ -147,9 +150,11 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
               y + 20,
             );
             if (stateIndex === 0 && !lamp) ctx.fillText(node.id, x - 65, y - 100);
+
             return pixels.some((value, i) => i % 4 === 3 && value > 0);
           }),
         );
+
         return {
           id: node.id,
           live: live.sprite.toDataURL(),
@@ -170,6 +175,7 @@ test('resource states keep distinct artwork and matching sun and lamp shadow sil
     expect(node.shadows.every(Boolean), node.id).toBe(true);
     expect(node.restored, node.id).toBe(true);
   }
+
   await page
     .locator('#resource-states')
     .screenshot({ path: 'test-results/resource-state-shadows.png' });

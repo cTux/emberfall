@@ -69,6 +69,7 @@ test('a late server cast retains its in-flight position and remaining range with
     shot.x += 80;
     shot.remaining -= 80;
   }
+
   const result = frame(movement, reply, 150);
   assert.equal(result.scene.playerShots!.length, 2);
   assert.deepEqual(
@@ -107,6 +108,7 @@ test('newly confirmed moving casts attach once to the displayed pose in both are
         assert(Math.abs(shot.x - result.player.x) < 1e-8);
         assert.equal(shot.y, result.player.y);
       }
+
       const next = frame(movement, reply, delay + 10);
       assert.equal(next.scene.playerShots!.length, 2);
       assert(next.scene.playerShots![0].remaining < result.scene.playerShots![0].remaining);

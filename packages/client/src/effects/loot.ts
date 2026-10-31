@@ -12,6 +12,7 @@ import { itemArtName } from '../class-art';
 import { pickupArt, drawArt, loadArt } from '../art';
 
 const lootSprites = new Map<LootDrop['kind'], HTMLCanvasElement>();
+
 function lootSprite(kind: LootDrop['kind']) {
   let sprite = lootSprites.get(kind);
   if (sprite) return sprite;
@@ -33,7 +34,9 @@ function lootSprite(kind: LootDrop['kind']) {
     ctx.strokeStyle = '#ad7420';
     ctx.strokeRect(19, 18, 2, 5);
   }
+
   lootSprites.set(kind, sprite);
+
   return sprite;
 }
 
@@ -83,6 +86,7 @@ export function drawLootAndBlood(
       );
     else ctx.drawImage(lootSprite(drop.kind), p.x - 20, p.y - 24 - jump);
   }
+
   // Bound bursts independently of ambient-particle settings, so hits remain readable on Low.
   for (const hit of scene.damage.slice(-80)) {
     const age = (now - hit.at) / 1000;
@@ -102,5 +106,6 @@ export function drawLootAndBlood(
       );
     }
   }
+
   ctx.restore();
 }

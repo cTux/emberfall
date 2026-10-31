@@ -23,6 +23,7 @@ test('lobby shows server columns, locked worlds and disabled creation', async ({
       true,
     );
   }
+
   await page.screenshot({ path: 'test-results/server-table.png' });
 });
 
@@ -46,11 +47,13 @@ test('all stories render; desktop and narrow screens fit', async ({ page, reques
           .poll(() => icon.evaluate((image: HTMLImageElement) => image.naturalWidth))
           .toBeGreaterThan(0);
       }
+
       if (entry.id.endsWith('--stacked') || entry.id.endsWith('--starter')) {
         await page.screenshot({ path: testInfo.outputPath(`${entry.id}.png`) });
       }
     }
   }
+
   expect(errors).toEqual([]);
   for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
@@ -73,6 +76,7 @@ test('all stories render; desktop and narrow screens fit', async ({ page, reques
       ).toBe(true);
     }
   }
+
   await page.goto('/iframe.html?id=guide-build-and-reuse--docs&viewMode=docs');
   await expect(page.getByText('Create a component', { exact: true })).toBeVisible();
 });
@@ -100,6 +104,7 @@ test('world names stay on one line inside compact lobby columns', async ({ page 
       await name.evaluate((element) => {
         const range = document.createRange();
         range.selectNodeContents(element);
+
         return new Set(Array.from(range.getClientRects(), (rect) => Math.round(rect.top))).size;
       }),
     ).toBe(1);
@@ -134,6 +139,7 @@ test('server rows join once from every cell and keyboard, respecting disabled st
         .click({ position: { x: 4, y: 4 } });
       await expect(status).toHaveText(`Joins: ${cell + 1}`);
     }
+
     await join.click();
     await expect(status).toHaveText('Joins: 4');
     await join.focus();
@@ -149,6 +155,7 @@ test('server rows join once from every cell and keyboard, respecting disabled st
         .nth(cell)
         .click({ position: { x: 4, y: 4 } });
     }
+
     await expect(full.getByRole('button')).toBeDisabled();
     await expect(status).toHaveText('Joins: 6');
     await page.goto(story('components-worldlist--disabled'));
@@ -158,6 +165,7 @@ test('server rows join once from every cell and keyboard, respecting disabled st
         .nth(cell)
         .click({ position: { x: 4, y: 4 } });
     }
+
     await expect(row.getByRole('button')).toBeDisabled();
     await expect(status).toHaveText('Joins: 0');
   }

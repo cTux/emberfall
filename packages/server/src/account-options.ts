@@ -11,8 +11,10 @@ export function steamOptionsFromEnv(): SteamOptions {
   const apiKey = process.env.STEAM_WEB_API_KEY;
   if (!origin || !apiKey)
     throw new Error('Set STEAM_ORIGIN and STEAM_WEB_API_KEY to enable Steam login.');
+
   return { origin, apiKey, clientUrl: process.env.CLIENT_URL };
 }
+
 export function accountOrigins(options: Pick<SteamOptions, 'origin' | 'clientUrl'>) {
   const origin = new URL(options.origin);
   if (origin.protocol !== 'https:' || origin.origin !== options.origin)
@@ -35,5 +37,6 @@ export function accountOrigins(options: Pick<SteamOptions, 'origin' | 'clientUrl
     clientUrl = client.toString();
     clientOrigin = client.origin;
   } else clientOrigin = canonicalOrigin;
+
   return { origin: canonicalOrigin, clientOrigin, clientUrl };
 }

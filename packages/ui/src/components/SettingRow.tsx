@@ -16,6 +16,7 @@ export function SettingToggle({ label, checked, disabled, onChange }: SettingTog
     />
   );
 }
+
 export interface VolumeControlProps {
   label: string;
   value: number;

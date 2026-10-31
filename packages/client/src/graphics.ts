@@ -98,5 +98,6 @@ export function loadGraphics(): GraphicsSettings {
   } catch {
     /* Use High defaults when storage is unavailable or invalid. */
   }
+
   return settings;
 }

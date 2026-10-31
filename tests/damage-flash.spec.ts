@@ -35,6 +35,7 @@ test('damage flash fades through fractional expiry without a Pixi color crash', 
         DamageFlashFixture: typeof import('./damage-flash-fixture');
       }
     ).DamageFlashFixture;
+
     return fixture.compare();
   });
   for (const { age, alphas, actual, expected } of results) {

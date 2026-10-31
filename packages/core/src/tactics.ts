@@ -31,6 +31,7 @@ export function attackTarget(
         if (difference !== 0) break;
       }
   }
+
   return best;
 }
 
@@ -80,5 +81,6 @@ export function healingTarget(
         }
     }
   }
+
   return best?.body;
 }

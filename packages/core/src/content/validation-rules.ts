@@ -28,6 +28,7 @@ export function createValidationRules(
           message: 'Invalid equipped item instance',
         });
     }
+
     const instances = [
       ...Object.values(progress.equipmentItems ?? {}),
       ...(progress.backpack ?? []),
@@ -63,5 +64,6 @@ export function createValidationRules(
     )
       ctx.addIssue({ code: 'custom', message: 'Aim outside world' });
   });
+
   return { classSchema, progressSchema, clientMessage };
 }

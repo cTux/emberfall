@@ -48,6 +48,7 @@ test('village rocks and all five plant kinds leave paths and service clearings o
       });
     }
   }
+
   const decorations = [...ROCKS, ...PLANTS];
   for (let i = 0; i < decorations.length; i++)
     for (let j = i + 1; j < decorations.length; j++)

@@ -23,6 +23,7 @@ export function StatusMeter({
   const limit = Number.isFinite(max) && max > 0 ? max : 0;
   const current = Number.isFinite(value) ? Math.min(limit, Math.max(0, value)) : 0;
   const text = `${thin ? Number(current.toFixed(2)) : Math.round(current)} / ${Math.round(limit)}`;
+
   return (
     <StatusMeterStyled>
       <StatusMeterProgressStyled

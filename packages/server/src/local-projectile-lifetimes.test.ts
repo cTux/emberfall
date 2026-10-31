@@ -92,6 +92,7 @@ test('a local root projectile remains visible through all confirmed bounces desp
         );
       }
     }
+
     const done = structuredClone(source);
     done.serverNow! += 500;
     (training ? done.training : done.scene)!.playerShots = [];

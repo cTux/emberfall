@@ -25,6 +25,7 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
         distance = next;
       }
     }
+
     drop.collectorId = target?.id;
     if (!target) return true;
     const travel = Math.min(distance, PICKUP_RULES.speed * Math.max(0, dt));
@@ -44,8 +45,10 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
           Number.MAX_SAFE_INTEGER,
           (target.coins ?? 0) + PICKUP_DEFINITIONS.gold.baseAmount,
         );
+
       return false;
     }
+
     drop.x = wrap(
       drop.x + (wrappedDelta(target.x, drop.x, FOREST.width) * travel) / distance,
       FOREST.width,
@@ -54,6 +57,7 @@ export function tickPickups(scene: SceneState, players: Player[], now: number, d
       drop.y + (wrappedDelta(target.y, drop.y, FOREST.height) * travel) / distance,
       FOREST.height,
     );
+
     return true;
   });
 }

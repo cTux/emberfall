@@ -94,6 +94,7 @@ export function weaponBadges(
       });
     }
   }
+
   if (ailment === 'roots') {
     const duration = AILMENT_DEFINITIONS.roots.durationMs / 1000;
     badges.push({
@@ -109,8 +110,10 @@ export function weaponBadges(
       explanation: `Hits have a ${percent(definition.chance)} chance to apply ${capitalize(ailment)}. Each stack deals ${definition.damagePerStack} damage every ${definition.tickMs / 1000} second for ${definition.durationMs / 1000} seconds; new stacks refresh the duration.`,
     });
   }
+
   return badges;
 }
+
 export function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadgeView[] {
   return Object.entries(item?.stats ?? {}).map(([stat, value]) => {
     const label =
@@ -122,6 +125,7 @@ export function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadge
       stat === ItemStat.Armor ||
       stat === ItemStat.MaximumHealth ||
       itemStatWeight[stat as ItemStat] < 1;
+
     return {
       label,
       icon: 'magic',

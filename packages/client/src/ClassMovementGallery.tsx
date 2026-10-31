@@ -19,6 +19,7 @@ export function ClassMovementGallery() {
     const ctx = element.getContext('2d')!;
     let request = 0;
     let previous = performance.now();
+
     function draw(now: number) {
       if (!paused) elapsed.current += (now - previous) * speed;
       previous = now;
@@ -54,9 +55,12 @@ export function ClassMovementGallery() {
       element.dataset.travel = String(travel);
       request = requestAnimationFrame(draw);
     }
+
     request = requestAnimationFrame(draw);
+
     return () => cancelAnimationFrame(request);
   }, [paused, travel, speed, step]);
+
   return (
     <main
       style={{

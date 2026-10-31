@@ -11,6 +11,7 @@ test('queued player mentions revalidate participants after the delay and cancel 
     const { world, life } = setup({
       generate: async () => {
         calls++;
+
         return { status: 'ok', text: 'Hello!' };
       },
     });
@@ -39,6 +40,7 @@ test('busy mention replies retry promptly without losing the conversation or its
     generate: async () => {
       calls++;
       if (calls === 2) return { status: 'busy' };
+
       return {
         status: 'ok',
         text: calls === 1 ? '@Oswin, goblins ate the ledger.' : '@Marta, again?',
@@ -68,6 +70,7 @@ test('player mentions wait for active speech and take priority over NPC continua
         contexts.push(JSON.parse(context));
         if (contexts.length === 1)
           return new Promise<DialogueResult>((resolve) => (finish = resolve));
+
         return { status: 'ok', text: 'Pack a spare pair of boots.' };
       },
     });
@@ -78,6 +81,7 @@ test('player mentions wait for active speech and take priority over NPC continua
         finish({ status: 'ok', text: '@Oswin, goblins ate the ledger.' });
         await flush();
       }
+
       const question = '@Marta Any forest advice?';
       life.hear(world.players.get('p')!, question, 10_100);
       if (pending === 'generation') {
@@ -90,6 +94,7 @@ test('player mentions wait for active speech and take priority over NPC continua
         life.tick(12_099, 0);
         assert.equal(contexts.length, 1, 'NPC banter cannot jump ahead of the player');
       }
+
       life.tick(13_001, 0);
       await flush();
       assert.equal(contexts.length, 2);
@@ -115,6 +120,7 @@ test('a pending, generating or retrying player reply cannot be replaced by anoth
         if (question) questions.push(question);
         if (!question || stage === 'generating')
           return new Promise<DialogueResult>((resolve) => (finish = resolve));
+
         return { status: 'busy' };
       },
     });
@@ -128,11 +134,13 @@ test('a pending, generating or retrying player reply cannot be replaced by anoth
         life.tick(12_100, 0);
         await flush();
       }
+
       life.hear(world.players.get('q')!, '@Marta Second question?', 30_000);
       if (stage !== 'retrying') {
         finish({ status: 'ok', text: 'Good morning!' });
         await flush();
       }
+
       life.tick(32_000, 0);
       await flush();
       assert(questions.length > 0, stage);

@@ -53,6 +53,7 @@ test('trade modifiers apply to buying, selling, buyback, keyboard and vendor dro
   } finally {
     await page.keyboard.up('Shift');
   }
+
   await expect(sell(180)).toBeVisible();
   expect(player.coins).toBe(820);
   await page.keyboard.down('Control');
@@ -64,6 +65,7 @@ test('trade modifiers apply to buying, selling, buyback, keyboard and vendor dro
   } finally {
     await page.keyboard.up('Control');
   }
+
   await expect(sell(190)).toBeVisible();
   expect(player.coins).toBe(810);
   expect(world.merchant!.coins).toBe(5190);

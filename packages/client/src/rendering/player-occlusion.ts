@@ -14,12 +14,15 @@ export class PlayerOcclusion {
   constructor(place: (graphics: Graphics) => void) {
     this.place = place;
   }
+
   begin() {
     this.enabled = false;
   }
+
   finish() {
     this.cutout.includeInBuild = false;
   }
+
   configure(
     mask: HTMLCanvasElement,
     x: number,
@@ -35,6 +38,7 @@ export class PlayerOcclusion {
       this.cutout.fill(0xffffff);
       this.runs = runs;
     }
+
     this.enabled = runs.length > 0;
     this.cutout.includeInBuild = false;
     this.place(this.cutout);
@@ -54,6 +58,7 @@ export class PlayerOcclusion {
       Math.ceil(height) + 2 * PLAYER_CUTOUT_MARGIN,
     );
   }
+
   apply(sprite: Sprite, matrix: Matrix, x: number, y: number, width: number, height: number) {
     if (
       this.enabled &&
@@ -61,6 +66,7 @@ export class PlayerOcclusion {
     )
       sprite.setMask({ mask: this.cutout, inverse: true });
   }
+
   destroy() {
     this.cutout.destroy();
   }

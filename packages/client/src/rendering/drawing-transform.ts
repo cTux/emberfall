@@ -16,6 +16,7 @@ export function transformedBounds(
   bounds.y = m.b * x + m.d * y + m.ty + Math.min(0, ay) + Math.min(0, by);
   bounds.width = Math.abs(ax) + Math.abs(bx);
   bounds.height = Math.abs(ay) + Math.abs(by);
+
   return bounds;
 }
 

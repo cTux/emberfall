@@ -10,21 +10,27 @@ class PlayerIndex extends Map<string, Player> {
   private ecs: World<Entity>;
   private index = new Map<string, Entity>();
   private order = 0;
+
   constructor(ecs: World<Entity>) {
     super();
     this.ecs = ecs;
   }
+
   override set(id: string, player: Player) {
     this.delete(id);
     this.index.set(id, this.ecs.add({ player, order: this.order++ }));
+
     return super.set(id, player);
   }
+
   override delete(id: string) {
     const entity = this.index.get(id);
     if (entity) this.ecs.remove(entity);
     this.index.delete(id);
+
     return super.delete(id);
   }
+
   override clear() {
     for (const id of this.keys()) this.delete(id);
   }
@@ -37,15 +43,19 @@ export class SimulationWorld {
   readonly ecs = new World<Entity>();
   readonly actors = this.ecs.with('player');
   readonly villagers = this.ecs.with('npc');
+
   setVillagers(npcs: VillageNpc[]) {
     // Removal swaps query entries; snapshot membership before removing.
     // oxlint-disable-next-line unicorn/no-useless-spread
     for (const entity of [...this.villagers]) this.ecs.remove(entity);
     npcs.forEach((npc, order) => this.ecs.add({ npc, order }));
+
     return [...this.villagers].sort((a, b) => a.order - b.order).map((e) => e.npc);
   }
+
   private scenes = new Map<SceneState, (() => void)[]>();
   readonly players = new PlayerIndex(this.ecs);
+
   /** Bind collections once. Pure shared systems read query views and commit
    * additions/removals through property assignment. Query order is explicit so
    * Miniplex's swap removal cannot alter target tie-breaking or reward order.
@@ -73,12 +83,14 @@ export class SimulationWorld {
             this.ecs.remove(entity);
             index.delete(value);
           }
+
         (values ?? []).forEach((value, order) => {
           let entity = index.get(value);
           if (!entity) {
             entity = this.ecs.add({ scene, order, [key]: value });
             index.set(value, entity);
           }
+
           entity.order = order;
         });
         view =
@@ -88,6 +100,7 @@ export class SimulationWorld {
                 [...query].sort((a, b) => a.order - b.order).map((entity) => entity[key]),
               ) as unknown as object[]);
       };
+
       replace(scene[key]);
       Object.defineProperty(scene, key, {
         enumerable: true,
@@ -107,6 +120,7 @@ export class SimulationWorld {
       });
     }
   }
+
   retain(scenes: (SceneState | undefined)[]) {
     for (const [scene, cleanup] of this.scenes)
       if (!scenes.includes(scene)) {
@@ -120,8 +134,10 @@ const owners = new WeakMap<Map<string, Player>, SimulationWorld>();
 export function createPlayers() {
   const owner = new SimulationWorld();
   owners.set(owner.players, owner);
+
   return owner.players;
 }
+
 export function simulationFor(players: Map<string, Player>) {
   return owners.get(players);
 }

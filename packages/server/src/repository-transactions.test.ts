@@ -18,6 +18,7 @@ async function fixture(t: TestContext) {
     store.close();
     rmSync(directory, { recursive: true });
   });
+
   return { store, db };
 }
 

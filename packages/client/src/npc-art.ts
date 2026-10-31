@@ -54,6 +54,7 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
       frame = { sprite, mask: makeMask(sprite) };
       atlas.set(key, frame);
     }
+
     return [
       {
         id: `npc:${npc.id}`,

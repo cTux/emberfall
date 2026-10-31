@@ -72,6 +72,7 @@ export function ChapterTabs({
       ))}
     </Tabs>
   );
+
   return (
     <Stack direction='row' spacing={1} useFlexGap sx={{ minWidth: 0 }}>
       {windowTabs ? createPortal(tabs, windowTabs) : tabs}

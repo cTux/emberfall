@@ -100,6 +100,7 @@ export function selectBrowserTests(paths: string[]): BrowserSelection {
       else groups.add(group);
     }
   }
+
   return { groups: [...groups].sort(), ui, full: false, reason: 'Affected desktop scenarios' };
 }
 
@@ -138,8 +139,10 @@ export function gameCommands(selection: BrowserSelection): string[][] {
         ...fullGroups.flatMap((group) => browserGroups[group].files),
       ],
     ];
+
   return selection.groups.map((name) => {
     const group = browserGroups[name];
+
     return [
       'test:browser',
       '--max-failures=1',

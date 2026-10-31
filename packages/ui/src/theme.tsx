@@ -228,11 +228,13 @@ export function GameUiProvider({
         /* Retain the working font when an asset cannot load. */
       },
     );
+
     return () => {
       active = false;
     };
   }, [font, fontBaseUrl]);
   const theme = useMemo(() => createGameTheme(loadedFont), [loadedFont]);
+
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyles styles={faces} />

@@ -44,6 +44,7 @@ export async function preview() {
       );
       ctx.restore();
     }
+
     pixi.present();
     const capture = document.createElement('canvas');
     capture.width = 1040;
@@ -62,6 +63,7 @@ export async function preview() {
       (enabled ? counts : disabled).push(count);
     }
   }
+
   // Leave a readable gallery with the real workstation art for visual review.
   pixi.begin();
   ctx.fillStyle = '#323b2d';
@@ -95,6 +97,8 @@ export async function preview() {
     );
     ctx.restore();
   }
+
   pixi.present();
+
   return { counts, disabled };
 }

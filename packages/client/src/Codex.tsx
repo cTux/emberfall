@@ -5,6 +5,7 @@ import { CODEX_CHAPTERS } from './codex/chapters';
 
 export function Codex() {
   const [chapter, setChapter] = useState('Controls');
+
   return (
     <Box
       sx={{

@@ -80,6 +80,7 @@ export function WardrobePanel({
         const selected = (me?.classId ?? 'warrior') === id;
         const stats = selected ? me : me?.classes?.[id];
         const details = classDetails[id];
+
         return (
           <ClassCard
             key={id}

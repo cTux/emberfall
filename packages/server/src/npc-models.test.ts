@@ -26,8 +26,10 @@ test('native Ollama requests use local generation without API credentials', asyn
     assert.match(body.messages[0].content, /Answer the actual question while being funny/);
     assert.match(body.messages[0].content, /do not copy them verbatim/);
     assert.match(body.messages[0].content, /Prefix every mentioned resident name with @/);
+
     return answer(' Good morning! ');
   };
+
   assert.deepEqual(
     await new OllamaNpcDialogue(request, () => 0, defaults).generate('fictional context', signal()),
     { status: 'ok', text: 'Good morning!' },
@@ -47,8 +49,10 @@ test('server environment configures the provider used by runtime and diagnostic'
   const request: typeof fetch = async (url, options) => {
     assert.equal(url, 'http://127.0.0.1:12345/api/chat');
     assert.equal(JSON.parse(options?.body as string).model, 'llama3.2:1b');
+
     return answer();
   };
+
   assert.equal((await new OllamaNpcDialogue(request).generate('{}', signal())).status, 'ok');
 });
 
@@ -67,6 +71,7 @@ test('usable model speech is folded to one complete line without cooling down', 
     const pool = new OllamaNpcDialogue(
       async () => {
         calls++;
+
         return answer(content);
       },
       () => 0,
@@ -76,6 +81,7 @@ test('usable model speech is folded to one complete line without cooling down', 
     assert.equal((await pool.generate('{}', signal())).status, 'ok');
     assert.equal(calls, 2, 'usable replies must not start a shared cooldown');
   }
+
   assert.equal(log.mock.callCount(), 0);
 });
 

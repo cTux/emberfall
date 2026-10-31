@@ -21,6 +21,7 @@ type ValidationFailure =
 
 class InvalidDialogueResponse extends Error {
   readonly failure: ValidationFailure;
+
   constructor(failure: ValidationFailure) {
     super(failure);
     this.failure = failure;
@@ -38,6 +39,7 @@ export function spokenLine(content: string) {
     .trim();
   if (!text) throw new InvalidDialogueResponse('empty_text');
   if (text.length > 32_768) throw new InvalidDialogueResponse('text_too_long');
+
   return text;
 }
 
@@ -58,6 +60,7 @@ async function boundedJson(response: Response) {
     await reader.cancel().catch(() => {});
     reader.releaseLock();
   }
+
   try {
     return JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
       message?: { content?: unknown };
@@ -77,6 +80,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
   private model: string;
   private timeoutMs: number;
   private failed = false;
+
   constructor(
     request: typeof fetch = fetch,
     clock = Date.now,
@@ -150,8 +154,10 @@ export class OllamaNpcDialogue implements NpcDialogue {
           this.retryAt = this.clock() + Math.min(900_000, Math.max(30_000, delay));
           this.logFailure(model, 'http', startedAt, response.status);
           await response.body?.cancel().catch(() => {});
+
           return { status: 'unavailable' };
         }
+
         const data = await boundedJson(response);
         const content = data?.message?.content;
         if (data?.done !== true) throw new InvalidDialogueResponse('incomplete');
@@ -161,6 +167,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
           serverLog.info('NPC dialogue provider recovered', { provider: 'ollama', model });
           this.failed = false;
         }
+
         return { status: 'ok', text };
       } catch (error) {
         // A departing world must not mark a shared provider unhealthy.
@@ -195,6 +202,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
           error instanceof InvalidDialogueResponse ? error.failure : undefined,
         );
       }
+
       return { status: 'unavailable' };
     } finally {
       this.active--;

@@ -35,6 +35,7 @@ export function drawDanger(
         );
       }
     }
+
     if (spawn) {
       ctx.beginPath();
       ctx.moveTo(p.x - 6, p.y - 6);
@@ -44,6 +45,7 @@ export function drawDanger(
       ctx.stroke();
     }
   };
+
   for (const spawn of projectilesOnly ? [] : (scene.spawns ?? []))
     zone(
       spawn.x,
@@ -73,6 +75,7 @@ export function drawDanger(
       ctx.setLineDash([]);
     }
   }
+
   for (const shot of projectilesOnly ? (scene.projectiles ?? []) : []) {
     const p = near(shot.x, shot.y + 15);
     ctx.strokeStyle = '#ff344c';
@@ -90,5 +93,6 @@ export function drawDanger(
     ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
     ctx.fill();
   }
+
   ctx.restore();
 }

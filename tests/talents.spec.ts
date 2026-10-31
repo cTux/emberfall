@@ -81,6 +81,7 @@ test('all class columns, generated icons and confirmed cast effects render in th
       const icon = tree.locator(`[data-talent-node="${node.id}"] > div`).first();
       await expect(icon).toHaveCSS('outline-style', node.kind === 'ability' ? 'solid' : 'none');
     }
+
     // The last authored row is taller than the preceding rows, not a 229px cell.
     const lastIcon = tree.locator(`[data-talent-node="v2:${classId}:2:9"] span[aria-hidden]`);
     const size = await lastIcon.evaluate((element) => getComputedStyle(element).backgroundSize);

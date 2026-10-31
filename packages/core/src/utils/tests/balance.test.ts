@@ -54,6 +54,7 @@ test('item counts roll inclusive percentage ranges then guaranteed items plus a 
     const remaining = [...rolls];
     t.mock.method(Math, 'random', () => {
       assert.ok(remaining.length, 'unexpected random roll');
+
       return remaining.shift()!;
     });
     assert.equal(itemDropCount(type), count);

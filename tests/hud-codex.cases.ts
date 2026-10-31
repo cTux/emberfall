@@ -38,6 +38,7 @@ test('Codex chapters have formatted content and loaded artwork without resizing'
           )
           .toBe(true);
       }
+
       expect(await panel.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
         true,
       );
@@ -45,6 +46,7 @@ test('Codex chapters have formatted content and loaded artwork without resizing'
         path: `test-results/codex-${viewport.width}-${await tab.textContent()}.png`,
       });
     }
+
     await tabs.last().focus();
     await page.keyboard.press('Home');
     await expect(tabs.first()).toBeFocused();

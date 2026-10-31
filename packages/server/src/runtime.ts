@@ -33,10 +33,13 @@ export async function createRuntime(
     if (ws.readyState !== WebSocket.OPEN) return;
     if (ws.bufferedAmount > 128_000) {
       ws.terminate();
+
       return;
     }
+
     ws.send(message);
   };
+
   const projection = createWorldProjection(parties, resourceOwner);
   const state = projection.state;
   const list = () => projection.list(worlds, permanentWorld);
@@ -44,6 +47,7 @@ export async function createRuntime(
     const message = list();
     for (const ws of sessions.keys()) send(ws, message);
   };
+
   const leave = (session: Session) => membership.leave(session, shuttingDown);
   const admit = createAdmission({
     worlds,
@@ -83,8 +87,10 @@ export async function createRuntime(
       const authenticated = account?.();
       if (account && !authenticated?.nickname) {
         ws.close(1008, 'Please sign in again');
+
         return;
       }
+
       if (
         authenticated &&
         command &&
@@ -99,54 +105,72 @@ export async function createRuntime(
           characterToken: '0'.repeat(64),
         };
       }
+
       const now = Date.now();
       if (now - session.windowAt > 1000) {
         session.windowAt = now;
         session.messages = 0;
       }
+
       if (++session.messages > 80) {
         ws.close(1008, 'Too many messages');
+
         return;
       }
+
       let parsed;
       try {
         parsed = clientMessage.safeParse(command);
       } catch {
         error('Invalid message.');
+
         return;
       }
+
       if (!parsed.success) {
         error('Invalid message.');
+
         return;
       }
+
       const message = parsed.data;
       const context = { session, world: worlds.get(session.worldId ?? ''), now, reply, error };
       if (realtime.handles(message)) {
         realtime.execute(message, context);
+
         return;
       }
+
       if (session.busy) {
         error('Please wait for your previous request.');
+
         return;
       }
+
       if (isCharacterCommand(message)) {
         executeCharacterCommand(message, context, characters, villageLife, state);
+
         return;
       }
+
       if (worldCommands.handles(message)) {
         worldCommands.execute(message, context);
+
         return;
       }
+
       if (message.type === 'join' || message.type === 'create' || message.type === 'resume')
         await admit(ws, session, message, now, authenticated, account);
     });
   });
+
   function broadcastState(world: World, now: number) {
     for (const [ws, session] of sessions) {
       if (session.worldId !== world.id) continue;
       send(ws, { type: 'state', world: state(world, now, world.players.get(session.id)) });
     }
   }
+
   const stopSimulation = startSimulation({
     sessions,
     worlds,
@@ -165,6 +189,7 @@ export async function createRuntime(
     leave,
     broadcastList,
   });
+
   async function close() {
     serverLog.info('Runtime stopping', { sessions: sessions.size, worlds: worlds.size });
     shuttingDown = true;
@@ -180,12 +205,14 @@ export async function createRuntime(
         failures.push(error);
       }
     }
+
     for (const ws of sessions.keys()) ws.terminate();
     characters.close();
     if (failures.length)
       throw new AggregateError(failures, 'Some characters could not be saved during shutdown');
     serverLog.info('Runtime stopped');
   }
+
   function renameCharacter(characterId: string, nickname: string) {
     for (const session of sessions.values()) {
       if (session.characterId !== characterId) continue;
@@ -193,6 +220,7 @@ export async function createRuntime(
       if (player) player.name = nickname;
     }
   }
+
   return {
     connect: (peer: WebSocket, account?: AccountIdentity) => wss.emit('connection', peer, account),
     renameCharacter,

@@ -38,13 +38,16 @@ export class VillageScene {
   private speech: VillageSpeech;
   private critters = createCritterMotion();
   private playerId: string;
+
   constructor(playerId: string, onCatSpeech: (text: string) => void) {
     this.playerId = playerId;
     this.speech = new VillageSpeech(onCatSpeech);
   }
+
   clear() {
     this.players.clear();
   }
+
   prepare(
     view: WorldState,
     local: Player | undefined,
@@ -59,8 +62,10 @@ export class VillageScene {
       view.players.filter((player) => !player.scene && player.hitpoints > 0),
       view.serverNow ?? now,
     );
+
     return { ...frame, scale: viewport.scale, critters, cats: this.speech.targets(critters) };
   }
+
   draw(
     ctx: WorldDrawingContext,
     villageFrame: ReturnType<VillageScene['prepare']>,
@@ -88,6 +93,7 @@ export class VillageScene {
       ctx.fillStyle = '#25392f';
       ctx.fillRect(cameraX, cameraY, viewWidth, viewHeight);
     }
+
     const training = view.training
       ? {
           ...view.training,
@@ -109,6 +115,7 @@ export class VillageScene {
         playerId,
       );
     }
+
     const players = view.players
       .filter((p) => !p.scene)
       .map((p) => ({
@@ -141,6 +148,7 @@ export class VillageScene {
       const caster = critterCaster(critter);
       if (caster) dynamic.push(caster);
     }
+
     for (const player of players) {
       if (!player.bear) continue;
       const point = player.bear;
@@ -153,6 +161,7 @@ export class VillageScene {
       );
       if (caster) dynamic.push(caster);
     }
+
     if (quality.shadows) for (const caster of dynamic) castShadow(ctx, caster);
     const layers = villageLayers(visibleScenery, players, critters, training, portal);
     const outlines = options.outlines();
@@ -179,8 +188,10 @@ export class VillageScene {
         drawVillageLayer(ctx, layer, layerFrame);
         continue;
       }
+
       this.players.draw(ctx, layer.player, layerFrame);
     }
+
     ctx.occlusion = false;
     if (training) {
       if (preferences.damageNumbers)
@@ -192,11 +203,14 @@ export class VillageScene {
           preferences.hideOtherPlayerDamageNumbers ? playerId : undefined,
         );
     }
+
     drawVillageLighting(ctx, villageFrame, dynamic, players, this.players, cycle);
     drawEnvironment(ctx, villageFrame.camera, now, quality, cycle.daylight);
     drawNavigation(ctx, view, playerId);
+
     return { players, serverTime };
   }
+
   overlays(
     ctx: WorldDrawingContext,
     frame: ReturnType<VillageScene['prepare']>,
@@ -222,6 +236,7 @@ export class VillageScene {
           })
         : 0,
     );
+
     return { catSpeech, debugHitboxes };
   }
 }

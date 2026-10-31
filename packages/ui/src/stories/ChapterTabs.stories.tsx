@@ -20,6 +20,7 @@ export const Playground: StoryObj<typeof meta> = {};
 export const Renameable: StoryObj<typeof meta> = {
   render: function Renameable(args) {
     const [title, setTitle] = useState('Storage 1');
+
     return (
       <ChapterTabs
         {...args}

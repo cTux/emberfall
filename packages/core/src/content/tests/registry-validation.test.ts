@@ -167,6 +167,7 @@ test('workstation content rejects unknown owners, wrong homes, duplicate IDs and
     };
     assert.equal(worldShapes.village.safeParse(invalid).success, false);
   }
+
   assert.equal(
     worldShapes.village.safeParse({ ...valid, workstations: valid.workstations.slice(1) }).success,
     false,

@@ -21,6 +21,7 @@ window.addEventListener('contextmenu', (event) => event.preventDefault(), { capt
 
 function App() {
   const [preferences, setPreferences] = useState(loadPreferences);
+
   return (
     <GameUiProvider fontBaseUrl={clientAsset('fonts/')} font={preferences.font}>
       <PanelPositionContext value={panelPositions}>

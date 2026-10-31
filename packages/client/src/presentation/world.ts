@@ -25,6 +25,7 @@ export class PresentationWorld {
   readonly players = this.ecs.with('player');
   readonly localPlayers = this.ecs.with('player', 'local');
   private index = new Map<string, Entity>();
+
   update(world: WorldState | null, playerId: string, predicted?: Player) {
     const present = new Set<string>();
     const put = (
@@ -44,6 +45,7 @@ export class PresentationWorld {
         Object.assign(entity, { [component]: value, order });
       }
     };
+
     world?.players.forEach((confirmed, order) => {
       const local = confirmed.id === playerId;
       const player = local && predicted ? { ...predicted, bear: confirmed.bear } : confirmed;
@@ -57,17 +59,21 @@ export class PresentationWorld {
             put(`${scene.id}:${key}:${value.id}`, key, value, order),
           );
       }
+
     for (const [id, entity] of this.index)
       if (!present.has(id)) {
         this.ecs.remove(entity);
         this.index.delete(id);
       }
+
     if (world)
       world.players = [...this.players]
         .sort((a, b) => a.order - b.order)
         .map((entity) => entity.player);
+
     return this.localPlayers.first?.player;
   }
+
   clear() {
     this.update(null, '');
   }

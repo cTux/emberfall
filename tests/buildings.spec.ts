@@ -24,6 +24,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
   });
   const code = bundle[0].output.find((item: { type: string }) => item.type === 'chunk').code;
   let release: () => void = () => {};
+
   const gate = new Promise<void>((done) => {
     release = done;
   });
@@ -45,6 +46,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
       Object.values(fixture.villageImages).some((image) => !image.complete)
     )
       await new Promise((done) => setTimeout(done, 20));
+
     return fixture.villageBackground(fixture.GRAPHICS_PRESETS.High) === undefined;
   });
   expect(pending).toBe(true);
@@ -86,6 +88,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
         ctx.fillText(row ? 'Nearby lamp' : 'Sunlight', caster.x - 60, caster.y + 100);
       }
     }
+
     return buildings.map((object) => {
       const additional = fixture.additionalBuildingArt[object.id.replace('building:', '')];
       const image = additional ?? fixture.buildingArt;
@@ -122,6 +125,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
           .some((value, i) => i % 4 === 3 && value >= 32)
       )
         bottom--;
+
       return {
         id: object.id,
         width: object.width,
@@ -147,6 +151,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
     expect(rendered.groundGap).toBeLessThan(4);
     expect(rendered.opaque).toBeGreaterThan(rendered.pixels * 0.2);
   }
+
   await page
     .locator('#building-shadows')
     .screenshot({ path: 'test-results/building-shadow-preview.png' });

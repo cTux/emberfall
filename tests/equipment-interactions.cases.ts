@@ -153,6 +153,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await dialog.getByRole('button', { name: 'Close Inventory', exact: true }).click();
     await expect(dialog).toHaveCount(0);
   }
+
   await opener.click();
   for (const width of [1280, 1024]) {
     await page.setViewportSize({ width, height: 800 });
@@ -161,6 +162,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
     await expect
       .poll(async () => {
         const box = (await dialog.boundingBox())!;
+
         return box.x + box.width;
       })
       .toBeLessThanOrEqual(width);
@@ -177,6 +179,7 @@ test('equipment shows all class starters and stats; physical I, tooltips, draggi
       expect(box.x + box.width).toBeLessThanOrEqual(width);
     }
   }
+
   await page.screenshot({ path: 'test-results/equipment-narrow.png' });
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);

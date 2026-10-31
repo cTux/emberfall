@@ -28,6 +28,7 @@ test('font preferences accept only bundled families and preserve legacy defaults
           : 'Alegreya Sans',
       );
     }
+
     for (const saved of ['{}', 'null', 'invalid']) {
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
@@ -92,6 +93,7 @@ for (const key of ['dps', 'fps', 'latency'] as const) {
         });
         assert.equal(loadPreferences()[key], expected);
       }
+
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
         get: () => {
@@ -141,6 +143,7 @@ test('custom cursor preferences accept only supported sizes and booleans', () =>
       assert.equal(preferences.customCursor, enabled);
       assert.equal(preferences.cursorSize, size);
     }
+
     Object.defineProperty(globalThis, 'localStorage', {
       configurable: true,
       get: () => {

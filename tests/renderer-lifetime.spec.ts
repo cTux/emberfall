@@ -37,6 +37,7 @@ test('filter textures are released before resize and disposal', async ({ page })
     const { RendererLifetimeFixture } = window as unknown as {
       RendererLifetimeFixture: typeof import('./renderer-lifetime-fixture');
     };
+
     return RendererLifetimeFixture.resizeAndDispose();
   });
   expect(errors).toEqual([]);
@@ -46,5 +47,6 @@ test('filter textures are released before resize and disposal', async ({ page })
     expect(pixel[3]).toBe(255);
     expect(pixel[0]).toBeGreaterThan(128);
   }
+
   await page.screenshot({ path: 'test-results/renderer-lifetime.png' });
 });

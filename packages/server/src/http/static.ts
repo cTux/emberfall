@@ -9,13 +9,17 @@ export function staticHandler(staticRoot?: string): RequestListener {
     if (req.url === '/health') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end('{"ok":true}');
+
       return;
     }
+
     if (!staticRoot || !['GET', 'HEAD'].includes(req.method ?? '')) {
       res.writeHead(404);
       res.end();
+
       return;
     }
+
     try {
       const pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname);
       const root = resolve(staticRoot);
@@ -23,8 +27,10 @@ export function staticHandler(staticRoot?: string): RequestListener {
       if (!file.startsWith(root + sep)) {
         res.writeHead(403);
         res.end();
+
         return;
       }
+
       // Require the original, so orphaned compressed files cannot resurrect deleted assets.
       let content = await readFile(file);
       const encodings = pathname === '/version.json' ? ['identity'] : ['br', 'gzip', 'identity'];
@@ -37,6 +43,7 @@ export function staticHandler(staticRoot?: string): RequestListener {
           selected = encoding;
           break;
         }
+
         try {
           content = await readFile(file + (encoding === 'br' ? '.br' : '.gz'));
           selected = encoding;
@@ -45,11 +52,14 @@ export function staticHandler(staticRoot?: string): RequestListener {
           if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
         }
       }
+
       if (!selected) {
         res.writeHead(406, { Vary: 'Accept-Encoding' });
         res.end();
+
         return;
       }
+
       const mime: Record<string, string> = {
         '.html': 'text/html',
         '.js': 'text/javascript',

@@ -58,5 +58,6 @@ test('a fixed tick consumes partial commands once and bounds a queued burst', ()
     stepMovement(input, player, undefined, 1150 + tick * 50);
     assert(Math.abs(player.x - before) <= 9.0001);
   }
+
   assert.equal(input.inputs.length, 90);
 });

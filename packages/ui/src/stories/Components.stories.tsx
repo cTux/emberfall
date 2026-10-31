@@ -56,6 +56,7 @@ export const Party: Story = {
 export const Worlds: Story = {
   render: function Worlds() {
     const [selectedId, select] = useState<string>();
+
     return (
       <WorldList
         worlds={[
@@ -76,6 +77,7 @@ export const EmptyWorlds: Story = {
 export const Choices: Story = {
   render: function Choices() {
     const [selected, select] = useState('Warrior');
+
     return (
       <Stack spacing={1}>
         {['Warrior', 'Ranger', 'Mage', 'Druid'].map((name) => (
@@ -97,6 +99,7 @@ export const Settings: Story = {
   render: function Settings() {
     const [checked, toggle] = useState(true);
     const [volume, setVolume] = useState(0.6);
+
     return (
       <Stack spacing={2}>
         <SettingToggle label='Sound effects' checked={checked} onChange={toggle} />
@@ -114,6 +117,7 @@ export const Settings: Story = {
 export const Chapters: Story = {
   render: function Chapters() {
     const [value, select] = useState('controls');
+
     return (
       <ChapterTabs
         label='Codex chapters'
@@ -178,6 +182,7 @@ export const Scene: Story = {
 export const Vote: Story = {
   render: function Vote() {
     const [voted, vote] = useState(false);
+
     return (
       <PortalVote
         scene='Forest'
@@ -219,6 +224,7 @@ export const Performance: Story = {
 export const Window: Story = {
   render: function Window() {
     const [open, setOpen] = useState(false);
+
     return (
       <>
         <Button variant='contained' onClick={() => setOpen(true)}>

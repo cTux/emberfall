@@ -34,7 +34,9 @@ export async function sample() {
     pixels.drawImage(canvas, 0, 0);
     results.push([0, 40, 80].map((x) => [...pixels.getImageData(x + 10, 10, 1, 1).data]));
   }
+
   renderer.destroy();
+
   return results;
 }
 
@@ -68,6 +70,7 @@ export async function shadows() {
     ctx.textAlign = 'center';
     ctx.fillText(['Morning sun', 'Midday sun', 'Evening sun', 'Midnight moon'][index], x, 35);
   }
+
   renderer.present();
   const capture = document.createElement('canvas');
   capture.width = canvas.width;
@@ -84,7 +87,9 @@ export async function shadows() {
           if (x < 110) left++;
           if (x > 190) right++;
         }
+
     frames.push({ left, right });
   }
+
   return frames;
 }

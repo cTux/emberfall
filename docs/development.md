@@ -54,7 +54,8 @@ entry module and delegates surface, lighting, damage and loot probes to helpers.
 Keep each module focused on one responsibility. Split implementation, declarative
 definitions and domain test groups at their ownership boundaries; keep composition
 roots small and their dependencies explicit. Oxlint caps JavaScript and TypeScript
-files at **249 physical lines**, including comments and blanks. The reviewed
+files at **249 nonblank lines**, including comments. Blank lines are excluded so
+readable spacing does not compete with the size limit. The reviewed
 `packages/client/src/rendering/pixi-context.ts` drawing façade has a **260-line cap**:
 it implements one drawing interface while state, textures, pools and lifecycle live
 in separate modules. Its exception permits no further growth. Extract meaningful
@@ -82,7 +83,47 @@ accessibility, plus selected suspicious checks (`no-debugger`, `no-eval` and
 `no-implied-eval`). Review new suspicious rules individually before enforcing
 them; pedantic, restriction and nursery categories are not enabled wholesale.
 Formatting belongs to Oxfmt: single quotes, JSX single quotes, consistent
-indentation and wrapping. Run `pnpm fmt:check` before submitting changes.
+indentation and wrapping. Oxlint loads `@stylistic/eslint-plugin` for the
+blank-line rules below; Oxfmt preserves their spacing. Run `pnpm fmt:check`
+before submitting changes.
+
+### Blank lines
+
+Use one blank line to separate functions and logical steps:
+
+- Separate function declarations from adjacent statements, including other functions.
+- Separate class methods (including constructors and accessors) from adjacent
+  members; consecutive data fields can stay together.
+- Put a blank line before `return` and `throw` when another statement precedes
+  them in the same block or switch case. A sole return or throw, including a
+  compact guard, needs no extra padding.
+- Put a blank line after control-flow blocks before the next statement.
+  Keep related assignments and declarations together; use judgement to separate
+  other logical steps, including arrow-function bindings and object methods.
+
+These rules are errors in `pnpm lint`, including editor and CI checks. Apply
+spacing fixes with `pnpm exec oxlint . --fix`, then run `pnpm fmt`. Avoid blank
+lines at the start/end of a block and repeated empty lines; Oxfmt normalizes them.
+
+```ts
+function finish() {
+  flush();
+
+  return result;
+}
+
+function trim() {
+  if (!active) return;
+
+  compact();
+}
+```
+
+![Concept preview: blank lines separate functions and the returned result.](images/code-spacing.svg)
+
+The examples illustrate source layout; they are not gameplay captures.
+
+### Other strict checks
 
 Selected rules additionally require immutable bindings when possible, block-scoped
 declarations, consolidated imports, explicit type imports, exhaustive union

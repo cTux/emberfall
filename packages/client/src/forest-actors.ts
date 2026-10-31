@@ -24,6 +24,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
   );
   const positions = new Map<string, { x: number; y: number; facing: number }>();
   let lastScene: string | undefined;
+
   return (
     world: WorldState | null,
     players: Player[],
@@ -37,6 +38,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
       positions.clear();
       lastScene = world?.scene?.id;
     }
+
     const casters: Caster[] = [];
     const actors = [
       ...players.map((p) => ({ id: p.id, x: p.x, y: p.y, player: p, enemy: null })),
@@ -116,6 +118,7 @@ export function createForestActors(skeleton: HTMLImageElement) {
           const angle = actor.player?.attackAngle ?? actor.enemy?.angle ?? 0;
           pos.facing = movementFacing(Math.cos(angle), Math.sin(angle), pos.facing);
         }
+
         if (image.naturalWidth)
           casters.push({
             id: actor.id,
@@ -125,10 +128,13 @@ export function createForestActors(skeleton: HTMLImageElement) {
             height: size,
             mask: forestActorMask(image, pos.facing, row),
           });
+
         return { ...actor, ...point, facing: pos.facing, row, image, size, moving, dx, dy };
       })
       .filter((a) => Math.abs(a.x - cx) < width / 2 + 80 && Math.abs(a.y - cy) < height / 2 + 80);
+
     return { rendered, casters, damageByTarget };
   };
 }
+
 export type ForestActor = ReturnType<ReturnType<typeof createForestActors>>['rendered'][number];

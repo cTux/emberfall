@@ -17,11 +17,14 @@ const hero = (id: string): Player => ({
   maxHitpoints: 100,
   playtimeSeconds: 0,
 });
+
 function setup() {
   const players = ['Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo'].map(hero);
   const world = { players: new Map(players.map((p) => [p.id, p])), chat: [] as ChatMessage[] };
+
   return { players, world, parties: new Parties(world) };
 }
+
 test('acceptance, leader routing, capacity and leadership transfer', () => {
   const {
     players: [a, b, c, d, e],

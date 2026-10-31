@@ -48,6 +48,7 @@ test('click and E gather replicated resources in village and forest, show deplet
     const scale = Math.max(viewport.width / 960, viewport.height / 640);
     await page.mouse.click(viewport.width / 2, viewport.height / 2 - 45 * scale);
   };
+
   await expect(canvas).toHaveAttribute('data-resource', tree.id);
   await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Gather tree');
   await clickTree();
@@ -60,6 +61,7 @@ test('click and E gather replicated resources in village and forest, show deplet
       .poll(() => world.resources?.[tree.id]?.remaining, { timeout: 7000 })
       .toBe(remaining);
   }
+
   await expect(canvas).toHaveAttribute('data-depleted-resources', '2');
   await page.screenshot({ path: 'test-results/gathering-stump.png' });
   world.resources![tree.id].restoresAt = Date.now() - 1;
@@ -126,6 +128,7 @@ test('green-zone E hits shorten gathering, replace the zone and allow the next g
     const offset = Number(data.gatheringIndicator) - Number(data.gatheringZone);
     if (offset <= 0.03 || offset >= 0.11) return false;
     window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE', key: 'e' }));
+
     return true;
   });
   await expect.poll(() => player.gathering?.endsAt).toBe(activity.endsAt - 2000);

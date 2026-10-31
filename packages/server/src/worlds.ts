@@ -33,6 +33,7 @@ export async function createGameServer(
     ? new Accounts(runtime.characters, steam, runtime.renameCharacter)
     : undefined;
   const projections = new WeakMap<object, PreparedState>();
+
   function replicate(
     state: SessionState,
     message: Extract<ServerMessage, { type: 'state' | 'joined' }>,
@@ -42,20 +43,25 @@ export async function createGameServer(
       projection = prepareState(message.world);
       projections.set(message, projection);
     }
+
     applyState(state, projection);
   }
+
   class SessionRoom extends Room<{ state: SessionState }> {
     override state = new SessionState();
     override maxClients = 1;
     private peer?: Peer;
+
     override onAuth(_client: Client, options: { ticket?: string }, context: { headers: Headers }) {
       if (!accounts) return true;
       if (context.headers.get('origin') !== accounts.clientOrigin)
         throw new ServerError(401, 'Invalid origin');
       const token = accounts.consumeTicket(options.ticket);
       if (!token) throw new ServerError(401, 'Please sign in again');
+
       return token;
     }
+
     override async onCreate(options: { protocolVersion?: number }) {
       if (options.protocolVersion !== RUNTIME.protocolVersion)
         throw new ServerError(4002, 'Client protocol version is incompatible. Reload the game.');
@@ -63,6 +69,7 @@ export async function createGameServer(
       this.setPatchRate(50);
       this.onMessage('command', (_client, command) => this.peer?.receive(command));
     }
+
     override onJoin(client: Client) {
       if (accounts && (typeof client.auth !== 'string' || !accounts.valid(client.auth)))
         throw new ServerError(401, 'Please sign in again');
@@ -75,6 +82,7 @@ export async function createGameServer(
               this.state.header = '';
               this.state.entities.clear();
             }
+
             client.send('event', message);
           }
         },
@@ -86,6 +94,7 @@ export async function createGameServer(
         accounts ? accounts.attach(this.peer, client.auth as string) : undefined,
       );
     }
+
     override onLeave(_client: Client, code: number) {
       this.peer?.detached(code === 4000 ? 1000 : code === 1008 ? 1008 : 1006);
     }
@@ -107,6 +116,7 @@ export async function createGameServer(
       } catch {
         return new Response('Forbidden', { status: 403 });
       }
+
       return undefined;
     },
   });

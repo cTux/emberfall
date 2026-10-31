@@ -8,6 +8,7 @@ export function edgeArrow(x: number, y: number, width: number, height: number) {
   const dx = x - width / 2,
     dy = y - height / 2;
   const ratio = Math.min((width / 2 - 28) / Math.abs(dx), (height / 2 - 28) / Math.abs(dy));
+
   return { x: width / 2 + dx * ratio, y: height / 2 + dy * ratio, angle: Math.atan2(dy, dx) };
 }
 
@@ -40,6 +41,7 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
       for (const portal of world.scene.portals)
         targets.push({ ...portal, name: 'Return portal', color: '#70d8ff' });
   }
+
   const matrix = ctx.getTransform();
   const width = ctx.canvas.clientWidth,
     height = ctx.canvas.clientHeight;
@@ -84,5 +86,6 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
     ctx.fillStyle = target.color;
     ctx.fillText(label, lx, ly);
   }
+
   ctx.restore();
 }

@@ -20,6 +20,7 @@ export function slash(
     swing = { sceneId: scene.id, at: actor.attackAt!, enemies: new Set() };
     swordHits.set(actor, swing);
   }
+
   const range =
     actor === owner ? defaultSpellRange(owner, context) : context.rules.companionStats(owner).range;
   for (const enemy of scene.enemies) {

@@ -44,12 +44,15 @@ const arena = (): SceneState => ({
   damage: [],
   portals: [],
 });
+
 function source(seed = 123) {
   let draws = 0;
+
   return {
     random: () => {
       draws++;
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
       return seed / 2 ** 32;
     },
     draws: () => draws,
@@ -66,6 +69,7 @@ test('injected combat and spawn outcomes match default seeded draw order', (t) =
       scene.enemies.push(enemy);
       hitWithWeapon(scene, enemy, player, 1000 + id, 'bleed', 1, stats, false, context);
     }
+
     scene.enemies = [];
     const enemies = Object.fromEntries(context.registries.enemies.entries());
     for (let i = 0; i < 20; i++) {
@@ -73,8 +77,10 @@ test('injected combat and spawn outcomes match default seeded draw order', (t) =
       scene.spawns = [];
       tickSpawns(scene, [player], 2000 + i, 1, enemies, context);
     }
+
     return { scene, experience: player.experience, meter: player.damageMeter };
   }
+
   const defaults = source(),
     injected = source();
   t.mock.method(Math, 'random', defaults.random);
@@ -95,8 +101,10 @@ test('independent contexts bind item outcomes and keep explicit item overrides',
     high = createGame(GAME_MODS, () => 0.99);
   const rolled = (context: typeof game, random?: () => number) => {
     const { id: _id, ...item } = context.rules.rollItem('warrior-sword', random);
+
     return item;
   };
+
   assert.notDeepEqual(rolled(low), rolled(high));
   assert.deepEqual(
     rolled(low, () => 0.99),
@@ -112,6 +120,7 @@ test('training forwards its context for hit rolls and never rolls rewards', (t) 
   let draws = 0;
   const context = createGame(GAME_MODS, () => {
     draws++;
+
     return 0;
   });
   const player = { ...hero(), scene: undefined, x: TRAINING_ZONES[0].x - 15, y: 355 };
@@ -139,6 +148,7 @@ test('scheduled talent hits retain the casting context', (t) => {
   let draws = 0;
   const context = createGame(GAME_MODS, () => {
     draws++;
+
     return 0.5;
   });
   const player = hero(),

@@ -19,6 +19,7 @@ test('players can mention any nearby resident anywhere in speech with or without
       const { world, life } = setup({
         generate: async (context) => {
           contexts.push(JSON.parse(context));
+
           return { status: 'ok', text: 'Watch out for goblins!' };
         },
       });
@@ -57,6 +58,7 @@ test('player mentions require a whole name, a live village player and wrapped ra
     const { world, life } = setup({
       generate: async () => {
         calls++;
+
         return { status: 'ok', text: 'Hello!' };
       },
     });
@@ -77,6 +79,7 @@ test('player mentions require a whole name, a live village player and wrapped ra
         marta.x = ARENA.width - 5;
         listener.x = 5;
       }
+
       life.hear(listener, text, 1000);
       life.tick(3000, 0);
       await flush();
@@ -92,6 +95,7 @@ test('the first nearby mentioned resident replies and player and village cooldow
   const { world, life } = setup({
     generate: async () => {
       calls++;
+
       return { status: 'ok', text: 'Hello!' };
     },
   });
@@ -129,6 +133,7 @@ test('mentions do not summon distant NPCs and truncated names cannot trigger rep
     const { life } = setup({
       generate: async () => {
         calls++;
+
         return { status: 'ok', text };
       },
     });

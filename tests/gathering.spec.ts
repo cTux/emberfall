@@ -28,6 +28,7 @@ test('gathering indicator advances smoothly across snapshots', async ({ page, ga
         let lastTime = 0;
         let lastIndicator = 0;
         let start = 0;
+
         function sample(now: number) {
           const indicator = Number(canvas.dataset.gatheringIndicator);
           if (!start) start = now;
@@ -45,6 +46,7 @@ test('gathering indicator advances smoothly across snapshots', async ({ page, ga
           if (now - start < 2000) requestAnimationFrame(sample);
           else resolve(errors);
         }
+
         requestAnimationFrame(sample);
       }),
   );

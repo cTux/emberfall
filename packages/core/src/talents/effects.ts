@@ -25,11 +25,13 @@ export function talentVisual(
     durationMs: 1000,
   });
 }
+
 export function control(enemy: Enemy, now: number, duration: number) {
   if (enemy.kind === 'boss') return;
   enemy.controlledUntil = Math.max(enemy.controlledUntil ?? 0, now + duration);
   enemy.attack = undefined;
 }
+
 export function strike(
   scene: SceneState,
   player: Player,
@@ -55,6 +57,7 @@ export function strike(
     context,
   );
 }
+
 type HealingTarget = Pick<Player, 'x' | 'y' | 'hitpoints' | 'maxHitpoints'>;
 export function heal(player: HealingTarget, fraction: number) {
   player.hitpoints = Math.min(
@@ -62,6 +65,7 @@ export function heal(player: HealingTarget, fraction: number) {
     player.hitpoints + player.maxHitpoints * fraction,
   );
 }
+
 export function shield(player: Player, scene: SceneState, amount: number, until: number) {
   const value = state(player, scene);
   value.barrier = Math.max(value.barrier, amount);

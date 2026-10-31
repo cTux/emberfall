@@ -5,6 +5,7 @@ import { TRANSIENT_EFFECTS } from '@emberfall/core/definitions/effects/transient
 export function bloodPuddleRenderer() {
   const puddles = new Map<number, Pick<DamageEvent, 'id' | 'x' | 'y' | 'at'>>();
   let sceneId: string | undefined;
+
   return (
     ctx: DrawingContext,
     scene: SceneState | undefined,
@@ -17,6 +18,7 @@ export function bloodPuddleRenderer() {
       puddles.clear();
       sceneId = scene?.id;
     }
+
     for (const hit of scene?.damage ?? [])
       if (
         hit.killed &&
@@ -45,8 +47,10 @@ export function bloodPuddleRenderer() {
       let seed = puddle.id;
       const random = () => {
         seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
         return seed / 4294967296;
       };
+
       // One fill keeps overlapping splash shapes at the same fading opacity.
       ctx.beginPath();
       for (let i = 0; i < 24; i++) {
@@ -57,6 +61,7 @@ export function bloodPuddleRenderer() {
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       }
+
       ctx.closePath();
       for (let i = 0; i < 10; i++) {
         const angle = random() * Math.PI * 2;
@@ -67,8 +72,10 @@ export function bloodPuddleRenderer() {
         ctx.moveTo(x + radius, y);
         ctx.ellipse(x, y, radius, radius * 0.55, 0, 0, Math.PI * 2);
       }
+
       ctx.fill();
     }
+
     ctx.restore();
   };
 }

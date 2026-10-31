@@ -32,6 +32,7 @@ test('unmapped runtime, dependencies, workflow and selector changes require full
   ]) {
     assert.equal(selectBrowserTests([path]).full, true, path);
   }
+
   assert.equal(selectBrowserTests([]).full, true);
 });
 
@@ -73,6 +74,7 @@ test('PR selection uses the merge-base range and fails closed for absent history
   assert.equal(
     selectionForEvent('pull_request', event, (range) => {
       assert.equal(range, `${base}...${head}`);
+
       return ['docs/README.md'];
     }).full,
     false,

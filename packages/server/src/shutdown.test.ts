@@ -23,13 +23,16 @@ test('shutdown attempts every save and closes resources even when one save fails
       await new Promise((resolve) => setTimeout(resolve, 10));
     }
   }
+
   const save = game.runtime.characters.save.bind(game.runtime.characters);
   const attempted: string[] = [];
   game.runtime.characters.save = (id, name, progress) => {
     attempted.push(name);
     if (name === 'First') throw new Error('Injected write failure');
+
     return save(id, name, progress);
   };
+
   await assert.rejects(game.close(), AggregateError);
   assert.deepEqual(attempted, ['First', 'Second']);
   assert(peers.every((peer) => peer.readyState === Peer.CLOSED));

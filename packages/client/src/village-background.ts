@@ -65,16 +65,20 @@ export function villageBackground(graphics: GraphicsSettings) {
     background.width = ARENA.width;
     background.height = ARENA.height;
   }
+
   const ctx = background.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = ctx.createPattern(terrainTile(0), 'repeat')!;
   ctx.fillRect(0, 0, ARENA.width, ARENA.height);
+
   // Paint overflow into the opposite edge of the cached, repeating world tile.
   function wrapped(x: number, y: number, radius: number, paint: () => void) {
     if (x >= radius && y >= radius && x + radius < ARENA.width && y + radius < ARENA.height) {
       paint();
+
       return;
     }
+
     for (
       let row = Math.floor((y - radius) / ARENA.height);
       row <= Math.floor((y + radius) / ARENA.height);
@@ -91,12 +95,15 @@ export function villageBackground(graphics: GraphicsSettings) {
         ctx.restore();
       }
   }
+
   // A fixed seed keeps the decorative clearing identical for every client.
   let seed = 7319;
   const random = () => {
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
     return seed / 4294967296;
   };
+
   for (let i = 0; i < 325; i++) {
     const x = random() * ARENA.width;
     const y = random() * ARENA.height;
@@ -109,6 +116,7 @@ export function villageBackground(graphics: GraphicsSettings) {
       ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
     });
   }
+
   for (let i = 0; i < 36000; i++) {
     ctx.fillStyle = random() > 0.5 ? '#80965c12' : '#142b2020';
     const x = random() * ARENA.width;
@@ -116,6 +124,7 @@ export function villageBackground(graphics: GraphicsSettings) {
     const width = 1 + random() * 3;
     wrapped(x, y, width, () => ctx.fillRect(x, y, width, 1));
   }
+
   drawVillagePaths(ctx, floor);
   const scenery = villageSprites(nature, houses, wardrobe, lampPost, lantern);
   for (const object of scenery.filter((object) => !/^(tree|plant|rock):/.test(object.id))) {
@@ -135,6 +144,7 @@ export function villageBackground(graphics: GraphicsSettings) {
       }
     });
   }
+
   const torchTextures = TORCH_LIGHTS.map((light) =>
     lightTexture(
       light,
@@ -145,6 +155,7 @@ export function villageBackground(graphics: GraphicsSettings) {
   const texture = background as HTMLCanvasElement & { textureRevision?: number };
   texture.textureRevision = (texture.textureRevision ?? 0) + 1;
   cached = { key, background, scenery, torchTextures };
+
   return cached;
 }
 

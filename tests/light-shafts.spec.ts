@@ -20,6 +20,7 @@ test('sunlight shafts render in village and forest with live presets and narrow 
     await page.getByRole('button', { name: preset, exact: true }).click();
     await expect(shafts).toBeChecked({ checked: preset === 'High' });
   }
+
   await shafts.uncheck();
   await page.getByRole('button', { name: 'Close Settings', exact: true }).click();
   await page.screenshot({ path: 'test-results/shafts-village-off.png' });

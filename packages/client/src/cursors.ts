@@ -28,9 +28,11 @@ export function combatCursor(
   if (held) return 'pressed';
   if (!autoTarget) return 'aim';
   const bounds = forest ? FOREST : ARENA;
+
   return scene.enemies.some((enemy) => {
     if (enemy.hitpoints <= 0) return false;
     const body = enemyHitbox(enemy);
+
     return (
       Math.hypot(
         wrappedDelta(pointer.x, body.x, bounds.width),

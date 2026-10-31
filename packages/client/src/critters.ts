@@ -14,6 +14,7 @@ export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
     false,
     64,
   );
+
   return mask
     ? {
         id: `critter:${critter.kind}:${critter.x}:${critter.y}`,
@@ -25,6 +26,7 @@ export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
       }
     : null;
 }
+
 export function drawCritter(
   ctx: DrawingContext,
   critter: ReturnType<typeof crittersAt>[number],
@@ -40,6 +42,7 @@ export function drawCritter(
     ctx.ellipse(0, -2, 8, 3, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+
   if (critter.left) ctx.scale(-1, 1);
   ctx.drawImage(
     image,

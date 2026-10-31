@@ -27,8 +27,10 @@ export function movePlayer(player: Player, x: number, y: number, dt: number) {
   player.x = next.x;
   player.y = wrap(next.y - 15, player.scene === 'forest' ? FOREST.height : ARENA.height);
 }
+
 export function playerAimAngle(player: Player, enemies: Enemy[], context: Game = game) {
   const target = nearestSpellTarget(player, enemies, context.rules.characterStats(player).range);
+
   return player.autoTarget === false && player.aimX !== undefined && player.aimY !== undefined
     ? Math.atan2(
         wrappedDelta(player.aimY, player.y, FOREST.height),
@@ -70,6 +72,7 @@ export function requestPlayerCast(
   player.attackAt = Math.max(now, (player.attackAt ?? -Infinity) + stats.attackIntervalMs);
   player.attackId = request.id;
   castInputs.set(player, request);
+
   return true;
 }
 
@@ -98,6 +101,7 @@ export function tickPlayerCombat(
       player.attackAt = undefined;
       continue;
     }
+
     player.attackAngle = smoothAttackAngle(
       player.attackAngle,
       playerAimAngle(player, scene.enemies, context),
@@ -118,6 +122,7 @@ export function tickPlayerCombat(
           : now;
       player.attackId = undefined;
     }
+
     if (player.attackAt === undefined) continue;
     const age = now - player.attackAt;
     if (age < 0 || age >= ability.durationMs) continue;
@@ -127,6 +132,7 @@ export function tickPlayerCombat(
       swing = { sceneId: scene.id, at: player.attackAt, enemies: new Set() };
       swordHits.set(player, swing);
     }
+
     if (ability.kind !== 'slash') {
       if (freshSwing) {
         const request = castInputs.get(player);
@@ -145,11 +151,14 @@ export function tickPlayerCombat(
         );
         castInputs.delete(player);
       }
+
       continue;
     }
+
     slash(scene, player, player, now, context);
     if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
   }
+
   tickPlayerShots(scene, alive, now, dt, context);
   if (!scene.training) scene.enemies = scene.enemies.filter((e) => e.hitpoints > 0);
 }

@@ -11,6 +11,7 @@ export class SnapshotBuffer {
   private renderedAt = 0;
   private receivedAt = 0;
   private playerId: string;
+
   constructor(playerId: string) {
     this.playerId = playerId;
   }
@@ -66,12 +67,15 @@ export class SnapshotBuffer {
         radius,
         collide,
       );
+
       return { x: point.x, y: wrap(point.y - 15, FOREST.height), dx, dy };
     };
+
     const players = older.players.map((a) => {
       const b = newer.players.find((p) => p.id === a.id);
       if (!b || a.scene !== b.scene) return { ...a, inputX: 0, inputY: 0 };
       const point = interpolate(a, b, a.scene === 'forest', 12, false);
+
       // Corrections with no movement intent must not trigger a walking animation.
       return {
         ...a,
@@ -86,6 +90,7 @@ export class SnapshotBuffer {
       const a = older.npcs?.find((n) => n.id === b.id);
       if (!a) return { ...b };
       const point = interpolate(a, b, false, 12, false);
+
       return { ...b, x: point.x, y: point.y };
     });
     const scene = older.scene
@@ -112,6 +117,7 @@ export class SnapshotBuffer {
         enemy.y = point.y;
         if (Math.hypot(point.dx, point.dy) > 0.001) enemy.angle = Math.atan2(point.dy, point.dx);
       }
+
       const drops = new Map(newer.scene.drops?.map((d) => [d.id, d]));
       for (const drop of scene.drops ?? []) {
         const next = drops.get(drop.id);
@@ -119,6 +125,7 @@ export class SnapshotBuffer {
         drop.x = wrap(drop.x + wrappedDelta(next.x, drop.x, FOREST.width) * alpha, FOREST.width);
         drop.y = wrap(drop.y + wrappedDelta(next.y, drop.y, FOREST.height) * alpha, FOREST.height);
       }
+
       const friendlyShots = new Map(newer.scene.playerShots?.map((p) => [p.id, p]));
       for (const shot of scene.playerShots ?? []) {
         const next = friendlyShots.get(shot.id);
@@ -126,6 +133,7 @@ export class SnapshotBuffer {
         shot.x = wrap(shot.x + wrappedDelta(next.x, shot.x, FOREST.width) * alpha, FOREST.width);
         shot.y = wrap(shot.y + wrappedDelta(next.y, shot.y, FOREST.height) * alpha, FOREST.height);
       }
+
       const shots = new Map(newer.scene.projectiles?.map((p) => [p.id, p]));
       for (const shot of scene.projectiles ?? []) {
         const b = shots.get(shot.id);
@@ -134,6 +142,7 @@ export class SnapshotBuffer {
         shot.y = wrap(shot.y + wrappedDelta(b.y, shot.y, FOREST.height) * alpha, FOREST.height);
       }
     }
+
     for (const player of players) {
       const next = newer.players.find((p) => p.id === player.id)?.bear;
       if (!player.bear || !next || player.bear.hitpoints <= 0 || next.hitpoints <= 0) continue;
@@ -142,11 +151,14 @@ export class SnapshotBuffer {
       player.bear.y = point.y;
       player.bear.moving = Math.hypot(point.dx, point.dy) > 0.001;
     }
+
     const training = older.training
       ? { ...older.training, playerShots: older.training.playerShots?.map((p) => ({ ...p })) }
       : undefined;
+
     return { ...older, players, npcs, scene, training, serverNow: this.clock };
   }
+
   age(now: number) {
     return this.latest
       ? Math.max(0, now - this.receivedAt) + Math.max(0, (this.latest.serverNow ?? 0) - this.clock)

@@ -27,6 +27,7 @@ test('isMultiChanced handles guaranteed counts and non-finite inputs', (t) => {
   for (const percent of [-Infinity, -1, 0, NaN]) {
     assert.equal(isMultiChanced(percent), 0);
   }
+
   assert.equal(isMultiChanced(100), 1);
   assert.equal(isMultiChanced(200), 2);
   assert.equal(random.mock.callCount(), 0);

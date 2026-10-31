@@ -40,6 +40,7 @@ test('compatible offensive talents repeat attacks and extend pierces/bounces, an
     if (classId === 'ranger' || classId === 'druid')
       assert.equal(scene.damage[1].target, 'enemy:2');
   }
+
   const player = hero('mage');
   equip(player, 'weapon', 'mage-staff', ItemStat.Range);
   equip(player, 'amulet', 'loot-amulet', ItemStat.AreaOfEffect);
@@ -111,6 +112,7 @@ test('whole party bonuses add once at drop generation, with guaranteed extras an
       player.equipmentItems = { ...player.equipmentItems, [slot]: item };
     }
   }
+
   for (const [roll, expectedGold, expectedXp] of [
     [0.3, 4, 6],
     [0.9, 3, 5],
@@ -128,6 +130,7 @@ test('whole party bonuses add once at drop generation, with guaranteed extras an
     assert.equal(scene.drops!.length, expectedGold + expectedXp);
     t.mock.restoreAll();
   }
+
   const scene = arena();
   setRewardPlayers(scene, [killer, member]);
   hitEnemy(scene, { id: 1, x: 2400, y: 1280, hitpoints: 1, angle: 0 }, 1, killer, 1000);

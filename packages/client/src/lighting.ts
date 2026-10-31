@@ -42,12 +42,14 @@ export function shadowProjection(
     light.radius * 0.8,
     (distance * caster.height) / Math.max(20, light.height - caster.height),
   );
+
   return {
     x: (dx / distance) * length,
     y: (dy / distance) * length,
     opacity: 0.65 * (1 - distance / light.radius),
   };
 }
+
 export function castShadow(ctx: DrawingContext, caster: Caster, light?: Light) {
   if (light?.owner === caster.id) return;
   const bottomInset = (maskBottomInsets.get(caster.mask) ?? 0) * caster.height;
@@ -67,6 +69,7 @@ export function castShadow(ctx: DrawingContext, caster: Caster, light?: Light) {
   );
   ctx.restore();
 }
+
 export function makeMask(sprite: HTMLCanvasElement) {
   const mask = document.createElement('canvas');
   mask.width = sprite.width;
@@ -88,10 +91,13 @@ export function makeMask(sprite: HTMLCanvasElement) {
         break;
       }
     }
+
     if (occupied) break;
     bottom--;
   }
+
   maskBottomInsets.set(mask, (mask.height - bottom) / mask.height);
+
   return mask;
 }
 
@@ -118,6 +124,7 @@ export function spriteMask(
       ctx.translate(frameWidth, 0);
       ctx.scale(-1, 1);
     }
+
     const resolution = Number(image.dataset.artResolution ?? 1);
     ctx.drawImage(
       image,
@@ -148,5 +155,6 @@ export function spriteMask(
       masks.set(key, cropped);
     } else masks.set(key, mask);
   }
+
   return masks.get(key)!;
 }

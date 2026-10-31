@@ -56,6 +56,7 @@ test('ability settings default, update, survive presets and reload in village an
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
     await page.getByRole('tab', { name: 'Graphics', exact: true }).click();
   };
+
   const slider = page.getByRole('slider', { name: 'Ability effect transparency' });
   const toggle = page.getByRole('switch', { name: "Hide other players' ability effects" });
   await open();

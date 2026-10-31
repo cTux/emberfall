@@ -7,6 +7,7 @@ test('one-hour cycle repeats across days and retains readable blue nights', () =
   for (const time of [0, 180000, 360000, 2160000, 2340000, 2520000, 3599999]) {
     assert.deepEqual(dayNight(time), dayNight(time + DAY_MS));
   }
+
   assert.equal(dayNight(360000).tint, 0xffffff);
   assert.equal(dayNight(2160000).daylight, 1);
   const night = dayNight(2520000);

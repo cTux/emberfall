@@ -12,6 +12,7 @@ export function drawLootHints(
 ) {
   const visible = hints.flatMap((hint) => {
     const frame = lootHintFrame(hint.at, now);
+
     return frame ? [{ hint, frame }] : [];
   });
   let y = player.y - 30 - visible.reduce((sum, row) => sum + row.frame.height, 0) / 2;
@@ -41,8 +42,10 @@ export function drawLootHints(
       ctx.strokeText(String(hint.quantity), 32, 16);
       ctx.fillText(String(hint.quantity), 32, 16);
     }
+
     ctx.restore();
     y += frame.height;
   }
+
   ctx.canvas.dataset.lootHintCount = String(visible.length);
 }

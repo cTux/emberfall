@@ -15,6 +15,7 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
         1000,
       );
   }
+
   pixi.present();
   const damagePreview = document.createElement('canvas');
   damagePreview.width = damagePreview.height = 256;
@@ -31,6 +32,7 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
       if (pixels[i] > 235 && pixels[i + 1] > 235 && pixels[i + 2] > 235) white++;
       if (pixels[i] > 150 && pixels[i + 1] < 90 && pixels[i + 2] < 110) red++;
     }
+
     return { white, red };
   });
   pixi.begin();
@@ -42,6 +44,7 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
     groupedLabels.push(String(text));
     fillText(text, x, y);
   };
+
   drawDamageNumbers(
     pixi,
     [
@@ -81,5 +84,6 @@ export function compareDamage(pixi: PixiContext, gpu: HTMLCanvasElement) {
   );
   pixi.fillText = fillText;
   pixi.present();
+
   return { damagePixels, groupedLabels };
 }

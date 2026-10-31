@@ -24,6 +24,7 @@ test('player shadow masks sample complete high-resolution frames in every facing
         rect.length === 8
       )
         crops.push(rect);
+
       return Reflect.apply(drawImage, this, [source, ...rect]);
     };
   });
@@ -43,8 +44,10 @@ test('player shadow masks sample complete high-resolution frames in every facing
       await page.waitForTimeout(350);
       await page.keyboard.up(key);
     }
+
     await page.screenshot({ path: `test-results/shadows-village-${classId}.png` });
   }
+
   const crops = await page.evaluate(
     () => (window as unknown as { shadowCrops: number[][] }).shadowCrops,
   );

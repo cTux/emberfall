@@ -42,6 +42,7 @@ export function forestRenderer(
   const prepareActors = createForestActors(skeleton);
   const forestGround = createForestGround();
   const drawBloodPuddles = bloodPuddleRenderer();
+
   return (
     ctx: WorldDrawingContext,
     world: WorldState | null,
@@ -80,6 +81,7 @@ export function forestRenderer(
       drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles, prefs, playerId);
       drawDanger(ctx, world.scene, serverTime, near, true);
     }
+
     const players =
       world?.players.filter((p) => p.scene === 'forest' && p.runId === me?.runId) ?? [];
     for (const player of players) {
@@ -95,6 +97,7 @@ export function forestRenderer(
         abilityEffectOpacity(prefs, playerId, player.id),
       );
     }
+
     drawBloodPuddles(ctx, world?.scene, serverTime, prefs.bloodPuddles, near, {
       x: cameraX,
       y: cameraY,
@@ -130,6 +133,7 @@ export function forestRenderer(
       const caster = critterCaster(critter);
       if (caster) casters.push(caster);
     }
+
     for (const player of players) {
       if (!player.bear) continue;
       const point = near(player.bear.x, player.bear.y);
@@ -142,6 +146,7 @@ export function forestRenderer(
       );
       if (caster) casters.push(caster);
     }
+
     if (quality.shadows) for (const caster of casters) castShadow(ctx, caster);
     if (!quality.shadows) {
       ctx.fillStyle = '#07120955';
@@ -151,6 +156,7 @@ export function forestRenderer(
         ctx.fill();
       }
     }
+
     if (world?.scene) drawDanger(ctx, world.scene, serverTime, near);
     if (world?.scene)
       drawLootAndBlood(ctx, world.scene, serverTime, near, {
@@ -172,6 +178,7 @@ export function forestRenderer(
         localActor.size * breath,
       );
     }
+
     const actorFrame = {
       world,
       players,
@@ -188,6 +195,7 @@ export function forestRenderer(
       renderer.occlusion = !!localActor && layer.y > localActor.y + 15;
       drawForestLayer(ctx, layer, actorFrame);
     }
+
     renderer.occlusion = false;
     if (quality.lighting) {
       ctx.save();
@@ -204,8 +212,10 @@ export function forestRenderer(
         };
         ctx.drawImage(lightTexture(light, casters, quality.shadows), light.x - 110, light.y - 110);
       }
+
       ctx.restore();
     }
+
     drawEnvironment(ctx, { x: cameraX, y: cameraY, width, height }, now, quality, cycle.daylight);
     if (prefs.damageNumbers)
       drawDamageNumbers(
@@ -221,6 +231,7 @@ export function forestRenderer(
       const point = near(player.x, player.y);
       drawChatBubble(ctx, point.x, point.y, player.chat);
     }
+
     ctx.canvas.dataset.debugHitboxes = String(
       prefs.debugHitboxes && world
         ? drawHitboxes(ctx, world, true, { x: cameraX, y: cameraY, width, height })
@@ -228,4 +239,5 @@ export function forestRenderer(
     );
   };
 }
+
 import { drawDamageNumbers } from './damage-text';

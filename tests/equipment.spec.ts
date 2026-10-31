@@ -43,6 +43,7 @@ test('inventory tabs preserve the bag, aligned square gear and calculated stat t
     const box = (await tab.boundingBox())!;
     expect(box.x + box.width).toBeLessThan(surface.x);
   }
+
   const positions = {
     helmet: [2, 1],
     amulet: [3, 1],
@@ -67,6 +68,7 @@ test('inventory tabs preserve the bag, aligned square gear and calculated stat t
       expect(box.y - origin.y).toBeCloseTo((row - 1) * (box.height + 4), 1);
     }
   }
+
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.mouse.move(0, 0);
   await page.screenshot({ path: 'test-results/inventory-equipment-tabs.png' });

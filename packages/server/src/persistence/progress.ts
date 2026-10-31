@@ -22,6 +22,7 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
     storages: freshStorages(),
     ...(classId ? { equipment: starterEquipment(classId) } : {}),
   });
+
   function classProgress(value: unknown, classId: ClassId): CharacterProgress {
     const progress = progressSchema.parse(value);
     progress.paragon = (progress.paragon ?? 0) + Math.max(0, progress.level - 20);
@@ -36,8 +37,10 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
     );
     const derived = { ...progress, classId } as Player;
     syncEquipmentVitals(derived);
+
     return progressSchema.parse(derived);
   }
+
   function decodeProgress(raw: string) {
     const data = JSON.parse(raw);
     if (data.classes)
@@ -47,6 +50,7 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
             `Save contains unknown class '${id}'; load its mod before opening this save`,
           );
       }
+
     if (data.formatVersion !== undefined && data.formatVersion !== 1 && data.formatVersion !== 2)
       throw new Error('Unsupported save format');
     const classId: ClassId = data.classes ? classSchema.parse(data.classId) : 'warrior';
@@ -82,12 +86,15 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
           }
         }
       }
+
       storehouse = storehouseSchema.parse(storehouse);
     }
+
     for (const id of CLASS_IDS) {
       delete classes[id].coins;
       delete classes[id].storages;
     }
+
     return { classId, classes, storehouse, progress: { ...classes[classId], ...storehouse } };
   }
 
@@ -117,6 +124,7 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
       attackAngle: undefined,
       bear: undefined,
     };
+
     return updated;
   }
 

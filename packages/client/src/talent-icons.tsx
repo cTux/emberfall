@@ -15,6 +15,7 @@ export function TalentIcon({ index, classId }: { index: number; classId: string 
   const row = Math.floor(index / 5);
   const width = x[column + 1] - x[column];
   const height = y[row + 1] - y[row];
+
   return (
     <Box
       component='span'

@@ -38,6 +38,7 @@ export function drawTorchFire(
     paint.clearRect(69, 28, 27, 46);
     hangingLamp = { post, lamp };
   }
+
   ctx.save();
   ctx.translate(x - width / 2, y - height);
   ctx.scale(width / 128, height / 128);
@@ -55,11 +56,13 @@ export function drawTorchFire(
       ctx.shadowBlur = 3;
       ctx.shadowColor = '#ff8b32';
     }
+
     for (let i = 0; i < 4; i++) {
       const age = ((now + i * 450) % 1800) / 1800;
       ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.45;
       ctx.fillRect(Math.sin(i * 2.4 + age) * 5, 25 - age * 24, 1, 1);
     }
   }
+
   ctx.restore();
 }

@@ -24,6 +24,7 @@ test('latest input is coalesced, held between packets, timed out and rejected ac
       await new Promise((r) => setTimeout(r, 10));
     }
   };
+
   try {
     await once(ws, 'open');
     ws.send(
@@ -79,6 +80,7 @@ test('timed inputs acknowledge partial steps, reject stale areas and cannot acce
       await new Promise((r) => setTimeout(r, 10));
     }
   };
+
   try {
     await once(ws, 'open');
     ws.send(

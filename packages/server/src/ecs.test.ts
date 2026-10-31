@@ -66,8 +66,10 @@ test('ECS-backed and plain-object combat produce the same state through spawns, 
       const seed = tick + 100;
       const seeded = () => {
         let state = seed;
+
         return () => (state = (Math.imul(state, 1664525) + 1013904223) >>> 0) / 2 ** 32;
       };
+
       Math.random = seeded();
       stepCombat(scene, [player], tick * 50, 0.05);
       Math.random = seeded();

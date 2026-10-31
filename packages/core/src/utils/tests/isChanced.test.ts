@@ -15,9 +15,11 @@ test('isChanced handles percentage boundaries and non-finite numbers', (t) => {
     for (const percent of [-Infinity, -1, 0, NaN]) {
       assert.equal(isChanced(percent), false);
     }
+
     for (const percent of [100, 101, Infinity]) {
       assert.equal(isChanced(percent), true);
     }
+
     t.mock.restoreAll();
   }
 });
@@ -27,8 +29,10 @@ test('isChanced skips random rolls for guaranteed outcomes', (t) => {
   for (const percent of [-Infinity, -1, 0]) {
     assert.equal(isChanced(percent), false);
   }
+
   for (const percent of [100, 101, Infinity]) {
     assert.equal(isChanced(percent), true);
   }
+
   assert.equal(random.mock.callCount(), 0);
 });

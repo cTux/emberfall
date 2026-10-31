@@ -65,6 +65,7 @@ export function worldHitboxes(
         label: 'melee',
       });
   };
+
   for (const player of world.players) {
     if ((player.scene === 'forest') !== forest || player.hitpoints <= 0) continue;
     const body = modelHitbox(player);
@@ -82,6 +83,7 @@ export function worldHitboxes(
       swing(bear, bear.range ?? BEAR_DEFINITION.range);
     }
   }
+
   for (const enemy of scene?.enemies ?? []) {
     if (enemy.hitpoints <= 0) continue;
     const body = enemyHitbox(enemy);
@@ -89,11 +91,13 @@ export function worldHitboxes(
     if (enemy.attack)
       circle(enemy.attack.x, enemy.attack.y, enemy.attack.radius, HITBOX_COLORS.range, 'attack');
   }
+
   for (const shot of scene?.playerShots ?? [])
     circle(shot.x, shot.y, COLLISION.playerProjectileRadius, HITBOX_COLORS.projectile);
   for (const shot of scene?.projectiles ?? []) {
     circle(shot.x, shot.y, COLLISION.enemyProjectileRadius, HITBOX_COLORS.projectile);
   }
+
   for (const drop of scene?.drops ?? [])
     circle(drop.x, drop.y, PICKUP_RULES.collectRadius, HITBOX_COLORS.range, 'collect');
   for (const explosion of scene?.explosions ?? [])
@@ -151,6 +155,7 @@ export function worldHitboxes(
           'interact',
         );
     }
+
     circle(
       (world.npcs?.find((n) => n.id === INNKEEPER.id) ?? INNKEEPER).x,
       (world.npcs?.find((n) => n.id === INNKEEPER.id) ?? INNKEEPER).y - COLLISION.feetOffset,
@@ -159,6 +164,7 @@ export function worldHitboxes(
       'interact',
     );
   }
+
   return shapes;
 }
 
@@ -205,8 +211,11 @@ export function drawHitboxes(
       ctx.fillStyle = shape.color;
       ctx.fillText(shape.label, x, y - height / 2 - 3);
     }
+
     drawn++;
   }
+
   ctx.restore();
+
   return drawn;
 }

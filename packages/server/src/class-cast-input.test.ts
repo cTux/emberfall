@@ -102,6 +102,7 @@ test('slightly early held casts wait for cooldown and retain aim without duplica
       tickPlayerCombat(arena, [player], player.attackAt, 0);
       assert.equal(arena.playerShots!.at(-1)!.castId, id);
     }
+
     assert.equal(player.attackAt, 12000, 'repeated early arrivals never shorten cooldown');
   }
 });

@@ -39,5 +39,6 @@ export function useGamePreferences(
       /* Storage may be disabled. */
     }
   }, [name, steam]);
+
   return { name, setName, graphics, setGraphics };
 }

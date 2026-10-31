@@ -58,6 +58,7 @@ const memory = setInterval(() => {
   peakRss = Math.max(peakRss, process.memoryUsage().rss);
 }, 250);
 let closing = false;
+
 async function close() {
   if (closing) return;
   closing = true;
@@ -66,9 +67,11 @@ async function close() {
   delay.disable();
   await app.close();
 }
+
 process.once('disconnect', () => {
   void close().catch(() => process.exit(1));
 });
+
 async function command(type: unknown) {
   let reply: WorkerReply;
   switch (type) {
@@ -120,6 +123,7 @@ async function command(type: unknown) {
       };
       break;
     }
+
     case 'stop':
       await close();
       reply = { type };
@@ -127,9 +131,11 @@ async function command(type: unknown) {
     default:
       throw new Error('Unknown benchmark command');
   }
+
   process.send!(reply);
   if (type === 'stop') process.disconnect!();
 }
+
 process.on('message', (type) => {
   void command(type).catch((error: unknown) => {
     process.send!({ type: 'error', message: String(error) } satisfies WorkerReply);

@@ -26,6 +26,7 @@ export function Trading({
       buying,
       amount: modifiers.ctrlKey ? 'stack' : modifiers.shiftKey ? 10 : 1,
     });
+
   return (
     <ChapterTabs
       label='Trader inventory'

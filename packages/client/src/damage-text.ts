@@ -17,6 +17,7 @@ export function damageTextFrame(hit: DamageEvent, now: number) {
   const rise = 1 - (1 - progress) ** 2;
   const lane = (((hit.id % 5) + 5) % 5) - 2;
   const pop = age < 80 ? 0.8 + (age / 80) * 0.55 : 1 + 0.35 * Math.max(0, 1 - (age - 80) / 140);
+
   return {
     x: lane * (7 + rise * 12),
     y: -42 - rise * 42,
@@ -41,6 +42,7 @@ export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[
       if (hit.ownerId) latest.set(key, total);
     }
   }
+
   return totals;
 }
 
@@ -56,6 +58,7 @@ export function drawDamageNumbers(
     drawDamageNumber(ctx, hit, project(hit.x, hit.y), now);
   }
 }
+
 /** Both combat areas render the same authoritative damage metadata. */
 export function drawDamageNumber(
   ctx: DrawingContext,
@@ -89,6 +92,7 @@ export function drawDamageNumber(
     ctx.lineWidth = CRITICAL_TEXT_STYLE.width;
     ctx.strokeText(value, 0, 0);
   }
+
   ctx.fillText(value, 0, 0);
   ctx.restore();
 }

@@ -39,6 +39,7 @@ test('rarity borders and exact stat tooltips survive equipment, storage, trading
     await expect(slot).toHaveCSS('border-top-color', rgb);
     await expect(slot).toHaveAttribute('data-rarity', rarity);
   }
+
   const uncommon = backpack.locator('[data-backpack-item=rarity-uncommon]');
   await uncommon.hover();
   await expect(page.getByRole('tooltip').filter({ hasText: 'Uncommon' })).toBeVisible();

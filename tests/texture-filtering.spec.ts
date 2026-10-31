@@ -37,6 +37,7 @@ test('texture filtering changes pixels on cached sources and restores nearest sa
     const { FilteringFixture } = window as unknown as {
       FilteringFixture: typeof import('./texture-filtering-fixture');
     };
+
     return FilteringFixture.compareFiltering();
   });
   expect(samples[0]).toEqual([0, 0, 0, 255]);
@@ -78,6 +79,7 @@ test('smooth textures apply live in village and forest, follow presets and persi
     await page.getByRole('button', { name: preset, exact: true }).click();
     await expect(smooth).toBeChecked();
   }
+
   await smooth.uncheck();
   await close.click();
   await expect(canvas).toHaveCSS('image-rendering', 'auto');

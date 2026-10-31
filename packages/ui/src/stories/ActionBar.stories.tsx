@@ -53,6 +53,7 @@ export const Interactive: Story = {
   render: function InteractiveActionBar(args) {
     const [autoCast, setAutoCast] = useState(false);
     const [chosen, setChosen] = useState(false);
+
     return (
       <>
         <ActionBar

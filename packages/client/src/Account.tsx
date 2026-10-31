@@ -18,6 +18,7 @@ function NicknameDialog({
   const [pending, setPending] = useState(false);
   const { reportError } = useChat();
   const valid = nicknameSchema.safeParse(value).success;
+
   return (
     <GameWindow
       title={account.nickname === null ? 'Choose your nickname' : 'Change nickname'}
@@ -149,6 +150,7 @@ export function AccountGate({
       reportError('Could not sign out. Please retry.');
     }
   };
+
   if (!account || (account.mode === 'steam' && !account.authenticated))
     return (
       <main className='lobby'>
@@ -175,6 +177,7 @@ export function AccountGate({
         </GameWindow>
       </main>
     );
+
   return (
     <>
       {(account.mode === 'legacy' || account.nickname !== null) &&

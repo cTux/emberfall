@@ -30,6 +30,7 @@ export function validateStructure(context: ValidationContext) {
       const result = contentShapes[name].safeParse(entry);
       if (!result.success) fail(name, entry.id, result.error.message);
     }
+
   for (const name of Object.keys(shapeGroups) as ShapeGroup[]) {
     const { shapes, unsupported } = shapeGroups[name];
     for (const entry of r[name].values()) {
@@ -39,6 +40,7 @@ export function validateStructure(context: ValidationContext) {
       if (!result.success) fail(name, entry.id, result.error.message);
     }
   }
+
   for (const entry of r.critters.values())
     check(
       ['cat', 'chicken', 'raccoon'].includes(entry.id),

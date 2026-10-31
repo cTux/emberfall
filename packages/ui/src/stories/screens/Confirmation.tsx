@@ -7,6 +7,7 @@ import { stage } from './styles';
 
 export function Confirmation() {
   const [open, setOpen] = useState(true);
+
   return (
     <Box sx={stage}>
       <Button onClick={() => setOpen(true)}>Leave scene</Button>

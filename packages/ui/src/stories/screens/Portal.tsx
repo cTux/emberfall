@@ -7,6 +7,7 @@ import { stage, panel } from './styles';
 
 export function Portal() {
   const [voted, vote] = useState(false);
+
   return (
     <Box sx={stage}>
       <Box sx={panel}>

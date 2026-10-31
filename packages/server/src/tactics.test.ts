@@ -47,6 +47,7 @@ test('tactics rejects duplicate, missing, unknown and unbounded preferences at c
       }).success,
     );
   }
+
   assert(
     !clientMessage.safeParse({ type: 'setTactics', classId: 'unknown', tactics: tactics() })
       .success,

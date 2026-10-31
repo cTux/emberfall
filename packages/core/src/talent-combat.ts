@@ -16,6 +16,7 @@ export function talentAbility(player: Pick<Player, 'classId'>, slot: number, con
       (ability) => ability.classId === (player.classId ?? 'warrior') && ability.talentSlot === slot,
     );
 }
+
 export function equippedTalent(player: Player, slot: number) {
   return TALENT_TREE.find(
     (node) =>
@@ -24,12 +25,14 @@ export function equippedTalent(player: Player, slot: number) {
       node.kind === 'ability',
   );
 }
+
 export function talentCooldownMs(player: Player, slot: number, context: Game = game) {
   return recoveryCooldownMs(
     talentAbility(player, slot, context)?.intervalMs ?? 0,
     context.rules.characterStats(player).cooldownRecoveryRate,
   );
 }
+
 export function castTalentAbility(
   scene: SceneState | undefined,
   player: Player,
@@ -95,6 +98,7 @@ export function castTalentAbility(
     )
       return false;
   }
+
   player.talentCooldowns = {
     ...player.talentCooldowns,
     [ability.id]: now + talentCooldownMs(player, node.slot!, context),
@@ -118,5 +122,6 @@ export function castTalentAbility(
     request.automatic ? (player.tactics ?? DEFAULT_TACTICS).healBelow : 1,
     context,
   );
+
   return true;
 }

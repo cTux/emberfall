@@ -14,12 +14,15 @@ type PathCommand = {
 
 export class DrawingPath {
   private commands: PathCommand[] = [];
+
   reset() {
     this.commands.length = 0;
   }
+
   add(method: PathCommand['method'], args: number[]) {
     this.commands.push({ method, args });
   }
+
   draw(graphics: Graphics, values: number[]): Graphics {
     graphics.clear();
     let penX = 0,
@@ -63,6 +66,7 @@ export class DrawingPath {
               offset -= dash[index];
               index++;
             }
+
             const step = Math.min(length - at, dash[index] - offset);
             at += step;
             dashAt += step;
@@ -80,6 +84,7 @@ export class DrawingPath {
         graphics.bezierCurveTo(args[0], args[1], args[2], args[3], args[4], args[5]);
       else graphics.closePath();
     }
+
     return graphics;
   }
 }

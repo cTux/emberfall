@@ -40,6 +40,7 @@ test('item tooltips follow class equipment rules without hiding trade actions', 
     await backpack.locator(`[data-backpack-item="${id}"]`).hover();
     await expect(warning).toBeHidden();
   }
+
   player.classId = 'ranger';
   player.equipment = starterEquipment('ranger');
   await bow.hover();

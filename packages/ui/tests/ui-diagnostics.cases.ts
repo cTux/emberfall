@@ -12,6 +12,7 @@ test('performance diagnostics stay compact with readable labels and all traces',
   for (const label of ['Input ack', 'Snapshot (local)', 'Ping']) {
     await expect(monitor.getByText(label, { exact: true })).toBeVisible();
   }
+
   await expect(monitor.locator('svg path')).toHaveCount(4);
   const bounds = await monitor.boundingBox();
   expect(bounds!.width).toBeLessThanOrEqual(224);

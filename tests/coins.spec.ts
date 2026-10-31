@@ -43,6 +43,7 @@ test('collected gold credits the account Storehouse across classes and rejoining
     await page.setViewportSize({ width, height: 900 });
     await page.screenshot({ path: testInfo.outputPath(`coins-forest-${width}.png`) });
   }
+
   await page.getByRole('button', { name: 'Leave world' }).click();
   await page.getByRole('button', { name: 'Leave', exact: true }).click();
   await expect(page.getByLabel('Shared village. Move with WASD or arrow keys.')).toBeVisible();

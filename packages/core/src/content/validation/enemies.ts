@@ -22,11 +22,13 @@ export function validateEnemies(context: ValidationContext) {
       check(positive(enemy[key]), 'enemies', enemy.id, `invalid ${key}`);
     check(nonnegative(enemy.damage), 'enemies', enemy.id, 'invalid damage');
   }
+
   let spawnChance = 0;
   for (const spawn of r.spawnRules.values()) {
     reference('spawnRules', spawn.id, 'enemies', spawn.enemy);
     spawnChance += spawn.chance;
   }
+
   check(
     spawnChance <= 1,
     'spawnRules',
@@ -39,6 +41,7 @@ export function validateEnemies(context: ValidationContext) {
     reference('bosses', boss.id, 'enemies', boss.archetype);
     check(boss.kind === 'boss', 'bosses', boss.id, 'unsupported kind');
   }
+
   for (const companion of r.companions.values()) {
     reference('companions', companion.id, 'abilities', companion.attack);
     check(
@@ -58,6 +61,7 @@ export function validateEnemies(context: ValidationContext) {
     ] as const)
       check(positive(companion[key]), 'companions', companion.id, `invalid ${key}`);
   }
+
   for (const ailment of r.ailments.values()) {
     check(
       ['bleed', 'poison', 'burn', 'roots', 'silence'].includes(ailment.kind) &&

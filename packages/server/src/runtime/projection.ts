@@ -45,5 +45,6 @@ export function createWorldProjection(
       capacity: w === permanentWorld ? 32 : MAX_PLAYERS,
     })),
   });
+
   return { state, list };
 }

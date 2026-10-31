@@ -87,6 +87,7 @@ test('Bear teleports only beyond 500 pixels, using wrapped forest distance, with
     assert.equal(bear.x, p.x + 501);
     assert.equal(bear.resurrectAt, 15150);
   }
+
   const p: Player = { ...hero(), classId: 'druid', x: 5 };
   tickCompanion(p, undefined, 10000, 0);
   p.bear!.x = FOREST.width - 5;

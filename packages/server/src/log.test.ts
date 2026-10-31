@@ -19,8 +19,10 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
       () => {},
     );
     runtime.connect(peer);
+
     return peer;
   };
+
   try {
     const first = connect();
     first.receive({
@@ -80,6 +82,7 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
   } finally {
     await runtime.close();
   }
+
   for (const event of [
     'Runtime ready',
     'Client connected',
@@ -97,6 +100,7 @@ test('logs major lifecycle events while combat, ticks, chat and successful autos
       event,
     );
   }
+
   assert(lines.every((line) => /^\d{4}-\d{2}-\d{2}T[\d:.]+Z INFO /.test(line)));
   const output = lines.join('\n');
   assert(!output.includes('Private'));

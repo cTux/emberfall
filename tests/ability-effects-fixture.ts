@@ -91,6 +91,8 @@ export async function compare() {
       results[kind].push(brightness);
     }
   }
+
   pixi.destroy();
+
   return results;
 }

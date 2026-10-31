@@ -65,9 +65,12 @@ export function resourceScenery(node: ResourceNode, state?: ResourceState): Scen
       frames.set(key, frame);
     } else frame = { sprite, mask: makeMask(sprite) };
   }
+
   const size = depleted && node.kind === 'tree' ? node.size * 0.48 : node.size;
+
   return { ...node, gathered: depleted, width: size, height: size, ...frame };
 }
+
 export function drawResourceHealth(ctx: DrawingContext, node: ResourceNode, state?: ResourceState) {
   if (node.kind !== 'tree' || !state || state.remaining <= 0 || state.remaining >= 5) return;
   drawWorldBar(ctx, node.x - 20, node.y - node.size - 4, 40, state.remaining / 5, '#a4cf7b');

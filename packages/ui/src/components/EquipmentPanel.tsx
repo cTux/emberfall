@@ -53,6 +53,7 @@ function StatRows({ stats }: { stats: EquipmentStatView[] }) {
 export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const [openSlot, setOpenSlot] = useState<string | null>(null);
+
   return (
     <Box
       ref={panelRef}
@@ -134,8 +135,10 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                     event.preventDefault();
                     slot.onUnequip();
                     setOpenSlot(null);
+
                     return;
                   }
+
                   if (event.key !== 'Tab' || event.shiftKey || openSlot !== slot.id) return;
                   const tooltipId = event.currentTarget.getAttribute('aria-describedby');
                   const badge = tooltipId

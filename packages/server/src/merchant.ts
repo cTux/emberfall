@@ -20,8 +20,10 @@ export function refreshMerchant(
     characters.saveMerchant(world.id, merchant);
   } catch (cause) {
     retryAt.set(world, now + RUNTIME.autosaveMs);
+
     throw cause;
   }
+
   retryAt.delete(world);
   world.merchant = merchant;
   addChat(world, 'Marta the Innkeeper has refreshed her stock.');

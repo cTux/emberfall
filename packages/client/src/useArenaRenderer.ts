@@ -119,23 +119,29 @@ export function useArenaRenderer({
       const ratio = Math.min(devicePixelRatio * quality.current.resolution * budget.scale, 3);
       renderer.resize(Math.round(innerWidth * ratio), Math.round(innerHeight * ratio));
     };
+
     const budget = new FrameBudget(quality.current, performance.now(), resize);
     resize();
     window.addEventListener('resize', resize);
     let previousScene: string | undefined;
+
     function draw(now: number) {
       const openWardrobe = interaction.current?.id === 'wardrobe';
       if (openWardrobe && !wardrobeActive) wardrobeOpenedAt = now;
       wardrobeActive = openWardrobe;
       if (!renderer.initialized) {
         frame = requestAnimationFrame(draw);
+
         return;
       }
+
       const delta = budget.begin(now, quality.current);
       if (delta === undefined) {
         frame = requestAnimationFrame(draw);
+
         return;
       }
+
       element.dataset.lootHintCount = '0';
       renderer.begin();
       renderer.fontFamily = fontFamily.current;
@@ -181,6 +187,7 @@ export function useArenaRenderer({
         village.clear();
         previousScene = local?.scene;
       }
+
       const fps = budget.sample(now);
       if (fps !== undefined) frameRate.current = fps;
       presentation.effects(presented, now);
@@ -202,8 +209,10 @@ export function useArenaRenderer({
           drawLootHints(ctx, lootHints.current.hints, local, now);
         renderer.present();
         frame = requestAnimationFrame(draw);
+
         return;
       }
+
       const villageFrame = village.prepare(view, local, now, quality.current, {
         width: el.width,
         height: el.height,
@@ -231,7 +240,9 @@ export function useArenaRenderer({
       renderer.present();
       frame = requestAnimationFrame(draw);
     }
+
     frame = requestAnimationFrame(draw);
+
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
@@ -243,5 +254,6 @@ export function useArenaRenderer({
       presentation.dispose();
     };
   }, [playerId, interaction, onCursorAim, onHitpoints, reportError]);
+
   return { canvas, frameRate, networkTiming };
 }

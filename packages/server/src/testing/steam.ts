@@ -13,17 +13,21 @@ export const steamRequest: typeof fetch = async (input, init) => {
           ? init.body
           : undefined,
     );
+
     return new Response(
       `ns:http://specs.openid.net/auth/2.0\nis_valid:${query.get('openid.sig') === 'test-signature'}\n`,
     );
   }
+
   const steamid = url.searchParams.get('steamids');
+
   return Response.json({
     response: {
       players: [{ steamid, personaname: steamid === friendId ? 'Steam Friend' : 'Steam Hero' }],
     },
   });
 };
+
 export function steamCallback(loginUrl: string, steamId = heroId) {
   const callback = new URL(new URL(loginUrl).searchParams.get('openid.return_to')!);
   const identity = `https://steamcommunity.com/openid/id/${steamId}`;
@@ -40,5 +44,6 @@ export function steamCallback(loginUrl: string, steamId = heroId) {
     signed: 'op_endpoint,claimed_id,identity,return_to,response_nonce,assoc_handle',
   }))
     callback.searchParams.set(`openid.${key}`, value);
+
   return callback;
 }

@@ -13,6 +13,7 @@ export function drawPlayerDetails(
   if (showVitals) {
     drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
   }
+
   if (p.reconnecting) {
     ctx.save();
     ctx.font = 'bold 10px "Alegreya Sans", sans-serif';
@@ -23,6 +24,7 @@ export function drawPlayerDetails(
     ctx.strokeText('Reconnecting', x, y - 62);
     ctx.fillText('Reconnecting', x, y - 62);
     ctx.restore();
+
     return;
   }
 }
@@ -48,6 +50,7 @@ export function drawPlayerAttack(
     if (p.classId === 'ranger' || p.classId === 'mage' || p.classId === 'druid') {
       return;
     }
+
     const progress = age / PLAYER_ATTACK_DURATION,
       angle = (p.attackAngle ?? 0) - Math.PI / 2 + progress * Math.PI;
     ctx.save();
@@ -58,6 +61,7 @@ export function drawPlayerAttack(
       ctx.shadowColor = '#c3edff';
       ctx.shadowBlur = 10;
     }
+
     ctx.strokeStyle = `rgba(195,237,255,${1 - progress * 0.7})`;
     ctx.lineWidth = 9;
     ctx.beginPath();
@@ -68,6 +72,7 @@ export function drawPlayerAttack(
       ctx.globalAlpha = opacity * (1 - progress) * (1 - i / 14);
       ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);
     }
+
     ctx.globalAlpha = 1;
     ctx.restore();
   }

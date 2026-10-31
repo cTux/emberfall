@@ -47,6 +47,7 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
           const fixture = (
             window as unknown as { TerrainFixture: typeof import('./terrain-fixture') }
           ).TerrainFixture;
+
           return fixture.terrainArt.naturalWidth;
         }),
       )
@@ -57,6 +58,7 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
       fixture.terrainTile(0);
       fixture.terrainTile(1, 64);
       fixture.terrainTile(2);
+
       return fixture.terrainArt.complete;
     });
     expect(during).toBe(false);
@@ -65,6 +67,7 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
       const fixture = (window as unknown as { TerrainFixture: typeof import('./terrain-fixture') })
         .TerrainFixture;
       await fixture.terrainArt.decode();
+
       return [fixture.terrainTile(0), fixture.terrainTile(1, 64), fixture.terrainTile(2)].map(
         (tile, column) => {
           const pixels = tile.getContext('2d')!.getImageData(0, 0, tile.width, tile.height).data;
@@ -82,12 +85,14 @@ test('terrain tiles load fully and repeat without hard joins', async ({ page }) 
                   pixels[(i * tile.width + tile.width - 1) * 4 + channel],
               );
             }
+
           const preview = document.createElement('canvas');
           preview.width = preview.height = tile.width * 3;
           const ctx = preview.getContext('2d')!;
           ctx.fillStyle = ctx.createPattern(tile, 'repeat')!;
           ctx.fillRect(0, 0, preview.width, preview.height);
           document.body.append(preview);
+
           return {
             opaque: opaque / (tile.width * tile.height),
             edgeDifference,

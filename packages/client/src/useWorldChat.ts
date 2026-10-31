@@ -38,11 +38,13 @@ export function useWorldChat({
       ].slice(-10),
     );
   };
+
   const chatMessages = useMemo(() => {
     const localChatAfter = (id?: string) =>
       catMessages
         .filter((entry) => entry.worldId === world?.id && entry.afterId === id)
         .map((entry) => entry.message);
+
     return [
       ...localChatAfter(),
       ...(world?.chat ?? []).flatMap((message) => [message, ...localChatAfter(message.id)]),
@@ -61,5 +63,6 @@ export function useWorldChat({
     });
   }, [world, chatMessages, me?.scene, playerId, status, send, configureChat]);
   useEffect(() => () => configureChat(null), [configureChat]);
+
   return { catSpoke, clearCatMessages: () => setCatMessages([]) };
 }

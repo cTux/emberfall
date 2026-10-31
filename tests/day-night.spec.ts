@@ -35,6 +35,7 @@ test('day-night tint changes sprites, preserves warnings and lights, and repeats
     expect(frame[1]).toEqual([255, 0, 0, 255]);
     expect(frame[2]).toEqual([255, 255, 255, 255]);
   }
+
   expect(samples[3]).toEqual(samples[0]);
   const shadows = await page.evaluate(() =>
     (window as unknown as { Cycle: typeof import('./day-night-fixture') }).Cycle.shadows(),

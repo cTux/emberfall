@@ -9,6 +9,7 @@ export function createAccountRepository(
   function steamAccount(steamId: string) {
     const row = db.prepare('SELECT * FROM steam_accounts WHERE steam_id=?').get(steamId);
     if (!row) return undefined;
+
     return {
       steamId,
       characterId: String(row.character_id),
@@ -16,6 +17,7 @@ export function createAccountRepository(
       steamName: String(row.steam_name),
     };
   }
+
   function loginSteam(steamId: string, steamName: string) {
     return transaction(() => {
       if (!steamAccount(steamId)) {
@@ -31,9 +33,11 @@ export function createAccountRepository(
           steamId,
         );
       }
+
       return steamAccount(steamId)!;
     });
   }
+
   function renameSteam(steamId: string, nickname: string) {
     return transaction(() => {
       const account = steamAccount(steamId);
@@ -44,9 +48,11 @@ export function createAccountRepository(
         Date.now(),
         account.characterId,
       );
+
       return steamAccount(steamId)!;
     });
   }
+
   function createSession(steamId: string, expiresAt: number) {
     const token = randomBytes(32).toString('hex');
     db.prepare('DELETE FROM account_sessions WHERE expires_at<=?').run(Date.now());
@@ -55,18 +61,23 @@ export function createAccountRepository(
       steamId,
       expiresAt,
     );
+
     return token;
   }
+
   function session(token: string) {
     const row = db
       .prepare('SELECT steam_id FROM account_sessions WHERE token_hash=? AND expires_at>?')
       .get(createHash('sha256').update(token).digest('hex'), Date.now());
+
     return row ? steamAccount(String(row.steam_id)) : undefined;
   }
+
   function revokeSession(token: string) {
     db.prepare('DELETE FROM account_sessions WHERE token_hash=?').run(
       createHash('sha256').update(token).digest('hex'),
     );
   }
+
   return { steamAccount, loginSteam, renameSteam, createSession, session, revokeSession };
 }

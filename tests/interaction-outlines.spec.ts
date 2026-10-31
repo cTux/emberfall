@@ -30,6 +30,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         await dialog.getByRole('button', { name: /^Close / }).click();
         await expect(dialog).toBeHidden();
       };
+
       const hover = async (x: number, y: number, id: string, inRange: boolean) => {
         await expect(async () => {
           await page.mouse.move(
@@ -40,6 +41,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
           await expect(canvas).toHaveAttribute('data-interaction-range', String(inRange));
         }).toPass();
       };
+
       const yellowPixels = async (name: string) => {
         const image = await canvas.screenshot({
           path: `test-results/${graphicsPreset}-${name}.png`,
@@ -48,8 +50,10 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         let count = 0;
         for (let i = 0; i < data.length; i += info.channels)
           if (data[i] > 220 && data[i + 1] > 180 && data[i + 2] < 45) count++;
+
         return count;
       };
+
       const greenPixels = async (name: string) => {
         const image = await canvas.screenshot({
           path: `test-results/${graphicsPreset}-${name}.png`,
@@ -59,8 +63,10 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
         for (let i = 0; i < data.length; i += info.channels)
           if (data[i + 1] > 70 && data[i] < data[i + 1] * 0.18 && data[i + 2] < data[i + 1] * 0.18)
             count++;
+
         return count;
       };
+
       const altDefaultsPrevented = async (code: string, type: 'keydown' | 'keyup') =>
         page.evaluate(
           ({ code, type }) =>

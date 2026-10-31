@@ -31,6 +31,7 @@ export function tickDebuffs(
         debuff.nextTick += debuff.tickIntervalMs ?? AILMENT_DEFINITIONS[debuff.kind].tickMs;
       }
     }
+
     enemy.debuffs = enemy.debuffs?.filter((d) => d.expiresAt > now);
   }
 }

@@ -44,6 +44,7 @@ export function createEquipmentRules(content: Registries) {
     content.stats.values().map((stat) => [stat.id, stat.default]),
   ) as GearStats & Record<string, number>;
   const BEAR_DEFINITION = content.companions.require('bear');
+
   function canEquip(slot: EquipmentSlot, item: GearDefinition, classId: ClassId) {
     return (
       content.classes.has(classId) &&
@@ -53,6 +54,7 @@ export function createEquipmentRules(content: Registries) {
         !!CLASS_GEAR_TYPES[classId]?.includes(item.gearType))
     );
   }
+
   const equipmentSchema = z
     .record(z.string(), z.string().nullable())
     .refine(
@@ -66,10 +68,13 @@ export function createEquipmentRules(content: Registries) {
         ),
       'Unknown or incompatible equipment',
     );
+
   function starterEquipment(classId: ClassId): Equipment {
     content.classes.require(classId);
+
     return { weapon: STARTER_WEAPONS[classId] };
   }
+
   function validateClassEquipment(equipment: Equipment, classId: ClassId) {
     const parsed = equipmentSchema.parse(equipment);
     if (
@@ -78,11 +83,14 @@ export function createEquipmentRules(content: Registries) {
       )
     )
       throw new Error('Equipment is incompatible with this class');
+
     return parsed;
   }
+
   function equippedItems(player: EquipmentOwner) {
     return player.equipment ?? starterEquipment(player.classId ?? 'warrior');
   }
+
   /** Definitions stay immutable; equipped instances preserve each item's rolled stats. */
   function characterStats(player: EquipmentOwner): CharacterStats {
     const stats = { ...INNATE_STATS };
@@ -104,6 +112,7 @@ export function createEquipmentRules(content: Registries) {
         for (const [stat, value] of Object.entries(instance.stats ?? {}))
           bonuses[stat as ItemStat] += value;
     }
+
     stats.power += bonuses.power;
     stats.armor += bonuses.armor;
     stats.maxHitpoints += bonuses.maximumHealth;
@@ -123,6 +132,7 @@ export function createEquipmentRules(content: Registries) {
     stats.criticalChance = Math.max(0, Math.min(1, stats.criticalChance));
     stats.criticalMultiplier = Math.max(1, stats.criticalMultiplier);
     stats.armor = Math.max(0, stats.armor);
+
     return {
       ...stats,
       bonuses: Object.freeze(bonuses),
@@ -134,14 +144,17 @@ export function createEquipmentRules(content: Registries) {
       damageReduction: stats.armor / (100 + stats.armor),
     };
   }
+
   function syncEquipmentVitals(player: Player) {
     const stats = characterStats(player);
     player.maxHitpoints = stats.maxHitpoints;
     player.hitpoints = Math.min(player.hitpoints, player.maxHitpoints);
   }
+
   function companionStats(player: Player): CharacterStats {
     const packHowl =
       player.classId === 'druid' && talentRank(player, talentNodeId('druid', 1, 3)) > 0;
+
     return {
       ...characterStats(player),
       damageType: BEAR_DEFINITION.damageType,
@@ -150,6 +163,7 @@ export function createEquipmentRules(content: Registries) {
       maxHitpoints: player.maxHitpoints * BEAR_DEFINITION.healthMultiplier * (packHowl ? 1.3 : 1),
     };
   }
+
   return {
     canEquip,
     equipmentSchema,

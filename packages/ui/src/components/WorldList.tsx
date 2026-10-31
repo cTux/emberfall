@@ -38,6 +38,7 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
         <TableBody>
           {worlds.map((world) => {
             const joinDisabled = disabled || world.players >= world.capacity;
+
             return (
               <TableRow
                 key={world.id}

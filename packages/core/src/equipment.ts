@@ -9,6 +9,7 @@ export function dotTickIntervalMs(
 ) {
   return recoveryCooldownMs(baseMs, stats.bonuses.dotSpeed / 100);
 }
+
 export * from './definitions/equipment.ts';
 export type { CharacterStats, EquipmentOwner } from './content/rules.ts';
 export const {

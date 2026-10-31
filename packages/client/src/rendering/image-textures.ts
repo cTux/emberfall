@@ -27,9 +27,11 @@ export class ImageTextures {
     dh: 0,
   };
   private entries = new Map<CanvasImageSource, { texture: Texture; used: number }>();
+
   get size() {
     return this.entries.size;
   }
+
   prepare(source: CanvasImageSource, args: number[], frame: number): ImageDraw | undefined {
     const image = source as HTMLImageElement | HTMLCanvasElement;
     const iw = image instanceof HTMLImageElement ? image.naturalWidth : image.width;
@@ -54,6 +56,7 @@ export class ImageTextures {
       sw *= resolution;
       sh *= resolution;
     }
+
     if (!sw || !sh || !dw || !dh) return;
     let entry = this.entries.get(source);
     if (!entry) {
@@ -71,11 +74,13 @@ export class ImageTextures {
         raster.getContext('2d')!.drawImage(image, 0, 0, iw, ih);
         resource = raster;
       }
+
       const texture = Texture.from(resource, true);
       texture.source.scaleMode = 'nearest';
       entry = { texture, used: frame };
       this.entries.set(source, entry);
     }
+
     // Dynamic light canvases explicitly mark their revision when repainted.
     const revision = (image as HTMLCanvasElement & { textureRevision?: number }).textureRevision;
     const textureRevision = (entry as typeof entry & { revision?: number }).revision;
@@ -83,6 +88,7 @@ export class ImageTextures {
       entry.texture.source.update();
       (entry as typeof entry & { revision?: number }).revision = revision;
     }
+
     entry.used = frame;
     this.draw.texture = entry.texture;
     this.draw.sx = sx;
@@ -93,8 +99,10 @@ export class ImageTextures {
     this.draw.dy = dy;
     this.draw.dw = dw;
     this.draw.dh = dh;
+
     return this.draw;
   }
+
   applyFrame(entity: Visual, draw: ImageDraw, smoothing: boolean) {
     const { sx, sy, sw, sh } = draw;
     const sprite = entity.object as Sprite;
@@ -104,6 +112,7 @@ export class ImageTextures {
       draw.texture.source.scaleMode = scaleMode;
       draw.texture.source.style.update();
     }
+
     if (!texture)
       texture = entity.frameTexture = new Texture({
         source: draw.texture.source,
@@ -123,8 +132,10 @@ export class ImageTextures {
       texture.orig.height = sh;
       texture.update();
     }
+
     sprite.texture = texture;
   }
+
   trim(frame: number) {
     for (const [key, entry] of this.entries)
       if (frame - entry.used > 600) {
@@ -132,6 +143,7 @@ export class ImageTextures {
         this.entries.delete(key);
       }
   }
+
   destroy() {
     for (const entry of this.entries.values()) entry.texture.destroy(true);
     this.entries.clear();

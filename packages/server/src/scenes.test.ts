@@ -115,6 +115,7 @@ test('every scene exit restores all classes and injured or dead companions to th
         scene.phase = 'ended';
         scene.portals = players.map((p) => ({ x: p.x, y: p.y }));
       }
+
       for (const player of players) {
         player.maxHitpoints = 120;
         player.hitpoints = exit === 'death' ? 0 : 12;
@@ -124,6 +125,7 @@ test('every scene exit restores all classes and injured or dead companions to th
           player.bear.resurrectAt = bearHealth === 0 ? 20000 : undefined;
         }
       }
+
       for (const player of players) {
         sceneAction(
           world,
@@ -140,6 +142,7 @@ test('every scene exit restores all classes and injured or dead companions to th
           assert.equal(player.bear.y, player.y);
         }
       }
+
       assert.equal(world.scene, exit === 'portal' ? undefined : scene);
       tickScene(world, 15002, 0);
       assert.equal(players.at(-1)!.bear!.hitpoints, 180);

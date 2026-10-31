@@ -14,11 +14,13 @@ export class CatSpeech {
       text,
       index,
     });
+
     return text;
   }
 
   message(id: string, now: number) {
     const response = this.responses.get(id);
+
     return response && now - response.at < 2000 ? response.text : undefined;
   }
 }

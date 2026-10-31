@@ -37,12 +37,15 @@ export function Chat({
       input.current?.closest<HTMLElement>('.chat')?.focus();
       input.current?.focus();
     };
+
     window.addEventListener('keydown', key);
+
     return () => window.removeEventListener('keydown', key);
   }, [disabled]);
   useEffect(() => {
     if (log.current) log.current.scrollTop = log.current.scrollHeight;
   }, [latestId]);
+
   return (
     // The chat region takes focus so keyboard users can reveal it before entering the input.
     <Paper

@@ -52,6 +52,7 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
             queue.push(next);
           }
       }
+
       if (queue.length > 100)
         components.push({
           left,
@@ -61,6 +62,7 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
           area: queue.length,
         });
     }
+
     // The revised druid's last two fallen poses touch; source them from the
     // earlier sheet instead of slicing through their shared pixels.
     if (name === 'druid' && sourceIndex === 0 && components.length === 39) {
@@ -69,6 +71,7 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
       );
       if (merged >= 0) components.splice(merged, 1);
     }
+
     if (components.length !== (name === 'druid' && sourceIndex === 0 ? 38 : rowCount * 4))
       throw new Error(
         `${name} source ${sourceIndex}: expected ${rowCount * 4} isolated sprites, got ${components.length}; ${JSON.stringify(components)}`,
@@ -79,8 +82,10 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
       const group = components.slice(row * 4, row * 4 + 4).sort((a, b) => a.left - b.left);
       group.forEach((f, col) => frames.push({ ...f, row, col, sourceIndex }));
     }
+
     allFrames.push(...frames.map((frame) => ({ ...frame, isStride })));
   }
+
   let frames = allFrames.filter((f) => f.sourceIndex === 0);
   if (name === 'warrior') {
     frames = frames
@@ -92,12 +97,14 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
         .map((f) => ({ ...f, row: f.row + 6 })),
     );
   }
+
   if (name === 'druid')
     frames.push(...allFrames.filter((f) => f.sourceIndex === 1 && f.row === 9 && f.col >= 2));
   if (name === 'mage') {
     frames = frames.filter((f) => f.row !== 0);
     frames.push(...allFrames.filter((f) => f.sourceIndex === 1));
   }
+
   // Side-on casts retain the far weapon arm; do not use a source pose
   // that transfers the staff to the visible, anatomical left hand.
   if (name === 'mage' || name === 'druid') {
@@ -106,6 +113,7 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
       f.col === 2 && (f.row === 7 || f.row === 8) ? { ...safe, row: f.row } : f,
     );
   }
+
   const baseHeight = Math.max(
     ...allFrames.filter((f) => f.sourceIndex === 0 && f.row === 0).map((f) => f.height),
   );
@@ -142,6 +150,7 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
       height,
     );
   }
+
   const originalStrides = allFrames.filter((f) => f.sourceIndex === strideIndex);
   const revisedStrides = allFrames.filter((f) => f.sourceIndex === strideIndex + 1);
   // Preserve explicitly accepted directions byte-for-byte, including their
@@ -178,5 +187,6 @@ export async function packPlayerFrames({ source, name, extra, stride, repair, co
       height,
     );
   }
+
   return { output, frames, scale, strides, strideScale, repairScale, walkRows, name };
 }

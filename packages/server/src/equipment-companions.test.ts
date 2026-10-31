@@ -93,6 +93,7 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
       stepCombat(arena, [player], 2000, 0, context);
       assert.equal(player.bear!.hitpoints, 178.5, 'owner armor halves incoming damage');
     }
+
     player.equipment = {};
     tickCompanion(player, arena, 3000, 0, context);
     assert.equal(player.bear!.attackAt, undefined);
@@ -119,6 +120,7 @@ test('Bear critical and 10% bleed boundaries work in forest and training across 
         assert.equal(arena.damage.at(-1)!.amount, 1);
         assert.equal(arena.damage.at(-1)!.ownerId, player.id);
       }
+
       random.mock.restore();
     }
   }

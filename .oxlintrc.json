@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "oxc", "unicorn", "react", "jsx-a11y"],
+  "jsPlugins": ["@stylistic/eslint-plugin"],
   "categories": {
     "correctness": "error"
   },
@@ -10,6 +11,20 @@
     "reportUnusedDisableDirectives": "error"
   },
   "rules": {
+    "@stylistic/padding-line-between-statements": [
+      "error",
+      { "blankLine": "always", "prev": "*", "next": ["function", "return", "throw"] },
+      { "blankLine": "always", "prev": ["function", "block-like"], "next": "*" }
+    ],
+    "@stylistic/lines-between-class-members": [
+      "error",
+      {
+        "enforce": [
+          { "blankLine": "always", "prev": "method", "next": "*" },
+          { "blankLine": "always", "prev": "*", "next": "method" }
+        ]
+      }
+    ],
     "typescript/no-explicit-any": "error",
     "no-unused-vars": "error",
     "react/rules-of-hooks": "error",
@@ -33,7 +48,7 @@
     "eslint/no-var": "error",
     "eslint/eqeqeq": ["error", "always", { "null": "ignore" }],
     "eslint/no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
-    "eslint/max-lines": ["error", { "max": 249 }],
+    "eslint/max-lines": ["error", { "max": 249, "skipBlankLines": true }],
     "react/react-in-jsx-scope": "off",
     "eslint/no-debugger": "error",
     "jsx-a11y/prefer-tag-over-role": "off",
@@ -51,7 +66,7 @@
     {
       "files": ["packages/client/src/rendering/pixi-context.ts"],
       "rules": {
-        "eslint/max-lines": ["error", { "max": 260 }]
+        "eslint/max-lines": ["error", { "max": 260, "skipBlankLines": true }]
       }
     },
     {

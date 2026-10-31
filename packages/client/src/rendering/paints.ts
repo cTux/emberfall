@@ -4,9 +4,11 @@ export type Paint = string | Gradient;
 
 export class Gradient {
   options: GradientOptions;
+
   constructor(options: GradientOptions) {
     this.options = options;
   }
+
   addColorStop(offset: number, color: string) {
     (this.options.colorStops ??= []).push({ offset, color });
   }
@@ -14,6 +16,7 @@ export class Gradient {
 
 export class Paints {
   private colors = new Map<string, Color>();
+
   color(value: string) {
     let color = this.colors.get(value);
     if (!color) {
@@ -21,13 +24,16 @@ export class Paints {
       if (this.colors.size >= 512) this.colors.delete(this.colors.keys().next().value!);
       this.colors.set(value, color);
     }
+
     return color;
   }
 
   private entries = new Map<string, { texture: Texture; used: number }>();
+
   get size() {
     return this.entries.size;
   }
+
   paint(
     value: Paint,
     frame: number,
@@ -75,6 +81,7 @@ export class Paints {
       };
       matrix = new Matrix(dx / 256, dy / 256, -dy / distance, dx / distance, start.x, start.y);
     }
+
     const key = JSON.stringify(normalized);
     let entry = this.entries.get(key);
     if (!entry) {
@@ -104,9 +111,12 @@ export class Paints {
       entry = { texture, used: frame };
       this.entries.set(key, entry);
     }
+
     entry.used = frame;
+
     return { texture: entry.texture, matrix, textureSpace: 'global' };
   }
+
   trim(frame: number) {
     for (const [key, entry] of this.entries)
       if (frame - entry.used > 120) {
@@ -114,6 +124,7 @@ export class Paints {
         this.entries.delete(key);
       }
   }
+
   destroy() {
     this.colors.clear();
     for (const entry of this.entries.values()) entry.texture.destroy(true);

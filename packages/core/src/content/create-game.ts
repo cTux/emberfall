@@ -46,12 +46,15 @@ export function createGame(mods: readonly GameMod[], random = () => Math.random(
       if (result !== undefined)
         throw new Error(`Mod '${mod.id}': registration must be synchronous and return no value`);
     }
+
     validateContent(registries, (name, id) => stores[name].owner(id));
   } finally {
     // Failed compositions also close retained registration handles.
     for (const store of Object.values(stores)) store.seal();
   }
+
   const rules = createRules(registries, random);
+
   return Object.freeze({
     registries,
     rules,

@@ -45,6 +45,7 @@ export function prepareTalentCast(
       y: wrap(player.y + (dy / distance) * maxRange, FOREST.height),
     };
   }
+
   const recipient =
     classId === 'druid' && column === 2 && (tier === 0 || tier === 3)
       ? healingTarget(players, player, origin, healingRadius, healBelow)
@@ -66,6 +67,7 @@ export function prepareTalentCast(
         dy = wrappedDelta(enemy.y, player.y, FOREST.height);
       const forward = dx * Math.cos(heading) + dy * Math.sin(heading),
         sideways = -dx * Math.sin(heading) + dy * Math.cos(heading);
+
       return tier === 0
         ? forward >= 0 &&
             Math.hypot(dx, dy) <=
@@ -90,6 +92,7 @@ export function prepareTalentCast(
         : classId === 'mage'
           ? 'burn'
           : 'roots';
+
   return {
     context,
     scene,
@@ -114,4 +117,5 @@ export function prepareTalentCast(
     ailment,
   };
 }
+
 export type TalentCast = ReturnType<typeof prepareTalentCast>;

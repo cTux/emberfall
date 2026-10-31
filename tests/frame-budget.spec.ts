@@ -40,6 +40,7 @@ test('profile village, training and forest frame budgets', async ({
       player.x = TRAINING_ZONES[0].x - 120;
       player.y = TRAINING_ZONES[0].y;
     }
+
     if (scene === 'forest') {
       player.x = LOBBY_PORTAL.x;
       player.y = LOBBY_PORTAL.y - 15;
@@ -53,6 +54,7 @@ test('profile village, training and forest frame budgets', async ({
       await expect(page.getByLabel('Forest combat scene.')).toBeVisible({ timeout: 10000 });
       await page.keyboard.down('d');
     }
+
     if (scene === 'crowded') {
       const forest = game.runtime.parties(world).run([...world.players.values()][0]).scene!;
       player.x = 2400;
@@ -71,6 +73,7 @@ test('profile village, training and forest frame budgets', async ({
         archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[i % 4],
       }));
     }
+
     await page.waitForTimeout(3000);
     if (profileCpu) await session.send('Profiler.start');
     const timing = await page.evaluate(
@@ -95,6 +98,7 @@ test('profile village, training and forest frame budgets', async ({
               });
             }
           };
+
           requestAnimationFrame(frame);
         }),
     );
@@ -102,6 +106,7 @@ test('profile village, training and forest frame budgets', async ({
       const { profile } = await session.send('Profiler.stop');
       writeFileSync(testInfo.outputPath(`${scene}.cpuprofile`), JSON.stringify(profile));
     }
+
     await page.keyboard.up('d');
     const stats = await page.locator('canvas').getAttribute('data-render-stats');
     const measurement = {
@@ -120,5 +125,6 @@ test('profile village, training and forest frame budgets', async ({
     console.log(JSON.stringify({ scene, timing, stats, gpu: gpu.devices }));
     await page.screenshot({ path: testInfo.outputPath(`${scene}.png`) });
   }
+
   await session.detach();
 });

@@ -18,6 +18,7 @@ export const Playground: StoryObj<typeof meta> = {};
 export const RowInteraction: StoryObj<typeof meta> = {
   render: function RowInteraction(args) {
     const [joins, setJoins] = useState(0);
+
     return (
       <>
         <WorldList {...args} onJoin={() => setJoins((count) => count + 1)} />

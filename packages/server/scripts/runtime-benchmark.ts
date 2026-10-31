@@ -32,15 +32,19 @@ async function measure(worlds: number) {
     });
     const reply = message as WorkerReply;
     assert(reply.type !== 'error', reply.type === 'error' ? reply.message : '');
+
     return reply;
   };
+
   const command = async (type: 'arrange' | 'measure' | 'finish' | 'stop') => {
     const response = receive();
     child.send(type);
     const reply = await response;
     assert.equal(reply.type, type);
+
     return reply;
   };
+
   let clients: Awaited<ReturnType<typeof connectWorkload>> | undefined;
   try {
     const ready = await receive();
@@ -68,6 +72,7 @@ async function measure(worlds: number) {
     await command('stop');
     await stopped;
     assert.equal(child.exitCode, 0, stderr);
+
     return {
       occupiedWorlds: worlds,
       server,
@@ -99,6 +104,7 @@ for (const worlds of BENCHMARK.worlds) {
   );
   workloads.push(await measure(worlds));
 }
+
 console.log(
   JSON.stringify(
     {

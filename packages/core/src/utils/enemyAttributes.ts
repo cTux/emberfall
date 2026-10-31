@@ -11,5 +11,6 @@ export function enemyAttributes(
   const multiplier =
     context.registries.enemyTypes.require(type).multiplier *
     context.registries.difficulties.require(difficulty).multiplier;
+
   return { hitPoints: base.hitPoints * multiplier, damage: base.damage * multiplier };
 }

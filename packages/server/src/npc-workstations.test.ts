@@ -18,8 +18,10 @@ function workingVillage(dialogue: NpcDialogue = { generate: async () => ({ statu
     const station = VILLAGE_DEFINITION.workstations.find((s) => s.npcId === npc.id)!;
     Object.assign(npc, station.worker);
   }
+
   life.tick(45_000, 0); // Arrive at each first workstation.
   life.tick(45_001, 0); // Publish the active work pose.
+
   return { world, life };
 }
 
@@ -38,6 +40,7 @@ test('every resident works at two home stations, stays a full minute and alterna
     assert.equal(npc.moving, false);
     assert.deepEqual({ x: npc.x, y: npc.y }, own[0].worker);
   }
+
   life.tick(105_000, 59.999);
   assert(
     world.npcs!.every((n) => n.workstationId),
@@ -49,6 +52,7 @@ test('every resident works at two home stations, stays a full minute and alterna
     const second = stations.filter((s) => s.npcId === npc.id)[1];
     Object.assign(npc, second.worker);
   }
+
   life.tick(150_000, 0);
   life.tick(150_001, 0);
   for (const npc of world.npcs!)

@@ -12,6 +12,7 @@ test('ability tooltips share window surfaces and support hover, keyboard and tou
   );
   const surface = await page.locator('.game-window-surface').evaluate((element) => {
     const style = getComputedStyle(element);
+
     return {
       background: style.backgroundColor,
       border: style.borderTop,
@@ -51,6 +52,7 @@ test('ability tooltips share window surfaces and support hover, keyboard and tou
     await page.keyboard.press('Tab');
     await expect(tooltip).toBeHidden();
   }
+
   await page.goto(story('components-actionbar--manual'));
   const ability = page.getByRole('group', { name: 'Slash', exact: true });
   await ability.dispatchEvent('touchstart', { touches: [{ identifier: 1 }] });
@@ -115,6 +117,7 @@ test('equipment exposes rarity borders, keyboard details and desktop stats', asy
       true,
     );
   }
+
   await page.goto(story('components-equipmentpanel--empty'));
   await expect(page.locator('[data-equipped="true"]')).toHaveCount(0);
   await expect(page.locator('[data-equipped="false"]')).toHaveCount(9);
@@ -146,6 +149,7 @@ test('wardrobe keeps one row and independent keyboard and touch details', async 
       true,
     );
   }
+
   await spell.dispatchEvent('touchstart', { touches: [{ identifier: 1 }] });
   await expect(page.getByRole('tooltip')).toContainText('Piercing arrows');
   await spell.dispatchEvent('touchend', { touches: [] });

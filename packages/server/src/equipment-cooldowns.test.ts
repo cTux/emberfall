@@ -78,6 +78,7 @@ test('gear recovery applies to attacks and equipped talent casts in training and
           );
           continue;
         }
+
         tickPlayerCombat(arena, [player], 1000 + stats.attackIntervalMs - 1, 0, context);
         assert.equal(player.attackAt, 1000);
         // Stay within floating-point precision of the fractional cooldown boundary.

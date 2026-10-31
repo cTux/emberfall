@@ -53,6 +53,7 @@ export function useGameSession({
       /* Recovery within this page still works when storage is unavailable. */
     }
   };
+
   const failedConnections = useRef(0);
   useEffect(() => {
     const url = websocketUrl();
@@ -76,6 +77,7 @@ export function useGameSession({
       pendingProbe = { id: ++probeId, at: now };
       ws.send({ type: 'ping', id: probeId });
     };
+
     const pingTimer = setInterval(ping, 2000);
     // The version request catches failures and closes the connection for retry.
     // oxlint-disable-next-line typescript/no-misused-promises
@@ -92,13 +94,16 @@ export function useGameSession({
         if (buildId !== __BUILD_ID__) {
           setStatus('Updating');
           location.reload();
+
           return;
         }
       } catch {
         if (!disposed && ws.readyState === GameConnection.OPEN)
           ws.close(3001, 'Retry version check');
+
         return;
       }
+
       if (disposed || ws.readyState !== GameConnection.OPEN) return;
       failedConnections.current = 0;
 
@@ -113,12 +118,14 @@ export function useGameSession({
       } else setStatus('Connected');
       ping();
     };
+
     ws.onmessage = (event) => {
       const message = event.data;
       if (message.type === 'pong' && pendingProbe?.id === message.id) {
         setLatency(Math.max(0, Math.round(performance.now() - pendingProbe.at)));
         pendingProbe = null;
       }
+
       if (message.type === 'worlds') setWorlds(message.worlds);
       if (message.type === 'joined') {
         rememberWorld(message.world.id);
@@ -135,10 +142,12 @@ export function useGameSession({
             'Your browser cannot remember this character key. Enable site storage to restore progress next session.',
           );
         }
+
         setWorld(message.world);
         setPlayerId(message.playerId);
         setPending(false);
       }
+
       if (message.type === 'state') {
         if (message.world.scene?.phase === 'voting' && voteScene !== message.world.scene.id)
           events.current('voting');
@@ -147,9 +156,11 @@ export function useGameSession({
         if (nextScene !== previousScene) {
           events.current('sceneChanged');
         }
+
         previousScene = nextScene;
         setWorld(message.world);
       }
+
       if (message.type === 'left') {
         rememberWorld(null);
         events.current('left');
@@ -157,6 +168,7 @@ export function useGameSession({
         setPlayerId('');
         setPending(false);
       }
+
       if (message.type === 'error') {
         if (resuming) {
           resuming = false;
@@ -166,10 +178,12 @@ export function useGameSession({
           setPlayerId('');
           events.current('resumeFailed');
         }
+
         reportError(message.message);
         setPending(false);
       }
     };
+
     ws.onclose = () => {
       if (steam) void refresh();
       clearInterval(pingTimer);
@@ -186,7 +200,9 @@ export function useGameSession({
         failedConnections.current++ === 0 ? 0 : 1000,
       );
     };
+
     ws.onerror = () => reportError('Cannot reach the world server. Retrying automatically…');
+
     return () => {
       disposed = true;
       versionRequest.abort();
@@ -213,5 +229,6 @@ export function useGameSession({
         : message,
     );
   };
+
   return { status, latency, worlds, world, playerId, pending, retry, send, act };
 }

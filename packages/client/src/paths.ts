@@ -22,6 +22,7 @@ export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
     for (const point of path.slice(1)) mask.lineTo(point.x, point.y);
     mask.stroke();
   }
+
   // Only the center tile is dirt throughout; edge tiles contain bright grass.
   const tile = terrainTile(1, 64);
   mask.resetTransform();

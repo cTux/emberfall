@@ -24,6 +24,7 @@ export function dayNight(serverTime: number) {
   const orbit = (sun ? phase / 0.7 : (phase - 0.7) / 0.3) * Math.PI;
   const elevation = Math.sin(orbit);
   const length = 1.8 - elevation * 1.35;
+
   return {
     tint: (channel(1) << 16) | (channel(2) << 8) | channel(3),
     daylight,

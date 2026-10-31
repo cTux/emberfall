@@ -7,6 +7,7 @@ import type { ArenaProps } from './arena-contract';
 export function Arena(props: ArenaProps) {
   const { world, playerId, preferences, latency } = props;
   const { canvas, frameRate, networkTiming } = useArenaRenderer(props);
+
   return (
     <>
       <canvas

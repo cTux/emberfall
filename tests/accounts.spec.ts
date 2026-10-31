@@ -35,6 +35,7 @@ const test = base.extend<{
               )
             )
               return Promise.resolve(new Response('Unavailable', { status: 503 }));
+
             return steamRequest(input, init);
           },
         },
@@ -50,6 +51,7 @@ const test = base.extend<{
   ],
 });
 test.use({ actionTimeout: 15_000 });
+
 async function login(page: Page, id = heroId) {
   await page.addInitScript(
     (graphics) => localStorage.setItem('emberfall-new.graphics', JSON.stringify(graphics)),
@@ -67,6 +69,7 @@ async function login(page: Page, id = heroId) {
   await page.goto('/');
   await page.getByRole('link', { name: 'Sign in through Steam' }).click();
 }
+
 async function edit(page: Page) {
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByRole('tab', { name: 'Account', exact: true }).click();
@@ -97,8 +100,10 @@ test('Steam players see the server list during an outage and resume automaticall
   await page.route('**/api/account/ticket', (route) => {
     if (unavailable) {
       failures++;
+
       return route.fulfill({ status: 503 });
     }
+
     return route.continue();
   });
   await page.evaluate(() =>

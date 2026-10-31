@@ -25,6 +25,7 @@ export function fixture(classId: Player['classId'] = 'mage', training = false): 
       angle: 0,
     })),
   };
+
   return {
     id: 'room',
     name: 'R',
@@ -62,5 +63,6 @@ export function frame(
   const view = structuredClone(source);
   const started = movement.animateAttack(player, view, now);
   movement.animateProjectiles(player, view, now, started);
+
   return { player, started, scene: (player.scene ? view.scene : view.training)! };
 }

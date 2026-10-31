@@ -27,6 +27,7 @@ export class Accounts {
   private timer: ReturnType<typeof setInterval>;
   private store: CharacterStore;
   private renamed: (id: string, name: string) => void;
+
   constructor(
     store: CharacterStore,
     options: SteamOptions,
@@ -42,6 +43,7 @@ export class Accounts {
     this.timer = setInterval(() => this.sweep(), 1000);
     this.timer.unref();
   }
+
   private sweep() {
     const now = Date.now();
     for (const map of [this.attempts, this.tickets, this.limits])
@@ -51,6 +53,7 @@ export class Accounts {
       if (peer.readyState === 3) this.peers.delete(peer);
     }
   }
+
   private limit(key: string, max: number) {
     this.sweep();
     const value = this.limits.get(key) ?? { count: 0, expires: Date.now() + 60_000 };
@@ -59,6 +62,7 @@ export class Accounts {
     this.limits.set(key, value);
     if (++value.count > max) throw new Error('Too many requests. Try again shortly.');
   }
+
   consumeTicket(ticket: unknown) {
     if (typeof ticket !== 'string') return undefined;
     const key = hash(ticket),
@@ -66,18 +70,24 @@ export class Accounts {
     this.tickets.delete(key);
     if (!saved || saved.expires <= Date.now() || !this.store.session(saved.token)?.nickname)
       return undefined;
+
     return saved.token;
   }
+
   attach(peer: Peer, token: string) {
     this.peers.set(peer, token);
+
     return () => this.store.session(token);
   }
+
   valid(token: string) {
     return !!this.store.session(token)?.nickname;
   }
+
   close() {
     clearInterval(this.timer);
   }
+
   async handle(req: IncomingMessage & { body?: unknown }, res: ServerResponse) {
     const url = new URL(req.url ?? '/', this.origin);
     if (!url.pathname.startsWith('/auth/') && !url.pathname.startsWith('/api/account'))
@@ -87,8 +97,10 @@ export class Accounts {
       res.removeHeader('Access-Control-Allow-Origin');
       res.writeHead(403);
       res.end();
+
       return true;
     }
+
     res.setHeader('Access-Control-Allow-Origin', this.clientOrigin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Cache-Control', 'no-store');
@@ -97,10 +109,12 @@ export class Accounts {
       res.writeHead(status, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(value));
     };
+
     const redirect = (path: string) => {
       res.writeHead(303, { Location: path });
       res.end();
     };
+
     const token = cookie(req.headers.cookie, sessionCookie);
     try {
       if (req.method === 'GET' && url.pathname === '/auth/steam') {
@@ -111,8 +125,10 @@ export class Accounts {
         this.attempts.set(state, { cookieHash: hash(browser), expires: Date.now() + 300_000 });
         res.setHeader('Set-Cookie', setCookie(loginCookie, browser, 300));
         redirect(this.steam.loginUrl(`${this.origin}/auth/steam/callback?state=${state}`));
+
         return true;
       }
+
       if (req.method === 'GET' && url.pathname === '/auth/steam/callback') {
         const state = url.searchParams.get('state') ?? '';
         const attempt = this.attempts.get(state);
@@ -136,6 +152,7 @@ export class Accounts {
           } catch {
             /* Manual nickname entry remains available. */
           }
+
           this.store.loginSteam(steamId, steamName);
           const session = this.store.createSession(steamId, Date.now() + lifetime);
           this.store.revokeSession(token);
@@ -148,8 +165,10 @@ export class Accounts {
         } finally {
           this.pending--;
         }
+
         return true;
       }
+
       const account = this.store.session(token);
       if (req.method === 'GET' && url.pathname === '/api/account') {
         const view: AccountView = {
@@ -159,25 +178,33 @@ export class Accounts {
           steamName: account?.steamName ?? '',
         };
         json(200, view);
+
         return true;
       }
+
       if (!account) {
         json(401, { error: 'Please sign in through Steam.' });
+
         return true;
       }
+
       if (
         req.headers.origin !== this.clientOrigin ||
         !['POST', 'PATCH'].includes(req.method ?? '')
       ) {
         json(403, { error: 'Request origin is not allowed.' });
+
         return true;
       }
+
       this.limit(`account:${account.steamId}`, 30);
       if (req.method === 'POST' && url.pathname === '/api/account/ticket') {
         if (!nicknameSchema.safeParse(account.nickname).success) {
           json(409, { error: 'Choose your nickname first.' });
+
           return true;
         }
+
         if (this.tickets.size >= 5000) throw new Error('Server is busy. Try again shortly.');
         const ticket = random();
         this.tickets.set(hash(ticket), { token, expires: Date.now() + 30_000 });
@@ -202,20 +229,26 @@ export class Accounts {
             raw += chunk;
             if (Buffer.byteLength(raw) > 2048) throw new Error('Request too large.');
           }
+
           body = JSON.parse(raw);
         }
+
         const parsed = nicknameSchema.safeParse(
           body && typeof body === 'object' && 'nickname' in body ? body.nickname : undefined,
         );
         if (!parsed.success) {
           json(400, { error: 'Use 1–24 characters without invisible or control characters.' });
+
           return true;
         }
+
         // Recheck after reading the body, which may have yielded to logout/expiry.
         if (!this.store.session(token)) {
           json(401, { error: 'Please sign in again.' });
+
           return true;
         }
+
         const updated = this.store.renameSteam(account.steamId, parsed.data);
         this.renamed(updated.characterId, parsed.data);
         json(200, {
@@ -230,6 +263,7 @@ export class Accounts {
         redirect(this.clientUrl ? `${this.clientUrl}?login=failed` : '/?login=failed');
       else json(400, { error: 'Unable to complete the request. Please try again.' });
     }
+
     return true;
   }
 }

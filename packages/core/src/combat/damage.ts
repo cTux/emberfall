@@ -20,16 +20,19 @@ type Game = ReturnType<typeof createGame>;
 export function setRewardPlayers(scene: SceneState, players: Player[]) {
   rewardPlayers.set(scene, players);
 }
+
 const damageHistory = new WeakMap<Player, { at: number; amount: number; ability: string }[]>();
 export function damagePerSecond(player: Player, now: number) {
   if (player.damageMeter && player.damageMeter.classId !== (player.classId ?? 'warrior')) {
     player.damageMeter = undefined;
     damageHistory.delete(player);
   }
+
   const recent = (damageHistory.get(player) ?? []).filter((hit) => now - hit.at < 5000);
   damageHistory.set(player, recent);
   for (const value of Object.values(player.damageMeter?.abilities ?? {})) value.dps = 0;
   for (const hit of recent) player.damageMeter!.abilities[hit.ability].dps += hit.amount / 5;
+
   return recent.reduce((sum, hit) => sum + hit.amount, 0) / 5;
 }
 
@@ -65,6 +68,7 @@ export function hitEnemy(
     history.push({ at: now, amount: dealt, ability });
     damageHistory.set(owner, history);
   }
+
   appendSceneEntities(scene, 'damage', {
     id: ++scene.sequence,
     x: enemy.x,
@@ -108,10 +112,12 @@ export function hitEnemy(
       enemy.debuffs = enemy.debuffs.filter((d) => d.kind !== ailment || d.ownerId !== owner.id);
       enemy.debuffs.push(debuff);
     }
+
     debuff.stacks++;
     debuff.expiresAt = now + AILMENT_DEFINITIONS[ailment].durationMs;
     debuff.ownerId = owner.id;
   }
+
   if (enemy.hitpoints > 0) return;
   if (owner) talentEnemyDeath(scene, owner, enemy, now, stats);
   if (scene.training) return;
@@ -156,6 +162,7 @@ export function hitEnemy(
         at: now,
       });
   }
+
   const type = enemy.kind ?? EnemyType.Normal;
   if (shouldDropItem(type, context.random)) {
     const count = itemDropCount(type, context.random);
@@ -175,6 +182,7 @@ export function hitEnemy(
       });
     }
   }
+
   if (scene.drops.length > PICKUP_RULES.capacity)
     scene.drops = scene.drops.slice(-PICKUP_RULES.capacity);
 }

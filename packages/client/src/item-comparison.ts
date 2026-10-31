@@ -61,6 +61,7 @@ export function itemComparison(
       });
     }
   }
+
   const nextRate = gear.stats.attacksPerSecond ?? 0;
   const previousRate = equipped?.stats.attacksPerSecond ?? 0;
   if (nextRate > 0 && previousRate > 0 && nextRate !== previousRate) {
@@ -71,5 +72,6 @@ export function itemComparison(
       improved: delta < 0,
     });
   }
+
   return { rows };
 }

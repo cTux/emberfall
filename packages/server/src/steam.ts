@@ -6,10 +6,12 @@ export class SteamProvider {
   private nonces = new Map<string, number>();
   private apiKey: string;
   private request: typeof fetch;
+
   constructor(apiKey: string, request: typeof fetch = fetch) {
     this.apiKey = apiKey;
     this.request = request;
   }
+
   loginUrl(returnTo: string) {
     const url = new URL(endpoint);
     url.search = new URLSearchParams({
@@ -20,8 +22,10 @@ export class SteamProvider {
       'openid.identity': `${namespace}/identifier_select`,
       'openid.claimed_id': `${namespace}/identifier_select`,
     }).toString();
+
     return url.toString();
   }
+
   async verify(query: URLSearchParams, returnTo: string) {
     const now = Date.now();
     for (const [nonce, expires] of this.nonces) if (expires <= now) this.nonces.delete(nonce);
@@ -60,6 +64,7 @@ export class SteamProvider {
     ) {
       throw new Error('Steam login could not be verified. Please try again.');
     }
+
     // Reserve before yielding so simultaneous replays cannot both succeed.
     this.nonces.set(nonce, now + 360_000);
     const body = new URLSearchParams([...query].filter(([key]) => key.startsWith('openid.')));
@@ -72,8 +77,10 @@ export class SteamProvider {
     });
     if (!response.ok || !(await response.text()).split(/\r?\n/).includes('is_valid:true'))
       throw new Error('Steam login could not be verified. Please try again.');
+
     return match[1];
   }
+
   async profile(steamId: string) {
     const url = new URL('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/');
     url.searchParams.set('key', this.apiKey);
@@ -88,6 +95,7 @@ export class SteamProvider {
       (value: { steamid?: string }) => value.steamid === steamId,
     );
     if (typeof player?.personaname !== 'string') throw new Error('Steam profile unavailable');
+
     return player.personaname.slice(0, 256);
   }
 }

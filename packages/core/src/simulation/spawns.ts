@@ -74,9 +74,11 @@ export function tickSpawns(
       if (spawnBoss) scene.bossId = id;
       break;
     }
+
     // Vary the next attempt even when a normal spawn was blocked.
     scene.sequence++;
   }
+
   scene.spawns = scene.spawns.filter((spawn) => {
     if (now < spawn.spawnsAt) return true;
     if (
@@ -88,10 +90,13 @@ export function tickSpawns(
       )
     ) {
       spawn.spawnsAt = now + FOREST_ENCOUNTER.blockedSpawnRetryMs;
+
       return true;
     }
+
     const { spawnsAt: _at, warnedAt: _warned, ...enemy } = spawn;
     appendSceneEntities(scene, 'enemies', enemy);
+
     return false;
   });
 }

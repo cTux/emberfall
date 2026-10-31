@@ -35,12 +35,15 @@ export type VillageActorFrame = {
 };
 export class VillagePlayers {
   private positions = new Map<string, { x: number; y: number; facing: number }>();
+
   clear() {
     this.positions.clear();
   }
+
   pose(player: Player): Readonly<{ x: number; y: number; facing: number }> {
     return this.positions.get(player.id) ?? { x: player.x, y: player.y, facing: 0 };
   }
+
   prepare(
     ctx: WorldDrawingContext,
     players: Player[],
@@ -81,6 +84,7 @@ export class VillagePlayers {
         const breath = idleBreath(now, frame);
         ctx.setPlayerCutout(mask, player.x - 24, player.y + 18 - 48 * breath, 48, 48 * breath);
       }
+
       if (mask)
         dynamic.push({
           id: player.id,
@@ -91,8 +95,10 @@ export class VillagePlayers {
           mask,
         });
     }
+
     return dynamic;
   }
+
   draw(ctx: WorldDrawingContext, player: Player, frame: VillageActorFrame) {
     const { view, local, playerId, now, serverTime, quality, preferences, highlightInteractions } =
       frame;
@@ -139,8 +145,10 @@ export class VillagePlayers {
             48,
           );
         }
+
         ctx.globalAlpha = 1;
       }
+
       ctx.drawImage(
         knight,
         pos.facing * ACTOR_CELL,
@@ -153,6 +161,7 @@ export class VillagePlayers {
         48 * idleBreath(now, spriteRow),
       );
     }
+
     const highlightPlayer = highlightInteractions && !!partyAction(view, local, player);
     if (highlightPlayer || view?.partyRequests?.some((r) => r.fromId === player.id)) {
       ctx.occlusion = false;
@@ -168,6 +177,7 @@ export class VillagePlayers {
           highlightPlayer,
         );
     }
+
     ctx.spriteTint = '#ffffff';
     ctx.occlusion = false;
     ctx.globalAlpha = 1;

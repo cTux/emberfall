@@ -20,8 +20,10 @@ test('an outage shows the server list and automatically restores the same player
   await page.route('**/matchmake/**', (route) => {
     if (unavailable) {
       failedAttempts++;
+
       return route.abort();
     }
+
     return route.continue();
   });
   await page.goto('/');
@@ -104,6 +106,7 @@ test('peers see a red reconnecting character in village and forest until recover
           p.x = LOBBY_PORTAL.x;
           p.y = LOBBY_PORTAL.y - 15;
         }
+
         const now = Date.now();
         const parties = game.runtime.parties(world);
         parties.request(host, remote, now);
@@ -118,6 +121,7 @@ test('peers see a red reconnecting character in village and forest until recover
         remote.y = host.y;
         await expect(page.getByLabel('Forest combat scene.')).toBeVisible();
       }
+
       unavailable = true;
       await guest.evaluate(() =>
         (window as unknown as { recoverySocket: WebSocket }).recoverySocket.close(3001),

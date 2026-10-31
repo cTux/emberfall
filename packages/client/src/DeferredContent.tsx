@@ -4,6 +4,7 @@ import { Button, Typography } from '@mui/material';
 
 export function DeferredContent({ children }: { children: ReactNode }) {
   const { reportError } = useChat();
+
   return <ContentBoundary reportError={reportError}>{children}</ContentBoundary>;
 }
 
@@ -23,6 +24,7 @@ class ContentBoundary extends Component<
 
   override render() {
     if (this.state.failed) return <Button onClick={() => location.reload()}>Reload</Button>;
+
     return (
       <Suspense
         fallback={

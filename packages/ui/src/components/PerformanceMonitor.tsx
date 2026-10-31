@@ -39,23 +39,28 @@ export function PerformanceMonitor({
       ...recent.map((sample) => (Number.isFinite(sample[key]) ? sample[key]! : 0)),
     );
     let connected = false;
+
     return recent
       .map((sample, index) => {
         const value = sample[key];
         if (value == null || !Number.isFinite(value)) {
           connected = false;
+
           return '';
         }
+
         const x =
           sample.at !== undefined && current?.at !== undefined
             ? 10 + ((sample.at - current.at + 30000) * 240) / 30000
             : 10 + (index * 240) / Math.max(1, recent.length - 1);
         const point = `${connected ? 'L' : 'M'}${x},${50 - (Math.max(0, value) / max) * 44}`;
         connected = true;
+
         return point;
       })
       .join(' ');
   };
+
   return (
     <Paper component='aside' aria-label='Performance monitor' sx={{ px: 1, py: 0.5 }}>
       <Stack direction='row' spacing={1} sx={{ alignItems: 'baseline' }}>

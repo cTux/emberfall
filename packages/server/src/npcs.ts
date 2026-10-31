@@ -27,6 +27,7 @@ export class VillageLife {
   private continuation?: { at: number; conversation: Conversation };
   private world: NpcWorld;
   private dialogue: NpcDialogue;
+
   constructor(world: NpcWorld, dialogue: NpcDialogue, now: number, random = Math.random) {
     this.world = world;
     this.dialogue = dialogue;
@@ -35,16 +36,19 @@ export class VillageLife {
     this.nextTalk = now + 10_000;
     this.lastTick = now;
   }
+
   close() {
     this.stopped = true;
     this.abort.abort();
     this.routines.close();
     this.reply = this.continuation = undefined;
   }
+
   interact(player: Player, npcId: string | null) {
     if (this.stopped) return;
     this.routines.interact(player, npcId);
   }
+
   hear(player: Player, text: string, now: number) {
     if (
       this.stopped ||
@@ -72,9 +76,11 @@ export class VillageLife {
         conversation: { speaker: npc.id, playerId: player.id, text },
       };
       this.replyAt.set(player.id, now + 10_000);
+
       return;
     }
   }
+
   tick(now: number, dt: number) {
     this.lastTick = now;
     if (this.stopped) return;
@@ -92,6 +98,7 @@ export class VillageLife {
       blocked.add(conversation.speaker);
       if (conversation.otherNpc) blocked.add(conversation.otherNpc);
     }
+
     if (this.reply) blocked.add(this.reply.conversation.speaker);
     this.routines.tick(now, dt, players, blocked);
     if (!players.length || this.inFlight || now < this.retryAt) return;
@@ -103,14 +110,18 @@ export class VillageLife {
       // produced by the request that was in flight when the question arrived.
       this.continuation = undefined;
       this.start(conversation, now);
+
       return;
     }
+
     if (this.continuation && now >= this.continuation.at) {
       const { conversation } = this.continuation;
       this.continuation = undefined;
       this.start(conversation, now);
+
       return;
     }
+
     if (this.continuation) return;
     if (now < this.nextTalk) return;
     for (const npc of npcs) {
@@ -122,8 +133,10 @@ export class VillageLife {
       );
       if (player) {
         this.start({ speaker: npc.id, playerId: player.id }, now);
+
         return;
       }
+
       const other = npcs.find(
         (n) =>
           n.id !== npc.id &&
@@ -132,11 +145,14 @@ export class VillageLife {
       );
       if (other) {
         this.start({ speaker: npc.id, otherNpc: other.id }, now);
+
         return;
       }
     }
   }
+
   private activeConversation?: Conversation;
+
   private participants(conversation: Conversation) {
     const npc = this.world.npcs?.find((n) => n.id === conversation.speaker);
     const target = conversation.playerId
@@ -150,8 +166,10 @@ export class VillageLife {
       forestDistance(npc, target) > (conversation.playerId ? PLAYER_RANGE : NPC_RANGE)
     )
       return undefined;
+
     return { npc, target };
   }
+
   private start(conversation: Conversation, now: number) {
     const actors = this.participants(conversation);
     if (!actors) return;
@@ -167,6 +185,7 @@ export class VillageLife {
       other.workstationId = other.workStartedAt = undefined;
       other.angle = actors.npc.angle + Math.PI;
     }
+
     this.inFlight = true;
     this.activeConversation = conversation;
     if (!conversation.text) {
@@ -174,6 +193,7 @@ export class VillageLife {
       this.npcAt.set(actors.npc.id, now + 180_000);
       if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, now + 180_000);
     }
+
     if (conversation.playerId && !conversation.text)
       this.playerAt.set(conversation.playerId, now + 240_000);
     const context = this.speech.context(conversation, actors.npc, actors.target);
@@ -186,22 +206,28 @@ export class VillageLife {
         if (result.status === 'busy') {
           if (conversation.text) {
             this.continuation = { at: at + 500, conversation };
+
             return;
           }
+
           this.nextTalk = at + 5000;
           this.npcAt.set(actors.npc.id, at + 5000);
           if (conversation.otherNpc) this.npcAt.set(conversation.otherNpc, at + 5000);
           if (conversation.playerId && !conversation.text)
             this.playerAt.set(conversation.playerId, at + 5000);
+
           return;
         }
+
         if (result.status === 'unavailable') {
           this.speech.silence(true);
           this.retryAt = at + 60_000;
           this.nextTalk = this.retryAt;
           this.continuation = undefined;
+
           return;
         }
+
         this.speech.silence(false);
         const current = this.participants(conversation);
         if (!current) return;
@@ -232,5 +258,6 @@ export class VillageLife {
         this.activeConversation = undefined;
       });
   }
+
   private lastTick = 0;
 }

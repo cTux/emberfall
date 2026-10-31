@@ -53,6 +53,7 @@ export function talentDescription(node: Readonly<TalentNode>) {
       `${ability(1, 2)} consuming at least three stacks leaves a six-second healing opportunity. The injured party member or Bear selected by Defensive Tactics (lowest health percentage by default) within 60 units heals for 3% / 5% maximum health, including you.`,
       'Your direct offensive ability hits against enemies with five of your ailment stacks have a 20% / 35% chance to deal 80% / 130% additional weapon damage. Two-second cooldown per target.',
     ][node.row];
+
   return [
     node.classId === 'druid'
       ? 'Every fifth weapon hit heals you for 2% / 4% maximum health. Weapon hits can also prepare a reactive guard.'

@@ -77,6 +77,7 @@ export function compareSurfaces(
     ctx.scale(4, 4);
     drawInteractionPrompt(ctx, 32, 48, '');
   };
+
   compare('prompt rounded corner', prompt, 81, 69);
   compare('prompt face highlight', prompt, 101, 89);
   compare('prompt face shade', prompt, 123, 111);
@@ -139,6 +140,7 @@ export function compareSurfaces(
       128,
     );
   }
+
   for (const kind of ['bleed', 'poison', 'burn', 'roots', 'silence'] as const) {
     stackLabels[kind] = [];
     const fillText = canvas.fillText.bind(canvas);
@@ -146,6 +148,7 @@ export function compareSurfaces(
       stackLabels[kind].push(text);
       fillText(text, x, y);
     };
+
     compare(
       kind,
       (ctx) =>
@@ -163,6 +166,7 @@ export function compareSurfaces(
     );
     canvas.fillText = fillText;
   }
+
   // Shrinking/reordering a retained display list must not leave ghost sprites
   // or a previous frame's clip attached to a reused graphic.
   compare(

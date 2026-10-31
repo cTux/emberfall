@@ -34,6 +34,7 @@ export function defensive(cast: TalentCast) {
         enemy.attack = undefined;
         control(enemy, now, learned === 2 ? 1000 : 600);
       }
+
     const fragments = rank(player, 2, 2);
     if (fragments)
       for (const enemy of effectArea(scene, aim, 250).slice(0, fragments === 2 ? 4 : 2))
@@ -64,6 +65,7 @@ export function defensive(cast: TalentCast) {
         )) {
           shield(ally, scene, player.maxHitpoints * (learned === 2 ? 0.1 : 0.06), at + 1200);
         }
+
       const hold = rank(player, 2, 4);
       if (hold)
         for (const enemy of effectArea(scene, origin, 200)) {
@@ -79,6 +81,7 @@ export function defensive(cast: TalentCast) {
         enemy.challengedBy = player.id;
         enemy.challengedUntil = now + 3000;
       }
+
       enemy.attack = undefined;
       applyTalentAilment(enemy, player, 'roots', 1, now, 1000);
     }
@@ -100,6 +103,7 @@ export function defensive(cast: TalentCast) {
           shield(ally, scene, ally.maxHitpoints * (shared === 2 ? 0.05 : 0.03), at + 1000);
       });
   }
+
   const unbroken = rank(player, 2, 9);
   const value = state(player, scene);
   if (unbroken && tier === 0 && value.wallPrevented) {

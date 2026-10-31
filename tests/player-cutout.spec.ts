@@ -28,6 +28,7 @@ test('village player masks sample the same high-resolution cells as the visible 
         coordinates.length === 8
       )
         samples.push(coordinates.slice(0, 4));
+
       return Reflect.apply(drawImage, this, [source, ...coordinates]);
     };
   });
@@ -91,6 +92,7 @@ test('foreground sprites reveal a silhouette hole with a 10-pixel margin', async
     const fixture = (
       window as unknown as { CutoutFixture: typeof import('./player-cutout-fixture') }
     ).CutoutFixture;
+
     return fixture.cutoutPixels();
   });
   const ground = [51, 119, 68, 255],

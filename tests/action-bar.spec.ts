@@ -34,11 +34,13 @@ test('action bar slots follow custom cursor size and native fallback', async ({ 
         size === null ? 'pointer' : new RegExp(`/${size}/pointer\\.png`),
       );
     }
+
     await expect(bar.getByRole('group', { name: 'Slash', exact: true })).toHaveCSS(
       'cursor',
       size === null ? 'default' : new RegExp(`/${size}/default\\.png`),
     );
   }
+
   await page.screenshot({ path: 'test-results/action-bar-cursors.png' });
 });
 
@@ -100,6 +102,7 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
       .toBeGreaterThan(0);
     await bar.screenshot({ path: `test-results/action-bar-${classId}.png` });
   }
+
   player.classId = 'warrior';
   player.equipment = starterEquipment('warrior');
   player.x = TRAINING_ZONES[0].x + 65;
@@ -140,8 +143,10 @@ test('action bar follows confirmed training and forest attacks, equipment and vi
         .boundingBox())!;
       expect(chat.y + chat.height).toBeLessThan(bounds.y);
     }
+
     await page.screenshot({ path: `test-results/action-bar-${viewport.width}.png` });
   }
+
   player.equipment = {};
   await expect(bar.getByRole('group')).toHaveCount(0);
   await expect(bar.locator('img')).toHaveCount(0);

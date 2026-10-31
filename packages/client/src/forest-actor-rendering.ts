@@ -53,8 +53,10 @@ export function drawForestActor(
       serverTime - hit.at,
     );
     ctx.restore();
+
     return;
   }
+
   const left = a.x - a.size / 2,
     top = a.y + 15 - (a.size * 45) / 48;
   const bodyOpacity = a.player?.hitpoints === 0 ? 0.35 : 1;
@@ -74,6 +76,7 @@ export function drawForestActor(
     );
     ctx.globalAlpha = bodyOpacity;
   }
+
   ctx.spriteTint = a.player?.reconnecting ? '#ff5555' : '#ffffff';
   const breath = idleBreath(now, a.row);
   ctx.drawImage(
@@ -143,5 +146,6 @@ export function drawForestActor(
       drawDebuffs(ctx, a.enemy, a.x - 17, top - 14, serverTime);
     }
   }
+
   if (a.player) drawPlayerDetails(ctx, a.player, a.x, a.y);
 }

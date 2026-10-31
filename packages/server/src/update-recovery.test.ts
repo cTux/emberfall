@@ -13,6 +13,7 @@ async function start(root?: string, savePath?: string) {
   await app.listen(0, '127.0.0.1');
   const address = app.server.address();
   assert(address && typeof address !== 'string');
+
   return { ...app, url: `http://127.0.0.1:${address.port}` };
 }
 
@@ -21,6 +22,7 @@ async function connect(url: string) {
   const messages: ServerMessage[] = [];
   ws.on('message', (raw) => messages.push(JSON.parse(raw.toString())));
   await once(ws, 'open');
+
   return {
     ws,
     send: (message: unknown) => ws.send(JSON.stringify(message)),
@@ -31,6 +33,7 @@ async function connect(url: string) {
         if (index >= 0) return messages.splice(index, 1)[0] as Extract<ServerMessage, { type: T }>;
         await new Promise((resolve) => setTimeout(resolve, 10));
       }
+
       throw new Error(`Missing ${type}`);
     },
   };
@@ -118,6 +121,7 @@ test('HTML revalidates, version checks bypass caches, and only hashed bundles ar
     ]) {
       assert.equal((await fetch(app.url + path)).headers.get('cache-control'), policy);
     }
+
     await writeFile(join(directory, 'version.json'), '{"buildId":"second"}');
     assert.equal((await (await fetch(app.url + '/version.json')).json()).buildId, 'second');
     const head = await fetch(app.url + '/', { method: 'HEAD' });

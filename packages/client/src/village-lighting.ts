@@ -57,6 +57,7 @@ export function drawVillageLighting(
       ctx.globalAlpha = cycle.lightAlpha * (0.9 + Math.sin(now / 190 + i) * 0.1);
       ctx.drawImage(movingLight, light.x - light.radius, light.y - light.radius);
     }
+
     ctx.globalAlpha = cycle.lightAlpha;
     for (const player of players) {
       const pos = poses.pose(player);
@@ -74,6 +75,7 @@ export function drawVillageLighting(
         lantern.y - lantern.radius,
       );
     }
+
     ctx.restore();
   }
 }

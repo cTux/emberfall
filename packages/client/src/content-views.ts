@@ -21,8 +21,10 @@ export function registeredSlotViews(context: ReturnType<typeof createGame> = gam
     icon: clientAsset(`/assets/wardrobe-style/${equipmentSlotArt(slot.id)}.png`),
   }));
 }
+
 export function additionalStatViews(player: Player, context: ReturnType<typeof createGame> = game) {
   const stats = context.rules.characterStats(player);
+
   return context.registries.stats
     .values()
     .filter(

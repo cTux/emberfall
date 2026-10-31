@@ -16,5 +16,6 @@ export function setup(
   const world: NpcWorld = { players: createPlayers() };
   world.players.set('p', player());
   const life = new VillageLife(world, dialogue, 0);
+
   return { world, life };
 }

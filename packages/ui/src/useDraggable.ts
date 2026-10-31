@@ -32,6 +32,7 @@ export function useDraggable(key: string, active = true) {
     position.current = next;
     setOffset(next);
   };
+
   const move = (dx: number, dy: number) => {
     const box = ref.current?.getBoundingClientRect();
     if (!box) return;
@@ -48,12 +49,14 @@ export function useDraggable(key: string, active = true) {
       ),
     });
   };
+
   useLayoutEffect(() => {
     if (!active || !element) return;
     const clamp = () => move(0, 0);
     const observer = new ResizeObserver(clamp);
     observer.observe(element);
     window.addEventListener('resize', clamp);
+
     return () => {
       observer.disconnect();
       window.removeEventListener('resize', clamp);
@@ -64,6 +67,7 @@ export function useDraggable(key: string, active = true) {
     drag.current = null;
     storage?.save(key, position.current);
   };
+
   return {
     ref: attachRef,
     style: { transform: `translate(${offset.x}px, ${offset.y}px)` },

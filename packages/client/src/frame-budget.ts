@@ -25,6 +25,7 @@ export class FrameBudget {
       this.frameTotal += now - this.previous;
       this.frameCount++;
     }
+
     if (now - this.budgetAt > 2000) {
       const target = 1000 / (limit || 60);
       const average = this.frameTotal / Math.max(1, this.frameCount);
@@ -41,10 +42,12 @@ export class FrameBudget {
         this.scale = next;
         this.resize();
       }
+
       this.budgetAt = now;
       this.frameTotal = 0;
       this.frameCount = 0;
     }
+
     const delta = Math.min(0.1, (now - this.previous) / 1000);
     this.previous = now;
     if (this.settings !== settings) {
@@ -52,6 +55,7 @@ export class FrameBudget {
       this.scale = 1;
       this.resize();
     }
+
     return delta;
   }
 
@@ -61,6 +65,7 @@ export class FrameBudget {
     const fps = Math.round((this.fpsFrames * 1000) / (now - this.fpsAt));
     this.fpsFrames = 0;
     this.fpsAt = now;
+
     return fps;
   }
 }

@@ -41,8 +41,10 @@ test('the server allows a connected player to walk into a tree', async () => {
         const length = Math.max(1, Math.hypot(dx, dy));
         ws.send(JSON.stringify({ type: 'move', x: dx / length, y: dy / length }));
       }
+
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
+
     assert(player);
     assert(samples.length > 30);
     assert(Math.hypot(player.x - tree.x, player.y + 15 - (tree.y - 8)) < 38);

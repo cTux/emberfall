@@ -5,10 +5,12 @@ import { sampleFrameTiming } from './frame-timing.ts';
 function clock(interval: number) {
   let now = 0;
   let sequence = 0;
+
   return (callback: (now: number) => void) => {
     const at = now;
     now += interval;
     queueMicrotask(() => callback(at));
+
     return ++sequence;
   };
 }

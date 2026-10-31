@@ -35,6 +35,7 @@ export function arrangeWorkload(
       group.request(players[0], player, now);
       group.accept(player, players[0].id, now);
     }
+
     const run = group.run(players[0]);
     for (const [index, player] of players.entries()) {
       const classId = (['warrior', 'ranger', 'mage', 'druid'] as const)[index];
@@ -51,6 +52,7 @@ export function arrangeWorkload(
       syncEquipmentVitals(player);
       player.hitpoints = player.maxHitpoints;
     }
+
     const id = randomUUID();
     scenes[world.id] = id;
     run.scene = {
@@ -78,6 +80,7 @@ export function arrangeWorkload(
       })),
     };
   }
+
   const healing = setInterval(() => {
     for (const world of occupied)
       for (const player of world.players.values()) {
@@ -86,6 +89,7 @@ export function arrangeWorkload(
         player.hitpoints = player.maxHitpoints;
       }
   }, BENCHMARK.healMs);
+
   return {
     scenes,
     reset() {
@@ -102,7 +106,9 @@ export function arrangeWorkload(
           'Combat must actually run',
         );
       }
+
       assert(healedDamage > 0, 'Enemy damage must actually run');
+
       return { occupiedWorlds: count, players: count * 4, enemies: count * 40, healedDamage };
     },
     close: () => clearInterval(healing),

@@ -59,6 +59,7 @@ test('optional HUD widgets start centered without moving party frames', async ({
       await expect
         .poll(async () => {
           const box = (await panel.boundingBox())!;
+
           return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
         })
         .toEqual({ x: viewport.width / 2, y: viewport.height / 2 });

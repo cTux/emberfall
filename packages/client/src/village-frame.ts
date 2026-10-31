@@ -25,6 +25,7 @@ export function prepareVillageFrame(
         node.kind === 'tree' && state?.remaining !== 0
           ? prepared?.scenery.find((object) => object.id === node.id)
           : undefined;
+
       return {
         ...(tree ?? resourceScenery(node, state)),
         kind: node.kind,
@@ -61,6 +62,7 @@ export function prepareVillageFrame(
     portal.x,
     portal.y,
   );
+
   return {
     view,
     local,
@@ -87,4 +89,5 @@ export function prepareVillageFrame(
     },
   };
 }
+
 export type VillageFrame = ReturnType<typeof prepareVillageFrame>;

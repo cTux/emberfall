@@ -24,6 +24,7 @@ export function Settings() {
         onChange={(checked) => setValues({ ...values, [label]: checked })}
       />
     ));
+
   return (
     <Box sx={stage}>
       <Box sx={panel}>

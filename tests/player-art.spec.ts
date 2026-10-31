@@ -13,6 +13,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
         const image = new Image();
         image.src = `/assets/wardrobe-style/${name}-atlas.png`;
         await image.decode();
+
         return image;
       }),
     );
@@ -46,6 +47,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
               idleTone.forEach((_, channel) => (idleTone[channel] += idle[i + channel]));
             }
           }
+
         const walkTone = [0, 0, 0];
         let walkCount = 0;
         const checked = new Set<string>();
@@ -64,6 +66,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
               if (x < 2 || x >= 62 || y < 2 || y >= 62)
                 failures.push(`${names[i]} ${col},${row} border`);
             }
+
           if (count < 100) failures.push(`${names[i]} ${col},${row} empty`);
           if (walks.includes(row)) {
             for (let p = 0; p < pixels.length; p += 4) {
@@ -83,6 +86,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
               )
                 failures.push(`${names[i]} ${col},${row} changes standing palette: ${key}`);
             }
+
             distinct.add(tile.toDataURL());
             // Alpha only: recoloring robes or animating a weapon must not hide
             // a frozen lower-leg silhouette. Inspect the bottom eight pixels.
@@ -99,9 +103,11 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
                   contactX += x;
                   contactPixels++;
                 }
+
             if (contactPixels) contacts.push(contactX / contactPixels);
           }
         }
+
         // A sheet can use the right colors yet look brighter by overusing its
         // highlights. Compare the whole six-phase cycle to standing at rest.
         if (
@@ -122,6 +128,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
             const occupied = silhouette
               .split('')
               .flatMap((pixel, index) => (pixel === '1' ? [index % 32] : []));
+
             return occupied.length ? Math.max(...occupied) - Math.min(...occupied) : 0;
           });
           if (Math.max(...spans) - Math.min(...spans) < 4)
@@ -170,6 +177,7 @@ test('all player poses have safe gutters, six distinct gaits and stable standing
       });
       frames.push(preview.toDataURL().split(',')[1]);
     }
+
     return { failures, frames };
   });
   expect(result.failures).toEqual([]);
@@ -199,6 +207,7 @@ test('class movement page shows every direction and supports gait inspection', a
     seen.add((await canvas.getAttribute('data-frame'))!);
     await canvas.screenshot({ path: `test-results/class-movement-${frame}.png` });
   }
+
   expect(seen.size).toBe(6);
   await page.getByLabel('Speed', { exact: true }).selectOption('0.5');
   await page.getByRole('button', { name: 'Play', exact: true }).click();

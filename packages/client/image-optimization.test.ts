@@ -62,6 +62,7 @@ for (const client of ['client']) {
         await sharp(original).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
       );
     }
+
     assert.ok((await readFile(join(root, 'dist', 'tiny.png'))).length <= tiny.length);
     assert.equal(await readFile(join(root, 'dist', 'credits.txt'), 'utf8'), 'Artist attribution');
     assert.equal(await readFile(join(root, 'dist', 'icon.svg'), 'utf8'), '<svg/>');

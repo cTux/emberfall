@@ -81,6 +81,7 @@ test('invalid response diagnostics identify validation failures without exposing
     assert.match(entry, /"reason":"invalid_response"/);
     assert(entry.includes(`"validationFailure":"${failure}"`), entry);
   }
+
   assert(!lines.join('\n').includes('private'));
 });
 
@@ -91,8 +92,10 @@ test('network diagnostics exclude arbitrary exception messages and codes', async
     const request: typeof fetch = async () => {
       throw new TypeError('private exception', { cause: { code } });
     };
+
     await new OllamaNpcDialogue(request, () => 0, defaults).generate('private prompt', signal());
   }
+
   assert.equal(lines.length, 2);
   assert.match(lines[0], /"networkCode":"ECONNREFUSED"/);
   assert.match(lines[0], /"timeoutMs":60000/);

@@ -50,10 +50,12 @@ test('village paths and door approaches are walkable while buildings and torch p
       },
     );
   }
+
   for (const torch of TORCHES) {
     const result = moveActor({ x: torch.x - 30, y: torch.y }, 60, 0, 12);
     assert(result.x <= torch.x - 17);
   }
+
   for (const path of PATHS)
     for (let i = 0; i < path.length - 1; i++) {
       const a = path[i],

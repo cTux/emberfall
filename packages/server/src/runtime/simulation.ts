@@ -41,12 +41,14 @@ export function startSimulation({
           wallTime,
         );
       }
+
       for (const world of worlds.values()) {
         try {
           refreshMerchant(world, characters, wallTime);
         } catch (cause) {
           serverLog.error(`Unable to refresh merchant stock for ${world.id}`, cause);
         }
+
         restoreResources(world.resources, wallTime);
         for (const player of world.players.values()) syncEquipmentVitals(player);
         tickScene(world, now, TICK_MS / 1000);
@@ -68,10 +70,12 @@ export function startSimulation({
                 });
           }
         }
+
         if (world.players.size) villageLife(world, now).tick(now, TICK_MS / 1000);
         broadcastState(world, now);
       }
     }
   }, 10);
+
   return () => clearInterval(tick);
 }

@@ -16,8 +16,10 @@ test('a player mention during an NPC greeting receives an answer in the chat log
   generate = async (context) => {
     contexts.push(JSON.parse(context));
     if (contexts.length === 1) return new Promise<DialogueResult>((resolve) => (finish = resolve));
+
     return { status: 'ok', text: 'Pack spare boots; goblins collect the left ones.' };
   };
+
   await page.goto('/');
   await page.getByRole('button', { name: /^Join Playtest Default/ }).click();
   const world = [...game.runtime.worlds.values()].find((w) => w.players.size)!;
@@ -164,6 +166,7 @@ test('players can address Marta, see her answer, and watch her walk after leavin
     await page.screenshot({ path: `test-results/npc-walking-${frame}.png` });
     await page.waitForTimeout(160);
   }
+
   expect(errors).toEqual([]);
 });
 

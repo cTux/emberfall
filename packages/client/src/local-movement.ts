@@ -35,6 +35,7 @@ export class LocalMovement {
   private attacks: LocalAttacks;
   private id: string;
   private send: (message: ClientMessage) => void;
+
   constructor(id: string, send: (message: ClientMessage) => void) {
     this.attacks = new LocalAttacks(send);
     this.id = id;
@@ -56,6 +57,7 @@ export class LocalMovement {
       while (this.unsent >= 50) this.flush(50);
     }
   }
+
   private flush(duration = this.unsent) {
     if (duration <= 0.0001 || !this.base) return;
     const command: Move = {
@@ -72,12 +74,14 @@ export class LocalMovement {
     const { sentAt: _, ...message } = command;
     this.send(message);
   }
+
   input(x: number, y: number, now: number) {
     this.advance(now);
     this.flush();
     this.x = x;
     this.y = y;
   }
+
   private predict() {
     const player = { ...this.base! };
     for (const command of this.pending) {
@@ -85,12 +89,16 @@ export class LocalMovement {
         command.seq === player.inputSeq ? (player.inputElapsed ?? command.durationMs) : 0;
       movePlayer(player, command.x, command.y, Math.max(0, command.durationMs - elapsed) / 1000);
     }
+
     movePlayer(player, this.x, this.y, this.unsent / 1000);
+
     return player;
   }
+
   private difference(a: { x: number; y: number }, b: { x: number; y: number }) {
     return { x: wrappedDelta(a.x, b.x, FOREST.width), y: wrappedDelta(a.y, b.y, FOREST.height) };
   }
+
   render(world: WorldState, now: number): Player | undefined {
     this.advance(now);
     const authoritative = world.players.find((p) => p.id === this.id);
@@ -132,6 +140,7 @@ export class LocalMovement {
       this.offset.y += error.y;
       if (Math.hypot(this.offset.x, this.offset.y) > SNAP_DISTANCE) this.offset = { x: 0, y: 0 };
     }
+
     const predicted = this.predict();
     const dt = Math.min(100, Math.max(0, now - this.drawnAt));
     this.drawnAt = now;
@@ -142,6 +151,7 @@ export class LocalMovement {
       this.offset.x *= decay;
       this.offset.y *= decay;
     }
+
     const point = (predicted.scene === 'forest' ? moveForestActor : moveActor)(
       { x: predicted.x, y: predicted.y + 15 },
       this.offset.x,
@@ -157,14 +167,18 @@ export class LocalMovement {
     const probe = { ...predicted };
     if (now - this.sourceAt <= PREDICTION_LIMIT_MS) movePlayer(probe, this.x, this.y, 1 / 60);
     const motion = this.difference(probe, predicted);
+
     return { ...predicted, ...displayed, inputX: motion.x, inputY: motion.y };
   }
+
   animateAttack(player: Player, world: WorldState, now: number) {
     return this.attacks.animateAttack(player, world, now);
   }
+
   animateProjectiles(player: Player, world: WorldState, now: number, started: boolean) {
     this.attacks.animateProjectiles(player, world, now, started);
   }
+
   inputDelay(now: number) {
     return this.pending.length
       ? Math.max(this.acknowledgedDelay ?? 0, now - this.pending[0].sentAt)

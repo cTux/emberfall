@@ -22,6 +22,7 @@ export function matchPlayerPalette({
         const rgb = [pixels[i], pixels[i + 1], pixels[i + 2]];
         palette.set(rgb.join(','), rgb);
       }
+
     if (!palette.size) throw new Error(`${name} direction ${col}: empty idle palette`);
     const colors = [...palette.values()];
     // Match the overall tonal distribution too: palette membership alone
@@ -35,8 +36,10 @@ export function matchPlayerPalette({
             if (pixels[i + 3] < 128) continue;
             channels.forEach((values, channel) => values.push(pixels[i + channel]));
           }
+
       return channels.map((values) => values.sort((a, b) => a - b));
     };
+
     const standing = samples([0]);
     const walking = samples(walkRows);
     const tones = walking.map((values, channel) =>
@@ -44,6 +47,7 @@ export function matchPlayerPalette({
         const first = values.findIndex((sample) => sample >= value);
         const last = values.findLastIndex((sample) => sample <= value);
         const rank = ((first < 0 ? values.length - 1 : first) + Math.max(0, last)) / 2;
+
         return standing[channel][
           Math.round((rank / (values.length - 1)) * (standing[channel].length - 1))
         ];
@@ -71,12 +75,16 @@ export function matchPlayerPalette({
                 match = color;
               }
             }
+
             matches.set(key, match);
           }
+
           pixels.set(match, i);
         }
   }
+
   out.putImageData(atlas, 0, 0);
+
   return {
     png: output.toDataURL().split(',')[1],
     frames,

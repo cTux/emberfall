@@ -28,6 +28,7 @@ export const PATHS = PATH_CURVES.map(([start, bend1, bend2, end]) =>
   Array.from({ length: 33 }, (_, step) => {
     const t = step / 32,
       u = 1 - t;
+
     return {
       x: u ** 3 * start.x + 3 * u ** 2 * t * bend1.x + 3 * u * t ** 2 * bend2.x + t ** 3 * end.x,
       y: u ** 3 * start.y + 3 * u ** 2 * t * bend1.y + 3 * u * t ** 2 * bend2.y + t ** 3 * end.y,
@@ -36,6 +37,7 @@ export const PATHS = PATH_CURVES.map(([start, bend1, bend2, end]) =>
 );
 export function onPath(x: number, y: number, margin = 28) {
   if (Math.hypot((x - 480) / 110, (y - 355) / 75) < 1) return true;
+
   return PATHS.some((path) =>
     path.some((point, index) => {
       const next = path[index + 1];
@@ -46,6 +48,7 @@ export function onPath(x: number, y: number, margin = 28) {
         0,
         Math.min(1, ((x - point.x) * dx + (y - point.y) * dy) / (dx * dx + dy * dy)),
       );
+
       return Math.hypot(x - point.x - t * dx, y - point.y - t * dy) < margin;
     }),
   );
@@ -61,8 +64,10 @@ const trees: Tree[] = [];
 let seed: number = VILLAGE_DEFINITION.treeSeed;
 const random = () => {
   seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+
   return seed / 4294967296;
 };
+
 function sceneryClearing(x: number, y: number) {
   return (
     TRAINING_ZONES.some((zone) => Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + 35) ||
@@ -72,6 +77,7 @@ function sceneryClearing(x: number, y: number) {
     TORCHES.some((t) => Math.hypot(t.x - x, t.y - y) < 45)
   );
 }
+
 for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
   const x = 35 + random() * (ARENA.width - 70);
   const y = 55 + random() * (ARENA.height - 85);
@@ -79,6 +85,7 @@ for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
   if (trees.some((tree) => Math.hypot(tree.x - x, tree.y - y) < 48)) continue;
   trees.push({ x, y, size: 72 + Math.floor(random() * 25), radius: 15 });
 }
+
 export const TREES: readonly Readonly<Tree>[] = Object.freeze(
   trees.map((tree) => Object.freeze(tree)),
 );
@@ -102,8 +109,10 @@ function scatterScenery(
   let decorationSeed = initialSeed;
   const roll = () => {
     decorationSeed = (Math.imul(decorationSeed, 1664525) + 1013904223) >>> 0;
+
     return decorationSeed / 4294967296;
   };
+
   const decorations: VillageDecoration[] = [];
   for (let i = 0; i < attempts; i++) {
     const x = 35 + roll() * (ARENA.width - 70);
@@ -118,6 +127,7 @@ function scatterScenery(
       variant: decorations.length % variants,
     });
   }
+
   return Object.freeze(decorations.map((object) => Object.freeze(object)));
 }
 
@@ -163,6 +173,7 @@ export function moveActor(
           wrappedDelta(tx, tree.x, ARENA.width),
           wrappedDelta(ty, tree.y - 8, ARENA.height),
         );
+
       return distance(px, py) >= Math.min(radius + tree.radius, distance(x, y));
     }) &&
     (!collideScenery ||
@@ -181,5 +192,6 @@ export function moveActor(
     const nextY = wrap(y + dy / steps, ARENA.height);
     if (clear(x, nextY)) y = nextY;
   }
+
   return { x, y };
 }

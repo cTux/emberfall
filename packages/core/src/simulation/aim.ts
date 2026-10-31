@@ -17,6 +17,7 @@ export function smoothAttackAngle(
   if (current === undefined) return target;
   const difference = Math.atan2(Math.sin(target - current), Math.cos(target - current));
   const angle = current + difference * (1 - Math.exp(-Math.max(0, dt) / smoothingSeconds));
+
   return Math.atan2(Math.sin(angle), Math.cos(angle));
 }
 
@@ -32,6 +33,7 @@ export function nearestEnemyAngle(
         !best || forestDistance(enemy, player) < forestDistance(best, player) ? enemy : best,
       undefined,
     );
+
   return closest
     ? Math.atan2(
         wrappedDelta(closest.y, player.y, FOREST.height),
@@ -57,5 +59,6 @@ export function swordOverlapsEnemy(
     forward >= 0
       ? Math.max(0, Math.hypot(dx, dy) - range)
       : Math.hypot(forward, Math.max(0, Math.abs(sideways) - range));
+
   return distance <= body.radius + 1e-6;
 }

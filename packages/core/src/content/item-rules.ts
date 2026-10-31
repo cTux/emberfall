@@ -24,9 +24,11 @@ export function createItemRules(content: Registries, roll = () => Math.random())
         .map((item) => [item.id, Object.freeze({ ...item, healing: item.healing })]),
     ),
   );
+
   function itemDefinition(id: string) {
     return content.items.require(id);
   }
+
   const itemSchema = inventoryItemSchema.refine((item) => {
     const definition = content.items.get(item.itemId);
     if (
@@ -44,6 +46,7 @@ export function createItemRules(content: Registries, roll = () => Math.random())
       );
     if (item.quantity !== 1) return false;
     if (item.stats === undefined) return rarity === Rarity.Common;
+
     return (
       entries.length === rarityStatCount[rarity] &&
       entries.every(
@@ -61,11 +64,13 @@ export function createItemRules(content: Registries, roll = () => Math.random())
       'Duplicate item identity',
     );
   type BackpackItem = z.infer<typeof backpackSchema>[number];
+
   function rollItem(itemId: string, random = roll): BackpackItem {
     const definition = itemDefinition(itemId);
     if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType])
       return { id: crypto.randomUUID(), itemId, quantity: 1 };
     const rarity = rollRarity(random);
+
     return {
       id: crypto.randomUUID(),
       itemId,
@@ -74,6 +79,7 @@ export function createItemRules(content: Registries, roll = () => Math.random())
       stats: rollItemStats(definition.gearType, rarity, random),
     };
   }
+
   function itemPrice(item: { itemId: string; rarity?: string; stats?: Record<string, number> }) {
     const definition = itemDefinition(item.itemId);
     const base = definition.price ?? 1;
@@ -83,8 +89,11 @@ export function createItemRules(content: Registries, roll = () => Math.random())
         sum + value / itemStatBaseValue[stat as ItemStat] / itemStatWeight[stat as ItemStat],
       0,
     );
+
     return Math.ceil(base * rarityStatMultiplier[itemRarity(item)] + 5 * statPrice);
   }
+
   return { itemDefinition, itemPrice, rollItem, CONSUMABLES, backpackSchema, itemSchema };
 }
+
 export type BackpackItem = ReturnType<ReturnType<typeof createItemRules>['rollItem']>;

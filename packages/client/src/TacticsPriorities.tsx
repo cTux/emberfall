@@ -29,6 +29,7 @@ export function TacticsPriorities({
           <Typography sx={{ flex: 1 }}>{TACTICS_LABELS[rule]}</Typography>
           {([-1, 1] as const).map((direction) => {
             const name = `Move ${TACTICS_LABELS[rule]} ${direction < 0 ? 'up' : 'down'}`;
+
             return (
               <Tooltip title={name} key={direction}>
                 <span>

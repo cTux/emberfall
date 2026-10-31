@@ -12,12 +12,14 @@ test('players opt into parties with nearby E and chat, vote together, join late 
   const other = await context.newPage();
   const errors: string[] = [];
   for (const p of [page, other]) p.on('pageerror', (e) => errors.push(e.message));
+
   async function join(p: Page, name: string) {
     await p.goto('/');
     await p.getByLabel('Your adventurer name').fill(name);
     await p.getByRole('button', { name: /^Join Playtest Default/ }).click();
     await expect(p.getByRole('button', { name: 'Leave world' })).toBeVisible();
   }
+
   async function chat(p: Page, text: string) {
     await p.keyboard.press('Enter');
     const input = p.locator('.chat-input input');
@@ -25,6 +27,7 @@ test('players opt into parties with nearby E and chat, vote together, join late 
     await input.press('Enter');
     await p.locator('canvas').click({ position: { x: 10, y: 10 } });
   }
+
   try {
     await join(page, 'Alpha');
     await join(other, 'Bravo');

@@ -13,8 +13,10 @@ function puff(color: string) {
   gradient.addColorStop(1, '#0000');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 32, 32);
+
   return canvas;
 }
+
 const smoke = puff('#d6cfc1');
 const energy = puff('#3eacff');
 
@@ -45,6 +47,7 @@ export function drawStonePortal(
       height * 0.42,
     );
   }
+
   ctx.restore();
 }
 
@@ -65,5 +68,6 @@ export function drawChimneySmoke(ctx: DrawingContext, x: number, y: number, now:
       size,
     );
   }
+
   ctx.restore();
 }
