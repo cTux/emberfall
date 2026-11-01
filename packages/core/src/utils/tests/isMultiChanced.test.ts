@@ -1,3 +1,4 @@
+import { randomSource } from '../../random.ts';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { isMultiChanced } from '../../index.ts';
@@ -7,7 +8,7 @@ test('isMultiChanced rolls for the remainder after guaranteed events', (t) => {
     [0.499, 2],
     [0.5, 1],
   ]) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return roll;
     });
     assert.equal(isMultiChanced(150), expected);
@@ -18,18 +19,18 @@ test('isMultiChanced rolls for the remainder after guaranteed events', (t) => {
 });
 
 test('isMultiChanced supports fractional percentages below one percent', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.000009;
   });
   assert.equal(isMultiChanced(0.001), 1);
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.000011;
   });
   assert.equal(isMultiChanced(0.001), 0);
 });
 
 test('isMultiChanced handles guaranteed counts and non-finite inputs', (t) => {
-  const random = t.mock.method(Math, 'random', () => {
+  const random = t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 

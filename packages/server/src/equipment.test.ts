@@ -1,4 +1,5 @@
 import {
+  randomSource,
   createGame,
   baseMod,
   CLASS_IDS,
@@ -70,7 +71,7 @@ test('every class starts with exactly its compatible weapon and preserves base s
 });
 
 test('all nine slots aggregate and gear controls real power, range, cadence and defense', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const items: GearDefinition[] = [];

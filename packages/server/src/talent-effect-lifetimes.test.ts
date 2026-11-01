@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { talentNodeId, learnTalent } from '@emberfall/core';
+import { randomSource, talentNodeId, learnTalent } from '@emberfall/core';
 
 import { talentIncomingDamage, tickTalentEffects } from '../../core/src/talent-effects.ts';
 
@@ -45,7 +45,7 @@ test('Rupture includes DOT Speed in the remaining wound damage', () => {
 });
 
 test('Second Impact repeats once, and clearing a reset invalidates queued effects even after relearning', async (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0;
   });
   const { clearTalentEffects } = await import('@emberfall/core');

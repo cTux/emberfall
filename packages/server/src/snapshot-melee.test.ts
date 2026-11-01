@@ -1,4 +1,10 @@
-import { swordOverlapsEnemy, smoothAttackAngle, stepCombat, FOREST } from '@emberfall/core';
+import {
+  randomSource,
+  swordOverlapsEnemy,
+  smoothAttackAngle,
+  stepCombat,
+  FOREST,
+} from '@emberfall/core';
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -8,7 +14,7 @@ import { hero } from './snapshots.fixture.ts';
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
   if ('mock' in t) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return 0.5;
     });
   }

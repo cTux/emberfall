@@ -1,3 +1,4 @@
+import { randomSource } from '../random.ts';
 import { z } from 'zod';
 import { inventoryItemSchema } from '@emberfall/common';
 import {
@@ -22,7 +23,7 @@ const ROLLED_STAT_PRICE = 5;
 export function createItemRules(
   content: Registries,
   roll = () => {
-    return Math.random();
+    return randomSource.next();
   },
 ) {
   const CONSUMABLES = Object.freeze(

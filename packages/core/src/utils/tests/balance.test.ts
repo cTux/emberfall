@@ -1,3 +1,4 @@
+import { randomSource } from '../../random.ts';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
@@ -18,7 +19,7 @@ test('spawn type rolls elite before normal and never selects a timer-only boss',
     [0.05, EnemyType.Normal],
     [0.99999, EnemyType.Normal],
   ] as const) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return roll;
     });
     assert.equal(spawnEnemyType(), type);
@@ -32,11 +33,11 @@ test('item drop chance checks each enemy type at its exact percentage boundary',
     [EnemyType.Elite, 0.15],
     [EnemyType.Boss, 0.5],
   ] as const) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return boundary - 0.000001;
     });
     assert.equal(shouldDropItem(type), true);
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return boundary;
     });
     assert.equal(shouldDropItem(type), false);
@@ -58,7 +59,7 @@ test('item counts roll inclusive percentage ranges then guaranteed items plus a 
     [EnemyType.Boss, [0.99999], 5],
   ] as const) {
     const remaining = [...rolls];
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       assert.ok(remaining.length, 'unexpected random roll');
 
       return remaining.shift()!;

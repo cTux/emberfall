@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { stepCombat, moveEnemies } from '@emberfall/core';
+import { randomSource, stepCombat, moveEnemies } from '@emberfall/core';
 import type { SceneState } from '@emberfall/common';
 
 import { player, enemy } from './enemies.fixture.ts';
@@ -39,7 +39,7 @@ test('spawn warnings last a full second and small enemies move faster than brute
 });
 
 test('successful elite rolls use configured HP; timer spawns only one configured boss', async (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.04;
   });
   const scene: SceneState = {

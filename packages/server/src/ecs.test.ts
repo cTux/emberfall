@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { SimulationWorld } from './ecs/simulation.ts';
 import { appendSceneEntities, type Player, type SceneState } from '@emberfall/common';
 
-import { createTrainingScene, stepCombat } from '@emberfall/core';
+import { randomSource, createTrainingScene, stepCombat } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 
 test('ECS collections preserve identity and explicit order across removal and scene disposal', () => {
@@ -66,7 +66,7 @@ test('ECS-backed and plain-object combat produce the same state through spawns, 
     ecsPlayer = structuredClone(player);
   entityWorld.players.set(player.id, ecsPlayer);
   entityWorld.bind(ecsScene);
-  const random = Math.random;
+  const random = randomSource.next;
   try {
     for (let tick = 0; tick < 300; tick++) {
       const seed = tick + 100;
@@ -78,9 +78,9 @@ test('ECS-backed and plain-object combat produce the same state through spawns, 
         };
       };
 
-      Math.random = seeded();
+      randomSource.next = seeded();
       stepCombat(scene, [player], tick * 50, 0.05);
-      Math.random = seeded();
+      randomSource.next = seeded();
       stepCombat(
         ecsScene,
         [...entityWorld.actors].map((e) => {
@@ -97,6 +97,6 @@ test('ECS-backed and plain-object combat produce the same state through spawns, 
       assert.deepEqual(ecsPlayer, player);
     }
   } finally {
-    Math.random = random;
+    randomSource.next = random;
   }
 });

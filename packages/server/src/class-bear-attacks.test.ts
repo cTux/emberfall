@@ -1,14 +1,14 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { FOREST, forestDistance, stepCombat, tickCompanion } from '@emberfall/core';
+import { randomSource, FOREST, forestDistance, stepCombat, tickCompanion } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
   if ('mock' in t) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return 0.5;
     });
   }

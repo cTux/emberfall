@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import type { Player, SceneState } from '@emberfall/common';
 import {
+  randomSource,
   createGame,
   game,
   GAME_MODS,
@@ -92,9 +93,9 @@ test('injected combat and spawn outcomes match default seeded draw order', (t) =
 
   const defaults = source(),
     injected = source();
-  t.mock.method(Math, 'random', defaults.random);
+  t.mock.method(randomSource, 'next', defaults.random);
   const expected = exercise(game);
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     throw new Error('injected context used global random');
   });
   assert.deepEqual(exercise(createGame(GAME_MODS, injected.random)), expected);
@@ -103,7 +104,7 @@ test('injected combat and spawn outcomes match default seeded draw order', (t) =
 });
 
 test('independent contexts bind item outcomes and keep explicit item overrides', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     throw new Error('global random');
   });
   const low = createGame(GAME_MODS, () => {
@@ -129,7 +130,7 @@ test('independent contexts bind item outcomes and keep explicit item overrides',
 });
 
 test('training forwards its context for hit rolls and never rolls rewards', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     throw new Error('global random');
   });
   let draws = 0;
@@ -157,7 +158,7 @@ test('training forwards its context for hit rolls and never rolls rewards', (t) 
 });
 
 test('scheduled talent hits retain the casting context', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     throw new Error('global random');
   });
   let draws = 0;

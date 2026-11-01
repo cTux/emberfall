@@ -4,6 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
+  randomSource,
   createGame,
   baseMod,
   fireClassAttack,
@@ -95,7 +96,7 @@ test('an added class/item/slot survives SQLite restart and reaches client views 
   }
 });
 test('registered ability parameters drive authoritative shots, prediction and protocol identity', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const player = hero();

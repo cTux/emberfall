@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import type { Enemy } from '@emberfall/common';
 import {
+  randomSource,
   Rarity,
   ItemStat,
   itemTypeStats,
@@ -21,7 +22,7 @@ import { executeTalent } from '../../core/src/talent-effects.ts';
 import { hero, instance, equip, arena } from './item-rolls.fixture.ts';
 
 test('compatible offensive talents repeat attacks and extend pierces/bounces, and scale area/range', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 
@@ -67,7 +68,7 @@ test('compatible offensive talents repeat attacks and extend pierces/bounces, an
 });
 
 test('passive talent areas scale and extra talent attacks independently apply on-hit procs', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const player = hero();
@@ -88,7 +89,7 @@ test('passive talent areas scale and extra talent attacks independently apply on
     1,
   );
   t.mock.restoreAll();
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.1;
   });
   const warrior = hero();
@@ -145,7 +146,7 @@ test('whole party bonuses add once at drop generation, with guaranteed extras an
     setRewardPlayers(scene, [killer, member, member, stranger]);
     // Gold gate succeeds, then the two independent bonus remainder rolls use the selected value.
     const values = [roll, 0, roll, 0.99];
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return values.shift() ?? 0.99;
     });
     const target = { id: 1, x: 2400, y: 1280, hitpoints: 1, angle: 0 };

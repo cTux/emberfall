@@ -1,4 +1,5 @@
 import {
+  randomSource,
   createGame,
   baseMod,
   companionStats,
@@ -52,7 +53,7 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
     },
   ]);
   const { characterStats, companionStats, syncEquipmentVitals } = context.rules;
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 
@@ -113,7 +114,7 @@ test('Bear inherits gear stats with physical damage, fixed range, health and ble
 test('Bear critical and 10% bleed boundaries work in forest and training across a seam', (t) => {
   for (const training of [true, false]) {
     for (const roll of [0, 0.049999, 0.05, 0.099999, 0.1]) {
-      const random = t.mock.method(Math, 'random', () => {
+      const random = t.mock.method(randomSource, 'next', () => {
         return roll;
       });
       const player = hero('druid');

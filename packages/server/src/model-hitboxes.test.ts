@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Player, SceneState } from '@emberfall/common';
-import { FOREST, ENEMY_STATS, tickPlayerShots } from '@emberfall/core';
+import { randomSource, FOREST, ENEMY_STATS, tickPlayerShots } from '@emberfall/core';
 import { INITIAL_PROGRESS } from '../../core/src/definitions/entities/players.ts';
 import { enemyHitbox } from '../../core/src/hitboxes.ts';
 
 test('projectiles hit heads and feet of every model in forest and training, across both seams', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 

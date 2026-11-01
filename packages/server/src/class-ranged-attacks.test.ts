@@ -2,6 +2,7 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  randomSource,
   FOREST,
   stepCombat,
   tickCompanion,
@@ -15,7 +16,7 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
   if ('mock' in t) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return 0.5;
     });
   }
@@ -85,7 +86,7 @@ test('Druid launches roots without instant melee damage, with zero or one target
 });
 
 test('ranger arrows hit each of the first four targets once, wrap, and expire at 1000 units', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const s = scene(),
@@ -148,7 +149,7 @@ test('mage fireballs target and travel up to 250 units, including wrapped edges'
 });
 
 test('mage aims at the nearest target; each impact deals three direct and one splash damage', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const s = scene(),
@@ -179,7 +180,7 @@ test('mage aims at the nearest target; each impact deals three direct and one sp
 });
 
 test('fireball damages the actual collision target only once and splashes across wrapped edges', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const s = scene(),
@@ -213,7 +214,7 @@ test('fireball damages the actual collision target only once and splashes across
 });
 
 test('class attacks fire once per cycle and ranged classes never deal a melee slash', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 

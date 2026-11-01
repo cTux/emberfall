@@ -1,9 +1,10 @@
+import { randomSource } from '../../random.ts';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { isChanced } from '../../index.ts';
 
 test('isChanced compares a random roll against a percentage', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.25;
   });
   assert.equal(isChanced(25.1), true);
@@ -13,7 +14,7 @@ test('isChanced compares a random roll against a percentage', (t) => {
 
 test('isChanced handles percentage boundaries and non-finite numbers', (t) => {
   for (const roll of [0, 0.9999999999999999]) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return roll;
     });
 
@@ -30,7 +31,7 @@ test('isChanced handles percentage boundaries and non-finite numbers', (t) => {
 });
 
 test('isChanced skips random rolls for guaranteed outcomes', (t) => {
-  const random = t.mock.method(Math, 'random', () => {
+  const random = t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 

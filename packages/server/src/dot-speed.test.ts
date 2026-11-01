@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { Enemy, Player } from '@emberfall/common';
 import {
+  randomSource,
   characterStats,
   companionStats,
   createTrainingScene,
@@ -77,7 +78,7 @@ test('DOT Speed is a regular offensive roll, validates exact values and leaves a
 });
 
 test('player, companion and talent DOTs use owner speed, keep cadence on refresh and catch up through expiry', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0;
   });
 
@@ -150,7 +151,7 @@ test('each owner retains a separate interval and roots/silence keep their timers
 });
 
 test('mod weapon and talent ailments use supplied context stats', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0;
   });
   const context = createGame([

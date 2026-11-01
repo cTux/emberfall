@@ -1,4 +1,4 @@
-import { stepCombat, FOREST } from '@emberfall/core';
+import { randomSource, stepCombat, FOREST } from '@emberfall/core';
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -8,7 +8,7 @@ import { hero } from './snapshots.fixture.ts';
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
   if ('mock' in t) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return 0.5;
     });
   }
@@ -46,7 +46,7 @@ test('boss defeat puts fixed return portals within reach of all scattered player
 
 test('kills drop experience and 10-percent coins; experience pickups reward players and expire', (t) => {
   let roll = 0.099;
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return roll;
   });
   const player = { ...hero, scene: 'forest' as const, x: 2400, y: 1280 };

@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  randomSource,
   INVENTORY_SLOTS,
   LOOT_ITEM_IDS,
   GEAR_DEFINITIONS,
@@ -13,7 +14,7 @@ import {
 import { hero, item } from './inventory.fixture.ts';
 
 test('full players leave item drops for nearby players while still collecting gold', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0;
   });
   const player = {
@@ -52,7 +53,7 @@ test('full players leave item drops for nearby players while still collecting go
 });
 
 test('auto-loot off leaves items for others without blocking shared XP or gold', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0;
   });
   const player = { ...hero(), scene: 'forest' as const, autoLoot: false };
@@ -79,7 +80,7 @@ test('auto-loot off leaves items for others without blocking shared XP or gold',
 test('successful item rolls include weapons and preserve rolls across a wrapped pickup; training drops none', (t) => {
   for (const [index, id] of LOOT_ITEM_IDS.entries()) {
     const rolls = [0.5, 0, 0, (index + 0.5) / LOOT_ITEM_IDS.length];
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return rolls.shift() ?? 0.5;
     });
     const player = hero();
