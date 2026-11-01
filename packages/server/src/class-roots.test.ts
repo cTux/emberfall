@@ -2,6 +2,7 @@ import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  randomSource,
   FOREST,
   forestDistance,
   stepCombat,
@@ -16,7 +17,7 @@ import { hero, enemy, scene } from './classes.fixture.ts';
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
   if ('mock' in t) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return 0.5;
     });
   }
@@ -183,7 +184,7 @@ test('roots slow ordinary enemies, bosses are immune, and root kills complete th
 });
 
 test('root primary and bounce both use full critical weapon damage', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0;
   });
   const s = scene(),

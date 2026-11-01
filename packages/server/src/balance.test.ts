@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Difficulty, EnemyType, type Enemy, type Player, type SceneState } from '@emberfall/common';
 
-import { createTrainingScene, hitEnemy, stepCombat } from '@emberfall/core';
+import { randomSource, createTrainingScene, hitEnemy, stepCombat } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 
 const hero = (): Player => {
@@ -46,7 +46,7 @@ test('failed item chance skips count rolls; successful normal chance can still y
     [EnemyType.Boss, 0.5],
   ] as const) {
     const rolls = [0.5, boundary];
-    const random = t.mock.method(Math, 'random', () => {
+    const random = t.mock.method(randomSource, 'next', () => {
       return rolls.shift()!;
     });
     const arena = scene();
@@ -62,7 +62,7 @@ test('failed item chance skips count rolls; successful normal chance can still y
   }
 
   const rolls = [0.5, 0, 0.01];
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return rolls.shift()!;
   });
   const arena = scene();
@@ -95,7 +95,7 @@ test('a successful 350 percent boss roll drops four independent items once and r
       0.5,
       0.5,
     ];
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       assert.ok(rolls.length, 'unexpected random roll');
 
       return rolls.shift()!;
@@ -140,7 +140,7 @@ test('a successful 350 percent boss roll drops four independent items once and r
 });
 
 test('training kills grant no rewards and never roll loot', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     assert.fail('training must not roll loot');
   });
   const arena = createTrainingScene(0);

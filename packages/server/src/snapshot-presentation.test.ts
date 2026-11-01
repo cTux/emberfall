@@ -1,5 +1,5 @@
 import { edgeArrow } from '../../client/src/navigation.ts';
-import { stepCombat, FOREST } from '@emberfall/core';
+import { randomSource, stepCombat, FOREST } from '@emberfall/core';
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
@@ -9,7 +9,7 @@ import { hero, snapshot } from './snapshots.fixture.ts';
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.
 beforeEach((t) => {
   if ('mock' in t) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return 0.5;
     });
   }

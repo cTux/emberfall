@@ -1,20 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { stepCombat, enemyMaxHealth, hitEnemy } from '@emberfall/core';
+import { randomSource, stepCombat, enemyMaxHealth, hitEnemy } from '@emberfall/core';
 import type { Player, SceneState } from '@emberfall/common';
 import { CharacterStore } from './characters.ts';
 
 import { player, enemy } from './enemies.fixture.ts';
 
 test('scene population compounds enemy HP and dropped XP, preserving fractions in saves', async (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 
   for (const count of [1, 2, 3, 8]) {
     for (const kind of ['normal', 'elite', 'boss'] as const) {
-      t.mock.method(Math, 'random', () => {
+      t.mock.method(randomSource, 'next', () => {
         return kind === 'elite' ? 0.04 : 0.5;
       });
       const players = Array.from({ length: count }, (_, i) => {

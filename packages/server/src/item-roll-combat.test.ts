@@ -3,6 +3,7 @@ import { test } from 'node:test';
 
 import type { Enemy } from '@emberfall/common';
 import {
+  randomSource,
   ItemStat,
   characterStats,
   game,
@@ -18,7 +19,7 @@ import {
 import { hero, equip, arena } from './item-rolls.fixture.ts';
 
 test('movement, range and melee area bonuses affect actual shared movement and targeting', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const player = hero();
@@ -46,7 +47,7 @@ test('legendary weapon and off-hand effects stack; extra warrior attacks indepen
   const scene = arena();
   const enemy: Enemy = { id: 1, x: 2420, y: 1280, hitpoints: 1000, angle: 0 };
   const rolls = [0, 0.5, 0.5, 0, 0.5, 0.5];
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return rolls.shift() ?? 0.5;
   });
   hitWithWeapon(scene, enemy, player, 1000, 'bleed');
@@ -65,7 +66,7 @@ test('legendary weapon and off-hand effects stack; extra warrior attacks indepen
 });
 
 test('hunter base arrows stop after four hits; two legendary pierce bonuses allow six across the seam', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 

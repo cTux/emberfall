@@ -4,7 +4,7 @@ import {
   faceConversation,
   conversationBlocks,
 } from './npc-participants.ts';
-import { forestDistance } from '@emberfall/core';
+import { randomSource, forestDistance } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import { NpcRoutines } from './npc-routines.ts';
 import { villagePlayers, type NpcWorld } from './npc-world.ts';
@@ -30,7 +30,7 @@ export class VillageLife {
   private world: NpcWorld;
   private dialogue: NpcDialogue;
 
-  constructor(world: NpcWorld, dialogue: NpcDialogue, now: number, random = Math.random) {
+  constructor(world: NpcWorld, dialogue: NpcDialogue, now: number, random = randomSource.next) {
     this.world = world;
     this.dialogue = dialogue;
     this.speech = new NpcSpeech(world, random);

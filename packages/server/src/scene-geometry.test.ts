@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FOREST, ARENA, forestTrees, moveForestActor, forestDistance } from '@emberfall/core';
+import {
+  randomSource,
+  FOREST,
+  ARENA,
+  forestTrees,
+  moveForestActor,
+  forestDistance,
+} from '@emberfall/core';
 
 import { sceneAction, tickScene } from './scenes.ts';
 import type { SceneWorld } from './scenes.ts';
@@ -44,7 +51,7 @@ test('forest and expanded lobby share dimensions; all edges wrap; indexed trunks
 
 test('combat uses wrapped distances and warned melee damage respects its cooldown', async (t) => {
   // This geometry/cooldown scenario asserts base damage; critical boundaries have separate coverage.
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const a = hero('a');

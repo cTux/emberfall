@@ -28,10 +28,25 @@ The default `game` uses the explicit `GAME_MODS` list in `src/mods/index.ts`, wi
 `createGame(mods, random)` optionally binds a random function to that context.
 Combat criticals, ailments, rewards, item rolls, enemy spawns and scheduled talent
 hits use it; training forwards the same context through the shared combat path.
-The default reads `Math.random()` at each draw. Probability helpers and item rolls
-also retain explicit per-call overrides. Seeded sources support isolated outcome
+The default reads `randomSource.next()` at each draw. This shared source uses
+`random-js`'s `realZeroToOneExclusive(browserCrypto)` for 53-bit values in `[0, 1)`,
+backed by `crypto.getRandomValues` in Node 24 and secure browser contexts. Probability
+helpers, gathering targets and village NPC behavior use the same default. Configured
+chances are unchanged; independent rolls can still produce streaks. Fixed scenery
+seeds and credential/UUID generation retain their existing implementations.
+
+![Gameplay random source architecture](../../../docs/design/assets/gameplay-random-source.svg)
+
+Architecture diagram, not a gameplay capture. Probability helpers and item rolls
+retain explicit per-call overrides. Seeded sources support isolated outcome
 fixtures without switching global state; item UUIDs remain cryptographically
 generated, so this is not a complete replay or deterministic identity API.
+
+Tests that exercise default draws mock `randomSource.next`, rather than
+`Math.random`. The [source checks](../src/utils/tests/random.test.ts) cover Web Crypto
+refills and `[0, 1)` boundaries; the
+[context checks](../../server/src/random-context.test.ts) cover isolated injected
+sources through shared gameplay.
 
 `src/mods/base/worlds/village-residents.ts` holds resident identities, workstations
 and conversation topics. `village.ts` composes those with geometry and scenery;

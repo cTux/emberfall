@@ -1,3 +1,4 @@
+import { randomSource } from '../random.ts';
 import { validateContent } from './validate.ts';
 import type { ContentTypes, GameMod, Registries, Registration } from './contracts.ts';
 import { createRegistry, validId } from './registry.ts';
@@ -6,7 +7,7 @@ import { createRules } from './rules.ts';
 export function createGame(
   mods: readonly GameMod[],
   random = () => {
-    return Math.random();
+    return randomSource.next();
   },
 ) {
   const stores = {

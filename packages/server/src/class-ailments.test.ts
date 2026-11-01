@@ -1,21 +1,21 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { stepCombat, hitEnemy, tickDebuffs } from '@emberfall/core';
+import { randomSource, stepCombat, hitEnemy, tickDebuffs } from '@emberfall/core';
 
 import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.
 beforeEach((t) => {
   if ('mock' in t) {
-    t.mock.method(Math, 'random', () => {
+    t.mock.method(randomSource, 'next', () => {
       return 0.5;
     });
   }
 });
 
 test('each ailment stacks, refreshes its timer, ticks once per second, and expires after five seconds', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.09;
   });
 
@@ -50,7 +50,7 @@ test('each ailment stacks, refreshes its timer, ticks once per second, and expir
 });
 
 test('proc boundary is ten percent; DOT kills use the same loot, XP and boss completion paths', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.1;
   });
   const s = scene(),

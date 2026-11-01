@@ -1,3 +1,4 @@
+import { randomSource } from '../random.ts';
 export type { CharacterStats, EquipmentOwner } from './equipment-rules.ts';
 import type { Registries } from './contracts.ts';
 import { createEquipmentRules } from './equipment-rules.ts';
@@ -10,7 +11,7 @@ import { createValidationRules } from './validation-rules.ts';
 export function createRules(
   content: Registries,
   random = () => {
-    return Math.random();
+    return randomSource.next();
   },
 ) {
   const equipment = createEquipmentRules(content);

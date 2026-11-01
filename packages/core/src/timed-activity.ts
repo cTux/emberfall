@@ -1,3 +1,4 @@
+import { randomSource } from './random.ts';
 import type { TimedActivity } from '@emberfall/common';
 
 // Existing fourteen-percent target width is the gathering timing difficulty calibration.
@@ -29,7 +30,7 @@ export function activityIndicator(activity: TimedActivity, now: number) {
 export function startTimedActivity(
   now: number,
   durationMs: number,
-  roll = Math.random,
+  roll = randomSource.next,
 ): TimedActivity {
   return {
     startedAt: now,
@@ -46,7 +47,7 @@ export function checkTimedActivity(
   checkId: string,
   at: number,
   now: number,
-  roll = Math.random,
+  roll = randomSource.next,
 ) {
   if (
     checkId !== activity.checkId ||

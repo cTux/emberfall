@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  randomSource,
   FOREST,
   TRAINING_ZONES,
   characterStats,
@@ -11,7 +12,7 @@ import { LocalMovement } from '../../client/src/local-movement.ts';
 import type { Player, WorldState } from '@emberfall/common';
 
 test('ranged auto-casts wait for a living target in range, then launch and damage it', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
 

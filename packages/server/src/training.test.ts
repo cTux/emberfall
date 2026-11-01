@@ -2,6 +2,7 @@ import { test } from 'node:test';
 
 import assert from 'node:assert/strict';
 import {
+  randomSource,
   ARENA,
   TRAINING_ZONES,
   inTrainingZone,
@@ -49,7 +50,7 @@ test('boar leaves its wardrobe spawn, follows its owner and attacks training tar
 });
 
 test('training has one and six stationary, harmless targets and regenerates every second', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const p = hero();

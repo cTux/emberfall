@@ -1,3 +1,4 @@
+import { randomSource } from './random.ts';
 import { PERCENT } from '@emberfall/common';
 export { ItemStat, Rarity } from './enums/items.ts';
 import { type ItemStat, Rarity } from './enums/items.ts';
@@ -27,7 +28,7 @@ export function statValue(stat: ItemStat, rarity: Rarity) {
   return itemStatBaseValue[stat] * (itemStatWeight[stat] < 1 ? 1 : rarityStatMultiplier[rarity]);
 }
 
-export function rollRarity(random = Math.random): Rarity {
+export function rollRarity(random = randomSource.next): Rarity {
   let roll = random() * PERCENT;
 
   for (const [rarity, chance] of Object.entries(rarityDropChance)) {
@@ -41,7 +42,7 @@ export function rollRarity(random = Math.random): Rarity {
   return Rarity.Common;
 }
 
-export function rollItemStats(gearType: string, rarity: Rarity, random = Math.random) {
+export function rollItemStats(gearType: string, rarity: Rarity, random = randomSource.next) {
   const pool = (itemTypeStats[gearType] ?? []).filter((stat) => {
     return rarity === Rarity.Legendary || itemStatWeight[stat] === 1;
   });

@@ -1,3 +1,4 @@
+import { randomSource } from './random.ts';
 import { COLLISION } from './definitions/collision.ts';
 import { VILLAGE_TREE } from './village-layout.ts';
 import {
@@ -204,7 +205,7 @@ export function gatherResource(
   states: Record<string, ResourceState>,
   nodeId: string,
   now: number,
-  roll: () => number = Math.random,
+  roll: () => number = randomSource.next,
 ) {
   const node = gatheringNode(player, states, nodeId, now);
   const previous = resourceState(states, node, now);

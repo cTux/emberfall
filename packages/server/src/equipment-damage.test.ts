@@ -1,4 +1,5 @@
 import {
+  randomSource,
   createGame,
   baseMod,
   CLASS_IDS,
@@ -97,7 +98,7 @@ test('critical boundary is exactly five percent, with fractional 150% power in b
       const player = hero(classId);
 
       for (const roll of [0, 0.049999, 0.05, 0.99]) {
-        const random = t.mock.method(Math, 'random', () => {
+        const random = t.mock.method(randomSource, 'next', () => {
           return roll;
         });
         const arena = scene(training);
@@ -118,7 +119,7 @@ test('critical boundary is exactly five percent, with fractional 150% power in b
 });
 
 test('projectile and splash hits carry weapon metadata; ailments never critically hit', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0;
   });
 

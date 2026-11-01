@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  randomSource,
   LOBBY_PORTAL,
   nearbyInteraction,
   clientMessage as validatedMessage,
@@ -11,7 +12,7 @@ import type { SceneWorld } from './scenes.ts';
 import { hero } from './scenes.fixture.ts';
 
 test('server scene lifecycle: proximity, unanimous votes, retract, membership changes, combat, death and boss-gated return', (t) => {
-  t.mock.method(Math, 'random', () => {
+  t.mock.method(randomSource, 'next', () => {
     return 0.5;
   });
   const a = hero('a'),
