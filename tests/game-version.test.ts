@@ -20,15 +20,15 @@ test('game versions advance once per first-parent commit, ignoring feature branc
     git('add', '.');
     git('commit', '-m', 'base');
     const base = git('rev-parse', 'HEAD');
-    assert.equal(gameVersion(root, base), '1.0.374');
+    assert.equal(gameVersion(root, base), '1.0.375');
     git('checkout', '-b', 'feature');
     git('commit', '--allow-empty', '-m', 'first');
     git('commit', '--allow-empty', '-m', 'second');
     git('checkout', 'main');
     git('merge', '--no-ff', 'feature', '-m', 'merge');
-    assert.equal(gameVersion(root, base), '1.0.375');
-    git('commit', '--allow-empty', '-m', 'next squash merge');
     assert.equal(gameVersion(root, base), '1.0.376');
+    git('commit', '--allow-empty', '-m', 'next squash merge');
+    assert.equal(gameVersion(root, base), '1.0.377');
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

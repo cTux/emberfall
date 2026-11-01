@@ -26,7 +26,7 @@ The browser clears displayed state and gameplay dialogs on interruption, shows t
 Client build checks load `version.json` before recovery. Mismatches warn in yellow without automatic reloads or blocking gameplay; invalid or failed checks retry. See [deployment](../operations/deployment.md#deployment-and-cache-consistency).
 
 Both Vite builds derive a `1.0.patch` game version from first-parent Git history
-since the `1.0.374` baseline in [game-version.ts](../../scripts/game-version.ts).
+since the `1.0.375` versioning release in [game-version.ts](../../scripts/game-version.ts).
 Server pong messages include the embedded version, so independently built client
 and server bundles from one revision agree. The client compares every reply;
 unknown or differing versions show yellow, while unavailable connections show
