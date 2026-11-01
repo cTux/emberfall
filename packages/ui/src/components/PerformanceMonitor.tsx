@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Paper, Stack, Typography, useTheme } from '@mui/material';
 
 // Sixty half-second host samples cover the existing thirty-second history window.
@@ -21,8 +22,9 @@ export interface PerformanceMonitorProps {
   showFps?: boolean;
   showLatency?: boolean;
 }
+
 /** Sampling and clocks belong to the host. This view renders up to 60 supplied samples. */
-export function PerformanceMonitor({
+function PerformanceMonitorView({
   samples,
   showFps = true,
   showLatency = true,
@@ -162,3 +164,5 @@ export function PerformanceMonitor({
     </Paper>
   );
 }
+
+export const PerformanceMonitor = memo(PerformanceMonitorView);
