@@ -145,7 +145,7 @@ Windows have a 400px content surface and a maximum height of 480px, clamped to t
 | InteractionPrompt  | Action and optional key text.                                                                                                                                                                                                                                                        |
 | SceneStatus        | Label and optional seconds; formats a nonnegative mm:ss timer. Host owns the clock.                                                                                                                                                                                                  |
 | PortalVote         | Scene/difficulty, ready/total, voted, optional countdown, disabled and vote callback. Host owns voting rules.                                                                                                                                                                        |
-| PerformanceMonitor | Caller-supplied FPS/latency samples, optional series visibility; renders last 60 samples and gaps for unavailable readings. Host owns sampling frequency and time window.                                                                                                            |
+| PerformanceMonitor | Caller-supplied FPS/latency samples, optional series visibility; renders last 60 samples and gaps for unavailable readings. Host owns sampling frequency and time window. Memoized by sample-array identity and series visibility; hosts replace samples when readings change.       |
 
 In-world HUD actions run left to right: Inventory (bag, I), Talents (magic
 sparkles, N), Codex (book, F1), optional Portal vote, Settings (gear, Esc),
