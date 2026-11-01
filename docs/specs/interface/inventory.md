@@ -21,8 +21,9 @@ available. The warning updates when the current class changes.
 
 The left side has three columns: weapon/gloves; helmet/body armor/leggings/boots;
 amulet/off-hand/ring. All cells are equal squares in a fixed three-column, four-row
-base grid, with aligned sides and equal gaps. Equipment cells are 52.8px per side,
-exactly 1.2 times the 44px backpack cells. Equipped slots retain their rarity border;
+base grid, with aligned sides and equal gaps. Equipment cells are 50px per side,
+compact enough to fit the standard Stats tab height. Switching tabs preserves the
+window and backpack position and dimensions. Equipped slots retain their rarity border;
 empty slots have no border. Empty slots show generated wardrobe-style
 equipment icons at 15% effective opacity; equipped weapons keep their full-brightness
 icon. Hover, focus or touch exposes a narrow translucent-black item tooltip with

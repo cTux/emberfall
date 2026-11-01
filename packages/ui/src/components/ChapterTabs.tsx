@@ -17,6 +17,7 @@ export interface ChapterTabsProps {
   chapters: Chapter[];
   value: string;
   showHeading?: boolean;
+  keepMounted?: boolean;
   onChange: (id: string) => void;
 }
 export function ChapterTabs({
@@ -24,6 +25,7 @@ export function ChapterTabs({
   chapters,
   value,
   showHeading = true,
+  keepMounted = false,
   onChange,
 }: ChapterTabsProps) {
   const id = useId();
@@ -82,18 +84,29 @@ export function ChapterTabs({
   return (
     <Stack direction='row' spacing={1} useFlexGap sx={{ minWidth: 0 }}>
       {windowTabs ? createPortal(tabs, windowTabs) : tabs}
-      <Box sx={{ minWidth: 0, flex: 1 }}>
+      <Box sx={{ minWidth: 0, flex: 1, display: keepMounted ? 'grid' : undefined }}>
         {chapters.map((chapter) => {
           return (
             <Box
               key={chapter.id}
               role='tabpanel'
-              hidden={value !== chapter.id || chapter.disabled}
+              hidden={!keepMounted && (value !== chapter.id || chapter.disabled)}
+              inert={value !== chapter.id || chapter.disabled}
+              aria-hidden={value !== chapter.id || chapter.disabled}
+              sx={
+                keepMounted
+                  ? {
+                      gridArea: '1 / 1',
+                      visibility: value === chapter.id && !chapter.disabled ? 'visible' : 'hidden',
+                      minWidth: 0,
+                    }
+                  : undefined
+              }
               id={`${id}-panel-${chapter.id}`}
               aria-labelledby={`${id}-${chapter.id}`}
               tabIndex={0}
             >
-              {value === chapter.id && !chapter.disabled && (
+              {(keepMounted || value === chapter.id) && !chapter.disabled && (
                 <>
                   {showHeading && (
                     <Typography component='h3' variant='h3' gutterBottom>

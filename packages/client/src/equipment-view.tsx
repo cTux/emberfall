@@ -119,6 +119,7 @@ export function Equipment({
     <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 1.5 }}>
       <ChapterTabs
         label='Inventory'
+        keepMounted
         value={tab}
         onChange={setTab}
         showHeading={false}

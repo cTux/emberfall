@@ -67,7 +67,7 @@ test('inventory tabs preserve the bag, aligned square gear and calculated stat t
 
     for (const [id, [column, row]] of Object.entries(positions)) {
       const box = (await dialog.locator(`[data-equipment-slot=${id}]`).boundingBox())!;
-      expect(box.width).toBeCloseTo(bagBox.width * 1.2, 1);
+      expect(box.width).toBe(50);
       expect(box.height).toBe(box.width);
       expect(box.x - origin.x).toBeCloseTo((column - 2) * (box.width + 4), 1);
       expect(box.y - origin.y).toBeCloseTo((row - 1) * (box.height + 4), 1);
@@ -78,12 +78,13 @@ test('inventory tabs preserve the bag, aligned square gear and calculated stat t
   await page.mouse.move(0, 0);
   await page.screenshot({ path: 'test-results/inventory-equipment-tabs.png' });
   const bagBox = await bag.boundingBox();
+  const equipmentSurface = await dialog.locator('.game-window-surface').boundingBox();
   await equipment.focus();
   await page.keyboard.press('ArrowDown');
   await expect(statsTab).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(statsTab).toHaveAttribute('aria-selected', 'true');
-  await expect(dialog.locator('[data-equipment-slot]')).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: /^Helmet:/ })).toHaveCount(0);
   const stats = dialog.getByRole('region', { name: 'Character stats' });
   await expect(stats).toContainText('Critical chance7.8%');
   await expect(stats).toContainText('Critical damage164%');
@@ -92,12 +93,16 @@ test('inventory tabs preserve the bag, aligned square gear and calculated stat t
   const after = (await bag.boundingBox())!;
   expect(after.x).toBe(bagBox!.x);
   expect(after.width).toBe(bagBox!.width);
+  expect(after.y).toBe(bagBox!.y);
+  expect(after.height).toBe(bagBox!.height);
+  expect(await dialog.locator('.game-window-surface').boundingBox()).toEqual(equipmentSurface);
   await page.mouse.move(0, 0);
   await page.screenshot({ path: 'test-results/inventory-stats-tabs.png' });
   await page.keyboard.press('ArrowUp');
   await expect(equipment).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(dialog.locator('[data-equipment-slot]')).toHaveCount(9);
+  expect(await dialog.locator('.game-window-surface').boundingBox()).toEqual(equipmentSurface);
   await dialog.locator('[data-equipment-slot=helmet]').click({ button: 'right' });
   await statsTab.click();
   await expect(stats).toContainText('Critical chance5%');
