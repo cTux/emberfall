@@ -1,5 +1,7 @@
 import { game } from './game.ts';
 export const {
+  improveItem,
+  improvableItems,
   itemDefinition,
   itemPrice,
   rollItem,

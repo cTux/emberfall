@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { tacticsSchema, OFFENSIVE_PRIORITIES } from './tactics.ts';
 import { Difficulty } from './enums/Difficulty.ts';
-import { storageNameSchema } from './inventory.ts';
+import { storageNameSchema, MAX_ITEM_STARS } from './inventory.ts';
 import { classSchema } from './progress.ts';
 import { CONTRACT_LIMITS } from './limits.ts';
 
@@ -13,6 +13,16 @@ const characterToken = z
   .regex(/^[a-f0-9]{64}$/)
   .optional();
 export const clientMessage = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('improveItem'),
+    id: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
+    slot: z.string().min(1).max(CONTRACT_LIMITS.contentIdCharacters).optional(),
+    stars: z
+      .number()
+      .int()
+      .min(0)
+      .max(MAX_ITEM_STARS - 1),
+  }),
   z.object({
     type: z.literal('moveTacticsPriority'),
     classId: classSchema,

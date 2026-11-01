@@ -13,6 +13,7 @@ import {
   GEAR_DEFINITIONS,
   equippedItems,
   canEquip,
+  itemStatMultiplier,
 } from '@emberfall/core';
 import type { ClientMessage, Player } from '@emberfall/common';
 import {
@@ -105,12 +106,15 @@ function EquipmentView({
                 rarityColor: rarityColor[itemRarity(instance)],
                 icon: itemIcon(gear.id),
                 price: itemPrice(instance ?? { itemId: gear.id }),
-                subtitle: GEAR_LABELS[gear.gearType],
+                subtitle: `${GEAR_LABELS[gear.gearType]} · ${instance?.stars ?? 0}/5 stars`,
                 primary: gear.stats.armor
-                  ? { label: 'Armor', value: number(gear.stats.armor) }
+                  ? {
+                      label: 'Armor',
+                      value: number(gear.stats.armor * itemStatMultiplier(instance)),
+                    }
                   : undefined,
                 badges: [
-                  ...(itemClass ? weaponBadges(player, itemClass, gear.id) : []),
+                  ...(itemClass ? weaponBadges(player, itemClass, gear.id, instance) : []),
                   ...rolledBadges(instance),
                 ],
               }

@@ -9,6 +9,12 @@ import { LeavePanel, PortalPanel } from './WorldPanels';
 import type { Preferences } from './preferences';
 import type { GraphicsSettings } from './graphics';
 
+const Anvil = lazy(() => {
+  return import('./Anvil').then((module) => {
+    return { default: module.Anvil };
+  });
+});
+
 const Talents = lazy(() => {
   return import('./Talents').then((module) => {
     return { default: module.Talents };
@@ -121,6 +127,9 @@ export function GamePanels({
   };
 
   const panels: Record<GameMenu, () => import('react').ReactNode> = {
+    anvil: () => {
+      return me ? <Anvil player={me} send={send} disabled={unavailable} /> : portal();
+    },
     resetTalents: () => {
       return me ? (
         <ResetTalentsPanel me={me} unavailable={unavailable} send={send} onClose={onClose} />

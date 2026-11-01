@@ -57,7 +57,9 @@ the equipment and animate working for 60–90 seconds of active work before wand
 again. Player trading and directed speech, pending conversations and visible replies
 replace the work pose with the regular talking/idle pose. Work resumes at the same
 station with its remaining duration when conversation ends. Empty-village time does
-not consume work time. Workstations are scenery and grant no items or combat damage.
+not consume work time. Workstations grant no items or combat damage. The smithing
+anvil additionally opens voluntary [equipment improvements](../characters/equipment.md#anvil-improvements)
+for nearby players; the other workstations remain scenery.
 
 Work feedback uses distinct particles at each functional item: cooking steam,
 amber brewing bubbles, green/lilac alchemy motes, ink flecks at the records desk,

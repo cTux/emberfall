@@ -1,5 +1,7 @@
 import {
   BULLSEYE,
+  anvilInRange,
+  improveItem,
   forestDistance,
   INTERACTION_RADIUS,
   nearbyInteraction,
@@ -22,6 +24,7 @@ import { DEFAULT_TACTICS, type ClientMessage, type Player, type Merchant } from 
 import type { CharacterStore } from '../characters.ts';
 
 type CommandType =
+  | 'improveItem'
   | 'setTactics'
   | 'moveTacticsPriority'
   | 'learnTalent'
@@ -40,6 +43,9 @@ type Handlers = {
 };
 
 const handlers: Handlers = {
+  improveItem: (message, next) => {
+    return improveItem(next, message.id, message.stars, message.slot);
+  },
   setTactics: (message, next) => {
     next.tactics = { ...DEFAULT_TACTICS, ...next.tactics, ...message.tactics };
   },
@@ -189,6 +195,13 @@ export function executeCharacterCommand(
   }
 
   villageLife(world, now);
+
+  if (message.type === 'improveItem' && !anvilInRange(player)) {
+    error('Use the smithing anvil in the village.');
+
+    return;
+  }
+
   const traderId = trading
     ? (message.npcId ?? nearbyInteraction(player, false, undefined, world.npcs)?.id)
     : undefined;

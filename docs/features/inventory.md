@@ -10,6 +10,15 @@ Village merchants: [CHAR-04](../specs/characters/equipment.md#char-04--equipment
 [merchant validation](../../packages/server/src/merchant-pricing.test.ts) and
 [desktop gear trading](../../tests/item-rarities.spec.ts). Marta stocks supplies; Bram stocks gear.
 
+## Anvil improvements
+
+[Anvil rules](../specs/characters/equipment.md#anvil-improvements),
+[bound improvement rules](../../packages/core/src/content/improvement-rules.ts),
+[picker window](../../packages/client/src/Anvil.tsx),
+[rule/save checks](../../packages/server/src/item-improvement.test.ts),
+[session validation](../../packages/server/src/anvil-commands.test.ts) and
+[desktop verification](../../tests/anvil.spec.ts).
+
 ## Random gear rarity, stats and prices
 
 Random gear rarity, stats and prices: [ITEM-01–04](../specs/item-rolls.md),

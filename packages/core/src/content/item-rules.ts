@@ -59,6 +59,7 @@ export function createItemRules(
     if (definition.kind !== 'gear') {
       return (
         rarity === Rarity.Common &&
+        (item.stars ?? 0) === 0 &&
         entries.length === 0 &&
         (definition.kind === 'consumable' || item.quantity <= RESOURCE_STACK_LIMIT)
       );

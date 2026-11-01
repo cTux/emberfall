@@ -2,6 +2,7 @@ import type { DrawingContext } from './rendering/drawing-context';
 import {
   GATHER_RANGE,
   BULLSEYE,
+  ANVIL,
   BUILDINGS,
   INNKEEPER,
   INTERACTION_RADIUS,
@@ -61,10 +62,12 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
     return b.id === id && b.id !== 'inn';
   });
   const bullseye = !!BULLSEYE && object.id === `workstation:${BULLSEYE.id}`;
+  const anvil = !!ANVIL && object.id === `workstation:${ANVIL.id}`;
 
   if (
     !building &&
     !bullseye &&
+    !anvil &&
     object.id !== 'building:wardrobe' &&
     object.id !== 'npc:innkeeper' &&
     object.id !== 'npc:craftsman'
@@ -77,11 +80,13 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
       id,
       name: building
         ? building.name
-        : bullseye
-          ? 'Bullseye'
-          : id === 'wardrobe'
-            ? 'Wardrobe'
-            : (object.npc?.name ?? INNKEEPER.name),
+        : anvil
+          ? ANVIL!.name
+          : bullseye
+            ? 'Bullseye'
+            : id === 'wardrobe'
+              ? 'Wardrobe'
+              : (object.npc?.name ?? INNKEEPER.name),
       x: object.x,
       y: object.y,
     },

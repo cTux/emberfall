@@ -7,6 +7,7 @@ import {
   itemRarity,
   rarityColor,
   itemPrice,
+  itemStatMultiplier,
 } from '@emberfall/core';
 import type { BackpackItem, Player } from '@emberfall/common';
 import { itemComparison } from '../item-comparison';
@@ -38,12 +39,16 @@ export function backpackViews(
       rarityColor: rarityColor[itemRarity(item)],
       icon: itemIcon(item.itemId),
       price: itemPrice(item),
-      subtitle: gear ? GEAR_LABELS[gear.gearType] : capitalize(definition.kind),
+      subtitle: gear
+        ? `${GEAR_LABELS[gear.gearType]} · ${item.stars ?? 0}/5 stars`
+        : capitalize(definition.kind),
       comparison: itemComparison(item, player),
-      primary: gear?.stats.armor ? { label: 'Armor', value: number(gear.stats.armor) } : undefined,
+      primary: gear?.stats.armor
+        ? { label: 'Armor', value: number(gear.stats.armor * itemStatMultiplier(item)) }
+        : undefined,
       stats: [
         ...(gear && ITEM_CLASSES[item.itemId]
-          ? weaponBadges(player, ITEM_CLASSES[item.itemId], gear.id)
+          ? weaponBadges(player, ITEM_CLASSES[item.itemId], gear.id, item)
           : []),
         ...rolledBadges(item),
       ],

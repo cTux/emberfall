@@ -30,6 +30,7 @@ export * from './training.ts';
 
 export * from './equipment.ts';
 export * from './inventory.ts';
+export * from './item-improvement.ts';
 export * from './world.ts';
 export * from './scene.ts';
 export * from './dimensions.ts';
