@@ -72,6 +72,9 @@ Configure the server as described in [operations](../../../docs/operations/steam
 - Codex, Settings and GameControls use memoized render boundaries. Their host
   callbacks remain stable so world snapshots do not rebuild unchanged panels;
   local tab state, account data, preferences and graphics changes still render.
+- `useGameHotkeys` installs its global keyboard listener once per mount. A React
+  Effect Event reads the latest committed menu, session and action handlers
+  without reconnecting the listener on snapshots or menu changes.
 - `codex/chapters.ts` declares chapter order while gameplay, character and
   credit content live in separate modules. Codex remains a lazy-loaded panel.
 - `settings-controls.ts` and `tactics-controls.ts` declare typed control labels,
