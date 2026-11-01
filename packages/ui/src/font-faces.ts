@@ -1,5 +1,8 @@
 import { GAME_FONTS } from './fonts';
 
+// Bundled Alegreya files use CSS's regular, medium and bold weight identifiers.
+const ALEGREYA_WEIGHTS = { regular: 400, medium: 500, bold: 700 };
+
 export const fontFaces = (fontBaseUrl: string) => {
   return [
     ...Object.entries(GAME_FONTS)
@@ -19,14 +22,14 @@ export const fontFaces = (fontBaseUrl: string) => {
           };
         });
       }),
-    ...[400, 500, 700].map((weight) => {
+    ...Object.values(ALEGREYA_WEIGHTS).map((weight) => {
       return {
         '@font-face': {
           fontFamily: 'Alegreya Sans',
           fontStyle: 'normal' as const,
           fontWeight: weight,
           fontDisplay: 'swap' as const,
-          src: `url('${fontBaseUrl}AlegreyaSans-${weight === 400 ? 'Regular' : weight === 500 ? 'Medium' : 'Bold'}.ttf') format('truetype')`,
+          src: `url('${fontBaseUrl}AlegreyaSans-${weight === ALEGREYA_WEIGHTS.regular ? 'Regular' : weight === ALEGREYA_WEIGHTS.medium ? 'Medium' : 'Bold'}.ttf') format('truetype')`,
         },
       };
     }),

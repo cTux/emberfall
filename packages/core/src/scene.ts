@@ -1,3 +1,25 @@
+import { COLLISION } from './definitions/collision.ts';
+import { SCENERY_RANDOM } from './scenery-seed.ts';
+
+// Existing integer hash decorrelates adjacent cells while preserving deterministic tree identities.
+const CELL_HASH = {
+  columnOffset: 17,
+  columnPrime: 73856093,
+  rowOffset: 31,
+  rowPrime: 19349663,
+} as const;
+// Existing in-cell tree placement and art sizes preserve the forest layout used by both runtimes.
+const FOREST_TREE_LAYOUT = {
+  inset: 25,
+  spread: 110,
+  minSize: 78,
+  sizeRange: 28,
+  portalClearing: 180,
+} as const;
+// Forty pixels covers nearby trunks during actor movement's radius-sized substeps.
+const TREE_COLLISION_QUERY_RADIUS = 40;
+// Existing interaction calibration matches the wardrobe and building doorway artwork.
+const FIXTURE_INTERACTION = { wardrobeRadius: 55, doorwayOffsetY: 24 } as const;
 import {
   FOREST,
   LOBBY_PORTAL,
@@ -34,17 +56,26 @@ export function forestTrees(x: number, y: number, radius: number) {
     ) {
       const c = wrap(col, FOREST.width / FOREST_DEFINITION.treeCellSize),
         r = wrap(row, FOREST.height / FOREST_DEFINITION.treeCellSize);
-      let seed = (Math.imul(c + 17, 73856093) ^ Math.imul(r + 31, 19349663)) >>> 0;
+      let seed =
+        (Math.imul(c + CELL_HASH.columnOffset, CELL_HASH.columnPrime) ^
+          Math.imul(r + CELL_HASH.rowOffset, CELL_HASH.rowPrime)) >>>
+        0;
       const random = () => {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        seed = (Math.imul(seed, SCENERY_RANDOM.multiplier) + SCENERY_RANDOM.increment) >>> 0;
 
-        return seed / 4294967296;
+        return seed / SCENERY_RANDOM.modulus;
       };
 
-      const tx = col * FOREST_DEFINITION.treeCellSize + 25 + random() * 110,
-        ty = row * FOREST_DEFINITION.treeCellSize + 25 + random() * 110;
+      const tx =
+          col * FOREST_DEFINITION.treeCellSize +
+          FOREST_TREE_LAYOUT.inset +
+          random() * FOREST_TREE_LAYOUT.spread,
+        ty =
+          row * FOREST_DEFINITION.treeCellSize +
+          FOREST_TREE_LAYOUT.inset +
+          random() * FOREST_TREE_LAYOUT.spread;
 
-      if (forestDistance({ x: tx, y: ty }, FOREST_PORTAL) < 180) {
+      if (forestDistance({ x: tx, y: ty }, FOREST_PORTAL) < FOREST_TREE_LAYOUT.portalClearing) {
         continue;
       }
 
@@ -52,7 +83,7 @@ export function forestTrees(x: number, y: number, radius: number) {
         id: `forest:${c}:${r}`,
         x: tx,
         y: ty,
-        size: 78 + random() * 28,
+        size: FOREST_TREE_LAYOUT.minSize + random() * FOREST_TREE_LAYOUT.sizeRange,
         radius: FOREST_DEFINITION.treeRadius,
       });
     }
@@ -76,7 +107,7 @@ export function moveForestActor(
   const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / Math.max(1, radius / 2)));
 
   for (let i = 0; i < steps; i++) {
-    const trees = forestTrees(x, y, 40);
+    const trees = forestTrees(x, y, TREE_COLLISION_QUERY_RADIUS);
     const clear = (px: number, py: number) => {
       // Owner-position spawns must be able to escape a trunk they already overlap.
       return trees.every((t) => {
@@ -111,7 +142,8 @@ export function traderInRange(
     !!npcs?.some((npc) => {
       return (
         npc.id === npcId &&
-        forestDistance({ x: player.x, y: player.y + 15 }, npc) < INTERACTION_RADIUS
+        forestDistance({ x: player.x, y: player.y + COLLISION.feetOffset }, npc) <
+          INTERACTION_RADIUS
       );
     })
   );
@@ -136,14 +168,14 @@ export function nearbyInteraction(
   }
 
   const distance = (point: { x: number; y: number }) => {
-    return forestDistance({ x: player.x, y: player.y + 15 }, point);
+    return forestDistance({ x: player.x, y: player.y + COLLISION.feetOffset }, point);
   };
 
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS) {
     return { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL };
   }
 
-  if (distance(WARDROBE) < 55) {
+  if (distance(WARDROBE) < FIXTURE_INTERACTION.wardrobeRadius) {
     return { id: 'wardrobe', name: 'Wardrobe', ...WARDROBE };
   }
 
@@ -156,7 +188,10 @@ export function nearbyInteraction(
   }
 
   const building = BUILDINGS.find((b) => {
-    return b.id !== 'inn' && distance({ x: b.doorX, y: b.y + 24 }) < INTERACTION_RADIUS;
+    return (
+      b.id !== 'inn' &&
+      distance({ x: b.doorX, y: b.y + FIXTURE_INTERACTION.doorwayOffsetY }) < INTERACTION_RADIUS
+    );
   });
 
   return building

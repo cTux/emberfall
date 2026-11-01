@@ -5,6 +5,9 @@ import { Box, Stack } from '@mui/material';
 import { clientAsset } from './urls';
 import { classSprite } from './class-art';
 
+// Preserve the private-world fallback while the first world-list message is still in flight.
+const FALLBACK_WORLD_CAPACITY = 8;
+
 export function PartyHud({
   world,
   worlds,
@@ -26,7 +29,7 @@ export function PartyHud({
       aria-label={`${world.name}: ${world.players.length}/${
         worlds.find((entry) => {
           return entry.id === world.id;
-        })?.capacity ?? 8
+        })?.capacity ?? FALLBACK_WORLD_CAPACITY
       } adventurers`}
     >
       {world.players

@@ -1,3 +1,5 @@
+import { MAX_SESSIONS } from './limits.ts';
+import { POLICY_VIOLATION } from '../network/codes.ts';
 import { randomUUID } from 'node:crypto';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import type { Peer as WebSocket } from '../network/peer.ts';
@@ -24,8 +26,8 @@ export function connectSession(
     isClosing: () => boolean;
   },
 ) {
-  if (sessions.size >= 256) {
-    ws.close(1008, 'Server is full');
+  if (sessions.size >= MAX_SESSIONS) {
+    ws.close(POLICY_VIOLATION, 'Server is full');
 
     return;
   }
@@ -62,7 +64,7 @@ export function connectSession(
       return;
     }
 
-    if (session.worldId && !isClosing() && code !== 1008) {
+    if (session.worldId && !isClosing() && code !== POLICY_VIOLATION) {
       session.reconnectUntil = Date.now() + RUNTIME.reconnectMs;
       serverLog.info('Waiting for player reconnect', {
         sessionId: session.id,

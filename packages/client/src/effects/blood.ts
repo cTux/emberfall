@@ -1,3 +1,4 @@
+import { BLOOD_STYLE as STYLE, STAIN_RANDOM } from './blood-style.ts';
 import type { DrawingContext } from '../rendering/drawing-context';
 import type { SceneState, DamageEvent } from '@emberfall/common';
 import { TRANSIENT_EFFECTS } from '@emberfall/core/definitions/effects/transient';
@@ -45,14 +46,14 @@ export function bloodPuddleRenderer() {
 
     for (const puddle of puddles.values()) {
       ctx.globalAlpha =
-        0.5 * (1 - Math.max(0, now - puddle.at) / TRANSIENT_EFFECTS.blood.lifetimeMs);
-      const p = near(puddle.x, puddle.y + 15);
+        STYLE.opacity * (1 - Math.max(0, now - puddle.at) / TRANSIENT_EFFECTS.blood.lifetimeMs);
+      const p = near(puddle.x, puddle.y + STYLE.feetOffset);
 
       if (
-        p.x < view.x - 40 ||
-        p.x > view.x + view.width + 40 ||
-        p.y < view.y - 20 ||
-        p.y > view.y + view.height + 20
+        p.x < view.x - STYLE.horizontalCullMargin ||
+        p.x > view.x + view.width + STYLE.horizontalCullMargin ||
+        p.y < view.y - STYLE.verticalCullMargin ||
+        p.y > view.y + view.height + STYLE.verticalCullMargin
       ) {
         continue;
       }
@@ -60,19 +61,19 @@ export function bloodPuddleRenderer() {
       // Seed each stain so its uneven outline and droplets stay fixed between frames.
       let seed = puddle.id;
       const random = () => {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+        seed = (Math.imul(seed, STAIN_RANDOM.multiplier) + STAIN_RANDOM.increment) >>> 0;
 
-        return seed / 4294967296;
+        return seed / STAIN_RANDOM.range;
       };
 
       // One fill keeps overlapping splash shapes at the same fading opacity.
       ctx.beginPath();
 
-      for (let i = 0; i < 24; i++) {
-        const angle = (i / 24) * Math.PI * 2 + puddle.id;
-        const radius = 9 + random() * 19;
+      for (let i = 0; i < STYLE.outlinePoints; i++) {
+        const angle = (i / STYLE.outlinePoints) * Math.PI * 2 + puddle.id;
+        const radius = STYLE.minimumRadius + random() * STYLE.radiusSpread;
         const x = p.x + Math.cos(angle) * radius;
-        const y = p.y + Math.sin(angle) * radius * 0.55;
+        const y = p.y + Math.sin(angle) * radius * STYLE.groundFlattening;
 
         if (i === 0) {
           ctx.moveTo(x, y);
@@ -83,14 +84,14 @@ export function bloodPuddleRenderer() {
 
       ctx.closePath();
 
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < STYLE.droplets; i++) {
         const angle = random() * Math.PI * 2;
-        const distance = 24 + random() * 13;
-        const radius = 1 + random() * 2.5;
+        const distance = STYLE.dropletDistance + random() * STYLE.dropletDistanceSpread;
+        const radius = 1 + random() * STYLE.dropletRadiusSpread;
         const x = p.x + Math.cos(angle) * distance;
-        const y = p.y + Math.sin(angle) * distance * 0.55;
+        const y = p.y + Math.sin(angle) * distance * STYLE.groundFlattening;
         ctx.moveTo(x + radius, y);
-        ctx.ellipse(x, y, radius, radius * 0.55, 0, 0, Math.PI * 2);
+        ctx.ellipse(x, y, radius, radius * STYLE.groundFlattening, 0, 0, Math.PI * 2);
       }
 
       ctx.fill();

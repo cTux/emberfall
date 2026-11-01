@@ -1,24 +1,15 @@
+import type { WorkloadPeer } from './runtime-client-models.ts';
+import * as LIMITS from './runtime-client-limits.ts';
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
-import { Client, type Room } from '@colyseus/sdk';
-import type { ClientMessage, ServerMessage, WorldState } from '@emberfall/common';
+import { Client } from '@colyseus/sdk';
+import type { ClientMessage, ServerMessage } from '@emberfall/common';
 import { SessionState, materializeState } from '@emberfall/common/protocol';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { BENCHMARK } from './runtime-workload.ts';
 
 export async function connectWorkload(port: number, worldCount: number) {
-  const peers: {
-    room: Room<SessionState>;
-    playerId: string;
-    worldId: string;
-    latest?: WorldState;
-    receivedAt: number;
-    states: number;
-    saved: number;
-    lastServerNow: number;
-    lastAck: number;
-    sent: Map<number, number>;
-  }[] = [];
+  const peers: WorkloadPeer[] = [];
   const errors: string[] = [];
   const gaps: number[] = [];
   const acknowledgements: number[] = [];
@@ -148,7 +139,7 @@ export async function connectWorkload(port: number, worldCount: number) {
               peer.lastAck = ack;
             }
           } catch (error) {
-            if (errors.length < 20) {
+            if (errors.length < LIMITS.MAX_ERRORS) {
               errors.push(String(error));
             }
           }
@@ -157,7 +148,7 @@ export async function connectWorkload(port: number, worldCount: number) {
           (resolve, reject) => {
             const timer = setTimeout(() => {
               return reject(new Error('Benchmark admission timed out'));
-            }, 15000);
+            }, LIMITS.ADMISSION_TIMEOUT_MS);
             joined = (message) => {
               clearTimeout(timer);
               resolve(message);
@@ -201,8 +192,8 @@ export async function connectWorkload(port: number, worldCount: number) {
             seq: sequence,
             epoch: scenes[peer.worldId],
             durationMs: BENCHMARK.inputMs,
-            x: Math.sin(sequence / 20 + index),
-            y: Math.cos(sequence / 20 + index),
+            x: Math.sin(sequence / LIMITS.ROTATION_SAMPLES + index),
+            y: Math.cos(sequence / LIMITS.ROTATION_SAMPLES + index),
           } satisfies ClientMessage);
         }
       }, BENCHMARK.inputMs);
@@ -224,15 +215,21 @@ export async function connectWorkload(port: number, worldCount: number) {
 
       for (const peer of peers) {
         assert(peer.states > 0 && peer.lastAck > 0);
-        assert(peer.saved >= 5, 'Measure multiple real autosave cycles per player');
-        assert(performance.now() - peer.receivedAt < 1000, 'Every client must remain live');
+        assert(
+          peer.saved >= LIMITS.MIN_AUTOSAVES,
+          'Measure multiple real autosave cycles per player',
+        );
+        assert(
+          performance.now() - peer.receivedAt < LIMITS.MAX_SNAPSHOT_AGE_MS,
+          'Every client must remain live',
+        );
       }
 
       assert(gaps.length && acknowledgements.length);
       const p95 = (values: number[]) => {
         return [...values].sort((a, b) => {
           return a - b;
-        })[Math.floor(values.length * 0.95)];
+        })[Math.floor(values.length * LIMITS.P95_QUANTILE)];
       };
 
       return {
@@ -242,14 +239,14 @@ export async function connectWorkload(port: number, worldCount: number) {
             return sum + peer.states;
           }, 0) /
           peers.length /
-          (measuredMs / 1000),
+          (measuredMs / LIMITS.MILLISECONDS_PER_SECOND),
         minStateHz:
           Math.min(
             ...peers.map((peer) => {
               return peer.states;
             }),
           ) /
-          (measuredMs / 1000),
+          (measuredMs / LIMITS.MILLISECONDS_PER_SECOND),
         serverNowGapP95Ms: p95(gaps),
         serverNowGapMaxMs: Math.max(...gaps),
         inputAcknowledgementP95Ms: p95(acknowledgements),

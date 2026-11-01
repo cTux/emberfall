@@ -1,3 +1,4 @@
+import { drawForestShadows, drawForestPlayerLights } from './forest-lighting.ts';
 import { drawEnvironment } from './environment-rendering';
 import { createForestActors, forestActorMask } from './forest-actors';
 import { forestLayers, drawForestLayer } from './forest-layers';
@@ -13,7 +14,7 @@ import { resourceNodes, resourceState, FOREST } from '@emberfall/core';
 import { resourceScenery } from './gathering';
 
 import { idleBreath } from './animation';
-import { createForestGround } from './forest-ground';
+import { createForestGround, drawForestGround } from './forest-ground';
 
 import { companionShadows } from './companion-shadows';
 import { critterCaster, crittersAt } from './critters';
@@ -28,10 +29,8 @@ import { drawDanger } from './danger';
 import type { WorldState } from '@emberfall/common';
 import type { GraphicsSettings } from './graphics';
 import type { Preferences } from './preferences';
-import { castShadow } from './lighting';
 import type { Caster } from './lighting';
 import { dayNight } from './day-night';
-import { lightTexture } from './light-texture';
 import { drawChatBubble, drawDamageFlash } from './effects';
 
 export function forestRenderer(
@@ -59,13 +58,19 @@ export function forestRenderer(
     ctx.ambientTint = cycle.tint;
     ctx.directionalShadow = cycle.shadow;
     const terrain = forestGround();
-    const scale = Math.max(ctx.canvas.width / 960, ctx.canvas.height / 640),
+    const scale = Math.max(
+        ctx.canvas.width / FOREST_VIEW.width,
+        ctx.canvas.height / FOREST_VIEW.height,
+      ),
       width = ctx.canvas.width / scale,
       height = ctx.canvas.height / scale;
     const me = world?.players.find((p) => {
       return p.id === playerId;
     });
-    const focus = me ?? { x: 2400 + Math.sin(now / 25000) * 70, y: 1280 };
+    const focus = me ?? {
+      x: FOREST_VIEW.demoX + Math.sin(now / FOREST_VIEW.demoSwayMs) * FOREST_VIEW.demoSway,
+      y: FOREST_VIEW.demoY,
+    };
     const cx = focus.x,
       cy = focus.y;
     const cameraX = cx - width / 2,
@@ -80,11 +85,7 @@ export function forestRenderer(
     ctx.setTransform(scale, 0, 0, scale, -cameraX * scale, -cameraY * scale);
     ctx.imageSmoothingEnabled = false;
 
-    for (let row = Math.floor(cameraY / 320); row <= (cameraY + height) / 320; row++) {
-      for (let col = Math.floor(cameraX / 320); col <= (cameraX + width) / 320; col++) {
-        ctx.drawImage(terrain, col * 320, row * 320);
-      }
-    }
+    drawForestGround(ctx, terrain, cameraX, cameraY, width, height);
 
     if (world?.scene) {
       drawClassProjectiles(ctx, world.scene, serverTime, near, quality.particles, prefs, playerId);
@@ -118,13 +119,13 @@ export function forestRenderer(
     });
     const trees = resourceNodes(
       { x: cx, y: cy, scene: 'forest' },
-      Math.hypot(width, height) / 2 + 300,
+      Math.hypot(width, height) / 2 + FOREST_VIEW.sceneryMargin,
     ).filter((t) => {
       return (
-        t.x > cameraX - 300 &&
-        t.x < cameraX + width + 300 &&
-        t.y > cameraY - 300 &&
-        t.y < cameraY + height + 300
+        t.x > cameraX - FOREST_VIEW.sceneryMargin &&
+        t.x < cameraX + width + FOREST_VIEW.sceneryMargin &&
+        t.y > cameraY - FOREST_VIEW.sceneryMargin &&
+        t.y < cameraY + height + FOREST_VIEW.sceneryMargin
       );
     });
     const casters: Caster[] = trees.map((node) => {
@@ -153,21 +154,7 @@ export function forestRenderer(
 
     casters.push(...companionShadows(players, serverTime, near));
 
-    if (quality.shadows) {
-      for (const caster of casters) {
-        castShadow(ctx, caster);
-      }
-    }
-
-    if (!quality.shadows) {
-      ctx.fillStyle = '#07120955';
-
-      for (const t of trees) {
-        ctx.beginPath();
-        ctx.ellipse(t.x, t.y, 23, 8, 0, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
+    drawForestShadows(ctx, casters, trees, quality.shadows);
 
     if (world?.scene) {
       drawDanger(ctx, world.scene, serverTime, near);
@@ -193,7 +180,10 @@ export function forestRenderer(
       renderer.setPlayerCutout(
         forestActorMask(localActor.image, localActor.facing, localActor.row),
         localActor.x - localActor.size / 2,
-        localActor.y + 15 - (localActor.size * 45) / 48 + localActor.size * (1 - breath),
+        localActor.y +
+          FOREST_ACTOR.footOffset -
+          (localActor.size * FOREST_ACTOR.bodyHeight) / FOREST_ACTOR.playerSize +
+          localActor.size * (1 - breath),
         localActor.size,
         localActor.size * breath,
       );
@@ -213,32 +203,14 @@ export function forestRenderer(
     };
 
     for (const layer of layers) {
-      renderer.occlusion = !!localActor && layer.y > localActor.y + 15;
+      renderer.occlusion = !!localActor && layer.y > localActor.y + FOREST_ACTOR.footOffset;
       drawForestLayer(ctx, layer, actorFrame);
     }
 
     renderer.occlusion = false;
 
     if (quality.lighting) {
-      ctx.save();
-      ctx.globalAlpha = cycle.lightAlpha;
-      ctx.globalCompositeOperation = 'screen';
-
-      for (const p of rendered.filter((a) => {
-        return a.player && a.player.hitpoints > 0;
-      })) {
-        const light = {
-          x: p.x + (p.facing === 2 ? -15 : 12),
-          y: p.y + 15,
-          height: 28,
-          radius: 110,
-          strength: 0.18,
-          owner: p.id,
-        };
-        ctx.drawImage(lightTexture(light, casters, quality.shadows), light.x - 110, light.y - 110);
-      }
-
-      ctx.restore();
+      drawForestPlayerLights(ctx, rendered, casters, cycle.lightAlpha, quality.shadows);
     }
 
     drawEnvironment(ctx, { x: cameraX, y: cameraY, width, height }, now, quality, cycle.daylight);
@@ -273,3 +245,5 @@ export function forestRenderer(
 }
 
 import { drawDamageNumbers } from './damage-text';
+
+import { FOREST_ACTOR, FOREST_VIEW } from './forest-calibration.ts';

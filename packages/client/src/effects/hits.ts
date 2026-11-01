@@ -1,22 +1,42 @@
 import type { DrawingContext } from '../rendering/drawing-context';
 import type { WorldState } from '@emberfall/common';
 
-export function hitOutline(mask: HTMLCanvasElement, color = '#ff3737', radius = 2) {
+// Existing flash timings keep damage visible briefly without obscuring the next attack.
+const HIT_STYLE = {
+  outlineRadius: 2,
+  targetDurationMs: 220,
+  screenDurationMs: 280,
+  screenOpacity: 0.22,
+  // The absent-hit timestamp is deliberately older than either flash lifetime at startup.
+  missingHitAt: -10000,
+  // Fixed pose resampling keeps party outlines one game pixel thick independent of source art.
+  partyMaskPixels: 48,
+  partyOutlinePixels: 50,
+} as const;
+
+// Eight authored offsets dilate the silhouette around its center before subtraction.
+const OUTLINE_OFFSETS = [
+  [0, 2],
+  [4, 2],
+  [2, 0],
+  [2, 4],
+  [1, 1],
+  [3, 3],
+  [1, 3],
+  [3, 1],
+];
+
+export function hitOutline(
+  mask: HTMLCanvasElement,
+  color = '#ff3737',
+  radius: number = HIT_STYLE.outlineRadius,
+) {
   const outline = document.createElement('canvas');
   outline.width = mask.width + radius * 2;
   outline.height = mask.height + radius * 2;
   const c = outline.getContext('2d')!;
 
-  for (const [x, y] of [
-    [0, 2],
-    [4, 2],
-    [2, 0],
-    [2, 4],
-    [1, 1],
-    [3, 3],
-    [1, 3],
-    [3, 1],
-  ]) {
+  for (const [x, y] of OUTLINE_OFFSETS) {
     c.drawImage(mask, (x * radius) / 2, (y * radius) / 2);
   }
 
@@ -42,7 +62,7 @@ export function drawTargetHit(
   height: number,
   age: number,
 ) {
-  if (age < 0 || age >= 220) {
+  if (age < 0 || age >= HIT_STYLE.targetDurationMs) {
     return;
   }
 
@@ -61,10 +81,10 @@ export function drawTargetHit(
     hitSprites.set(mask, sprites);
   }
 
-  const padX = (2 * width) / mask.width;
-  const padY = (2 * height) / mask.height;
+  const padX = (HIT_STYLE.outlineRadius * width) / mask.width;
+  const padY = (HIT_STYLE.outlineRadius * height) / mask.height;
   ctx.save();
-  ctx.globalAlpha *= 1 - age / 220;
+  ctx.globalAlpha *= 1 - age / HIT_STYLE.targetDurationMs;
   ctx.drawImage(sprites.outline, x - padX, y - padY, width + padX * 2, height + padY * 2);
   ctx.drawImage(sprites.tint, x, y, width, height);
   ctx.restore();
@@ -76,15 +96,15 @@ export function drawDamageFlash(ctx: DrawingContext, world: WorldState | null, i
       return d.target === id;
     })
     .at(-1);
-  const age = (world?.serverNow ?? 0) - (hit?.at ?? -10000);
+  const age = (world?.serverNow ?? 0) - (hit?.at ?? HIT_STYLE.missingHitAt);
 
-  if (age < 0 || age > 280) {
+  if (age < 0 || age > HIT_STYLE.screenDurationMs) {
     return;
   }
 
   ctx.save();
   ctx.resetTransform();
-  ctx.globalAlpha *= 0.22 * (1 - age / 280);
+  ctx.globalAlpha *= HIT_STYLE.screenOpacity * (1 - age / HIT_STYLE.screenDurationMs);
   ctx.fillStyle = '#ff1923';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.restore();
@@ -110,12 +130,20 @@ export function drawPartyOutline(
 
   if (!outline) {
     const silhouette = document.createElement('canvas');
-    silhouette.width = 48;
-    silhouette.height = 48;
-    silhouette.getContext('2d')!.drawImage(mask, 0, 0, 48, 48);
+    silhouette.width = HIT_STYLE.partyMaskPixels;
+    silhouette.height = HIT_STYLE.partyMaskPixels;
+    silhouette
+      .getContext('2d')!
+      .drawImage(mask, 0, 0, HIT_STYLE.partyMaskPixels, HIT_STYLE.partyMaskPixels);
     outline = hitOutline(silhouette, highlighted ? '#00ff00' : '#339dff', 1);
     cache.set(highlighted, outline);
   }
 
-  ctx.drawImage(outline, x - width / 48, y - height / 48, (width * 50) / 48, (height * 50) / 48);
+  ctx.drawImage(
+    outline,
+    x - width / HIT_STYLE.partyMaskPixels,
+    y - height / HIT_STYLE.partyMaskPixels,
+    (width * HIT_STYLE.partyOutlinePixels) / HIT_STYLE.partyMaskPixels,
+    (height * HIT_STYLE.partyOutlinePixels) / HIT_STYLE.partyMaskPixels,
+  );
 }

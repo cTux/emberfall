@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="230" viewBox="0 0 960 230" role="img" aria-labelledby="title description">
+  <title id="title">Named numeric values with rationale</title>
+  <desc id="description">A fifteen-second heartbeat interval is named at its definition, explained as tolerance for brief network stalls, and reused by the timer.</desc>
+  <rect width="960" height="230" rx="16" fill="#101817"/>
+  <text x="30" y="42" fill="#eeeddf" font-family="sans-serif" font-size="22">Concept preview · name the policy and explain the choice</text>
+  <g font-family="monospace" font-size="17">
+    <text x="30" y="92" fill="#9bbca1">// 15 seconds tolerates brief network stalls before dropping a peer.</text>
+    <text x="30" y="128" fill="#e6be80">const HEARTBEAT_INTERVAL_MS = 15_000;</text>
+    <text x="30" y="180" fill="#88b8df">setInterval(checkConnections, HEARTBEAT_INTERVAL_MS);</text>
+  </g>
+</svg>

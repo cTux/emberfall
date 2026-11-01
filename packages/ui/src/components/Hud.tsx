@@ -4,6 +4,9 @@ import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { StatusMeter } from './StatusMeter';
 import { BossHealthStyled, HudActionButtonStyled, HudShortcutStyled } from './styles';
 
+// A minute contains sixty seconds; pad seconds to two digits for the mm:ss timer.
+const SCENE_CLOCK = { secondsPerMinute: 60, secondsDigits: 2 };
+
 export function ConnectionStatus({
   status,
 }: {
@@ -101,7 +104,7 @@ export function SceneStatus({ label, seconds }: { label: string; seconds?: numbe
       {label}
       {time === undefined
         ? ''
-        : ` · ${Math.floor(time / 60)}:${String(time % 60).padStart(2, '0')}`}
+        : ` · ${Math.floor(time / SCENE_CLOCK.secondsPerMinute)}:${String(time % SCENE_CLOCK.secondsPerMinute).padStart(SCENE_CLOCK.secondsDigits, '0')}`}
     </Typography>
   );
 }

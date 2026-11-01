@@ -1,6 +1,10 @@
 import { z } from 'zod';
+import { PERCENT } from '@emberfall/common';
 import type { RegistryName } from '../contracts.ts';
 import { id, positive, nonnegative, data } from './primitives.ts';
+
+// Three talent columns each have four active abilities, encoded as stable slots 0 through 11.
+const MAX_TALENT_SLOT = 11;
 
 export const contentShapes: Record<RegistryName, z.ZodType> = {
   items: z.discriminatedUnion('kind', [
@@ -67,7 +71,7 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
     id,
     name: z.string().min(1).optional(),
     classId: id.optional(),
-    talentSlot: nonnegative.int().max(11).optional(),
+    talentSlot: nonnegative.int().max(MAX_TALENT_SLOT).optional(),
     powerScale: positive.optional(),
     kind: z.enum(['slash', 'arrow', 'fireball', 'roots']),
     range: positive,
@@ -136,9 +140,9 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
   enemyTypes: z.object({
     id,
     multiplier: positive,
-    dropChance: nonnegative.max(100),
+    dropChance: nonnegative.max(PERCENT),
     dropCount: z.union([nonnegative, z.object({ min: nonnegative, max: nonnegative })]),
-    spawnChance: nonnegative.max(100).optional(),
+    spawnChance: nonnegative.max(PERCENT).optional(),
   }),
   difficulties: z.object({ id, multiplier: positive, speedMultiplier: positive }),
 };

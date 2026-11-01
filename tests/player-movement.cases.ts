@@ -1,3 +1,5 @@
+// Observe a paused gait longer than its normal frame interval.
+const PAUSE_OBSERVATION_MS = 160;
 import { test, expect } from './fixtures';
 
 test('class movement page shows every direction and supports gait inspection', async ({ page }) => {
@@ -18,7 +20,7 @@ test('class movement page shows every direction and supports gait inspection', a
   await page.getByLabel('Travel', { exact: true }).uncheck();
   await expect(canvas).toHaveAttribute('data-travel', 'false');
   const pausedFrame = await canvas.getAttribute('data-frame');
-  await page.waitForTimeout(160);
+  await page.waitForTimeout(PAUSE_OBSERVATION_MS);
   await expect(canvas).toHaveAttribute('data-frame', pausedFrame!);
   const seen = new Set<string>();
 

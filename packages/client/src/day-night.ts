@@ -1,4 +1,27 @@
-export const DAY_MS = 60 * 60 * 1000;
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+
+// Smoothstep uses the cubic 3t²-2t³ to join keyframes with zero slope at both endpoints.
+const SMOOTHSTEP_CUBIC = 3;
+
+// A one-hour presentation cycle retains the existing 6/30/6/18-minute dawn/day/dusk/night split.
+const DAY_CYCLE = {
+  minutesPerHour: 60,
+  secondsPerMinute: 60,
+  daylightEnd: 0.7,
+  nightFraction: 0.3,
+  lightReduction: 0.7,
+  shadowLength: 1.8,
+  elevationShortening: 1.35,
+  shadowAspect: 0.6,
+  sunOpacity: 0.26,
+  moonOpacity: 0.12,
+  horizonFade: 5,
+} as const;
+// RGB channels use eight bits; packing shifts preserve the renderer's 0xRRGGBB color format.
+const RGB = { maximum: 255, redShift: 16, greenShift: 8, greenIndex: 2, blueIndex: 3 } as const;
+
+export const DAY_MS =
+  DAY_CYCLE.minutesPerHour * DAY_CYCLE.secondsPerMinute * MILLISECONDS_PER_SECOND;
 
 // Dawn 6m, daylight 30m, dusk 6m, night 18m. Endpoints join seamlessly.
 const KEYS = [
@@ -19,27 +42,35 @@ export function dayNight(serverTime: number) {
   const from = KEYS[index - 1],
     to = KEYS[index];
   const progress = (phase - from[0]) / (to[0] - from[0]);
-  const blend = progress * progress * (3 - 2 * progress);
+  const blend = progress * progress * (SMOOTHSTEP_CUBIC - 2 * progress);
   const channel = (i: 1 | 2 | 3) => {
-    return Math.round(255 * (from[i] + (to[i] - from[i]) * blend));
+    return Math.round(RGB.maximum * (from[i] + (to[i] - from[i]) * blend));
   };
 
   const daylight = from[4] + (to[4] - from[4]) * blend;
-  const sun = phase < 0.7;
-  const orbit = (sun ? phase / 0.7 : (phase - 0.7) / 0.3) * Math.PI;
+  const sun = phase < DAY_CYCLE.daylightEnd;
+  const orbit =
+    (sun
+      ? phase / DAY_CYCLE.daylightEnd
+      : (phase - DAY_CYCLE.daylightEnd) / DAY_CYCLE.nightFraction) * Math.PI;
   const elevation = Math.sin(orbit);
-  const length = 1.8 - elevation * 1.35;
+  const length = DAY_CYCLE.shadowLength - elevation * DAY_CYCLE.elevationShortening;
 
   return {
-    tint: (channel(1) << 16) | (channel(2) << 8) | channel(3),
+    tint:
+      (channel(1) << RGB.redShift) |
+      (channel(RGB.greenIndex) << RGB.greenShift) |
+      channel(RGB.blueIndex),
     daylight,
-    lightAlpha: 1 - daylight * 0.7,
+    lightAlpha: 1 - daylight * DAY_CYCLE.lightReduction,
     celestial: sun ? 'sun' : 'moon',
     // Both bodies travel east to west; their shadows fade at the horizon handoff.
     shadow: {
       x: Math.cos(orbit) * length,
-      y: length * 0.6,
-      opacity: (sun ? 0.26 : 0.12) * Math.min(1, elevation * 5),
+      y: length * DAY_CYCLE.shadowAspect,
+      opacity:
+        (sun ? DAY_CYCLE.sunOpacity : DAY_CYCLE.moonOpacity) *
+        Math.min(1, elevation * DAY_CYCLE.horizonFade),
     },
   };
 }

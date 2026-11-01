@@ -10,6 +10,9 @@ import { ItemTooltip, type ItemTooltipView, type EquipmentBadgeView } from './It
 import { GoldBalance } from './GoldBalance';
 import { INVENTORY_DRAG_PREFIX, inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
+// Preserve the default twenty-slot pack; storage hosts explicitly request their larger capacity.
+const DEFAULT_BACKPACK_SLOTS = 20;
+
 export interface BackpackItemView extends ItemTooltipView {
   stats?: EquipmentBadgeView[];
   useAction?: string;
@@ -37,7 +40,7 @@ export function Backpack({
   coins,
   action,
   headerActions,
-  slots = 20,
+  slots = DEFAULT_BACKPACK_SLOTS,
   inventory,
   drop,
   onUse,

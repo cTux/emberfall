@@ -1,3 +1,12 @@
+import { HEARTBEAT_INTERVAL_MS } from './runtime/limits.ts';
+import {
+  NORMAL_CLOSE,
+  ABNORMAL_CLOSE,
+  POLICY_VIOLATION,
+  CONSENTED_LEAVE,
+  CONNECTION_LOST,
+  INCOMPATIBLE_PROTOCOL,
+} from './network/codes.ts';
 import type { ServerMessage } from '@emberfall/common';
 import { Encoder } from '@colyseus/schema';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
@@ -17,6 +26,11 @@ import { Peer } from './network/peer.ts';
 import { staticHandler } from './http/static.ts';
 import { Accounts, type SteamOptions } from './accounts.ts';
 
+// Preserve transport budgets: 128 KiB snapshots, 1 MiB command limit, patches at the existing 20 Hz.
+const TRANSPORT = { encoderBytes: 128 * 1024, maxPayloadBytes: 1024 * 1024, patchMs: 50 } as const;
+// HTTP authentication failures use the standard Unauthorized response code.
+const UNAUTHORIZED = 401;
+
 /** Private session rooms preserve world browsing and transfers on one SDK connection. */
 export async function createGameServer(
   staticRoot?: string,
@@ -25,7 +39,7 @@ export async function createGameServer(
   steam?: SteamOptions,
   dialogue?: import('./npc-models.ts').NpcDialogue,
 ) {
-  Encoder.BUFFER_SIZE = 128 * 1024;
+  Encoder.BUFFER_SIZE = TRANSPORT.encoderBytes;
   const runtime = await createRuntime(savePath, dialogue);
   // The executable always supplies Steam configuration. Omission is for the
   // isolated legacy/parity fixtures, which exercise the pre-account protocol.
@@ -59,13 +73,13 @@ export async function createGameServer(
       }
 
       if (context.headers.get('origin') !== accounts.clientOrigin) {
-        throw new ServerError(401, 'Invalid origin');
+        throw new ServerError(UNAUTHORIZED, 'Invalid origin');
       }
 
       const token = accounts.consumeTicket(options.ticket);
 
       if (!token) {
-        throw new ServerError(401, 'Please sign in again');
+        throw new ServerError(UNAUTHORIZED, 'Please sign in again');
       }
 
       return token;
@@ -73,11 +87,14 @@ export async function createGameServer(
 
     override async onCreate(options: { protocolVersion?: number }) {
       if (options.protocolVersion !== RUNTIME.protocolVersion) {
-        throw new ServerError(4002, 'Client protocol version is incompatible. Reload the game.');
+        throw new ServerError(
+          INCOMPATIBLE_PROTOCOL,
+          'Client protocol version is incompatible. Reload the game.',
+        );
       }
 
       await this.setPrivate(true);
-      this.setPatchRate(50);
+      this.setPatchRate(TRANSPORT.patchMs);
       this.onMessage('command', (_client, command) => {
         return this.peer?.receive(command);
       });
@@ -85,7 +102,7 @@ export async function createGameServer(
 
     override onJoin(client: Client) {
       if (accounts && (typeof client.auth !== 'string' || !accounts.valid(client.auth))) {
-        throw new ServerError(401, 'Please sign in again');
+        throw new ServerError(UNAUTHORIZED, 'Please sign in again');
       }
 
       this.peer = new Peer(
@@ -106,7 +123,7 @@ export async function createGameServer(
           }
         },
         (code) => {
-          return client.leave(code === 1006 ? 4001 : code);
+          return client.leave(code === ABNORMAL_CLOSE ? CONNECTION_LOST : code);
         },
         () => {
           return (client as WebSocketClient).ref.bufferedAmount;
@@ -119,15 +136,21 @@ export async function createGameServer(
     }
 
     override onLeave(_client: Client, code: number) {
-      this.peer?.detached(code === 4000 ? 1000 : code === 1008 ? 1008 : 1006);
+      this.peer?.detached(
+        code === CONSENTED_LEAVE
+          ? NORMAL_CLOSE
+          : code === POLICY_VIOLATION
+            ? POLICY_VIOLATION
+            : ABNORMAL_CLOSE,
+      );
     }
   }
   const handler = staticHandler(staticRoot);
   const server = tls ? createSecureServer(tls) : createServer();
   const transport = new WebSocketTransport({
     server,
-    maxPayload: 1024 * 1024,
-    pingInterval: 15000,
+    maxPayload: TRANSPORT.maxPayloadBytes,
+    pingInterval: HEARTBEAT_INTERVAL_MS,
     pingMaxRetries: 1,
     beforeUpgrade: (request) => {
       const origin = request.headers.get('origin');

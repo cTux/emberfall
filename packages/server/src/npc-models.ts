@@ -1,3 +1,12 @@
+import {
+  spokenLine,
+  boundedJson,
+  InvalidDialogueResponse,
+  type ValidationFailure,
+} from './npc-model-response.ts';
+export { spokenLine } from './npc-model-response.ts';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import * as MODEL_LIMITS from './npc-model-limits.ts';
 import { serverLog } from './log.ts';
 
 export const DEFAULT_NPC_MODEL = 'llama3.2:3b';
@@ -7,89 +16,6 @@ export type DialogueResult =
   | { status: 'unavailable' };
 export interface NpcDialogue {
   generate(context: string, signal: AbortSignal): Promise<DialogueResult>;
-}
-
-type ValidationFailure =
-  | 'missing_body'
-  | 'response_too_large'
-  | 'invalid_json'
-  | 'incomplete'
-  | 'missing_text'
-  | 'empty_text'
-  | 'text_too_long'
-  | 'control_characters';
-
-class InvalidDialogueResponse extends Error {
-  readonly failure: ValidationFailure;
-
-  constructor(failure: ValidationFailure) {
-    super(failure);
-    this.failure = failure;
-  }
-}
-
-export function spokenLine(content: string) {
-  let text = content.replace(/[\t\r\n\u2028\u2029]+/gu, ' ');
-
-  if (/[\p{Cc}\p{Cf}]/u.test(text)) {
-    throw new InvalidDialogueResponse('control_characters');
-  }
-
-  // Keep apostrophes inside words (don't, Nell’s), but remove speech quotes.
-  text = text
-    .replace(/["“”„«»‹›`]/gu, '')
-    .replace(/(?<![\p{L}\p{N}])['‘’]|['‘’](?![\p{L}\p{N}])/gu, '')
-    .replace(/ +/gu, ' ')
-    .trim();
-
-  if (!text) {
-    throw new InvalidDialogueResponse('empty_text');
-  }
-
-  if (text.length > 32_768) {
-    throw new InvalidDialogueResponse('text_too_long');
-  }
-
-  return text;
-}
-
-async function boundedJson(response: Response) {
-  if (!response.body) {
-    throw new InvalidDialogueResponse('missing_body');
-  }
-
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  try {
-    for (;;) {
-      const { value, done } = await reader.read();
-
-      if (done) {
-        break;
-      }
-
-      size += value.length;
-
-      if (size > 32_768) {
-        throw new InvalidDialogueResponse('response_too_large');
-      }
-
-      chunks.push(value);
-    }
-  } finally {
-    await reader.cancel().catch(() => {});
-    reader.releaseLock();
-  }
-
-  try {
-    return JSON.parse(Buffer.concat(chunks).toString('utf8')) as {
-      message?: { content?: unknown };
-      done?: boolean;
-    };
-  } catch {
-    throw new InvalidDialogueResponse('invalid_json');
-  }
 }
 
 export class OllamaNpcDialogue implements NpcDialogue {
@@ -132,9 +58,13 @@ export class OllamaNpcDialogue implements NpcDialogue {
       throw new Error('OLLAMA_MODEL must name a downloaded local model, not a cloud model');
     }
 
-    this.timeoutMs = options.timeoutMs ?? 60_000;
+    this.timeoutMs = options.timeoutMs ?? MODEL_LIMITS.DEFAULT_TIMEOUT_MS;
 
-    if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs <= 0 || this.timeoutMs > 300_000) {
+    if (
+      !Number.isSafeInteger(this.timeoutMs) ||
+      this.timeoutMs <= 0 ||
+      this.timeoutMs > MODEL_LIMITS.MAX_TIMEOUT_MS
+    ) {
       throw new Error('Invalid NPC dialogue timeout');
     }
   }
@@ -144,7 +74,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
       return { status: 'unavailable' };
     }
 
-    if (this.active >= 2) {
+    if (this.active >= MODEL_LIMITS.MAX_GENERATIONS) {
       return { status: 'busy' };
     }
 
@@ -183,11 +113,16 @@ export class OllamaNpcDialogue implements NpcDialogue {
           const date = Date.parse(response.headers.get('retry-after') ?? '');
           const delay =
             Number.isFinite(retry) && retry > 0
-              ? retry * 1000
+              ? retry * MILLISECONDS_PER_SECOND
               : Number.isFinite(date)
                 ? date - this.clock()
-                : 60_000;
-          this.retryAt = this.clock() + Math.min(900_000, Math.max(30_000, delay));
+                : MODEL_LIMITS.FAILURE_RETRY_MS;
+          this.retryAt =
+            this.clock() +
+            Math.min(
+              MODEL_LIMITS.MAX_RETRY_DELAY_MS,
+              Math.max(MODEL_LIMITS.MIN_RETRY_DELAY_MS, delay),
+            );
           this.logFailure(model, 'http', startedAt, response.status);
           await response.body?.cancel().catch(() => {});
 
@@ -219,7 +154,7 @@ export class OllamaNpcDialogue implements NpcDialogue {
           return { status: 'unavailable' };
         }
 
-        this.retryAt = this.clock() + 60_000;
+        this.retryAt = this.clock() + MODEL_LIMITS.FAILURE_RETRY_MS;
         const cause = error instanceof Error ? error.cause : undefined;
         const code = cause && typeof cause === 'object' && 'code' in cause ? cause.code : undefined;
         // Never log provider bodies, prompts, headers, or arbitrary exception messages.

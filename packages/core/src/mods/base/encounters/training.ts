@@ -1,3 +1,5 @@
+// One billion HP and a one-second refresh keep practice targets reusable without awarding rewards.
+// Three rows at 40-unit spacing preserve the existing triangular practice formation.
 export const TRAINING_DEFINITION = {
   id: 'training',
   dummyName: 'Training dummy',

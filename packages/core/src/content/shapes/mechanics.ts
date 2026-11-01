@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { id, positive, nonnegative, point } from './primitives.ts';
 
+// Match the wire chat schema's existing 200-character ceiling; mods can only lower it.
+const MAX_CHAT_MESSAGE_LENGTH = 200;
+
 export const encounterShapes = {
   forest: z.object({
     id: z.literal('forest'),
@@ -28,7 +31,7 @@ export const settingShapes: Record<string, z.ZodType> = {
     tickMs: positive,
     maxPlayers: positive.int(),
     chatLimit: positive.int(),
-    chatMaxLength: positive.int().max(200),
+    chatMaxLength: positive.int().max(MAX_CHAT_MESSAGE_LENGTH),
     autosaveMs: positive,
     reconnectMs: positive,
     predictionLimitMs: positive,

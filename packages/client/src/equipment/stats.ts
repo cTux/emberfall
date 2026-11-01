@@ -1,3 +1,4 @@
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
 import { characterStats } from '@emberfall/core';
 import type { Player } from '@emberfall/common';
 import type { EquipmentStatView } from '@emberfall/ui';
@@ -10,7 +11,7 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
   return [
     { label: 'Power', value: number(stats.power) },
     { label: 'Damage type', value: stats.hasWeapon ? capitalize(stats.damageType) : '—' },
-    { label: 'Cooldown', value: `${number(stats.attackIntervalMs / 1000)} sec` },
+    { label: 'Cooldown', value: `${number(stats.attackIntervalMs / MILLISECONDS_PER_SECOND)} sec` },
     { label: 'DOT Speed', value: `${number(stats.bonuses.dotSpeed)}%` },
     {
       label: 'Range',

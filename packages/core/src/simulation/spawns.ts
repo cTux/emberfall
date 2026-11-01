@@ -1,3 +1,5 @@
+import { COLLISION } from '../definitions/collision.ts';
+
 import { game, type createGame } from '../game.ts';
 import { TRANSIENT_EFFECTS } from '../definitions/effects/transient.ts';
 import { ENEMY_RULES, BOSS_DEFINITIONS } from '../definitions/entities/enemies.ts';
@@ -9,6 +11,9 @@ import type { Player, SceneState } from '@emberfall/common';
 import { EnemyType } from '@emberfall/common/enums';
 import { spawnEnemyType } from '../utils/spawnEnemyType.ts';
 import type { EnemyDefinition } from '../content/contracts.ts';
+
+// Existing spawn clearances keep emerging bodies off trunks and separate their warning silhouettes.
+const SPAWN_CLEARANCE = { treeQueryRadius: 40, treeRadius: 31, otherEnemy: 32 } as const;
 
 type Game = ReturnType<typeof createGame>;
 export function tickSpawns(
@@ -51,11 +56,18 @@ export function tickSpawns(
         y: wrap(target.y + Math.sin(angle) * radius, FOREST.height),
       };
       const clear =
-        forestTrees(position.x, position.y + 15, 40).every((t) => {
-          return Math.hypot(position.x - t.x, position.y + 15 - t.y) >= 31;
+        forestTrees(
+          position.x,
+          position.y + COLLISION.feetOffset,
+          SPAWN_CLEARANCE.treeQueryRadius,
+        ).every((t) => {
+          return (
+            Math.hypot(position.x - t.x, position.y + COLLISION.feetOffset - t.y) >=
+            SPAWN_CLEARANCE.treeRadius
+          );
         }) &&
         [...scene.enemies, ...scene.spawns].every((e) => {
-          return forestDistance(e, position) >= 32;
+          return forestDistance(e, position) >= SPAWN_CLEARANCE.otherEnemy;
         });
 
       if (!clear) {

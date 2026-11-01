@@ -1,3 +1,11 @@
+import { COLLISION } from './definitions/collision.ts';
+import { VILLAGE_TREE } from './village-layout.ts';
+import {
+  FOREST_RESOURCE_LAYOUT,
+  FOREST_RESOURCE_QUERY_PADDING,
+  TREE_GATHER_COUNT,
+  TREE_DROPS,
+} from './gathering-rules.ts';
 import type { Player, ResourceState } from '@emberfall/common';
 import { ARENA, TREES, ROCKS, PLANTS } from './world.ts';
 import { FOREST, forestTrees, wrappedDelta } from './scene.ts';
@@ -5,8 +13,11 @@ import { addItem } from './inventory.ts';
 import { PLANT_KINDS } from './plants.ts';
 import { startTimedActivity } from './timed-activity.ts';
 
+// Existing sixty-five-pixel reach lets players gather beside resource artwork rather than overlap it.
 export const GATHER_RANGE = 65;
-export const RESOURCE_RESTORE_MS = 60 * 60 * 1000;
+// An exhausted node regenerates after one hour, preserving the established resource supply cadence.
+export const RESOURCE_RESTORE_MS = 3_600_000;
+// Existing five-second base duration leaves room for the optional two-second timing bonus.
 export const GATHER_DURATION_MS = 5000;
 export interface ResourceNode {
   id: string;
@@ -20,7 +31,7 @@ export interface ResourceNode {
 const villageNodes: ResourceNode[] = TREES.map((tree, i) => {
   return {
     ...tree,
-    y: tree.y - 8,
+    y: tree.y - VILLAGE_TREE.trunkOffsetY,
     id: `tree:${i}`,
     kind: 'tree',
   };
@@ -45,29 +56,29 @@ export function resourceNodes(
   const forest = player.scene === 'forest';
   const geometry = forest ? FOREST : ARENA;
   const nodes: readonly ResourceNode[] = forest
-    ? forestTrees(player.x, player.y, radius + 180).flatMap((tree) => {
+    ? forestTrees(player.x, player.y, radius + FOREST_RESOURCE_QUERY_PADDING).flatMap((tree) => {
         return [
           { ...tree, kind: 'tree' as const },
           {
             id: `${tree.id}:plant`,
             kind: 'plant' as const,
-            x: tree.x + 65,
-            y: tree.y + 45,
-            size: 32,
+            x: tree.x + FOREST_RESOURCE_LAYOUT.plant.x,
+            y: tree.y + FOREST_RESOURCE_LAYOUT.plant.y,
+            size: FOREST_RESOURCE_LAYOUT.plant.size,
           },
           {
             id: `${tree.id}:rock`,
             kind: 'rock' as const,
-            x: tree.x - 55,
-            y: tree.y + 65,
-            size: 40,
+            x: tree.x + FOREST_RESOURCE_LAYOUT.rock.x,
+            y: tree.y + FOREST_RESOURCE_LAYOUT.rock.y,
+            size: FOREST_RESOURCE_LAYOUT.rock.size,
           },
           {
             id: `${tree.id}:stone`,
             kind: 'stone' as const,
-            x: tree.x + 45,
-            y: tree.y - 65,
-            size: 26,
+            x: tree.x + FOREST_RESOURCE_LAYOUT.stone.x,
+            y: tree.y + FOREST_RESOURCE_LAYOUT.stone.y,
+            size: FOREST_RESOURCE_LAYOUT.stone.size,
           },
         ];
       })
@@ -105,14 +116,14 @@ export function nearbyResource(
     return undefined;
   }
 
-  return resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE)
+  return resourceNodes({ ...player, y: player.y + COLLISION.feetOffset }, GATHER_RANGE)
     .filter((node) => {
       return resourceState(states, node, now)?.remaining !== 0;
     })
     .sort((a, b) => {
       return (
-        Math.hypot(a.x - player.x, a.y - player.y - 15) -
-        Math.hypot(b.x - player.x, b.y - player.y - 15)
+        Math.hypot(a.x - player.x, a.y - player.y - COLLISION.feetOffset) -
+        Math.hypot(b.x - player.x, b.y - player.y - COLLISION.feetOffset)
       );
     })[0];
 }
@@ -127,9 +138,11 @@ export function gatheringNode(
     throw new Error('You cannot gather while dead or disconnected.');
   }
 
-  const node = resourceNodes({ ...player, y: player.y + 15 }, GATHER_RANGE).find((n) => {
-    return n.id === nodeId;
-  });
+  const node = resourceNodes({ ...player, y: player.y + COLLISION.feetOffset }, GATHER_RANGE).find(
+    (n) => {
+      return n.id === nodeId;
+    },
+  );
 
   if (!node) {
     throw new Error('Move closer to this resource.');
@@ -195,7 +208,7 @@ export function gatherResource(
 ) {
   const node = gatheringNode(player, states, nodeId, now);
   const previous = resourceState(states, node, now);
-  const remaining = previous?.remaining ?? (node.kind === 'tree' ? 5 : 1);
+  const remaining = previous?.remaining ?? (node.kind === 'tree' ? TREE_GATHER_COUNT : 1);
 
   if (!remaining) {
     throw new Error('This resource is restoring.');
@@ -203,13 +216,7 @@ export function gatherResource(
 
   const items =
     node.kind === 'tree'
-      ? (
-          [
-            ['log', 0.8],
-            ['stick', 0.4],
-            ['leaf', 0.2],
-          ] as const
-        )
+      ? Object.entries(TREE_DROPS)
           .filter(([, chance]) => {
             return roll() < chance;
           })

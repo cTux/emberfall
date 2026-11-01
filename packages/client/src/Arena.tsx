@@ -2,7 +2,7 @@ import { ARENA } from '@emberfall/core';
 import { DamageMeter } from './DamageMeter';
 import { PerformanceGraph } from './PerformanceGraph';
 import { useArenaRenderer } from './useArenaRenderer';
-import type { ArenaProps } from './arena-contract';
+import type { ArenaProps } from './arena-contract.ts';
 
 export function Arena(props: ArenaProps) {
   const { world, playerId, preferences, latency } = props;

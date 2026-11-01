@@ -1,6 +1,9 @@
 import { DEFAULT_TACTICS, type Enemy, type Player, type Tactics } from '@emberfall/common';
 import { forestDistance } from './scene.ts';
 
+// Lower scores prioritize bosses, then elites, then ordinary enemies as the tactics setting promises.
+const ENEMY_PRIORITY = { boss: 0, elite: 1, normal: 2 } as const;
+
 /** Eligibility precedes ordered preferences; equal scores retain collection order. */
 export function attackTarget(
   origin: { x: number; y: number },
@@ -16,10 +19,10 @@ export function attackTarget(
       : rule === 'lowestHealth'
         ? enemy.hitpoints / (enemy.maxHitpoints ?? enemy.hitpoints)
         : enemy.kind === 'boss'
-          ? 0
+          ? ENEMY_PRIORITY.boss
           : enemy.kind === 'elite'
-            ? 1
-            : 2;
+            ? ENEMY_PRIORITY.elite
+            : ENEMY_PRIORITY.normal;
   };
 
   for (const enemy of enemies) {

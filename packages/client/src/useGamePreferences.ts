@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import type { Preferences } from './preferences';
 import { loadGraphics } from './graphics';
 
+// Match the legacy nickname field's 24-character admission limit when restoring browser storage.
+const LEGACY_NICKNAME_MAX_LENGTH = 24;
+
 export function useGamePreferences(
   preferences: Preferences,
   steam: boolean,
@@ -9,7 +12,10 @@ export function useGamePreferences(
 ) {
   const [legacyName, setName] = useState(() => {
     try {
-      return localStorage.getItem('emberfall-new.nickname')?.slice(0, 24) || 'Wanderer';
+      return (
+        localStorage.getItem('emberfall-new.nickname')?.slice(0, LEGACY_NICKNAME_MAX_LENGTH) ||
+        'Wanderer'
+      );
     } catch {
       return 'Wanderer';
     }

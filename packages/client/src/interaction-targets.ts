@@ -12,6 +12,15 @@ import { hitOutline } from './effects.ts';
 import type { Interaction } from './effects';
 import type { Scenery } from './village';
 
+// Existing interaction geometry aligns door/wardrobe reach with their visible entry points.
+const INTERACTION_GEOMETRY = {
+  doorOffset: 24,
+  wardrobeRadius: 55,
+  feetOffset: 15,
+  rgbaChannels: 4,
+  alphaChannel: 3,
+} as const;
+
 export interface InteractionTarget {
   source: Interaction;
   x: number;
@@ -81,8 +90,10 @@ export function sceneryInteraction(object: Scenery): InteractionTarget | null {
     width: object.width,
     height: object.height,
     mask: object.mask as HTMLCanvasElement,
-    reach: building ? { x: building.doorX, y: building.y + 24 } : object,
-    radius: id === 'wardrobe' ? 55 : INTERACTION_RADIUS,
+    reach: building
+      ? { x: building.doorX, y: building.y + INTERACTION_GEOMETRY.doorOffset }
+      : object,
+    radius: id === 'wardrobe' ? INTERACTION_GEOMETRY.wardrobeRadius : INTERACTION_RADIUS,
   };
 }
 
@@ -94,7 +105,10 @@ export function interactionInRange(target: InteractionTarget, player: Player | u
       {
         x: player.x,
         y:
-          player.y + (target.source.id.startsWith('gather:') || player.scene !== 'forest' ? 15 : 0),
+          player.y +
+          (target.source.id.startsWith('gather:') || player.scene !== 'forest'
+            ? INTERACTION_GEOMETRY.feetOffset
+            : 0),
       },
       target.reach,
     ) < target.radius
@@ -129,7 +143,12 @@ export function pickInteraction(
       pixels.set(target.mask, data);
     }
 
-    if (data[(y * target.mask.width + x) * 4 + 3] > 0) {
+    if (
+      data[
+        (y * target.mask.width + x) * INTERACTION_GEOMETRY.rgbaChannels +
+          INTERACTION_GEOMETRY.alphaChannel
+      ] > 0
+    ) {
       return target;
     }
   }

@@ -1,4 +1,6 @@
 import type { ItemStat } from '../enums/items.ts';
+// Existing per-affix balance keeps percentage stats modest, health at five and mechanic counts at one.
+// These are retained tuning values; a different scale requires an explicit gear-balance change.
 export const itemStatBaseValue: Readonly<Record<ItemStat, number>> = {
   attackSpeed: 2,
   dotSpeed: 2,

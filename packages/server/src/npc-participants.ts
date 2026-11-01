@@ -1,9 +1,9 @@
+import { NPC_TIMING } from './npc-timing.ts';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { forestDistance, wrappedDelta } from '@emberfall/core';
 import { villagePlayers, type NpcWorld } from './npc-world.ts';
 import type { Conversation } from './npc-speech.ts';
-const PLAYER_RANGE = 120;
-const NPC_RANGE = 160;
+
 export function conversationParticipants(world: NpcWorld, conversation: Conversation) {
   const npc = world.npcs?.find((n) => {
     return n.id === conversation.speaker;
@@ -21,7 +21,8 @@ export function conversationParticipants(world: NpcWorld, conversation: Conversa
       !villagePlayers(world).some((p) => {
         return p.id === conversation.playerId;
       })) ||
-    forestDistance(npc, target) > (conversation.playerId ? PLAYER_RANGE : NPC_RANGE)
+    forestDistance(npc, target) >
+      (conversation.playerId ? NPC_TIMING.playerRange : NPC_TIMING.npcRange)
   ) {
     return undefined;
   }

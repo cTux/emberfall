@@ -1,8 +1,9 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
 export class ShadowPrimitives {
   private entries = new Map<string, HTMLCanvasElement>();
 
   rectangle(width: number, height: number, blur: number, opacity: number, color: string) {
-    const padding = Math.ceil(blur * 3 + 2);
+    const padding = Math.ceil(blur * TUNING.shadowBlurPadding + TUNING.shadowEdgePadding);
     const key = `${width}:${height}:${blur}:${opacity}:${color}`;
     let canvas = this.entries.get(key);
 
@@ -19,7 +20,7 @@ export class ShadowPrimitives {
       ctx.globalAlpha = opacity;
       ctx.fillRect(padding - canvas.width * 2, padding, Math.abs(width), Math.abs(height));
 
-      if (this.entries.size >= 128) {
+      if (this.entries.size >= TUNING.shadowCacheEntries) {
         this.entries.delete(this.entries.keys().next().value!);
       }
 

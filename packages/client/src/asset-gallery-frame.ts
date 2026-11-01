@@ -14,6 +14,13 @@ import {
 import { actorFrame, playerFrame, idleBreath } from './animation';
 import { drawStonePortal, drawChimneySmoke } from './ambient-art';
 
+import {
+  GALLERY_TIMING,
+  GALLERY_FRAMES,
+  GALLERY_GRID,
+  WARDROBE_PREVIEW_FRAMES,
+} from './gallery-calibration.ts';
+
 const names = [
   'warrior',
   'ranger',
@@ -35,13 +42,13 @@ const bearFrames = new Map<string, (clock: number) => number>([
   [
     'fallen',
     () => {
-      return 7;
+      return GALLERY_FRAMES.bearFallen;
     },
   ],
   [
     'attack',
     (clock) => {
-      return 5 + (Math.floor(clock / 150) % 2);
+      return GALLERY_FRAMES.bearWindup + (Math.floor(clock / GALLERY_TIMING.animalStepMs) % 2);
     },
   ],
   [
@@ -66,21 +73,29 @@ export function drawAssetGalleryFrame(
   ctx.textAlign = 'center';
   const row =
     action === 'attack'
-      ? actorFrame(clock % 780, false, true, 0, 600)
+      ? actorFrame(
+          clock % GALLERY_TIMING.attackCycleMs,
+          false,
+          true,
+          0,
+          GALLERY_TIMING.attackDurationMs,
+        )
       : action === 'fallen'
-        ? 7
+        ? GALLERY_FRAMES.bearFallen
         : actorFrame(clock, action === 'walk', true);
   actors.forEach((image, i) => {
-    const x = 20 + (i % 5) * 235,
-      y = 20 + Math.floor(i / 5) * 200;
+    const x = GALLERY_GRID.actorLeft + (i % GALLERY_GRID.actorColumns) * GALLERY_GRID.actorStrideX,
+      y =
+        GALLERY_GRID.actorTop +
+        Math.floor(i / GALLERY_GRID.actorColumns) * GALLERY_GRID.actorStrideY;
     const actorRow =
-      i < 4
+      i < GALLERY_FRAMES.playableClasses
         ? playerFrame(
-            action === 'attack' ? clock % 780 : clock,
+            action === 'attack' ? clock % GALLERY_TIMING.attackCycleMs : clock,
             action === 'walk',
             action !== 'fallen',
             action === 'attack' ? 0 : -Infinity,
-            600,
+            GALLERY_TIMING.attackDurationMs,
           )
         : row;
     const breath = idleBreath(clock, actorRow);
@@ -89,46 +104,114 @@ export function drawAssetGalleryFrame(
     ctx.fillText(names[i], x + 117, y + 169);
   });
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < GALLERY_FRAMES.animals; i++) {
     drawArt(
       ctx,
       animalArt,
       i,
-      animalFrames.get(action) ?? 1 + (Math.floor(clock / 150) % 3),
-      55 + i * 230,
+      animalFrames.get(action) ??
+        1 + (Math.floor(clock / GALLERY_TIMING.animalStepMs) % GALLERY_FRAMES.animalWalk),
+      55 + i * GALLERY_GRID.animalStride,
       425,
       120,
       120,
     );
-    ctx.fillText(['Boar', 'Cat', 'Chicken', 'Raccoon'][i], 115 + i * 230, 565);
+    ctx.fillText(
+      ['Boar', 'Cat', 'Chicken', 'Raccoon'][i],
+      115 + i * GALLERY_GRID.animalStride,
+      565,
+    );
   }
 
-  const bearFrame = bearFrames.get(action)?.(clock) ?? 1 + (Math.floor(clock / 150) % 4);
-  drawArt(ctx, bearArt, bearFrame % 4, Math.floor(bearFrame / 4), 980, 440, 110, 110);
+  const bearFrame =
+    bearFrames.get(action)?.(clock) ??
+    1 + (Math.floor(clock / GALLERY_TIMING.animalStepMs) % GALLERY_FRAMES.bearWalk);
+  drawArt(
+    ctx,
+    bearArt,
+    bearFrame % GALLERY_FRAMES.bearColumns,
+    Math.floor(bearFrame / GALLERY_FRAMES.bearColumns),
+    980,
+    440,
+    110,
+    110,
+  );
   ctx.fillText('Bear cub', 1035, 565);
-  const door = [0, 0, 1, 2, 3, 3, 2, 1][Math.floor(clock / 220) % 8];
+  const door =
+    WARDROBE_PREVIEW_FRAMES[
+      Math.floor(clock / GALLERY_TIMING.wardrobeStepMs) % WARDROBE_PREVIEW_FRAMES.length
+    ];
   drawArt(ctx, wardrobeArt, door, 0, 30, 600, 176, 176, 128);
-  drawArt(ctx, effectsArt, Math.floor(clock / 150) % 4, 0, 240, 600, 160, 160, 128);
+  drawArt(
+    ctx,
+    effectsArt,
+    Math.floor(clock / GALLERY_TIMING.animalStepMs) % GALLERY_FRAMES.effects,
+    0,
+    240,
+    600,
+    160,
+    160,
+    128,
+  );
   drawStonePortal(ctx, 430, 600, 176, 176, clock);
-  drawArt(ctx, effectsArt, Math.floor(clock / 120) % 3, 2, 660, 620, 140, 140, 128);
-  drawArt(ctx, effectsArt, Math.floor(clock / 120) % 3, 3, 865, 620, 140, 140, 128);
+  drawArt(
+    ctx,
+    effectsArt,
+    Math.floor(clock / GALLERY_TIMING.effectStepMs) % GALLERY_FRAMES.projectileEffects,
+    2,
+    660,
+    620,
+    140,
+    140,
+    128,
+  );
+  drawArt(
+    ctx,
+    effectsArt,
+    Math.floor(clock / GALLERY_TIMING.effectStepMs) % GALLERY_FRAMES.projectileEffects,
+    3,
+    865,
+    620,
+    140,
+    140,
+    128,
+  );
   ['Wardrobe', 'Lantern', 'Portal', 'Fireball', 'Roots'].forEach((name, i) => {
     return ctx.fillText(name, 120 + i * 200, 798);
   });
 
-  for (let i = 0; i < 9; i++) {
-    if (i < 3 && buildingArt.complete && buildingArt.naturalWidth) {
+  for (let i = 0; i < GALLERY_FRAMES.scenery; i++) {
+    if (i < buildingFrames.length && buildingArt.complete && buildingArt.naturalWidth) {
       const frame = buildingFrames[i];
-      const scale = 126 / frame.width;
+      const scale = GALLERY_GRID.sceneryWidth / frame.width;
       const height = frame.height * scale;
-      const x = 10 + i * 132;
-      const y = 1000 - height;
+      const x = GALLERY_GRID.sceneryLeft + i * GALLERY_GRID.sceneryStride;
+      const y = GALLERY_GRID.sceneryBottom - height;
       ctx.drawImage(buildingArt, frame.x, frame.y, frame.width, frame.height, x, y, 126, height);
       drawChimneySmoke(ctx, x + frame.chimneyX * scale, y + frame.chimneyY * scale, clock);
-    } else if (i === 6) {
-      drawTorchFire(ctx, 10 + i * 132 + 63, 1000, clock, true, false, 126, 160);
+    } else if (i === GALLERY_FRAMES.torch) {
+      drawTorchFire(
+        ctx,
+        GALLERY_GRID.sceneryLeft + i * GALLERY_GRID.sceneryStride + GALLERY_GRID.torchCenterOffset,
+        GALLERY_GRID.sceneryBottom,
+        clock,
+        true,
+        false,
+        GALLERY_GRID.sceneryWidth,
+        GALLERY_GRID.sceneryHeight,
+      );
     } else {
-      drawArt(ctx, environmentArt, i % 3, Math.floor(i / 3), 10 + i * 132, 840, 126, 160, 128);
+      drawArt(
+        ctx,
+        environmentArt,
+        i % GALLERY_FRAMES.sceneryColumns,
+        Math.floor(i / GALLERY_FRAMES.sceneryColumns),
+        GALLERY_GRID.sceneryLeft + i * GALLERY_GRID.sceneryStride,
+        840,
+        126,
+        160,
+        128,
+      );
     }
   }
 

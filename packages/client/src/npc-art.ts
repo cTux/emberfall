@@ -7,7 +7,29 @@ import { playerFrame } from './animation';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { Scenery } from './village';
 
-const walkingMarta = loadArt('innkeeper-walk', 4, 4, 64, true);
+// Native NPC sheets use four directions/poses and 64-pixel cells; existing work timing matches their action rows.
+const NPC_POSES = {
+  columns: 4,
+  rows: 4,
+  cell: 64,
+  idleFrameMs: 400,
+  walkFrameMs: 160,
+  workCycleMs: 1600,
+  windupMs: 650,
+  windupRow: 5,
+  releaseRow: 6,
+  drawnSize: 48,
+  breathPeriodMs: 180,
+  breathAmplitude: 1.2,
+};
+
+const walkingMarta = loadArt(
+  'innkeeper-walk',
+  NPC_POSES.columns,
+  NPC_POSES.rows,
+  NPC_POSES.cell,
+  true,
+);
 const frames = new WeakMap<
   HTMLImageElement,
   Map<string, { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }>
@@ -30,7 +52,8 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
       return [];
     }
 
-    const column = marta && !npc.moving ? Math.floor(now / 400) % 4 : facing;
+    const column =
+      marta && !npc.moving ? Math.floor(now / NPC_POSES.idleFrameMs) % NPC_POSES.columns : facing;
     const station = VILLAGE_DEFINITION.workstations.find((s) => {
       return s.id === npc.workstationId;
     });
@@ -39,12 +62,12 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
     const phase = Math.max(0, now - (npc.workStartedAt ?? now));
     const row = marta
       ? npc.moving
-        ? Math.floor(now / 160) % 4
+        ? Math.floor(now / NPC_POSES.walkFrameMs) % NPC_POSES.rows
         : 0
       : actionPose
-        ? phase % 1600 < 650
-          ? 5
-          : 6
+        ? phase % NPC_POSES.workCycleMs < NPC_POSES.windupMs
+          ? NPC_POSES.windupRow
+          : NPC_POSES.releaseRow
         : playerFrame(now, npc.moving, true);
     let atlas = frames.get(image);
 
@@ -57,7 +80,7 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
 
     if (!frame) {
       const sprite = document.createElement('canvas');
-      const cell = 64 * Number(image.dataset.artResolution ?? 1);
+      const cell = NPC_POSES.cell * Number(image.dataset.artResolution ?? 1);
       sprite.width = sprite.height = cell;
       sprite
         .getContext('2d')!
@@ -71,8 +94,11 @@ export function npcScenery(npcs: VillageNpc[], now: number): Scenery[] {
         id: `npc:${npc.id}`,
         x: npc.x,
         y: npc.y,
-        width: 48,
-        height: working ? 48 + Math.sin(phase / 180) * 1.2 : 48,
+        width: NPC_POSES.drawnSize,
+        height: working
+          ? NPC_POSES.drawnSize +
+            Math.sin(phase / NPC_POSES.breathPeriodMs) * NPC_POSES.breathAmplitude
+          : NPC_POSES.drawnSize,
         name: npc.name,
         npc,
         ...frame,

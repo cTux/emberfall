@@ -1,6 +1,22 @@
 import type { CharacterProgress } from '@emberfall/common';
-import { TALENT_LEVELS, TALENT_NAMES, talentNodeId } from './talent-catalog.ts';
-export { TALENT_LEVELS, TALENT_NAMES, TALENT_COLUMNS, talentNodeId } from './talent-catalog.ts';
+import {
+  TALENT_LEVELS,
+  TALENT_NAMES,
+  talentNodeId,
+  TALENT_ABILITY_ROWS,
+  TALENT_ABILITIES_PER_COLUMN,
+  TALENT_MAX_RANK,
+  TALENT_ACTION_SLOTS,
+  TALENT_POINT_CAP,
+  TALENT_VERSION,
+} from './talent-catalog.ts';
+export {
+  TALENT_LEVELS,
+  TALENT_NAMES,
+  TALENT_COLUMNS,
+  TALENT_POINT_CAP,
+  talentNodeId,
+} from './talent-catalog.ts';
 export type TalentKind = 'ability' | 'extension';
 export interface TalentNode {
   id: string;
@@ -23,8 +39,10 @@ export const TALENT_TREE: readonly Readonly<TalentNode>[] = Object.freeze(
           row,
           name,
           level: TALENT_LEVELS[row],
-          kind: [1, 3, 5, 7].includes(row) ? ('ability' as const) : ('extension' as const),
-          ...([1, 3, 5, 7].includes(row) ? { slot: column * 4 + (row - 1) / 2 } : {}),
+          kind: TALENT_ABILITY_ROWS.includes(row) ? ('ability' as const) : ('extension' as const),
+          ...(TALENT_ABILITY_ROWS.includes(row)
+            ? { slot: column * TALENT_ABILITIES_PER_COLUMN + (row - 1) / 2 }
+            : {}),
         });
       });
     });
@@ -39,7 +57,9 @@ type Progress = Pick<CharacterProgress, 'level' | 'talents'> & { classId?: strin
 export function talentRank(progress: Pick<CharacterProgress, 'talents'>, id: string) {
   const value = progress.talents?.[id];
 
-  return nodesById.has(id) && Number.isInteger(value) && value! > 0 && value! <= 2 ? value! : 0;
+  return nodesById.has(id) && Number.isInteger(value) && value! > 0 && value! <= TALENT_MAX_RANK
+    ? value!
+    : 0;
 }
 
 export function isTalentLearned(progress: Pick<CharacterProgress, 'talents'>, id: string) {
@@ -51,7 +71,7 @@ export function availableTalentPoints(progress: Progress) {
     return sum + talentRank(progress, node.id);
   }, 0);
 
-  return Math.max(0, Math.min(20, progress.level) - spent);
+  return Math.max(0, Math.min(TALENT_POINT_CAP, progress.level) - spent);
 }
 
 export function canLearnTalent(progress: Progress, id: string) {
@@ -61,7 +81,7 @@ export function canLearnTalent(progress: Progress, id: string) {
     !!node &&
     node.classId === (progress.classId ?? 'warrior') &&
     progress.level >= node.level &&
-    talentRank(progress, id) < 2 &&
+    talentRank(progress, id) < TALENT_MAX_RANK &&
     availableTalentPoints(progress) > 0
   );
 }
@@ -74,6 +94,7 @@ export function learnTalent(progress: Progress, id: string) {
   progress.talents = { ...progress.talents, [id]: talentRank(progress, id) + 1 };
 }
 
+// PROG-03 fixes the optional respec price at 50 coins; retain the established economy cost.
 export const TALENT_RESET_COST = 50;
 export function resetTalents(
   progress: Pick<CharacterProgress, 'talents' | 'coins' | 'talentSlots'>,
@@ -98,7 +119,7 @@ export function resetTalents(
 /** A versioned, idempotent migration refunds old trees and repairs invalid budgets. */
 export function normalizeTalents(progress: CharacterProgress, classId: string) {
   const valid =
-    progress.talentVersion === 2 &&
+    progress.talentVersion === TALENT_VERSION &&
     Object.entries(progress.talents ?? {}).every(([id, rank]) => {
       const node = nodesById.get(id);
 
@@ -108,20 +129,20 @@ export function normalizeTalents(progress: CharacterProgress, classId: string) {
         node.level <= progress.level &&
         Number.isInteger(rank) &&
         rank >= 1 &&
-        rank <= 2
+        rank <= TALENT_MAX_RANK
       );
     }) &&
     TALENT_TREE.reduce((sum, node) => {
       return sum + talentRank(progress, node.id);
-    }, 0) <= Math.min(20, progress.level);
+    }, 0) <= Math.min(TALENT_POINT_CAP, progress.level);
 
   if (!valid) {
     progress.talents = {};
     progress.talentSlots = [null, null, null, null];
   }
 
-  progress.talentVersion = 2;
-  progress.talentSlots = Array.from({ length: 4 }, (_, index) => {
+  progress.talentVersion = TALENT_VERSION;
+  progress.talentSlots = Array.from({ length: TALENT_ACTION_SLOTS }, (_, index) => {
     const id = progress.talentSlots?.[index];
     const node = id ? nodesById.get(id) : undefined;
 
@@ -141,7 +162,7 @@ export function equipTalent(
   if (
     !Number.isInteger(slot) ||
     slot < 0 ||
-    slot > 3 ||
+    slot >= TALENT_ACTION_SLOTS ||
     (nodeId !== null &&
       (!node ||
         node.kind !== 'ability' ||
@@ -151,7 +172,7 @@ export function equipTalent(
     throw new Error('Choose a learned ability for this slot.');
   }
 
-  progress.talentSlots = Array.from({ length: 4 }, (_, index) => {
+  progress.talentSlots = Array.from({ length: TALENT_ACTION_SLOTS }, (_, index) => {
     return index === slot ? nodeId : (progress.talentSlots?.[index] ?? null);
   });
 }

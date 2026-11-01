@@ -1,3 +1,10 @@
+import {
+  TALENT_DEFENSIVE_COLUMN,
+  TALENT_HEALING_SLOTS,
+  TALENT_SHELTER_SLOT,
+  TALENT_ACTION_SLOTS,
+} from './talent-catalog.ts';
+import { PERCENT, DEFAULT_TACTICS } from '@emberfall/common';
 import type { Player, SceneState } from '@emberfall/common';
 import { game, type createGame } from './game.ts';
 import { TALENT_TREE, isTalentLearned, talentRank } from './talent-tree.ts';
@@ -6,9 +13,10 @@ import { FOREST } from './scene.ts';
 import { inTrainingZone } from './world.ts';
 import { executeTalent } from './talent-effects.ts';
 import { healingTarget } from './tactics.ts';
-import { DEFAULT_TACTICS } from '@emberfall/common';
 import { nearestSpellTarget, setRewardPlayers, effectiveAbility } from './class-combat.ts';
 type Game = ReturnType<typeof createGame>;
+// Match the existing shelter/grove healing reach when deciding whether an automatic cast is useful.
+const AUTOMATIC_SHELTER_RADIUS = 200;
 export function talentAbility(player: Pick<Player, 'classId'>, slot: number, context: Game = game) {
   return context.registries.abilities.values().find((ability) => {
     return ability.classId === (player.classId ?? 'warrior') && ability.talentSlot === slot;
@@ -58,7 +66,7 @@ export function castTalentAbility(
     !ability ||
     !Number.isInteger(request.slot) ||
     request.slot < 0 ||
-    request.slot > 3 ||
+    request.slot >= TALENT_ACTION_SLOTS ||
     !Number.isFinite(request.aimX) ||
     !Number.isFinite(request.aimY) ||
     request.aimX < 0 ||
@@ -90,12 +98,13 @@ export function castTalentAbility(
   if (
     request.automatic &&
     player.classId === 'druid' &&
-    node.column === 2 &&
-    [8, 9, 11].includes(node.slot!)
+    node.column === TALENT_DEFENSIVE_COLUMN &&
+    TALENT_HEALING_SLOTS.includes(node.slot!)
   ) {
     const radius =
-      node.slot === 9
-        ? 200 * (1 + context.rules.characterStats(player).bonuses.areaOfEffect / 100)
+      node.slot === TALENT_SHELTER_SLOT
+        ? AUTOMATIC_SHELTER_RADIUS *
+          (1 + context.rules.characterStats(player).bonuses.areaOfEffect / PERCENT)
         : ability.range;
 
     if (

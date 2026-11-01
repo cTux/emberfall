@@ -44,7 +44,10 @@ test('failed saves, malformed commands and a mismatched class cannot publish tac
 
     for (let i = 0; i < 200 && !world.players.size; i++) {
       await new Promise((resolve) => {
-        return setTimeout(resolve, 10);
+        // Poll frequently enough to observe asynchronous messages without busy-waiting.
+        const MESSAGE_POLL_MS = 10;
+
+        return setTimeout(resolve, MESSAGE_POLL_MS);
       });
     }
 

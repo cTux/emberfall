@@ -4,6 +4,12 @@ import { Client, type Room } from '@colyseus/sdk';
 import { SessionState, materializeState } from '@emberfall/common/protocol';
 import type { ServerMessage, ClientMessage } from '@emberfall/common';
 
+// Standard WebSocket normal closure distinguishes an intentional leave from a transport error.
+const NORMAL_CLOSE = 1000;
+
+// Match the account UI request budget so ticket acquisition fails promptly when authentication is unavailable.
+const TICKET_REQUEST_TIMEOUT_MS = 10_000;
+
 /** SDK adapter keeps application recovery separate from transport recovery. */
 export class GameConnection {
   static readonly OPEN = 1;
@@ -44,7 +50,7 @@ export class GameConnection {
         const response = await fetch(apiUrl('/api/account/ticket'), {
           method: 'POST',
           credentials: 'include',
-          signal: AbortSignal.timeout(10_000),
+          signal: AbortSignal.timeout(TICKET_REQUEST_TIMEOUT_MS),
         });
 
         if (!response.ok) {
@@ -103,10 +109,10 @@ export class GameConnection {
     }
   }
 
-  close(code = 1000, reason?: string) {
+  close(code = NORMAL_CLOSE, reason?: string) {
     this.closed = true;
 
-    if (code === 1000) {
+    if (code === NORMAL_CLOSE) {
       void this.room?.leave();
     } else {
       this.room?.connection.close(code, reason);

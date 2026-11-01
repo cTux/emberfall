@@ -12,6 +12,18 @@ import { partyAction } from './interaction-targets';
 import { drawPartyOutline, drawPlayerHealth } from './effects';
 import { drawPlayerDetails } from './player-rendering';
 
+// Action rows come from the packaged actor sheet; three faint trailing samples retain the existing motion blur.
+const PLAYER_PRESENTATION = {
+  windupRow: 5,
+  releaseRow: 6,
+  trailSamples: 3,
+  trailAlpha: 0.09,
+  trailSpacing: 0.45,
+};
+
+// These anchors match the approved 48-unit actor placement, status row and detached cutout mask.
+const ACTOR_LAYOUT = { size: 48, halfWidth: 24, feetOffset: 18, trailTop: 30, healthTop: 46 };
+
 const colors = [
   '#efd086',
   '#86d9b6',
@@ -81,7 +93,7 @@ export class VillagePlayers {
         player.attackAt,
       );
 
-      if (frame === 5 || frame === 6) {
+      if (frame === PLAYER_PRESENTATION.windupRow || frame === PLAYER_PRESENTATION.releaseRow) {
         pos.facing = movementFacing(
           Math.cos(player.attackAngle ?? 0),
           Math.sin(player.attackAngle ?? 0),
@@ -101,7 +113,13 @@ export class VillagePlayers {
 
       if (mask && player.id === playerId) {
         const breath = idleBreath(now, frame);
-        ctx.setPlayerCutout(mask, player.x - 24, player.y + 18 - 48 * breath, 48, 48 * breath);
+        ctx.setPlayerCutout(
+          mask,
+          player.x - ACTOR_LAYOUT.halfWidth,
+          player.y + ACTOR_LAYOUT.feetOffset - ACTOR_LAYOUT.size * breath,
+          ACTOR_LAYOUT.size,
+          ACTOR_LAYOUT.size * breath,
+        );
       }
 
       if (mask) {
@@ -141,7 +159,10 @@ export class VillagePlayers {
       pos.facing = movementFacing(ix, iy, pos.facing);
     }
 
-    if (spriteRow === 5 || spriteRow === 6) {
+    if (
+      spriteRow === PLAYER_PRESENTATION.windupRow ||
+      spriteRow === PLAYER_PRESENTATION.releaseRow
+    ) {
       pos.facing = movementFacing(
         Math.cos(player.attackAngle ?? 0),
         Math.sin(player.attackAngle ?? 0),
@@ -158,18 +179,18 @@ export class VillagePlayers {
     if (knight.complete && knight.naturalWidth) {
       if (quality.motionBlur && moving) {
         // Sprite-only temporal samples keep HUD text and the world sharp.
-        for (let sample = 3; sample > 0; sample--) {
-          ctx.globalAlpha = 0.09;
+        for (let sample = PLAYER_PRESENTATION.trailSamples; sample > 0; sample--) {
+          ctx.globalAlpha = PLAYER_PRESENTATION.trailAlpha;
           ctx.drawImage(
             knight,
             pos.facing * ACTOR_CELL,
             spriteRow * ACTOR_CELL,
             ACTOR_CELL,
             ACTOR_CELL,
-            pos.x - 24 - dx * sample * 0.45,
-            pos.y - 30 - dy * sample * 0.45,
-            48,
-            48,
+            pos.x - ACTOR_LAYOUT.halfWidth - dx * sample * PLAYER_PRESENTATION.trailSpacing,
+            pos.y - ACTOR_LAYOUT.trailTop - dy * sample * PLAYER_PRESENTATION.trailSpacing,
+            ACTOR_LAYOUT.size,
+            ACTOR_LAYOUT.size,
           );
         }
 
@@ -182,10 +203,10 @@ export class VillagePlayers {
         spriteRow * ACTOR_CELL,
         ACTOR_CELL,
         ACTOR_CELL,
-        pos.x - 24,
-        pos.y + 18 - 48 * idleBreath(now, spriteRow),
-        48,
-        48 * idleBreath(now, spriteRow),
+        pos.x - ACTOR_LAYOUT.halfWidth,
+        pos.y + ACTOR_LAYOUT.feetOffset - ACTOR_LAYOUT.size * idleBreath(now, spriteRow),
+        ACTOR_LAYOUT.size,
+        ACTOR_LAYOUT.size * idleBreath(now, spriteRow),
       );
     }
 
@@ -204,10 +225,10 @@ export class VillagePlayers {
         drawPartyOutline(
           ctx,
           mask,
-          pos.x - 24,
-          pos.y + 18 - 48 * idleBreath(now, spriteRow),
-          48,
-          48 * idleBreath(now, spriteRow),
+          pos.x - ACTOR_LAYOUT.halfWidth,
+          pos.y + ACTOR_LAYOUT.feetOffset - ACTOR_LAYOUT.size * idleBreath(now, spriteRow),
+          ACTOR_LAYOUT.size,
+          ACTOR_LAYOUT.size * idleBreath(now, spriteRow),
           highlightPlayer,
         );
       }
@@ -219,7 +240,7 @@ export class VillagePlayers {
     drawPlayerHealth(
       ctx,
       pos.x,
-      pos.y - 46,
+      pos.y - ACTOR_LAYOUT.healthTop,
       player.hitpoints,
       player.maxHitpoints,
       player.name,

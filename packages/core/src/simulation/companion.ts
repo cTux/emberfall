@@ -1,5 +1,7 @@
+import { COLLISION } from '../definitions/collision.ts';
+
 import { game, type createGame } from '../game.ts';
-import { DEFAULT_TACTICS, wrappedDelta, wrap } from '@emberfall/common';
+import { DEFAULT_TACTICS, wrappedDelta, wrap, PERCENT } from '@emberfall/common';
 import { talentNodeId, talentRank } from '../talent-tree.ts';
 import { BEAR_DEFINITION } from '../definitions/entities/companions.ts';
 import { FOREST, forestDistance } from '../scene.ts';
@@ -10,6 +12,15 @@ import { companionDecisions, decideCompanion } from './companion-decision.ts';
 import { PLAYER_ATTACK_DURATION } from './constants.ts';
 import { nearestEnemyAngle } from './aim.ts';
 import { slash } from './melee.ts';
+
+// The middle-column fourth row owns the druid bear-growth talent in the saved talent grid.
+const BEAR_GROWTH_NODE = { column: 1, row: 3 } as const;
+// The growth talent doubles the existing forty-eight-pixel bear model.
+const COMPANION_SIZE = { normal: 48, grown: 96 } as const;
+// Existing distance presets map the tactics labels to increasing hundred-pixel hunt bands.
+const COMPANION_HUNT_RADIUS = { close: 100, medium: 200, far: 300 } as const;
+// Ignore sub-millipixel movement so numerical jitter does not play walking animations.
+const COMPANION_MOVEMENT_EPSILON = 0.001;
 
 type Game = ReturnType<typeof createGame>;
 export function tickCompanion(
@@ -37,7 +48,10 @@ export function tickCompanion(
   bear.moving = false;
   const stats = context.rules.companionStats(player);
   bear.range = stats.range;
-  bear.size = talentRank(player, talentNodeId('druid', 1, 3)) > 0 ? 96 : 48;
+  bear.size =
+    talentRank(player, talentNodeId('druid', BEAR_GROWTH_NODE.column, BEAR_GROWTH_NODE.row)) > 0
+      ? COMPANION_SIZE.grown
+      : COMPANION_SIZE.normal;
   const max = stats.maxHitpoints;
 
   if (bear.hitpoints > 0) {
@@ -69,10 +83,10 @@ export function tickCompanion(
 
   const forest = player.scene === 'forest';
   const tactics = player.tactics ?? DEFAULT_TACTICS;
-  const preferredRadius = { close: 100, medium: 200, far: 300 }[tactics.distance];
+  const preferredRadius = COMPANION_HUNT_RADIUS[tactics.distance];
   const huntRadius =
     tactics.stance === 'protect'
-      ? Math.min(100, preferredRadius)
+      ? Math.min(COMPANION_HUNT_RADIUS.close, preferredRadius)
       : tactics.stance === 'aggressive'
         ? preferredRadius
         : Math.min(BEAR_DEFINITION.huntRadius, preferredRadius);
@@ -120,7 +134,7 @@ export function tickCompanion(
 
   if (destination !== player || destinationDistance > BEAR_DEFINITION.returnRadius) {
     const speed =
-      ARENA.speed * (1 + context.rules.characterStats(player).bonuses.movementSpeed / 100);
+      ARENA.speed * (1 + context.rules.characterStats(player).bonuses.movementSpeed / PERCENT);
 
     if (forest) {
       const body: Enemy = {
@@ -143,19 +157,19 @@ export function tickCompanion(
         speed * Math.max(0, dt),
       );
       const next = moveActor(
-        { x: bear.x, y: bear.y + 15 },
+        { x: bear.x, y: bear.y + COLLISION.feetOffset },
         Math.cos(heading) * travel,
         Math.sin(heading) * travel,
-        12,
+        COLLISION.companionRadius,
         true,
         false, // Follow through village fixtures, while retaining tree collision.
       );
       bear.x = next.x;
-      bear.y = wrap(next.y - 15, ARENA.height);
+      bear.y = wrap(next.y - COLLISION.feetOffset, ARENA.height);
     }
   }
 
-  bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > 0.001;
+  bear.moving = Math.hypot(bear.x - startX, bear.y - startY) > COMPANION_MOVEMENT_EPSILON;
 
   if (bear.moving) {
     bear.attackAngle = heading;

@@ -34,6 +34,8 @@ export interface BrowserSelection {
   full: boolean;
   reason: string;
 }
+// Four minutes permits the complete combat flow on slower CI desktops.
+const GAME_TIMEOUT_ARGUMENT = '--timeout=240000';
 const fullGroups: Group[] = ['session', 'combat', 'controls', 'rendering'];
 const full = (reason: string): BrowserSelection => {
   return {
@@ -161,7 +163,7 @@ export function gameCommands(selection: BrowserSelection): string[][] {
       [
         'test:browser',
         '--max-failures=1',
-        '--timeout=240000',
+        GAME_TIMEOUT_ARGUMENT,
         ...fullGroups.flatMap((group) => {
           return browserGroups[group].files;
         }),
@@ -175,7 +177,7 @@ export function gameCommands(selection: BrowserSelection): string[][] {
     return [
       'test:browser',
       '--max-failures=1',
-      '--timeout=240000',
+      GAME_TIMEOUT_ARGUMENT,
       ...group.files,
       ...('grep' in group ? ['--grep', group.grep] : []),
     ];

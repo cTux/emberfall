@@ -11,6 +11,14 @@ import {
 } from '@emberfall/common';
 import { game } from '@emberfall/core';
 
+// Preserve the server-supported automatic-heal thresholds and their player-facing labels.
+const HEAL_THRESHOLD_OPTIONS = [
+  [1, 'Any missing health'],
+  [0.9, '90% HP'],
+  [0.75, '75% HP'],
+  [0.5, '50% HP'],
+];
+
 export function Tactics({
   player,
   send,
@@ -158,12 +166,7 @@ export function Tactics({
                     });
                   }}
                 >
-                  {[
-                    [1, 'Any missing health'],
-                    [0.9, '90% HP'],
-                    [0.75, '75% HP'],
-                    [0.5, '50% HP'],
-                  ].map(([id, name]) => {
+                  {HEAL_THRESHOLD_OPTIONS.map(([id, name]) => {
                     return (
                       <MenuItem key={id} value={id}>
                         {name}

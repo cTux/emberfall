@@ -1,4 +1,5 @@
 import {
+  MILLISECONDS_PER_SECOND,
   wrap,
   wrappedDelta,
   type Player,
@@ -7,6 +8,13 @@ import {
 } from '@emberfall/common';
 import { FOREST, game, advancePlayerShot, fireClassAttack } from '@emberfall/core';
 import { PREDICTION_LIMIT_MS, type ConfirmedFrame, type AttackState } from './prediction-frame.ts';
+
+// Existing visual-prediction limits cap stalled-frame travel and retire subpixel range residue.
+const PROJECTILE_PREDICTION = {
+  maximumStepMs: 100,
+  remainingEpsilon: 0.001,
+  launchWindowMs: 100,
+} as const;
 
 export class LocalProjectiles {
   private shots: (PlayerShot & { confirmedId?: number })[] = [];
@@ -53,7 +61,9 @@ export class LocalProjectiles {
       };
     };
 
-    const dt = Math.min(100, Math.max(0, now - this.shotsAt)) / 1000;
+    const dt =
+      Math.min(PROJECTILE_PREDICTION.maximumStepMs, Math.max(0, now - this.shotsAt)) /
+      MILLISECONDS_PER_SECOND;
     this.shotsAt = now;
 
     if (!scene) {
@@ -124,10 +134,14 @@ export class LocalProjectiles {
         // invent an impact that hides a projectile the server still has alive.
         advancePlayerShot(shot, confirmed?.enemies ?? [], dt, undefined, false);
 
-        return shot.remaining > 0.001;
+        return shot.remaining > PROJECTILE_PREDICTION.remainingEpsilon;
       });
 
-      if (started && player.attackAt !== undefined && now - player.attackAt < 100) {
+      if (
+        started &&
+        player.attackAt !== undefined &&
+        now - player.attackAt < PROJECTILE_PREDICTION.launchWindowMs
+      ) {
         const known =
           confirmed?.playerShots?.filter((shot) => {
             return (

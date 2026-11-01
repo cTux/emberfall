@@ -1,5 +1,11 @@
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
 import { clientAsset } from './urls.ts';
 import type { Preferences } from './preferences';
+
+// Four reusable voices preserve overlapping effects without allocating audio elements during combat.
+const SOUND_VOICES = 4;
+// Preserve the existing fade calibration: cap stalled-frame progress and stop inaudible voices.
+const AUDIO_FADE = { maxStepSeconds: 0.1, silentVolume: 0.001 } as const;
 
 let audioUnlocked = false;
 
@@ -37,7 +43,7 @@ export function gameAudio(preferences: () => Preferences) {
     ['slash', 'hit', 'warning'].map((name) => {
       return [
         name,
-        Array.from({ length: 4 }, () => {
+        Array.from({ length: SOUND_VOICES }, () => {
           const audio = new Audio(clientAsset(`/audio/${name}.wav`));
           audio.preload = 'auto';
 
@@ -90,7 +96,10 @@ export function gameAudio(preferences: () => Preferences) {
     update(nextArea: keyof typeof tracks, now: number) {
       area = nextArea;
       const prefs = preferences();
-      const dt = Math.min(0.1, Math.max(0, (now - lastTime) / 1000));
+      const dt = Math.min(
+        AUDIO_FADE.maxStepSeconds,
+        Math.max(0, (now - lastTime) / MILLISECONDS_PER_SECOND),
+      );
       lastTime = now;
 
       for (const [key, playlist] of Object.entries(music)) {
@@ -103,7 +112,7 @@ export function gameAudio(preferences: () => Preferences) {
 
           if (target > 0) {
             start(audio);
-          } else if (audio.volume <= 0.001) {
+          } else if (audio.volume <= AUDIO_FADE.silentVolume) {
             audio.pause();
             started.delete(audio);
           }

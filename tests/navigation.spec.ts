@@ -1,3 +1,5 @@
+// Allow replicated poses and camera reconciliation to settle.
+const CAMERA_SETTLE_MS = 700;
 import { test, expect } from './fixtures';
 import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
@@ -80,7 +82,7 @@ test('portal navigation labels stay clear of edge arrows', async ({ page, game }
   ] as const) {
     player.x = LOBBY_PORTAL.x + dx;
     player.y = LOBBY_PORTAL.y + dy;
-    await page.waitForTimeout(700); // Let replicated poses and camera reconciliation settle.
+    await page.waitForTimeout(CAMERA_SETTLE_MS); // Let replicated poses and camera reconciliation settle.
     await page.screenshot({ path: `test-results/navigation-${name}.png` });
   }
 });

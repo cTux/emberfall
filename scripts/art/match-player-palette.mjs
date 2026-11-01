@@ -8,20 +8,26 @@ export function matchPlayerPalette({
   walkRows,
   name,
 }) {
+  // The shipped atlas uses four facings and 128 px physical cells (64 px at 2x).
+  const atlasLayout = { facings: 4, cell: 128 };
+  // Canvas pixels have four RGBA channels and 256 possible values per byte.
+  const pixelLayout = { channels: 4, alpha: 3, byteValues: 256 };
+  // Sample palette tones only from pixels at least half opaque to avoid fringe colors.
+  const PALETTE_ALPHA_THRESHOLD = 128;
   const out = output.getContext('2d');
   // Each turnaround has its own lighting/material palette. Match RGB only:
   // keep every alpha value, silhouette, gait, anchor and non-walk pixel.
   const atlas = out.getImageData(0, 0, output.width, output.height);
   const pixels = atlas.data;
 
-  for (let col = 0; col < 4; col++) {
+  for (let col = 0; col < atlasLayout.facings; col++) {
     const palette = new Map();
 
-    for (let y = 0; y < 128; y++) {
-      for (let x = col * 128; x < (col + 1) * 128; x++) {
-        const i = (y * output.width + x) * 4;
+    for (let y = 0; y < atlasLayout.cell; y++) {
+      for (let x = col * atlasLayout.cell; x < (col + 1) * atlasLayout.cell; x++) {
+        const i = (y * output.width + x) * pixelLayout.channels;
 
-        if (pixels[i + 3] < 128) {
+        if (pixels[i + pixelLayout.alpha] < PALETTE_ALPHA_THRESHOLD) {
           continue;
         }
 
@@ -41,11 +47,11 @@ export function matchPlayerPalette({
       const channels = [[], [], []];
 
       for (const row of rows) {
-        for (let y = row * 128; y < (row + 1) * 128; y++) {
-          for (let x = col * 128; x < (col + 1) * 128; x++) {
-            const i = (y * output.width + x) * 4;
+        for (let y = row * atlasLayout.cell; y < (row + 1) * atlasLayout.cell; y++) {
+          for (let x = col * atlasLayout.cell; x < (col + 1) * atlasLayout.cell; x++) {
+            const i = (y * output.width + x) * pixelLayout.channels;
 
-            if (pixels[i + 3] < 128) {
+            if (pixels[i + pixelLayout.alpha] < PALETTE_ALPHA_THRESHOLD) {
               continue;
             }
 
@@ -66,7 +72,7 @@ export function matchPlayerPalette({
     const standing = samples([0]);
     const walking = samples(walkRows);
     const tones = walking.map((values, channel) => {
-      return Array.from({ length: 256 }, (_, value) => {
+      return Array.from({ length: pixelLayout.byteValues }, (_, value) => {
         const first = values.findIndex((sample) => {
           return sample >= value;
         });
@@ -83,11 +89,11 @@ export function matchPlayerPalette({
     const matches = new Map();
 
     for (const row of walkRows) {
-      for (let y = row * 128; y < (row + 1) * 128; y++) {
-        for (let x = col * 128; x < (col + 1) * 128; x++) {
-          const i = (y * output.width + x) * 4;
+      for (let y = row * atlasLayout.cell; y < (row + 1) * atlasLayout.cell; y++) {
+        for (let x = col * atlasLayout.cell; x < (col + 1) * atlasLayout.cell; x++) {
+          const i = (y * output.width + x) * pixelLayout.channels;
 
-          if (!pixels[i + 3]) {
+          if (!pixels[i + pixelLayout.alpha]) {
             continue;
           }
 

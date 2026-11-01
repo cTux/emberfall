@@ -1,3 +1,4 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
 import { Texture, Rectangle, type Sprite } from 'pixi.js';
 import type { Visual } from './visual-pools';
 
@@ -12,6 +13,9 @@ type ImageDraw = {
   dw: number;
   dh: number;
 };
+
+// Canvas drawImage overloads take position, destination box, or source plus destination boxes.
+const IMAGE_ARGUMENTS = { position: 2, destination: 4, sourceAndDestination: 8 } as const;
 
 export class ImageTextures {
   // The adapter consumes this scratch layout before another image is prepared.
@@ -50,16 +54,16 @@ export class ImageTextures {
       dw = iw,
       dh = ih;
 
-    if (args.length === 2) {
+    if (args.length === IMAGE_ARGUMENTS.position) {
       [dx, dy] = args;
-    } else if (args.length === 4) {
+    } else if (args.length === IMAGE_ARGUMENTS.destination) {
       [dx, dy, dw, dh] = args;
     } else {
       [sx, sy, sw, sh, dx, dy, dw, dh] = args;
     }
 
     // Atlas callers use game-pixel cells; the backing art retains twice the detail.
-    if (args.length === 8 && image instanceof HTMLImageElement) {
+    if (args.length === IMAGE_ARGUMENTS.sourceAndDestination && image instanceof HTMLImageElement) {
       const resolution = Number(image.dataset.artResolution ?? 1);
       sx *= resolution;
       sy *= resolution;
@@ -155,7 +159,7 @@ export class ImageTextures {
 
   trim(frame: number) {
     for (const [key, entry] of this.entries) {
-      if (frame - entry.used > 600) {
+      if (frame - entry.used > TUNING.imageIdleFrames) {
         entry.texture.destroy(true);
         this.entries.delete(key);
       }

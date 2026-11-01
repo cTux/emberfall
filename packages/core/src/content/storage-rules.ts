@@ -3,8 +3,12 @@ import type { createItemRules } from './item-rules.ts';
 
 export function createStorageRules(items: ReturnType<typeof createItemRules>) {
   const { backpackSchema } = items;
+  // Twenty carried entries preserves the backpack capacity used by inventory/save validation.
   const INVENTORY_SLOTS = 20;
+  // Storage holds twice a backpack's entries under the existing storage contract.
   const STORAGE_SLOTS = 40;
+  // Saves and the storehouse expose exactly three named storage tabs.
+  const STORAGE_TABS = 3;
   const storageNameSchema = z
     .string()
     .trim()
@@ -19,7 +23,7 @@ export function createStorageRules(items: ReturnType<typeof createItemRules>) {
         }),
       }),
     )
-    .length(3)
+    .length(STORAGE_TABS)
     .refine((storages) => {
       const ids = storages.flatMap((storage) => {
         return storage.items.map((item) => {
@@ -31,7 +35,7 @@ export function createStorageRules(items: ReturnType<typeof createItemRules>) {
     }, 'Duplicate stored item identity');
 
   function freshStorages(): z.infer<typeof storagesSchema> {
-    return Array.from({ length: 3 }, (_, index) => {
+    return Array.from({ length: STORAGE_TABS }, (_, index) => {
       return { name: `Storage ${index + 1}`, items: [] };
     });
   }

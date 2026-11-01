@@ -1,3 +1,4 @@
+import { NORMAL_CLOSE, ABNORMAL_CLOSE } from './codes.ts';
 import { EventEmitter } from 'node:events';
 import type { ServerMessage } from '@emberfall/common';
 
@@ -42,7 +43,7 @@ export class Peer extends EventEmitter {
     this.emit('pong');
   }
 
-  close(code = 1000, _reason?: string) {
+  close(code = NORMAL_CLOSE, _reason?: string) {
     if (this.readyState === Peer.CLOSED) {
       return;
     }
@@ -53,10 +54,10 @@ export class Peer extends EventEmitter {
   }
 
   terminate() {
-    this.close(1006);
+    this.close(ABNORMAL_CLOSE);
   }
 
-  detached(code = 1006) {
+  detached(code = ABNORMAL_CLOSE) {
     if (this.readyState === Peer.CLOSED) {
       return;
     }

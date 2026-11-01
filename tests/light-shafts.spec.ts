@@ -1,3 +1,7 @@
+// Allow changed lighting settings to reach subsequent captures.
+const LIGHTING_SETTLE_MS = 500;
+// Warm initial lighting resources before collecting captures.
+const LIGHTING_WARMUP_MS = 1000;
 import { test, expect } from './fixtures';
 import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
@@ -36,7 +40,7 @@ test('sunlight shafts render in village and forest with live presets and narrow 
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(LIGHTING_WARMUP_MS);
   const portal = page.getByRole('dialog', { name: 'Forest portal' });
   await expect(async () => {
     await page.keyboard.press('e');
@@ -48,10 +52,10 @@ test('sunlight shafts render in village and forest with live presets and narrow 
   await page.screenshot({ path: 'test-results/shafts-forest-high.png' });
   player.x = 4790;
   player.y = 2550;
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(LIGHTING_SETTLE_MS);
   await page.screenshot({ path: 'test-results/shafts-forest-seam.png' });
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(LIGHTING_SETTLE_MS);
   await page.screenshot({ path: 'test-results/shafts-forest-narrow.png' });
   expect(errors).toEqual([]);
 });

@@ -1,3 +1,7 @@
+// Separate subsequent captures by half a second to reveal unwanted scenery animation.
+const NEXT_SCENERY_OBSERVATION_MS = 500;
+// Observe prepared scenery for one second before checking capture stability.
+const FIRST_SCENERY_OBSERVATION_MS = 1000;
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -60,7 +64,10 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       })
     ) {
       await new Promise((done) => {
-        return setTimeout(done, 20);
+        // Poll roughly once per frame while yielding for asynchronous image preparation.
+        const ART_POLL_INTERVAL_MS = 20;
+
+        return setTimeout(done, ART_POLL_INTERVAL_MS);
       });
     }
 
@@ -78,7 +85,10 @@ test('village waits for plant art and packages five distinct silhouettes with sh
       })
     ) {
       await new Promise((done) => {
-        return setTimeout(done, 20);
+        // Poll roughly once per frame while yielding for asynchronous image preparation.
+        const ART_POLL_INTERVAL_MS = 20;
+
+        return setTimeout(done, ART_POLL_INTERVAL_MS);
       });
     }
 
@@ -217,11 +227,11 @@ test('rocks and plants render in the village and across wrapped seams', async ({
   })!;
   player.x = plant.x;
   player.y = plant.y;
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(FIRST_SCENERY_OBSERVATION_MS);
   await page.screenshot({ path: 'test-results/village-rocks-plants.png' });
   player.x = ARENA.width - 10;
   player.y = ARENA.height - 10;
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(NEXT_SCENERY_OBSERVATION_MS);
   await page.screenshot({ path: 'test-results/village-scenery-seams.png' });
   expect(errors).toEqual([]);
 });

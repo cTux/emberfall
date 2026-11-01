@@ -1,3 +1,4 @@
+import { COLLISION } from '../definitions/collision.ts';
 import { game, type createGame } from '../game.ts';
 import { tickDebuffs, setRewardPlayers } from '../class-combat.ts';
 import type { Player, SceneState } from '@emberfall/common';
@@ -66,7 +67,7 @@ export function stepCombat(
         return p.scene === 'forest';
       })
       .map((p) => {
-        return { x: p.x, y: p.y + 15 };
+        return { x: p.x, y: p.y + COLLISION.feetOffset };
       });
   }
 }

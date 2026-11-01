@@ -4,6 +4,14 @@ import type { ClientMessage, WorldState, WorldSummary } from '@emberfall/common'
 import { GameConnection } from './connection';
 import { clientAsset, websocketUrl } from './urls';
 
+import {
+  LATENCY_PROBE_INTERVAL_MS,
+  VERSION_REQUEST_TIMEOUT_MS,
+  VERSION_RETRY_CLOSE_CODE,
+  LEGACY_CHARACTER_TOKEN_LENGTH,
+  RECONNECT_DELAY_MS,
+} from './session-timing.ts';
+
 export type SessionEvent =
   | 'joined'
   | 'voting'
@@ -75,14 +83,17 @@ export function useGameSession({
     let voteScene: string | undefined;
     const latencyProbe = connectionLatency(ws, setLatency);
     const ping = latencyProbe.ping;
-    const pingTimer = setInterval(ping, 2000);
+    const pingTimer = setInterval(ping, LATENCY_PROBE_INTERVAL_MS);
     // The version request catches failures and closes the connection for retry.
     // oxlint-disable-next-line typescript/no-misused-promises
     ws.onopen = async () => {
       try {
         const response = await fetch(clientAsset('/version.json'), {
           cache: 'no-store',
-          signal: AbortSignal.any([versionRequest.signal, AbortSignal.timeout(3000)]),
+          signal: AbortSignal.any([
+            versionRequest.signal,
+            AbortSignal.timeout(VERSION_REQUEST_TIMEOUT_MS),
+          ]),
         });
 
         if (!response.ok) {
@@ -107,7 +118,7 @@ export function useGameSession({
         }
       } catch {
         if (!disposed && ws.readyState === GameConnection.OPEN) {
-          ws.close(3001, 'Retry version check');
+          ws.close(VERSION_RETRY_CLOSE_CODE, 'Retry version check');
         }
 
         return;
@@ -126,7 +137,9 @@ export function useGameSession({
         ws.send({
           type: 'resume',
           worldId: previousWorld.current!,
-          characterToken: steam ? '0'.repeat(64) : characterToken.current!,
+          characterToken: steam
+            ? '0'.repeat(LEGACY_CHARACTER_TOKEN_LENGTH)
+            : characterToken.current!,
         });
       } else {
         setStatus('Connected');
@@ -227,7 +240,7 @@ export function useGameSession({
             return value + 1;
           });
         },
-        failedConnections.current++ === 0 ? 0 : 1000,
+        failedConnections.current++ === 0 ? 0 : RECONNECT_DELAY_MS,
       );
     };
 

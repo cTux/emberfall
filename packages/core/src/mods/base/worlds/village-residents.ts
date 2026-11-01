@@ -1,3 +1,4 @@
+// Authored resident anchors keep each NPC near the corresponding home building.
 export const INNKEEPER = { id: 'innkeeper', name: 'Marta the Innkeeper', x: 300, y: 238 } as const;
 export const VILLAGERS = [
   {
@@ -70,6 +71,7 @@ export const VILLAGERS = [
   },
 ] as const;
 // Equipment feet and separate worker anchors keep actors in front of their home walls.
+// Authored station/worker coordinates align each job with its home and the eight-frame workstation atlas.
 export const WORKSTATIONS = [
   {
     id: 'inn-cooking',

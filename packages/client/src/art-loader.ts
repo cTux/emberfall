@@ -2,6 +2,31 @@ import { clientAsset } from './urls.ts';
 import { ACTOR_CELL } from './animation';
 import { softenArtTones } from './art-tones';
 
+// Preserve the measured source-sheet cut boundaries and duplicate walk row used by the approved generated art.
+const SOURCE_COLUMNS = {
+  plants: [0, 440, 845, 1230, 1615, 2048],
+  animals: [0, 309, 535, 735, 1024],
+} as const;
+// Three-pose source walking sheets repeat the middle pose to fill the existing eight-row action grid.
+const SOURCE_ROW_MAP = [0, 1, 2, 3, 2, 4, 5, 6];
+
+// Packaged actor sheets use four facing columns and eight action rows; orientation fixes refer to those atlas IDs.
+const SOURCE_ATLAS = { columns: 4, rows: 8, left: 2, windupRow: 5, releaseRow: 6 } as const;
+// Existing packing gutters preserve clear borders/feet; standing heights retain the approved druid and humanoid scale.
+const PACKAGING = {
+  defaultCell: 64,
+  actorResolution: 2,
+  alphaThreshold: 32,
+  horizontalGutter: 4,
+  verticalGutter: 6,
+  standingRows: 5,
+  druidHeight: 58,
+  humanoidHeight: 52,
+  footPadding: 3,
+  rgbaChannels: 4,
+  alphaChannel: 3,
+} as const;
+
 export const artUrl = (name: string) => {
   return clientAsset(`/assets/wardrobe-style/${name}.png`);
 };
@@ -22,15 +47,25 @@ function softenAtlas(canvas: HTMLCanvasElement) {
  */
 function actorOrientation(name: string, row: number, col: number) {
   const flip =
-    (col === 0 && (['caster', 'warden'].includes(name) || (name === 'brute' && row !== 6))) ||
-    (col === 1 && ((name === 'caster' && row === 6) || (name === 'warden' && row !== 5))) ||
-    (col === 2 && name === 'caster');
+    (col === 0 &&
+      (['caster', 'warden'].includes(name) ||
+        (name === 'brute' && row !== SOURCE_ATLAS.releaseRow))) ||
+    (col === 1 &&
+      ((name === 'caster' && row === SOURCE_ATLAS.releaseRow) ||
+        (name === 'warden' && row !== SOURCE_ATLAS.windupRow))) ||
+    (col === SOURCE_ATLAS.left && name === 'caster');
 
   return { col, flip };
 }
 
 /** Load art once. The returned image becomes ready only after atlas packaging. */
-export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = false) {
+export function loadArt(
+  name: string,
+  columns = 1,
+  rows = 1,
+  cell: number = PACKAGING.defaultCell,
+  actor = false,
+) {
   const key = `${name}:${columns}:${rows}:${cell}:${actor}`;
   const cached = loadedArt.get(key);
 
@@ -39,7 +74,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
   }
 
   const result = new Image();
-  const resolution = actor ? 2 : 1;
+  const resolution = actor ? PACKAGING.actorResolution : 1;
   result.dataset.artResolution = String(resolution);
   loadedArt.set(key, result);
   const source = new Image();
@@ -69,15 +104,14 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
     };
     const boundaries = custom[name];
     const rowMap =
-      boundaries?.length === 8 && rows === 8
-        ? [0, 1, 2, 3, 2, 4, 5, 6]
+      boundaries?.length === SOURCE_ATLAS.rows && rows === SOURCE_ATLAS.rows
+        ? SOURCE_ROW_MAP
         : Array.from({ length: rows }, (_, i) => {
             return i;
           });
     const frames = rowMap.flatMap((row) => {
       return Array.from({ length: columns }, (_, col) => {
-        const sourceColumns =
-          name === 'plants' ? [0, 440, 845, 1230, 1615, 2048] : [0, 309, 535, 735, 1024];
+        const sourceColumns = name === 'plants' ? SOURCE_COLUMNS.plants : SOURCE_COLUMNS.animals;
         const sourceWidth = sourceColumns.at(-1)!;
         const x0 = ['animals', 'plants'].includes(name)
           ? Math.round((sourceColumns[col] * input.width) / sourceWidth)
@@ -98,7 +132,10 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
 
         for (let y = Math.floor(y0); y < Math.floor(y1); y++) {
           for (let x = x0; x < x1; x++) {
-            if (pixels[(y * input.width + x) * 4 + 3] < 32) {
+            if (
+              pixels[(y * input.width + x) * PACKAGING.rgbaChannels + PACKAGING.alphaChannel] <
+              PACKAGING.alphaThreshold
+            ) {
               continue;
             }
 
@@ -122,7 +159,10 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
         return f.width;
       }),
     );
-    const scale = Math.min((cell - 4) / maxWidth, (cell - 6) / maxHeight);
+    const scale = Math.min(
+      (cell - PACKAGING.horizontalGutter) / maxWidth,
+      (cell - PACKAGING.verticalGutter) / maxHeight,
+    );
     const output = document.createElement('canvas');
     output.width = columns * cell * resolution;
     output.height = rows * cell * resolution;
@@ -134,16 +174,21 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
         col = i % columns;
       const orientation = actorOrientation(name, row, col);
       const f = frames[row * columns + orientation.col];
-      const standing = ['warrior', 'ranger', 'mage', 'druid'].includes(name) && i < columns * 5;
+      const standing =
+        ['warrior', 'ranger', 'mage', 'druid'].includes(name) &&
+        i < columns * PACKAGING.standingRows;
       const frameScale =
         name === 'environment'
-          ? Math.min((cell - 4) / f.width, (cell - 6) / f.height)
+          ? Math.min(
+              (cell - PACKAGING.horizontalGutter) / f.width,
+              (cell - PACKAGING.verticalGutter) / f.height,
+            )
           : standing
             ? Math.min(
-                (cell - 4) / f.width,
-                (name === 'druid' ? 58 : 52) /
+                (cell - PACKAGING.horizontalGutter) / f.width,
+                (name === 'druid' ? PACKAGING.druidHeight : PACKAGING.humanoidHeight) /
                   Math.max(
-                    ...frames.slice(0, columns * 5).map((f) => {
+                    ...frames.slice(0, columns * PACKAGING.standingRows).map((f) => {
                       return f.height;
                     }),
                   ),
@@ -165,7 +210,9 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
         f.width,
         f.height,
         -width / 2,
-        actor || name === 'gathered' ? cell - 3 - height : Math.round((cell - height) / 2),
+        actor || name === 'gathered'
+          ? cell - PACKAGING.footPadding - height
+          : Math.round((cell - height) / 2),
         width,
         height,
       );
@@ -187,7 +234,7 @@ export function loadArt(name: string, columns = 1, rows = 1, cell = 64, actor = 
 
 export const actorArt = (name: string) => {
   if (!['warrior', 'ranger', 'mage', 'druid'].includes(name)) {
-    return loadArt(name, 4, 8, ACTOR_CELL, true);
+    return loadArt(name, SOURCE_ATLAS.columns, SOURCE_ATLAS.rows, ACTOR_CELL, true);
   }
 
   const key = `${name}:player-atlas`;

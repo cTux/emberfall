@@ -43,7 +43,10 @@ test('resume authenticates retained sessions, rejects live takeover, expires and
           }
 
           await new Promise((resolve) => {
-            return setTimeout(resolve, 10);
+            // Poll frequently enough to observe asynchronous messages without busy-waiting.
+            const MESSAGE_POLL_MS = 10;
+
+            return setTimeout(resolve, MESSAGE_POLL_MS);
           });
         }
 

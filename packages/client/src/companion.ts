@@ -2,9 +2,29 @@ import type { DrawingContext } from './rendering/drawing-context';
 import { bearArt as image } from './art';
 import { PLAYER_ATTACK_DURATION } from '@emberfall/core';
 import { BEAR_DEFINITION } from '@emberfall/core/definitions/entities/companions';
-import type { Bear } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND, type Bear } from '@emberfall/common';
 import { drawPlayerHealth, drawTargetHit } from './effects';
 import { spriteMask } from './lighting';
+
+// Bear sheet rows/columns and display bounds preserve the packaged cub's existing foot anchor and scale.
+const BEAR_ART = {
+  fallenFrame: 7,
+  windupFrame: 5,
+  releaseFrame: 6,
+  stepMs: 120,
+  walkFrames: 4,
+  baseSize: 48,
+  columns: 4,
+  cell: 64,
+  footOffset: 15,
+  shadowFootOffset: 3,
+  width: 42.5,
+  height: 40,
+  deadOpacity: 0.3,
+  healthOffset: 53,
+  claws: 3,
+  clawStroke: 3,
+} as const;
 
 function companionFrame(bear: Bear, now: number) {
   const age = now - (bear.attackAt ?? -Infinity);
@@ -12,13 +32,13 @@ function companionFrame(bear: Bear, now: number) {
   return {
     column:
       bear.hitpoints <= 0
-        ? 7
+        ? BEAR_ART.fallenFrame
         : age >= 0 && age < PLAYER_ATTACK_DURATION
           ? age < PLAYER_ATTACK_DURATION / 2
-            ? 5
-            : 6
+            ? BEAR_ART.windupFrame
+            : BEAR_ART.releaseFrame
           : bear.moving
-            ? 1 + (Math.floor(now / 120) % 4)
+            ? 1 + (Math.floor(now / BEAR_ART.stepMs) % BEAR_ART.walkFrames)
             : 0,
     left: Math.cos(bear.attackAngle ?? 0) < 0,
   };
@@ -30,11 +50,26 @@ export function companionCaster(bear: Bear, x: number, y: number, now: number, i
   }
 
   const { column, left } = companionFrame(bear, now);
-  const scale = (bear.size ?? 48) / 48;
-  const mask = spriteMask(image, column % 4, Math.floor(column / 4), left, 64, false, 64);
+  const scale = (bear.size ?? BEAR_ART.baseSize) / BEAR_ART.baseSize;
+  const mask = spriteMask(
+    image,
+    column % BEAR_ART.columns,
+    Math.floor(column / BEAR_ART.columns),
+    left,
+    BEAR_ART.cell,
+    false,
+    BEAR_ART.cell,
+  );
 
   return mask
-    ? { id, x, y: y + 15 + 3 * scale, width: 42.5 * scale, height: 40 * scale, mask }
+    ? {
+        id,
+        x,
+        y: y + BEAR_ART.footOffset + BEAR_ART.shadowFootOffset * scale,
+        width: BEAR_ART.width * scale,
+        height: BEAR_ART.height * scale,
+        mask,
+      }
     : null;
 }
 
@@ -49,22 +84,22 @@ export function drawCompanion(
   showHealth = true,
 ) {
   ctx.save();
-  const scale = (bear.size ?? 48) / 48;
-  ctx.translate(x, y + 15);
+  const scale = (bear.size ?? BEAR_ART.baseSize) / BEAR_ART.baseSize;
+  ctx.translate(x, y + BEAR_ART.footOffset);
   ctx.scale(scale, scale);
-  ctx.translate(-x, -y - 15);
+  ctx.translate(-x, -y - BEAR_ART.footOffset);
 
   if (!shadows) {
     ctx.fillStyle = '#06181080';
     ctx.beginPath();
-    ctx.ellipse(x, y + 15, 15, 6, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, y + BEAR_ART.footOffset, 15, 6, 0, 0, Math.PI * 2);
     ctx.fill();
   }
 
   const angle = bear.attackAngle ?? 0;
   const { column, left } = companionFrame(bear, now);
   const dead = bear.hitpoints <= 0;
-  ctx.globalAlpha = opacity * (dead ? 0.3 : 1);
+  ctx.globalAlpha = opacity * (dead ? BEAR_ART.deadOpacity : 1);
 
   if (image.naturalWidth) {
     ctx.save();
@@ -76,8 +111,8 @@ export function drawCompanion(
 
     ctx.drawImage(
       image,
-      (column % 4) * 64,
-      Math.floor(column / 4) * 64,
+      (column % BEAR_ART.columns) * 64,
+      Math.floor(column / BEAR_ART.columns) * 64,
       64,
       64,
       -21.25,
@@ -88,7 +123,15 @@ export function drawCompanion(
     ctx.restore();
     drawTargetHit(
       ctx,
-      spriteMask(image, column % 4, Math.floor(column / 4), left, 64, false, 64)!,
+      spriteMask(
+        image,
+        column % BEAR_ART.columns,
+        Math.floor(column / BEAR_ART.columns),
+        left,
+        BEAR_ART.cell,
+        false,
+        BEAR_ART.cell,
+      )!,
       x - 21.25,
       y - 22,
       42.5,
@@ -103,10 +146,12 @@ export function drawCompanion(
   drawPlayerHealth(
     ctx,
     x,
-    y + 15 - 53 * scale,
+    y + BEAR_ART.footOffset - BEAR_ART.healthOffset * scale,
     bear.hitpoints,
     bear.maxHitpoints,
-    dead ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / 1000))}s` : 'Bear',
+    dead
+      ? `Bear · ${Math.max(0, Math.ceil(((bear.resurrectAt ?? now) - now) / MILLISECONDS_PER_SECOND))}s`
+      : 'Bear',
     undefined,
     false,
     showHealth,
@@ -117,9 +162,9 @@ export function drawCompanion(
     ctx.translate(x, y);
     ctx.rotate(angle - Math.PI / 2 + (age / PLAYER_ATTACK_DURATION) * Math.PI);
     ctx.strokeStyle = `rgba(255,235,196,${1 - age / PLAYER_ATTACK_DURATION})`;
-    ctx.lineWidth = 3;
+    ctx.lineWidth = BEAR_ART.clawStroke;
 
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < BEAR_ART.claws; i++) {
       ctx.beginPath();
       ctx.arc(0, 0, (bear.range ?? BEAR_DEFINITION.range) - 5 - i * 7, -0.65, 0);
       ctx.stroke();

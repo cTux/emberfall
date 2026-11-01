@@ -1,3 +1,5 @@
+// Allow interpolation and render reconciliation to settle before capture.
+const LAYERING_SETTLE_MS = 700;
 import { test, expect } from './fixtures';
 import { BUILDINGS, LOBBY_PORTAL, CLASS_IDS } from '../packages/core/src/index.ts';
 import type { SceneState } from '../packages/common/src/index.ts';
@@ -24,7 +26,7 @@ test('dummies, remote players and forest enemies layer around the local player',
   const capture = async (name: string, x: number, y: number) => {
     player.x = x;
     player.y = y;
-    await page.waitForTimeout(700); // Let interpolation and render reconciliation settle.
+    await page.waitForTimeout(LAYERING_SETTLE_MS); // Let interpolation and render reconciliation settle.
     await page.screenshot({ path: `test-results/layering-${name}.png` });
     expect(player.hitpoints).toBe(player.maxHitpoints);
   };

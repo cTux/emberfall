@@ -1,3 +1,4 @@
+import { COMBAT_TUNING } from './tuning.ts';
 import { game, type createGame } from '../game.ts';
 type Game = ReturnType<typeof createGame>;
 import { appendSceneEntities, wrappedDelta } from '@emberfall/common';
@@ -23,7 +24,7 @@ function applyRoots(target: Enemy, ownerId: string, now: number) {
     kind: 'roots',
     stacks: 1,
     expiresAt: now + AILMENT_DEFINITIONS.roots.durationMs,
-    nextTick: now + 1000,
+    nextTick: now + COMBAT_TUNING.rootsTickMs,
     ownerId,
   });
 }
@@ -262,6 +263,6 @@ export function tickPlayerShots(
       return false;
     }
 
-    return shot.remaining > 0.001;
+    return shot.remaining > COMBAT_TUNING.projectileRemainingEpsilon;
   });
 }

@@ -1,3 +1,4 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
 import type { TextStyleOptions, Text } from 'pixi.js';
 import type { Visual } from './visual-pools';
 
@@ -14,7 +15,7 @@ export function updateText(
   const match = settings.font.match(/(?:(bold|[1-9]00)\s+)?([\d.]+)px\s+(.+)/);
   const style = {
     fontFamily: match?.[3] ?? 'sans-serif',
-    fontSize: Number(match?.[2] ?? 10),
+    fontSize: Number(match?.[2] ?? TUNING.fallbackFontSize),
     fontWeight: (match?.[1] ?? 'normal') as 'normal' | 'bold',
     fill,
     stroke,
@@ -31,13 +32,17 @@ export function updateText(
   }
 
   text.anchor.set(
-    settings.textAlign === 'center' ? 0.5 : ['right', 'end'].includes(settings.textAlign) ? 1 : 0,
+    settings.textAlign === 'center'
+      ? TUNING.centerAnchor
+      : ['right', 'end'].includes(settings.textAlign)
+        ? 1
+        : 0,
     settings.textBaseline === 'middle'
-      ? 0.5
+      ? TUNING.centerAnchor
       : ['top', 'hanging'].includes(settings.textBaseline)
         ? 0
         : settings.textBaseline === 'alphabetic'
-          ? 0.8
+          ? TUNING.alphabeticAnchor
           : 1,
   );
 }

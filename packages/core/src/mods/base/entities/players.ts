@@ -1,4 +1,4 @@
-// Movement radius only; combat uses the complete model in hitboxes.ts.
+// Existing movement calibration uses 70% of the 12-unit body radius; combat keeps the full hitbox.
 export const PLAYER_BODY_RADIUS = 12 * 0.7;
 
 export const CLASS_IDS = ['warrior', 'ranger', 'mage', 'druid'] as const;
@@ -39,6 +39,7 @@ export const PLAYER_DEFINITIONS = {
     companion: 'bear',
   },
 } as const;
+// New characters retain the existing 100-HP health budget with no earned currency or progression.
 export const INITIAL_PROGRESS = {
   level: 1,
   paragon: 0,

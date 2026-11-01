@@ -1,5 +1,10 @@
+// PROG-02 starts the XP curve at fifty and doubles the requirement for every normal/paragon level.
+const EXPERIENCE_CURVE = { base: 50, growth: 2 } as const;
+// PROG-02 caps normal levels at twenty; further advancement becomes uncapped paragon.
+const MAX_NORMAL_LEVEL = 20;
+
 export const experienceRequired = (level: number, paragon = 0) => {
-  return 50 * 2 ** (level + paragon - 1);
+  return EXPERIENCE_CURVE.base * EXPERIENCE_CURVE.growth ** (level + paragon - 1);
 };
 
 export function levelUp({
@@ -15,7 +20,7 @@ export function levelUp({
   while (experience >= requiredExperience) {
     experience -= requiredExperience;
 
-    if (level < 20) {
+    if (level < MAX_NORMAL_LEVEL) {
       level++;
     } else {
       paragon++;

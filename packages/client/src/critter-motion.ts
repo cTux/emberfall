@@ -1,6 +1,47 @@
 import { VILLAGE_CRITTERS, type CritterKind } from '@emberfall/core/definitions/entities/critters';
-import { wrap, wrappedDelta } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND, wrap, wrappedDelta } from '@emberfall/common';
 import { ARENA, FOREST, forestTrees } from '@emberfall/core';
+
+// Existing decorative chicken reactions use hysteresis (70px start/100px stop) so a nearby player does not toggle panic every frame.
+const CHICKEN_MOTION = {
+  maxStepMs: 100,
+  panicExitRadius: 100,
+  panicEnterRadius: 70,
+  fleeSpeed: 80,
+  returnSpeed: 10,
+  facingEpsilon: 1e-6,
+  panicStepMs: 70,
+  walkingStepMs: 180,
+  walkFrames: 3,
+  movingThreshold: 0.5,
+} as const;
+// Fixed forest cells and seeded phase strides keep decorative homes stable across wrapped camera views.
+const CRITTER_HOMES = {
+  margin: 40,
+  cellSize: 320,
+  rowStride: 3,
+  offsetX: 120,
+  offsetY: 180,
+  treeQueryRadius: 60,
+  treeClearance: 55,
+  xPhaseStride: 37,
+  yPhaseStride: 19,
+  cycleMs: 12000,
+  viewportMargin: 24,
+} as const;
+// Existing 12-second wander choreography travels 40px out/back with pauses and one idle action near the turn.
+const CRITTER_WANDER = {
+  outboundSeconds: 4,
+  returnStartsSeconds: 6,
+  returnEndsSeconds: 10,
+  speed: 10,
+  excursion: 40,
+  centerOffset: 20,
+  actionStartsSeconds: 4.5,
+  actionEndsSeconds: 5.5,
+  actionRow: 4,
+} as const;
+
 type Critter = {
   id: string;
   x: number;
@@ -33,9 +74,12 @@ export function createCritterMotion() {
         chickens.set(index, state);
       }
 
-      const dt = Math.max(0, Math.min(100, now - state.now)) / 1000;
+      const dt =
+        Math.max(0, Math.min(CHICKEN_MOTION.maxStepMs, now - state.now)) / MILLISECONDS_PER_SECOND;
       state.now = now;
-      let distance = state.panicking ? 100 : 70;
+      let distance: number = state.panicking
+        ? CHICKEN_MOTION.panicExitRadius
+        : CHICKEN_MOTION.panicEnterRadius;
       let away: Point | undefined;
 
       for (const player of players) {
@@ -53,13 +97,15 @@ export function createCritterMotion() {
       const dx = away?.x ?? wrappedDelta(critter.x, state.x, ARENA.width);
       const dy = away?.y ?? wrappedDelta(critter.y, state.y, ARENA.height);
       const length = Math.hypot(dx, dy);
-      const step = away ? 80 * dt : Math.min(length, 10 * dt);
+      const step = away
+        ? CHICKEN_MOTION.fleeSpeed * dt
+        : Math.min(length, CHICKEN_MOTION.returnSpeed * dt);
 
       if (length > 0) {
         state.x = wrap(state.x + (dx / length) * step, ARENA.width);
         state.y = wrap(state.y + (dy / length) * step, ARENA.height);
 
-        if (Math.abs(dx) > 1e-6) {
+        if (Math.abs(dx) > CHICKEN_MOTION.facingEpsilon) {
           state.left = dx < 0;
         }
       }
@@ -73,9 +119,9 @@ export function createCritterMotion() {
         y: cy + wrappedDelta(state.y, cy, ARENA.height),
         left: length > 0 ? state.left : critter.left,
         frame: away
-          ? 1 + (Math.floor(now / 70) % 3)
-          : length > 0.5
-            ? 1 + (Math.floor(now / 180) % 3)
+          ? 1 + (Math.floor(now / CHICKEN_MOTION.panicStepMs) % CHICKEN_MOTION.walkFrames)
+          : length > CHICKEN_MOTION.movingThreshold
+            ? 1 + (Math.floor(now / CHICKEN_MOTION.walkingStepMs) % CHICKEN_MOTION.walkFrames)
             : critter.frame,
       };
     });
@@ -104,28 +150,28 @@ function sampleCritters(
 
   if (area === 'forest') {
     for (
-      let row = Math.floor((bounds.y - 40) / 320);
-      row <= (bounds.y + bounds.height + 40) / 320;
+      let row = Math.floor((bounds.y - CRITTER_HOMES.margin) / CRITTER_HOMES.cellSize);
+      row <= (bounds.y + bounds.height + CRITTER_HOMES.margin) / CRITTER_HOMES.cellSize;
       row++
     ) {
       for (
-        let col = Math.floor((bounds.x - 40) / 320);
-        col <= (bounds.x + bounds.width + 40) / 320;
+        let col = Math.floor((bounds.x - CRITTER_HOMES.margin) / CRITTER_HOMES.cellSize);
+        col <= (bounds.x + bounds.width + CRITTER_HOMES.margin) / CRITTER_HOMES.cellSize;
         col++
       ) {
-        const c = wrap(col, FOREST.width / 320),
-          r = wrap(row, FOREST.height / 320);
+        const c = wrap(col, FOREST.width / CRITTER_HOMES.cellSize),
+          r = wrap(row, FOREST.height / CRITTER_HOMES.cellSize);
 
-        if ((c + r * 3) % 2) {
+        if ((c + r * CRITTER_HOMES.rowStride) % 2) {
           continue;
         }
 
-        const x = col * 320 + 120,
-          y = row * 320 + 180;
+        const x = col * CRITTER_HOMES.cellSize + CRITTER_HOMES.offsetX,
+          y = row * CRITTER_HOMES.cellSize + CRITTER_HOMES.offsetY;
 
         if (
-          forestTrees(x, y, 60).some((t) => {
-            return Math.hypot(t.x - x, t.y - y) < 55;
+          forestTrees(x, y, CRITTER_HOMES.treeQueryRadius).some((t) => {
+            return Math.hypot(t.x - x, t.y - y) < CRITTER_HOMES.treeClearance;
           })
         ) {
           continue;
@@ -139,25 +185,42 @@ function sampleCritters(
   return homes
     .map((home, index) => {
       const phase =
-        ((now + wrap(home.x, world.width) * 37 + wrap(home.y, world.height) * 19) % 12000) / 1000;
-      const moving = phase < 4 || (phase >= 6 && phase < 10);
-      const offset = phase < 4 ? phase * 10 : phase < 6 ? 40 : phase < 10 ? (10 - phase) * 10 : 0;
+        ((now +
+          wrap(home.x, world.width) * CRITTER_HOMES.xPhaseStride +
+          wrap(home.y, world.height) * CRITTER_HOMES.yPhaseStride) %
+          CRITTER_HOMES.cycleMs) /
+        MILLISECONDS_PER_SECOND;
+      const moving =
+        phase < CRITTER_WANDER.outboundSeconds ||
+        (phase >= CRITTER_WANDER.returnStartsSeconds && phase < CRITTER_WANDER.returnEndsSeconds);
+      const offset =
+        phase < CRITTER_WANDER.outboundSeconds
+          ? phase * CRITTER_WANDER.speed
+          : phase < CRITTER_WANDER.returnStartsSeconds
+            ? CRITTER_WANDER.excursion
+            : phase < CRITTER_WANDER.returnEndsSeconds
+              ? (CRITTER_WANDER.returnEndsSeconds - phase) * CRITTER_WANDER.speed
+              : 0;
       const critter = {
         ...home,
         id: `${home.kind}:${wrap(home.x, ARENA.width)}:${wrap(home.y, ARENA.height)}`,
-        x: home.x + offset - 20,
-        left: phase >= 6,
-        frame: moving ? 1 + (Math.floor(now / 180) % 3) : phase > 4.5 && phase < 5.5 ? 4 : 0,
+        x: home.x + offset - CRITTER_WANDER.centerOffset,
+        left: phase >= CRITTER_WANDER.returnStartsSeconds,
+        frame: moving
+          ? 1 + (Math.floor(now / CHICKEN_MOTION.walkingStepMs) % CHICKEN_MOTION.walkFrames)
+          : phase > CRITTER_WANDER.actionStartsSeconds && phase < CRITTER_WANDER.actionEndsSeconds
+            ? CRITTER_WANDER.actionRow
+            : 0,
       };
 
       return react ? react(critter, index) : critter;
     })
     .filter((p) => {
       return (
-        p.x >= bounds.x - 24 &&
-        p.x <= bounds.x + bounds.width + 24 &&
-        p.y >= bounds.y - 24 &&
-        p.y <= bounds.y + bounds.height + 24
+        p.x >= bounds.x - CRITTER_HOMES.viewportMargin &&
+        p.x <= bounds.x + bounds.width + CRITTER_HOMES.viewportMargin &&
+        p.y >= bounds.y - CRITTER_HOMES.viewportMargin &&
+        p.y <= bounds.y + bounds.height + CRITTER_HOMES.viewportMargin
       );
     });
 }

@@ -1,3 +1,4 @@
+import { MAX_QUEUED_INPUTS } from './limits.ts';
 import type { ClientMessage } from '@emberfall/common';
 import type { CommandContext, BroadcastState } from './models.ts';
 import type { WorldMembership } from './world-membership.ts';
@@ -131,7 +132,7 @@ export function createRealtimeCommands({
             return;
           }
 
-          if (timed && session.inputs.length >= 40) {
+          if (timed && session.inputs.length >= MAX_QUEUED_INPUTS) {
             return;
           }
 

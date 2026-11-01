@@ -6,6 +6,16 @@ import type { Caster, Light } from './lighting';
 import type { dayNight } from './day-night';
 import { TORCH_LIGHTS, lightTexture } from './village';
 
+// Keep the existing ±10% flicker; the lantern offsets align light with the actor's held lamp in each facing.
+const LANTERN_LIGHT = {
+  baseAlpha: 0.9,
+  flickerMs: 190,
+  flickerAlpha: 0.1,
+  leftFacing: 2,
+  leftX: -15,
+  rightX: 12,
+};
+
 type LightFrame = Pick<
   VillageFrame,
   'quality' | 'now' | 'project' | 'camera' | 'torchTextures' | 'visibleScenery'
@@ -63,7 +73,10 @@ export function drawVillageLighting(
         quality.shadows,
         texture,
       );
-      ctx.globalAlpha = cycle.lightAlpha * (0.9 + Math.sin(now / 190 + i) * 0.1);
+      ctx.globalAlpha =
+        cycle.lightAlpha *
+        (LANTERN_LIGHT.baseAlpha +
+          Math.sin(now / LANTERN_LIGHT.flickerMs + i) * LANTERN_LIGHT.flickerAlpha);
       ctx.drawImage(movingLight, light.x - light.radius, light.y - light.radius);
     }
 
@@ -72,7 +85,9 @@ export function drawVillageLighting(
     for (const player of players) {
       const pos = poses.pose(player);
       const lantern: Light = {
-        x: pos.x + (pos.facing === 2 ? -15 : 12),
+        x:
+          pos.x +
+          (pos.facing === LANTERN_LIGHT.leftFacing ? LANTERN_LIGHT.leftX : LANTERN_LIGHT.rightX),
         y: pos.y + 15,
         height: 28,
         radius: 110,

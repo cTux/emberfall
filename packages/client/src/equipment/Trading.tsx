@@ -6,6 +6,9 @@ import { Backpack, ChapterTabs } from '@emberfall/ui';
 import type { ClientMessage, Player } from '@emberfall/common';
 import { backpackViews } from './backpack';
 
+// Shift trades ten items, leaving Ctrl for the whole stack and an unmodified click for one item.
+const SHIFT_TRADE_AMOUNT = 10;
+
 export function Trading({
   player,
   merchant,
@@ -28,7 +31,7 @@ export function Trading({
       npcId: craftsman ? 'craftsman' : 'innkeeper',
       id,
       buying,
-      amount: modifiers.ctrlKey ? 'stack' : modifiers.shiftKey ? 10 : 1,
+      amount: modifiers.ctrlKey ? 'stack' : modifiers.shiftKey ? SHIFT_TRADE_AMOUNT : 1,
     });
   };
 

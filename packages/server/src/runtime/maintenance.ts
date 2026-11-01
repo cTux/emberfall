@@ -1,3 +1,4 @@
+import { HEARTBEAT_INTERVAL_MS, PLAYTIME_INTERVAL_MS } from './limits.ts';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { Peer as WebSocket } from '../network/peer.ts';
 import { serverLog } from '../log.ts';
@@ -33,7 +34,7 @@ export function startMaintenance({
       session.alive = false;
       ws.ping();
     }
-  }, 15_000);
+  }, HEARTBEAT_INTERVAL_MS);
   const progressTick = setInterval(() => {
     for (const [ws, session] of sessions) {
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);
@@ -42,7 +43,7 @@ export function startMaintenance({
         player.playtimeSeconds++;
       }
     }
-  }, 1000);
+  }, PLAYTIME_INTERVAL_MS);
   const autosave = setInterval(() => {
     for (const [ws, session] of sessions) {
       const player = worlds.get(session.worldId ?? '')?.players.get(session.id);

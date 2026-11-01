@@ -1,3 +1,4 @@
+import { PASSWORD_HASH_BYTES } from './limits.ts';
 import { scrypt } from 'node:crypto';
 import { promisify } from 'node:util';
 
@@ -13,7 +14,7 @@ export function createWorldPasswords() {
     async hash(password: string, salt: string) {
       pending++;
       try {
-        return (await derive(password, salt, 32)) as Buffer;
+        return (await derive(password, salt, PASSWORD_HASH_BYTES)) as Buffer;
       } finally {
         pending--;
       }

@@ -25,7 +25,10 @@ test('latest input is coalesced, held between packets, timed out and rejected ac
     while (!predicate()) {
       assert(Date.now() < until, 'timed out');
       await new Promise((r) => {
-        return setTimeout(r, 10);
+        // Poll frequently enough to observe asynchronous messages without busy-waiting.
+        const MESSAGE_POLL_MS = 10;
+
+        return setTimeout(r, MESSAGE_POLL_MS);
       });
     }
   };
@@ -54,7 +57,10 @@ test('latest input is coalesced, held between packets, timed out and rejected ac
     })!;
     assert.equal(first.x, 429, 'a burst must consume only one movement step');
     await new Promise((r) => {
-      return setTimeout(r, 380);
+      // Wait beyond the 250 ms held-input deadline and replication delay.
+      const INPUT_EXPIRY_WAIT_MS = 380;
+
+      return setTimeout(r, INPUT_EXPIRY_WAIT_MS);
     });
     const stopped = samples.at(-1)!;
     assert(stopped.x > first.x, 'direction persists between heartbeats');
@@ -62,7 +68,10 @@ test('latest input is coalesced, held between packets, timed out and rejected ac
     // six steps. Other tick phases permit five. The timeout is inclusive.
     assert(stopped.x <= 474, 'missing heartbeat stops movement after 250ms');
     await new Promise((r) => {
-      return setTimeout(r, 100);
+      // Observe two further simulation ticks to verify movement remains stopped.
+      const STOPPED_INPUT_OBSERVATION_MS = 100;
+
+      return setTimeout(r, STOPPED_INPUT_OBSERVATION_MS);
     });
     assert.equal(samples.at(-1)!.x, stopped.x);
     ws.send(JSON.stringify({ type: 'move', seq: 5, epoch: 'old-scene', x: 1, y: 0 }));
@@ -108,7 +117,10 @@ test('timed inputs acknowledge partial steps, reject stale areas and cannot acce
     while (!predicate()) {
       assert(Date.now() < until, 'timed out');
       await new Promise((r) => {
-        return setTimeout(r, 10);
+        // Poll frequently enough to observe asynchronous messages without busy-waiting.
+        const MESSAGE_POLL_MS = 10;
+
+        return setTimeout(r, MESSAGE_POLL_MS);
       });
     }
   };
@@ -133,7 +145,10 @@ test('timed inputs acknowledge partial steps, reject stale areas and cannot acce
     assert(Math.abs(samples.at(-1)!.x - 430.8) < 0.001);
     const stopped = samples.at(-1)!.x;
     await new Promise((r) => {
-      return setTimeout(r, 100);
+      // Observe two further simulation ticks to verify movement remains stopped.
+      const STOPPED_INPUT_OBSERVATION_MS = 100;
+
+      return setTimeout(r, STOPPED_INPUT_OBSERVATION_MS);
     });
     assert.equal(samples.at(-1)!.x, stopped, 'acknowledged duration is never applied twice');
     ws.send(JSON.stringify({ type: 'move', seq: 3, epoch: 'expired', x: 1, y: 0, durationMs: 50 }));
@@ -185,7 +200,10 @@ test('timed inputs acknowledge partial steps, reject stale areas and cannot acce
     );
     ws.send(JSON.stringify({ ...cast, epoch: 'lobby' }));
     await new Promise((r) => {
-      return setTimeout(r, 100);
+      // Observe two further simulation ticks to verify movement remains stopped.
+      const STOPPED_INPUT_OBSERVATION_MS = 100;
+
+      return setTimeout(r, STOPPED_INPUT_OBSERVATION_MS);
     });
     assert.equal(samples.at(-1)!.castSeq, 1);
     assert.equal(samples.at(-1)!.attackId, undefined, 'duplicate request IDs cannot be replayed');

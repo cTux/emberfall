@@ -1,3 +1,5 @@
+import { VILLAGE_ATLAS, LODGE_CHIMNEY } from './village-art-layout.ts';
+
 import type { VillageNpc } from '@emberfall/common';
 import { WARDROBE, BUILDINGS, TORCHES, TREES, ROCKS, PLANTS } from '@emberfall/core';
 import { makeMask } from './lighting';
@@ -14,7 +16,13 @@ import {
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { resourceScenery } from './gathering';
 
-export const workstationArt = loadArt('workstations', 4, 2, 128, true);
+export const workstationArt = loadArt(
+  'workstations',
+  VILLAGE_ATLAS.workstationColumns,
+  VILLAGE_ATLAS.workstationRows,
+  VILLAGE_ATLAS.environmentCell,
+  true,
+);
 
 export interface Scenery extends Caster {
   kind?: 'tree' | 'plant' | 'rock' | 'stone';
@@ -102,14 +110,14 @@ export function villageSprites(
       return add(
         `tree:${i}`,
         t.x,
-        t.y - 8,
+        t.y - VILLAGE_ATLAS.treeOffsetY,
         t.size,
         t.size,
         environmentArt,
-        (i % 2) * 128,
-        128,
-        128,
-        128,
+        (i % 2) * VILLAGE_ATLAS.environmentCell,
+        VILLAGE_ATLAS.environmentCell,
+        VILLAGE_ATLAS.environmentCell,
+        VILLAGE_ATLAS.environmentCell,
       );
     });
     ROCKS.forEach((rock, i) => {
@@ -128,10 +136,10 @@ export function villageSprites(
         plant.size,
         plant.size,
         plantArt,
-        plant.variant * 64,
+        plant.variant * VILLAGE_ATLAS.plantCell,
         0,
-        64,
-        64,
+        VILLAGE_ATLAS.plantCell,
+        VILLAGE_ATLAS.plantCell,
       );
     });
   }
@@ -171,7 +179,10 @@ export function villageSprites(
           y: chimney.chimneyY * scale - height,
         };
       } else if (b.id === 'lodge') {
-        objects.at(-1)!.chimney = { x: 585 * scale - width / 2, y: 18 * scale - height };
+        objects.at(-1)!.chimney = {
+          x: LODGE_CHIMNEY.x * scale - width / 2,
+          y: LODGE_CHIMNEY.y * scale - height,
+        };
       }
     });
   }
@@ -182,24 +193,46 @@ export function villageSprites(
         `workstation:${station.id}`,
         station.x,
         station.y,
-        48,
-        48,
+        VILLAGE_ATLAS.workstationSize,
+        VILLAGE_ATLAS.workstationSize,
         workstationArt,
-        (station.art % 4) * 128,
-        Math.floor(station.art / 4) * 128,
-        128,
-        128,
+        (station.art % VILLAGE_ATLAS.workstationColumns) * VILLAGE_ATLAS.environmentCell,
+        Math.floor(station.art / VILLAGE_ATLAS.workstationColumns) * VILLAGE_ATLAS.environmentCell,
+        VILLAGE_ATLAS.environmentCell,
+        VILLAGE_ATLAS.environmentCell,
       );
     }
   }
 
   if (wardrobeArt.naturalWidth) {
-    add('building:wardrobe', WARDROBE.x, WARDROBE.y, 60, 64, wardrobeArt, 0, 0, 128, 128);
+    add(
+      'building:wardrobe',
+      WARDROBE.x,
+      WARDROBE.y,
+      VILLAGE_ATLAS.wardrobeWidth,
+      VILLAGE_ATLAS.wardrobeHeight,
+      wardrobeArt,
+      0,
+      0,
+      VILLAGE_ATLAS.environmentCell,
+      VILLAGE_ATLAS.environmentCell,
+    );
   }
 
   if (environmentArt.naturalWidth) {
     TORCHES.forEach((t, i) => {
-      return add(`torch:${i}`, t.x, t.y, 42, 64, environmentArt, 0, 256, 128, 128);
+      return add(
+        `torch:${i}`,
+        t.x,
+        t.y,
+        VILLAGE_ATLAS.torchWidth,
+        VILLAGE_ATLAS.torchHeight,
+        environmentArt,
+        0,
+        VILLAGE_ATLAS.torchSourceY,
+        VILLAGE_ATLAS.environmentCell,
+        VILLAGE_ATLAS.environmentCell,
+      );
     });
   }
 
@@ -208,6 +241,7 @@ export function villageSprites(
   });
 }
 
+// Retain the existing warm, local torch pool rather than changing village visibility.
 export const TORCH_LIGHTS: Light[] = TORCHES.map((t, i) => {
   return {
     ...t,

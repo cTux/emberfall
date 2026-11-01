@@ -22,6 +22,8 @@ import { PICKUP_RULES } from '@emberfall/core/definitions/entities/pickups';
 import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
 import { modelHitbox, enemyHitbox } from '@emberfall/core/hitboxes';
 
+import { HITBOX_PRESENTATION, HITBOX_COLORS } from './hitbox-calibration.ts';
+
 export type Hitbox = {
   x: number;
   y: number;
@@ -29,12 +31,7 @@ export type Hitbox = {
   label?: string;
   angle?: number;
 } & ({ radius: number } | { width: number; height: number });
-export const HITBOX_COLORS = {
-  body: '#00ffff',
-  projectile: '#ff00ff',
-  scenery: '#ffff00',
-  range: '#ff8800',
-} as const;
+export { HITBOX_COLORS } from './hitbox-calibration.ts';
 
 /** Displayed poses, shared rule dimensions. Decorations deliberately have no shapes. */
 export function worldHitboxes(
@@ -147,22 +144,33 @@ export function worldHitboxes(
     for (const tree of forestTrees(
       view.x + view.width / 2,
       view.y + view.height / 2,
-      Math.max(view.width, view.height) / 2 + 150,
+      Math.max(view.width, view.height) / 2 + HITBOX_PRESENTATION.sceneryMargin,
     )) {
       circle(tree.x, tree.y, tree.radius, HITBOX_COLORS.scenery);
     }
   } else {
     for (const tree of TREES) {
-      circle(tree.x, tree.y - 8, tree.radius, HITBOX_COLORS.scenery);
+      circle(
+        tree.x,
+        tree.y - HITBOX_PRESENTATION.treeCenterOffset,
+        tree.radius,
+        HITBOX_COLORS.scenery,
+      );
     }
 
     for (const torch of TORCHES) {
-      circle(torch.x, torch.y, 5, HITBOX_COLORS.scenery);
+      circle(torch.x, torch.y, HITBOX_PRESENTATION.torchRadius, HITBOX_COLORS.scenery);
     }
 
-    circle(WARDROBE.x, WARDROBE.y, 18, HITBOX_COLORS.scenery);
+    circle(WARDROBE.x, WARDROBE.y, HITBOX_PRESENTATION.wardrobeRadius, HITBOX_COLORS.scenery);
     // Interaction checks use player.y + 15; shift these ranges into the body coordinate frame.
-    circle(WARDROBE.x, WARDROBE.y - COLLISION.feetOffset, 55, HITBOX_COLORS.range, 'interact');
+    circle(
+      WARDROBE.x,
+      WARDROBE.y - COLLISION.feetOffset,
+      HITBOX_PRESENTATION.wardrobeReach,
+      HITBOX_COLORS.range,
+      'interact',
+    );
     circle(
       LOBBY_PORTAL.x,
       LOBBY_PORTAL.y - COLLISION.feetOffset,
@@ -183,7 +191,7 @@ export function worldHitboxes(
       if (building.id !== 'inn') {
         circle(
           building.doorX,
-          building.y + 24 - COLLISION.feetOffset,
+          building.y + HITBOX_PRESENTATION.doorOffset - COLLISION.feetOffset,
           INTERACTION_RADIUS,
           HITBOX_COLORS.range,
           'interact',
@@ -225,7 +233,7 @@ export function drawHitboxes(
   ctx.save();
   ctx.globalAlpha = 1;
   ctx.shadowBlur = 0;
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = HITBOX_PRESENTATION.outlineWidth;
   ctx.font = '10px monospace';
   ctx.textAlign = 'center';
 

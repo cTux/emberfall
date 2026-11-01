@@ -1,3 +1,4 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
 import { Color, Matrix, Texture, type GradientOptions, type LinearGradientOptions } from 'pixi.js';
 
 export type Paint = string | Gradient;
@@ -23,7 +24,7 @@ export class Paints {
     if (!color) {
       color = new Color(value);
 
-      if (this.colors.size >= 512) {
+      if (this.colors.size >= TUNING.colorCacheEntries) {
         this.colors.delete(this.colors.keys().next().value!);
       }
 
@@ -56,7 +57,7 @@ export class Paints {
     if (options.type === 'radial') {
       const outer = options.outerCenter!,
         center = options.center!,
-        radius = Math.max(0.0001, options.outerRadius!);
+        radius = Math.max(TUNING.minimumGradientExtent, options.outerRadius!);
       normalized = {
         type: 'radial',
         textureSpace: 'global',
@@ -67,10 +68,10 @@ export class Paints {
         colorStops: options.colorStops,
       };
       matrix = new Matrix(
-        (radius * 2) / 256,
+        (radius * 2) / TUNING.gradientSize,
         0,
         0,
-        (radius * 2) / 256,
+        (radius * 2) / TUNING.gradientSize,
         outer.x - radius,
         outer.y - radius,
       );
@@ -80,7 +81,7 @@ export class Paints {
         end = linear.end!,
         dx = end.x - start.x,
         dy = end.y - start.y;
-      const distance = Math.max(0.0001, Math.hypot(dx, dy));
+      const distance = Math.max(TUNING.minimumGradientExtent, Math.hypot(dx, dy));
       normalized = {
         type: 'linear',
         textureSpace: 'global',
@@ -88,7 +89,14 @@ export class Paints {
         end: { x: 1, y: 0 },
         colorStops: options.colorStops,
       };
-      matrix = new Matrix(dx / 256, dy / 256, -dy / distance, dx / distance, start.x, start.y);
+      matrix = new Matrix(
+        dx / TUNING.gradientSize,
+        dy / TUNING.gradientSize,
+        -dy / distance,
+        dx / distance,
+        start.x,
+        start.y,
+      );
     }
 
     const key = JSON.stringify(normalized);
@@ -98,20 +106,20 @@ export class Paints {
       // Bake only the reusable ramp, on a transparent surface. FillGradient's
       // radial builder pre-fills the outer stop, making transparent centers opaque.
       const canvas = document.createElement('canvas');
-      canvas.width = 256;
-      canvas.height = normalized.type === 'radial' ? 256 : 1;
+      canvas.width = TUNING.gradientSize;
+      canvas.height = normalized.type === 'radial' ? TUNING.gradientSize : 1;
       const ctx = canvas.getContext('2d')!;
       const ramp =
         normalized.type === 'radial'
           ? ctx.createRadialGradient(
-              (normalized.center!.x + 1) * 128,
-              (normalized.center!.y + 1) * 128,
-              normalized.innerRadius! * 128,
-              128,
-              128,
-              128,
+              (normalized.center!.x + 1) * (TUNING.gradientSize / 2),
+              (normalized.center!.y + 1) * (TUNING.gradientSize / 2),
+              normalized.innerRadius! * (TUNING.gradientSize / 2),
+              TUNING.gradientSize / 2,
+              TUNING.gradientSize / 2,
+              TUNING.gradientSize / 2,
             )
-          : ctx.createLinearGradient(0, 0, 256, 0);
+          : ctx.createLinearGradient(0, 0, TUNING.gradientSize, 0);
 
       for (const stop of normalized.colorStops!) {
         ramp.addColorStop(stop.offset, new Color(stop.color).toRgbaString());
@@ -132,7 +140,7 @@ export class Paints {
 
   trim(frame: number) {
     for (const [key, entry] of this.entries) {
-      if (frame - entry.used > 120) {
+      if (frame - entry.used > TUNING.gradientIdleFrames) {
         entry.texture.destroy(true);
         this.entries.delete(key);
       }

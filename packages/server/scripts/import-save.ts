@@ -1,11 +1,15 @@
+// Node places its executable and script before user arguments.
+const NODE_ARGUMENT_COUNT = 2;
+// Import requires exactly one source and one destination path.
+const PATH_ARGUMENT_COUNT = 2;
 import { importLegacy } from '../src/persistence/import-legacy.ts';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 try {
-  const args = process.argv.slice(2);
+  const args = process.argv.slice(NODE_ARGUMENT_COUNT);
 
-  if (args.length !== 0 && args.length !== 2) {
+  if (args.length !== 0 && args.length !== PATH_ARGUMENT_COUNT) {
     throw new Error('Usage: pnpm import-save [<legacy-backup.sqlite> <new-destination.sqlite>]');
   }
 

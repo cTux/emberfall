@@ -6,6 +6,9 @@ import { ATTACK_DEFINITIONS } from '../definitions/abilities/attacks.ts';
 import type { Player, Enemy } from '@emberfall/common';
 import { PLAYER_ATTACK_RANGE } from './constants.ts';
 
+// A micro-pixel tolerance keeps mathematically tangent sword/body circles from missing due to roundoff.
+const SWORD_CONTACT_EPSILON = 1e-6;
+
 type Game = ReturnType<typeof createGame>;
 /** Frame-rate independent aim smoothing, always taking the shortest turn across ±pi. */
 export function smoothAttackAngle(
@@ -63,5 +66,5 @@ export function swordOverlapsEnemy(
       ? Math.max(0, Math.hypot(dx, dy) - range)
       : Math.hypot(forward, Math.max(0, Math.abs(sideways) - range));
 
-  return distance <= body.radius + 1e-6;
+  return distance <= body.radius + SWORD_CONTACT_EPSILON;
 }

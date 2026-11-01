@@ -1,3 +1,4 @@
+import { COMBAT_TUNING } from './tuning.ts';
 import { game, type createGame } from '../game.ts';
 type Game = ReturnType<typeof createGame>;
 import { wrappedDelta, wrap } from '@emberfall/common';
@@ -33,7 +34,7 @@ export function advancePlayerShot(
       wrappedDelta(destination.y, shot.y, FOREST.height),
       wrappedDelta(destination.x, shot.x, FOREST.width),
     );
-    shot.remaining = forestDistance(shot, destination) + 64;
+    shot.remaining = forestDistance(shot, destination) + COMBAT_TUNING.rootsTravelPadding;
     // Hold at the target while waiting for the next authoritative bounce.
     travelLimit = detectHits ? shot.remaining : forestDistance(shot, destination);
   }
@@ -42,7 +43,7 @@ export function advancePlayerShot(
     travelLimit,
     Math.max(0, dt) * context.registries.abilities.require(shot.abilityId ?? shot.kind).speed,
   );
-  const steps = Math.max(1, Math.ceil(distance / 6));
+  const steps = Math.max(1, Math.ceil(distance / COMBAT_TUNING.projectileStep));
 
   for (let i = 0; i < steps; i++) {
     if (shot.remaining <= 0) {

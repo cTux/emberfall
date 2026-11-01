@@ -1,3 +1,5 @@
+// Preserve the extended budget for multi-step desktop flows on slower CI workers.
+const EXTENDED_SCENARIO_TIMEOUT_MS = 180000;
 import { test, expect } from './fixtures';
 import {
   BUILDINGS,
@@ -14,7 +16,7 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
   test.describe(graphicsPreset, () => {
     test.use({ graphicsPreset });
     test('hover outlines stay thin and clicks share E interactions', async ({ page, game }) => {
-      test.setTimeout(180000);
+      test.setTimeout(EXTENDED_SCENARIO_TIMEOUT_MS);
       const errors: string[] = [];
       page.on('pageerror', (error) => {
         return errors.push(error.message);
@@ -208,7 +210,6 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       await expect(page.getByRole('dialog', { name: 'Forest portal' })).toBeVisible();
       await closeDialog();
 
-      // Isolate a completed forest with its portal across the horizontal seam.
       game.runtime.parties(world).run([...world.players.values()][0]).scene = {
         ...world.training!,
         id: 'outline-forest',

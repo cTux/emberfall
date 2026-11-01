@@ -1,3 +1,10 @@
+// Ten seconds leaves published speech readable before clearing the bubble.
+const SPEECH_DISPLAY_MS = 10_000;
+// Retain the existing thirty-line world history budget for recent dialogue context.
+const PUBLISHED_HISTORY_LINES = 30;
+// Keep six recent lines per villager to supply callbacks without unbounded prompt growth.
+const MEMORY_LINES_PER_NPC = 6;
+
 import { randomUUID } from 'node:crypto';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { VillageNpc } from '@emberfall/common';
@@ -89,7 +96,7 @@ export class NpcSpeech {
 
     text = spokenLine(text);
     npc.chat = text;
-    npc.chatUntil = at + 10_000;
+    npc.chatUntil = at + SPEECH_DISPLAY_MS;
     this.world.chat = [
       ...(this.world.chat ?? []),
       {
@@ -100,7 +107,7 @@ export class NpcSpeech {
         text,
         dimension: 'village',
       },
-    ].slice(-30);
+    ].slice(-PUBLISHED_HISTORY_LINES);
     const mentioned = [...text.matchAll(/@([\p{L}]+)/gu)]
       .map((match) => {
         return this.world.npcs?.find((npc) => {
@@ -117,7 +124,7 @@ export class NpcSpeech {
         return !!id;
       }),
     )) {
-      this.memories.set(id, [...(this.memories.get(id) ?? []), line].slice(-6));
+      this.memories.set(id, [...(this.memories.get(id) ?? []), line].slice(-MEMORY_LINES_PER_NPC));
     }
 
     return { text, mentioned };
@@ -154,6 +161,6 @@ export class NpcSpeech {
           ? 'The villagers have been silenced. Their voices will return soon.'
           : 'The villagers’ voices have returned.',
       },
-    ].slice(-30);
+    ].slice(-PUBLISHED_HISTORY_LINES);
   }
 }

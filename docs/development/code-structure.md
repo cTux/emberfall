@@ -24,6 +24,11 @@ that makes their purpose clearer. Short geometry names such as `x` and `y` are
 appropriate when their meaning is clear. Human review still checks readability;
 passing automated checks alone does not establish a good module boundary.
 
+Name numeric policies and explain their exact values beside their definition;
+follow the [numeric-value policy and lint](quality.md#numeric-values). Keep local
+tuning with its owner and reuse existing content/style definitions before adding
+constants. Structural literals and explicitly named declarative data can stay inline.
+
 Represent repeated content choices with typed objects or maps, checked with
 `satisfies` where it preserves useful literals. Let existing rules consume those
 definitions, as core's drop tables do. Keep side effects and transactions in their

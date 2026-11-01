@@ -14,6 +14,10 @@ import {
   rollItemStats,
 } from '../item-stats.ts';
 import type { Registries } from './contracts.ts';
+import { RESOURCE_STACK_LIMIT } from './inventory-limits.ts';
+
+// Five gold per normalized rolled-stat unit preserves the existing gear resale balance.
+const ROLLED_STAT_PRICE = 5;
 
 export function createItemRules(
   content: Registries,
@@ -55,7 +59,7 @@ export function createItemRules(
       return (
         rarity === Rarity.Common &&
         entries.length === 0 &&
-        (definition.kind === 'consumable' || item.quantity <= 200)
+        (definition.kind === 'consumable' || item.quantity <= RESOURCE_STACK_LIMIT)
       );
     }
 
@@ -119,7 +123,7 @@ export function createItemRules(
       return sum + value / itemStatBaseValue[stat as ItemStat] / itemStatWeight[stat as ItemStat];
     }, 0);
 
-    return Math.ceil(base * rarityStatMultiplier[itemRarity(item)] + 5 * statPrice);
+    return Math.ceil(base * rarityStatMultiplier[itemRarity(item)] + ROLLED_STAT_PRICE * statPrice);
   }
 
   return { itemDefinition, itemPrice, rollItem, CONSUMABLES, backpackSchema, itemSchema };
