@@ -1,9 +1,10 @@
 import type { Player, WorldState } from '@emberfall/common';
 import { wrappedDelta } from '@emberfall/common';
-import { game, ENEMY_STATS, FOREST } from '@emberfall/core';
+import { game, ENEMY_STATS, FOREST, dimensionDefinition } from '@emberfall/core';
+import { dimensionEnemyArt } from './dimension-art';
 import { actorArt } from './art';
 import { characterImages } from './characters';
-import { ACTOR_CELL, playerFrame, enemyFrame } from './animation';
+import { ACTOR_CELL, playerFrame, enemyFrame, enemyReleasedAt } from './animation';
 import { movementFacing } from './facing';
 import { spriteMask, type Caster } from './lighting';
 
@@ -139,16 +140,24 @@ export function createForestActors(skeleton: HTMLImageElement) {
                 moving,
                 actor.enemy.hitpoints > 0,
                 actor.enemy.attack,
-                (actor.enemy.cooldownUntil ?? -Infinity) -
+                enemyReleasedAt(
+                  actor.enemy.cooldownUntil,
                   ENEMY_STATS[actor.enemy.archetype ?? 'skeleton'].cooldown,
+                  dimensionDefinition(world?.scene?.dimension).enemyMultiplier,
+                ),
               ),
           image = actor.player
             ? characterImages[actor.player.classId ?? 'warrior'].walk
-            : actor.enemy?.kind === 'boss'
-              ? enemyImages.warden
-              : (enemyImages[
-                  game.registries.enemies.require(actor.enemy?.archetype ?? 'skeleton').art
-                ] ?? skeleton);
+            : game.registries.enemies.require(actor.enemy?.archetype ?? 'skeleton').sprite
+              ? dimensionEnemyArt(
+                  game.registries.enemies.require(actor.enemy?.archetype ?? 'skeleton').sprite!,
+                  actor.enemy?.kind === 'boss',
+                )
+              : actor.enemy?.kind === 'boss'
+                ? enemyImages.warden
+                : (enemyImages[
+                    game.registries.enemies.require(actor.enemy?.archetype ?? 'skeleton').art
+                  ] ?? skeleton);
         const size = actor.enemy
           ? ENEMY_STATS[actor.enemy.archetype ?? 'skeleton'].size
           : FOREST_ACTOR.playerSize;

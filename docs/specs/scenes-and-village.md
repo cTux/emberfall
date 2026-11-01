@@ -35,3 +35,7 @@ See [Geometry, forest entry and completion](scenes/forest.md#acceptance).
 ## VILLAGE-07 — Gathering
 
 See [Resource gathering](scenes/gathering.md#village-07--gathering).
+
+## SCENE-07 — Dimensions
+
+See [Swamp, Desert and dimension modifiers](scenes/forest.md#scene-07--dimensions).

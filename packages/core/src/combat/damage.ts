@@ -1,3 +1,4 @@
+import { dimensionDefinition } from '../dimensions.ts';
 import { PERCENT, appendSceneEntities, wrap } from '@emberfall/common';
 import { COMBAT_TUNING } from './tuning.ts';
 import { game, type createGame } from '../game.ts';
@@ -223,7 +224,9 @@ export function hitEnemy(
       const item = context.rules.rollItem(
         LOOT_ITEM_IDS[Math.floor(context.random() * LOOT_ITEM_IDS.length)],
         context.random,
-        zoneRarityMultiplier[scene.type] * difficultyRarityMultiplier[scene.difficulty],
+        dimensionDefinition(scene.dimension, context).rarityMultiplier *
+          zoneRarityMultiplier[scene.type] *
+          difficultyRarityMultiplier[scene.difficulty],
       );
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,

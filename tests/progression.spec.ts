@@ -17,7 +17,7 @@ test('XP bar follows authoritative leveling and saved paragon after rejoining', 
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
-  await expect(page.locator('canvas')).toHaveAttribute('data-interaction-prompt', 'Forest portal');
+  await expect(page.locator('canvas')).toHaveAttribute('data-interaction-prompt', 'Portal');
   await page.keyboard.press('e');
   await page.getByRole('button', { name: 'Create', exact: true }).click();
   await page.getByRole('button', { name: "I'm ready" }).click();

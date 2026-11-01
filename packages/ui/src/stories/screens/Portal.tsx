@@ -11,7 +11,7 @@ export function Portal() {
   return (
     <Box sx={stage}>
       <Box sx={panel}>
-        <GameWindow title='Forest portal' modal={false} onClose={() => {}}>
+        <GameWindow title='Portal' modal={false} onClose={() => {}}>
           <PortalVote
             scene='Forest'
             difficulty='Easy'

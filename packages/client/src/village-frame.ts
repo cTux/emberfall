@@ -78,7 +78,7 @@ export function prepareVillageFrame(
     });
   const portal = project(LOBBY_PORTAL.x, LOBBY_PORTAL.y);
   const portalTarget = portalInteraction(
-    { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL },
+    { id: 'portal', name: 'Portal', ...LOBBY_PORTAL },
     portal.x,
     portal.y,
   );

@@ -22,7 +22,7 @@ const panels: Record<GameMenu, Panel> = {
   codex: { title: 'Codex', height: 480 },
   equipment: { title: 'Inventory', width: INVENTORY_WINDOW_WIDTH },
   settings: { title: 'Settings', height: 420 },
-  portal: { title: 'Forest portal' },
+  portal: { title: 'Portal' },
   wardrobe: { title: 'Wardrobe', width: 600 },
   exit: { title: 'Leave?' },
   building: { title: '' },

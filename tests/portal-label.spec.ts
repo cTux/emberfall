@@ -12,8 +12,8 @@ test('unlabeled village portal keeps its interaction prompt and window', async (
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y + 45;
   const canvas = page.locator('canvas');
-  await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Forest portal');
+  await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Portal');
   await canvas.screenshot({ path: 'test-results/village-portal-no-label.png' });
   await page.keyboard.press('e');
-  await expect(page.getByRole('dialog', { name: 'Forest portal' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Portal' })).toBeVisible();
 });

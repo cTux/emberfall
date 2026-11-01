@@ -1,3 +1,4 @@
+import { dimensionArt } from './dimension-art';
 import { drawForestShadows, drawForestPlayerLights } from './forest-lighting.ts';
 import { drawEnvironment } from './environment-rendering';
 import { createForestActors, forestActorMask } from './forest-actors';
@@ -53,11 +54,21 @@ export function forestRenderer(
     outlines: readonly InteractionTarget[],
     highlightInteractions: boolean,
   ) => {
+    const dimension = world?.scene?.dimension ?? 'forest';
+    ctx.canvas.dataset.dimension = dimension;
+    ctx.canvas.dataset.dimensionArtReady = String(
+      dimension === 'forest' ||
+        (['terrain', 'scenery', 'enemies', 'boss'] as const).every((kind) => {
+          const image = dimensionArt(dimension, kind);
+
+          return image.complete && image.naturalWidth > 0;
+        }),
+    );
     const serverTime = world?.scene?.pausedAt ?? world?.serverNow ?? 0;
     const cycle = dayNight(world?.serverNow ?? 0);
     ctx.ambientTint = cycle.tint;
     ctx.directionalShadow = cycle.shadow;
-    const terrain = forestGround();
+    const terrain = forestGround(dimension);
     const scale = Math.max(
         ctx.canvas.width / FOREST_VIEW.width,
         ctx.canvas.height / FOREST_VIEW.height,
@@ -118,7 +129,7 @@ export function forestRenderer(
       height,
     });
     const trees = resourceNodes(
-      { x: cx, y: cy, scene: 'forest' },
+      { x: cx, y: cy, scene: 'forest', dimension },
       Math.hypot(width, height) / 2 + FOREST_VIEW.sceneryMargin,
     ).filter((t) => {
       return (
@@ -137,12 +148,15 @@ export function forestRenderer(
       damageByTarget,
     } = prepareActors(world, players, playerId, { cx, cy, width, height, near }, now, serverTime);
     casters.push(...actorCasters);
-    const critters = crittersAt('forest', world ? serverTime : now, {
-      x: cameraX,
-      y: cameraY,
-      width,
-      height,
-    });
+    const critters =
+      dimension === 'forest'
+        ? crittersAt('forest', world ? serverTime : now, {
+            x: cameraX,
+            y: cameraY,
+            width,
+            height,
+          })
+        : [];
 
     for (const critter of critters) {
       const caster = critterCaster(critter);
@@ -213,7 +227,14 @@ export function forestRenderer(
       drawForestPlayerLights(ctx, rendered, casters, cycle.lightAlpha, quality.shadows);
     }
 
-    drawEnvironment(ctx, { x: cameraX, y: cameraY, width, height }, now, quality, cycle.daylight);
+    drawEnvironment(
+      ctx,
+      { x: cameraX, y: cameraY, width, height },
+      now,
+      quality,
+      cycle.daylight,
+      dimension,
+    );
 
     if (prefs.damageNumbers) {
       drawDamageNumbers(

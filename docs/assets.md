@@ -26,6 +26,13 @@ The wardrobe is a crop from LPC Wooden Furniture, distributed under CC BY-SA 3.0
 
 Path lamps use Karsiori’s FREE Pixel Art Lantern Pack under CC0. Keep the original source filenames, license notes and [lantern credits](../packages/client/public/assets/lanterns/CREDITS.txt).
 
+## Dimension artwork
+
+Swamp and Desert use ten new generated terrain/scenery/item/enemy/boss sheets.
+[Prompts, layout, preserved sources and attribution](../packages/client/public/assets/dimensions/README.md)
+accompany the assets. [Verified production captures](specs/scenes/forest.md#scene-07--dimensions)
+show the shipped presentation; the contact sheet is labeled as an asset preview.
+
 ## Audio and fonts
 
 The six TimberwolfGames tracks and Ninja Adventure sampled effects are CC0. Preserve [audio credits](../packages/client/public/audio/CREDITS.txt) and [CC0 text](../packages/client/public/audio/CC0.txt). Playback rules are in [UI-04](specs/interface/settings.md#ui-04--settings-and-music).

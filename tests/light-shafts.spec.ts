@@ -41,7 +41,7 @@ test('sunlight shafts render in village and forest with live presets and narrow 
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
   await page.waitForTimeout(LIGHTING_WARMUP_MS);
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
+  const portal = page.getByRole('dialog', { name: 'Portal' });
   await expect(async () => {
     await page.keyboard.press('e');
     await expect(portal).toBeVisible({ timeout: 500 });

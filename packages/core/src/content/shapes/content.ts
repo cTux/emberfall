@@ -5,6 +5,8 @@ import { id, positive, nonnegative, data } from './primitives.ts';
 
 // Three talent columns each have four active abilities, encoded as stable slots 0 through 11.
 const MAX_TALENT_SLOT = 11;
+// Eight shots cover a complete colossus sunburst while bounding per-attack entities.
+const MAX_ENEMY_VOLLEY = 8;
 
 export const contentShapes: Record<RegistryName, z.ZodType> = {
   items: z.discriminatedUnion('kind', [
@@ -90,9 +92,33 @@ export const contentShapes: Record<RegistryName, z.ZodType> = {
     bounces: nonnegative.int(),
     bounceRadius: nonnegative,
   }),
-  spawnRules: z.object({ id, enemy: id, chance: nonnegative.max(1) }),
+  spawnRules: z.object({
+    id,
+    enemy: id,
+    chance: nonnegative.max(1),
+    dimension: z.enum(['forest', 'swamp', 'desert']).optional(),
+  }),
   enemies: z.object({
     id,
+    sprite: z
+      .enum(['mireling', 'bogToad', 'mossGolem', 'scarab', 'sandWisp', 'duneColossus'])
+      .optional(),
+    skill: z
+      .discriminatedUnion('kind', [
+        z.object({
+          name: z.string().min(1),
+          kind: z.literal('ground'),
+          radius: positive,
+          targeted: z.boolean(),
+        }),
+        z.object({
+          name: z.string().min(1),
+          kind: z.literal('volley'),
+          count: positive.int().max(MAX_ENEMY_VOLLEY),
+          spread: nonnegative.max(Math.PI * 2),
+        }),
+      ])
+      .optional(),
     behavior: z.enum(['melee', 'ranged']),
     art: z.enum(['skeleton', 'runner', 'brute', 'caster']),
     speed: positive,

@@ -1,3 +1,4 @@
+import { dimensionDefinition } from './dimensions.ts';
 import { COLLISION } from './definitions/collision.ts';
 
 import { game, type createGame } from './game.ts';
@@ -30,15 +31,26 @@ export function spawnArchetype(
   roll: number,
   count: number,
   context: ReturnType<typeof createGame> = game,
+  dimension: import('@emberfall/common').DimensionId = 'forest',
 ): NonNullable<Enemy['archetype']> {
   let threshold = 0;
 
   for (const rule of context.registries.spawnRules.values()) {
+    if ((rule.dimension ?? 'forest') !== dimension) {
+      continue;
+    }
+
     threshold += rule.chance;
 
     if (roll < threshold) {
       return rule.enemy;
     }
+  }
+
+  if (dimension !== 'forest') {
+    const enemies = dimensionDefinition(dimension, context).enemies;
+
+    return enemies[count % enemies.length];
   }
 
   const fallbacks = context.registries.settings.require('spawnFallbacks')
@@ -71,9 +83,12 @@ export function moveEnemies(
   now = 0,
   context: ReturnType<typeof createGame> = game,
   difficulty: Difficulty = Difficulty.Easy,
+  dimension?: import('@emberfall/common').DimensionId,
 ) {
   const ENEMY_STATS = Object.fromEntries(context.registries.enemies.entries());
-  const speedMultiplier = context.registries.difficulties.require(difficulty).speedMultiplier;
+  const dimensionScale = dimensionDefinition(dimension, context).enemyMultiplier;
+  const speedMultiplier =
+    context.registries.difficulties.require(difficulty).speedMultiplier * dimensionScale;
   const cells = new Map<number, Set<Enemy>>();
   const key = (x: number, y: number) => {
     return (
@@ -120,7 +135,10 @@ export function moveEnemies(
 
     const targetDistance = forestDistance(enemy, target);
 
-    if (stats.behavior === 'ranged' && targetDistance < ENEMY_RULES.casterStopRange) {
+    if (
+      stats.behavior === 'ranged' &&
+      targetDistance < Math.min(ENEMY_RULES.casterStopRange, stats.reach) * dimensionScale
+    ) {
       continue;
     }
 

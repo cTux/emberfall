@@ -1,3 +1,4 @@
+import { dimensionDefinition } from './dimensions.ts';
 import { randomSource } from './random.ts';
 import { COLLISION } from './definitions/collision.ts';
 import { VILLAGE_TREE } from './village-layout.ts';
@@ -7,7 +8,7 @@ import {
   TREE_GATHER_COUNT,
   TREE_DROPS,
 } from './gathering-rules.ts';
-import type { Player, ResourceState } from '@emberfall/common';
+import type { Player, ResourceState, DimensionId } from '@emberfall/common';
 import { ARENA, TREES, ROCKS, PLANTS } from './world.ts';
 import { FOREST, forestTrees, wrappedDelta } from './scene.ts';
 import { addItem } from './inventory.ts';
@@ -22,6 +23,7 @@ export const RESOURCE_RESTORE_MS = 3_600_000;
 export const GATHER_DURATION_MS = 5000;
 export interface ResourceNode {
   id: string;
+  dimension?: DimensionId;
   kind: 'tree' | 'plant' | 'rock' | 'stone';
   x: number;
   y: number;
@@ -51,7 +53,7 @@ export const VILLAGE_RESOURCES: readonly ResourceNode[] = Object.freeze(
 
 /** Queries return the nearest wrapped image; identities do not depend on camera position. */
 export function resourceNodes(
-  player: { x: number; y: number; scene?: string },
+  player: { x: number; y: number; scene?: string; dimension?: DimensionId },
   radius: number,
 ): ResourceNode[] {
   const forest = player.scene === 'forest';
@@ -87,6 +89,11 @@ export function resourceNodes(
 
   return nodes
     .map((node) => {
+      return forest && player.dimension && player.dimension !== 'forest'
+        ? { ...node, id: `${player.dimension}:${node.id}`, dimension: player.dimension }
+        : node;
+    })
+    .map((node) => {
       return {
         ...node,
         x: player.x + wrappedDelta(node.x, player.x, geometry.width),
@@ -109,7 +116,7 @@ export function resourceState(
 }
 
 export function nearbyResource(
-  player: Pick<Player, 'x' | 'y' | 'scene' | 'hitpoints'>,
+  player: Pick<Player, 'x' | 'y' | 'scene' | 'hitpoints' | 'dimension'>,
   states: Record<string, ResourceState> | undefined,
   now: number,
 ) {
@@ -215,8 +222,10 @@ export function gatherResource(
     throw new Error('This resource is restoring.');
   }
 
-  const items =
-    node.kind === 'tree'
+  const dimension = node.dimension ? dimensionDefinition(node.dimension) : undefined;
+  const items = dimension
+    ? [dimension.resources[node.kind]]
+    : node.kind === 'tree'
       ? Object.entries(TREE_DROPS)
           .filter(([, chance]) => {
             return roll() < chance;

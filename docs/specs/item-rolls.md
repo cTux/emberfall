@@ -5,7 +5,9 @@
 New dropped gear and merchant-generated gear receive one server-owned rarity roll:
 Legendary 0.01%, Epic 0.1%, Rare 1%, Uncommon 10%, Common the remaining 88.89%.
 For dropped gear, multiply each non-Common chance by the zone factor and the
-scene difficulty factor. Forest uses ×1; Easy uses ×1, Medium ×1.5 and Hard ×2.
+scene difficulty factor. Forest uses ×1, Swamp ×1.3 and Desert ×1.6; Easy uses ×1,
+Medium ×1.5 and Hard ×2. Dimension factors compose with difficulty: Swamp Hard
+is ×2.6 and Desert Hard is ×3.2.
 Common takes the remaining probability. Thus Forest Medium yields Legendary
 0.015%, Epic 0.15%, Rare 1.5%, Uncommon 15%, Common 83.335%; Forest Hard yields
 0.02%, 0.2%, 2%, 20% and 77.78% respectively. Merchant-generated gear retains

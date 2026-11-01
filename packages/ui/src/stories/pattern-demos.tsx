@@ -107,7 +107,7 @@ export function WindowDemo() {
         Open window
       </Button>
       <GameWindow
-        title='Forest portal'
+        title='Portal'
         open={open}
         onClose={() => {
           return setOpen(false);

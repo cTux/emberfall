@@ -35,7 +35,7 @@ test('companion HUD follows confirmed health in village and forest and disappear
   player.bear!.hitpoints = player.bear!.maxHitpoints;
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
+  const portal = page.getByRole('dialog', { name: 'Portal' });
   await expect(async () => {
     await page.keyboard.press('e');
     await expect(portal).toBeVisible();

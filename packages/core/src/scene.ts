@@ -172,7 +172,7 @@ export function nearbyInteraction(
   };
 
   if (distance(LOBBY_PORTAL) < INTERACTION_RADIUS) {
-    return { id: 'portal', name: 'Forest portal', ...LOBBY_PORTAL };
+    return { id: 'portal', name: 'Portal', ...LOBBY_PORTAL };
   }
 
   if (distance(WARDROBE) < FIXTURE_INTERACTION.wardrobeRadius) {

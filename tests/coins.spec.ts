@@ -18,7 +18,7 @@ test('collected gold credits the account Storehouse across classes and rejoining
   player.y = LOBBY_PORTAL.y - 15;
   const portal = page
     .getByRole('dialog')
-    .filter({ has: page.getByRole('heading', { name: 'Forest portal', exact: true }) });
+    .filter({ has: page.getByRole('heading', { name: 'Portal', exact: true }) });
   await expect(async () => {
     await page.keyboard.press('e');
     await expect(portal).toBeVisible();

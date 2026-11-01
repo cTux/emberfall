@@ -1,0 +1,432 @@
+{
+  "swamp-scenery": {
+    "sourceSize": [1536, 1024],
+    "exportSize": [1536, 1024],
+    "columns": 3,
+    "rows": 2,
+    "footAnchor": 0.90625,
+    "frames": [
+      {
+        "column": 0,
+        "row": 0,
+        "sourceCrop": [0, 0, 620, 655],
+        "visibleBounds": [35, 20, 594, 628],
+        "scale": 0.7105263157894737,
+        "placed": [57, 32, 397, 432]
+      },
+      {
+        "column": 0,
+        "row": 1,
+        "sourceCrop": [0, 655, 620, 1024],
+        "visibleBounds": [24, 39, 615, 332],
+        "scale": 0.7105263157894737,
+        "placed": [46, 768, 420, 208]
+      },
+      {
+        "column": 1,
+        "row": 0,
+        "sourceCrop": [620, 0, 1040, 655],
+        "visibleBounds": [8, 96, 391, 625],
+        "scale": 0.8166351606805293,
+        "placed": [611, 32, 313, 432]
+      },
+      {
+        "column": 1,
+        "row": 1,
+        "sourceCrop": [620, 655, 1040, 1024],
+        "visibleBounds": [25, 51, 382, 318],
+        "scale": 0.8166351606805293,
+        "placed": [622, 758, 292, 218]
+      },
+      {
+        "column": 2,
+        "row": 0,
+        "sourceCrop": [1040, 0, 1536, 655],
+        "visibleBounds": [59, 110, 463, 617],
+        "scale": 0.8520710059171598,
+        "placed": [1108, 32, 344, 432]
+      },
+      {
+        "column": 2,
+        "row": 1,
+        "sourceCrop": [1040, 655, 1536, 1024],
+        "visibleBounds": [28, 73, 477, 326],
+        "scale": 0.8520710059171598,
+        "placed": [1088, 760, 383, 216]
+      }
+    ]
+  },
+  "swamp-enemies": {
+    "sourceSize": [971, 1619],
+    "exportSize": [1536, 2560],
+    "columns": 3,
+    "rows": 5,
+    "footAnchor": 0.90625,
+    "frames": [
+      {
+        "column": 0,
+        "row": 0,
+        "sourceVisibleBounds": [38, 91, 275, 309],
+        "scale": 1.5,
+        "placed": [78, 137, 356, 327]
+      },
+      {
+        "column": 0,
+        "row": 1,
+        "sourceVisibleBounds": [58, 395, 292, 622],
+        "scale": 1.5,
+        "placed": [80, 636, 351, 340]
+      },
+      {
+        "column": 0,
+        "row": 2,
+        "sourceVisibleBounds": [37, 684, 258, 917],
+        "scale": 1.5,
+        "placed": [90, 1138, 332, 350]
+      },
+      {
+        "column": 0,
+        "row": 3,
+        "sourceVisibleBounds": [24, 978, 291, 1206],
+        "scale": 1.5,
+        "placed": [56, 1658, 400, 342]
+      },
+      {
+        "column": 0,
+        "row": 4,
+        "sourceVisibleBounds": [20, 1403, 308, 1533],
+        "scale": 1.5,
+        "placed": [40, 2317, 432, 195]
+      },
+      {
+        "column": 1,
+        "row": 0,
+        "sourceVisibleBounds": [350, 115, 613, 320],
+        "scale": 1.4545454545454546,
+        "placed": [576, 166, 383, 298]
+      },
+      {
+        "column": 1,
+        "row": 1,
+        "sourceVisibleBounds": [351, 411, 608, 630],
+        "scale": 1.4545454545454546,
+        "placed": [581, 657, 374, 319]
+      },
+      {
+        "column": 1,
+        "row": 2,
+        "sourceVisibleBounds": [335, 705, 608, 923],
+        "scale": 1.4545454545454546,
+        "placed": [569, 1171, 397, 317]
+      },
+      {
+        "column": 1,
+        "row": 3,
+        "sourceVisibleBounds": [334, 1001, 629, 1221],
+        "scale": 1.4545454545454546,
+        "placed": [553, 1680, 429, 320]
+      },
+      {
+        "column": 1,
+        "row": 4,
+        "sourceVisibleBounds": [328, 1373, 625, 1537],
+        "scale": 1.4545454545454546,
+        "placed": [552, 2273, 432, 239]
+      },
+      {
+        "column": 2,
+        "row": 0,
+        "sourceVisibleBounds": [643, 42, 957, 312],
+        "scale": 1.3670886075949367,
+        "placed": [1065, 95, 429, 369]
+      },
+      {
+        "column": 2,
+        "row": 1,
+        "sourceVisibleBounds": [650, 345, 953, 622],
+        "scale": 1.3670886075949367,
+        "placed": [1073, 597, 414, 379]
+      },
+      {
+        "column": 2,
+        "row": 2,
+        "sourceVisibleBounds": [660, 650, 955, 916],
+        "scale": 1.3670886075949367,
+        "placed": [1078, 1124, 403, 364]
+      },
+      {
+        "column": 2,
+        "row": 3,
+        "sourceVisibleBounds": [660, 953, 960, 1223],
+        "scale": 1.3670886075949367,
+        "placed": [1075, 1631, 410, 369]
+      },
+      {
+        "column": 2,
+        "row": 4,
+        "sourceVisibleBounds": [639, 1335, 955, 1556],
+        "scale": 1.3670886075949367,
+        "placed": [1064, 2210, 432, 302]
+      }
+    ]
+  },
+  "swamp-boss": {
+    "sourceSize": [793, 1983],
+    "exportSize": [512, 2560],
+    "columns": 1,
+    "rows": 5,
+    "footAnchor": 0.90625,
+    "frames": [
+      {
+        "column": 0,
+        "row": 0,
+        "sourceVisibleBounds": [201, 4, 598, 382],
+        "scale": 0.6912,
+        "placed": [119, 203, 274, 261]
+      },
+      {
+        "column": 0,
+        "row": 1,
+        "sourceVisibleBounds": [197, 388, 636, 778],
+        "scale": 0.6912,
+        "placed": [104, 706, 303, 270]
+      },
+      {
+        "column": 0,
+        "row": 2,
+        "sourceVisibleBounds": [151, 782, 606, 1161],
+        "scale": 0.6912,
+        "placed": [99, 1226, 314, 262]
+      },
+      {
+        "column": 0,
+        "row": 3,
+        "sourceVisibleBounds": [158, 1162, 659, 1623],
+        "scale": 0.6912,
+        "placed": [83, 1681, 346, 319]
+      },
+      {
+        "column": 0,
+        "row": 4,
+        "sourceVisibleBounds": [84, 1628, 709, 1965],
+        "scale": 0.6912,
+        "placed": [40, 2279, 432, 233]
+      }
+    ]
+  },
+  "desert-scenery": {
+    "sourceSize": [1536, 1024],
+    "exportSize": [1536, 1024],
+    "columns": 3,
+    "rows": 2,
+    "footAnchor": 0.90625,
+    "frames": [
+      {
+        "column": 0,
+        "row": 0,
+        "sourceCrop": [0, 0, 560, 620],
+        "visibleBounds": [33, 5, 543, 592],
+        "scale": 0.7359454855195912,
+        "placed": [68, 32, 375, 432]
+      },
+      {
+        "column": 0,
+        "row": 1,
+        "sourceCrop": [0, 620, 560, 1024],
+        "visibleBounds": [76, 88, 455, 360],
+        "scale": 0.7359454855195912,
+        "placed": [116, 776, 279, 200]
+      },
+      {
+        "column": 1,
+        "row": 0,
+        "sourceCrop": [560, 0, 1030, 620],
+        "visibleBounds": [25, 148, 427, 566],
+        "scale": 1.0334928229665072,
+        "placed": [560, 32, 415, 432]
+      },
+      {
+        "column": 1,
+        "row": 1,
+        "sourceCrop": [560, 620, 1030, 1024],
+        "visibleBounds": [73, 36, 357, 329],
+        "scale": 1.0334928229665072,
+        "placed": [621, 673, 294, 303]
+      },
+      {
+        "column": 2,
+        "row": 0,
+        "sourceCrop": [1030, 0, 1536, 620],
+        "visibleBounds": [21, 108, 475, 580],
+        "scale": 0.9152542372881356,
+        "placed": [1072, 32, 416, 432]
+      },
+      {
+        "column": 2,
+        "row": 1,
+        "sourceCrop": [1030, 620, 1536, 1024],
+        "visibleBounds": [78, 112, 435, 349],
+        "scale": 0.9152542372881356,
+        "placed": [1116, 759, 327, 217]
+      }
+    ]
+  },
+  "desert-enemies": {
+    "sourceSize": [971, 1619],
+    "exportSize": [1536, 2560],
+    "columns": 3,
+    "rows": 5,
+    "footAnchor": 0.90625,
+    "frames": [
+      {
+        "column": 0,
+        "row": 0,
+        "sourceVisibleBounds": [25, 91, 332, 315],
+        "scale": 1.3012048192771084,
+        "placed": [56, 173, 399, 291]
+      },
+      {
+        "column": 0,
+        "row": 1,
+        "sourceVisibleBounds": [22, 397, 328, 624],
+        "scale": 1.3012048192771084,
+        "placed": [57, 681, 398, 295]
+      },
+      {
+        "column": 0,
+        "row": 2,
+        "sourceVisibleBounds": [20, 698, 331, 924],
+        "scale": 1.3012048192771084,
+        "placed": [53, 1194, 405, 294]
+      },
+      {
+        "column": 0,
+        "row": 3,
+        "sourceVisibleBounds": [12, 1000, 344, 1231],
+        "scale": 1.3012048192771084,
+        "placed": [40, 1699, 432, 301]
+      },
+      {
+        "column": 0,
+        "row": 4,
+        "sourceVisibleBounds": [11, 1303, 326, 1569],
+        "scale": 1.3012048192771084,
+        "placed": [51, 2166, 410, 346]
+      },
+      {
+        "column": 1,
+        "row": 0,
+        "sourceVisibleBounds": [377, 46, 567, 311],
+        "scale": 1.55956678700361,
+        "placed": [620, 51, 296, 413]
+      },
+      {
+        "column": 1,
+        "row": 1,
+        "sourceVisibleBounds": [369, 351, 576, 613],
+        "scale": 1.55956678700361,
+        "placed": [606, 567, 323, 409]
+      },
+      {
+        "column": 1,
+        "row": 2,
+        "sourceVisibleBounds": [378, 662, 598, 908],
+        "scale": 1.55956678700361,
+        "placed": [596, 1104, 343, 384]
+      },
+      {
+        "column": 1,
+        "row": 3,
+        "sourceVisibleBounds": [331, 964, 589, 1221],
+        "scale": 1.55956678700361,
+        "placed": [567, 1599, 402, 401]
+      },
+      {
+        "column": 1,
+        "row": 4,
+        "sourceVisibleBounds": [320, 1384, 597, 1552],
+        "scale": 1.55956678700361,
+        "placed": [552, 2250, 432, 262]
+      },
+      {
+        "column": 2,
+        "row": 0,
+        "sourceVisibleBounds": [625, 11, 952, 313],
+        "scale": 1.2134831460674158,
+        "placed": [1081, 98, 397, 366]
+      },
+      {
+        "column": 2,
+        "row": 1,
+        "sourceVisibleBounds": [648, 335, 949, 628],
+        "scale": 1.2134831460674158,
+        "placed": [1097, 620, 365, 356]
+      },
+      {
+        "column": 2,
+        "row": 2,
+        "sourceVisibleBounds": [659, 636, 939, 924],
+        "scale": 1.2134831460674158,
+        "placed": [1110, 1139, 340, 349]
+      },
+      {
+        "column": 2,
+        "row": 3,
+        "sourceVisibleBounds": [614, 948, 960, 1231],
+        "scale": 1.2134831460674158,
+        "placed": [1070, 1657, 420, 343]
+      },
+      {
+        "column": 2,
+        "row": 4,
+        "sourceVisibleBounds": [604, 1332, 960, 1573],
+        "scale": 1.2134831460674158,
+        "placed": [1064, 2220, 432, 292]
+      }
+    ]
+  },
+  "desert-boss": {
+    "sourceSize": [793, 1983],
+    "exportSize": [512, 2560],
+    "columns": 1,
+    "rows": 5,
+    "footAnchor": 0.90625,
+    "frames": [
+      {
+        "column": 0,
+        "row": 0,
+        "sourceVisibleBounds": [182, 9, 547, 394],
+        "scale": 0.6803149606299213,
+        "placed": [132, 202, 248, 262]
+      },
+      {
+        "column": 0,
+        "row": 1,
+        "sourceVisibleBounds": [194, 403, 556, 799],
+        "scale": 0.6803149606299213,
+        "placed": [133, 707, 246, 269]
+      },
+      {
+        "column": 0,
+        "row": 2,
+        "sourceVisibleBounds": [223, 800, 569, 1208],
+        "scale": 0.6803149606299213,
+        "placed": [138, 1210, 235, 278]
+      },
+      {
+        "column": 0,
+        "row": 3,
+        "sourceVisibleBounds": [114, 1193, 630, 1629],
+        "scale": 0.6803149606299213,
+        "placed": [80, 1703, 351, 297]
+      },
+      {
+        "column": 0,
+        "row": 4,
+        "sourceVisibleBounds": [78, 1669, 713, 1951],
+        "scale": 0.6803149606299213,
+        "placed": [40, 2320, 432, 192]
+      }
+    ]
+  }
+}

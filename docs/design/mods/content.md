@@ -26,6 +26,12 @@ registers shipped data from private `mods/base/` modules.
 | Critters and transient effects                     | [Critters](../../../packages/core/src/definitions/entities/critters.ts), [effects](../../../packages/core/src/definitions/effects/transient.ts); client content consumers                                                                                                                                                                                  |
 | Defaults and rules                                 | [Runtime](../../../packages/core/src/definitions/runtime.ts), [collision](../../../packages/core/src/definitions/collision.ts), initial progress and spawn/drop policies; their existing consumers                                                                                                                                                         |
 
+The bundled [dimensions mod](../../../packages/core/src/mods/dimensions.mod.ts)
+adds swamp/desert content through a validated `dimensions` setting, enemy/resource
+registrations and optional typed ground/volley enemy skills. These are encounter
+variants of the existing forest family, not new transport discriminants. See
+[simulation design](../simulation.md#dimension-variants).
+
 Singleton settings may be registered as named configuration entries rather than
 inventing multiple interchangeable runtimes. Protocol mechanics and transport
 message discriminants remain engine contracts, not mod extension points. Existing

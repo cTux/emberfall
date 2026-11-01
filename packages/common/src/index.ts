@@ -4,6 +4,7 @@ export * from './tactics.ts';
 export * from './inventory.ts';
 export * from './equipment.ts';
 export * from './scene.ts';
+export * from './dimension.ts';
 export * from './progress.ts';
 export * from './commands.ts';
 export * from './player.ts';

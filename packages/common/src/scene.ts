@@ -83,6 +83,7 @@ export interface LootDrop {
   at: number;
 }
 export interface SceneState {
+  dimension?: import('./dimension.ts').DimensionId;
   playerCount?: number;
   training?: boolean;
   pausedAt?: number;

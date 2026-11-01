@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import {
+  DIMENSION_IDS,
+  type DimensionId,
   Difficulty,
   type ClientMessage,
   type Player,
   type SceneState,
   type WorldState,
 } from '@emberfall/common';
-import { difficultyMultiplier } from '@emberfall/core';
+import { dimensionDefinition, difficultyMultiplier } from '@emberfall/core';
 import { PortalVote } from '@emberfall/ui';
 import { Typography, Stack, Button, TextField, MenuItem } from '@mui/material';
 type Actions = {
@@ -75,13 +78,16 @@ export function PortalPanel({
   difficulty: Difficulty;
   setDifficulty: (difficulty: Difficulty) => void;
 }) {
+  const [dimension, setDimension] = useState<DimensionId>('forest');
+  const selected = dimensionDefinition(dimension);
+
   return (
     <>
       {world && scene && ['voting', 'countdown'].includes(scene.phase) ? (
         <>
           <Typography>Scene created. Vote here when you are ready.</Typography>
           <PortalVote
-            scene={scene.type}
+            scene={dimensionDefinition(scene.dimension).name}
             difficulty={scene.difficulty}
             ready={scene.ready.length}
             total={
@@ -126,6 +132,7 @@ export function PortalPanel({
                     type: 'createScene',
                     scene: 'Forest',
                     difficulty: scene.difficulty,
+                    dimension: scene.dimension,
                   });
                 }}
               >
@@ -150,11 +157,25 @@ export function PortalPanel({
           spacing={2}
           onSubmit={(e) => {
             e.preventDefault();
-            send({ type: 'createScene', scene: 'Forest', difficulty });
+            send({ type: 'createScene', scene: 'Forest', difficulty, dimension });
           }}
         >
-          <TextField select label='Scene type' defaultValue='Forest'>
-            <MenuItem value='Forest'>Forest</MenuItem>
+          <TextField
+            select
+            label='Dimension'
+            value={dimension}
+            onChange={(event) => {
+              return setDimension(event.target.value as DimensionId);
+            }}
+            helperText={`${selected.enemyMultiplier}× enemy stats · ${selected.rarityMultiplier}× loot rarity`}
+          >
+            {DIMENSION_IDS.map((id) => {
+              return (
+                <MenuItem key={id} value={id}>
+                  {dimensionDefinition(id).name}
+                </MenuItem>
+              );
+            })}
           </TextField>
           <TextField
             select

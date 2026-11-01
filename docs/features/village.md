@@ -2,6 +2,16 @@
 
 [Feature map](../features.md). Links identify implementation and coverage; they do not claim a test was run.
 
+## Portal dimensions
+
+[SCENE-07](../specs/scenes/forest.md#scene-07--dimensions):
+[registered content](../../packages/core/src/mods/dimensions.mod.ts),
+[portal controls](../../packages/client/src/WorldPanels.tsx),
+[dimension rules](../../packages/core/src/dimensions.ts),
+[authoritative checks](../../packages/server/src/dimensions.test.ts),
+[resource checks](../../packages/server/src/dimension-resources.test.ts), and
+[desktop verification](../../tests/dimensions.spec.ts).
+
 ## Interactive cats
 
 Interactive cats: [SCENE-06](../specs/scenes/village.md#scene-06--village-life),

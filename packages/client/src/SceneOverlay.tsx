@@ -1,5 +1,5 @@
 import type { SceneState, Enemy, Player } from '@emberfall/common';
-import { enemyMaxHealth } from '@emberfall/core';
+import { dimensionDefinition, enemyMaxHealth } from '@emberfall/core';
 import { GameWindow, BossHealth, SceneStatus } from '@emberfall/ui';
 import { Box, Stack, Typography, Button } from '@mui/material';
 
@@ -52,7 +52,7 @@ export function SceneOverlay({
                 ? 'Scene complete · Return portal open'
                 : scene?.bossId !== undefined
                   ? 'Defeat the boss'
-                  : 'Forest'
+                  : dimensionDefinition(scene?.dimension).name
             }
             seconds={
               scene?.phase === 'ended' || scene?.bossId !== undefined ? undefined : remaining

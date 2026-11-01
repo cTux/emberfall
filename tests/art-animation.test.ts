@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { actorFrame, enemyFrame, playerFrame } from '../packages/client/src/animation.ts';
+import {
+  actorFrame,
+  enemyFrame,
+  playerFrame,
+  enemyReleasedAt,
+} from '../packages/client/src/animation.ts';
 import { movementFacing } from '../packages/client/src/facing.ts';
 
 test('action frames follow timestamps, do not animate future actions, and death wins', () => {
@@ -41,4 +46,14 @@ test('enemy windup, release and locomotion use existing confirmed times', () => 
   assert.equal(enemyFrame(1650, false, true, undefined, 1650), 6);
   assert.equal(enemyFrame(1830, false, true, undefined, 1650), 0);
   assert.equal(enemyFrame(1400, true, false, attack), 7);
+});
+
+test('dimension attack speeds retain the full confirmed enemy release pose', () => {
+  for (const speed of [1, 1.2, 1.4]) {
+    const releasedAt = enemyReleasedAt(2000 + 1600 / speed, 1600, speed);
+    assert.equal(enemyFrame(2001, false, true, undefined, releasedAt), 6);
+    assert.equal(enemyFrame(2179, false, true, undefined, releasedAt), 6);
+    assert.equal(enemyFrame(2181, false, true, undefined, releasedAt), 0);
+    assert.equal(enemyFrame(1999, false, true, undefined, releasedAt), 0);
+  }
 });

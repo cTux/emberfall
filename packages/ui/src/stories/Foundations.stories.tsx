@@ -43,7 +43,7 @@ export const Fonts: Story = {
               );
             })}
           </TextField>
-          <Typography variant='h2'>Emberfall · Forest portal</Typography>
+          <Typography variant='h2'>Emberfall · Portal</Typography>
           {[10, 12, 14, 18].map((fontSize) => {
             return (
               <Typography key={fontSize} sx={{ fontSize }}>
