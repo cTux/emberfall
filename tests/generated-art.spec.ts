@@ -5,6 +5,7 @@ import { test, expect } from './fixtures';
 import { game as catalog, PLANT_KINDS } from '../packages/core/src/index.ts';
 import type { ResourceNode } from '../packages/core/src/gathering.ts';
 import { itemArtName } from '../packages/client/src/class-art.ts';
+import { DIMENSION_ITEM_ART } from '../packages/client/src/dimension-art-layout.ts';
 import './render-sized-art.cases.ts';
 
 test('all bundled items render dedicated artwork in inventory', async ({ page, game }) => {
@@ -26,8 +27,25 @@ test('all bundled items render dedicated artwork in inventory', async ({ page, g
     const button = backpack.getByRole('button', { name: `Use ${item.name}`, exact: true });
     await expect(button).toBeVisible();
 
-    if (plants.has(item.id)) {
-      await expect(button.locator('canvas')).toBeVisible();
+    if (plants.has(item.id) || Object.hasOwn(DIMENSION_ITEM_ART, item.id)) {
+      const canvas = button.locator('canvas');
+      await expect(canvas).toBeVisible();
+      await expect
+        .poll(
+          async () => {
+            return canvas.evaluate((element: HTMLCanvasElement) => {
+              const pixels = element
+                .getContext('2d')!
+                .getImageData(0, 0, element.width, element.height).data;
+
+              return pixels.some((value, index) => {
+                return index % 4 === 3 && value > 0;
+              });
+            });
+          },
+          { message: `${item.id} artwork must finish drawing` },
+        )
+        .toBe(true);
     } else {
       const image = button.locator('img');
       await expect(image).toHaveAttribute(
