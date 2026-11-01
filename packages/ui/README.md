@@ -161,11 +161,12 @@ All consumer-facing prop/data types are exported from `src/index.ts`. Screen sto
 
 EquipmentPanel derives its grid dimensions from supplied slot positions, with a
 minimum of three columns and four rows. Additional rows/columns preserve the
-fixed 52.8px square cells and the existing base arrangement. Both track axes
-use the same size, exactly 1.2 times the shared 44px backpack cell, so item artwork
+fixed 50px square cells and the existing base arrangement. Both track axes
+use the same size, so item artwork
 and available width cannot stretch slots. Empty slot/stat arrays omit their
 respective section. The inventory host uses ChapterTabs for external Equipment
-and Stats tabs, with the backpack remaining visible beside either panel.
+and Stats tabs with `keepMounted` to reserve both panels' height. Inactive content
+stays hidden and inert; switching tabs keeps the window and backpack in place.
 Calculated totals include equipment bonuses without duplicate bonus rows.
 The host supplies valid
 positive coordinates, labels, icons and stats; the component has no registry or

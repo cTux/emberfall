@@ -14,9 +14,8 @@ const EQUIPMENT_STYLE = {
 
 // Preserve the established 44px inventory cell shared with fixed equipment geometry.
 export const BACKPACK_SLOT_SIZE = 44;
-// Equipment artwork occupies cells twenty percent larger than the backpack cells.
-const EQUIPMENT_SLOT_SCALE = 1.2;
-export const EQUIPMENT_SLOT_SIZE = BACKPACK_SLOT_SIZE * EQUIPMENT_SLOT_SCALE;
+// Four 50px rows and their gaps fit within the standard inventory Stats panel.
+export const EQUIPMENT_SLOT_SIZE = 50;
 
 export const GearTooltipStyled = styled(({ className, ...props }: TooltipProps) => {
   return createElement(Tooltip, { ...props, classes: { popper: className } });
