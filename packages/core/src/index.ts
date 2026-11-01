@@ -14,6 +14,8 @@ export { enemyKindAttribute } from './configs/enemyKindAttribute.ts';
 export { enemyTypeAttributesMultiplier } from './configs/enemyTypeAttributesMultiplier.ts';
 export { difficultyAttributesMultiplier } from './configs/difficultyAttributesMultiplier.ts';
 export { difficultySpeedMultiplier } from './configs/difficultySpeedMultiplier.ts';
+export { difficultyRarityMultiplier } from './configs/difficultyRarityMultiplier.ts';
+export { zoneRarityMultiplier } from './configs/zoneRarityMultiplier.ts';
 export { shouldDropItem } from './utils/shouldDropItem.ts';
 export { itemDropCount } from './utils/itemDropCount.ts';
 export { spawnEnemyType } from './utils/spawnEnemyType.ts';

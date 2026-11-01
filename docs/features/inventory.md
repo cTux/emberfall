@@ -16,6 +16,7 @@ Random gear rarity, stats and prices: [ITEM-01–04](../specs/item-rolls.md),
 [core configuration](../../packages/core/src/item-stats.ts),
 [instance rules](../../packages/core/src/content/rules.ts),
 [rule checks](../../packages/server/src/item-rolls.test.ts),
+[zone/difficulty rarity checks](../../packages/server/src/loot-rarity-modifiers.test.ts),
 [persistence checks](../../packages/server/src/item-roll-persistence.test.ts),
 [combat and reward checks](../../packages/server/src/item-roll-talents-rewards.test.ts) and
 [desktop verification](../../tests/item-rarities.spec.ts).

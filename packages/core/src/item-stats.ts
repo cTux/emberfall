@@ -28,15 +28,15 @@ export function statValue(stat: ItemStat, rarity: Rarity) {
   return itemStatBaseValue[stat] * (itemStatWeight[stat] < 1 ? 1 : rarityStatMultiplier[rarity]);
 }
 
-export function rollRarity(random = randomSource.next): Rarity {
+export function rollRarity(random = randomSource.next, multiplier = 1): Rarity {
   let roll = random() * PERCENT;
 
   for (const [rarity, chance] of Object.entries(rarityDropChance)) {
-    if (roll < chance) {
+    if (rarity === Rarity.Common || roll < chance * multiplier) {
       return rarity as Rarity;
     }
 
-    roll -= chance;
+    roll -= chance * multiplier;
   }
 
   return Rarity.Common;
