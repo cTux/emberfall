@@ -13,8 +13,8 @@ For a temporary internet test, build and run `pnpm start`, reserve this PC's LAN
 When changing the server port, update existing environment overrides, the Pages
 `BASE_PORT` repository variable, backend `STEAM_ORIGIN`, and router/firewall or
 reverse-proxy rules to match. Rebuild the remote client and restart the server.
-Changing the port also changes the browser origin, so local browser settings and
-login cookies do not automatically carry over; the server's saved characters stay
-in the existing database.
+Changing the port also changes the browser origin, so origin-scoped local browser
+settings do not automatically carry over; the server's saved characters stay in
+the existing database.
 
 The production health endpoint is `/health`; matchmaking and WebSocket traffic use Colyseus. Default binding is `0.0.0.0:4003`. Development proxies `/auth`, `/api`, `/matchmake` and `/colyseus` to the game server. See [development](../development.md) for test configuration.
