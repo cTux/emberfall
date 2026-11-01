@@ -4,18 +4,19 @@ Choose the task below, then load only the relevant topic. The [root README](../R
 
 ## Start here by task
 
-| Task                                        | Start with                                                                                    |
-| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Understand player-visible rules             | [Specifications](specs/README.md)                                                             |
-| Locate feature code and test coverage       | [Feature map](features.md)                                                                    |
-| Understand package ownership and data flow  | [Architecture](design/architecture.md)                                                        |
-| Find an implementation design               | [Design index](design/README.md)                                                              |
-| Install, run or host the game               | [Operations](operations.md)                                                                   |
-| Write code or select checks                 | [Development](development.md)                                                                 |
-| Find delivered work or unresolved decisions | [Plans and historical evidence](plans/README.md)                                              |
-| Trace artwork or licenses                   | [Assets and attribution](assets.md)                                                           |
-| Work as a coding agent                      | [Root instructions](../AGENTS.md), then the affected subtree's AGENTS.md                      |
-| Edit documentation                          | [Documentation instructions](AGENTS.md) and [maintenance guide](development/documentation.md) |
+| Task                                              | Start with                                                                                    |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Understand player-visible rules                   | [Specifications](specs/README.md)                                                             |
+| Compare difficulty, dimension and party modifiers | [Difficulty reference](reference/difficulty.md)                                               |
+| Locate feature code and test coverage             | [Feature map](features.md)                                                                    |
+| Understand package ownership and data flow        | [Architecture](design/architecture.md)                                                        |
+| Find an implementation design                     | [Design index](design/README.md)                                                              |
+| Install, run or host the game                     | [Operations](operations.md)                                                                   |
+| Write code or select checks                       | [Development](development.md)                                                                 |
+| Find delivered work or unresolved decisions       | [Plans and historical evidence](plans/README.md)                                              |
+| Trace artwork or licenses                         | [Assets and attribution](assets.md)                                                           |
+| Work as a coding agent                            | [Root instructions](../AGENTS.md), then the affected subtree's AGENTS.md                      |
+| Edit documentation                                | [Documentation instructions](AGENTS.md) and [maintenance guide](development/documentation.md) |
 
 ## How to use these documents
 
