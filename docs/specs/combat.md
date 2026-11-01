@@ -2,6 +2,9 @@
 
 Status: implemented baseline. Goal: Responsive class combat with authoritative damage, cooperative scaling and clear threats. See [technical design](../design/simulation.md).
 
+For combined dimension, difficulty, enemy-type and party factors, see the
+[difficulty reference tables](../reference/difficulty.md).
+
 ## COMBAT-01 — Attacks and ailments
 
 The one-second bleed, poison and burn cadence below is their base interval.
