@@ -69,6 +69,9 @@ Configure the server as described in [operations](../../../docs/operations/steam
   Talents compares class, level and ranks across snapshots. Core's
   `talentLearningState` shares one point-budget scan across the presented tree
   and uses the same eligibility rule as individual server learning commands.
+- Codex, Settings and GameControls use memoized render boundaries. Their host
+  callbacks remain stable so world snapshots do not rebuild unchanged panels;
+  local tab state, account data, preferences and graphics changes still render.
 - `codex/chapters.ts` declares chapter order while gameplay, character and
   credit content live in separate modules. Codex remains a lazy-loaded panel.
 - `settings-controls.ts` and `tactics-controls.ts` declare typed control labels,

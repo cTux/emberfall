@@ -1,4 +1,4 @@
-import { lazy, type Dispatch, type SetStateAction } from 'react';
+import { lazy, useCallback, type Dispatch, type SetStateAction } from 'react';
 import type { AccountView, ClientMessage, Player, WorldState, Difficulty } from '@emberfall/common';
 import { GameWindow } from '@emberfall/ui';
 import { Box, Stack, Typography } from '@mui/material';
@@ -95,6 +95,13 @@ export function GamePanels({
   onClose: () => void;
 }) {
   const scene = world?.scene;
+  const onRename = useCallback(() => {
+    onClose();
+    rename();
+  }, [onClose, rename]);
+  const onLogout = useCallback(() => {
+    void logout();
+  }, [logout]);
   const portal = () => {
     return (
       <PortalPanel
@@ -137,13 +144,8 @@ export function GamePanels({
       return (
         <Settings
           account={account}
-          onRename={() => {
-            onClose();
-            rename();
-          }}
-          onLogout={() => {
-            void logout();
-          }}
+          onRename={onRename}
+          onLogout={onLogout}
           tab={settingsTab}
           onTab={setSettingsTab}
           preferences={preferences}

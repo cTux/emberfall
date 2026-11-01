@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Box } from '@mui/material';
 import { HudActions, ConnectionStatus } from '@emberfall/ui';
 import type { GameMenu } from './game-panels';
@@ -10,7 +11,7 @@ import { faDoorOpen } from '@fortawesome/free-solid-svg-icons/faDoorOpen';
 import { faGlobe } from '@fortawesome/free-solid-svg-icons/faGlobe';
 import { faBagShopping } from '@fortawesome/free-solid-svg-icons/faBagShopping';
 
-export function GameControls({
+function GameControlsView({
   hasWorld,
   canVote,
   unavailable,
@@ -133,3 +134,5 @@ export function GameControls({
     </>
   );
 }
+
+export const GameControls = memo(GameControlsView);

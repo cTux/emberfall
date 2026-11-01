@@ -1,14 +1,14 @@
 import { SettingsGraphics } from './SettingsGraphics';
 import { GAMEPLAY_CONTROLS, SOUND_CONTROLS, type BooleanPreference } from './settings-controls';
 import { clientAsset } from './urls.ts';
-import { Fragment, type Dispatch, type SetStateAction } from 'react';
+import { memo, Fragment, type Dispatch, type SetStateAction } from 'react';
 import { ChapterTabs, SettingToggle, VolumeControl } from '@emberfall/ui';
 import { Button, Link, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import type { Preferences } from './preferences';
 import type { GraphicsSettings } from './graphics';
 import type { AccountView } from '@emberfall/common';
 
-export function Settings({
+function SettingsView({
   tab,
   onTab,
   preferences,
@@ -153,3 +153,5 @@ export function Settings({
     />
   );
 }
+
+export const Settings = memo(SettingsView);
