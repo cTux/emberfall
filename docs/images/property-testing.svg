@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="180" viewBox="0 0 880 180" role="img" aria-labelledby="title desc">
+  <title id="title">Property-based test workflow</title>
+  <desc id="desc">Generated inputs exercise public rules. Assertions check invariants. Failures shrink to a counterexample with a seed and replay path.</desc>
+  <rect width="880" height="180" rx="16" fill="#15202b"/>
+  <g font-family="sans-serif" text-anchor="middle" fill="#f3f7fa">
+    <text x="440" y="32" font-size="19">fast-check + Node test runner</text>
+    <g fill="#263b4d" stroke="#8dd3ce" stroke-width="2">
+      <rect x="20" y="58" width="230" height="90" rx="10"/>
+      <rect x="310" y="58" width="230" height="90" rx="10"/>
+      <rect x="600" y="58" width="260" height="90" rx="10"/>
+    </g>
+    <g font-size="17">
+      <text x="135" y="88">Generate valid cases</text>
+      <text x="425" y="88">Check public rules</text>
+      <text x="730" y="88">Shrink a failure</text>
+    </g>
+    <g font-size="12" fill="#c6d8e5">
+      <text x="135" y="119">coordinates, stacks, transfers</text>
+      <text x="425" y="119">bounds, conservation, atomicity</text>
+      <text x="730" y="119">counterexample + seed + path</text>
+    </g>
+    <g font-size="28" fill="#8dd3ce">
+      <text x="280" y="110">→</text>
+      <text x="570" y="110">→</text>
+    </g>
+  </g>
+</svg>
