@@ -68,8 +68,9 @@ test('manual release runs always select the complete desktop baseline including 
     commands[0].filter((arg) => {
       return arg.endsWith('.spec.ts');
     }).length,
-    14,
+    15,
   );
+  assert.ok(commands[0].includes('tests/server-version.spec.ts'));
 });
 
 test('PR selection uses the merge-base range and fails closed for absent history or payloads', () => {
