@@ -14,7 +14,7 @@
       <text x="425" y="88">Check public rules</text>
       <text x="730" y="88">Shrink a failure</text>
     </g>
-    <g font-size="14" fill="#c6d8e5">
+    <g font-size="12" fill="#c6d8e5">
       <text x="135" y="119">coordinates, stacks, transfers</text>
       <text x="425" y="119">bounds, conservation, atomicity</text>
       <text x="730" y="119">counterexample + seed + path</text>
