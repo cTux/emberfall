@@ -36,6 +36,8 @@ test('numeric lint requires named tuning and rationale while preserving structur
       'globalThis.setInterval(ping, 1);',
       'setTimeout(ping, 15 * 1000);',
       'setTimeout(ping, -15);',
+      'setTimeout(ping, 15000 satisfies number);',
+      "globalThis['setTimeout'](ping, 15000);",
       'page.waitForTimeout(15000);',
       'test.setTimeout(15000);',
       'export function full(count: number) { return count >= 32; }',
@@ -73,6 +75,36 @@ test('numeric lint requires named tuning and rationale while preserving structur
     assert.match(fixture.diagnostics[0].message, /15000/);
     assert.equal(lint('page.waitForTimeout(15000);', 'example.spec.ts').diagnostics.length, 1);
     assert.equal(lint('test.setTimeout(15000);', 'example.spec.ts').diagnostics.length, 1);
+    assert.equal(
+      lint('setTimeout(ping, 15000 satisfies number);', 'example.test.ts').diagnostics.length,
+      1,
+    );
+    assert.equal(
+      lint("globalThis['setTimeout'](ping, 15000);", 'example.test.ts').diagnostics.length,
+      1,
+    );
+    assert.equal(
+      lint('const view = <Tooltip leaveDelay={250} />;', 'example.test.tsx').diagnostics.length,
+      1,
+    );
+    assert.equal(
+      lint('const view = <Tooltip enterDelay={0} />;', 'example.test.tsx').diagnostics.length,
+      0,
+    );
+
+    for (const source of [
+      'setTimeout(ping, <number>15000);',
+      'setTimeout(ping, ready ? 15000 : 20000);',
+      'setTimeout(ping, Math.max(15000, wait));',
+    ]) {
+      assert.ok(lint(source, 'wrapped.test.ts').diagnostics.length > 0, source);
+    }
+
+    assert.equal(
+      lint('setTimeout(() => { assert.equal(value, 15000); }, delay);', 'callback.test.ts')
+        .diagnostics.length,
+      0,
+    );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

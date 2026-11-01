@@ -6,6 +6,8 @@ import { inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
 // Empty gear is quarter-opacity to distinguish placeholders from equipped artwork.
 const EMPTY_GEAR_OPACITY = 0.25;
+// Preserve the quarter-second grace period for moving from a gear slot into its interactive stat tooltip.
+const GEAR_TOOLTIP_LEAVE_DELAY_MS = 250;
 
 // Keep the original three-column, four-row silhouette when hosts supply only a partial loadout.
 const MIN_EQUIPMENT_GRID = { columns: 3, rows: 4 };
@@ -112,7 +114,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                 arrow
                 describeChild
                 enterTouchDelay={0}
-                leaveDelay={250}
+                leaveDelay={GEAR_TOOLTIP_LEAVE_DELAY_MS}
                 slotProps={{
                   popper: {
                     container: () => {

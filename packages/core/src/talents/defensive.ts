@@ -31,7 +31,7 @@ function guard(cast: TalentCast) {
       heal(recipient, DEFENSE.guardHeal[learnedIndex]);
     }
   } else {
-    for (const enemy of effectArea(scene, origin, DEFENSE.unbrokenRadius)) {
+    for (const enemy of effectArea(scene, origin, DEFENSE.guardRadius)) {
       strike(scene, player, enemy, DEFENSE.guardPower[learnedIndex], now, ability, context);
       applyTalentAilment(enemy, player, 'roots', 1, now, DEFENSE.guardControlMs[learnedIndex]);
       enemy.attack = undefined;

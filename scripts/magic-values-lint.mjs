@@ -4,6 +4,13 @@ const arithmetic = new Set(['*', '/', '**', '%']);
 const mathematicalFactors = new Set([2, 0.5]);
 // Permit one blank line between a rationale and its declaration after spacing fixes.
 const commentGapLines = 2;
+const timerProperties = new Set([
+  'enterDelay',
+  'enterNextDelay',
+  'leaveDelay',
+  'transitionDuration',
+  'timeout',
+]);
 const drawing = new Set([
   'arc',
   'ellipse',
@@ -135,27 +142,47 @@ function structuralCall(node) {
 function timerDelay(node) {
   let value = node;
 
-  while (['UnaryExpression', 'BinaryExpression', 'TSAsExpression'].includes(value.parent?.type)) {
-    value = value.parent;
+  while (
+    value.parent &&
+    !['ArrowFunctionExpression', 'FunctionExpression', 'FunctionDeclaration', 'Program'].includes(
+      value.parent.type,
+    )
+  ) {
+    const parent = value.parent;
+
+    if (
+      parent.type === 'JSXExpressionContainer' &&
+      parent.parent?.type === 'JSXAttribute' &&
+      timerProperties.has(parent.parent.name.name)
+    ) {
+      return true;
+    }
+
+    if (parent.type === 'CallExpression') {
+      const name =
+        parent.callee.type === 'Identifier'
+          ? parent.callee.name
+          : parent.callee.computed
+            ? parent.callee.property?.value
+            : parent.callee.property?.name;
+
+      if (name === 'waitForTimeout' && parent.arguments[0] === value) {
+        return true;
+      }
+
+      if (
+        ['setTimeout', 'setInterval'].includes(name) &&
+        (parent.arguments[1] === value ||
+          (parent.arguments[0] === value && (parent.arguments.length === 1 || numeric(value))))
+      ) {
+        return true;
+      }
+    }
+
+    value = parent;
   }
 
-  const parent = value.parent;
-
-  if (parent?.type !== 'CallExpression') {
-    return false;
-  }
-
-  const name =
-    parent.callee.type === 'Identifier' ? parent.callee.name : parent.callee.property?.name;
-
-  if (name === 'waitForTimeout') {
-    return parent.arguments[0] === value;
-  }
-
-  return (
-    ['setTimeout', 'setInterval'].includes(name) &&
-    (parent.arguments[1] === value || (parent.arguments[0] === value && numeric(value)))
-  );
+  return false;
 }
 
 const namedValues = {

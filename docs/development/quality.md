@@ -100,6 +100,8 @@ nonstructural numeric literals in executable expressions and requires nearby
 comments for scalar numeric constant definitions. It also requires immutable
 numeric policy bindings. Nonzero literal timer delays are rejected even in tests,
 including computed delays such as `15 * 1000`. A zero-delay yield is structural.
+Known JSX timer properties such as `leaveDelay` and `timeout` require named
+nonzero values too; ordinary numeric style properties remain declarative data.
 The rule applies in editors, `pnpm lint` and CI; no existing-code baseline is used.
 
 The automated exceptions include named object properties, named arrays/maps/sets,
