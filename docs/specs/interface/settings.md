@@ -14,9 +14,19 @@ The floating performance panel is 224 pixels wide with 8-pixel side padding. A c
 
 The independently positioned DPS meter stays visible when the graph is hidden. It displays a compact Recount-style Damage done list: one row per current party member (only yourself when solo), ordered by total damage descending. Each row starts with a small class portrait followed by a padded rank and character name, total damage, rolling five-second DPS and percentage of party damage. Ability breakdown rows start with their existing spell, talent, ailment or companion artwork. Column headings and the total footer are omitted. Class-colored row backgrounds and bars show that percentage of total damage, with zero-width bars when no damage has been dealt. Warrior uses tan, Ranger green, Mage blue and Druid orange.
 
-Left-clicking a character opens their damage-dealing abilities, ordered by total damage, with damage, rolling DPS and percentage of that character's damage. Weapon attacks, named talent damage, ailments and Bear damage are attributed by the server through the shared hit path; overkill and hits on dead enemies are excluded. Right-click anywhere inside the meter returns to characters and suppresses the browser context menu. An accessible Back button provides the same action; character rows support keyboard activation. Drag the header to reposition it without interfering with row clicks.
+Right-click anywhere inside the meter opens a menu with **Damage done**, **Healing done** and **Damage received**, suppressing the browser context menu. The header's **Choose meter type** button opens the same menu for keyboard users. Selecting a mode returns to the party list, sorted by that mode's total, showing total, rolling five-second amount per second and party percentage. Escape or clicking outside closes the menu without changing the current view. Gameplay input pauses while the menu is open. Mode selection lasts until the meter is unmounted; Damage done is the default.
 
-Totals cover the current connected character session, including training and forest, and reset on class change or a fresh character session. They are temporary, not saved progression. DPS retains the rolling five-second window divided by five and returns to zero after five seconds without damage. Leaving a party removes former members from the list; an unavailable selected character returns the display to the current party.
+Healing done credits the caster for actual HP restored by talents (including companion healing), and counts consumed healing items as self-healing. Overhealing, shields, resurrection and village restoration do not count. Damage received counts the character's actual HP lost to enemy melee and projectiles after armor, talent mitigation, shields and remaining-HP caps; companion damage received is excluded. Healing and received modes show party totals without ability drilldown.
+
+![Verified desktop right-click meter menu](../../images/dps-meter-menu.png)
+
+![Verified desktop healing done totals](../../images/dps-meter-healing.png)
+
+![Verified desktop damage received totals](../../images/dps-meter-received.png)
+
+In Damage done, left-clicking a character opens their damage-dealing abilities, ordered by total damage, with damage, rolling DPS and percentage of that character's damage. Weapon attacks, named talent damage, ailments and Bear damage are attributed by the server through the shared hit path; overkill and hits on dead enemies are excluded. An accessible Back button returns to the party; character rows support keyboard activation. Drag the header to reposition it without interfering with row clicks or the menu button.
+
+All three modes' totals cover the current connected character session, including training and forest, and reset on class change or a fresh character session. They are temporary, not saved progression. Rates retain the rolling five-second window divided by five and return to zero after five seconds without an event. Leaving a party removes former members from the list; an unavailable selected character returns the display to the current party.
 
 ![Verified desktop damage meter with character portraits](../../images/damage-meter.png)
 

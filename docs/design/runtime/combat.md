@@ -58,6 +58,16 @@ sorts rows and owns the selected character. Its header reuses the persisted
 cover attribution and overkill; desktop browser tests cover replicated totals,
 party filtering, breakdown navigation and the existing visibility preference.
 
+`core/combat/meters.ts` owns effective healing and received-damage totals with
+bounded five-second histories. Talent heal callers pass the caster and simulation
+timestamp; consumables credit their user. Enemy combat records character HP lost
+after mitigation and lethal caps. `tickTraining` refreshes both rates for every
+connected player and discards mismatched class totals, including forest players.
+The optional `healingMeter` and `receivedMeter` contracts use the same temporary
+player projection and stay outside saved progress. The client's Material UI menu
+selects party totals; only Damage done retains ability breakdowns. Its button
+supports keyboard access, and open menus suppress gameplay input.
+
 ## Talent configuration
 
 [PROG-03](../../specs/progression.md#prog-03--talents) uses core's immutable

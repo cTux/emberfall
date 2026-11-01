@@ -2,7 +2,7 @@ import { TALENT_MAX_RANK, TALENT_THIRD_TIER } from '../talent-catalog.ts';
 import type { TalentCast } from './targeting.ts';
 import { rank, applyTalentAilment } from '../talent-ailments.ts';
 import { schedule } from './state.ts';
-import { strike } from './effects.ts';
+import { strike, heal } from './effects.ts';
 
 // Existing rank-one/rank-two Bear balance; the original tuning basis is undocumented.
 // Retain these values so the companion's healing, control and damage still match its tooltips.
@@ -46,10 +46,7 @@ export function companion(cast: TalentCast) {
     bear.y = primary.y;
     strike(scene, player, primary, BEAR.pouncePower[learnedIndex], now, ability, context);
   } else if (tier === 1) {
-    bear.hitpoints = Math.min(
-      bear.maxHitpoints,
-      bear.hitpoints + bear.maxHitpoints * BEAR.howlHeal[learnedIndex],
-    );
+    heal(bear, BEAR.howlHeal[learnedIndex], player, now);
 
     for (const enemy of effectArea(scene, bear, BEAR.howlRadius)) {
       applyTalentAilment(enemy, player, 'roots', 1, now, BEAR.howlRootsMs);

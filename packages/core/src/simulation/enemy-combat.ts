@@ -10,6 +10,7 @@ import { moveEnemies } from '../enemies.ts';
 import type { Player, Bear, SceneState } from '@emberfall/common';
 import { EnemyKind, EnemyType } from '@emberfall/common/enums';
 import { enemyAttributes } from '../utils/enemyAttributes.ts';
+import { recordCombatTotal } from '../combat/meters.ts';
 import type { EnemyDefinition } from '../content/contracts.ts';
 
 // A missed windup retries after 150 ms rather than imposing the full successful-attack cooldown.
@@ -68,6 +69,10 @@ export function tickEnemyCombat(
 
     if (damage <= 0) {
       return;
+    }
+
+    if (!('returning' in target)) {
+      recordCombatTotal(target, 'receivedMeter', damage, now);
     }
 
     appendSceneEntities(scene, 'damage', {
