@@ -56,7 +56,7 @@ test('changed browser scenarios rerun their desktop group without adding phone-o
   assert.ok(!command.at(-1)!.includes('narrow screens'));
 });
 
-test('manual release runs always select the original complete desktop baseline', () => {
+test('manual release runs always select the complete desktop baseline including artwork', () => {
   const selection = selectionForEvent('workflow_dispatch', {}, () => {
     throw new Error('not needed');
   });
@@ -68,7 +68,7 @@ test('manual release runs always select the original complete desktop baseline',
     commands[0].filter((arg) => {
       return arg.endsWith('.spec.ts');
     }).length,
-    11,
+    14,
   );
 });
 

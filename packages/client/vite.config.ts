@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { Agent } from 'node:https';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
+import { PNG_OPTIONS, resizeBuildImages } from './resize-build-images.ts';
 
 export default defineConfig(({ command, mode }) => {
   const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -25,10 +26,11 @@ export default defineConfig(({ command, mode }) => {
     },
     plugins: [
       react(),
+      resizeBuildImages(),
       ViteImageOptimizer({
         test: /\.png$/i,
         includePublic: true,
-        png: { compressionLevel: 9, adaptiveFiltering: true, palette: false, progressive: true },
+        png: PNG_OPTIONS,
       }),
       {
         name: 'client-version',

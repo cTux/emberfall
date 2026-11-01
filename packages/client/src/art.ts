@@ -1,5 +1,6 @@
 import type { DrawingContext } from './rendering/drawing-context';
 import { artUrl, loadArt, loadNativeArt } from './art-loader';
+import { BUILDING_SOURCE_SIZES } from '../asset-render-sizes.ts';
 
 // These measured grids describe the shipped source PNGs; changing them changes which pixels form each frame.
 const ATLAS_LAYOUT = {
@@ -21,11 +22,21 @@ const DEFAULT_ART_CELL = 64;
 export { artUrl, artImages, loadArt, actorArt, loadNativeArt } from './art-loader';
 
 export const environmentArt = loadArt('environment', ...ATLAS_LAYOUT.environment, true);
-// Keep the approved buildings at native resolution, without square-cell repackaging.
-export const buildingArt = loadNativeArt('buildings');
+
+// Keep authored crop/chimney coordinates valid for original dev art and resized production art.
+function loadBuildingArt(name: keyof typeof BUILDING_SOURCE_SIZES) {
+  const image = loadNativeArt(name);
+  image.addEventListener('load', () => {
+    image.dataset.artResolution = String(image.naturalWidth / BUILDING_SOURCE_SIZES[name].width);
+  });
+
+  return image;
+}
+
+export const buildingArt = loadBuildingArt('buildings');
 export const additionalBuildingArt: Record<string, HTMLImageElement> = {
-  storehouse: loadNativeArt('building-storehouse'),
-  lodge: loadNativeArt('building-lodge'),
+  storehouse: loadBuildingArt('building-storehouse'),
+  lodge: loadBuildingArt('building-lodge'),
 };
 export const buildingFrames = [
   { x: 38, y: 41, width: 638, height: 652, chimneyX: 453, chimneyY: 0 },
