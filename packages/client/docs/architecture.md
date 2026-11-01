@@ -66,6 +66,9 @@ Configure the server as described in [operations](../../../docs/operations/steam
   These panels compare inventory inputs by value across detached snapshots,
   so movement does not rebuild unchanged item views.
   Equipment stat rows share one character-stat calculation with extra registered stats.
+  Talents compares class, level and ranks across snapshots. Core's
+  `talentLearningState` shares one point-budget scan across the presented tree
+  and uses the same eligibility rule as individual server learning commands.
 - `codex/chapters.ts` declares chapter order while gameplay, character and
   credit content live in separate modules. Codex remains a lazy-loaded panel.
 - `settings-controls.ts` and `tactics-controls.ts` declare typed control labels,

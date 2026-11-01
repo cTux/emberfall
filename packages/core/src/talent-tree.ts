@@ -74,16 +74,38 @@ export function availableTalentPoints(progress: Progress) {
   return Math.max(0, Math.min(TALENT_POINT_CAP, progress.level) - spent);
 }
 
-export function canLearnTalent(progress: Progress, id: string) {
-  const node = nodesById.get(id);
-
+function canLearnNode(progress: Progress, node: Readonly<TalentNode> | undefined) {
   return (
     !!node &&
     node.classId === (progress.classId ?? 'warrior') &&
     progress.level >= node.level &&
-    talentRank(progress, id) < TALENT_MAX_RANK &&
-    availableTalentPoints(progress) > 0
+    talentRank(progress, node.id) < TALENT_MAX_RANK
   );
+}
+
+export function canLearnTalent(progress: Progress, id: string) {
+  return canLearnNode(progress, nodesById.get(id)) && availableTalentPoints(progress) > 0;
+}
+
+/** Present the whole class tree using one point-budget scan and the authoritative eligibility rule. */
+export function talentLearningState(progress: Progress) {
+  const points = availableTalentPoints(progress);
+
+  return {
+    points,
+    nodes: TALENT_TREE.filter((node) => {
+      return node.classId === (progress.classId ?? 'warrior');
+    }).map((node) => {
+      const rank = talentRank(progress, node.id);
+
+      return {
+        ...node,
+        rank,
+        learned: rank > 0,
+        available: points > 0 && canLearnNode(progress, node),
+      };
+    }),
+  };
 }
 
 export function learnTalent(progress: Progress, id: string) {
