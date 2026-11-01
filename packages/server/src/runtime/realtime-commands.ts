@@ -1,4 +1,5 @@
 import { MAX_QUEUED_INPUTS } from './limits.ts';
+import { GAME_VERSION } from '../game-version.ts';
 import type { ClientMessage } from '@emberfall/common';
 import type { CommandContext, BroadcastState } from './models.ts';
 import type { WorldMembership } from './world-membership.ts';
@@ -83,7 +84,7 @@ export function createRealtimeCommands({
       }
     },
     ping: (message, { reply }) => {
-      reply({ type: 'pong', id: message.id });
+      reply({ type: 'pong', id: message.id, version: GAME_VERSION });
     },
     combatInput: (message, { session, world, now }) => {
       const player = world?.players.get(session.id);

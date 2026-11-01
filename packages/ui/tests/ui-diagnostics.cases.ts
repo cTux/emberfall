@@ -42,6 +42,7 @@ test('connection states use colored circles without visible text', async ({ page
   for (const [name, color] of [
     ['World server online', 'rgb(131, 203, 163)'],
     ['World server connecting', 'rgb(230, 190, 128)'],
+    ['World server mismatch', 'rgb(230, 190, 128)'],
     ['World server disconnected', 'rgb(239, 155, 133)'],
   ]) {
     const indicator = page.getByRole('status', { name });

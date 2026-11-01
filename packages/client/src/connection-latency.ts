@@ -1,7 +1,8 @@
 import { GameConnection } from './connection';
+import { VERSION_RETRY_CLOSE_CODE } from './session-timing.ts';
 import type { ServerMessage } from '@emberfall/common';
 
-// Five seconds prevents overlapping RTT probes while allowing a lost reply to be retried.
+// Five seconds tolerates brief stalls before a missing reply starts connection recovery.
 const LATENCY_PROBE_TIMEOUT_MS = 5000;
 
 export function connectionLatency(ws: GameConnection, setLatency: (value: number | null) => void) {
@@ -20,6 +21,9 @@ export function connectionLatency(ws: GameConnection, setLatency: (value: number
 
     if (pendingProbe) {
       setLatency(null);
+      ws.close(VERSION_RETRY_CLOSE_CODE, 'Server did not answer');
+
+      return;
     }
 
     pendingProbe = { id: ++probeId, at: now };

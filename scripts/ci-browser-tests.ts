@@ -3,7 +3,7 @@ import { appendFileSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 export const browserGroups = {
-  session: { files: ['tests/reconnect.spec.ts'] },
+  session: { files: ['tests/reconnect.spec.ts', 'tests/server-version.spec.ts'] },
   inventory: {
     files: ['tests/equipment.spec.ts', 'tests/trade-quantity.spec.ts'],
     grep: '^(?:.* )?(?:inventory tabs preserve the bag, aligned square gear and calculated stat totals|trade modifiers apply to buying, selling, buyback, keyboard and vendor drops)$',

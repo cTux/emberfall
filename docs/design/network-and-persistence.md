@@ -23,7 +23,14 @@ Interrupted players remain for 10 seconds with a Reconnecting debuff and red tin
 
 The browser clears displayed state and gameplay dialogs on interruption, shows the world browser and retries recovery. Remembered world state uses sessionStorage; presentation and legacy-protocol fixture identity retain their existing `emberfall-new.*` storage keys. Production identity belongs to Steam accounts and HttpOnly sessions. Process restart restores authorized village membership, not combat scenes, positions or chat.
 
-Client build checks load `version.json` before recovery. Mismatches reload; invalid or failed checks retry. See [deployment](../operations/deployment.md#deployment-and-cache-consistency).
+Client build checks load `version.json` before recovery. Mismatches warn in yellow without automatic reloads or blocking gameplay; invalid or failed checks retry. See [deployment](../operations/deployment.md#deployment-and-cache-consistency).
+
+Both Vite builds derive a `1.0.patch` game version from first-parent Git history
+since the `1.0.374` baseline in [game-version.ts](../../scripts/game-version.ts).
+Server pong messages include the embedded version, so independently built client
+and server bundles from one revision agree. The client compares every reply;
+unknown or differing versions show yellow, while unavailable connections show
+red and take priority. Version metadata is optional for older servers.
 
 ## Persistence and failure behavior
 

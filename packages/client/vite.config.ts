@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { Agent } from 'node:https';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
+import { gameVersion } from '../../scripts/game-version.ts';
 import { PNG_OPTIONS, resizeBuildImages } from './resize-build-images.ts';
 
 export default defineConfig(({ command, mode }) => {
@@ -17,10 +18,12 @@ export default defineConfig(({ command, mode }) => {
     ...process.env,
   };
   const buildId = command === 'build' ? randomUUID() : 'development';
+  const version = gameVersion();
   const shared = {
     base: env.PAGES_BASE_PATH || '/',
     define: {
       __BUILD_ID__: JSON.stringify(buildId),
+      __GAME_VERSION__: JSON.stringify(version),
       'import.meta.env.BASE_API': JSON.stringify(env.BASE_API || ''),
       'import.meta.env.BASE_PORT': JSON.stringify(env.BASE_PORT || ''),
     },
@@ -38,14 +41,14 @@ export default defineConfig(({ command, mode }) => {
           this.emitFile({
             type: 'asset',
             fileName: 'version.json',
-            source: JSON.stringify({ buildId }),
+            source: JSON.stringify({ buildId, version }),
           });
         },
         configureServer(server) {
           server.middlewares.use('/version.json', (_req, res) => {
             res.setHeader('Content-Type', 'application/json');
             res.setHeader('Cache-Control', 'no-store');
-            res.end(JSON.stringify({ buildId }));
+            res.end(JSON.stringify({ buildId, version }));
           });
         },
       } satisfies import('vite').Plugin,

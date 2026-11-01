@@ -33,6 +33,11 @@ Open http://localhost:6006. `build` produces the static Storybook in `packages/u
 
 ## Visual contract
 
+`ConnectionStatus` supports green `connected`, yellow `connecting`/`mismatch`
+and red `disconnected` circles. The host supplies optional hover `description`
+text with game/server versions; network checks and update decisions stay in the
+client. Status labels remain accessible without visible text.
+
 One dark forest theme: green-black surfaces, parchment text, wardrobe-brown borders and backpack slots, warm ember primary actions, green health, blue information, red danger. Alegreya Sans is the default; Inter, Source Sans 3 and Atkinson Hyperlegible Next are also bundled locally with SIL Open Font Licenses. No external font service, game art dependency, gradients or ornamental frames.
 
 `gameTheme` owns palette, typography, spacing, corners and MUI defaults. Use semantic colors such as `primary.main`, `text.secondary`, `divider`, `success` and `info`. Use the theme's spacing scale and responsive breakpoints. Preserve focus rings, readable contrast, reduced motion, labels, loading and disabled states. This library deliberately provides one color scheme.

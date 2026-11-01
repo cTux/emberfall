@@ -16,6 +16,7 @@ export function GameControls({
   unavailable,
   browserOpen,
   status,
+  version,
   onMenu,
   onOpenBrowser,
 }: {
@@ -24,6 +25,7 @@ export function GameControls({
   unavailable: boolean;
   browserOpen: boolean;
   status: string;
+  version: { server: string | null; updateAvailable: boolean };
   onMenu: (menu: GameMenu) => void;
   onOpenBrowser: () => void;
 }) {
@@ -121,12 +123,13 @@ export function GameControls({
       </Box>
       <Box className='connection'>
         <ConnectionStatus
+          description={`Game ${__GAME_VERSION__} · Server ${version.server ?? 'unavailable'}${version.updateAvailable ? ' · App update available; refresh when ready' : ''}`}
           status={
             status === 'Connected'
-              ? 'connected'
-              : status === 'Connecting'
-                ? 'connecting'
-                : 'disconnected'
+              ? version.updateAvailable || version.server !== __GAME_VERSION__
+                ? 'mismatch'
+                : 'connected'
+              : 'disconnected'
           }
         />
       </Box>

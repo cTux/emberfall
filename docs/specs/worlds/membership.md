@@ -8,14 +8,27 @@ Worlds are public in the server directory, optionally password protected, and li
 
 ## WORLD-02 — Client updates
 
-Every production client build embeds a unique build ID and emits matching `version.json`. Before resuming gameplay on each WebSocket connection, the client requests that file with `cache: no-store`. Failed, malformed or timed-out checks retry the connection; a different build ID reloads the page. The current world UUID is saved in per-tab `sessionStorage` on successful join, restored on page load and cleared on explicit leave or rejected recovery. Production character identity belongs to the Steam account; the HttpOnly login session authorizes recovery. Browsers with disabled storage can recover within the current page, but cannot guarantee recovery across reloads.
+The first versioned release is `1.0.375` and increases its patch number once per merge
+to main (`1.0.376`, `1.0.377`, …). Both builds embed the version derived from the
+same Git revision. The bottom-right circle is green when client and server
+versions match, yellow when the connected server reports a different or unknown
+version, and red when the server is unavailable, including reconnect attempts.
+Hovering the circle shows the client and server versions. A mismatch warns
+without interrupting gameplay. A newer app build also shows yellow and never
+reloads automatically; players refresh manually when ready. Each latency reply
+reports the running server version. Missing
+replies for five seconds close the connection and begin recovery.
+
+![Concept preview: matching, mismatched and unavailable server indicators.](../../images/server-versions.svg)
+
+Every production client build embeds a unique build ID and emits matching `version.json`. Before resuming gameplay on each WebSocket connection, the client requests that file with `cache: no-store`. Failed, malformed or timed-out checks retry the connection; a different build ID shows an update warning and allows gameplay to resume without reloading. The current world UUID is saved in per-tab `sessionStorage` on successful join, restored on page load and cleared on explicit leave or rejected recovery. Production character identity belongs to the Steam account; the HttpOnly login session authorizes recovery. Browsers with disabled storage can recover within the current page, but cannot guarantee recovery across reloads.
 
 ## Acceptance
 
 - Creating joins the creator; wrong passwords and full worlds reject entry. Other worlds receive no state or chat.
 - Leaving transfers the host label; the last departure removes a player-created world but preserves the permanent world.
 - On interruption, immediately show the world browser's server list, close gameplay dialogs and clear the displayed world while preserving the recovery target. Resume automatically when the server is available, without duplicating the player or losing position, vote or scene within the grace period. After server restart, authorized recovery enters the village.
-- Explicit leave revokes recovery. Failed build checks retry; changed build IDs reload before gameplay resumes.
+- Explicit leave revokes recovery. Failed build checks retry; changed build IDs warn without automatic reloads or blocking gameplay.
 - Typing never moves the character. Invalid or rate-limited chat is rejected; only the newest ten messages remain.
 - System messages do not overwrite speech bubbles or consume player chat cooldowns.
 

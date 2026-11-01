@@ -3,11 +3,11 @@ import { retainWorldChat } from './world-chat';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
 import { GameConnection } from './connection';
-import { clientAsset, websocketUrl } from './urls';
+import { websocketUrl } from './urls';
+import { clientBuild } from './client-build.ts';
 
 import {
   LATENCY_PROBE_INTERVAL_MS,
-  VERSION_REQUEST_TIMEOUT_MS,
   VERSION_RETRY_CLOSE_CODE,
   LEGACY_CHARACTER_TOKEN_LENGTH,
   RECONNECT_DELAY_MS,
@@ -38,6 +38,7 @@ export function useGameSession({
   const socket = useRef<GameConnection | null>(null);
   const [status, setStatus] = useState('Connecting');
   const [latency, setLatency] = useState<number | null>(null);
+  const [version, setVersion] = useState({ server: null as string | null, updateAvailable: false });
   const [worlds, setWorlds] = useState<WorldSummary[]>([]);
   const [world, setWorld] = useState<WorldState | null>(null);
   const [playerId, setPlayerId] = useState('');
@@ -73,6 +74,7 @@ export function useGameSession({
   useEffect(() => {
     const url = websocketUrl();
     setStatus(previousWorld.current ? 'Reconnecting' : 'Connecting');
+    setVersion({ server: null, updateAvailable: false });
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
     const versionRequest = new AbortController();
     let disposed = false;
@@ -88,34 +90,15 @@ export function useGameSession({
     // oxlint-disable-next-line typescript/no-misused-promises
     ws.onopen = async () => {
       try {
-        const response = await fetch(clientAsset('/version.json'), {
-          cache: 'no-store',
-          signal: AbortSignal.any([
-            versionRequest.signal,
-            AbortSignal.timeout(VERSION_REQUEST_TIMEOUT_MS),
-          ]),
-        });
-
-        if (!response.ok) {
-          throw new Error('Version check unavailable');
-        }
-
-        const { buildId } = await response.json();
-
-        if (typeof buildId !== 'string' || !buildId) {
-          throw new Error('Invalid build ID');
-        }
+        const buildId = await clientBuild(versionRequest.signal);
 
         if (disposed || ws.readyState !== GameConnection.OPEN) {
           return;
         }
 
-        if (buildId !== __BUILD_ID__) {
-          setStatus('Updating');
-          location.reload();
-
-          return;
-        }
+        setVersion((current) => {
+          return { ...current, updateAvailable: buildId !== __BUILD_ID__ };
+        });
       } catch {
         if (!disposed && ws.readyState === GameConnection.OPEN) {
           ws.close(VERSION_RETRY_CLOSE_CODE, 'Retry version check');
@@ -151,6 +134,12 @@ export function useGameSession({
     ws.onmessage = (event) => {
       const message = event.data;
       latencyProbe.receive(message);
+
+      if (message.type === 'pong') {
+        setVersion((current) => {
+          return { ...current, server: message.version ?? 'unknown' };
+        });
+      }
 
       if (message.type === 'worlds') {
         setWorlds(message.worlds);
@@ -278,5 +267,5 @@ export function useGameSession({
     );
   };
 
-  return { status, latency, worlds, world, playerId, pending, retry, send, act };
+  return { status, version, latency, worlds, world, playerId, pending, retry, send, act };
 }
