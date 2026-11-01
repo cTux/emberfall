@@ -6,15 +6,16 @@
 
 The [Verify workflow](../../.github/workflows/verify.yml) always runs formatting,
 lint, typechecking, core and root Node suites, and builds on every pull request.
-Pull requests also run affected desktop browser scenarios selected by
-[browser selection](../../scripts/ci-browser-tests.ts). Unmapped and shared-runtime
-changes fall back to
-the complete 11-file desktop baseline plus shared UI checks. Desktop allowlists
-exclude existing mixed phone/touch scenarios.
+Pull requests also run affected shared UI browser checks selected by
+[browser selection](../../scripts/ci-browser-tests.ts). Desktop game checks are
+disabled on pull requests and skipped by default on manual runs. Desktop
+allowlists exclude existing mixed phone/touch scenarios.
 
 For a release candidate, run **Actions → Verify → Run workflow** on
-`main` (CLI: `gh workflow run verify.yml --ref main`). Manual runs always execute
-the complete desktop baseline and shared UI checks. A successful manual run on
+`main` (CLI: `gh workflow run verify.yml --ref main`). To include the complete
+11-file desktop game baseline, enable **Run desktop game checks** (CLI: add
+`-f desktop_game_checks=true`). Manual runs always execute shared UI checks.
+A successful manual run on
 current `main` triggers Pages deployment of that exact SHA. Intermediate merges
 do not repeat the PR run. A stale release is rejected before building and
 before deployment. See [operations](../operations/github-pages.md#github-pages-client-with-a-server-on-your-machine).

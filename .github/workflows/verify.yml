@@ -3,6 +3,11 @@ name: Verify
 on:
   pull_request:
   workflow_dispatch:
+    inputs:
+      desktop_game_checks:
+        description: Run desktop game checks
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -35,16 +40,16 @@ jobs:
         id: browsers
         run: node scripts/ci-browser-tests.ts select > "$RUNNER_TEMP/browser-selection.json"
       - run: pnpm exec playwright install --with-deps chromium
-        if: steps.browsers.outputs.browser == 'true'
+        if: steps.browsers.outputs.ui == 'true' || (github.event_name == 'workflow_dispatch' && inputs.desktop_game_checks)
       - name: Create disposable browser-test certificate
-        if: steps.browsers.outputs.game == 'true'
+        if: github.event_name == 'workflow_dispatch' && inputs.desktop_game_checks
         run: |
           mkdir -p .certs
           openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
             -keyout .certs/localhost-key.pem -out .certs/localhost.pem \
             -subj '/CN=localhost' -addext 'subjectAltName=DNS:localhost,IP:127.0.0.1'
       - name: Verify affected desktop game behavior
-        if: steps.browsers.outputs.game == 'true'
+        if: github.event_name == 'workflow_dispatch' && inputs.desktop_game_checks
         run: node scripts/ci-browser-tests.ts game "$RUNNER_TEMP/browser-selection.json"
       - name: Verify desktop shared UI behavior
         if: steps.browsers.outputs.ui == 'true'

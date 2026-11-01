@@ -5,10 +5,12 @@
 ## GitHub Pages client with a server on your machine
 
 The [Pages workflow](../../.github/workflows/deploy-pages.yml) builds only the client
-and deploys the exact SHA from a successful manual full desktop Verify run on
+and deploys the exact SHA from a successful manual Verify run on
 current `main`. For a release candidate, use **Actions → Verify → Run
 workflow → main**, or `gh workflow run verify.yml --ref main`. PRs run static
-checks, Node suites, builds and affected desktop browser checks without deploying.
+checks, Node suites, builds and affected shared UI browser checks without deploying.
+Desktop game checks are skipped by default; enable **Run desktop game checks**
+or add `-f desktop_game_checks=true` to the CLI command to run them manually.
 Intermediate merges do not repeat verification. The release is rejected if `main`
 advances before building or deployment; rerun Verify on the new head. The server
 must be deployed/restarted separately with a compatible protocol version.
@@ -20,7 +22,7 @@ must be deployed/restarted separately with a compatible protocol version.
    These are already the workflow defaults. `BASE_API` is a host/IP without a
    scheme, port or path. The client uses HTTPS and WSS. For a tunnel on standard
    HTTPS, use its hostname and `BASE_PORT=443`.
-3. Merge the intended release into `main`, then dispatch the full Verify run.
+3. Merge the intended release into `main`, then dispatch the Verify run.
    After it passes, Pages publishes the client at
    `https://ctux.github.io/emberfall/` for this repository. The workflow derives
    the asset base path from Pages configuration, including custom domains.
