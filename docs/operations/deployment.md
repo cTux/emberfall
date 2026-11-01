@@ -5,7 +5,7 @@
 ## Deployment and cache consistency
 
 Build from a full Git checkout: client and server embed the same `1.0.patch`
-version, counting first-parent commits after the `1.0.374` baseline. Each squash
+version, counting first-parent commits after the `1.0.375` versioning release. Each squash
 merge to main advances the patch once; rebuilding one revision keeps its version.
 Shallow checkouts must fetch history before building. Production bundles retain
 their embedded version and do not require Git at startup. `version.json` includes

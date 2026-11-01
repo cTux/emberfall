@@ -1,9 +1,9 @@
 import { execFileSync } from 'node:child_process';
 
-// The next merge starts at 1.0.375; each first-parent main commit represents one merged release.
-const VERSION_BASE = 'dfd10970022802bdc849a14049b9e2af6f1bde06';
-// Main predates versioning; treating it as 374 makes this feature's first merge 375.
-const INITIAL_PATCH = 374;
+// Anchor to the versioning release so merges during implementation do not shift the starting version.
+const VERSION_BASE = 'f173a29d3e8f4e53a72ce1769595c72a93a66489';
+// The release introducing versioning is 1.0.375; every subsequent merge advances its patch once.
+const INITIAL_PATCH = 375;
 
 export function gameVersion(
   cwd: string | URL = new URL('../', import.meta.url),
