@@ -143,7 +143,8 @@ without mutating base definitions. Optional ground and volley skill definitions
 use the existing enemy attack state; ground markers lock at windup, volleys
 share a bounded projectile path extracted into `enemy-projectiles.ts`.
 
-`hitEnemy` passes the dimension rarity factor to the context-bound item roller.
+`hitEnemy` passes the product of dimension, scene-family and difficulty rarity factors
+to the context-bound item roller.
 Merchant rolls omit it. Rarity increases stretch only non-Common intervals;
 random draw count and base forest outcomes remain compatible.
 

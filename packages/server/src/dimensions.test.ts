@@ -162,55 +162,61 @@ test('rarity modifiers multiply higher-quality probability intervals without cha
 
 test('real enemy drops use dimension rarity while merchant and training outcomes retain base rules', () => {
   const context = createGame(GAME_MODS, () => {
-    return 0.00015;
+    return 0.00014;
   });
 
   for (const dimension of DIMENSION_IDS) {
-    const run = combatScene();
-    run.dimension = dimension;
-    const player = combatHero();
-    const enemy = {
-      id: 1,
-      x: player.x,
-      y: player.y,
-      hitpoints: 1,
-      angle: 0,
-      kind: 'boss' as const,
-    };
-    hitEnemy(
-      run,
-      enemy,
-      1,
-      player,
-      1000,
-      undefined,
-      'physical',
-      false,
-      'Attack',
-      undefined,
-      context,
-    );
-    const gear = run.drops!.filter((drop) => {
-      return drop.kind === 'item';
-    });
-    assert.equal(gear.length, 1);
-    assert.equal(gear[0].rarity, dimension === 'desert' ? Rarity.Legendary : Rarity.Epic);
-    assert.equal(context.rules.rollItem('warrior-sword').rarity, Rarity.Epic);
-    run.training = true;
-    run.drops = [];
-    hitEnemy(
-      run,
-      { ...enemy, hitpoints: 1 },
-      1,
-      player,
-      2000,
-      undefined,
-      'physical',
-      false,
-      'Attack',
-      undefined,
-      context,
-    );
-    assert.deepEqual(run.drops, []);
+    for (const difficulty of ['Easy', 'Medium', 'Hard'] as const) {
+      const run = combatScene();
+      run.difficulty = difficulty;
+      run.dimension = dimension;
+      const player = combatHero();
+      const enemy = {
+        id: 1,
+        x: player.x,
+        y: player.y,
+        hitpoints: 1,
+        angle: 0,
+        kind: 'boss' as const,
+      };
+      hitEnemy(
+        run,
+        enemy,
+        1,
+        player,
+        1000,
+        undefined,
+        'physical',
+        false,
+        'Attack',
+        undefined,
+        context,
+      );
+      const gear = run.drops!.filter((drop) => {
+        return drop.kind === 'item';
+      });
+      assert.equal(gear.length, 1);
+      assert.equal(
+        gear[0].rarity,
+        dimension === 'desert' || difficulty !== 'Easy' ? Rarity.Legendary : Rarity.Epic,
+      );
+      assert.equal(context.rules.rollItem('warrior-sword').rarity, Rarity.Epic);
+      run.training = true;
+      run.drops = [];
+      hitEnemy(
+        run,
+        { ...enemy, hitpoints: 1 },
+        1,
+        player,
+        2000,
+        undefined,
+        'physical',
+        false,
+        'Attack',
+        undefined,
+        context,
+      );
+      assert.deepEqual(run.drops, []);
+    }
   }
 });

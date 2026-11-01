@@ -18,6 +18,9 @@ instance; they never regenerate it. Server commands still save before publishing
 Combat reads summed equipped bonuses, and the server binds the complete party
 roster to reward generation independently of hit credit. Client/UI receive
 rarity colors and stat descriptions from the host; common never imports core.
+Combat passes the product of core's `zoneRarityMultiplier` and
+`difficultyRarityMultiplier` maps to the context-bound `rollItem` rarity roll.
+This adds no wire/save fields and keeps merchant rolls at the base odds.
 
 Core is the composition root for the playable game: it constructs registries,
 loads bundled mods, validates content, prepares derived data and exposes shared

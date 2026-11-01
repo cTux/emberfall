@@ -32,13 +32,11 @@ export function rollRarity(random = randomSource.next, multiplier = 1): Rarity {
   let roll = random() * PERCENT;
 
   for (const [rarity, chance] of Object.entries(rarityDropChance)) {
-    const adjustedChance = rarity === Rarity.Common ? chance : chance * multiplier;
-
-    if (roll < adjustedChance) {
+    if (rarity === Rarity.Common || roll < chance * multiplier) {
       return rarity as Rarity;
     }
 
-    roll -= adjustedChance;
+    roll -= chance * multiplier;
   }
 
   return Rarity.Common;

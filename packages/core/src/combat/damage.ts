@@ -14,6 +14,8 @@ import { EnemyType } from '@emberfall/common/enums';
 import { isChanced } from '../utils/isChanced.ts';
 import { shouldDropItem } from '../utils/shouldDropItem.ts';
 import { itemDropCount } from '../utils/itemDropCount.ts';
+import { zoneRarityMultiplier } from '../configs/zoneRarityMultiplier.ts';
+import { difficultyRarityMultiplier } from '../configs/difficultyRarityMultiplier.ts';
 import { isMultiChanced } from '../utils/isMultiChanced.ts';
 import { talentAilmentChance, talentEnemyDeath } from '../talent-ailments.ts';
 
@@ -222,7 +224,9 @@ export function hitEnemy(
       const item = context.rules.rollItem(
         LOOT_ITEM_IDS[Math.floor(context.random() * LOOT_ITEM_IDS.length)],
         context.random,
-        dimensionDefinition(scene.dimension, context).rarityMultiplier,
+        dimensionDefinition(scene.dimension, context).rarityMultiplier *
+          zoneRarityMultiplier[scene.type] *
+          difficultyRarityMultiplier[scene.difficulty],
       );
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,

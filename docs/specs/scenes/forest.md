@@ -72,7 +72,8 @@ wrapped collision. Each new enemy and resource has dedicated generated artwork.
 Weather respects particles/fog settings and does not change combat rules.
 
 Higher-quality equipment rarity intervals multiply by the dimension's rarity
-modifier; Common receives the remainder. This changes quality, not item drop
+modifier and the existing difficulty rarity factor (Easy 1, Medium 1.5, Hard 2);
+Common receives the remainder. This changes quality, not item drop
 chance, item count, gold, XP or merchant gear. Resources remain Common. New
 resource nodes grant one corresponding item per completed gather; trees retain
 five gathers and all nodes retain the existing one-hour restore/atomic inventory

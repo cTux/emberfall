@@ -25,6 +25,15 @@ Each balance table has its own `.ts` file and is exported from core:
 | `enemyTypeAttributesMultiplier`  | Normal 1, Elite 3, Boss 10                                       |
 | `difficultySpeedMultiplier`      | Easy 1, Medium 1.05, Hard 1.15                                   |
 | `difficultyAttributesMultiplier` | Easy 1, Medium 2, Hard 4                                         |
+| `zoneRarityMultiplier`           | Forest 1                                                         |
+| `difficultyRarityMultiplier`     | Easy 1, Medium 1.5, Hard 2                                       |
+
+Combat gear uses `zoneRarityMultiplier[scene.type] *
+difficultyRarityMultiplier[scene.difficulty]`. `rollItem(id, random, rarityMultiplier)`
+passes this product to `rollRarity(random, multiplier)`, scaling non-Common
+chances while Common fills the remainder. Both optional arguments preserve
+base odds by default, including merchant stock. These maps are separate from
+enemy strength, item drop gates and item counts.
 
 `enemyKindAttribute` also exposes base movement speed in world units per second:
 Skeleton 64, Runner 104, Brute 40 and Caster 54. Movement applies the registered
