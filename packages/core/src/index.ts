@@ -21,6 +21,7 @@ export { enemyTypeMultiplier } from './utils/enemyTypeMultiplier.ts';
 export { difficultyMultiplier } from './utils/difficultyMultiplier.ts';
 export { enemyAttributes } from './utils/enemyAttributes.ts';
 export * from './class-combat.ts';
+export { recordCombatTotal } from './combat/meters.ts';
 export * from './enemies.ts';
 export * from './simulation.ts';
 export * from './training.ts';

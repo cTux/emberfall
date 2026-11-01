@@ -169,7 +169,7 @@ export function talentWeaponHit(
     const life = rank(player, 1, 8);
 
     if (life && value.hits % PASSIVES.lifeEveryHits === 0) {
-      heal(player, PASSIVES.lifeHealthFraction[life === TALENT_MAX_RANK ? 1 : 0]);
+      heal(player, PASSIVES.lifeHealthFraction[life === TALENT_MAX_RANK ? 1 : 0], player, now);
     }
 
     const shared = rank(player, 1, 6);
@@ -233,6 +233,11 @@ export function talentWeaponHit(
     rank(player, 2, 0) &&
     value.hits % PASSIVES.druidGuardEveryHits === 0
   ) {
-    heal(player, PASSIVES.druidGuardHealthFraction[rank(player, 2, 0) === TALENT_MAX_RANK ? 1 : 0]);
+    heal(
+      player,
+      PASSIVES.druidGuardHealthFraction[rank(player, 2, 0) === TALENT_MAX_RANK ? 1 : 0],
+      player,
+      now,
+    );
   }
 }

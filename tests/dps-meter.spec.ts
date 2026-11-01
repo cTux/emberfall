@@ -91,7 +91,7 @@ test('DPS meter toggles independently of performance graphs and persists across 
   await closeSettings();
 });
 
-test('party damage bars drill into abilities and return with right click anywhere', async ({
+test('party damage bars drill into abilities and select damage through the right-click menu', async ({
   page,
   game,
 }) => {
@@ -136,6 +136,7 @@ test('party damage bars drill into abilities and return with right click anywher
   await rows.filter({ hasText: 'Willow' }).click();
   await expect(meter).toContainText('No damage recorded.');
   await meter.click({ button: 'right' });
+  await page.getByRole('menuitem', { name: 'Damage done', exact: true }).click();
   const scene = createTrainingScene(Date.now());
   const enemy = scene.enemies[0];
   enemy.hitpoints = 10000;
@@ -183,6 +184,7 @@ test('party damage bars drill into abilities and return with right click anywher
     meter.locator('.damage-meter-icon').first(),
   ]) {
     await target.click({ button: 'right' });
+    await page.getByRole('menuitem', { name: 'Damage done', exact: true }).click();
     await expect(meter).toContainText('Damage done');
     await rows.first().click();
   }

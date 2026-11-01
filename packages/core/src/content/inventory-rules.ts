@@ -3,6 +3,7 @@ import type { createEquipmentRules } from './equipment-rules.ts';
 import type { createItemRules, BackpackItem } from './item-rules.ts';
 import type { createStorageRules } from './storage-rules.ts';
 import { RESOURCE_STACK_LIMIT } from './inventory-limits.ts';
+import { applyHealing } from '../combat/meters.ts';
 
 export function createInventoryRules(
   equipment: ReturnType<typeof createEquipmentRules>,
@@ -146,7 +147,7 @@ export function createInventoryRules(
         throw new Error('You do not need healing.');
       }
 
-      player.hitpoints = Math.min(player.maxHitpoints, player.hitpoints + consumable.healing);
+      applyHealing(player, consumable.healing, player, Date.now());
 
       if (--item.quantity === 0) {
         backpack.splice(index, 1);

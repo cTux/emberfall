@@ -4,6 +4,7 @@ import { TRAINING_DEFINITION } from './definitions/encounters/training.ts';
 import { TRAINING_ZONES, inTrainingZone } from './world.ts';
 import { tickCompanion, tickPlayerCombat } from './simulation.ts';
 import { damagePerSecond, tickDebuffs } from './class-combat.ts';
+import { refreshCombatTotals } from './combat/meters.ts';
 import type { Player, SceneState } from '@emberfall/common';
 
 // Seven dummy IDs occupy the initial training layout; subsequent transient IDs start after them.
@@ -45,6 +46,7 @@ export function tickTraining(
 
   for (const player of players) {
     player.dps = damagePerSecond(player, now);
+    refreshCombatTotals(player, now);
   }
 
   return scene;

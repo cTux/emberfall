@@ -108,7 +108,7 @@ export function woundBurst(cast: TalentCast) {
       now,
       WOUND_BURST.offeringDurationMs,
       WOUND_BURST.offeringIntervalMs,
-      (_at, players) => {
+      (at, players) => {
         if (orbConsumed) {
           return;
         }
@@ -121,7 +121,7 @@ export function woundBurst(cast: TalentCast) {
         );
 
         if (ally) {
-          heal(ally, WOUND_BURST.offeringHeal[offering === TALENT_MAX_RANK ? 1 : 0]);
+          heal(ally, WOUND_BURST.offeringHeal[offering === TALENT_MAX_RANK ? 1 : 0], player, at);
           orbConsumed = true;
         }
       },

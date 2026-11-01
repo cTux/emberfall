@@ -1,8 +1,9 @@
 import { useState, type CSSProperties } from 'react';
 import { useDraggable } from '@emberfall/ui';
-import { ButtonBase, IconButton } from '@mui/material';
+import { ButtonBase, IconButton, Menu, MenuItem } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
+import { faBars } from '@fortawesome/free-solid-svg-icons/faBars';
 import { PERCENT, type Player } from '@emberfall/common';
 import { TALENT_TREE } from '@emberfall/core';
 import { classSprite, spellSrc, statusSrc } from './class-art';
@@ -19,8 +20,27 @@ const number = (value: number) => {
   return value.toLocaleString('en', { maximumFractionDigits: 1 });
 };
 
+const meterModes = {
+  damage: 'Damage done',
+  healing: 'Healing done',
+  received: 'Damage received',
+} as const;
+type MeterMode = keyof typeof meterModes;
+
+function meterValues(player: Player, mode: MeterMode) {
+  if (mode === 'damage') {
+    return { total: player.damageMeter?.total ?? 0, perSecond: player.dps ?? 0 };
+  }
+
+  const meter = mode === 'healing' ? player.healingMeter : player.receivedMeter;
+
+  return { total: meter?.total ?? 0, perSecond: meter?.perSecond ?? 0 };
+}
+
 export function DamageMeter({ players, playerId }: { players: Player[]; playerId: string }) {
   const [selectedId, select] = useState<string | null>(null);
+  const [mode, setMode] = useState<MeterMode>('damage');
+  const [menu, setMenu] = useState<{ top: number; left: number } | null>(null);
   const { ref, style, handleProps } = useDraggable('panel.dps');
   const me = players.find((player) => {
     return player.id === playerId;
@@ -29,10 +49,10 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
     return player.id === playerId || (!!me?.partyId && player.partyId === me.partyId);
   });
   const selected = party.find((player) => {
-    return player.id === selectedId;
+    return mode === 'damage' && player.id === selectedId;
   });
   const total = party.reduce((sum, player) => {
-    return sum + (player.damageMeter?.total ?? 0);
+    return sum + meterValues(player, mode).total;
   }, 0);
   const rows = selected
     ? Object.entries(selected.damageMeter?.abilities ?? {}).map(([name, value]) => {
@@ -48,8 +68,8 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
         return {
           id: player.id,
           name: player.name,
-          damage: player.damageMeter?.total ?? 0,
-          dps: player.dps ?? 0,
+          damage: meterValues(player, mode).total,
+          dps: meterValues(player, mode).perSecond,
           classId: player.classId,
         };
       });
@@ -59,7 +79,7 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
   const denominator = selected ? (selected.damageMeter?.total ?? 0) : total;
 
   return (
-    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Right-click anywhere is a shortcut; rows and Back also support keyboard activation.
+    // oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- Right-click is a shortcut for the keyboard-accessible meter menu button.
     <aside
       className='dps-meter'
       aria-label='Damage per second'
@@ -67,14 +87,27 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
       style={style}
       onContextMenu={(event) => {
         event.preventDefault();
-        select(null);
+        event.stopPropagation();
+        setMenu({ top: event.clientY, left: event.clientX });
       }}
       onPointerDown={(event) => {
         return event.stopPropagation();
       }}
     >
       <header {...handleProps}>
-        <strong>{selected ? `${selected.name} — Abilities` : 'Damage done'}</strong>
+        <strong>{selected ? `${selected.name} — Abilities` : meterModes[mode]}</strong>
+        <IconButton
+          size='small'
+          aria-label='Choose meter type'
+          aria-haspopup='menu'
+          aria-expanded={!!menu}
+          onClick={(event) => {
+            const box = event.currentTarget.getBoundingClientRect();
+            setMenu({ top: box.bottom, left: box.left });
+          }}
+        >
+          <FontAwesomeIcon icon={faBars} />
+        </IconButton>
         {selected && (
           <IconButton
             size='small'
@@ -136,7 +169,7 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
             '--class-color': classColors[row.classId ?? 'warrior'] ?? '#a7c4bc',
           } as CSSProperties;
 
-          return selected ? (
+          return selected || mode !== 'damage' ? (
             <div key={row.id} className='damage-meter-row' style={rowStyle}>
               {content}
             </div>
@@ -155,6 +188,31 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
         })}
         {selected && rows.length === 0 && <p>No damage recorded.</p>}
       </div>
+      <Menu
+        open={!!menu}
+        anchorReference='anchorPosition'
+        anchorPosition={menu ?? undefined}
+        onClose={() => {
+          return setMenu(null);
+        }}
+        slotProps={{ list: { 'aria-label': 'Meter type' } }}
+      >
+        {Object.entries(meterModes).map(([key, label]) => {
+          return (
+            <MenuItem
+              key={key}
+              selected={mode === key}
+              onClick={() => {
+                setMode(key as MeterMode);
+                select(null);
+                setMenu(null);
+              }}
+            >
+              {label}
+            </MenuItem>
+          );
+        })}
+      </Menu>
     </aside>
   );
 }

@@ -11,6 +11,8 @@ export interface Player extends CharacterProgress {
   reconnecting?: boolean;
   chat?: string;
   dps?: number;
+  healingMeter?: CombatTotal;
+  receivedMeter?: CombatTotal;
   damageMeter?: {
     classId: ClassId;
     total: number;
@@ -45,6 +47,11 @@ export interface Player extends CharacterProgress {
   inputX?: number;
   inputY?: number;
   inputAt?: number;
+}
+export interface CombatTotal {
+  classId: ClassId;
+  total: number;
+  perSecond: number;
 }
 export interface Bear {
   size?: number;

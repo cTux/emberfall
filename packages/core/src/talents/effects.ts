@@ -3,6 +3,7 @@ import { game, type createGame } from '../game.ts';
 import type { Enemy, Player, SceneState } from '@emberfall/common';
 import { characterStats } from '../equipment.ts';
 import { hitEnemy } from '../combat/damage.ts';
+import { applyHealing } from '../combat/meters.ts';
 import { isChanced } from '../utils/isChanced.ts';
 import { state } from './state.ts';
 
@@ -64,11 +65,8 @@ export function strike(
 }
 
 type HealingTarget = Pick<Player, 'x' | 'y' | 'hitpoints' | 'maxHitpoints'>;
-export function heal(player: HealingTarget, fraction: number) {
-  player.hitpoints = Math.min(
-    player.maxHitpoints,
-    player.hitpoints + player.maxHitpoints * fraction,
-  );
+export function heal(player: HealingTarget, fraction: number, owner: Player, now: number) {
+  applyHealing(player, player.maxHitpoints * fraction, owner, now);
 }
 
 export function shield(player: Player, scene: SceneState, amount: number, until: number) {

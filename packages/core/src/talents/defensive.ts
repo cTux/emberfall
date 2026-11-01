@@ -28,7 +28,7 @@ function guard(cast: TalentCast) {
 
   if (classId === 'druid') {
     if (recipient) {
-      heal(recipient, DEFENSE.guardHeal[learnedIndex]);
+      heal(recipient, DEFENSE.guardHeal[learnedIndex], player, now);
     }
   } else {
     for (const enemy of effectArea(scene, origin, DEFENSE.guardRadius)) {
@@ -81,7 +81,7 @@ function shelter(cast: TalentCast) {
         );
 
         if (ally) {
-          heal(ally, DEFENSE.shelterHeal[learnedIndex]);
+          heal(ally, DEFENSE.shelterHeal[learnedIndex], player, at);
         }
       } else {
         for (const ally of players.filter((ally) => {
@@ -152,7 +152,7 @@ function wall(cast: TalentCast) {
   value.wallPrevented = false;
 
   if (recipient) {
-    heal(recipient, DEFENSE.wallHeal[learnedIndex]);
+    heal(recipient, DEFENSE.wallHeal[learnedIndex], player, now);
   }
 
   const shared = rank(player, 2, 8);

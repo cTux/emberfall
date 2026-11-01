@@ -14,6 +14,7 @@ import {
   sellAll,
   transferStoredItem,
   moveStorageItem,
+  recordCombatTotal,
 } from '@emberfall/core';
 import type { CommandContext, Snapshot } from '../runtime/models.ts';
 import type { WorldMembership } from '../runtime/world-membership.ts';
@@ -118,6 +119,12 @@ export function commitCharacterCommand<K extends CommandType>(
       next,
       trading ? { worldId: world.id, state: merchant } : undefined,
     );
+
+    // Detached item actions must credit healing only after the save succeeds.
+    if (message.type === 'useItem') {
+      recordCombatTotal(player, 'healingMeter', next.hitpoints - player.hitpoints, Date.now());
+    }
+
     Object.assign(player, {
       tactics: next.tactics,
       talents: next.talents,

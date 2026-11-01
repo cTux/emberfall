@@ -20,11 +20,16 @@ DOT Speed: [equipped effects](../specs/item-rolls.md#item-02--equipped-effects-a
 [rule checks](../../packages/server/src/dot-speed.test.ts) and
 [desktop presentation](../../tests/dot-speed.spec.ts).
 
-## DPS meter visibility
+## DPS meter modes and visibility
 
 DPS meter visibility: [UI-03](../specs/interface/settings.md#ui-03--network-and-performance-feedback),
 [saved preference](../../packages/client/src/preferences.ts), [HUD](../../packages/client/src/Arena.tsx)
 and [toggle/persistence verification](../../tests/dps-meter.spec.ts).
+The right-click menu selects damage done, healing done and damage received:
+[meter UI](../../packages/client/src/DamageMeter.tsx),
+[server accounting](../../packages/core/src/combat/meters.ts),
+[accounting checks](../../packages/server/src/combat-meter-modes.test.ts), and
+[desktop mode selection](../../tests/dps-meter-modes.spec.ts).
 
 ## Talents
 
