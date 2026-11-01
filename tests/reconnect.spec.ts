@@ -2,6 +2,8 @@
 const RECONNECT_RENDER_SETTLE_MS = 300;
 // Allow disconnect presentation and replicated state to settle.
 const DISCONNECT_SETTLE_MS = 500;
+// CI's software renderer can publish the forest canvas after the default five-second assertion window.
+const FOREST_SCENE_TIMEOUT_MS = 10_000;
 import { test, expect } from './fixtures';
 
 test('an outage shows the server list and automatically restores the same player', async ({
@@ -150,7 +152,9 @@ test('peers see a red reconnecting character in village and forest until recover
         game.runtime.parties(world).run([...world.players.values()][0]).scene!.nextSpawn = 1e12;
         remote.x = host.x + 70;
         remote.y = host.y;
-        await expect(page.getByLabel('Forest combat scene.')).toBeVisible();
+        await expect(page.getByLabel('Forest combat scene.')).toBeVisible({
+          timeout: FOREST_SCENE_TIMEOUT_MS,
+        });
       }
 
       unavailable = true;
