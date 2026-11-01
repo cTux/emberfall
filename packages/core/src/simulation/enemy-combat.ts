@@ -1,11 +1,12 @@
+import { dimensionDefinition } from '../dimensions.ts';
+import { tickEnemyProjectiles } from './enemy-projectiles.ts';
 import { game, type createGame } from '../game.ts';
 import { talentIncomingDamage } from '../talent-effects.ts';
 import { modelHitbox, overlapsBody } from '../hitboxes.ts';
 import { BEAR_DEFINITION } from '../definitions/entities/companions.ts';
 import { ENEMY_RULES } from '../definitions/entities/enemies.ts';
-import { COLLISION } from '../definitions/collision.ts';
-import { appendSceneEntities, wrappedDelta, wrap } from '@emberfall/common';
-import { FOREST, forestDistance, forestTrees } from '../scene.ts';
+import { appendSceneEntities, wrappedDelta } from '@emberfall/common';
+import { FOREST, forestDistance } from '../scene.ts';
 import { moveEnemies } from '../enemies.ts';
 import type { Player, Bear, SceneState } from '@emberfall/common';
 import { EnemyKind, EnemyType } from '@emberfall/common/enums';
@@ -17,11 +18,6 @@ import type { EnemyDefinition } from '../content/contracts.ts';
 const MISSED_ATTACK_RETRY_MS = 150;
 // Existing ranged warning size marks a narrower target than a melee attack reach.
 const RANGED_WARNING_RADIUS = 22;
-// Six-pixel projectile substeps prevent fast shots from skipping thin collision bodies.
-const PROJECTILE_STEP_PIXELS = 6;
-// Existing query/contact distances align enemy shots with the forest trunk collision footprint.
-const PROJECTILE_TREE_COLLISION = { queryRadius: 24, contactRadius: 20 } as const;
-
 type Game = ReturnType<typeof createGame>;
 export function tickEnemyCombat(
   scene: SceneState,
@@ -32,13 +28,14 @@ export function tickEnemyCombat(
   context: Game = game,
 ) {
   scene.projectiles ??= [];
+  const scale = dimensionDefinition(scene.dimension, context).enemyMultiplier;
   const combatants = [
     ...alive,
     ...alive.flatMap((p) => {
       return p.bear && p.bear.hitpoints > 0 ? [p.bear] : [];
     }),
   ];
-  moveEnemies(scene.enemies, combatants, dt, now, context, scene.difficulty);
+  moveEnemies(scene.enemies, combatants, dt, now, context, scene.difficulty, scene.dimension);
   const hurt = (target: Player | Bear, damage: number) => {
     if (target.hitpoints <= 0 || now - (target.hurtAt ?? 0) < ENEMY_RULES.damageCooldownMs) {
       return;
@@ -93,12 +90,13 @@ export function tickEnemyCombat(
     }
 
     const stats = ENEMY_STATS[enemy.archetype ?? 'skeleton'];
-    const damage = enemyAttributes(
-      enemy.archetype ?? EnemyKind.Skeleton,
-      enemy.kind ?? EnemyType.Normal,
-      scene.difficulty,
-      context,
-    ).damage;
+    const damage =
+      enemyAttributes(
+        enemy.archetype ?? EnemyKind.Skeleton,
+        enemy.kind ?? EnemyType.Normal,
+        scene.difficulty,
+        context,
+      ).damage * scale;
     const challenged =
       (enemy.challengedUntil ?? 0) > now
         ? combatants.find((player) => {
@@ -123,10 +121,11 @@ export function tickEnemyCombat(
       }
 
       enemy.attack = undefined;
-      const inRange = target && forestDistance(enemy, target) <= stats.reach;
-      enemy.cooldownUntil = now + (inRange ? stats.cooldown : MISSED_ATTACK_RETRY_MS);
+      const inRange = target && forestDistance(enemy, target) <= stats.reach * scale;
+      enemy.cooldownUntil =
+        now + (inRange || stats.skill ? stats.cooldown / scale : MISSED_ATTACK_RETRY_MS);
 
-      if (!inRange) {
+      if (!inRange && !stats.skill) {
         continue;
       }
 
@@ -136,13 +135,21 @@ export function tickEnemyCombat(
           wrappedDelta(attack.x, enemy.x, FOREST.width),
         );
 
-        if (scene.projectiles.length < ENEMY_RULES.maxAlive) {
+        const count = stats.skill?.kind === 'volley' ? stats.skill.count : 1;
+        const spread = stats.skill?.kind === 'volley' ? stats.skill.spread : 0;
+
+        for (
+          let index = 0;
+          index < count && scene.projectiles.length < ENEMY_RULES.maxAlive;
+          index++
+        ) {
+          const heading = angle + (index - (count - 1) / 2) * spread;
           appendSceneEntities(scene, 'projectiles', {
             id: ++scene.sequence,
             x: enemy.x,
             y: enemy.y,
-            vx: Math.cos(angle) * ENEMY_RULES.projectileSpeed,
-            vy: Math.sin(angle) * ENEMY_RULES.projectileSpeed,
+            vx: Math.cos(heading) * ENEMY_RULES.projectileSpeed * scale,
+            vy: Math.sin(heading) * ENEMY_RULES.projectileSpeed * scale,
             expiresAt: now + ENEMY_RULES.projectileLifetimeMs,
             damage,
           });
@@ -157,66 +164,21 @@ export function tickEnemyCombat(
     } else if (
       target &&
       now >= (enemy.cooldownUntil ?? 0) &&
-      forestDistance(enemy, target) <= stats.reach
+      forestDistance(enemy, target) <= stats.reach * scale
     ) {
-      const ranged = stats.behavior === 'ranged';
+      const ground = stats.skill?.kind === 'ground' ? stats.skill : undefined;
+      const ranged = stats.behavior === 'ranged' && !ground;
+      const targeted = ranged || ground?.targeted;
       enemy.attack = {
         startedAt: now,
-        endsAt: now + stats.windup,
-        x: ranged ? target.x : enemy.x,
-        y: ranged ? target.y : enemy.y,
-        radius: ranged ? RANGED_WARNING_RADIUS : stats.reach,
+        endsAt: now + stats.windup / scale,
+        x: targeted ? target.x : enemy.x,
+        y: targeted ? target.y : enemy.y,
+        radius: (ground?.radius ?? (ranged ? RANGED_WARNING_RADIUS : stats.reach)) * scale,
         ranged,
       };
     }
   }
 
-  scene.projectiles = scene.projectiles.filter((shot) => {
-    if (now >= shot.expiresAt) {
-      return false;
-    }
-
-    const steps = Math.max(
-      1,
-      Math.ceil((Math.hypot(shot.vx, shot.vy) * dt) / PROJECTILE_STEP_PIXELS),
-    );
-
-    for (let i = 0; i < steps; i++) {
-      shot.x = wrap(shot.x + (shot.vx * dt) / steps, FOREST.width);
-      shot.y = wrap(shot.y + (shot.vy * dt) / steps, FOREST.height);
-
-      if (
-        forestTrees(
-          shot.x,
-          shot.y + COLLISION.feetOffset,
-          PROJECTILE_TREE_COLLISION.queryRadius,
-        ).some((t) => {
-          return (
-            Math.hypot(shot.x - t.x, shot.y + COLLISION.feetOffset - t.y) <
-            PROJECTILE_TREE_COLLISION.contactRadius
-          );
-        })
-      ) {
-        return false;
-      }
-
-      const hit = combatants.find((p) => {
-        return (
-          p.hitpoints > 0 && overlapsBody(shot, COLLISION.enemyProjectileRadius, modelHitbox(p))
-        );
-      });
-
-      if (hit) {
-        hurt(
-          hit,
-          shot.damage ??
-            enemyAttributes(EnemyKind.Caster, EnemyType.Normal, scene.difficulty).damage,
-        );
-
-        return false;
-      }
-    }
-
-    return true;
-  });
+  tickEnemyProjectiles(scene, combatants, now, dt, hurt);
 }

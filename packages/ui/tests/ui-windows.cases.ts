@@ -119,10 +119,10 @@ test('dialog closes with Escape, restores focus and drags', async ({ page }) => 
   await page.goto(story('components-game-patterns--window'));
   const trigger = page.getByRole('button', { name: 'Open window' });
   await trigger.click();
-  const dialog = page.getByRole('dialog', { name: 'Forest portal' });
+  const dialog = page.getByRole('dialog', { name: 'Portal' });
   await expect(dialog).toBeVisible();
   const before = (await dialog.boundingBox())!;
-  const title = (await dialog.getByText('Forest portal', { exact: true }).boundingBox())!;
+  const title = (await dialog.getByText('Portal', { exact: true }).boundingBox())!;
   await page.mouse.move(title.x + 40, title.y + 10);
   await page.mouse.down();
   await page.mouse.move(title.x + 90, title.y + 45, { steps: 5 });

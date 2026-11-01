@@ -77,7 +77,7 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
   };
 
   draw();
-  assert.deepEqual(labels, ['Forest portal']);
+  assert.deepEqual(labels, ['Portal']);
   assert.deepEqual(colors, ['#70d8ff']);
   assert.equal(Math.abs(angles[0]), Math.PI);
 
@@ -87,7 +87,7 @@ test('portal navigation shares off-screen suppression, wrapped direction and for
 
   player.x = FOREST.width - 100;
   draw();
-  assert.deepEqual(labels, ['Forest portal']);
+  assert.deepEqual(labels, ['Portal']);
   assert.equal(angles[0], 0);
 
   for (let degrees = 0; degrees < 360; degrees += 5) {

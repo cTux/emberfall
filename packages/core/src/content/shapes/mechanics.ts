@@ -74,6 +74,24 @@ export const settingShapes: Record<string, z.ZodType> = {
     attractionRadius: positive,
     speed: positive,
   }),
+  dimensions: z.object(
+    Object.fromEntries(
+      ['forest', 'swamp', 'desert'].map((dimension) => {
+        return [
+          dimension,
+          z.object({
+            id: z.literal(dimension),
+            name: z.string().min(1),
+            enemyMultiplier: positive,
+            rarityMultiplier: positive,
+            enemies: z.array(id).min(1),
+            boss: id,
+            resources: z.object({ tree: id, plant: id, rock: id, stone: id }),
+          }),
+        ];
+      }),
+    ),
+  ),
   spawnFallbacks: z.array(id).min(1),
   villageCritters: z.array(point.extend({ kind: id })),
   lobbyPortal: point,

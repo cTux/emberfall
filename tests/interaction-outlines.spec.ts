@@ -204,10 +204,10 @@ for (const graphicsPreset of ['Low', 'High'] as const) {
       player.x = LOBBY_PORTAL.x - 35;
       player.y = LOBBY_PORTAL.y + 9;
       await hover(LOBBY_PORTAL.x, LOBBY_PORTAL.y - 30, 'portal', true);
-      await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Forest portal');
+      await expect(canvas).toHaveAttribute('data-interaction-prompt', 'Portal');
       await page.mouse.down();
       await page.mouse.up();
-      await expect(page.getByRole('dialog', { name: 'Forest portal' })).toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Portal' })).toBeVisible();
       await closeDialog();
 
       game.runtime.parties(world).run([...world.players.values()][0]).scene = {

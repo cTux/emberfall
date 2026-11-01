@@ -94,14 +94,14 @@ export function createItemRules(
   }, 'Duplicate item identity');
   type BackpackItem = z.infer<typeof backpackSchema>[number];
 
-  function rollItem(itemId: string, random = roll): BackpackItem {
+  function rollItem(itemId: string, random = roll, rarityMultiplier = 1): BackpackItem {
     const definition = itemDefinition(itemId);
 
     if (definition.kind !== 'gear' || !itemTypeStats[definition.gearType]) {
       return { id: crypto.randomUUID(), itemId, quantity: 1 };
     }
 
-    const rarity = rollRarity(random);
+    const rarity = rollRarity(random, rarityMultiplier);
 
     return {
       id: crypto.randomUUID(),

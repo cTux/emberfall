@@ -5,6 +5,7 @@ import { enterScene, returnToLobby } from './scene-travel.ts';
 export { returnToLobby } from './scene-travel.ts';
 import { FOREST_DEFINITION } from '@emberfall/core/definitions/worlds/forest';
 import {
+  dimensionDefinition,
   levelUp,
   stepCombat,
   tickTraining,
@@ -85,7 +86,9 @@ const sceneHandlers: SceneHandlers = {
       }
     }
 
+    const dimension = dimensionDefinition(message.dimension);
     world.scene = {
+      dimension: dimension.id,
       id: randomUUID(),
       type: 'Forest',
       difficulty: message.difficulty,

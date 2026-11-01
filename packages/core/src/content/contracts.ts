@@ -77,7 +77,12 @@ export interface AbilityDefinition {
   bounces: number;
   bounceRadius: number;
 }
+export type EnemySkill =
+  | { name: string; kind: 'ground'; radius: number; targeted: boolean }
+  | { name: string; kind: 'volley'; count: number; spread: number };
 export interface EnemyDefinition {
+  sprite?: 'mireling' | 'bogToad' | 'mossGolem' | 'scarab' | 'sandWisp' | 'duneColossus';
+  skill?: EnemySkill;
   speed: number;
   radius: number;
   size: number;
@@ -128,7 +133,12 @@ export interface ContentTypes {
   classes: ClassDefinition;
   abilities: AbilityDefinition;
   enemies: EnemyDefinition;
-  spawnRules: { id: string; enemy: string; chance: number };
+  spawnRules: {
+    id: string;
+    enemy: string;
+    chance: number;
+    dimension?: import('@emberfall/common').DimensionId;
+  };
   companions: CompanionDefinition;
   ailments: AilmentDefinition;
   bosses: { id: string; name: string; archetype: string; kind: 'boss' };

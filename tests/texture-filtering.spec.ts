@@ -106,7 +106,7 @@ test('smooth textures apply live in village and forest, follow presets and persi
   const player = [...world.players.values()][0];
   player.x = LOBBY_PORTAL.x - 35;
   player.y = LOBBY_PORTAL.y + 9;
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
+  const portal = page.getByRole('dialog', { name: 'Portal' });
   await expect(async () => {
     await page.mouse.move(515, 281);
     await expect(canvas).toHaveAttribute('data-interaction-target', 'portal');

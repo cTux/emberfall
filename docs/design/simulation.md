@@ -126,6 +126,34 @@ Count all forest members for party scaling, including dead members, but exclude 
 
 Scene entities, projectiles, drops, damage events, companion state and DPS history are temporary. Scene completion clears hostiles while leaving collectible rewards and fixed return portals. Returning to the village restores HP and existing Bear health and clears pending resurrection.
 
+## Dimension variants
+
+`SceneState.dimension` and transient `Player.dimension` select forest, swamp or
+desert while preserving the `Forest` command and `forest` combat-area family.
+Missing dimension means forest. Server entry sets player dimension and return
+clears it; it is excluded from character progress. Scene projection and Colyseus
+headers carry the selected ID through reconnect and late entry.
+
+The bundled `dimensions` mod registers the typed dimension setting, resources,
+enemies and bosses after base content. Catalog validation checks dimensions,
+positive modifiers and all enemy/boss/resource references. `tickSpawns` selects
+only the current dimension's enemies and boss; it applies dimension HP before
+party scaling. `moveEnemies` and `tickEnemyCombat` apply runtime modifiers
+without mutating base definitions. Optional ground and volley skill definitions
+use the existing enemy attack state; ground markers lock at windup, volleys
+share a bounded projectile path extracted into `enemy-projectiles.ts`.
+
+`hitEnemy` passes the dimension rarity factor to the context-bound item roller.
+Merchant rolls omit it. Rarity increases stretch only non-Common intervals;
+random draw count and base forest outcomes remain compatible.
+
+Gathering derives prefixed node IDs and registered resource drops from the
+server-owned player dimension; clients cannot supply item rewards. Geometry,
+trunk positions and movement collision remain shared across variants. Client
+art dispatch selects generated terrain, intact/depleted scenery, enemy action
+frames and inventory/trade icons. Weather uses bounded native Pixi drawing
+commands, with particles and fog independently controlled by existing settings.
+
 ## Verification
 
 Talent casts receive server-owned world players. Shared healing selection in

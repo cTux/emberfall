@@ -4,7 +4,10 @@
 
 New dropped gear and merchant-generated gear receive one server-owned rarity roll:
 Legendary 0.01%, Epic 0.1%, Rare 1%, Uncommon 10%, Common the remaining 88.89%.
-Existing item drop gates/counts remain independent. All four weapons join the loot
+Existing item drop gates/counts remain independent. Forest uses the base rarity
+intervals; Swamp multiplies every non-Common interval by 1.3 and Desert by 1.6,
+with Common receiving the remainder. This dimension modifier applies to enemy
+equipment drops only; merchant gear retains the base distribution. All four weapons join the loot
 pool using their existing definitions and dedicated artwork. Resources and consumables
 are Common and do not roll gear stats. Existing items retain their intrinsic stats,
 default to Common, and never receive retroactive rolls.

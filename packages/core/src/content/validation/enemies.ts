@@ -27,15 +27,18 @@ export function validateEnemies(context: ValidationContext) {
     check(nonnegative(enemy.damage), 'enemies', enemy.id, 'invalid damage');
   }
 
-  let spawnChance = 0;
+  const spawnChances = new Map<string, number>();
 
   for (const spawn of r.spawnRules.values()) {
     reference('spawnRules', spawn.id, 'enemies', spawn.enemy);
-    spawnChance += spawn.chance;
+    const dimension = spawn.dimension ?? 'forest';
+    spawnChances.set(dimension, (spawnChances.get(dimension) ?? 0) + spawn.chance);
   }
 
   check(
-    spawnChance <= 1,
+    [...spawnChances.values()].every((chance) => {
+      return chance <= 1;
+    }),
     'spawnRules',
     r.spawnRules.values()[0]?.id ?? '',
     'combined spawn chances exceed 1',

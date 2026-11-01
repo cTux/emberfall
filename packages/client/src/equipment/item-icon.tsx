@@ -1,3 +1,5 @@
+import { DimensionItemIcon } from './dimension-item-icon';
+import { DIMENSION_ITEM_ART } from '../dimension-art';
 import { useEffect, useRef } from 'react';
 import {
   itemDefinition,
@@ -47,6 +49,10 @@ function PlantIcon({ variant }: { variant: number }) {
 }
 
 export function itemIcon(itemId: string) {
+  if (Object.hasOwn(DIMENSION_ITEM_ART, itemId)) {
+    return <DimensionItemIcon itemId={itemId} />;
+  }
+
   const art = itemArtName(itemId);
 
   if (art) {

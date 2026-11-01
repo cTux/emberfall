@@ -81,8 +81,9 @@ export const worldsChapter = {
       </p>
       <h4>Depart together</h4>
       <p>
-        A portal creates a Forest / Easy scene on the server. Vote inside the portal window.
-        Everyone must be ready. Retract your vote to cancel the five-second countdown.
+        The Portal offers Forest, Swamp and Desert with Easy, Medium or Hard difficulty. Swamp has
+        1.2× enemy stats and 1.3× loot rarity; Desert has 1.4× and 1.6×. Vote inside the portal
+        window. Everyone must be ready. Retract your vote to cancel the five-second countdown.
       </p>
       <h4>Join & return</h4>
       <p>

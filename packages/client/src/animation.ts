@@ -62,6 +62,15 @@ export function enemyFrame(
   return actorFrame(now, moving, alive);
 }
 
+/** Replicated cooldown deadlines include the dimension's attack-speed factor. */
+export function enemyReleasedAt(
+  cooldownUntil: number | undefined,
+  cooldownMs: number,
+  speed: number,
+) {
+  return (cooldownUntil ?? -Infinity) - cooldownMs / speed;
+}
+
 /** Player-only six-pose gait; action rows stay compatible with the enemy atlas. */
 const playerWalkRows = [1, 2, 3, 4, 8, 9];
 export function playerFrame(

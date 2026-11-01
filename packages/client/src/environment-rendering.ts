@@ -1,3 +1,5 @@
+import type { DimensionId } from '@emberfall/common';
+import { drawDimensionWeather } from './dimension-weather';
 import type { DrawingContext } from './rendering/drawing-context';
 import type { GraphicsSettings } from './graphics';
 import { drawParticles, drawAtmosphere, drawVignette } from './effects';
@@ -9,8 +11,19 @@ export function drawEnvironment(
   now: number,
   quality: GraphicsSettings,
   daylight: number,
+  dimension: DimensionId = 'forest',
 ) {
   const { x, y, width, height } = viewport;
+
+  if (dimension !== 'forest') {
+    drawDimensionWeather(ctx, viewport, now, quality, dimension);
+
+    if (quality.vignette) {
+      drawVignette(ctx, x, y, width, height);
+    }
+
+    return;
+  }
 
   if (quality.particles) {
     drawParticles(ctx, x, y, width, height, now);

@@ -1,3 +1,5 @@
+import type { DimensionId } from '@emberfall/common';
+import { dimensionArt } from './dimension-art';
 import type { DrawingContext } from './rendering/drawing-context';
 import { environmentArt, terrainArt, terrainTile } from './art';
 
@@ -8,8 +10,10 @@ const GROUND_SCATTER = { seed: 512, samples: 700, colorPeriod: 3, terrainColumn:
 const LCG = { multiplier: 1664525, increment: 1013904223, range: 4294967296 } as const;
 
 export function createForestGround() {
-  let groundReady = false;
-  const ground = document.createElement('canvas');
+  let groundReady: DimensionId | undefined;
+  const ground = document.createElement('canvas') as HTMLCanvasElement & {
+    textureRevision?: number;
+  };
   ground.width = ground.height = FOREST_VIEW.tileSize;
   const g = ground.getContext('2d')!;
   g.fillStyle = '#22392d';
@@ -26,16 +30,22 @@ export function createForestGround() {
     g.fillRect(random() * 320, random() * 320, 2 + random() * 6, 1 + random() * 3);
   }
 
-  return () => {
+  return (dimension: DimensionId = 'forest') => {
+    const source = dimension === 'forest' ? terrainArt : dimensionArt(dimension, 'terrain');
+
     if (
       environmentArt.naturalWidth &&
-      terrainArt.complete &&
-      terrainArt.naturalWidth &&
-      !groundReady
+      source.complete &&
+      source.naturalWidth &&
+      groundReady !== dimension
     ) {
-      groundReady = true;
-      g.fillStyle = g.createPattern(terrainTile(GROUND_SCATTER.terrainColumn), 'repeat')!;
+      groundReady = dimension;
+      g.fillStyle = g.createPattern(
+        terrainTile(GROUND_SCATTER.terrainColumn, FOREST_VIEW.tileSize, source),
+        'repeat',
+      )!;
       g.fillRect(0, 0, 320, 320);
+      ground.textureRevision = (ground.textureRevision ?? 0) + 1;
     }
 
     return ground;

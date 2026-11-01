@@ -2,6 +2,7 @@ import type { DrawingContext } from './rendering/drawing-context';
 import type { ResourceNode } from '@emberfall/core';
 import type { ResourceState } from '@emberfall/common';
 import { environmentArt, gatheredArt, plantArt, loadNativeArt } from './art';
+import { dimensionScenery } from './dimension-scenery';
 import { makeMask } from './lighting';
 import type { Scenery } from './village';
 import { drawWorldBar } from './world-bar';
@@ -25,6 +26,10 @@ const gatheredPlants = PLANT_KINDS.map((id) => {
 export const resourceStateArt = [stoneArt, stoneGatheredArt, ...gatheredPlants];
 const frames = new Map<string, { sprite: HTMLCanvasElement; mask: HTMLCanvasElement }>();
 export function resourceScenery(node: ResourceNode, state?: ResourceState): Scenery {
+  if (node.dimension && node.dimension !== 'forest') {
+    return dimensionScenery(node, state);
+  }
+
   const depleted = state?.remaining === 0;
   const dedicated =
     node.kind === 'stone' || (depleted && node.kind === 'plant' && node.variant !== undefined);

@@ -1,8 +1,9 @@
+import { dimensionDefinition } from '../dimensions.ts';
 import { COLLISION } from '../definitions/collision.ts';
 
 import { game, type createGame } from '../game.ts';
 import { TRANSIENT_EFFECTS } from '../definitions/effects/transient.ts';
-import { ENEMY_RULES, BOSS_DEFINITIONS } from '../definitions/entities/enemies.ts';
+import { ENEMY_RULES } from '../definitions/entities/enemies.ts';
 import { FOREST_ENCOUNTER } from '../definitions/encounters/forest.ts';
 import { appendSceneEntities, wrap } from '@emberfall/common';
 import { FOREST, forestDistance, forestTrees } from '../scene.ts';
@@ -25,6 +26,8 @@ export function tickSpawns(
   context: Game = game,
 ) {
   scene.spawns ??= [];
+  const dimension = dimensionDefinition(scene.dimension, context);
+  const boss = context.registries.bosses.require(dimension.boss);
   const spawnBoss = now >= scene.endsAt! && scene.bossId === undefined;
   scene.damage = scene.damage.filter((d) => {
     return now - d.at < TRANSIENT_EFFECTS.damage.lifetimeMs;
@@ -78,17 +81,19 @@ export function tickSpawns(
       const kind = spawnBoss ? EnemyType.Boss : spawnEnemyType(context.random);
       const id = ++scene.sequence;
       const archetype = spawnBoss
-        ? BOSS_DEFINITIONS[FOREST_ENCOUNTER.boss].archetype
-        : spawnArchetype(context.random(), scene.spawnCount, context);
+        ? boss.archetype
+        : spawnArchetype(context.random(), scene.spawnCount, context, dimension.id);
       const hitpoints =
-        enemyMaxHealth({ kind, archetype }, scene.difficulty, context) * healthScale;
+        enemyMaxHealth({ kind, archetype }, scene.difficulty, context) *
+        healthScale *
+        dimension.enemyMultiplier;
       appendSceneEntities(scene, 'spawns', {
         id,
         ...position,
         hitpoints,
         maxHitpoints: hitpoints,
         kind,
-        name: spawnBoss ? BOSS_DEFINITIONS[FOREST_ENCOUNTER.boss].name : undefined,
+        name: spawnBoss ? boss.name : undefined,
         archetype,
         angle: 0,
         warnedAt: now,

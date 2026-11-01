@@ -2,6 +2,7 @@ import type { CharacterProgress } from './progress.ts';
 import type { ClassId } from './content.ts';
 
 export interface Player extends CharacterProgress {
+  dimension?: import('./dimension.ts').DimensionId;
   partyId?: string;
   partyLeaderId?: string;
   homeRunId?: string;

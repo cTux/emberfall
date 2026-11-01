@@ -10,6 +10,7 @@ export function returnToLobby(world: SceneWorld, player: Player) {
   }
 
   player.scene = undefined;
+  delete player.dimension;
   player.x = VILLAGE_DEFINITION.returnSpawn.x;
   player.y = VILLAGE_DEFINITION.returnSpawn.y;
   player.hitpoints = player.maxHitpoints;
@@ -34,6 +35,7 @@ export function enterScene(world: SceneWorld, player: Player, offset = 0) {
     player.id,
   );
   player.scene = 'forest';
+  player.dimension = world.scene?.dimension ?? 'forest';
 
   if (world.runKey) {
     player.runId = world.runKey;

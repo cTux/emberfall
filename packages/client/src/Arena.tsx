@@ -1,4 +1,4 @@
-import { ARENA } from '@emberfall/core';
+import { ARENA, dimensionDefinition } from '@emberfall/core';
 import { DamageMeter } from './DamageMeter';
 import { PerformanceGraph } from './PerformanceGraph';
 import { useArenaRenderer } from './useArenaRenderer';
@@ -19,7 +19,7 @@ export function Arena(props: ArenaProps) {
             ? world.players.find((p) => {
                 return p.id === playerId;
               })?.scene === 'forest'
-              ? 'Forest combat scene.'
+              ? `${dimensionDefinition(world.scene?.dimension).name} combat scene.`
               : 'Shared village. Move with WASD or arrow keys.'
             : 'Forest preview'
         }

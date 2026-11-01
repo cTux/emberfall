@@ -53,8 +53,13 @@ export const pickupArt = loadArt('pickups', ...ATLAS_LAYOUT.pickups);
 export const terrainArt = new Image();
 terrainArt.src = artUrl('terrain');
 const terrainTiles = new Map<string, HTMLCanvasElement>();
-export function terrainTile(column: number, size: number = TERRAIN_LAYOUT.tileSize) {
-  const key = `${column}:${size}`;
+export function terrainTile(
+  column: number,
+  size: number = TERRAIN_LAYOUT.tileSize,
+  source: HTMLImageElement = terrainArt,
+) {
+  const terrainArt = source;
+  const key = `${source.src}:${column}:${size}`;
   const cached = terrainTiles.get(key);
 
   if (cached) {

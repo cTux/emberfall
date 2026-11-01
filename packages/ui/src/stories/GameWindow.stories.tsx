@@ -6,7 +6,7 @@ const meta = {
   component: GameWindow,
   tags: ['autodocs'],
   args: {
-    title: 'Forest portal',
+    title: 'Portal',
     open: true,
     modal: false,
     children: 'Drag this title. The host owns open state.',

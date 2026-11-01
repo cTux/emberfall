@@ -161,6 +161,7 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('createScene'),
     scene: z.literal('Forest'),
+    dimension: z.enum(['forest', 'swamp', 'desert']).optional(),
     difficulty: z.enum(Difficulty),
   }),
   z.object({ type: z.literal('ready'), ready: z.boolean() }),

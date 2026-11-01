@@ -59,7 +59,7 @@ export function drawNavigation(ctx: DrawingContext, world: WorldState, id: strin
     });
 
   if (me.scene !== 'forest') {
-    targets.push({ ...LOBBY_PORTAL, name: 'Forest portal', color: '#70d8ff' });
+    targets.push({ ...LOBBY_PORTAL, name: 'Portal', color: '#70d8ff' });
   }
 
   if (me.scene === 'forest') {

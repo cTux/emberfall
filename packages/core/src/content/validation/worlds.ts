@@ -87,6 +87,28 @@ export function validateWorlds(context: ValidationContext) {
     r.settings.require(id);
   }
 
+  const dimensions = r.settings.get('dimensions')?.value as
+    | Record<string, import('../../mods/dimensions/definitions.ts').DimensionDefinition>
+    | undefined;
+
+  for (const dimension of Object.values(dimensions ?? {})) {
+    reference('settings', 'dimensions', 'bosses', dimension.boss);
+
+    for (const enemy of dimension.enemies) {
+      reference('settings', 'dimensions', 'enemies', enemy);
+    }
+
+    for (const resource of Object.values(dimension.resources)) {
+      reference('settings', 'dimensions', 'items', resource);
+      check(
+        r.items.get(resource)?.kind === 'resource',
+        'settings',
+        'dimensions',
+        'dimension drops must be resources',
+      );
+    }
+  }
+
   const runtime = r.settings.require('runtime').value as Record<string, number>;
 
   for (const [key, value] of Object.entries(runtime)) {

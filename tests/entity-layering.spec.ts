@@ -73,7 +73,7 @@ test('dummies, remote players and forest enemies layer around the local player',
   await page.setViewportSize({ width: 960, height: 640 });
   player.x = LOBBY_PORTAL.x - 35;
   player.y = LOBBY_PORTAL.y + 9;
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
+  const portal = page.getByRole('dialog', { name: 'Portal' });
   await expect(async () => {
     await page.mouse.move(515, 281);
     await expect(page.locator('canvas')).toHaveAttribute('data-interaction-target', 'portal');

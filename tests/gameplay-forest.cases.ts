@@ -21,10 +21,10 @@ test('bear chases and defeats a forest boss after portal entry, opening the retu
   player.attackAt = Date.now() + 60000;
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
+  const portal = page.getByRole('dialog', { name: 'Portal' });
   await expect(
     page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
-  ).toHaveAttribute('data-interaction-prompt', 'Forest portal', { timeout: 15000 });
+  ).toHaveAttribute('data-interaction-prompt', 'Portal', { timeout: 15000 });
   await page.keyboard.press('e');
   await expect(portal).toBeVisible();
   await portal.getByRole('button', { name: 'Create', exact: true }).click();
@@ -87,10 +87,10 @@ for (const [difficulty, multiplier] of [
     player.autoAttack = false;
     player.x = LOBBY_PORTAL.x;
     player.y = LOBBY_PORTAL.y - 15;
-    const portal = page.getByRole('dialog', { name: 'Forest portal' });
+    const portal = page.getByRole('dialog', { name: 'Portal' });
     await expect(
       page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
-    ).toHaveAttribute('data-interaction-prompt', 'Forest portal', { timeout: 15000 });
+    ).toHaveAttribute('data-interaction-prompt', 'Portal', { timeout: 15000 });
     await page.keyboard.press('e');
     await expect(portal).toBeVisible();
     await expect(portal.getByRole('combobox', { name: 'Difficulty' })).toHaveText('Easy');
@@ -120,7 +120,7 @@ for (const [difficulty, multiplier] of [
     player.y = LOBBY_PORTAL.y - 15;
     await expect(
       page.getByLabel('Shared village. Move with WASD or arrow keys.', { exact: true }),
-    ).toHaveAttribute('data-interaction-prompt', 'Forest portal', { timeout: 15000 });
+    ).toHaveAttribute('data-interaction-prompt', 'Portal', { timeout: 15000 });
     await page.keyboard.press('e');
     await expect(portal.getByRole('button', { name: 'Regenerate scene' })).toBeVisible();
     await portal.getByRole('button', { name: 'Regenerate scene' }).click();

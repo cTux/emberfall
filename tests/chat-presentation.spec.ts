@@ -137,7 +137,7 @@ test('fog is opt-in and player messages sit above health in village and forest',
   await page.screenshot({ path: 'test-results/new-chat-village-wrapped.png' });
   player.x = LOBBY_PORTAL.x;
   player.y = LOBBY_PORTAL.y - 15;
-  const portal = page.getByRole('dialog', { name: 'Forest portal' });
+  const portal = page.getByRole('dialog', { name: 'Portal' });
   await expect(async () => {
     await page.keyboard.press('e');
     await expect(portal).toBeVisible();

@@ -27,3 +27,6 @@ An exhausted node restores after one hour of wall time; partial trees also reset
 one hour after their first gather. Resource state is shared within the running
 world, including forest re-entry, and resets when that world is disposed.
 Inventory rejection leaves the resource and all rewards unchanged.
+Swamp and Desert use dedicated resources and drops described in
+[SCENE-07](forest.md#scene-07--dimensions); the gathering clock, capacity validation
+and restore cadence are shared.

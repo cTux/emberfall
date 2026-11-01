@@ -84,10 +84,7 @@ test('players opt into parties with nearby E and chat, vote together, join late 
       .toBeUndefined();
     a.x = LOBBY_PORTAL.x;
     a.y = LOBBY_PORTAL.y - 15;
-    await expect(page.locator('canvas')).toHaveAttribute(
-      'data-interaction-prompt',
-      'Forest portal',
-    );
+    await expect(page.locator('canvas')).toHaveAttribute('data-interaction-prompt', 'Portal');
     await page.keyboard.press('e');
     await page.getByRole('button', { name: 'Create', exact: true }).click();
     await page.getByRole('button', { name: "I'm ready", exact: true }).click();
@@ -112,10 +109,7 @@ test('players opt into parties with nearby E and chat, vote together, join late 
     expect(b.scene).toBeUndefined();
     b.x = LOBBY_PORTAL.x;
     b.y = LOBBY_PORTAL.y - 15;
-    await expect(other.locator('canvas')).toHaveAttribute(
-      'data-interaction-prompt',
-      'Forest portal',
-    );
+    await expect(other.locator('canvas')).toHaveAttribute('data-interaction-prompt', 'Portal');
     await other.keyboard.press('e');
     await other.getByRole('button', { name: 'Join scene', exact: true }).click();
     await expect

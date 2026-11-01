@@ -30,6 +30,7 @@ export * from './equipment.ts';
 export * from './inventory.ts';
 export * from './world.ts';
 export * from './scene.ts';
+export * from './dimensions.ts';
 export * from './validation.ts';
 export * from './definitions/entities/players.ts';
 export * from './game.ts';
