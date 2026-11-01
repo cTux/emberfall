@@ -21,7 +21,7 @@ const tls =
         ),
       };
 const app = await createGameServer(root, savePath, tls, steam);
-const port = Number(process.env.BASE_PORT ?? process.env.PORT_NEW ?? 3003);
+const port = Number(process.env.BASE_PORT ?? process.env.PORT_NEW ?? 4003);
 await app.listen(port, process.env.HOST ?? '0.0.0.0');
 serverLog.info('Server listening', {
   url: `${tls ? 'https' : 'http'}://localhost:${port}`,

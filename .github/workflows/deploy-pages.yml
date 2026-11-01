@@ -46,7 +46,7 @@ jobs:
         run: pnpm --filter @emberfall/client build
         env:
           BASE_API: ${{ vars.BASE_API || '176.36.232.74' }}
-          BASE_PORT: ${{ vars.BASE_PORT || '3003' }}
+          BASE_PORT: ${{ vars.BASE_PORT || '4003' }}
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
       - uses: actions/upload-pages-artifact@v3
         with:

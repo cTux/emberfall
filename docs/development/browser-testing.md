@@ -17,7 +17,7 @@ Assertion deadlines remain unchanged; local scenarios retain the 90-second budge
 The independent runtime uses `pnpm dev`, `pnpm build`, and `pnpm start`.
 `pnpm start` sets up HTTPS and builds the runtime packages before launching,
 so a fresh checkout needs no separate build step after installing dependencies.
-Its development client is on 5174 and its server on 3003. Use `PORT_NEW` and
+Its development client is on 5174 and its server on 4003. Use `PORT_NEW` and
 `SAVE_PATH_NEW` for overrides; these names are retained for deployment compatibility.
 `pnpm typecheck` and `pnpm test` validate the workspace. Build before
 `pnpm test:browser`; those tests own an in-memory server per test on 3013

@@ -70,7 +70,7 @@ export default defineConfig(({ command, mode }) => {
   }
 
   const cert = readFileSync(new URL('../../.certs/localhost.pem', import.meta.url));
-  const serverPort = env.BASE_PORT ?? env.PORT_NEW ?? '3003';
+  const serverPort = env.BASE_PORT ?? env.PORT_NEW ?? '4003';
 
   return {
     ...shared,
