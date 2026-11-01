@@ -1,5 +1,11 @@
 import { GAME_FONTS, type GameFont } from '@emberfall/ui/fonts';
 
+// Bound untrusted saved auto-cast preferences to 128 IDs of 128 characters, retaining the existing storage budget.
+const SAVED_AUTO_CAST_LIMITS = { count: 128, idLength: 128 };
+
+// These three sizes correspond to the shipped cursor assets and persisted settings union.
+const CURSOR_SIZES = [32, 48, 64];
+
 export interface Preferences {
   font: GameFont;
   customCursor: boolean;
@@ -56,9 +62,9 @@ export function loadPreferences(): Preferences {
     if (Array.isArray(saved?.autoCastAbilities)) {
       result.autoCastAbilities = saved.autoCastAbilities
         .filter((id: unknown) => {
-          return typeof id === 'string' && id.length <= 128;
+          return typeof id === 'string' && id.length <= SAVED_AUTO_CAST_LIMITS.idLength;
         })
-        .slice(0, 128);
+        .slice(0, SAVED_AUTO_CAST_LIMITS.count);
     }
 
     if (typeof saved?.font === 'string' && Object.hasOwn(GAME_FONTS, saved.font)) {
@@ -89,7 +95,7 @@ export function loadPreferences(): Preferences {
       }
     }
 
-    if ([32, 48, 64].includes(saved?.cursorSize)) {
+    if (CURSOR_SIZES.includes(saved?.cursorSize)) {
       result.cursorSize = saved.cursorSize;
     }
 

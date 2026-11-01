@@ -1,12 +1,14 @@
+import { PERCENT, appendSceneEntities } from '@emberfall/common';
 import { game, type createGame } from '../game.ts';
 import type { Enemy, Player, SceneState } from '@emberfall/common';
-import { appendSceneEntities } from '@emberfall/common';
 import { characterStats } from '../equipment.ts';
 import { hitEnemy } from '../combat/damage.ts';
 import { isChanced } from '../utils/isChanced.ts';
 import { state } from './state.ts';
 
 type Game = ReturnType<typeof createGame>;
+// Retain the one-second talent flash so visual effects outlast a single simulation tick.
+const TALENT_VISUAL_MS = 1000;
 export function talentVisual(
   scene: SceneState,
   player: Player,
@@ -22,7 +24,7 @@ export function talentVisual(
     at: now,
     talentClass: player.classId ?? 'warrior',
     talentColumn: column,
-    durationMs: 1000,
+    durationMs: TALENT_VISUAL_MS,
   });
 }
 
@@ -45,7 +47,7 @@ export function strike(
   context: Game = game,
 ) {
   const stats = state(player, scene).stats ?? characterStats(player);
-  const critical = isChanced(stats.criticalChance * 100, context.random);
+  const critical = isChanced(stats.criticalChance * PERCENT, context.random);
   hitEnemy(
     scene,
     enemy,

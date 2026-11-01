@@ -1,7 +1,11 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "oxc", "unicorn", "react", "jsx-a11y"],
-  "jsPlugins": ["@stylistic/eslint-plugin", "./scripts/dispatch-lint.mjs"],
+  "jsPlugins": [
+    "@stylistic/eslint-plugin",
+    "./scripts/dispatch-lint.mjs",
+    "./scripts/magic-values-lint.mjs"
+  ],
   "categories": {
     "correctness": "error"
   },
@@ -11,6 +15,7 @@
     "reportUnusedDisableDirectives": "error"
   },
   "rules": {
+    "emberfall-values/named-values": "error",
     "emberfall/prefer-dispatch": "error",
     "@stylistic/padding-line-between-statements": [
       "error",

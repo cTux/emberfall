@@ -1,3 +1,12 @@
+// One second bounds invitation spam independently of invitation expiration.
+const INVITATION_COOLDOWN_MS = 1000;
+// Preserve the four-player cooperative party limit exposed by the existing error messages.
+const MAX_PARTY_MEMBERS = 4;
+// Give invitations the existing thirty-second response window.
+const PARTY_INVITATION_MS = 30_000;
+// A party needs two members; dissolve singleton parties.
+const MIN_PARTY_MEMBERS = 2;
+
 import type { Party, PartyRequest, PartyWorld } from './party-models.ts';
 import { interactParty, partyCommand } from './party-interactions.ts';
 import { randomUUID } from 'node:crypto';
@@ -145,11 +154,11 @@ export class Parties {
 
     const partyId = from.partyId ?? to.partyId;
 
-    if (partyId && this.parties.get(partyId)!.members.length >= 4) {
+    if (partyId && this.parties.get(partyId)!.members.length >= MAX_PARTY_MEMBERS) {
       throw new Error('Party is full (4 players).');
     }
 
-    if (now - (this.sentAt.get(from.id) ?? -Infinity) < 1000) {
+    if (now - (this.sentAt.get(from.id) ?? -Infinity) < INVITATION_COOLDOWN_MS) {
       throw new Error('Please wait before requesting again.');
     }
 
@@ -168,7 +177,7 @@ export class Parties {
       partyId,
       fromPartyId: from.partyId,
       toPartyId: to.partyId,
-      expiresAt: now + 30_000,
+      expiresAt: now + PARTY_INVITATION_MS,
     });
     this.announce(
       `${from.name} ${to.partyId ? 'requested to join' : 'invited'} ${to.name}${to.partyId ? "'s party" : ' to a party'}. Use /accept @${from.name}.`,
@@ -189,7 +198,7 @@ export class Parties {
     const from = this.world.players.get(r.fromId)!;
     let party = r.partyId ? this.parties.get(r.partyId) : undefined;
 
-    if (party && party.members.length >= 4) {
+    if (party && party.members.length >= MAX_PARTY_MEMBERS) {
       throw new Error('Party is full (4 players).');
     }
 
@@ -272,7 +281,7 @@ export class Parties {
       }
     }
 
-    if (party.members.length < 2) {
+    if (party.members.length < MIN_PARTY_MEMBERS) {
       this.parties.delete(party.id);
     }
 

@@ -13,4 +13,6 @@ export { SCENE_COLLECTIONS, appendSceneEntities } from './entities.ts';
 export type { SceneCollection, SceneEntity } from './entities.ts';
 
 export * from './geometry.ts';
+export * from './units.ts';
+export { CONTRACT_LIMITS } from './limits.ts';
 export type { Tree } from './world.ts';

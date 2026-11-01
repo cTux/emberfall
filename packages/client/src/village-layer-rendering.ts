@@ -1,3 +1,5 @@
+import { TRAINING_TARGET_ART, WARDROBE_ANIMATION } from './village-art-layout.ts';
+
 import type { VillageLayer } from './village-layers';
 import type { DamageEvent } from '@emberfall/common';
 import type { InteractionTarget } from './interaction-targets';
@@ -17,6 +19,9 @@ import { drawNpcWork } from './npc-work';
 import { drawChimneySmoke } from './ambient-art';
 import { resourceState } from '@emberfall/core';
 import { drawResourceHealth } from './gathering';
+
+// A nine-unit gap keeps NPC names just above the sprite instead of touching the head.
+const NPC_NAME_GAP = 9;
 
 type LayerFrame = VillageActorFrame & {
   portal: { x: number; y: number };
@@ -45,17 +50,35 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
     const dummy = layer.dummy;
 
     if (environmentArt.naturalWidth) {
-      drawArt(ctx, environmentArt, 1, 2, dummy.x - 24, dummy.y - 30, 48, 48, 128);
+      drawArt(
+        ctx,
+        environmentArt,
+        TRAINING_TARGET_ART.column,
+        TRAINING_TARGET_ART.row,
+        dummy.x - TRAINING_TARGET_ART.left,
+        dummy.y - TRAINING_TARGET_ART.top,
+        TRAINING_TARGET_ART.width,
+        TRAINING_TARGET_ART.height,
+        TRAINING_TARGET_ART.cell,
+      );
       const hit = damageByTarget.get(`enemy:${dummy.id}`);
 
       if (hit) {
         drawTargetHit(
           ctx,
-          spriteMask(environmentArt, 1, 2, false, 128, false, 128)!,
-          dummy.x - 24,
-          dummy.y - 30,
-          48,
-          48,
+          spriteMask(
+            environmentArt,
+            TRAINING_TARGET_ART.column,
+            TRAINING_TARGET_ART.row,
+            false,
+            TRAINING_TARGET_ART.cell,
+            false,
+            TRAINING_TARGET_ART.cell,
+          )!,
+          dummy.x - TRAINING_TARGET_ART.left,
+          dummy.y - TRAINING_TARGET_ART.top,
+          TRAINING_TARGET_ART.width,
+          TRAINING_TARGET_ART.width,
           serverTime - hit.at,
         );
       }
@@ -67,15 +90,21 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
     if (!preferences.hideHealthBarsInTown) {
       drawWorldBar(
         ctx,
-        dummy.x - 20,
-        dummy.y - 41,
-        40,
+        dummy.x - TRAINING_TARGET_ART.barLeft,
+        dummy.y - TRAINING_TARGET_ART.barTop,
+        TRAINING_TARGET_ART.barWidth,
         dummy.hitpoints / dummy.maxHitpoints!,
         '#df7765',
       );
     }
 
-    drawDebuffs(ctx, dummy, dummy.x - 20, dummy.y - 52, serverTime);
+    drawDebuffs(
+      ctx,
+      dummy,
+      dummy.x - TRAINING_TARGET_ART.barLeft,
+      dummy.y - TRAINING_TARGET_ART.debuffsTop,
+      serverTime,
+    );
 
     return;
   }
@@ -148,13 +177,18 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
       drawArt(
         ctx,
         wardrobeArt,
-        open ? Math.min(3, Math.floor((now - wardrobeOpenedAt) / 100)) : 0,
+        open
+          ? Math.min(
+              WARDROBE_ANIMATION.lastFrame,
+              Math.floor((now - wardrobeOpenedAt) / WARDROBE_ANIMATION.frameMs),
+            )
+          : 0,
         0,
         object.x - object.width / 2,
         object.y - object.height,
         object.width,
         object.height,
-        128,
+        WARDROBE_ANIMATION.cell,
       );
     } else if (object.id.startsWith('torch:')) {
       drawTorchFire(ctx, object.x, object.y, now, quality.particles, quality.bloom);
@@ -205,7 +239,7 @@ export function drawVillageLayer(ctx: WorldDrawingContext, layer: VillageLayer, 
       drawCharacterName(
         ctx,
         object.x,
-        object.y - object.height - 9,
+        object.y - object.height - NPC_NAME_GAP,
         object.name,
         object.npc?.silenced ? '#ff8794' : undefined,
       );

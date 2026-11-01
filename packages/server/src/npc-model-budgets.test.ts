@@ -64,7 +64,9 @@ test('deadline bounds loading and body reads and permits recovery after cooldown
         return answer();
       }
 
-      const keepAlive = setTimeout(() => {}, 500);
+      // Keep the event loop alive longer than the deliberately stalled request budget.
+      const STALLED_REQUEST_KEEPALIVE_MS = 500;
+      const keepAlive = setTimeout(() => {}, STALLED_REQUEST_KEEPALIVE_MS);
 
       if (stallBody) {
         return new Response(

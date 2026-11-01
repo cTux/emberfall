@@ -1,3 +1,5 @@
+// Allow the confirmed chat snapshot and subsequent canvas render to settle.
+const CHAT_RENDER_SETTLE_MS = 300;
 import { test, expect } from './fixtures';
 import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
@@ -125,7 +127,7 @@ test('fog is opt-in and player messages sit above health in village and forest',
     await page.keyboard.press('Escape');
     await page.mouse.move(700, 400);
     // Allow the confirmed snapshot and subsequent render to reach the canvas.
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(CHAT_RENDER_SETTLE_MS);
   };
 
   await send('hello');

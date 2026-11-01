@@ -1,4 +1,5 @@
 import type { ValidationContext } from './context.ts';
+import { PERCENT } from '@emberfall/common';
 
 export function validateBalance(context: ValidationContext) {
   const { r, check, positive, nonnegative } = context;
@@ -8,7 +9,7 @@ export function validateBalance(context: ValidationContext) {
       ['normal', 'elite', 'boss'].includes(type.id) &&
         positive(type.multiplier) &&
         nonnegative(type.dropChance) &&
-        type.dropChance <= 100 &&
+        type.dropChance <= PERCENT &&
         (typeof type.dropCount === 'number'
           ? nonnegative(type.dropCount)
           : nonnegative(type.dropCount.min) &&

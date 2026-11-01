@@ -1,11 +1,17 @@
 import { z } from 'zod';
+import { CONTRACT_LIMITS } from './limits.ts';
 export const itemRollSchema = z.object({
-  rarity: z.string().min(1).max(32).optional(),
-  stats: z.record(z.string().min(1).max(64), z.number().finite().nonnegative()).optional(),
+  rarity: z.string().min(1).max(CONTRACT_LIMITS.rarityIdCharacters).optional(),
+  stats: z
+    .record(
+      z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
+      z.number().finite().nonnegative(),
+    )
+    .optional(),
 });
 export const inventoryItemSchema = itemRollSchema.extend({
-  id: z.string().min(1).max(64),
-  itemId: z.string().min(1).max(128),
+  id: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
+  itemId: z.string().min(1).max(CONTRACT_LIMITS.contentIdCharacters),
   quantity: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
 });
 export const backpackSchema = z.array(inventoryItemSchema).refine((items) => {
@@ -18,7 +24,9 @@ export const backpackSchema = z.array(inventoryItemSchema).refine((items) => {
   );
 }, 'Duplicate item identity');
 export type BackpackItem = z.infer<typeof backpackSchema>[number];
+// The existing backpack grid has twenty cells; keep inventory and buyback capacity aligned.
 export const INVENTORY_SLOTS = 20;
+// A storage tab holds twice the backpack capacity in the existing save and UI layout.
 export const STORAGE_SLOTS = 40;
 export const storageNameSchema = z
   .string()
@@ -34,7 +42,7 @@ export const storagesSchema = z
       }),
     }),
   )
-  .length(3)
+  .length(CONTRACT_LIMITS.storageTabs)
   .refine((storages) => {
     const ids = storages.flatMap((storage) => {
       return storage.items.map((item) => {
@@ -45,7 +53,7 @@ export const storagesSchema = z
     return new Set(ids).size === ids.length;
   }, 'Duplicate stored item identity');
 export function freshStorages(): z.infer<typeof storagesSchema> {
-  return Array.from({ length: 3 }, (_, index) => {
+  return Array.from({ length: CONTRACT_LIMITS.storageTabs }, (_, index) => {
     return { name: `Storage ${index + 1}`, items: [] };
   });
 }

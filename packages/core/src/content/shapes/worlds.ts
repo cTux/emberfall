@@ -1,6 +1,15 @@
 import { z } from 'zod';
 import { id, positive, nonnegative, point, geometry } from './primitives.ts';
 
+// NPCs alternate dialogue topics and route stops, so each optional list needs a pair.
+const MIN_NPC_CHOICES = 2;
+// The shipped workstation atlas contains eight frames, addressed by indexes 0 through 7.
+const MAX_WORKSTATION_ART_INDEX = 7;
+// Existing villages provide two training areas and exactly two jobs per resident.
+const MIN_TRAINING_ZONES = 2;
+// Alternating between two home workstations is the resident lifecycle contract.
+const WORKSTATIONS_PER_RESIDENT = 2;
+
 export const worldShapes = {
   forest: z.object({
     id: z.literal('forest'),
@@ -37,8 +46,8 @@ export const worldShapes = {
           }),
         )
         .optional(),
-      dialogueTopics: z.array(z.string().min(1)).min(2).optional(),
-      npcStops: z.array(point).min(2).optional(),
+      dialogueTopics: z.array(z.string().min(1)).min(MIN_NPC_CHOICES).optional(),
+      npcStops: z.array(point).min(MIN_NPC_CHOICES).optional(),
       workstations: z
         .array(
           point.extend({
@@ -56,7 +65,7 @@ export const worldShapes = {
               'archery',
               'leatherworking',
             ]),
-            art: z.number().int().min(0).max(7),
+            art: z.number().int().min(0).max(MAX_WORKSTATION_ART_INDEX),
             worker: point,
           }),
         )
@@ -71,7 +80,9 @@ export const worldShapes = {
         }),
       ),
       torches: z.array(point),
-      trainingZones: z.array(point.extend({ radius: positive, clearingRadius: positive })).min(2),
+      trainingZones: z
+        .array(point.extend({ radius: positive, clearingRadius: positive }))
+        .min(MIN_TRAINING_ZONES),
       paths: z.array(z.tuple([point, point, point, point])),
       treeSeed: nonnegative.int(),
       treeAttempts: nonnegative.int(),
@@ -116,7 +127,7 @@ export const worldShapes = {
         if (
           village.workstations.filter((station) => {
             return station.npcId === npc.id;
-          }).length !== 2
+          }).length !== WORKSTATIONS_PER_RESIDENT
         ) {
           ctx.addIssue({
             code: 'custom',

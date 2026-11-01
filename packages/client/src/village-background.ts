@@ -16,6 +16,19 @@ import {
   terrainTile,
 } from './art';
 
+// Retain the shipped deterministic grass painting; these LCG parameters map 32-bit state into [0,1).
+const GRASS_RANDOM = { seed: 7319, multiplier: 1664525, increment: 1013904223, range: 4294967296 };
+// Existing patch density and radii fill the clearing without changing the approved background texture.
+const GRASS_PAINT = {
+  patches: 325,
+  minRadius: 35,
+  radiusRange: 110,
+  blades: 36000,
+  bladeWidthRange: 3,
+  brightBladeChance: 0.5,
+  contactShadowScale: 0.3,
+};
+
 const nature = new Image();
 nature.src = clientAsset('/assets/nature.png');
 const floor = new Image();
@@ -112,17 +125,17 @@ export function villageBackground(graphics: GraphicsSettings) {
   }
 
   // A fixed seed keeps the decorative clearing identical for every client.
-  let seed = 7319;
+  let seed: number = GRASS_RANDOM.seed;
   const random = () => {
-    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    seed = (Math.imul(seed, GRASS_RANDOM.multiplier) + GRASS_RANDOM.increment) >>> 0;
 
-    return seed / 4294967296;
+    return seed / GRASS_RANDOM.range;
   };
 
-  for (let i = 0; i < 325; i++) {
+  for (let i = 0; i < GRASS_PAINT.patches; i++) {
     const x = random() * ARENA.width;
     const y = random() * ARENA.height;
-    const radius = 35 + random() * 110;
+    const radius = GRASS_PAINT.minRadius + random() * GRASS_PAINT.radiusRange;
     wrapped(x, y, radius, () => {
       const patch = ctx.createRadialGradient(x, y, 0, x, y, radius);
       patch.addColorStop(0, i % 2 ? '#78905712' : '#0b231c20');
@@ -132,11 +145,11 @@ export function villageBackground(graphics: GraphicsSettings) {
     });
   }
 
-  for (let i = 0; i < 36000; i++) {
-    ctx.fillStyle = random() > 0.5 ? '#80965c12' : '#142b2020';
+  for (let i = 0; i < GRASS_PAINT.blades; i++) {
+    ctx.fillStyle = random() > GRASS_PAINT.brightBladeChance ? '#80965c12' : '#142b2020';
     const x = random() * ARENA.width;
     const y = random() * ARENA.height;
-    const width = 1 + random() * 3;
+    const width = 1 + random() * GRASS_PAINT.bladeWidthRange;
     wrapped(x, y, width, () => {
       return ctx.fillRect(x, y, width, 1);
     });
@@ -153,7 +166,7 @@ export function villageBackground(graphics: GraphicsSettings) {
       if (graphics.ambientOcclusion) {
         ctx.save();
         ctx.translate(object.x, object.y);
-        ctx.scale(1, 0.3);
+        ctx.scale(1, GRASS_PAINT.contactShadowScale);
         const radius = object.width * 0.5;
         const ao = ctx.createRadialGradient(0, 0, 0, 0, 0, radius);
         ao.addColorStop(0, '#07100980');

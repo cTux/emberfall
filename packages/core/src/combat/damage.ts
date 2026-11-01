@@ -1,5 +1,6 @@
+import { PERCENT, appendSceneEntities, wrap } from '@emberfall/common';
+import { COMBAT_TUNING } from './tuning.ts';
 import { game, type createGame } from '../game.ts';
-import { appendSceneEntities, wrap } from '@emberfall/common';
 import type { DebuffKind, Enemy, SceneState, Player, DamageType } from '@emberfall/common';
 import { LOOT_ITEM_IDS } from '../definitions/equipment.ts';
 import { FOREST } from '../scene.ts';
@@ -29,7 +30,7 @@ export function damagePerSecond(player: Player, now: number) {
   }
 
   const recent = (damageHistory.get(player) ?? []).filter((hit) => {
-    return now - hit.at < 5000;
+    return now - hit.at < COMBAT_TUNING.damageWindowMs;
   });
   damageHistory.set(player, recent);
 
@@ -38,13 +39,14 @@ export function damagePerSecond(player: Player, now: number) {
   }
 
   for (const hit of recent) {
-    player.damageMeter!.abilities[hit.ability].dps += hit.amount / 5;
+    player.damageMeter!.abilities[hit.ability].dps +=
+      hit.amount / COMBAT_TUNING.damageWindowSeconds;
   }
 
   return (
     recent.reduce((sum, hit) => {
       return sum + hit.amount;
-    }, 0) / 5
+    }, 0) / COMBAT_TUNING.damageWindowSeconds
   );
 }
 
@@ -110,7 +112,7 @@ export function hitEnemy(
     ailment !== 'roots' &&
     owner &&
     isChanced(
-      (AILMENT_DEFINITIONS[ailment].chance + talentAilmentChance(owner, ailment)) * 100,
+      (AILMENT_DEFINITIONS[ailment].chance + talentAilmentChance(owner, ailment)) * PERCENT,
       context.random,
     )
   ) {
@@ -189,7 +191,7 @@ export function hitEnemy(
     });
   }
 
-  if (isChanced(PICKUP_DEFINITIONS.gold.chance * 100, context.random)) {
+  if (isChanced(PICKUP_DEFINITIONS.gold.chance * PERCENT, context.random)) {
     const goldCopies =
       1 +
       isMultiChanced(
@@ -203,7 +205,7 @@ export function hitEnemy(
       appendSceneEntities(scene, 'drops', {
         id: ++scene.sequence,
         kind: 'gold',
-        x: wrap(enemy.x + 10, FOREST.width),
+        x: wrap(enemy.x + COMBAT_TUNING.lootOffset, FOREST.width),
         y: enemy.y,
         at: now,
       });
@@ -225,7 +227,7 @@ export function hitEnemy(
         itemId: item.itemId,
         rarity: item.rarity,
         stats: item.stats,
-        x: wrap(enemy.x - 10, FOREST.width),
+        x: wrap(enemy.x - COMBAT_TUNING.lootOffset, FOREST.width),
         y: enemy.y,
         at: now,
       });

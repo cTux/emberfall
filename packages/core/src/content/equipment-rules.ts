@@ -2,6 +2,7 @@ import { recoveryCooldownMs } from '../utils/recoveryCooldownMs.ts';
 import { talentNodeId, talentRank } from '../talent-tree.ts';
 import { z } from 'zod';
 import { ItemStat } from '../item-stats.ts';
+import { MILLISECONDS_PER_SECOND, PERCENT } from '@emberfall/common';
 import type {
   Player,
   ClassId,
@@ -12,6 +13,11 @@ import type {
   DamageType,
 } from '@emberfall/common';
 import type { Registries } from './contracts.ts';
+
+// Existing armor curve: 100 armor reduces incoming damage by exactly one half.
+const ARMOR_FOR_HALF_REDUCTION = 100;
+// The registered druid node at column 1/row 3 grants the existing 30% Bear range/health boost.
+const PACK_HOWL = { column: 1, row: 3, multiplier: 1.3 } as const;
 
 export interface CharacterStats extends GearStats {
   bonuses: Readonly<Record<ItemStat, number>>;
@@ -143,19 +149,19 @@ export function createEquipmentRules(content: Registries) {
     stats.power += bonuses.power;
     stats.armor += bonuses.armor;
     stats.maxHitpoints += bonuses.maximumHealth;
-    stats.criticalChance += bonuses.criticalChance / 100;
-    stats.criticalMultiplier += bonuses.criticalDamage / 100;
-    stats.attacksPerSecond *= 1 + bonuses.attackSpeed / 100;
-    stats.range *= 1 + bonuses.range / 100;
-    stats.manualRange *= 1 + bonuses.range / 100;
+    stats.criticalChance += bonuses.criticalChance / PERCENT;
+    stats.criticalMultiplier += bonuses.criticalDamage / PERCENT;
+    stats.attacksPerSecond *= 1 + bonuses.attackSpeed / PERCENT;
+    stats.range *= 1 + bonuses.range / PERCENT;
+    stats.manualRange *= 1 + bonuses.range / PERCENT;
     const baseAttackRate = weapon?.stats.attacksPerSecond ?? 0;
     const cooldownRecoveryRate =
       baseAttackRate > 0 ? stats.attacksPerSecond / baseAttackRate - 1 : -1;
     const attackIntervalMs =
       baseAttackRate > 0
-        ? recoveryCooldownMs(1000 / baseAttackRate, cooldownRecoveryRate)
+        ? recoveryCooldownMs(MILLISECONDS_PER_SECOND / baseAttackRate, cooldownRecoveryRate)
         : Infinity;
-    stats.attacksPerSecond = 1000 / attackIntervalMs;
+    stats.attacksPerSecond = MILLISECONDS_PER_SECOND / attackIntervalMs;
     stats.criticalChance = Math.max(0, Math.min(1, stats.criticalChance));
     stats.criticalMultiplier = Math.max(1, stats.criticalMultiplier);
     stats.armor = Math.max(0, stats.armor);
@@ -168,7 +174,7 @@ export function createEquipmentRules(content: Registries) {
       hasWeapon: !!weapon,
       attackIntervalMs,
       cooldownRecoveryRate,
-      damageReduction: stats.armor / (100 + stats.armor),
+      damageReduction: stats.armor / (ARMOR_FOR_HALF_REDUCTION + stats.armor),
     };
   }
 
@@ -180,14 +186,18 @@ export function createEquipmentRules(content: Registries) {
 
   function companionStats(player: Player): CharacterStats {
     const packHowl =
-      player.classId === 'druid' && talentRank(player, talentNodeId('druid', 1, 3)) > 0;
+      player.classId === 'druid' &&
+      talentRank(player, talentNodeId('druid', PACK_HOWL.column, PACK_HOWL.row)) > 0;
 
     return {
       ...characterStats(player),
       damageType: BEAR_DEFINITION.damageType,
-      range: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
-      manualRange: BEAR_DEFINITION.range * (packHowl ? 1.3 : 1),
-      maxHitpoints: player.maxHitpoints * BEAR_DEFINITION.healthMultiplier * (packHowl ? 1.3 : 1),
+      range: BEAR_DEFINITION.range * (packHowl ? PACK_HOWL.multiplier : 1),
+      manualRange: BEAR_DEFINITION.range * (packHowl ? PACK_HOWL.multiplier : 1),
+      maxHitpoints:
+        player.maxHitpoints *
+        BEAR_DEFINITION.healthMultiplier *
+        (packHowl ? PACK_HOWL.multiplier : 1),
     };
   }
 

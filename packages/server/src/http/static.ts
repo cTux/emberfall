@@ -1,3 +1,4 @@
+import { constants as httpConstants } from 'node:http2';
 import type { RequestListener } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import Negotiator from 'negotiator';
@@ -7,14 +8,14 @@ export function staticHandler(staticRoot?: string): RequestListener {
   // oxlint-disable-next-line typescript/no-misused-promises
   const handler: RequestListener = async (req, res) => {
     if (req.url === '/health') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.writeHead(httpConstants.HTTP_STATUS_OK, { 'Content-Type': 'application/json' });
       res.end('{"ok":true}');
 
       return;
     }
 
     if (!staticRoot || !['GET', 'HEAD'].includes(req.method ?? '')) {
-      res.writeHead(404);
+      res.writeHead(httpConstants.HTTP_STATUS_NOT_FOUND);
       res.end();
 
       return;
@@ -26,7 +27,7 @@ export function staticHandler(staticRoot?: string): RequestListener {
       const file = resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
 
       if (!file.startsWith(root + sep)) {
-        res.writeHead(403);
+        res.writeHead(httpConstants.HTTP_STATUS_FORBIDDEN);
         res.end();
 
         return;
@@ -58,7 +59,7 @@ export function staticHandler(staticRoot?: string): RequestListener {
       }
 
       if (!selected) {
-        res.writeHead(406, { Vary: 'Accept-Encoding' });
+        res.writeHead(httpConstants.HTTP_STATUS_NOT_ACCEPTABLE, { Vary: 'Accept-Encoding' });
         res.end();
 
         return;
@@ -76,7 +77,7 @@ export function staticHandler(staticRoot?: string): RequestListener {
         '.ttf': 'font/ttf',
         '.txt': 'text/plain',
       };
-      res.writeHead(200, {
+      res.writeHead(httpConstants.HTTP_STATUS_OK, {
         'Content-Type': mime[extname(file)] ?? 'application/octet-stream',
         'X-Content-Type-Options': 'nosniff',
         Vary: 'Accept-Encoding',
@@ -91,7 +92,7 @@ export function staticHandler(staticRoot?: string): RequestListener {
       });
       res.end(req.method === 'HEAD' ? undefined : content);
     } catch {
-      res.writeHead(404);
+      res.writeHead(httpConstants.HTTP_STATUS_NOT_FOUND);
       res.end();
     }
   };

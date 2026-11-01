@@ -1,3 +1,5 @@
+// Preserve the extended budget for multi-step desktop flows on slower CI workers.
+const EXTENDED_SCENARIO_TIMEOUT_MS = 120000;
 import { test, expect } from './fixtures';
 import {
   WARDROBE,
@@ -11,7 +13,7 @@ test('every wardrobe class trains through Colyseus, preserves health, and resume
   page,
   game,
 }) => {
-  test.setTimeout(Math.max(test.info().timeout, 120000));
+  test.setTimeout(Math.max(test.info().timeout, EXTENDED_SCENARIO_TIMEOUT_MS));
   const errors: string[] = [];
   page.on('pageerror', (error) => {
     return errors.push(error.message);

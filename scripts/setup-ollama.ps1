@@ -36,20 +36,26 @@ if (-not (Test-Path -LiteralPath $ollamaExecutable)) {
     if (-not (Test-Path -LiteralPath $ollamaExecutable)) { throw "Ollama executable not found at $ollamaExecutable." }
 }
 
+# Limit each local health request to two seconds so an unresponsive daemon cannot hang setup.
+$healthRequestTimeoutSeconds = 2
+# Allow thirty one-second startup polls for the newly launched local daemon.
+$startupPollAttempts = 30
+$startupPollSeconds = 1
+
 # The installer may already have started Ollama with the environment above.
-try { $null = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/version' -TimeoutSec 2 }
+try { $null = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/version' -TimeoutSec $healthRequestTimeoutSeconds }
 catch {
     $null = Start-Process -FilePath $ollamaExecutable -ArgumentList 'serve' -PassThru `
         -RedirectStandardOutput (Join-Path $logDirectory 'ollama.stdout.log') `
         -RedirectStandardError (Join-Path $logDirectory 'ollama.stderr.log')
 }
 $ready = $false
-for ($attempt = 0; $attempt -lt 30; $attempt++) {
+for ($attempt = 0; $attempt -lt $startupPollAttempts; $attempt++) {
     try {
-        $null = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/version' -TimeoutSec 2
+        $null = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/version' -TimeoutSec $healthRequestTimeoutSeconds
         $ready = $true
         break
-    } catch { Start-Sleep -Seconds 1 }
+    } catch { Start-Sleep -Seconds $startupPollSeconds }
 }
 if (-not $ready) { throw "Ollama did not start. Check $logDirectory and the Ollama tray application." }
 

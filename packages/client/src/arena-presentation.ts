@@ -9,6 +9,9 @@ import { alignLocalPickups } from './pickup-presentation';
 import { combatCursor } from './cursors';
 import { dayNight } from './day-night';
 
+// Existing half-second sound throttle keeps rapid attacks from stacking slash voices.
+const SLASH_SOUND_INTERVAL_MS = 500;
+
 type FrameInput = Pick<
   ReturnType<typeof createArenaInput>,
   'camera' | 'combat' | 'held' | 'blocked' | 'currentAim' | 'pointer'
@@ -136,7 +139,7 @@ export class ArenaPresentation {
   ) {
     const { view, local, localSwing } = frame;
 
-    if (localSwing && now - this.lastSlashAt >= 500) {
+    if (localSwing && now - this.lastSlashAt >= SLASH_SOUND_INTERVAL_MS) {
       this.lastSlashAt = now;
       this.audio.play('slash');
     }

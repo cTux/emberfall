@@ -1,3 +1,5 @@
+// Preserve the extended budget for multi-step desktop flows on slower CI workers.
+const EXTENDED_SCENARIO_TIMEOUT_MS = 120_000;
 import { test, expect } from './fixtures';
 import { npcDialogueState } from './npcs.fixture';
 
@@ -6,7 +8,7 @@ export function registerWorkstationCases() {
     page,
     game,
   }) => {
-    test.setTimeout(120_000);
+    test.setTimeout(EXTENDED_SCENARIO_TIMEOUT_MS);
     npcDialogueState.response = { status: 'ok', text: 'The soup is almost ready!' };
     const errors: string[] = [];
     page.on('pageerror', (error) => {

@@ -12,6 +12,15 @@ import { EnemyKind, EnemyType } from '@emberfall/common/enums';
 import { enemyAttributes } from '../utils/enemyAttributes.ts';
 import type { EnemyDefinition } from '../content/contracts.ts';
 
+// A missed windup retries after 150 ms rather than imposing the full successful-attack cooldown.
+const MISSED_ATTACK_RETRY_MS = 150;
+// Existing ranged warning size marks a narrower target than a melee attack reach.
+const RANGED_WARNING_RADIUS = 22;
+// Six-pixel projectile substeps prevent fast shots from skipping thin collision bodies.
+const PROJECTILE_STEP_PIXELS = 6;
+// Existing query/contact distances align enemy shots with the forest trunk collision footprint.
+const PROJECTILE_TREE_COLLISION = { queryRadius: 24, contactRadius: 20 } as const;
+
 type Game = ReturnType<typeof createGame>;
 export function tickEnemyCombat(
   scene: SceneState,
@@ -110,7 +119,7 @@ export function tickEnemyCombat(
 
       enemy.attack = undefined;
       const inRange = target && forestDistance(enemy, target) <= stats.reach;
-      enemy.cooldownUntil = now + (inRange ? stats.cooldown : 150);
+      enemy.cooldownUntil = now + (inRange ? stats.cooldown : MISSED_ATTACK_RETRY_MS);
 
       if (!inRange) {
         continue;
@@ -151,7 +160,7 @@ export function tickEnemyCombat(
         endsAt: now + stats.windup,
         x: ranged ? target.x : enemy.x,
         y: ranged ? target.y : enemy.y,
-        radius: ranged ? 22 : stats.reach,
+        radius: ranged ? RANGED_WARNING_RADIUS : stats.reach,
         ranged,
       };
     }
@@ -162,15 +171,25 @@ export function tickEnemyCombat(
       return false;
     }
 
-    const steps = Math.max(1, Math.ceil((Math.hypot(shot.vx, shot.vy) * dt) / 6));
+    const steps = Math.max(
+      1,
+      Math.ceil((Math.hypot(shot.vx, shot.vy) * dt) / PROJECTILE_STEP_PIXELS),
+    );
 
     for (let i = 0; i < steps; i++) {
       shot.x = wrap(shot.x + (shot.vx * dt) / steps, FOREST.width);
       shot.y = wrap(shot.y + (shot.vy * dt) / steps, FOREST.height);
 
       if (
-        forestTrees(shot.x, shot.y + 15, 24).some((t) => {
-          return Math.hypot(shot.x - t.x, shot.y + 15 - t.y) < 20;
+        forestTrees(
+          shot.x,
+          shot.y + COLLISION.feetOffset,
+          PROJECTILE_TREE_COLLISION.queryRadius,
+        ).some((t) => {
+          return (
+            Math.hypot(shot.x - t.x, shot.y + COLLISION.feetOffset - t.y) <
+            PROJECTILE_TREE_COLLISION.contactRadius
+          );
         })
       ) {
         return false;

@@ -1,7 +1,4 @@
-import { wrappedDelta } from '@emberfall/common';
 import {
-  FOREST,
-  resourceState,
   resourceNodes,
   nearbyInteraction,
   nearbyResource,
@@ -9,18 +6,21 @@ import {
   inTrainingZone,
 } from '@emberfall/core';
 import {
-  sceneryInteraction,
   partyInteraction,
   pickInteraction,
   interactionInRange,
   type InteractionTarget,
 } from './interaction-targets';
-import { resourceScenery } from './gathering';
-import { portalInteraction } from './portal';
 import type { ClientMessage, WorldState, Player } from '@emberfall/common';
 import type { DrawingContext } from './rendering/drawing-context';
 import { drawTimedActivity } from './timed-activity';
 import { drawInteractionPrompt, type Interaction } from './effects';
+
+// Preserve enough scenery beyond the viewport for tall sprites and keep an active node query bounded near the player.
+const INTERACTION_SCENERY = {
+  activeNodeRadius: 250,
+  activityBarGap: 26,
+} as const;
 
 type Options = {
   element: HTMLCanvasElement;
@@ -77,7 +77,7 @@ export class InteractionPresentation {
 
       if (activity && local) {
         element.dataset.interactionPrompt = '';
-        const node = resourceNodes(local, 250).find((node) => {
+        const node = resourceNodes(local, INTERACTION_SCENERY.activeNodeRadius).find((node) => {
           return node.id === activity.nodeId;
         });
 
@@ -98,7 +98,13 @@ export class InteractionPresentation {
           const activityTime = now + this.clock.offset;
           element.dataset.gatheringIndicator = String(activityIndicator(activity, activityTime));
           element.dataset.gatheringZone = String(activity.zoneStart);
-          drawTimedActivity(ctx, activity, node.x, node.y - node.size - 26, activityTime);
+          drawTimedActivity(
+            ctx,
+            activity,
+            node.x,
+            node.y - node.size - INTERACTION_SCENERY.activityBarGap,
+            activityTime,
+          );
           signal.current = {
             id: `gather:${node.id}`,
             name: `Gather ${node.kind}`,
@@ -173,7 +179,7 @@ export class InteractionPresentation {
 
     const updateGatherDiagnostics = () => {
       element.dataset.resource = signal.current?.id.startsWith('gather:')
-        ? signal.current.id.slice(7)
+        ? signal.current.id.slice('gather:'.length)
         : '';
       element.dataset.depletedResources = String(
         Object.values(view?.resources ?? {}).filter((state) => {
@@ -235,40 +241,4 @@ export class InteractionPresentation {
   }
 }
 
-export function forestInteractionTargets(
-  view: WorldState | null,
-  local: Player | undefined,
-  camera: { width: number; height: number },
-) {
-  let targets: InteractionTarget[] = [];
-
-  if (local?.scene === 'forest' && view?.scene?.phase === 'ended') {
-    targets = view.scene.portals.map((portal) => {
-      return portalInteraction(
-        { id: 'return', name: 'Return to village', ...portal },
-        local.x + wrappedDelta(portal.x, local.x, FOREST.width),
-        local.y + wrappedDelta(portal.y, local.y, FOREST.height),
-      );
-    });
-  }
-
-  if (local?.scene === 'forest') {
-    targets.push(
-      ...resourceNodes(local, Math.hypot(camera.width, camera.height) / 2 + 150)
-        .filter((node) => {
-          return resourceState(view?.resources, node, view?.serverNow ?? 0)?.remaining !== 0;
-        })
-        .map((node) => {
-          return sceneryInteraction(resourceScenery(node));
-        })
-        .filter((target) => {
-          return target !== null;
-        }),
-    );
-    targets.sort((a, b) => {
-      return a.y + a.height - b.y - b.height;
-    });
-  }
-
-  return targets;
-}
+export { forestInteractionTargets } from './forest-interactions.ts';

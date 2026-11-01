@@ -1,3 +1,5 @@
+// Allow reconciled actor position and shadow projection to reach capture.
+const SHADOW_RENDER_SETTLE_MS = 350;
 import { test, expect } from './fixtures';
 import { starterEquipment } from '../packages/core/src/index.ts';
 
@@ -48,7 +50,7 @@ test('player shadow masks sample complete high-resolution frames in every facing
 
     for (const key of ['ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowUp']) {
       await page.keyboard.down(key);
-      await page.waitForTimeout(350);
+      await page.waitForTimeout(SHADOW_RENDER_SETTLE_MS);
       await page.keyboard.up(key);
     }
 

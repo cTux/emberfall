@@ -21,7 +21,10 @@ export async function connectWorldClient(port: number, clients: WebSocket[]) {
       }
 
       await new Promise((r) => {
-        return setTimeout(r, 10);
+        // Poll frequently enough to observe asynchronous messages without busy-waiting.
+        const MESSAGE_POLL_MS = 10;
+
+        return setTimeout(r, MESSAGE_POLL_MS);
       });
     }
 
@@ -47,7 +50,10 @@ export async function waitForWorldMessage(messages: ServerMessage[], type: Serve
   ) {
     assert(Date.now() < deadline, `Missing ${type}`);
     await new Promise((resolve) => {
-      return setTimeout(resolve, 5);
+      // Yield briefly while awaiting world replication in integration fixtures.
+      const WORLD_MESSAGE_POLL_MS = 5;
+
+      return setTimeout(resolve, WORLD_MESSAGE_POLL_MS);
     });
   }
 

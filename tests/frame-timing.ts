@@ -5,6 +5,15 @@ export function sampleFrameTiming(
   },
   cancelFrame: (id: number) => void = cancelAnimationFrame,
 ) {
+  // Three seconds smooths frame jitter; six intervals still allow low-FPS samples.
+  const MIN_SAMPLE_MS = 3000;
+  // Six intervals provide enough observations to distinguish a stalled loop from sparse frames.
+  const MIN_FRAME_INTERVALS = 6;
+  // Bound stalled/very slow rendering to fifteen seconds so a benchmark cannot hang.
+  const MAX_SAMPLE_MS = 15000;
+  // Report the requested 95th-percentile frame-time statistic.
+  const P95_QUANTILE = 0.95;
+
   return new Promise<{ frames: number; averageMs: number; p95Ms: number; sampleMs: number }>(
     (resolve) => {
       const startedAt = clock();
@@ -14,7 +23,7 @@ export function sampleFrameTiming(
       let finished = false;
       const deadline = setTimeout(() => {
         return finish(clock());
-      }, 15000);
+      }, MAX_SAMPLE_MS);
 
       function finish(now: number) {
         if (finished) {
@@ -37,7 +46,7 @@ export function sampleFrameTiming(
             intervals.reduce((sum, n) => {
               return sum + n;
             }, 0) / Math.max(1, intervals.length),
-          p95Ms: sorted[Math.floor(sorted.length * 0.95)] ?? 0,
+          p95Ms: sorted[Math.floor(sorted.length * P95_QUANTILE)] ?? 0,
           sampleMs: now - startedAt,
         });
       }
@@ -54,7 +63,10 @@ export function sampleFrameTiming(
         previous = now;
         const sampleMs = now - startedAt;
 
-        if ((sampleMs < 3000 || intervals.length < 6) && sampleMs < 15000) {
+        if (
+          (sampleMs < MIN_SAMPLE_MS || intervals.length < MIN_FRAME_INTERVALS) &&
+          sampleMs < MAX_SAMPLE_MS
+        ) {
           pending = requestFrame(frame);
         } else {
           finish(now);

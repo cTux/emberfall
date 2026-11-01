@@ -1,6 +1,7 @@
 import { clientAsset } from './urls.ts';
 import { game, type createGame } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
+import { PERCENT, type Player } from '@emberfall/common';
+
 const builtinSlots = new Set([
   'weapon',
   'gloves',
@@ -47,7 +48,7 @@ export function additionalStatViews(player: Player, context: ReturnType<typeof c
     .map((stat) => {
       return {
         label: stat.label,
-        value: `${(stats.attributes[stat.id] * (stat.format === 'percent' ? 100 : 1)).toLocaleString('en', { maximumFractionDigits: 2 })}${stat.format === 'percent' ? '%' : ''}`,
+        value: `${(stats.attributes[stat.id] * (stat.format === 'percent' ? PERCENT : 1)).toLocaleString('en', { maximumFractionDigits: 2 })}${stat.format === 'percent' ? '%' : ''}`,
       };
     });
 }

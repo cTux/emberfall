@@ -26,6 +26,11 @@ import { useTheme } from '@mui/material';
 
 import { forestRenderer } from './forest';
 
+// Keep the original 960×640 composition; cap oversampling at 3× to bound GPU render-target size.
+const VIEWPORT = { width: 960, height: 640, maxPixelRatio: 3 };
+// A deliberate half-second hold distinguishes highlighting from ordinary Alt taps.
+const INTERACTION_HIGHLIGHT_HOLD_MS = 500;
+
 export function useArenaRenderer(props: ArenaProps) {
   const { playerId, interaction, onCursorAim, onHitpoints } = props;
   const canvas = useRef<HTMLCanvasElement>(null);
@@ -93,7 +98,10 @@ export function useArenaRenderer(props: ArenaProps) {
     let wardrobeOpenedAt = 0;
     let wardrobeActive = false;
     const resize = () => {
-      const ratio = Math.min(devicePixelRatio * quality.current.resolution * budget.scale, 3);
+      const ratio = Math.min(
+        devicePixelRatio * quality.current.resolution * budget.scale,
+        VIEWPORT.maxPixelRatio,
+      );
       renderer.resize(Math.round(innerWidth * ratio), Math.round(innerHeight * ratio));
     };
 
@@ -138,7 +146,7 @@ export function useArenaRenderer(props: ArenaProps) {
 
       const el = element;
       // Keep the original view scale independent of the walkable map size.
-      const scale = Math.max(el.width / 960, el.height / 640);
+      const scale = Math.max(el.width / VIEWPORT.width, el.height / VIEWPORT.height);
 
       if (document.querySelector('[role="dialog"][aria-modal="true"]')) {
         input.clearKeys();
@@ -156,7 +164,8 @@ export function useArenaRenderer(props: ArenaProps) {
       renderer.directionalShadow = cycle.shadow;
       updateFrameDiagnostics(element, presented);
       networkTiming.current = presented.timing;
-      const highlightInteractions = now - input.altHeldAt > 500 && !input.blocked();
+      const highlightInteractions =
+        now - input.altHeldAt > INTERACTION_HIGHLIGHT_HOLD_MS && !input.blocked();
       const interactionFrame = prompts.frame({
         ctx,
         authoritative: latest.current,

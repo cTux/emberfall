@@ -5,6 +5,11 @@ import { Alert, Button, Stack, TextField, Typography } from '@mui/material';
 import { GameWindow } from '@emberfall/ui';
 import { nicknameSchema, type AccountView } from '@emberfall/common';
 
+// Ten seconds bounds account requests so an unavailable service cannot leave the form pending indefinitely.
+const ACCOUNT_REQUEST_TIMEOUT_MS = 10_000;
+// HTTP defines 401 as an unauthenticated response; sign-out is already complete in that case.
+const HTTP_UNAUTHORIZED = 401;
+
 function NicknameDialog({
   account,
   onSaved,
@@ -47,7 +52,7 @@ function NicknameDialog({
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ nickname: value }),
-              signal: AbortSignal.timeout(10_000),
+              signal: AbortSignal.timeout(ACCOUNT_REQUEST_TIMEOUT_MS),
             });
             const result = await response.json();
 
@@ -116,7 +121,7 @@ export function AccountGate({
       const response = await fetch(apiUrl('/api/account'), {
         credentials: 'include',
         cache: 'no-store',
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(ACCOUNT_REQUEST_TIMEOUT_MS),
       });
 
       if (!response.ok) {
@@ -133,7 +138,7 @@ export function AccountGate({
     const request = fetch(apiUrl('/api/account'), {
       credentials: 'include',
       cache: 'no-store',
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(ACCOUNT_REQUEST_TIMEOUT_MS),
     });
     void request
       .then(async (response) => {
@@ -158,10 +163,10 @@ export function AccountGate({
       const response = await fetch(apiUrl('/auth/logout'), {
         credentials: 'include',
         method: 'POST',
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(ACCOUNT_REQUEST_TIMEOUT_MS),
       });
 
-      if (!response.ok && response.status !== 401) {
+      if (!response.ok && response.status !== HTTP_UNAUTHORIZED) {
         throw new Error();
       }
 

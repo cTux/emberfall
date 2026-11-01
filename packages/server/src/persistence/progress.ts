@@ -1,3 +1,8 @@
+// Legacy saves convert levels above twenty to paragon without changing the existing migration.
+const LEGACY_LEVEL_CAP = 20;
+// Version two is the persisted format that moves shared storage outside individual classes.
+const STOREHOUSE_FORMAT_VERSION = 2;
+
 import { normalizeTalents, type createGame } from '@emberfall/core';
 import type { CharacterProgress, ClassId, Player } from '@emberfall/common';
 
@@ -29,8 +34,8 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
 
   function classProgress(value: unknown, classId: ClassId): CharacterProgress {
     const progress = progressSchema.parse(value);
-    progress.paragon = (progress.paragon ?? 0) + Math.max(0, progress.level - 20);
-    progress.level = Math.min(20, progress.level);
+    progress.paragon = (progress.paragon ?? 0) + Math.max(0, progress.level - LEGACY_LEVEL_CAP);
+    progress.level = Math.min(LEGACY_LEVEL_CAP, progress.level);
     normalizeTalents(progress, classId);
     progress.coins ??= 0;
     progress.backpack ??= [];
@@ -58,7 +63,11 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
       }
     }
 
-    if (data.formatVersion !== undefined && data.formatVersion !== 1 && data.formatVersion !== 2) {
+    if (
+      data.formatVersion !== undefined &&
+      data.formatVersion !== 1 &&
+      data.formatVersion !== STOREHOUSE_FORMAT_VERSION
+    ) {
       throw new Error('Unsupported save format');
     }
 
@@ -76,7 +85,7 @@ export function createProgressCodec(context: ReturnType<typeof createGame>) {
     ) as Record<ClassId, CharacterProgress>;
     let storehouse;
 
-    if (data.formatVersion === 2) {
+    if (data.formatVersion === STOREHOUSE_FORMAT_VERSION) {
       storehouse = storehouseSchema.parse(data.storehouse);
     } else {
       storehouse = { coins: 0, storages: freshStorages() };

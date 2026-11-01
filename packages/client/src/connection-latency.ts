@@ -1,6 +1,9 @@
 import { GameConnection } from './connection';
 import type { ServerMessage } from '@emberfall/common';
 
+// Five seconds prevents overlapping RTT probes while allowing a lost reply to be retried.
+const LATENCY_PROBE_TIMEOUT_MS = 5000;
+
 export function connectionLatency(ws: GameConnection, setLatency: (value: number | null) => void) {
   let probeId = 0;
   let pendingProbe: { id: number; at: number } | null = null;
@@ -11,7 +14,7 @@ export function connectionLatency(ws: GameConnection, setLatency: (value: number
 
     const now = performance.now();
 
-    if (pendingProbe && now - pendingProbe.at < 5000) {
+    if (pendingProbe && now - pendingProbe.at < LATENCY_PROBE_TIMEOUT_MS) {
       return;
     }
 

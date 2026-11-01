@@ -1,5 +1,10 @@
+import { PERCENT } from '@emberfall/common';
+
 import { clientAsset } from './urls';
 import { Box } from '@mui/material';
+
+// The supplied talent sheets have five columns in a 1145×1374 native image; percentages use 100 units.
+const TALENT_SHEET = { columns: 5, width: 1145, height: 1374 };
 
 // Generated frames are unevenly spaced in the native 1145 × 1374 sheets.
 const frames: Record<string, { x: number[]; y: number[] }> = {
@@ -11,8 +16,8 @@ const frames: Record<string, { x: number[]; y: number[] }> = {
 
 export function TalentIcon({ index, classId }: { index: number; classId: string }) {
   const { x, y } = frames[classId];
-  const column = index % 5;
-  const row = Math.floor(index / 5);
+  const column = index % TALENT_SHEET.columns;
+  const row = Math.floor(index / TALENT_SHEET.columns);
   const width = x[column + 1] - x[column];
   const height = y[row + 1] - y[row];
 
@@ -25,8 +30,8 @@ export function TalentIcon({ index, classId }: { index: number; classId: string 
         width: '100%',
         height: '100%',
         backgroundImage: `url("${clientAsset(`/assets/talents/${classId}-icons.png`)}")`,
-        backgroundSize: `${(1145 / width) * 100}% ${(1374 / height) * 100}%`,
-        backgroundPosition: `${(x[column] / (1145 - width)) * 100}% ${(y[row] / (1374 - height)) * 100}%`,
+        backgroundSize: `${(TALENT_SHEET.width / width) * PERCENT}% ${(TALENT_SHEET.height / height) * PERCENT}%`,
+        backgroundPosition: `${(x[column] / (TALENT_SHEET.width - width)) * PERCENT}% ${(y[row] / (TALENT_SHEET.height - height)) * PERCENT}%`,
         backgroundRepeat: 'no-repeat',
       }}
     />

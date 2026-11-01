@@ -1,4 +1,6 @@
 import type { DrawingContext } from './rendering/drawing-context';
+// A seven-pixel bar preserves five fill pixels inside its one-pixel border at world scale.
+
 const WORLD_BAR_HEIGHT = 7;
 const BORDER = 1;
 

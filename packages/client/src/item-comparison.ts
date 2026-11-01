@@ -1,4 +1,4 @@
-import type { BackpackItem, Player } from '@emberfall/common';
+import { PERCENT, type BackpackItem, type Player } from '@emberfall/common';
 import {
   game,
   GEAR_DEFINITIONS,
@@ -59,7 +59,7 @@ export function itemComparison(
             stat as typeof ItemStat.Power,
           ) && !(itemStatWeight[stat as ItemStat] < 1)
         : metadata?.format === 'percent';
-      const value = (delta * (!bonus && percentage ? 100 : 1)).toLocaleString('en', {
+      const value = (delta * (!bonus && percentage ? PERCENT : 1)).toLocaleString('en', {
         maximumFractionDigits: 2,
       });
       rows.push({

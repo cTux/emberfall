@@ -18,6 +18,12 @@ import { spellSrc } from './class-art';
 import { classDetails } from './class-details';
 import type { Preferences } from './preferences';
 
+// Preserve four assignable ability slots, checking auto-casts four times per second rather than per frame.
+const ACTION_BAR = { slotCount: 4, autoCastIntervalMs: 250, talentRowsPerColumn: 10 };
+
+// The wire slot IDs are the four zero-based action-bar positions.
+const ABILITY_SLOTS = [0, 1, 2, 3];
+
 export function WeaponActionBar({
   player,
   now,
@@ -47,14 +53,14 @@ export function WeaponActionBar({
       !stats.hasWeapon ||
       document.hidden ||
       (!player.scene && !inTrainingZone(player)) ||
-      now - lastRequest.current < 250
+      now - lastRequest.current < ACTION_BAR.autoCastIntervalMs
     ) {
       return;
     }
 
     lastRequest.current = now;
 
-    for (let slot = 0; slot < 4; slot++) {
+    for (let slot = 0; slot < ACTION_BAR.slotCount; slot++) {
       const node = equippedTalent(player, slot);
       const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot);
 
@@ -84,7 +90,7 @@ export function WeaponActionBar({
         onChoose={(slot, anchor) => {
           return setPicker({ slot, anchor });
         }}
-        abilities={[0, 1, 2, 3].map((slot) => {
+        abilities={ABILITY_SLOTS.map((slot) => {
           const node = equippedTalent(player, slot);
           const ability = node?.slot === undefined ? undefined : talentAbility(player, node.slot);
 
@@ -92,7 +98,12 @@ export function WeaponActionBar({
             ? {
                 name: ability.name!,
                 description: talentDescription(node),
-                icon: <TalentIcon classId={classId} index={node.column * 10 + node.row} />,
+                icon: (
+                  <TalentIcon
+                    classId={classId}
+                    index={node.column * ACTION_BAR.talentRowsPerColumn + node.row}
+                  />
+                ),
                 cooldownMs: talentCooldownMs(player, node.slot!),
                 remainingMs: (player.talentCooldowns?.[ability.id] ?? 0) - now,
                 autoCast:
@@ -177,7 +188,10 @@ export function WeaponActionBar({
                   setPicker(null);
                 }}
               >
-                <TalentIcon classId={classId} index={node.column * 10 + node.row} />
+                <TalentIcon
+                  classId={classId}
+                  index={node.column * ACTION_BAR.talentRowsPerColumn + node.row}
+                />
               </MenuItem>
             </Tooltip>
           );

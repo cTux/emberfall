@@ -5,6 +5,13 @@ import type { createItemRules } from './item-rules.ts';
 import type { createStorageRules } from './storage-rules.ts';
 import type { createInventoryRules } from './inventory-rules.ts';
 
+// Keep each trader's existing 5,000-gold liquidity budget when creating or migrating stock.
+const TRADER_COINS = 5000;
+// Thirty minutes is the existing stock refresh cadence; no shorter reset is intended here.
+const STOCK_REFRESH_MS = 1_800_000;
+// Modifier-click trades ten items under the existing command contract.
+const BULK_TRADE_QUANTITY = 10;
+
 export function createMerchantRules(
   content: Registries,
   items: ReturnType<typeof createItemRules>,
@@ -54,7 +61,7 @@ export function createMerchantRules(
           return itemDefinition(item.itemId).kind !== 'gear';
         }),
         craftsman: craftsman ?? {
-          coins: 5000,
+          coins: TRADER_COINS,
           backpack: merchant.backpack.filter((item) => {
             return itemDefinition(item.itemId).kind === 'gear';
           }),
@@ -67,15 +74,16 @@ export function createMerchantRules(
 
   function freshMerchant(now = Date.now()): Merchant {
     return {
-      refreshAt: now + 30 * 60 * 1000,
-      coins: 5000,
+      refreshAt: now + STOCK_REFRESH_MS,
+      coins: TRADER_COINS,
+      // Existing starting supply: five heals and a full 200-bottle resource stack.
       backpack: [
         { id: crypto.randomUUID(), itemId: 'health-potion', quantity: 5 },
         { id: crypto.randomUUID(), itemId: 'empty-bottle', quantity: 200 },
       ],
       buyback: [],
       craftsman: {
-        coins: 5000,
+        coins: TRADER_COINS,
         backpack: content.items
           .values()
           .filter((item) => {
@@ -97,7 +105,7 @@ export function createMerchantRules(
     buying: boolean,
     amount: 1 | 10 | 'stack' = 1,
   ) {
-    if (amount !== 1 && amount !== 10 && amount !== 'stack') {
+    if (amount !== 1 && amount !== BULK_TRADE_QUANTITY && amount !== 'stack') {
       throw new Error('Invalid trade quantity.');
     }
 

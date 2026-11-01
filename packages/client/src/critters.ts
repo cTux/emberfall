@@ -3,6 +3,10 @@ import type { crittersAt } from './critter-motion.ts';
 export { crittersAt } from './critter-motion.ts';
 import { spriteMask } from './lighting.ts';
 import { animalArt } from './art';
+
+// Animal sheets use 64-pixel frames; the approved 24-pixel display footprint sets both sprites and shadow bounds.
+const CRITTER_ART = { cell: 64, size: 24 } as const;
+
 const animalColumn = { cat: 1, chicken: 2, raccoon: 3 };
 export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
   const mask = spriteMask(
@@ -10,9 +14,9 @@ export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
     animalColumn[critter.kind],
     critter.frame,
     critter.left,
-    64,
+    CRITTER_ART.cell,
     false,
-    64,
+    CRITTER_ART.cell,
   );
 
   return mask
@@ -20,8 +24,8 @@ export function critterCaster(critter: ReturnType<typeof crittersAt>[number]) {
         id: `critter:${critter.kind}:${critter.x}:${critter.y}`,
         x: critter.x,
         y: critter.y,
-        width: 24,
-        height: 24,
+        width: CRITTER_ART.size,
+        height: CRITTER_ART.size,
         mask,
       }
     : null;
@@ -56,8 +60,8 @@ export function drawCritter(
     image,
     animalColumn[critter.kind] * 64,
     critter.frame * 64,
-    64,
-    64,
+    CRITTER_ART.cell,
+    CRITTER_ART.cell,
     -12,
     -24,
     24,

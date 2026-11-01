@@ -1,5 +1,6 @@
 import type { ClientMessage, Player, SceneState } from '@emberfall/common';
 import {
+  TALENT_POINT_CAP,
   TALENT_RESET_COST,
   availableTalentPoints,
   CLASS_IDS,
@@ -10,6 +11,10 @@ import { Box, Stack, Typography, Button } from '@mui/material';
 import { ClassCard, GoldBalance } from '@emberfall/ui';
 import { classSprite, weaponSrc, spellSrc } from './class-art';
 import { classDetails } from './class-details';
+
+// Preserve the class-card placeholder while saved progress is unavailable; it is presentation-only.
+const CLASS_PREVIEW_MAX_HEALTH = 100;
+
 type Actions = { unavailable: boolean; send: (message: ClientMessage) => void };
 
 export function ResetTalentsPanel({
@@ -48,7 +53,7 @@ export function ResetTalentsPanel({
           disabled={
             unavailable ||
             (me.coins ?? 0) < TALENT_RESET_COST ||
-            availableTalentPoints(me) >= Math.min(20, me.level) - 1
+            availableTalentPoints(me) >= Math.min(TALENT_POINT_CAP, me.level) - 1
           }
           onClick={() => {
             send({ type: 'resetTalents', classId: me.classId ?? 'warrior' });
@@ -104,7 +109,7 @@ export function WardrobePanel({
             stats={{
               level: stats?.level ?? 1,
               experience: stats?.experience ?? 0,
-              maxHitpoints: stats?.maxHitpoints ?? 100,
+              maxHitpoints: stats?.maxHitpoints ?? CLASS_PREVIEW_MAX_HEALTH,
               power: characterStats({ classId: id, equipment: stats?.equipment }).power,
             }}
           />

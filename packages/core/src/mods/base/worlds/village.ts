@@ -1,7 +1,9 @@
 import { INNKEEPER, VILLAGERS, WORKSTATIONS, DIALOGUE_TOPICS } from './village-residents.ts';
 export { INNKEEPER, VILLAGERS, WORKSTATIONS, DIALOGUE_TOPICS } from './village-residents.ts';
 
+// Existing wrapped dimensions and 180-unit/second movement preserve village traversal and save positions.
 export const ARENA = { width: 4800, height: 2560, speed: 180 } as const;
+// Authored wardrobe placement stays beside the central village paths.
 export const WARDROBE = { x: 350, y: 365 };
 // Shared stops form a village circuit, away from building footprints.
 export const NPC_STOPS = [
@@ -15,10 +17,12 @@ export const NPC_STOPS = [
   { x: 330, y: 590 },
   { x: 330, y: 440 },
 ] as const;
+// Authored circles retain the two practice areas and their scenery-clearance footprints.
 export const TRAINING_ZONES = [
   { x: 60, y: 355, radius: 270, clearingRadius: 135 },
   { x: 1000, y: 355, radius: 270, clearingRadius: 135 },
 ] as const;
+// Positions/door anchors match the authored village plan; source offsets/widths select existing sprite crops.
 export const BUILDINGS = [
   { id: 'inn', name: 'Inn', x: 235, y: 225, doorX: 219, sourceX: 0, sourceWidth: 64 },
   { id: 'hall', name: 'Hall', x: 485, y: 170, doorX: 469, sourceX: 192, sourceWidth: 64 },
@@ -34,6 +38,7 @@ export const BUILDINGS = [
   },
   { id: 'lodge', name: 'Lodge', x: 730, y: 510, doorX: 730, sourceX: 256, sourceWidth: 48 },
 ] as const;
+// Authored light positions mark the existing paths and building entrances.
 export const TORCHES = [
   { x: 330, y: 249 },
   { x: 620, y: 249 },
@@ -43,6 +48,7 @@ export const TORCHES = [
   { x: 345, y: 580 },
   { x: 635, y: 580 },
 ] as const;
+// Cubic control points preserve the authored routes between the plaza, wardrobe and building doors.
 export const PATH_CURVES = [
   [
     { x: WARDROBE.x, y: WARDROBE.y },
@@ -100,12 +106,14 @@ export const VILLAGE_DEFINITION = {
   torches: TORCHES,
   trainingZones: TRAINING_ZONES,
   paths: PATH_CURVES,
+  // Fixed seeds preserve scenery identity across clients; attempt budgets retain its existing density.
   treeSeed: 8927,
   treeAttempts: 550,
   rockSeed: 3719,
   rockAttempts: 300,
   plantSeed: 6143,
   plantAttempts: 1000,
+  // Existing spawn/return anchors keep arrivals in the plaza, with 22-unit separation between players.
   spawn: { x: 420, y: 340, spacing: 22 },
   returnSpawn: { x: 480, y: 360 },
 } as const;

@@ -1,3 +1,4 @@
+import { WHITE_TINT } from './color.ts';
 import { Graphics, Matrix, Rectangle, type Sprite } from 'pixi.js';
 import { playerCutoutRuns, PLAYER_CUTOUT_MARGIN } from './player-cutout';
 import { applyTransform, transformedBounds } from './drawing-transform';
@@ -40,7 +41,7 @@ export class PlayerOcclusion {
         this.cutout.rect(x, y, width, 1);
       }
 
-      this.cutout.fill(0xffffff);
+      this.cutout.fill(WHITE_TINT);
       this.runs = runs;
     }
 

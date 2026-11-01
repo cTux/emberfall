@@ -4,6 +4,12 @@ import { GearTooltipStyled, EQUIPMENT_SLOT_SIZE } from './equipment.styles';
 import { ItemTooltip, type ItemTooltipView, type EquipmentBadgeView } from './ItemTooltip';
 import { inventoryDropProps, type InventoryDrop } from '../inventory-drag';
 
+// Empty gear is quarter-opacity to distinguish placeholders from equipped artwork.
+const EMPTY_GEAR_OPACITY = 0.25;
+
+// Keep the original three-column, four-row silhouette when hosts supply only a partial loadout.
+const MIN_EQUIPMENT_GRID = { columns: 3, rows: 4 };
+
 export type { EquipmentBadgeView } from './ItemTooltip';
 
 export interface EquipmentStatView {
@@ -72,13 +78,13 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
           sx={{
             display: 'grid',
             gridTemplateColumns: `repeat(${Math.max(
-              3,
+              MIN_EQUIPMENT_GRID.columns,
               ...slots.map((slot) => {
                 return slot.position.column;
               }),
             )}, ${EQUIPMENT_SLOT_SIZE}px)`,
             gridTemplateRows: `repeat(${Math.max(
-              4,
+              MIN_EQUIPMENT_GRID.rows,
               ...slots.map((slot) => {
                 return slot.position.row;
               }),
@@ -201,7 +207,7 @@ export function EquipmentPanel({ slots, stats }: EquipmentPanelProps) {
                       height: { xs: 32, sm: 44 },
                       display: 'grid',
                       placeItems: 'center',
-                      opacity: slot.item ? 1 : 0.25,
+                      opacity: slot.item ? 1 : EMPTY_GEAR_OPACITY,
                       color: 'text.secondary',
                       '& img, & svg': {
                         width: '100%',

@@ -1,3 +1,6 @@
+import { NORMAL_CLOSE, CONNECTION_LOST } from '../network/codes.ts';
+// Three matches the standard WebSocket CLOSED readyState in this test transport.
+const CLOSED_STATE = 3;
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { EventEmitter } from 'node:events';
 import { Client, type Room } from '@colyseus/sdk';
@@ -6,7 +9,7 @@ import { SessionState, materializeState } from '@emberfall/common/protocol';
 /** Ports the existing behavioral assertions to a real Colyseus connection. */
 export class WebSocket extends EventEmitter {
   static OPEN = 1;
-  static CLOSED = 3;
+  static CLOSED = CLOSED_STATE;
   readyState = 0;
   private room?: Room<SessionState>;
 
@@ -36,7 +39,7 @@ export class WebSocket extends EventEmitter {
         }
       });
       this.room.onLeave((code) => {
-        this.readyState = 3;
+        this.readyState = CLOSED_STATE;
         this.emit('close', code);
       });
       this.readyState = 1;
@@ -57,8 +60,8 @@ export class WebSocket extends EventEmitter {
     this.room?.send('command', command);
   }
 
-  close(code = 1000) {
-    if (code === 1000) {
+  close(code = NORMAL_CLOSE) {
+    if (code === NORMAL_CLOSE) {
       void this.room?.leave();
     } else {
       this.room?.connection.close(code);
@@ -66,6 +69,6 @@ export class WebSocket extends EventEmitter {
   }
 
   terminate() {
-    this.room?.connection.close(4001);
+    this.room?.connection.close(CONNECTION_LOST);
   }
 }

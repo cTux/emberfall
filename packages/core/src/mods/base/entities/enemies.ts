@@ -2,6 +2,8 @@ import type { EnemyArt, EnemyDefinition } from '../../../content/contracts.ts';
 export const BOSS_DEFINITIONS = {
   hollowWarden: { id: 'hollowWarden', name: 'The Hollow Warden', archetype: 'brute', kind: 'boss' },
 } as const;
+// Existing archetype calibration: runners trade body size for speed, brutes speed for reach and size.
+// Windup/cooldown values preserve their established attack telegraphs; no benchmarked optimum is claimed.
 export const ENEMY_STATS = {
   skeleton: { speed: 64, radius: 10, size: 48, reach: 40, windup: 650, cooldown: 1000 },
   runner: { speed: 104, radius: 8, size: 32, reach: 32, windup: 500, cooldown: 900 },
@@ -12,6 +14,8 @@ export const ENEMY_STATS = {
   Omit<EnemyDefinition, 'id' | 'behavior' | 'art' | 'hitPoints' | 'damage'>
 >;
 
+// Preserve encounter balance: cap live enemies and keep melee/caster attacks on their existing cadence.
+// Probabilities, warning/range budgets and per-member multipliers are existing gameplay tuning.
 export const ENEMY_RULES = {
   damageCooldownMs: 1000,
   maxAlive: 160,

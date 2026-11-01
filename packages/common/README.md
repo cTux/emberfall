@@ -10,6 +10,8 @@ Game content, semantic validation and shared rules live in [core](../core/README
 | Location                                              | Responsibility                                                      |
 | ----------------------------------------------------- | ------------------------------------------------------------------- |
 | `src/content.ts`                                      | Open class/slot/item-related contracts and fixed damage type fields |
+| `src/limits.ts`                                       | Named wire/save bounds with compatibility and budget rationale      |
+| `src/units.ts`                                        | Exact content-independent unit conversions                          |
 | `src/enums`                                           | Named built-in enemy type/kind and difficulty values                |
 | `src/index.ts`                                        | Public compatibility exports                                        |
 | `src/progress.ts`, `src/commands.ts`                  | Structural progress and client command schemas                      |

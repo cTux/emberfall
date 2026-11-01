@@ -1,3 +1,5 @@
+import { PERCENT } from '@emberfall/common';
+
 import { game, STARTER_WEAPONS } from '@emberfall/core';
 import type { ClassId } from '@emberfall/common';
 import { registeredSlotViews } from '../content-views';
@@ -28,7 +30,7 @@ export const number = (value: number) => {
 };
 
 export const percent = (value: number) => {
-  return `${number(value * 100)}%`;
+  return `${number(value * PERCENT)}%`;
 };
 
 export const capitalize = (value: string) => {

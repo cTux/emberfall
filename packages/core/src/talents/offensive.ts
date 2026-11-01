@@ -1,10 +1,13 @@
+import { TALENT_MAX_RANK, TALENT_THIRD_TIER, TALENT_FINISHER_TIER } from '../talent-catalog.ts';
+import { PERCENT, wrap, wrappedDelta } from '@emberfall/common';
+import { offensiveFollowups } from './offensive-followups.ts';
+import { OFFENSE } from './offensive-tuning.ts';
 import type { TalentCast } from './targeting.ts';
 import type { Enemy, Player } from '@emberfall/common';
-import { wrap, wrappedDelta } from '@emberfall/common';
 import { forestDistance, FOREST } from '../scene.ts';
 import { rank, applyTalentAilment } from '../talent-ailments.ts';
 import { TALENT_NAMES } from '../talent-tree.ts';
-import { state, schedule, deepCuts } from './state.ts';
+import { schedule, deepCuts } from './state.ts';
 import { talentVisual, strike } from './effects.ts';
 import { talentWeaponHit } from './passives.ts';
 
@@ -13,7 +16,6 @@ export function offensive(cast: TalentCast) {
     context,
     scene,
     player,
-    slot,
     nodeId,
     learned,
     aim,
@@ -30,6 +32,7 @@ export function offensive(cast: TalentCast) {
     primary,
     ailment,
   } = cast;
+  const learnedIndex = learned === TALENT_MAX_RANK ? 1 : 0;
   const hitIds = new Set<number>();
   const hit = (enemy: Enemy, at: number, scale: number) => {
     hitIds.add(enemy.id);
@@ -50,12 +53,24 @@ export function offensive(cast: TalentCast) {
 
       const serrated = rank(player, 1, 2);
 
-      if (column === 0 && serrated && context.random() < (serrated === 2 ? 0.45 : 0.25)) {
+      if (
+        column === 0 &&
+        serrated &&
+        context.random() < OFFENSE.serratedChance[serrated === TALENT_MAX_RANK ? 1 : 0]
+      ) {
         applyTalentAilment(enemy, player, ailment, 1, at, undefined, stats);
       }
 
       if (column === 1) {
-        applyTalentAilment(enemy, player, ailment, learned === 2 ? 3 : 2, at, undefined, stats);
+        applyTalentAilment(
+          enemy,
+          player,
+          ailment,
+          OFFENSE.ailmentStacks[learnedIndex],
+          at,
+          undefined,
+          stats,
+        );
       }
 
       const deep = rank(player, 1, 9);
@@ -63,19 +78,23 @@ export function offensive(cast: TalentCast) {
       if (
         deep &&
         enemy.debuffs?.some((entry) => {
-          return entry.ownerId === player.id && entry.stacks >= 5 && entry.expiresAt > at;
+          return (
+            entry.ownerId === player.id &&
+            entry.stacks >= OFFENSE.deepCutsStacks &&
+            entry.expiresAt > at
+          );
         }) &&
-        context.random() < (deep === 2 ? 0.35 : 0.2) &&
+        context.random() < OFFENSE.deepCutsChance[deep === TALENT_MAX_RANK ? 1 : 0] &&
         at >= (deepCuts.get(enemy)?.get(player) ?? 0)
       ) {
         const timers = deepCuts.get(enemy) ?? new WeakMap<Player, number>();
-        timers.set(player, at + 2000);
+        timers.set(player, at + OFFENSE.deepCutsCooldownMs);
         deepCuts.set(enemy, timers);
         strike(
           scene,
           player,
           enemy,
-          deep === 2 ? 1.3 : 0.8,
+          OFFENSE.deepCutsPower[deep === TALENT_MAX_RANK ? 1 : 0],
           at,
           TALENT_NAMES[player.classId ?? 'warrior'][1][9],
           context,
@@ -85,15 +104,15 @@ export function offensive(cast: TalentCast) {
   };
 
   if (tier === 1 && column === 1 && primary) {
-    hit(primary, now, learned === 2 ? 1.5 : 1);
+    hit(primary, now, OFFENSE.pullPower[learnedIndex]);
 
     if (primary.kind !== 'boss') {
       primary.x = wrap(
-        player.x + wrappedDelta(primary.x, player.x, FOREST.width) * 0.25,
+        player.x + wrappedDelta(primary.x, player.x, FOREST.width) * OFFENSE.pullDistanceFraction,
         FOREST.width,
       );
       primary.y = wrap(
-        player.y + wrappedDelta(primary.y, player.y, FOREST.height) * 0.25,
+        player.y + wrappedDelta(primary.y, player.y, FOREST.height) * OFFENSE.pullDistanceFraction,
         FOREST.height,
       );
     }
@@ -101,55 +120,67 @@ export function offensive(cast: TalentCast) {
     const trail = rank(player, 1, 4);
 
     if (trail) {
-      for (const enemy of effectArea(scene, primary, 150)) {
+      for (const enemy of effectArea(scene, primary, OFFENSE.trailRadius)) {
         applyTalentAilment(enemy, player, ailment, trail, now, undefined, stats);
       }
     }
-  } else if ((tier === 1 && column === 0) || (tier === 3 && column === 1)) {
-    const count = column === 0 ? 3 : 4;
-    schedule(scene, player, nodeId, now, (count - 1) * 500, 500, (at) => {
-      for (const enemy of effectArea(
-        scene,
-        column === 0 ? player : aim,
-        learned === 2 ? 170 : 125,
-      )) {
-        hit(enemy, at, column === 0 ? (learned === 2 ? 0.65 : 0.45) : learned === 2 ? 0.45 : 0.3);
-      }
-
-      talentVisual(scene, player, column, column === 0 ? player : aim, at);
-      const advancing = rank(player, 0, 4);
-
-      if (column === 0 && advancing && at === now + (count - 1) * 500) {
-        for (const enemy of effectArea(scene, aim, 220)) {
-          strike(
-            scene,
-            player,
+  } else if ((tier === 1 && column === 0) || (tier === TALENT_FINISHER_TIER && column === 1)) {
+    const count = column === 0 ? OFFENSE.whirlwindHits : OFFENSE.cycloneHits;
+    schedule(
+      scene,
+      player,
+      nodeId,
+      now,
+      (count - 1) * OFFENSE.repeatedHitIntervalMs,
+      OFFENSE.repeatedHitIntervalMs,
+      (at) => {
+        for (const enemy of effectArea(
+          scene,
+          column === 0 ? player : aim,
+          OFFENSE.repeatedHitRadius[learnedIndex],
+        )) {
+          hit(
             enemy,
-            advancing === 2 ? 1.1 : 0.7,
             at,
-            TALENT_NAMES[player.classId ?? 'warrior'][0][4],
-            context,
+            column === 0
+              ? OFFENSE.whirlwindPower[learnedIndex]
+              : OFFENSE.cyclonePower[learnedIndex],
           );
         }
-      }
-    });
+
+        talentVisual(scene, player, column, column === 0 ? player : aim, at);
+        const advancing = rank(player, 0, 4);
+
+        if (column === 0 && advancing && at === now + (count - 1) * OFFENSE.repeatedHitIntervalMs) {
+          for (const enemy of effectArea(scene, aim, OFFENSE.advancingRadius)) {
+            strike(
+              scene,
+              player,
+              enemy,
+              OFFENSE.advancingPower[advancing === TALENT_MAX_RANK ? 1 : 0],
+              at,
+              TALENT_NAMES[player.classId ?? 'warrior'][0][4],
+              context,
+            );
+          }
+        }
+      },
+    );
   } else {
-    for (const enemy of tier === 3 ? (primary ? [primary] : []) : targets) {
+    for (const enemy of tier === TALENT_FINISHER_TIER ? (primary ? [primary] : []) : targets) {
       hit(
         enemy,
         now,
-        tier === 3 && enemy.hitpoints < (enemy.maxHitpoints ?? enemy.hitpoints) * 0.3
-          ? learned === 2
-            ? 4
-            : 3
-          : learned === 2
-            ? 2.1
-            : 1.5,
+        tier === TALENT_FINISHER_TIER &&
+          enemy.hitpoints <
+            (enemy.maxHitpoints ?? enemy.hitpoints) * OFFENSE.executionHealthFraction
+          ? OFFENSE.executionPower[learnedIndex]
+          : OFFENSE.directPower[learnedIndex],
       );
     }
   }
 
-  if (column === 0 && (tier === 0 || tier === 2 || tier === 3)) {
+  if (column === 0 && (tier === 0 || tier === TALENT_THIRD_TIER || tier === TALENT_FINISHER_TIER)) {
     let previous = primary ?? targets[0];
     const extras =
       classId === 'druid'
@@ -166,7 +197,10 @@ export function offensive(cast: TalentCast) {
           }
 
           if (classId === 'druid') {
-            return forestDistance(previous, enemy) <= 300 * (1 + stats.bonuses.range / 100);
+            return (
+              forestDistance(previous, enemy) <=
+              OFFENSE.bounceRadius * (1 + stats.bonuses.range / PERCENT)
+            );
           }
 
           const dx = wrappedDelta(enemy.x, player.x, FOREST.width);
@@ -174,7 +208,7 @@ export function offensive(cast: TalentCast) {
 
           return (
             dx * Math.cos(heading) + dy * Math.sin(heading) >= 0 &&
-            Math.abs(-dx * Math.sin(heading) + dy * Math.cos(heading)) <= 32 &&
+            Math.abs(-dx * Math.sin(heading) + dy * Math.cos(heading)) <= OFFENSE.pierceHalfWidth &&
             forestDistance(player, enemy) <= maxRange
           );
         })
@@ -186,88 +220,24 @@ export function offensive(cast: TalentCast) {
         break;
       }
 
-      hit(next, now, learned === 2 ? 2.1 : 1.5);
+      hit(next, now, OFFENSE.directPower[learnedIndex]);
       previous = next;
     }
   }
 
   const second = column === 0 ? rank(player, column, 2) : 0;
 
-  if (second && tier === 0 && context.random() < (second === 2 ? 0.5 : 0.25)) {
-    schedule(scene, player, nodeId, now + 300, 0, 1, (at) => {
-      for (const enemy of effectArea(scene, aim, 125)) {
-        hit(enemy, at, learned === 2 ? 1.05 : 0.75);
+  if (
+    second &&
+    tier === 0 &&
+    context.random() < OFFENSE.secondImpactChance[second === TALENT_MAX_RANK ? 1 : 0]
+  ) {
+    schedule(scene, player, nodeId, now + OFFENSE.secondImpactDelayMs, 0, 1, (at) => {
+      for (const enemy of effectArea(scene, aim, OFFENSE.secondImpactRadius)) {
+        hit(enemy, at, OFFENSE.secondImpactPower[learnedIndex]);
       }
     });
   }
 
-  const value = state(player, scene);
-
-  if (column === 0 && tier === 2 && rank(player, 0, 6)) {
-    value.fissure = { ...aim, until: now + 4000 };
-  } else if (tier === 0 && value.fissure && value.fissure.until > now) {
-    for (const enemy of effectArea(scene, value.fissure, 170)) {
-      strike(
-        scene,
-        player,
-        enemy,
-        rank(player, 0, 6) === 2 ? 1.5 : 0.9,
-        now,
-        TALENT_NAMES[player.classId ?? 'warrior'][0][6],
-        context,
-      );
-    }
-
-    value.fissure = undefined;
-  }
-
-  const momentum = rank(player, 0, 8);
-
-  if (column === 0 && tier === 3 && primary && primary.hitpoints <= 0 && momentum) {
-    const id = `talent:${classId}:${slot}`;
-    player.talentCooldowns![id] = Math.max(
-      now,
-      player.talentCooldowns![id] - (momentum === 2 ? 12000 : 6000),
-    );
-    value.empoweredUntil = now + 6000;
-  }
-
-  if (tier === 0 && value.empoweredUntil && value.empoweredUntil > now) {
-    value.empoweredUntil = undefined;
-
-    for (const enemy of targets) {
-      strike(
-        scene,
-        player,
-        enemy,
-        momentum === 2 ? 0.75 : 0.5,
-        now,
-        TALENT_NAMES[player.classId ?? 'warrior'][0][8],
-        context,
-      );
-    }
-  }
-
-  value.sequence = value.sequence.filter((entry) => {
-    return now - entry.at <= 6000 && entry.slot !== slot;
-  });
-  value.sequence.push({ slot, at: now });
-  const rhythm = rank(player, 0, 9);
-
-  if (rhythm && value.sequence.length >= 3 && now >= value.rhythmAt) {
-    value.rhythmAt = now + 8000;
-    value.sequence = [];
-
-    for (const enemy of effectArea(scene, player, 200)) {
-      strike(
-        scene,
-        player,
-        enemy,
-        rhythm === 2 ? 1.6 : 1,
-        now,
-        TALENT_NAMES[player.classId ?? 'warrior'][0][9],
-        context,
-      );
-    }
-  }
+  offensiveFollowups(cast);
 }

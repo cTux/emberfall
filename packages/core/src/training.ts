@@ -6,6 +6,9 @@ import { tickCompanion, tickPlayerCombat } from './simulation.ts';
 import { damagePerSecond, tickDebuffs } from './class-combat.ts';
 import type { Player, SceneState } from '@emberfall/common';
 
+// Seven dummy IDs occupy the initial training layout; subsequent transient IDs start after them.
+const TRAINING_INITIAL_SEQUENCE = 7;
+
 type Game = ReturnType<typeof createGame>;
 export function tickTraining(
   scene: SceneState | undefined,
@@ -58,7 +61,7 @@ export function createTrainingScene(now: number): SceneState {
     countdownAt: null,
     endsAt: null,
     portals: [],
-    sequence: 7,
+    sequence: TRAINING_INITIAL_SEQUENCE,
     nextSpawn: now + TRAINING_DEFINITION.refreshMs,
     damage: [],
     enemies: [

@@ -1,3 +1,4 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
 import type { Graphics } from 'pixi.js';
 
 type PathParameters = {
@@ -62,7 +63,10 @@ const methods: PathHandlers = {
     const sweep = counterclockwise
       ? -((startAngle - endAngle + Math.PI * 2) % (Math.PI * 2) || Math.PI * 2)
       : (endAngle - startAngle) % (Math.PI * 2) || Math.PI * 2;
-    const count = Math.max(12, Math.ceil((Math.abs(sweep) * Math.max(radiusX, radiusY)) / 4));
+    const count = Math.max(
+      TUNING.minimumEllipseSegments,
+      Math.ceil((Math.abs(sweep) * Math.max(radiusX, radiusY)) / TUNING.ellipseSegmentPixels),
+    );
 
     for (let i = 0; i <= count; i++) {
       const angle = startAngle + (sweep * i) / count;

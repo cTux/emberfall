@@ -1,6 +1,26 @@
 import type { DrawingContext } from './rendering/drawing-context';
 import type { DamageEvent, DamageType } from '@emberfall/common';
 
+// Existing combat-label calibration gives each number a fixed 750 ms flight and short initial pop.
+const DAMAGE_TEXT = {
+  lifetimeMs: 750,
+  lanes: 5,
+  centerLane: 2,
+  popMs: 80,
+  initialScale: 0.8,
+  popGrowth: 0.55,
+  settleScale: 0.35,
+  settleMs: 140,
+  laneGap: 7,
+  laneSpread: 12,
+  rise: 42,
+  fadeAtMs: 450,
+  fadeMs: 300,
+  mergeWindowMs: 10,
+  criticalStroke: 7,
+  normalStroke: 3,
+} as const;
+
 export const DAMAGE_COLORS: Record<DamageType, string> = {
   physical: '#fff0b1',
   fire: '#ff9d48',
@@ -13,20 +33,26 @@ export const CRITICAL_TEXT_STYLE = { fill: '#ffffff', outline: '#d52b3f', width:
 export function damageTextFrame(hit: DamageEvent, now: number) {
   const age = now - hit.at;
 
-  if (age < 0 || age >= 750) {
+  if (age < 0 || age >= DAMAGE_TEXT.lifetimeMs) {
     return undefined;
   }
 
-  const progress = age / 750;
+  const progress = age / DAMAGE_TEXT.lifetimeMs;
   const rise = 1 - (1 - progress) ** 2;
-  const lane = (((hit.id % 5) + 5) % 5) - 2;
-  const pop = age < 80 ? 0.8 + (age / 80) * 0.55 : 1 + 0.35 * Math.max(0, 1 - (age - 80) / 140);
+  const lane =
+    (((hit.id % DAMAGE_TEXT.lanes) + DAMAGE_TEXT.lanes) % DAMAGE_TEXT.lanes) -
+    DAMAGE_TEXT.centerLane;
+  const pop =
+    age < DAMAGE_TEXT.popMs
+      ? DAMAGE_TEXT.initialScale + (age / DAMAGE_TEXT.popMs) * DAMAGE_TEXT.popGrowth
+      : 1 +
+        DAMAGE_TEXT.settleScale * Math.max(0, 1 - (age - DAMAGE_TEXT.popMs) / DAMAGE_TEXT.settleMs);
 
   return {
-    x: lane * (7 + rise * 12),
-    y: -42 - rise * 42,
+    x: lane * (DAMAGE_TEXT.laneGap + rise * DAMAGE_TEXT.laneSpread),
+    y: -DAMAGE_TEXT.rise - rise * DAMAGE_TEXT.rise,
     scale: pop,
-    alpha: age <= 450 ? 1 : (750 - age) / 300,
+    alpha: age <= DAMAGE_TEXT.fadeAtMs ? 1 : (DAMAGE_TEXT.lifetimeMs - age) / DAMAGE_TEXT.fadeMs,
   };
 }
 
@@ -41,7 +67,7 @@ export function combineDamageNumbers(hits: readonly DamageEvent[]): DamageEvent[
     const key = JSON.stringify([hit.ownerId, hit.target, hit.damageType ?? 'physical']);
     const previous = hit.ownerId ? latest.get(key) : undefined;
 
-    if (previous && hit.at - previous.at <= 10) {
+    if (previous && hit.at - previous.at <= DAMAGE_TEXT.mergeWindowMs) {
       previous.amount += hit.amount;
       previous.critical = previous.critical || hit.critical;
     } else {
@@ -102,7 +128,7 @@ export function drawDamageNumber(
       : '#ff8b81';
   const value = String(Math.max(1, Math.round(hit.amount)));
   ctx.strokeStyle = '#20150f';
-  ctx.lineWidth = hit.critical ? 7 : 3;
+  ctx.lineWidth = hit.critical ? DAMAGE_TEXT.criticalStroke : DAMAGE_TEXT.normalStroke;
   ctx.lineJoin = 'round';
   ctx.strokeText(value, 0, 0);
 

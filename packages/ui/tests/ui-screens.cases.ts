@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { story } from './ui.fixture.ts';
 
+// The catalog smoke test visits every story, so retain its one-minute suite budget.
+const STORY_CATALOG_TIMEOUT_MS = 60_000;
+
 test('lobby shows server columns, locked worlds and disabled creation', async ({ page }) => {
   await page.goto(story('screens-compositions--lobby'));
   await expect(page.getByRole('tab', { name: 'Join a world' })).toBeVisible();
@@ -34,7 +37,7 @@ test('lobby shows server columns, locked worlds and disabled creation', async ({
 });
 
 test('all stories render; desktop and narrow screens fit', async ({ page, request }, testInfo) => {
-  test.setTimeout(60_000);
+  test.setTimeout(STORY_CATALOG_TIMEOUT_MS);
   const errors: string[] = [];
   page.on('pageerror', (error) => {
     return errors.push(error.message);

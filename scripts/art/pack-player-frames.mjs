@@ -1,4 +1,17 @@
 export function packPlayerFrames({ isolated, name, config }) {
+  // Match the shipped four-facing, ten-row atlas at twice the logical 64 px cell size.
+  const atlasLayout = { width: 512, height: 1280, cell: 64, resolution: 2, baseline: 61 };
+  // Preserve approved silhouette margins inside each 64 px logical cell.
+  const spriteBounds = { width: 58, height: 56 };
+  // Row/column IDs describe the approved source sheets, including repaired fallen/cast poses.
+  const sourcePoses = {
+    firstExtraRow: 6,
+    oldFallen: 8,
+    fallen: 9,
+    sideFacing: 2,
+    safeCast: 6,
+    castFollowThrough: 7,
+  };
   const { allFrames, images, strideIndex } = isolated;
   let frames = allFrames.filter((f) => {
     return f.sourceIndex === 0;
@@ -7,10 +20,10 @@ export function packPlayerFrames({ isolated, name, config }) {
   if (name === 'warrior') {
     frames = frames
       .filter((f) => {
-        return f.row < 6 || f.row === 8;
+        return f.row < sourcePoses.firstExtraRow || f.row === sourcePoses.oldFallen;
       })
       .map((f) => {
-        return { ...f, row: f.row === 8 ? 9 : f.row };
+        return { ...f, row: f.row === sourcePoses.oldFallen ? sourcePoses.fallen : f.row };
       });
     frames.push(
       ...allFrames
@@ -18,7 +31,7 @@ export function packPlayerFrames({ isolated, name, config }) {
           return f.sourceIndex === 1 && !f.isStride;
         })
         .map((f) => {
-          return { ...f, row: f.row + 6 };
+          return { ...f, row: f.row + sourcePoses.firstExtraRow };
         }),
     );
   }
@@ -26,7 +39,9 @@ export function packPlayerFrames({ isolated, name, config }) {
   if (name === 'druid') {
     frames.push(
       ...allFrames.filter((f) => {
-        return f.sourceIndex === 1 && f.row === 9 && f.col >= 2;
+        return (
+          f.sourceIndex === 1 && f.row === sourcePoses.fallen && f.col >= sourcePoses.sideFacing
+        );
       }),
     );
   }
@@ -46,10 +61,13 @@ export function packPlayerFrames({ isolated, name, config }) {
   // that transfers the staff to the visible, anatomical left hand.
   if (name === 'mage' || name === 'druid') {
     const safe = frames.find((f) => {
-      return f.col === 2 && f.row === 6;
+      return f.col === sourcePoses.sideFacing && f.row === sourcePoses.safeCast;
     });
     frames = frames.map((f) => {
-      return f.col === 2 && (f.row === 7 || f.row === 8) ? { ...safe, row: f.row } : f;
+      return f.col === sourcePoses.sideFacing &&
+        (f.row === sourcePoses.castFollowThrough || f.row === sourcePoses.oldFallen)
+        ? { ...safe, row: f.row }
+        : f;
     });
   }
 
@@ -78,13 +96,13 @@ export function packPlayerFrames({ isolated, name, config }) {
     };
   });
   const scale = Math.min(
-    58 /
+    spriteBounds.width /
       Math.max(
         ...frames.map((f) => {
           return f.width * f.unitScale;
         }),
       ),
-    56 /
+    spriteBounds.height /
       Math.max(
         ...frames.map((f) => {
           return f.height * f.unitScale;
@@ -92,11 +110,11 @@ export function packPlayerFrames({ isolated, name, config }) {
       ),
   );
   const output = document.createElement('canvas');
-  output.width = 512;
-  output.height = 1280;
+  output.width = atlasLayout.width;
+  output.height = atlasLayout.height;
   const out = output.getContext('2d');
   out.imageSmoothingEnabled = false;
-  out.scale(2, 2);
+  out.scale(atlasLayout.resolution, atlasLayout.resolution);
   const rows = [0, 1, 2, 3, 4, 8, 9, 5, 6, 7];
 
   for (const f of frames) {
@@ -108,8 +126,8 @@ export function packPlayerFrames({ isolated, name, config }) {
       f.top,
       f.width,
       f.height,
-      f.col * 64 + Math.floor((64 - width) / 2),
-      rows[f.row] * 64 + 61 - height,
+      f.col * atlasLayout.cell + Math.floor((atlasLayout.cell - width) / 2),
+      rows[f.row] * atlasLayout.cell + atlasLayout.baseline - height,
       width,
       height,
     );
@@ -133,7 +151,7 @@ export function packPlayerFrames({ isolated, name, config }) {
     }),
   ];
   const strideScale = Math.min(
-    58 /
+    spriteBounds.width /
       Math.max(
         ...originalStrides.map((f) => {
           return f.width;
@@ -147,7 +165,7 @@ export function packPlayerFrames({ isolated, name, config }) {
       ),
   );
   const repairScale = Math.min(
-    58 /
+    spriteBounds.width /
       Math.max(
         ...revisedStrides.map((f) => {
           return f.width;
@@ -166,16 +184,16 @@ export function packPlayerFrames({ isolated, name, config }) {
     const frameScale = f.sourceIndex === strideIndex ? strideScale : repairScale;
     const width = Math.round(f.width * frameScale);
     const height = Math.round(f.height * frameScale);
-    const y = walkRows[f.row] * 64;
-    out.clearRect(f.col * 64, y, 64, 64);
+    const y = walkRows[f.row] * atlasLayout.cell;
+    out.clearRect(f.col * atlasLayout.cell, y, atlasLayout.cell, atlasLayout.cell);
     out.drawImage(
       images[f.sourceIndex],
       f.left,
       f.top,
       f.width,
       f.height,
-      f.col * 64 + Math.floor((64 - width) / 2),
-      y + 61 - height,
+      f.col * atlasLayout.cell + Math.floor((atlasLayout.cell - width) / 2),
+      y + atlasLayout.baseline - height,
       width,
       height,
     );

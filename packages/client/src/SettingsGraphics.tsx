@@ -4,6 +4,9 @@ import { Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import type { Preferences } from './preferences';
 import { GRAPHICS_LABELS, GRAPHICS_PRESETS, type GraphicsSettings } from './graphics';
 
+// Offer the existing common display cadences without changing the uncapped display-refresh option.
+const FRAME_LIMIT_OPTIONS = [30, 60, 120, 144];
+
 export function SettingsGraphics({
   preferences,
   setPreferences,
@@ -102,7 +105,7 @@ export function SettingsGraphics({
         }}
       >
         <MenuItem value={0}>Display refresh rate</MenuItem>
-        {[30, 60, 120, 144].map((fps) => {
+        {FRAME_LIMIT_OPTIONS.map((fps) => {
           return (
             <MenuItem key={fps} value={fps}>
               {fps} FPS

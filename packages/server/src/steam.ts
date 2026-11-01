@@ -1,3 +1,22 @@
+// OpenID UTC timestamps occupy twenty ISO-8601 characters before the nonce suffix.
+const NONCE_TIMESTAMP_LENGTH = 20;
+// Preserve the five-minute accepted login window while rejecting stale responses.
+const MAX_NONCE_AGE_MS = 300_000;
+// Permit the existing one-minute provider/server clock skew allowance.
+const MAX_CLOCK_SKEW_MS = 60_000;
+// Preserve the bounded replay-cache capacity; this is an operational budget.
+const MAX_REMEMBERED_NONCES = 5000;
+// Retain nonces for the accepted five-minute age plus one-minute future skew.
+const NONCE_RETENTION_MS = 360_000;
+// Bound provider requests to the existing eight-second login latency budget.
+const STEAM_REQUEST_TIMEOUT_MS = 8000;
+// Bound remote display names before placing them in account responses.
+const MAX_PROFILE_NAME_LENGTH = 256;
+// Preserve the accepted public individual-account SteamID64 lower boundary.
+const MIN_INDIVIDUAL_STEAM_ID = 76561197960265729n;
+// Preserve the accepted public individual-account SteamID64 upper boundary.
+const MAX_INDIVIDUAL_STEAM_ID = 76561202255233023n;
+
 const endpoint = 'https://steamcommunity.com/openid/login';
 const namespace = 'http://specs.openid.net/auth/2.0';
 
@@ -43,7 +62,7 @@ export class SteamProvider {
     const identity = get('claimed_id');
     const match = /^https?:\/\/steamcommunity\.com\/openid\/id\/(\d{17})$/.exec(identity);
     const nonce = get('response_nonce');
-    const issued = Date.parse(nonce.slice(0, 20));
+    const issued = Date.parse(nonce.slice(0, NONCE_TIMESTAMP_LENGTH));
 
     if (
       [...query.keys()].some((key) => {
@@ -54,8 +73,8 @@ export class SteamProvider {
       get('op_endpoint') !== endpoint ||
       get('return_to') !== returnTo ||
       !match ||
-      BigInt(match[1]) < 76561197960265729n ||
-      BigInt(match[1]) > 76561202255233023n ||
+      BigInt(match[1]) < MIN_INDIVIDUAL_STEAM_ID ||
+      BigInt(match[1]) > MAX_INDIVIDUAL_STEAM_ID ||
       get('identity') !== identity ||
       !get('sig') ||
       !get('assoc_handle') ||
@@ -71,16 +90,16 @@ export class SteamProvider {
       }) ||
       !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z.+$/.test(nonce) ||
       !Number.isFinite(issued) ||
-      issued < now - 300_000 ||
-      issued > now + 60_000 ||
+      issued < now - MAX_NONCE_AGE_MS ||
+      issued > now + MAX_CLOCK_SKEW_MS ||
       this.nonces.has(nonce) ||
-      this.nonces.size >= 5000
+      this.nonces.size >= MAX_REMEMBERED_NONCES
     ) {
       throw new Error('Steam login could not be verified. Please try again.');
     }
 
     // Reserve before yielding so simultaneous replays cannot both succeed.
-    this.nonces.set(nonce, now + 360_000);
+    this.nonces.set(nonce, now + NONCE_RETENTION_MS);
     const body = new URLSearchParams(
       [...query].filter(([key]) => {
         return key.startsWith('openid.');
@@ -91,7 +110,7 @@ export class SteamProvider {
       method: 'POST',
       body,
       redirect: 'error',
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(STEAM_REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok || !(await response.text()).split(/\r?\n/).includes('is_valid:true')) {
@@ -107,7 +126,7 @@ export class SteamProvider {
     url.searchParams.set('steamids', steamId);
     const response = await this.request(url, {
       redirect: 'error',
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(STEAM_REQUEST_TIMEOUT_MS),
     });
 
     if (!response.ok) {
@@ -123,6 +142,6 @@ export class SteamProvider {
       throw new Error('Steam profile unavailable');
     }
 
-    return player.personaname.slice(0, 256);
+    return player.personaname.slice(0, MAX_PROFILE_NAME_LENGTH);
   }
 }

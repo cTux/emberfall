@@ -1,4 +1,6 @@
 import type { CompanionDefinition } from '../../../content/contracts.ts';
+// Existing Bear balance: 1.5-times owner health, short melee range and five seconds before resurrection.
+// Hunt/return/teleport distances and one-second decisions preserve the calibrated follow behavior.
 export const BEAR_DEFINITION = {
   id: 'bear',
   name: 'Bear',

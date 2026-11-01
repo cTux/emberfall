@@ -1,5 +1,8 @@
 import { FormControlLabel, Slider, Stack, Switch, Typography } from '@mui/material';
 
+// Normalized volume is displayed as a percentage; five-percent steps keep keyboard adjustment practical.
+const VOLUME_DISPLAY = { fullPercent: 100, step: 0.05 };
+
 export interface SettingToggleProps {
   label: string;
   checked: boolean;
@@ -38,14 +41,14 @@ export function VolumeControl({ label, value, disabled, onChange }: VolumeContro
         value={value}
         min={0}
         max={1}
-        step={0.05}
+        step={VOLUME_DISPLAY.step}
         disabled={disabled}
         valueLabelDisplay='auto'
         valueLabelFormat={(volume) => {
-          return `${Math.round(volume * 100)}%`;
+          return `${Math.round(volume * VOLUME_DISPLAY.fullPercent)}%`;
         }}
         getAriaValueText={(volume) => {
-          return `${Math.round(volume * 100)}%`;
+          return `${Math.round(volume * VOLUME_DISPLAY.fullPercent)}%`;
         }}
         onChange={(_, next) => {
           return onChange(next);

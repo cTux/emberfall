@@ -3,9 +3,11 @@ import { tacticsSchema, OFFENSIVE_PRIORITIES } from './tactics.ts';
 import { Difficulty } from './enums/Difficulty.ts';
 import { storageNameSchema } from './inventory.ts';
 import { classSchema } from './progress.ts';
+import { CONTRACT_LIMITS } from './limits.ts';
 
-const name = z.string().trim().min(1).max(24);
-const password = z.string().max(64);
+const name = z.string().trim().min(1).max(CONTRACT_LIMITS.nameCharacters);
+const password = z.string().max(CONTRACT_LIMITS.passwordCharacters);
+// Legacy credentials contain a 32-byte token encoded as exactly 64 hexadecimal characters.
 const characterToken = z
   .string()
   .regex(/^[a-f0-9]{64}$/)
@@ -25,54 +27,92 @@ export const clientMessage = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('gather'),
-    nodeId: z.string().min(1).max(64),
-    epoch: z.string().min(1).max(64),
-    checkId: z.string().min(1).max(64).optional(),
+    nodeId: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
+    epoch: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
+    checkId: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters).optional(),
     at: z.number().finite().nonnegative().optional(),
   }),
   z.object({ type: z.literal('resetTalents'), classId: classSchema }),
-  z.object({ type: z.literal('learnTalent'), nodeId: z.string().min(1).max(64) }),
+  z.object({
+    type: z.literal('learnTalent'),
+    nodeId: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
+  }),
   z.object({
     type: z.literal('equipTalent'),
-    slot: z.number().int().min(0).max(3),
-    nodeId: z.string().min(1).max(64).nullable(),
+    slot: z
+      .number()
+      .int()
+      .min(0)
+      .max(CONTRACT_LIMITS.talentSlots - 1),
+    nodeId: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters).nullable(),
   }),
   z.object({
     type: z.literal('talentCast'),
     automatic: z.boolean().optional(),
     aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
     aimY: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
-    slot: z.number().int().min(0).max(3),
+    slot: z
+      .number()
+      .int()
+      .min(0)
+      .max(CONTRACT_LIMITS.talentSlots - 1),
     classId: classSchema,
-    epoch: z.string().min(1).max(64),
+    epoch: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
   }),
-  z.object({ type: z.literal('useItem'), id: z.string().min(1).max(64) }),
-  z.object({ type: z.literal('unequip'), slot: z.string().min(1).max(128) }),
+  z.object({
+    type: z.literal('useItem'),
+    id: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
+  }),
+  z.object({
+    type: z.literal('unequip'),
+    slot: z.string().min(1).max(CONTRACT_LIMITS.contentIdCharacters),
+  }),
   z.object({
     type: z.literal('trade'),
     npcId: z.enum(['innkeeper', 'craftsman']).optional(),
-    id: z.string().min(1).max(64),
+    id: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
     buying: z.boolean(),
-    amount: z.union([z.literal(1), z.literal(10), z.literal('stack')]).optional(),
+    amount: z
+      .union([z.literal(1), z.literal(CONTRACT_LIMITS.tradeBundleQuantity), z.literal('stack')])
+      .optional(),
   }),
   z.object({ type: z.literal('sellAll'), npcId: z.enum(['innkeeper', 'craftsman']).optional() }),
-  z.object({ type: z.literal('npcInteraction'), npcId: z.string().min(1).max(64).nullable() }),
+  z.object({
+    type: z.literal('npcInteraction'),
+    npcId: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters).nullable(),
+  }),
   z.object({
     type: z.literal('storeItem'),
-    tab: z.number().int().min(0).max(2),
-    id: z.string().min(1).max(64),
+    tab: z
+      .number()
+      .int()
+      .min(0)
+      .max(CONTRACT_LIMITS.storageTabs - 1),
+    id: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
     depositing: z.boolean(),
   }),
   z.object({
     type: z.literal('renameStorage'),
-    tab: z.number().int().min(0).max(2),
+    tab: z
+      .number()
+      .int()
+      .min(0)
+      .max(CONTRACT_LIMITS.storageTabs - 1),
     name: storageNameSchema,
   }),
   z.object({
     type: z.literal('moveStorageItem'),
-    fromTab: z.number().int().min(0).max(2),
-    toTab: z.number().int().min(0).max(2),
-    id: z.string().min(1).max(64),
+    fromTab: z
+      .number()
+      .int()
+      .min(0)
+      .max(CONTRACT_LIMITS.storageTabs - 1),
+    toTab: z
+      .number()
+      .int()
+      .min(0)
+      .max(CONTRACT_LIMITS.storageTabs - 1),
+    id: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
   }),
   z.object({
     type: z.literal('chat'),
@@ -80,7 +120,7 @@ export const clientMessage = z.discriminatedUnion('type', [
       .string()
       .trim()
       .min(1)
-      .max(200)
+      .max(CONTRACT_LIMITS.chatCharacters)
       .regex(/^[^\p{Cc}\p{Cf}]*$/u),
   }),
   z.object({ type: z.literal('ping'), id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER) }),
@@ -109,7 +149,7 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('cast'),
     id: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
-    epoch: z.string().min(1).max(64),
+    epoch: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
     classId: classSchema,
     autoTarget: z.boolean(),
     aimX: z.number().finite().min(0).max(Number.MAX_SAFE_INTEGER),
@@ -130,8 +170,8 @@ export const clientMessage = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('move'),
     seq: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER).optional(),
-    epoch: z.string().max(64).optional(),
-    durationMs: z.number().finite().positive().max(50).optional(),
+    epoch: z.string().max(CONTRACT_LIMITS.instanceIdCharacters).optional(),
+    durationMs: z.number().finite().positive().max(CONTRACT_LIMITS.movementDurationMs).optional(),
     x: z.number().finite().min(-1).max(1),
     y: z.number().finite().min(-1).max(1),
   }),

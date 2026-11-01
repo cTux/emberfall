@@ -1,3 +1,4 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
 import { Container, Sprite, Graphics, Text, BlurFilter, type Texture, type Matrix } from 'pixi.js';
 import { World } from 'miniplex';
 
@@ -66,7 +67,10 @@ export class VisualPools {
   trim() {
     for (const kind of ['sprite', 'graphics', 'text'] as const) {
       const pool = this.pools[kind];
-      const keep = Math.max(this.cursors[kind] + 32, Math.ceil(pool.length * 0.75));
+      const keep = Math.max(
+        this.cursors[kind] + TUNING.poolHeadroom,
+        Math.ceil(pool.length * TUNING.poolRetention),
+      );
       while (pool.length > keep) {
         const entry = pool.pop()!;
         this.ecs.remove(entry);
@@ -111,7 +115,11 @@ export class VisualPools {
           ? new Sprite()
           : kind === 'graphics'
             ? new Graphics()
-            : new Text({ text: '', resolution: 4, textureStyle: { scaleMode: 'linear' } });
+            : new Text({
+                text: '',
+                resolution: TUNING.textResolution,
+                textureStyle: { scaleMode: 'linear' },
+              });
       object.eventMode = 'none';
       entity = this.ecs.add({ object, kind, active: true });
       this.pools[kind].push(entity);
@@ -131,7 +139,10 @@ export class VisualPools {
     object.mask = null;
 
     if (shadowPass && shadowStrength > 0) {
-      entity.blur ??= new BlurFilter({ quality: 2, resolution: 0.5 });
+      entity.blur ??= new BlurFilter({
+        quality: TUNING.blurQuality,
+        resolution: TUNING.blurResolution,
+      });
       entity.blur.strength = shadowStrength;
 
       if (object.filters?.[0] !== entity.blur) {

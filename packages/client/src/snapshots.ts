@@ -2,6 +2,21 @@ import { wrappedDelta, wrap } from '@emberfall/common';
 import { FOREST, moveActor, moveForestActor, ENEMY_STATS } from '@emberfall/core';
 import type { WorldState } from '@emberfall/common';
 
+// Keep two ticks (100 ms) buffered; 50/150 ms thresholds and ±10% clock rates gently recover that depth.
+const INTERPOLATION = {
+  delayMs: 100,
+  capacity: 20,
+  fastLagMs: 150,
+  slowLagMs: 50,
+  fastRate: 1.1,
+  slowRate: 0.9,
+  teleportDistance: 96,
+  feetOffset: 15,
+  actorRadius: 12,
+  bearRadius: 8,
+  movementEpsilon: 0.001,
+};
+
 /** Interpolate confirmed states on a monotonic clock. No input prediction or rollback. */
 export class SnapshotBuffer {
   private history: WorldState[] = [];
@@ -29,7 +44,7 @@ export class SnapshotBuffer {
 
     if (epoch !== this.epoch) {
       this.history = [];
-      this.clock = time - 100;
+      this.clock = time - INTERPOLATION.delayMs;
       this.renderedAt = now;
       this.epoch = epoch;
     } else if (time < (this.latest?.serverNow ?? 0)) {
@@ -46,7 +61,7 @@ export class SnapshotBuffer {
 
     this.history.push(world);
 
-    if (this.history.length > 20) {
+    if (this.history.length > INTERPOLATION.capacity) {
       this.history.shift();
     }
   }
@@ -61,10 +76,15 @@ export class SnapshotBuffer {
     this.renderedAt = now;
     const lag = newest - this.clock;
     // Gently recover buffer depth instead of resetting the camera clock on each packet.
-    const rate = lag > 150 ? 1.1 : lag < 50 ? 0.9 : 1;
+    const rate =
+      lag > INTERPOLATION.fastLagMs
+        ? INTERPOLATION.fastRate
+        : lag < INTERPOLATION.slowLagMs
+          ? INTERPOLATION.slowRate
+          : 1;
     this.clock = Math.min(newest, this.clock + elapsed * rate);
 
-    if (this.history.length === 20) {
+    if (this.history.length === INTERPOLATION.capacity) {
       this.clock = Math.max(this.history[0].serverNow ?? 0, this.clock);
     }
 
@@ -88,19 +108,19 @@ export class SnapshotBuffer {
       const dx = wrappedDelta(b.x, a.x, FOREST.width);
       const dy = wrappedDelta(b.y, a.y, FOREST.height);
 
-      if (Math.hypot(dx, dy) > 96) {
+      if (Math.hypot(dx, dy) > INTERPOLATION.teleportDistance) {
         return { ...b, dx: 0, dy: 0 };
       }
 
       const point = (forest ? moveForestActor : moveActor)(
-        { x: a.x, y: a.y + 15 },
+        { x: a.x, y: a.y + INTERPOLATION.feetOffset },
         dx * alpha,
         dy * alpha,
         radius,
         collide,
       );
 
-      return { x: point.x, y: wrap(point.y - 15, FOREST.height), dx, dy };
+      return { x: point.x, y: wrap(point.y - INTERPOLATION.feetOffset, FOREST.height), dx, dy };
     };
 
     const players = older.players.map((a) => {
@@ -112,7 +132,7 @@ export class SnapshotBuffer {
         return { ...a, inputX: 0, inputY: 0 };
       }
 
-      const point = interpolate(a, b, a.scene === 'forest', 12, false);
+      const point = interpolate(a, b, a.scene === 'forest', INTERPOLATION.actorRadius, false);
 
       // Corrections with no movement intent must not trigger a walking animation.
       return {
@@ -133,7 +153,7 @@ export class SnapshotBuffer {
         return { ...b };
       }
 
-      const point = interpolate(a, b, false, 12, false);
+      const point = interpolate(a, b, false, INTERPOLATION.actorRadius, false);
 
       return { ...b, x: point.x, y: point.y };
     });
@@ -178,7 +198,7 @@ export class SnapshotBuffer {
         enemy.x = point.x;
         enemy.y = point.y;
 
-        if (Math.hypot(point.dx, point.dy) > 0.001) {
+        if (Math.hypot(point.dx, point.dy) > INTERPOLATION.movementEpsilon) {
           enemy.angle = Math.atan2(point.dy, point.dx);
         }
       }
@@ -244,10 +264,15 @@ export class SnapshotBuffer {
         continue;
       }
 
-      const point = interpolate(player.bear, next, player.scene === 'forest', 8);
+      const point = interpolate(
+        player.bear,
+        next,
+        player.scene === 'forest',
+        INTERPOLATION.bearRadius,
+      );
       player.bear.x = point.x;
       player.bear.y = point.y;
-      player.bear.moving = Math.hypot(point.dx, point.dy) > 0.001;
+      player.bear.moving = Math.hypot(point.dx, point.dy) > INTERPOLATION.movementEpsilon;
     }
 
     const training = older.training

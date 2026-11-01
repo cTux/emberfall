@@ -10,6 +10,10 @@ import { drawInteractionOutline, type InteractionTarget } from './interaction-ta
 import { drawCompanion } from './companion';
 import { type crittersAt, drawCritter } from './critters';
 
+import { FOREST_ACTOR } from './forest-calibration.ts';
+// Existing layer anchors match the visible portal threshold and companion feet for stable painter ordering.
+const LAYER_ANCHOR = { portal: 8, companion: 18 } as const;
+
 export function forestLayers(
   world: WorldState | null,
   trees: ReturnType<typeof resourceNodes>,
@@ -21,7 +25,7 @@ export function forestLayers(
   return [
     ...(world?.scene?.phase === 'ended' ? world.scene.portals : []).map((portal) => {
       return {
-        y: near(portal.x, portal.y).y + 8,
+        y: near(portal.x, portal.y).y + LAYER_ANCHOR.portal,
         tree: null,
         actor: null,
         bear: null,
@@ -41,7 +45,7 @@ export function forestLayers(
     }),
     ...rendered.map((a) => {
       return {
-        y: a.y + 15,
+        y: a.y + FOREST_ACTOR.footOffset,
         tree: null,
         actor: a,
         bear: null,
@@ -53,7 +57,7 @@ export function forestLayers(
       return p.bear
         ? [
             {
-              y: near(p.bear.x, p.bear.y).y + 18,
+              y: near(p.bear.x, p.bear.y).y + LAYER_ANCHOR.companion,
               tree: null,
               actor: null,
               bear: p.bear,

@@ -1,3 +1,4 @@
+import { WIND, FIREFLIES, VIGNETTE, LIGHT_SHAFTS } from './world-style.ts';
 import type { DrawingContext } from '../rendering/drawing-context';
 
 export function vegetationSway(
@@ -8,12 +9,13 @@ export function vegetationSway(
   now: number,
   grass = false,
 ) {
-  const phase = x * 0.013 + y * 0.017;
+  const phase = x * WIND.xPhase + y * WIND.yPhase;
 
   return (
-    (Math.sin(now / 1600 + phase) + Math.sin(now / 2700 + phase * 1.7) * 0.3) *
+    (Math.sin(now / WIND.primaryPeriodMs + phase) +
+      Math.sin(now / WIND.secondaryPeriodMs + phase * WIND.secondaryPhase) * WIND.secondaryWeight) *
     (width / height) *
-    (grass ? 0.07 : 0.018)
+    (grass ? WIND.grassShear : WIND.foliageShear)
   );
 }
 
@@ -28,7 +30,7 @@ export function drawVegetation(
   waving: boolean,
 ) {
   if (waving) {
-    const sway = vegetationSway(x, y, width, height, now, sprite.width === 16);
+    const sway = vegetationSway(x, y, width, height, now, sprite.width === WIND.grassSpritePixels);
     ctx.save();
     // Shear around the base: roots stay fixed while foliage catches the breeze.
     ctx.transform(1, 0, sway, 1, -sway * y, 0);
@@ -50,13 +52,31 @@ export function drawParticles(
   ctx.save();
   ctx.fillStyle = '#eed389';
 
-  for (let row = Math.floor((y - 40) / 160); row <= Math.ceil((y + height + 40) / 160); row++) {
-    for (let col = Math.floor((x - 40) / 160); col <= Math.ceil((x + width + 40) / 160); col++) {
-      const seed = (((col % 30) + 30) % 30) * 179 + (((row % 16) + 16) % 16) * 83;
-      ctx.globalAlpha = 0.25 + Math.sin(now / 900 + seed) * 0.2;
+  for (
+    let row = Math.floor((y - FIREFLIES.cullMargin) / FIREFLIES.cellSize);
+    row <= Math.ceil((y + height + FIREFLIES.cullMargin) / FIREFLIES.cellSize);
+    row++
+  ) {
+    for (
+      let col = Math.floor((x - FIREFLIES.cullMargin) / FIREFLIES.cellSize);
+      col <= Math.ceil((x + width + FIREFLIES.cullMargin) / FIREFLIES.cellSize);
+      col++
+    ) {
+      const seed =
+        (((col % FIREFLIES.seedColumns) + FIREFLIES.seedColumns) % FIREFLIES.seedColumns) *
+          FIREFLIES.columnSeed +
+        (((row % FIREFLIES.seedRows) + FIREFLIES.seedRows) % FIREFLIES.seedRows) *
+          FIREFLIES.rowSeed;
+      ctx.globalAlpha =
+        FIREFLIES.opacity +
+        Math.sin(now / FIREFLIES.flickerPeriodMs + seed) * FIREFLIES.flickerRange;
       ctx.fillRect(
-        col * 160 + (seed % 135) + Math.sin(now / 2400 + seed) * 18,
-        row * 160 + (seed % 111) + Math.cos(now / 1900 + seed) * 25,
+        col * FIREFLIES.cellSize +
+          (seed % FIREFLIES.xScatter) +
+          Math.sin(now / FIREFLIES.xPeriodMs + seed) * FIREFLIES.xDrift,
+        row * FIREFLIES.cellSize +
+          (seed % FIREFLIES.yScatter) +
+          Math.cos(now / FIREFLIES.yPeriodMs + seed) * FIREFLIES.yDrift,
         2,
         2,
       );
@@ -73,11 +93,11 @@ export function drawVignette(
   width: number,
   height: number,
 ) {
-  const radius = Math.max(width, height) * 0.65;
+  const radius = Math.max(width, height) * VIGNETTE.outerScale;
   const gradient = ctx.createRadialGradient(
     x + width / 2,
     y + height / 2,
-    radius * 0.25,
+    radius * VIGNETTE.clearRadiusScale,
     x + width / 2,
     y + height / 2,
     radius,
@@ -109,21 +129,26 @@ export function drawAtmosphere(
   if (settings.lightShafts) {
     ctx.globalAlpha *= daylight;
     ctx.globalCompositeOperation = 'screen';
-    const slope = 0.6;
-    const beamWidth = 160;
+    const slope = LIGHT_SHAFTS.slope;
+    const beamWidth = LIGHT_SHAFTS.width;
     // Anchor parallel beams to the world, rather than restarting at the viewport top.
-    const first = Math.floor((x - slope * (y + height) - beamWidth - 12) / 420);
-    const last = Math.ceil((x + width - slope * y + 12) / 420);
+    const first = Math.floor(
+      (x - slope * (y + height) - beamWidth - LIGHT_SHAFTS.drift) / LIGHT_SHAFTS.spacing,
+    );
+    const last = Math.ceil((x + width - slope * y + LIGHT_SHAFTS.drift) / LIGHT_SHAFTS.spacing);
 
     for (let col = first; col <= last; col++) {
-      const base = col * 420 + Math.sin(now / 12000 + col) * 12 + slope * y;
+      const base =
+        col * LIGHT_SHAFTS.spacing +
+        Math.sin(now / LIGHT_SHAFTS.periodMs + col) * LIGHT_SHAFTS.drift +
+        slope * y;
       // Fade across the beam's perpendicular axis so both long edges are transparent.
       const cross = beamWidth / (1 + slope * slope);
       const gradient = ctx.createLinearGradient(base, y, base + cross, y - slope * cross);
       gradient.addColorStop(0, '#ffe6a800');
-      gradient.addColorStop(0.2, '#ffe6a803');
+      gradient.addColorStop(LIGHT_SHAFTS.leadingFadeStop, '#ffe6a803');
       gradient.addColorStop(0.5, '#ffe6a80c');
-      gradient.addColorStop(0.8, '#ffe6a803');
+      gradient.addColorStop(LIGHT_SHAFTS.trailingFadeStop, '#ffe6a803');
       gradient.addColorStop(1, '#ffe6a800');
       ctx.fillStyle = gradient;
       ctx.beginPath();

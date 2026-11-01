@@ -1,12 +1,29 @@
 export async function isolatePlayerFrames({ source, name, extra, stride, repair, config }) {
+  // Source layout has four facings and six stride rows; these are authored sheet coordinates.
+  const sourceLayout = { facings: 4, strideRows: 6, strideSources: 2 };
+  // Canvas stores four RGBA channels, with alpha in its final channel.
+  const pixelLayout = { channels: 4, alpha: 3 };
+  // Ignore nearly transparent pixels and specks smaller than a sprite when finding components.
+  const componentFilter = { alphaCutoff: 32, minimumArea: 100 };
+  // The original druid has 39 components before removing one merged bottom-row pose.
+  const druidLayout = {
+    mergedComponents: 39,
+    isolatedComponents: 38,
+    bottomFraction: 0.9,
+    mergedWidthDivisor: 3,
+  };
   const sources = [source, ...(extra ? [extra] : []), stride, repair];
-  const strideIndex = sources.length - 2;
+  const strideIndex = sources.length - sourceLayout.strideSources;
   const allFrames = [];
   const images = [];
 
   for (let sourceIndex = 0; sourceIndex < sources.length; sourceIndex++) {
     const isStride = sourceIndex >= strideIndex;
-    const rowCount = isStride ? 6 : sourceIndex ? config.extraRows : config.rows;
+    const rowCount = isStride
+      ? sourceLayout.strideRows
+      : sourceIndex
+        ? config.extraRows
+        : config.rows;
     const image = new Image();
     image.src = `data:image/png;base64,${sources[sourceIndex]}`;
     await image.decode();
@@ -21,7 +38,10 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
     const components = [];
 
     for (let start = 0; start < visited.length; start++) {
-      if (visited[start] || pixels[start * 4 + 3] <= 32) {
+      if (
+        visited[start] ||
+        pixels[start * pixelLayout.channels + pixelLayout.alpha] <= componentFilter.alphaCutoff
+      ) {
         continue;
       }
 
@@ -53,7 +73,7 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
               ny < 0 ||
               ny >= image.height ||
               visited[next] ||
-              pixels[next * 4 + 3] <= 32
+              pixels[next * pixelLayout.channels + pixelLayout.alpha] <= componentFilter.alphaCutoff
             ) {
               continue;
             }
@@ -64,7 +84,7 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
         }
       }
 
-      if (queue.length > 100) {
+      if (queue.length > componentFilter.minimumArea) {
         components.push({
           left,
           top,
@@ -77,9 +97,16 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
 
     // The revised druid's last two fallen poses touch; source them from the
     // earlier sheet instead of slicing through their shared pixels.
-    if (name === 'druid' && sourceIndex === 0 && components.length === 39) {
+    if (
+      name === 'druid' &&
+      sourceIndex === 0 &&
+      components.length === druidLayout.mergedComponents
+    ) {
       const merged = components.findIndex((f) => {
-        return f.top > image.height * 0.9 && f.width > image.width / 3;
+        return (
+          f.top > image.height * druidLayout.bottomFraction &&
+          f.width > image.width / druidLayout.mergedWidthDivisor
+        );
       });
 
       if (merged >= 0) {
@@ -87,9 +114,14 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
       }
     }
 
-    if (components.length !== (name === 'druid' && sourceIndex === 0 ? 38 : rowCount * 4)) {
+    if (
+      components.length !==
+      (name === 'druid' && sourceIndex === 0
+        ? druidLayout.isolatedComponents
+        : rowCount * sourceLayout.facings)
+    ) {
       throw new Error(
-        `${name} source ${sourceIndex}: expected ${rowCount * 4} isolated sprites, got ${components.length}; ${JSON.stringify(components)}`,
+        `${name} source ${sourceIndex}: expected ${rowCount * sourceLayout.facings} isolated sprites, got ${components.length}; ${JSON.stringify(components)}`,
       );
     }
 
@@ -99,9 +131,11 @@ export async function isolatePlayerFrames({ source, name, extra, stride, repair,
     const frames = [];
 
     for (let row = 0; row < rowCount; row++) {
-      const group = components.slice(row * 4, row * 4 + 4).sort((a, b) => {
-        return a.left - b.left;
-      });
+      const group = components
+        .slice(row * sourceLayout.facings, row * sourceLayout.facings + sourceLayout.facings)
+        .sort((a, b) => {
+          return a.left - b.left;
+        });
       group.forEach((f, col) => {
         return frames.push({ ...f, row, col, sourceIndex });
       });

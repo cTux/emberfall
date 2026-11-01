@@ -1,7 +1,9 @@
+import { COLLISION } from '../definitions/collision.ts';
+
 import { game, type createGame } from '../game.ts';
 import { tickTalentEffects } from '../talent-effects.ts';
 import { PLAYER_BODY_RADIUS } from '../definitions/entities/players.ts';
-import { wrappedDelta, wrap } from '@emberfall/common';
+import { wrappedDelta, wrap, PERCENT } from '@emberfall/common';
 import { FOREST, moveForestActor } from '../scene.ts';
 import { ARENA, moveActor, inTrainingZone } from '../world.ts';
 import { fireClassAttack, tickPlayerShots, nearestSpellTarget } from '../class-combat.ts';
@@ -9,6 +11,9 @@ import type { Player, ClientMessage, SceneState, Enemy } from '@emberfall/common
 import { TICK_MS } from './constants.ts';
 import { smoothAttackAngle, nearestEnemyAngle } from './aim.ts';
 import { swordHits, slash } from './melee.ts';
+
+// Buffer two simulation ticks of early requests to tolerate normal command/tick phase differences.
+const CAST_BUFFER_TICKS = 2;
 
 type Game = ReturnType<typeof createGame>;
 type CastRequest = Extract<ClientMessage, { type: 'cast' }>;
@@ -19,16 +24,20 @@ export function movePlayer(player: Player, x: number, y: number, dt: number) {
   }
 
   const length = Math.max(1, Math.hypot(x, y));
-  const speed = ARENA.speed * (1 + game.rules.characterStats(player).bonuses.movementSpeed / 100);
+  const speed =
+    ARENA.speed * (1 + game.rules.characterStats(player).bonuses.movementSpeed / PERCENT);
   const next = (player.scene === 'forest' ? moveForestActor : moveActor)(
-    { x: player.x, y: player.y + 15 },
+    { x: player.x, y: player.y + COLLISION.feetOffset },
     (x / length) * speed * dt,
     (y / length) * speed * dt,
     PLAYER_BODY_RADIUS,
     false,
   );
   player.x = next.x;
-  player.y = wrap(next.y - 15, player.scene === 'forest' ? FOREST.height : ARENA.height);
+  player.y = wrap(
+    next.y - COLLISION.feetOffset,
+    player.scene === 'forest' ? FOREST.height : ARENA.height,
+  );
 }
 
 export function playerAimAngle(player: Player, enemies: Enemy[], context: Game = game) {
@@ -69,7 +78,8 @@ export function requestPlayerCast(
     request.classId !== (player.classId ?? 'warrior') ||
     request.epoch !== (player.scene === 'forest' ? scene.id : 'lobby') ||
     (!player.scene && !inTrainingZone(player)) ||
-    (player.attackAt !== undefined && now - player.attackAt < stats.attackIntervalMs - 2 * TICK_MS)
+    (player.attackAt !== undefined &&
+      now - player.attackAt < stats.attackIntervalMs - CAST_BUFFER_TICKS * TICK_MS)
   ) {
     return false;
   }

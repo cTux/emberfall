@@ -1,4 +1,9 @@
-import type { Player, WorldState, ClientMessage } from '@emberfall/common';
+import {
+  MILLISECONDS_PER_SECOND,
+  type Player,
+  type WorldState,
+  type ClientMessage,
+} from '@emberfall/common';
 import {
   game,
   characterStats,
@@ -9,6 +14,9 @@ import {
 } from '@emberfall/core';
 import { LocalProjectiles } from './local-projectiles.ts';
 import { PREDICTION_LIMIT_MS, type ConfirmedFrame } from './prediction-frame.ts';
+
+// Keep a bounded history of 32 casts so delayed confirmations cannot replay recent visuals.
+const MAX_REMEMBERED_CASTS = 32;
 
 export class LocalAttacks {
   private attackAt = -Infinity;
@@ -91,7 +99,7 @@ export class LocalAttacks {
     this.attackAngle = smoothAttackAngle(
       this.attackAngle,
       playerAimAngle({ ...player, attackAngle: this.attackAngle }, scene.enemies),
-      this.aimAt === undefined ? 0 : (now - this.aimAt) / 1000,
+      this.aimAt === undefined ? 0 : (now - this.aimAt) / MILLISECONDS_PER_SECOND,
       ability.aimSmoothingSeconds,
     );
     this.aimAt = now;
@@ -117,7 +125,7 @@ export class LocalAttacks {
         this.casts.set(this.attackId, now);
 
         // Keep completed IDs briefly so delayed confirmation cannot replay an expired visual.
-        if (this.casts.size > 32) {
+        if (this.casts.size > MAX_REMEMBERED_CASTS) {
           this.casts.delete(this.casts.keys().next().value!);
         }
 

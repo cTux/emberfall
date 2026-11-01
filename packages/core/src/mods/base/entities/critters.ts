@@ -1,3 +1,4 @@
+// Authored spawn coordinates place the six existing critters around the village buildings and paths.
 export const VILLAGE_CRITTERS = [
   { x: 280, y: 278, kind: 'cat' },
   { x: 650, y: 278, kind: 'chicken' },
