@@ -1,6 +1,6 @@
 import { clientAsset } from './urls.ts';
-import { game, type createGame } from '@emberfall/core';
-import { PERCENT, type Player } from '@emberfall/common';
+import { game, type createGame, type CharacterStats } from '@emberfall/core';
+import { PERCENT } from '@emberfall/common';
 
 const builtinSlots = new Set([
   'weapon',
@@ -28,9 +28,10 @@ export function registeredSlotViews(context: ReturnType<typeof createGame> = gam
   });
 }
 
-export function additionalStatViews(player: Player, context: ReturnType<typeof createGame> = game) {
-  const stats = context.rules.characterStats(player);
-
+export function additionalStatViews(
+  stats: CharacterStats,
+  context: ReturnType<typeof createGame> = game,
+) {
   return context.registries.stats
     .values()
     .filter((stat) => {

@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import { Backpack, ChapterTabs } from '@emberfall/ui';
 import type { ClientMessage, Player } from '@emberfall/common';
 import { backpackViews } from './backpack';
+import { sameInventoryPlayer } from './same-inventory-player';
 
 // Shift trades ten items, leaving Ctrl for the whole stack and an unmodified click for one item.
 const SHIFT_TRADE_AMOUNT = 10;
 
-export function Trading({
+function TradingView({
   player,
   merchant,
   craftsman = false,
@@ -60,7 +61,7 @@ export function Trading({
         return {
           id,
           title,
-          content: (
+          content: tab === id && (
             <Box
               sx={{
                 display: 'grid',
@@ -126,3 +127,12 @@ export function Trading({
     />
   );
 }
+
+export const Trading = memo(TradingView, (previous, next) => {
+  return (
+    previous.send === next.send &&
+    previous.craftsman === next.craftsman &&
+    sameInventoryPlayer(previous.player, next.player) &&
+    JSON.stringify(previous.merchant) === JSON.stringify(next.merchant)
+  );
+});

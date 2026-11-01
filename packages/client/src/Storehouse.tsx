@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { Box, Button, Stack, TextField } from '@mui/material';
 import { Backpack, ChapterTabs, GameWindow, GoldBalance } from '@emberfall/ui';
 import type { Player, ClientMessage } from '@emberfall/common';
 import { STORAGE_SLOTS, storageNameSchema } from '@emberfall/core';
 import { backpackViews } from './equipment/backpack';
+import { sameInventoryPlayer } from './equipment/same-inventory-player';
 
-export function Storehouse({
+function StorehouseView({
   player,
   send,
 }: {
@@ -61,7 +62,7 @@ export function Storehouse({
               setRenaming(index);
               setName(storage.name);
             },
-            content: (
+            content: tab === String(index) && (
               <>
                 <Box
                   sx={{
@@ -155,3 +156,11 @@ export function Storehouse({
     </Stack>
   );
 }
+
+export const Storehouse = memo(StorehouseView, (previous, next) => {
+  return (
+    previous.send === next.send &&
+    sameInventoryPlayer(previous.player, next.player) &&
+    JSON.stringify(previous.player.storages) === JSON.stringify(next.player.storages)
+  );
+});

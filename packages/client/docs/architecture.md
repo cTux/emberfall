@@ -60,7 +60,12 @@ Configure the server as described in [operations](../../../docs/operations/steam
   native building loading and softened actor palettes keep their original order.
 - `equipment/` owns item artwork, stat and badge presentation, backpack view
   models and the controlled trading panel. Storehouse consumes the backpack
-  model directly; `equipment-view.tsx` retains its lazy panel exports.
+  model directly; `equipment-view.tsx` retains its lazy panel exports. Trading and storage
+  prepare expensive item views only for the selected tab. Inventory keeps both
+  panes mounted to preserve window height, memoizing derived slots and stats.
+  These panels compare inventory inputs by value across detached snapshots,
+  so movement does not rebuild unchanged item views.
+  Equipment stat rows share one character-stat calculation with extra registered stats.
 - `codex/chapters.ts` declares chapter order while gameplay, character and
   credit content live in separate modules. Codex remains a lazy-loaded panel.
 - `settings-controls.ts` and `tactics-controls.ts` declare typed control labels,
