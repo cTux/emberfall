@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { ChapterTabs } from '@emberfall/ui';
 import { Box } from '@mui/material';
 import { CODEX_CHAPTERS } from './codex/chapters';
 
-export function Codex() {
+function CodexView() {
   const [chapter, setChapter] = useState('Controls');
 
   return (
@@ -52,3 +52,5 @@ export function Codex() {
     </Box>
   );
 }
+
+export const Codex = memo(CodexView);

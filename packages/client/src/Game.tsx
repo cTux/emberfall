@@ -13,7 +13,7 @@ import { useGameSession } from './useGameSession';
 import type { AccountView, WorldSummary } from '@emberfall/common';
 import { Difficulty } from '@emberfall/common';
 import { INNKEEPER } from '@emberfall/core';
-import { lazy, useEffect, useState } from 'react';
+import { lazy, useCallback, useEffect, useState } from 'react';
 import { DeferredContent } from './DeferredContent';
 import type { Preferences } from './preferences';
 import type { Dispatch, SetStateAction } from 'react';
@@ -93,10 +93,16 @@ export function Game({
     account.nickname,
   );
   const [menu, setMenu] = useState<GameMenu | null>(null);
+  const closeMenu = useCallback(() => {
+    setMenu(null);
+  }, []);
   const [difficulty, setDifficulty] = useState<Difficulty>(Difficulty.Easy);
   const [building, setBuilding] = useState('');
   const [settingsTab, setSettingsTab] = useState('gameplay');
   const [browserOpen, setBrowserOpen] = useState(true);
+  const openBrowser = useCallback(() => {
+    setBrowserOpen(true);
+  }, []);
   const [deathWindow, setDeathWindow] = useState(true);
   const [joinPassword, setJoinPassword] = useState('');
   const [selected, setSelected] = useState<WorldSummary | null>(null);
@@ -168,9 +174,7 @@ export function Game({
           browserOpen={browserOpen}
           status={status}
           onMenu={setMenu}
-          onOpenBrowser={() => {
-            return setBrowserOpen(true);
-          }}
+          onOpenBrowser={openBrowser}
         />
         {world ? (
           <PartyHud
@@ -240,9 +244,7 @@ export function Game({
         canRegenerate={canRegenerate}
         difficulty={difficulty}
         setDifficulty={setDifficulty}
-        onClose={() => {
-          return setMenu(null);
-        }}
+        onClose={closeMenu}
       />
     </main>
   );
