@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="280" viewBox="0 0 860 280" role="img" aria-labelledby="title desc">
+  <title id="title">Forest loot rarity by difficulty</title>
+  <desc id="desc">Rule illustration: Forest factor one times difficulty scales non-Common chances. Common fills the remainder. Merchants retain base odds.</desc>
+  <rect width="860" height="280" rx="14" fill="#18212d"/>
+  <g fill="#edf2f7" font-family="sans-serif" font-size="17">
+    <text x="28" y="35" font-size="23">Forest ×1 · Difficulty → dropped gear rarity</text>
+    <text x="28" y="72" fill="#b9c9d9">Rule illustration · each non-Common chance × zone × difficulty</text>
+    <text x="28" y="113">Difficulty</text><text x="210" y="113">Legendary</text><text x="360" y="113">Epic</text><text x="470" y="113">Rare</text><text x="575" y="113">Uncommon</text><text x="730" y="113">Common</text>
+    <text x="28" y="150">Easy ×1</text><text x="210" y="150">0.01%</text><text x="360" y="150">0.1%</text><text x="470" y="150">1%</text><text x="575" y="150">10%</text><text x="730" y="150">88.89%</text>
+    <text x="28" y="186">Medium ×1.5</text><text x="210" y="186">0.015%</text><text x="360" y="186">0.15%</text><text x="470" y="186">1.5%</text><text x="575" y="186">15%</text><text x="730" y="186">83.335%</text>
+    <text x="28" y="222">Hard ×2</text><text x="210" y="222">0.02%</text><text x="360" y="222">0.2%</text><text x="470" y="222">2%</text><text x="575" y="222">20%</text><text x="730" y="222">77.78%</text>
+    <text x="28" y="260" fill="#b9c9d9">Drop gates and counts stay independent. Merchants use base odds.</text>
+  </g>
+</svg>
