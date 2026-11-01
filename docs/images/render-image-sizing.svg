@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="248" viewBox="0 0 880 248" role="img" aria-labelledby="title description">
+  <title id="title">Render-sized production images</title>
+  <desc id="description">Original terrain artwork stays at 2172 by 724 pixels. The build makes a 1080 by 360 interlaced PNG, and the game still draws 320 by 320 tiles.</desc>
+  <rect width="880" height="248" rx="16" fill="#17251f"/>
+  <g font-family="sans-serif" fill="#f1e7ce">
+    <text x="28" y="38" font-size="22" font-weight="bold">Smaller downloads, same game texture sizes</text>
+    <g fill="#293c31" stroke="#8ba77d">
+      <rect x="28" y="67" width="244" height="112" rx="10"/>
+      <rect x="318" y="67" width="244" height="112" rx="10"/>
+      <rect x="608" y="67" width="244" height="112" rx="10"/>
+    </g>
+    <g text-anchor="middle" font-size="17">
+      <text x="150" y="96">Original terrain sheet</text>
+      <text x="150" y="124" font-weight="bold">2172 × 724 · 2.41 MB</text>
+      <text x="150" y="153" fill="#b9d1ad">Retained in source</text>
+      <text x="440" y="96">Production PNG</text>
+      <text x="440" y="124" font-weight="bold">1080 × 360 · 0.79 MB</text>
+      <text x="440" y="153" fill="#b9d1ad">Full alpha · interlaced</text>
+      <text x="730" y="96">Game ground tiles</text>
+      <text x="730" y="124" font-weight="bold">320 × 320</text>
+      <text x="730" y="153" fill="#b9d1ad">Existing seamless crossfade</text>
+      <text x="295" y="129" font-size="27">→</text>
+      <text x="585" y="129" font-size="27">→</text>
+    </g>
+    <text x="28" y="216" font-size="16" fill="#b9d1ad">22 oversized assets: 35.82 MB → 11.05 MB shipped. Already-small artwork stays at its current size.</text>
+  </g>
+</svg>

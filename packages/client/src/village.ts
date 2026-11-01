@@ -1,4 +1,5 @@
 import { VILLAGE_ATLAS, LODGE_CHIMNEY } from './village-art-layout.ts';
+import { BUILDING_SOURCE_SIZES } from '../asset-render-sizes.ts';
 
 import type { VillageNpc } from '@emberfall/common';
 import { WARDROBE, BUILDINGS, TORCHES, TREES, ROCKS, PLANTS } from '@emberfall/core';
@@ -154,7 +155,11 @@ export function villageSprites(
       }
 
       const frame = additional
-        ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
+        ? {
+            x: 0,
+            y: 0,
+            ...BUILDING_SOURCE_SIZES[b.id === 'lodge' ? 'building-lodge' : 'building-storehouse'],
+          }
         : buildingFrames[i];
       const width = b.sourceWidth * 2;
       const scale = width / frame.width;

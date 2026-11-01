@@ -13,7 +13,7 @@ allowlists exclude existing mixed phone/touch scenarios.
 
 For a release candidate, run **Actions → Verify → Run workflow** on
 `main` (CLI: `gh workflow run verify.yml --ref main`). To include the complete
-11-file desktop game baseline, enable **Run desktop game checks** (CLI: add
+14-file desktop game baseline, enable **Run desktop game checks** (CLI: add
 `-f desktop_game_checks=true`). Manual runs always execute shared UI checks.
 A successful manual run on
 current `main` triggers Pages deployment of that exact SHA. Intermediate merges

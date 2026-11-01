@@ -1,4 +1,10 @@
-export { plantArt, environmentArt, artImages, terrainArt } from '../packages/client/src/art';
+export {
+  plantArt,
+  environmentArt,
+  artImages,
+  terrainArt,
+  terrainTile,
+} from '../packages/client/src/art';
 export { villageBackground, villageImages } from '../packages/client/src/village-background';
 export { villageSprites } from '../packages/client/src/village';
 export { resourceScenery } from '../packages/client/src/gathering';

@@ -187,7 +187,18 @@ export function drawAssetGalleryFrame(
       const height = frame.height * scale;
       const x = GALLERY_GRID.sceneryLeft + i * GALLERY_GRID.sceneryStride;
       const y = GALLERY_GRID.sceneryBottom - height;
-      ctx.drawImage(buildingArt, frame.x, frame.y, frame.width, frame.height, x, y, 126, height);
+      const resolution = Number(buildingArt.dataset.artResolution ?? 1);
+      ctx.drawImage(
+        buildingArt,
+        frame.x * resolution,
+        frame.y * resolution,
+        frame.width * resolution,
+        frame.height * resolution,
+        x,
+        y,
+        126,
+        height,
+      );
       drawChimneySmoke(ctx, x + frame.chimneyX * scale, y + frame.chimneyY * scale, clock);
     } else if (i === GALLERY_FRAMES.torch) {
       drawTorchFire(

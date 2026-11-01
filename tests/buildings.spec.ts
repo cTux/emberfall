@@ -111,25 +111,31 @@ test('buildings retain native crops, source proportions and matching grounded sh
     return buildings.map((object) => {
       const additional = fixture.additionalBuildingArt[object.id.replace('building:', '')];
       const image = additional ?? fixture.buildingArt;
+      const resolution = Number(image.dataset.artResolution ?? 1);
       const frame = additional
-        ? { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight }
+        ? {
+            x: 0,
+            y: 0,
+            width: image.naturalWidth / resolution,
+            height: image.naturalHeight / resolution,
+          }
         : fixture.buildingFrames.find((frame) => {
-            return frame.width === object.sprite.width;
+            return Math.trunc(frame.width * resolution) === object.sprite.width;
           })!;
       const crop = document.createElement('canvas');
-      crop.width = frame.width;
-      crop.height = frame.height;
+      crop.width = object.sprite.width;
+      crop.height = object.sprite.height;
       const cropCtx = crop.getContext('2d')!;
       cropCtx.drawImage(
         image,
-        frame.x,
-        frame.y,
-        frame.width,
-        frame.height,
+        frame.x * resolution,
+        frame.y * resolution,
+        frame.width * resolution,
+        frame.height * resolution,
         0,
         0,
-        frame.width,
-        frame.height,
+        crop.width,
+        crop.height,
       );
       const source = cropCtx.getImageData(0, 0, crop.width, crop.height).data;
       const sprite = object.sprite
@@ -163,7 +169,7 @@ test('buildings retain native crops, source proportions and matching grounded sh
         opaque: sprite.filter((value, i) => {
           return i % 4 === 3 && value >= 128;
         }).length,
-        pixels: frame.width * frame.height,
+        pixels: crop.width * crop.height,
         groundY: object.y,
       };
     });

@@ -5,6 +5,7 @@ import { test, expect } from './fixtures';
 import { game as catalog, PLANT_KINDS } from '../packages/core/src/index.ts';
 import type { ResourceNode } from '../packages/core/src/gathering.ts';
 import { itemArtName } from '../packages/client/src/class-art.ts';
+import './render-sized-art.cases.ts';
 
 test('all bundled items render dedicated artwork in inventory', async ({ page, game }) => {
   await page.goto('/');
