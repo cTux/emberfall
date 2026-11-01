@@ -8,6 +8,34 @@ The wardrobe opposite the village portal switches between warrior (default), ran
 
 ## CHAR-04 — Equipment (new runtime)
 
+### Anvil improvements
+
+The Smithing anvil beside the Workshop opens with E or left click within the
+village interaction radius. Its item slot opens the same anchored square-icon
+grid as action-bar ability selection. Choose any equipped or backpack gear,
+including another class's gear; consumables and resources are excluded. Stored
+gear must first be withdrawn. Selection shows the item, current stars, current
+and next stats, gold balance and the next price.
+
+Every item starts at zero stars. Each Improve adds one star, up to five, costing
+10, 20, 30, 50 and 100 account gold respectively (210 total). Each star adds 10%
+of the original intrinsic and rolled numeric stats: the multiplier is
+`1 + stars * 0.1`, reaching 1.5 at five stars. Base rolls and definitions remain
+unchanged. Damage types and class restrictions remain the item's existing rules.
+Increasing maximum health does not heal the player. The UI disables upgrades
+when gold is insufficient, the item is capped, the player is unavailable or out
+of range. The server independently validates these conditions and ownership,
+rejects stale star counts and saves the item and gold before publishing them.
+Stars survive equipping, storage, trade/buyback, class switching and reloads;
+old saves without stars read as zero. Resale prices keep their existing formula.
+
+![Verified desktop anvil improvement window](../../images/anvil-improvement.png)
+
+Coverage: [upgrade rules and save failures](../../../packages/server/src/item-improvement.test.ts),
+[session validation](../../../packages/server/src/anvil-commands.test.ts),
+[SQLite restart](../../../packages/server/src/item-roll-persistence.test.ts) and
+[desktop picker and upgrades](../../../tests/anvil.spec.ts).
+
 Each class starts with exactly one equipped item: its sword, bow, fire staff or
 nature staff. Equipment is saved independently per class. Older saves without
 equipment receive that class's starter weapon; explicitly empty slots stay empty.

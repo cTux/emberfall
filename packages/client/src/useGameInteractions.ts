@@ -98,6 +98,9 @@ export function useGameInteractions({
       wardrobe: () => {
         setMenu('wardrobe');
       },
+      'workshop-anvil': () => {
+        setMenu('anvil');
+      },
       portal: () => {
         setMenu('portal');
       },

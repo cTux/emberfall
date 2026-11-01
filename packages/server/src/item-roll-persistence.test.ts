@@ -16,6 +16,7 @@ import {
   tradeItem,
   sellAll,
   talentCooldownMs,
+  improveItem,
 } from '@emberfall/core';
 
 import { CharacterStore, decodeProgress } from './characters.ts';
@@ -31,6 +32,8 @@ test('exact rolls survive equip replacement, storage, sale, buyback, class switc
     const player = { ...hero(), ...saved.progress, id: saved.id, name: saved.name };
     const item = instance('warrior-sword', ItemStat.AdditionalAttack);
     player.backpack = [item];
+    player.coins = 10;
+    improveItem(player, item.id, 0);
     useBackpackItem(player, item.id);
     assert.deepEqual(player.equipmentItems!.weapon, item);
     const replacement = instance('warrior-sword', ItemStat.CriticalChance, Rarity.Uncommon);
@@ -75,6 +78,7 @@ test('exact rolls survive equip replacement, storage, sale, buyback, class switc
     store = new CharacterStore(path);
     await store.ready;
     const reloaded = store.load(saved.token);
+    assert.equal(reloaded.progress.equipmentItems!.weapon.stars, 1);
     assert.deepEqual(reloaded.progress.equipmentItems!.weapon.stats, item.stats);
     assert.deepEqual(store.merchant(world.id).buyback, merchant.buyback);
     assert.deepEqual(

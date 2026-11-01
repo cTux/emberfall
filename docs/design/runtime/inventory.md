@@ -4,6 +4,18 @@
 
 ## Inventory, loot and shared trading
 
+Anvil improvements use optional integer `stars` (0–5) on the existing item
+instance contract; absent fields retain zero-star behavior. Core's
+`createImprovementRules` resolves only the authenticated player's equipped and
+backpack gear. Starter equipment without an instance receives a fresh identity
+on its first improvement. The command includes item identity, optional equipped
+slot and expected current stars, preventing stale or duplicate requests from
+charging again. The server checks living village proximity to the anvil and uses
+the existing detached-copy, save-before-publication character transaction.
+Shared stat calculation applies the additive star multiplier to intrinsic and
+rolled contributions without rewriting their original values. Client previews,
+tooltips and comparisons use that same multiplier. Prices remain unchanged.
+
 `core/content/rules.ts` owns validated 20-slot backpack entries, stack merging,
 gear exchange, consumable use, quantity-aware trades and atomic whole-backpack sales.
 Merchant buyback is a separate newest-first queue capped at 20 entries, including

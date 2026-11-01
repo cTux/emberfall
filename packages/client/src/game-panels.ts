@@ -4,6 +4,7 @@ import type { GameWindowProps } from '@emberfall/ui';
 const INVENTORY_WINDOW_WIDTH = 520;
 
 export type GameMenu =
+  | 'anvil'
   | 'resetTalents'
   | 'talents'
   | 'tactics'
@@ -16,6 +17,7 @@ export type GameMenu =
   | 'exit';
 type Panel = Pick<GameWindowProps, 'title' | 'width' | 'height' | 'modal'>;
 const panels: Record<GameMenu, Panel> = {
+  anvil: { title: 'Smithing anvil', width: INVENTORY_WINDOW_WIDTH },
   resetTalents: { title: 'Reset talent points?' },
   talents: { title: 'Talents', width: 700, modal: false },
   tactics: { title: 'Tactics', width: 460, height: 480 },

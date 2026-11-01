@@ -13,6 +13,7 @@ import type {
   DamageType,
 } from '@emberfall/common';
 import type { Registries } from './contracts.ts';
+import { itemStatMultiplier } from '../item-improvement.ts';
 
 // Existing armor curve: 100 armor reduces incoming damage by exactly one half.
 const ARMOR_FOR_HALF_REDUCTION = 100;
@@ -133,15 +134,16 @@ export function createEquipmentRules(content: Registries) {
         weapon = gear;
       }
 
-      for (const key of Object.keys(gear.stats)) {
-        stats[key] += gear.stats[key] ?? 0;
-      }
-
       const instance = player.equipmentItems?.[slot];
+      const multiplier = itemStatMultiplier(instance?.itemId === id ? instance : undefined);
+
+      for (const key of Object.keys(gear.stats)) {
+        stats[key] += (gear.stats[key] ?? 0) * multiplier;
+      }
 
       if (instance?.itemId === id) {
         for (const [stat, value] of Object.entries(instance.stats ?? {})) {
-          bonuses[stat as ItemStat] += value;
+          bonuses[stat as ItemStat] += value * multiplier;
         }
       }
     }

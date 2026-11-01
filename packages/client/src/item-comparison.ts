@@ -7,6 +7,7 @@ import {
   equippedItems,
   itemStatWeight,
   ItemStat,
+  improvedItemStats,
 } from '@emberfall/core';
 
 /** Compare item contributions, including bonuses lost when replacing the equipped instance. */
@@ -32,11 +33,23 @@ export function itemComparison(
   const equipped = GEAR_DEFINITIONS[equippedId ?? ''];
   const instance = player.equipmentItems?.[slot];
   const previousBonuses = instance?.itemId === equippedId ? instance?.stats : undefined;
+  const nextBase = improvedItemStats(gear.stats, item);
+  const previousBase = improvedItemStats(
+    equipped?.stats ?? {},
+    instance?.itemId === equippedId ? instance : undefined,
+  );
   const rows: { label: string; value: string; improved: boolean }[] = [];
 
   for (const [bonus, next, previous] of [
-    [false, gear.stats, equipped?.stats ?? {}],
-    [true, item.stats ?? {}, previousBonuses ?? {}],
+    [false, nextBase, previousBase],
+    [
+      true,
+      improvedItemStats(item.stats ?? {}, item),
+      improvedItemStats(
+        previousBonuses ?? {},
+        instance?.itemId === equippedId ? instance : undefined,
+      ),
+    ],
   ] as const) {
     for (const stat of new Set([...Object.keys(next), ...Object.keys(previous)])) {
       if (
@@ -79,8 +92,8 @@ export function itemComparison(
     }
   }
 
-  const nextRate = gear.stats.attacksPerSecond ?? 0;
-  const previousRate = equipped?.stats.attacksPerSecond ?? 0;
+  const nextRate = nextBase.attacksPerSecond ?? 0;
+  const previousRate = previousBase.attacksPerSecond ?? 0;
 
   if (nextRate > 0 && previousRate > 0 && nextRate !== previousRate) {
     const delta = 1 / nextRate - 1 / previousRate;

@@ -7,6 +7,7 @@ import { createStorageRules } from './storage-rules.ts';
 import { createInventoryRules } from './inventory-rules.ts';
 import { createMerchantRules } from './merchant-rules.ts';
 import { createValidationRules } from './validation-rules.ts';
+import { createImprovementRules } from './improvement-rules.ts';
 
 export function createRules(
   content: Registries,
@@ -15,6 +16,7 @@ export function createRules(
   },
 ) {
   const equipment = createEquipmentRules(content);
+  const improvement = createImprovementRules(equipment);
   const items = createItemRules(content, random);
   const storage = createStorageRules(items);
   const inventory = createInventoryRules(equipment, items, storage);
@@ -44,6 +46,7 @@ export function createRules(
   const { classSchema, progressSchema, clientMessage } = validation;
 
   return Object.freeze({
+    ...improvement,
     canEquip,
     equipmentSchema,
     starterEquipment,

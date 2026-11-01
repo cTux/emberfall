@@ -1,5 +1,5 @@
 import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
-import { characterStats, ItemStat, itemStatWeight } from '@emberfall/core';
+import { characterStats, ItemStat, itemStatWeight, itemStatMultiplier } from '@emberfall/core';
 import type { Player, ClassId, BackpackItem } from '@emberfall/common';
 import type { EquipmentBadgeView } from '@emberfall/ui';
 import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
@@ -11,8 +11,13 @@ export function weaponBadges(
   player: Pick<Player, 'autoTarget'>,
   classId: ClassId,
   weapon: string,
+  item?: BackpackItem,
 ): EquipmentBadgeView[] {
-  const stats = characterStats({ classId, equipment: { weapon } });
+  const stats = characterStats({
+    classId,
+    equipment: { weapon },
+    equipmentItems: item ? { weapon: { ...item, stats: undefined } } : undefined,
+  });
   const { attack: abilityId, ailment } = PLAYER_DEFINITIONS[classId];
   const attack = ATTACK_DEFINITIONS[abilityId].kind;
   const range = player.autoTarget === false ? stats.manualRange : stats.range;
@@ -112,8 +117,9 @@ export function weaponBadges(
   return badges;
 }
 
-export function rolledBadges(item?: Pick<BackpackItem, 'stats'>): EquipmentBadgeView[] {
-  return Object.entries(item?.stats ?? {}).map(([stat, value]) => {
+export function rolledBadges(item?: Pick<BackpackItem, 'stats' | 'stars'>): EquipmentBadgeView[] {
+  return Object.entries(item?.stats ?? {}).map(([stat, original]) => {
+    const value = original * itemStatMultiplier(item);
     const label =
       stat === ItemStat.DotSpeed
         ? 'DOT Speed'

@@ -31,6 +31,18 @@ export { FOREST, LOBBY_PORTAL, FOREST_PORTAL, INTERACTION_RADIUS };
 import { BUILDINGS, WARDROBE } from './world.ts';
 import { INNKEEPER, VILLAGE_DEFINITION } from './definitions/worlds/village.ts';
 export { INNKEEPER };
+export const ANVIL = VILLAGE_DEFINITION.workstations.find((station) => {
+  return station.id === 'workshop-anvil';
+});
+
+export function anvilInRange(player: { x: number; y: number; scene?: string; hitpoints: number }) {
+  return (
+    !player.scene &&
+    player.hitpoints > 0 &&
+    !!ANVIL &&
+    forestDistance({ x: player.x, y: player.y + COLLISION.feetOffset }, ANVIL) < INTERACTION_RADIUS
+  );
+}
 
 export { WARDROBE } from './world.ts';
 
@@ -177,6 +189,10 @@ export function nearbyInteraction(
 
   if (distance(WARDROBE) < FIXTURE_INTERACTION.wardrobeRadius) {
     return { id: 'wardrobe', name: 'Wardrobe', ...WARDROBE };
+  }
+
+  if (anvilInRange(player)) {
+    return ANVIL!;
   }
 
   const trader = (npcs ?? VILLAGE_DEFINITION.villagers).find((npc) => {
