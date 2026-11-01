@@ -42,6 +42,38 @@ runner globs discover them. Cross-package presentation fixtures live in `tests`
 so production package dependency rules still apply. When splitting suites, preserve case bodies,
 parameterized cases and hook scope, then verify discovery and the complete suite.
 
+### Property-based tests
+
+Use [fast-check](https://fast-check.dev/docs/introduction/) with the existing Node
+runner for invariants across generated inputs. It is a root development dependency;
+no runtime package or separate CI job is needed. `pnpm test` discovers the pilot:
+
+- [Geometry properties](../../tests/geometry-properties.test.ts): wrapping bounds,
+  whole-world translations, shortest displacement and half-world ties.
+- [Inventory properties](../../tests/inventory-properties.test.ts): resource and
+  consumable transfers conserve quantity and unique identities, respect slot/stack
+  limits, and leave both inventories unchanged when a destination is full.
+
+Run just these suites with
+`node --test tests/geometry-properties.test.ts tests/inventory-properties.test.ts`.
+Each property runs 200 generated cases: enough for a small pilot without slowing
+the normal suite substantially. Inputs use bounded integers so geometry arithmetic
+is exact, and inventory fixtures stay within valid game limits. Existing worked
+examples remain the independent checks for specific tuning values and regressions.
+
+On failure, fast-check shrinks the input and prints the counterexample, `seed` and
+`path`. Temporarily add those values to that failing `fc.assert` options object
+alongside `numRuns`, rerun the focused command, and retain the minimized case as an
+explicit regression test when fixing a bug. Remove the temporary replay options
+afterward so normal runs continue exploring new inputs. See the official
+[runner documentation](https://fast-check.dev/docs/core-blocks/runners/).
+
+![Concept preview: generated cases are checked and failures shrink to replayable examples.](../images/property-testing.svg)
+
+This diagram describes the test workflow; it is not a gameplay capture.
+
+### Browser suite organization
+
 Browser suites retain their `*.spec.ts` entry points and import focused
 `*.cases.ts` groups. These groups are not separately discovered, so existing
 commands, CI selectors and per-entry hooks continue to apply. Shared setup lives
