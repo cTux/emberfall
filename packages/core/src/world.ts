@@ -1,10 +1,23 @@
+import { onPath } from './village-paths.ts';
+export { PATHS, onPath } from './village-paths.ts';
+import { COLLISION } from './definitions/collision.ts';
+import { SCENERY_RANDOM } from './scenery-seed.ts';
+import {
+  TRAINING_FOOTPRINT,
+  PLAZA,
+  SCENERY_CLEARANCE,
+  SCENERY_BOUNDS,
+  VILLAGE_TREE,
+  ROCK_SCATTER,
+  PLANT_SCATTER,
+  VILLAGE_OBSTACLES,
+} from './village-layout.ts';
 import {
   ARENA,
   WARDROBE,
   TRAINING_ZONES,
   BUILDINGS,
   TORCHES,
-  PATH_CURVES,
   VILLAGE_DEFINITION,
 } from './definitions/worlds/village.ts';
 import { PLANT_KINDS } from './plants.ts';
@@ -19,48 +32,12 @@ export const inTrainingZone = (player: { x: number; y: number }) => {
     return (
       Math.hypot(
         wrappedDelta(player.x, zone.x, ARENA.width) / zone.radius,
-        wrappedDelta(player.y + 15, zone.y, ARENA.height) / (zone.radius * 0.85),
+        wrappedDelta(player.y + COLLISION.feetOffset, zone.y, ARENA.height) /
+          (zone.radius * TRAINING_FOOTPRINT.yScale),
       ) <= 1
     );
   });
 };
-
-// Sample gentle Bezier bends once so drawing and vegetation clearance share the same route.
-export const PATHS = PATH_CURVES.map(([start, bend1, bend2, end]) => {
-  return Array.from({ length: 33 }, (_, step) => {
-    const t = step / 32,
-      u = 1 - t;
-
-    return {
-      x: u ** 3 * start.x + 3 * u ** 2 * t * bend1.x + 3 * u * t ** 2 * bend2.x + t ** 3 * end.x,
-      y: u ** 3 * start.y + 3 * u ** 2 * t * bend1.y + 3 * u * t ** 2 * bend2.y + t ** 3 * end.y,
-    };
-  });
-});
-export function onPath(x: number, y: number, margin = 28) {
-  if (Math.hypot((x - 480) / 110, (y - 355) / 75) < 1) {
-    return true;
-  }
-
-  return PATHS.some((path) => {
-    return path.some((point, index) => {
-      const next = path[index + 1];
-
-      if (!next) {
-        return false;
-      }
-
-      const dx = next.x - point.x,
-        dy = next.y - point.y;
-      const t = Math.max(
-        0,
-        Math.min(1, ((x - point.x) * dx + (y - point.y) * dy) / (dx * dx + dy * dy)),
-      );
-
-      return Math.hypot(x - point.x - t * dx, y - point.y - t * dy) < margin;
-    });
-  });
-}
 
 export interface Tree {
   x: number;
@@ -71,30 +48,34 @@ export interface Tree {
 const trees: Tree[] = [];
 let seed: number = VILLAGE_DEFINITION.treeSeed;
 const random = () => {
-  seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+  seed = (Math.imul(seed, SCENERY_RANDOM.multiplier) + SCENERY_RANDOM.increment) >>> 0;
 
-  return seed / 4294967296;
+  return seed / SCENERY_RANDOM.modulus;
 };
 
 function sceneryClearing(x: number, y: number) {
   return (
     TRAINING_ZONES.some((zone) => {
-      return Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + 35;
+      return Math.hypot(x - zone.x, y - zone.y) < zone.clearingRadius + SCENERY_CLEARANCE.training;
     }) ||
-    Math.hypot((x - 480) / 190, (y - 355) / 110) < 1 ||
-    onPath(x, y, 55) ||
+    Math.hypot((x - PLAZA.x) / PLAZA.clearingX, (y - PLAZA.y) / PLAZA.clearingY) < 1 ||
+    onPath(x, y, SCENERY_CLEARANCE.path) ||
     BUILDINGS.some((b) => {
-      return Math.abs(x - b.x) < 100 && y > b.y - 130 && y < b.y + 65;
+      return (
+        Math.abs(x - b.x) < SCENERY_CLEARANCE.buildingX &&
+        y > b.y - SCENERY_CLEARANCE.buildingAbove &&
+        y < b.y + SCENERY_CLEARANCE.buildingBelow
+      );
     }) ||
     TORCHES.some((t) => {
-      return Math.hypot(t.x - x, t.y - y) < 45;
+      return Math.hypot(t.x - x, t.y - y) < SCENERY_CLEARANCE.torch;
     })
   );
 }
 
 for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
-  const x = 35 + random() * (ARENA.width - 70);
-  const y = 55 + random() * (ARENA.height - 85);
+  const x = SCENERY_BOUNDS.left + random() * (ARENA.width - SCENERY_BOUNDS.horizontalInset);
+  const y = SCENERY_BOUNDS.top + random() * (ARENA.height - SCENERY_BOUNDS.verticalInset);
 
   if (sceneryClearing(x, y)) {
     continue;
@@ -102,13 +83,18 @@ for (let i = 0; i < VILLAGE_DEFINITION.treeAttempts; i++) {
 
   if (
     trees.some((tree) => {
-      return Math.hypot(tree.x - x, tree.y - y) < 48;
+      return Math.hypot(tree.x - x, tree.y - y) < SCENERY_CLEARANCE.separation;
     })
   ) {
     continue;
   }
 
-  trees.push({ x, y, size: 72 + Math.floor(random() * 25), radius: 15 });
+  trees.push({
+    x,
+    y,
+    size: VILLAGE_TREE.minSize + Math.floor(random() * VILLAGE_TREE.sizeRange),
+    radius: VILLAGE_TREE.radius,
+  });
 }
 
 export const TREES: readonly Readonly<Tree>[] = Object.freeze(
@@ -135,16 +121,17 @@ function scatterScenery(
 ): readonly Readonly<VillageDecoration>[] {
   let decorationSeed = initialSeed;
   const roll = () => {
-    decorationSeed = (Math.imul(decorationSeed, 1664525) + 1013904223) >>> 0;
+    decorationSeed =
+      (Math.imul(decorationSeed, SCENERY_RANDOM.multiplier) + SCENERY_RANDOM.increment) >>> 0;
 
-    return decorationSeed / 4294967296;
+    return decorationSeed / SCENERY_RANDOM.modulus;
   };
 
   const decorations: VillageDecoration[] = [];
 
   for (let i = 0; i < attempts; i++) {
-    const x = 35 + roll() * (ARENA.width - 70);
-    const y = 55 + roll() * (ARENA.height - 85);
+    const x = SCENERY_BOUNDS.left + roll() * (ARENA.width - SCENERY_BOUNDS.horizontalInset);
+    const y = SCENERY_BOUNDS.top + roll() * (ARENA.height - SCENERY_BOUNDS.verticalInset);
 
     if (sceneryClearing(x, y)) {
       continue;
@@ -152,7 +139,7 @@ function scatterScenery(
 
     if (
       occupied.some((object) => {
-        return Math.hypot(object.x - x, object.y - y) < 48;
+        return Math.hypot(object.x - x, object.y - y) < SCENERY_CLEARANCE.separation;
       })
     ) {
       continue;
@@ -160,7 +147,7 @@ function scatterScenery(
 
     if (
       decorations.some((object) => {
-        return Math.hypot(object.x - x, object.y - y) < 48;
+        return Math.hypot(object.x - x, object.y - y) < SCENERY_CLEARANCE.separation;
       })
     ) {
       continue;
@@ -182,18 +169,18 @@ function scatterScenery(
 }
 
 export const ROCKS = scatterScenery(
-  VILLAGE_DEFINITION.rockSeed ?? 3719,
-  VILLAGE_DEFINITION.rockAttempts ?? 300,
-  32,
-  17,
+  VILLAGE_DEFINITION.rockSeed ?? ROCK_SCATTER.seed,
+  VILLAGE_DEFINITION.rockAttempts ?? ROCK_SCATTER.attempts,
+  ROCK_SCATTER.minSize,
+  ROCK_SCATTER.sizeRange,
   1,
   TREES,
 );
 export const PLANTS = scatterScenery(
-  VILLAGE_DEFINITION.plantSeed ?? 6143,
-  VILLAGE_DEFINITION.plantAttempts ?? 1000,
-  28,
-  17,
+  VILLAGE_DEFINITION.plantSeed ?? PLANT_SCATTER.seed,
+  VILLAGE_DEFINITION.plantAttempts ?? PLANT_SCATTER.attempts,
+  PLANT_SCATTER.minSize,
+  PLANT_SCATTER.sizeRange,
   PLANT_KINDS.length,
   [...TREES, ...ROCKS],
 );
@@ -224,22 +211,27 @@ export function moveActor(
         const distance = (tx: number, ty: number) => {
           return Math.hypot(
             wrappedDelta(tx, tree.x, ARENA.width),
-            wrappedDelta(ty, tree.y - 8, ARENA.height),
+            wrappedDelta(ty, tree.y - VILLAGE_TREE.trunkOffsetY, ARENA.height),
           );
         };
 
         return distance(px, py) >= Math.min(radius + tree.radius, distance(x, y));
       }) &&
       (!collideScenery ||
-        (Math.hypot(px - WARDROBE.x, py - WARDROBE.y) >= radius + 18 &&
+        (Math.hypot(px - WARDROBE.x, py - WARDROBE.y) >=
+          radius + VILLAGE_OBSTACLES.wardrobeRadius &&
           TORCHES.every((t) => {
-            return Math.hypot(px - t.x, py - t.y) >= radius + 5;
+            return Math.hypot(px - t.x, py - t.y) >= radius + VILLAGE_OBSTACLES.torchRadius;
           }) &&
           BUILDINGS.every((b) => {
             return (
               Math.hypot(
-                px - Math.max(b.x - b.sourceWidth + 8, Math.min(b.x + b.sourceWidth - 8, px)),
-                py - Math.max(b.y - 40, Math.min(b.y, py)),
+                px -
+                  Math.max(
+                    b.x - b.sourceWidth + VILLAGE_OBSTACLES.buildingInset,
+                    Math.min(b.x + b.sourceWidth - VILLAGE_OBSTACLES.buildingInset, px),
+                  ),
+                py - Math.max(b.y - VILLAGE_OBSTACLES.buildingDepth, Math.min(b.y, py)),
               ) >= radius
             );
           })))

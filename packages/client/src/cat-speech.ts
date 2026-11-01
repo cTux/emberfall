@@ -1,3 +1,6 @@
+// A response lasts two seconds; the same window prevents repeated pets from restarting it.
+const CAT_RESPONSE_MS = 2000;
+
 const responses = ['Purrr', 'Meow', 'Mrrp', 'Mew', 'Prrrt', 'Mrrrow'];
 
 /** Local, bounded by the village's cats; no timers or shared chat state. */
@@ -7,7 +10,7 @@ export class CatSpeech {
   pet(id: string, now: number) {
     const previous = this.responses.get(id);
 
-    if (previous && now - previous.at < 2000) {
+    if (previous && now - previous.at < CAT_RESPONSE_MS) {
       return;
     }
 
@@ -25,6 +28,6 @@ export class CatSpeech {
   message(id: string, now: number) {
     const response = this.responses.get(id);
 
-    return response && now - response.at < 2000 ? response.text : undefined;
+    return response && now - response.at < CAT_RESPONSE_MS ? response.text : undefined;
   }
 }

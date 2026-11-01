@@ -17,3 +17,6 @@ export type ArenaProps = {
   onHitpoints: (hp: Record<string, number>) => void;
   onCatSpeech: (text: string) => void;
 };
+
+// With no pointer sample, aim at the viewport midpoint rather than its top-left corner.
+export const VIEWPORT_MIDPOINT = 0.5;

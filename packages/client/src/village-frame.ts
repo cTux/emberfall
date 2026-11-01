@@ -6,6 +6,9 @@ import { resourceScenery } from './gathering';
 import { npcScenery } from './npc-art';
 import { portalInteraction } from './portal';
 
+// Preserve the original lobby focus before a player arrives and preload 200 world units beyond the viewport.
+const VILLAGE_VIEW = { fallbackX: 480, fallbackY: 320, resourceMargin: 200, sceneryFrameMs: 400 };
+
 export function prepareVillageFrame(
   view: WorldState,
   local: Player | undefined,
@@ -19,8 +22,8 @@ export function prepareVillageFrame(
       return !/^(tree|plant|rock):/.test(object.id);
     }),
     ...resourceNodes(
-      { x: local?.x ?? 480, y: local?.y ?? 320 },
-      Math.max(viewport.width, viewport.height) / viewport.scale + 200,
+      { x: local?.x ?? VILLAGE_VIEW.fallbackX, y: local?.y ?? VILLAGE_VIEW.fallbackY },
+      Math.max(viewport.width, viewport.height) / viewport.scale + VILLAGE_VIEW.resourceMargin,
     ).map((node) => {
       const state = resourceState(view.resources, node, view.serverNow ?? now);
       const tree =
@@ -41,12 +44,15 @@ export function prepareVillageFrame(
 
   for (const object of scenery) {
     if (object.frames) {
-      Object.assign(object, object.frames[Math.floor(now / 400) % object.frames.length]);
+      Object.assign(
+        object,
+        object.frames[Math.floor(now / VILLAGE_VIEW.sceneryFrameMs) % object.frames.length],
+      );
     }
   }
 
   const torchTextures = prepared?.torchTextures ?? [];
-  const focus = local ?? { x: 480, y: 320 };
+  const focus = local ?? { x: VILLAGE_VIEW.fallbackX, y: VILLAGE_VIEW.fallbackY };
   const viewWidth = viewport.width / viewport.scale;
   const viewHeight = viewport.height / viewport.scale;
   const cameraX = focus.x - viewWidth / 2;

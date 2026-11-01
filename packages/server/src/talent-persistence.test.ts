@@ -24,7 +24,10 @@ test('save failure cannot publish learned points or equipped slots; bullseye res
 
     for (let i = 0; i < 200 && !world.players.size; i++) {
       await new Promise((resolve) => {
-        return setTimeout(resolve, 10);
+        // Poll frequently enough to observe asynchronous messages without busy-waiting.
+        const MESSAGE_POLL_MS = 10;
+
+        return setTimeout(resolve, MESSAGE_POLL_MS);
       });
     }
 

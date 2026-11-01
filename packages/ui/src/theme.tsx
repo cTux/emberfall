@@ -4,6 +4,9 @@ import { windowSurface } from './window-surface';
 import type { GameFont } from './fonts';
 import { fontFaces } from './font-faces';
 
+// Preserve the compact tooltip type size and ten-pixel theme-scaled padding.
+const TOOLTIP_STYLE = { fontPx: 14, padding: 1.25 };
+
 declare module '@mui/material/styles' {
   interface Palette {
     boss: Palette['primary'];
@@ -154,8 +157,8 @@ const createGameTheme = (fontFamily = '"Alegreya Sans", sans-serif') => {
             return {
               ...windowSurface(theme),
               fontFamily: theme.typography.fontFamily,
-              fontSize: theme.typography.pxToRem(14),
-              padding: theme.spacing(1.25),
+              fontSize: theme.typography.pxToRem(TOOLTIP_STYLE.fontPx),
+              padding: theme.spacing(TOOLTIP_STYLE.padding),
               maxWidth: 'min(300px, calc(100vw - 32px))',
             };
           },

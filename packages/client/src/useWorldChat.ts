@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChatMessage, ClientMessage, Player, WorldState } from '@emberfall/common';
 import { useChat } from './ChatProvider';
 
+// Bound local cat interjections to the same ten-message visible chat budget as server messages.
+const LOCAL_CAT_MESSAGE_LIMIT = 10;
+
 export function useWorldChat({
   world,
   me,
@@ -40,7 +43,7 @@ export function useWorldChat({
             dimension: 'village',
           },
         },
-      ].slice(-10);
+      ].slice(-LOCAL_CAT_MESSAGE_LIMIT);
     });
   };
 

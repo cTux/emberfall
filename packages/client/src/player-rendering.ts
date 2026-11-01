@@ -3,6 +3,25 @@ import type { Player } from '@emberfall/common';
 import { characterStats, defaultSpellRange, PLAYER_ATTACK_DURATION } from '@emberfall/core';
 import { drawPlayerHealth } from './effects';
 
+// Preserve the world-scale status anchors above the 48-unit actor, with an outlined reconnect label.
+const PLAYER_LABEL = { healthY: 46, reconnectY: 62, outline: 3 };
+// Retain the approved warrior slash arc and ten fading motes; values control presentation, never hit detection.
+const SLASH_ART = {
+  bloom: 10,
+  alphaFalloff: 0.7,
+  stroke: 9,
+  radiusInset: 5,
+  startAngle: -0.65,
+  particles: 10,
+  fadeDivisor: 14,
+  startX: 30,
+  spacing: 5,
+  travel: 12,
+  angle: 2.4,
+  spread: 4,
+  expansion: 24,
+};
+
 export function drawPlayerDetails(
   ctx: DrawingContext,
   p: Player,
@@ -11,7 +30,7 @@ export function drawPlayerDetails(
   showVitals = true,
 ) {
   if (showVitals) {
-    drawPlayerHealth(ctx, x, y - 46, p.hitpoints, p.maxHitpoints, p.name);
+    drawPlayerHealth(ctx, x, y - PLAYER_LABEL.healthY, p.hitpoints, p.maxHitpoints, p.name);
   }
 
   if (p.reconnecting) {
@@ -20,9 +39,9 @@ export function drawPlayerDetails(
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ff5555';
     ctx.strokeStyle = '#101817';
-    ctx.lineWidth = 3;
-    ctx.strokeText('Reconnecting', x, y - 62);
-    ctx.fillText('Reconnecting', x, y - 62);
+    ctx.lineWidth = PLAYER_LABEL.outline;
+    ctx.strokeText('Reconnecting', x, y - PLAYER_LABEL.reconnectY);
+    ctx.fillText('Reconnecting', x, y - PLAYER_LABEL.reconnectY);
     ctx.restore();
 
     return;
@@ -71,19 +90,24 @@ export function drawPlayerAttack(
 
     if (bloom) {
       ctx.shadowColor = '#c3edff';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = SLASH_ART.bloom;
     }
 
-    ctx.strokeStyle = `rgba(195,237,255,${1 - progress * 0.7})`;
-    ctx.lineWidth = 9;
+    ctx.strokeStyle = `rgba(195,237,255,${1 - progress * SLASH_ART.alphaFalloff})`;
+    ctx.lineWidth = SLASH_ART.stroke;
     ctx.beginPath();
-    ctx.arc(0, 0, Math.max(0, attackRange - 5), -0.65, 0);
+    ctx.arc(0, 0, Math.max(0, attackRange - SLASH_ART.radiusInset), SLASH_ART.startAngle, 0);
     ctx.stroke();
     ctx.fillStyle = '#a8ffce';
 
-    for (let i = 0; i < 10; i++) {
-      ctx.globalAlpha = opacity * (1 - progress) * (1 - i / 14);
-      ctx.fillRect(30 + i * 5 + progress * 12, Math.sin(i * 2.4) * (4 + progress * 24), 2, 2);
+    for (let i = 0; i < SLASH_ART.particles; i++) {
+      ctx.globalAlpha = opacity * (1 - progress) * (1 - i / SLASH_ART.fadeDivisor);
+      ctx.fillRect(
+        SLASH_ART.startX + i * SLASH_ART.spacing + progress * SLASH_ART.travel,
+        Math.sin(i * SLASH_ART.angle) * (SLASH_ART.spread + progress * SLASH_ART.expansion),
+        2,
+        2,
+      );
     }
 
     ctx.globalAlpha = 1;

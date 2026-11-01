@@ -1,3 +1,7 @@
+// Allow updated geometry one quarter-second to reach the renderer.
+const GEOMETRY_RENDER_SETTLE_MS = 250;
+// Allow damage effects and replicated poses to reach the screenshot.
+const DAMAGE_RENDER_SETTLE_MS = 350;
 import { test, expect } from './fixtures';
 import { LOBBY_PORTAL, starterEquipment } from '../packages/core/src/index.ts';
 
@@ -47,7 +51,7 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
         return world.training?.damage.length ?? 0;
       })
       .toBeGreaterThan(0);
-    await page.waitForTimeout(350);
+    await page.waitForTimeout(DAMAGE_RENDER_SETTLE_MS);
     await page.screenshot({ path: `test-results/hitboxes-training-${classId}.png` });
     world.training!.damage = [];
   }
@@ -65,7 +69,7 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
   player.x = 3;
   player.y = 100;
   await expect(canvas).toHaveAttribute('data-debug-hitboxes', /^[1-9]\d*$/);
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(DAMAGE_RENDER_SETTLE_MS);
   await page.screenshot({ path: 'test-results/hitboxes-forest-seam.png' });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await expect(toggle).toBeChecked();
@@ -75,7 +79,7 @@ test('hitbox debugging defaults off, toggles live, persists and renders in train
   await page.setViewportSize({ width: 480, height: 800 });
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await toggle.check();
-  await page.waitForTimeout(250);
+  await page.waitForTimeout(GEOMETRY_RENDER_SETTLE_MS);
   await page.screenshot({ path: 'test-results/hitboxes-settings-narrow.png' });
   expect(errors).toEqual([]);
 });

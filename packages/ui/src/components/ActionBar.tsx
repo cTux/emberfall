@@ -1,3 +1,4 @@
+import { COOLDOWN_ARC, COOLDOWN_TIME, TALENT_SLOTS, cooldownTenths } from './action-bar-values';
 import type { ReactNode } from 'react';
 import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -57,10 +58,12 @@ function AbilityCooldown({ ability }: { ability: ActionBarAbility }) {
   const remaining = Math.max(0, Math.min(duration, ability.remainingMs));
   const fraction = duration > 0 ? remaining / duration : 0;
   const angle = (1 - fraction) * Math.PI * 2 - Math.PI / 2;
-  const x = 50 + 72 * Math.cos(angle);
-  const y = 50 + 72 * Math.sin(angle);
+  const x = COOLDOWN_ARC.center + COOLDOWN_ARC.radius * Math.cos(angle);
+  const y = COOLDOWN_ARC.center + COOLDOWN_ARC.radius * Math.sin(angle);
   const seconds =
-    remaining >= 1000 ? Math.ceil(remaining / 1000) : (Math.ceil(remaining / 100) / 10).toFixed(1);
+    remaining >= COOLDOWN_TIME.secondMs
+      ? Math.ceil(remaining / COOLDOWN_TIME.secondMs)
+      : (Math.ceil(remaining / COOLDOWN_TIME.tenthMs) / COOLDOWN_TIME.tenthsPerSecond).toFixed(1);
 
   if (fraction <= 0) {
     return null;
@@ -81,7 +84,7 @@ function AbilityCooldown({ ability }: { ability: ActionBarAbility }) {
           <rect width='100' height='100' fill='rgba(0, 0, 0, 0.7)' />
         ) : (
           <path
-            d={`M 50 50 L ${x} ${y} A 72 72 0 ${fraction > 0.5 ? 1 : 0} 1 50 -22 Z`}
+            d={`M 50 50 L ${x} ${y} A 72 72 0 ${fraction > COOLDOWN_ARC.halfTurn ? 1 : 0} 1 50 -22 Z`}
             fill='rgba(0, 0, 0, 0.7)'
           />
         )}
@@ -125,8 +128,8 @@ export function ActionBar({
             <Stack spacing={0.5}>
               <Typography sx={{ fontWeight: 700 }}>{baseAbility.name}</Typography>
               <Typography variant='body2'>
-                Cooldown: {Math.round(duration / 100) / 10}{' '}
-                {duration === 1000 ? 'second' : 'seconds'}
+                Cooldown: {cooldownTenths(duration)}{' '}
+                {duration === COOLDOWN_TIME.secondMs ? 'second' : 'seconds'}
               </Typography>
               <Typography variant='body2'>{baseAbility.description}</Typography>
             </Stack>
@@ -173,7 +176,7 @@ export function ActionBar({
           </ActionSlotStyled>
         </Tooltip>
       )}
-      {[1, 2, 3, 4].map((slot) => {
+      {Object.values(TALENT_SLOTS).map((slot) => {
         const ability = abilities[slot - 1];
 
         if (!ability) {
@@ -208,7 +211,7 @@ export function ActionBar({
               <Stack spacing={0.5}>
                 <Typography sx={{ fontWeight: 700 }}>{ability.name}</Typography>
                 <Typography variant='body2'>
-                  Cooldown: {Math.round(ability.cooldownMs / 100) / 10} seconds
+                  Cooldown: {cooldownTenths(ability.cooldownMs)} seconds
                 </Typography>
                 <Typography variant='body2'>{ability.description}</Typography>
               </Stack>

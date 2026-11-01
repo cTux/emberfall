@@ -1,3 +1,9 @@
+// Retain eight thousand characters of worker failure evidence while bounding memory.
+const STDERR_TAIL_LENGTH = 8000;
+// Allow thirty seconds for cold worker startup.
+const WORKER_START_TIMEOUT_MS = 30000;
+// Two-space indentation keeps benchmark JSON artifacts readable.
+const JSON_INDENT = 2;
 import assert from 'node:assert/strict';
 import { fork, execFileSync } from 'node:child_process';
 import { once } from 'node:events';
@@ -32,11 +38,11 @@ async function measure(worlds: number) {
   });
   let stderr = '';
   child.stderr!.on('data', (chunk: Buffer) => {
-    stderr = (stderr + chunk.toString()).slice(-8000);
+    stderr = (stderr + chunk.toString()).slice(-STDERR_TAIL_LENGTH);
   });
   const receive = async () => {
     const [message] = await once(child, 'message', {
-      signal: AbortSignal.any([exited.signal, AbortSignal.timeout(30000)]),
+      signal: AbortSignal.any([exited.signal, AbortSignal.timeout(WORKER_START_TIMEOUT_MS)]),
     });
     const reply = message as WorkerReply;
     assert(reply.type !== 'error', reply.type === 'error' ? reply.message : '');
@@ -140,6 +146,6 @@ console.log(
       workloads,
     },
     null,
-    2,
+    JSON_INDENT,
   ),
 );

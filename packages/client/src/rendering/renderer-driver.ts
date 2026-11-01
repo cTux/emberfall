@@ -7,6 +7,9 @@ import {
 } from 'pixi.js';
 import './soft-light';
 
+// Pixi's filter bind-group layout places input texture, sampler and backdrop in these slots.
+const FILTER_BINDINGS = { input: 1, sampler: 2, backdrop: 3 } as const;
+
 export class RendererDriver {
   private renderer?: Renderer;
   private disposed = false;
@@ -75,9 +78,9 @@ export class RendererDriver {
       const { _globalFilterBindGroup: group } = this.renderer.filter as unknown as {
         _globalFilterBindGroup: BindGroup;
       };
-      group.setResource(Texture.EMPTY.source, 1);
-      group.setResource(Texture.EMPTY.source.style, 2);
-      group.setResource(Texture.EMPTY.source, 3);
+      group.setResource(Texture.EMPTY.source, FILTER_BINDINGS.input);
+      group.setResource(Texture.EMPTY.source.style, FILTER_BINDINGS.sampler);
+      group.setResource(Texture.EMPTY.source, FILTER_BINDINGS.backdrop);
     }
   }
 

@@ -1,3 +1,5 @@
+// Observe the cleared cooldown across several ticks to detect unwanted automatic recasts.
+const COOLDOWN_OBSERVATION_MS = 500;
 import { test, expect } from './fixtures';
 import {
   TRAINING_ZONES,
@@ -124,7 +126,7 @@ test('three independent columns support rank learning, custom tooltips, LMB assi
   await expect(cast).toHaveAttribute('data-auto-cast', 'false');
   const cooldown = player.talentCooldowns!['talent:warrior:0'];
   player.talentCooldowns!['talent:warrior:0'] = 0;
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(COOLDOWN_OBSERVATION_MS);
   expect(player.talentCooldowns!['talent:warrior:0']).toBe(0);
   await page.keyboard.press('f');
   await expect

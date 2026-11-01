@@ -1,5 +1,8 @@
 import type { GameWindowProps } from '@emberfall/ui';
 
+// Inventory/trade/storage share the existing 520-pixel content width so switching services does not change slot layout.
+const INVENTORY_WINDOW_WIDTH = 520;
+
 export type GameMenu =
   | 'resetTalents'
   | 'talents'
@@ -17,7 +20,7 @@ const panels: Record<GameMenu, Panel> = {
   talents: { title: 'Talents', width: 700, modal: false },
   tactics: { title: 'Tactics', width: 460, height: 480 },
   codex: { title: 'Codex', height: 480 },
-  equipment: { title: 'Inventory', width: 520 },
+  equipment: { title: 'Inventory', width: INVENTORY_WINDOW_WIDTH },
   settings: { title: 'Settings', height: 420 },
   portal: { title: 'Forest portal' },
   wardrobe: { title: 'Wardrobe', width: 600 },
@@ -29,6 +32,10 @@ export function gamePanel(menu: GameMenu, building: string, trading: boolean): P
   const panel = panels[menu];
 
   return menu === 'building'
-    ? { ...panel, title: building, width: trading || building === 'Storehouse' ? 520 : undefined }
+    ? {
+        ...panel,
+        title: building,
+        width: trading || building === 'Storehouse' ? INVENTORY_WINDOW_WIDTH : undefined,
+      }
     : panel;
 }

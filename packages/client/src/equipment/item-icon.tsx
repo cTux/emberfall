@@ -12,6 +12,9 @@ import { weaponSrc, itemArtName } from '../class-art';
 import { clientAsset } from '../urls.ts';
 import { slotViews, ITEM_CLASSES } from './metadata';
 
+// Inventory art is rasterized at the shared 32-pixel tooltip/icon size to avoid unnecessary texture work.
+const PLANT_ICON_SIZE = 32;
+
 function PlantIcon({ variant }: { variant: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -22,12 +25,12 @@ function PlantIcon({ variant }: { variant: number }) {
         kind: 'plant',
         x: 0,
         y: 0,
-        size: 32,
+        size: PLANT_ICON_SIZE,
         variant: variant === -1 ? undefined : variant,
       });
       const ctx = canvas.current?.getContext('2d');
-      ctx?.clearRect(0, 0, 32, 32);
-      ctx?.drawImage(sprite, 0, 0, 32, 32);
+      ctx?.clearRect(0, 0, PLANT_ICON_SIZE, PLANT_ICON_SIZE);
+      ctx?.drawImage(sprite, 0, 0, PLANT_ICON_SIZE, PLANT_ICON_SIZE);
     };
 
     image.addEventListener('load', draw);
@@ -38,7 +41,9 @@ function PlantIcon({ variant }: { variant: number }) {
     };
   }, [variant]);
 
-  return <canvas ref={canvas} width={32} height={32} aria-hidden='true' />;
+  return (
+    <canvas ref={canvas} width={PLANT_ICON_SIZE} height={PLANT_ICON_SIZE} aria-hidden='true' />
+  );
 }
 
 export function itemIcon(itemId: string) {

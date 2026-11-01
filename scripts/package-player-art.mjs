@@ -7,12 +7,15 @@ import { matchPlayerPalette } from './art/match-player-palette.mjs';
 // Art and handedness are authored in the sources; packaging locks walk colors
 // to the standing pose so separately generated sheets cannot change materials.
 const root = 'packages/client/public/assets/wardrobe-style';
+// Row counts and approved direction IDs match the shipped source sheets; keep approved art unchanged.
 const classes = {
   warrior: { rows: 9, extraRows: 3, approved: [2, 3] },
   ranger: { rows: 10, extraRows: 0, approved: [0] },
   mage: { rows: 10, extraRows: 1, approved: [] },
   druid: { rows: 10, extraRows: 10, approved: [] },
 };
+// Two-space JSON keeps generated atlas metadata consistent with the committed assets.
+const METADATA_INDENT = 2;
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage();
@@ -46,7 +49,7 @@ try {
             strides: packed.strides,
           },
           null,
-          2,
+          METADATA_INDENT,
         ) + '\n',
       );
       console.log(`${name}: ${packed.frames.length} isolated frames, scale ${packed.scale}`);

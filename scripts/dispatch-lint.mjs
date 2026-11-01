@@ -1,3 +1,6 @@
+// Two-way choices stay readable as branches; the third repeated selector needs a table.
+const MIN_DISPATCH_BRANCHES = 3;
+
 function selector(node) {
   if (node.type === 'Identifier') {
     return node.name;
@@ -58,7 +61,7 @@ const preferDispatch = {
         branch = next(branch);
       }
 
-      if (count >= 3) {
+      if (count >= MIN_DISPATCH_BRANCHES) {
         context.report({ node, messageId: 'dispatch', data: { selector: key } });
       }
     }

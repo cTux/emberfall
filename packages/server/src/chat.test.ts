@@ -1,8 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { once } from 'node:events';
-import { WebSocket } from './testing/socket.ts';
-import type { ServerMessage, WorldState } from '@emberfall/common';
+import type { WebSocket } from './testing/socket.ts';
+import { connectChatClient } from './chat.fixture.ts';
 import { createGameServer } from './worlds.ts';
 
 test('chat validates text, identifies senders, retains ten messages and isolates worlds', async () => {
@@ -21,42 +20,18 @@ test('chat validates text, identifies senders, retains ten messages and isolates
     while (!predicate()) {
       assert(Date.now() < until, 'chat timed out');
       await new Promise((resolve) => {
-        return setTimeout(resolve, 10);
+        // Poll frequently enough to observe asynchronous messages without busy-waiting.
+        const MESSAGE_POLL_MS = 10;
+
+        return setTimeout(resolve, MESSAGE_POLL_MS);
       });
     }
   };
 
-  async function connect() {
-    const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`);
-    sockets.push(ws);
-    const messages: ServerMessage[] = [];
-    let world: WorldState | undefined;
-    ws.on('message', (raw) => {
-      const message = JSON.parse(raw.toString()) as ServerMessage;
-      messages.push(message);
-
-      if (message.type === 'joined' || message.type === 'state') {
-        world = message.world;
-      }
-    });
-    await once(ws, 'open');
-
-    return {
-      ws,
-      send: (message: unknown) => {
-        return ws.send(JSON.stringify(message));
-      },
-      messages,
-      get world() {
-        return world;
-      },
-    };
-  }
-
   try {
-    const alice = await connect(),
-      bob = await connect(),
-      outsider = await connect();
+    const alice = await connectChatClient(port, sockets),
+      bob = await connectChatClient(port, sockets),
+      outsider = await connectChatClient(port, sockets);
     outsider.send({ type: 'chat', text: 'Not joined' });
     await wait(() => {
       return outsider.messages.some((m) => {
@@ -131,7 +106,10 @@ test('chat validates text, identifies senders, retains ten messages and isolates
     for (let i = 0; i < 11; i++) {
       if (i) {
         await new Promise((resolve) => {
-          return setTimeout(resolve, 510);
+          // Wait just beyond the 500 ms chat cooldown, allowing ten milliseconds of headroom.
+          const CHAT_COOLDOWN_WAIT_MS = 510;
+
+          return setTimeout(resolve, CHAT_COOLDOWN_WAIT_MS);
         });
       }
 
@@ -167,7 +145,10 @@ test('chat validates text, identifies senders, retains ten messages and isolates
     );
     // Alice's older bubble expires first; Bob's latest message gets a fresh ten seconds.
     await new Promise((resolve) => {
-      return setTimeout(resolve, 5000);
+      // Advance five seconds so the older bubble expires before the latest one.
+      const OLDER_BUBBLE_WAIT_MS = 5000;
+
+      return setTimeout(resolve, OLDER_BUBBLE_WAIT_MS);
     });
     await wait(() => {
       return (
@@ -183,7 +164,10 @@ test('chat validates text, identifies senders, retains ten messages and isolates
       'Message 10',
     );
     await new Promise((resolve) => {
-      return setTimeout(resolve, 5100);
+      // Wait the remaining five seconds plus headroom for the latest bubble to expire.
+      const LATEST_BUBBLE_WAIT_MS = 5100;
+
+      return setTimeout(resolve, LATEST_BUBBLE_WAIT_MS);
     });
     await wait(() => {
       return (
@@ -212,7 +196,7 @@ test('chat validates text, identifies senders, retains ten messages and isolates
       }),
       'interruption retains membership',
     );
-    const resumed = await connect();
+    const resumed = await connectChatClient(port, sockets);
     resumed.send({
       type: 'resume',
       worldId: joined.world.id,

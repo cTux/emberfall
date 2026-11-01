@@ -1,3 +1,5 @@
+// ISO-8601 seconds occupy nineteen characters before the UTC suffix.
+const ISO_TIMESTAMP_SECONDS_LENGTH = 19;
 import { randomUUID } from 'node:crypto';
 
 export const heroId = '76561198000000001';
@@ -40,7 +42,7 @@ export function steamCallback(loginUrl: string, steamId = heroId) {
     claimed_id: identity,
     identity,
     return_to: callback.toString(),
-    response_nonce: `${new Date().toISOString().slice(0, 19)}Z${randomUUID()}`,
+    response_nonce: `${new Date().toISOString().slice(0, ISO_TIMESTAMP_SECONDS_LENGTH)}Z${randomUUID()}`,
     assoc_handle: 'test-association',
     sig: 'test-signature',
     signed: 'op_endpoint,claimed_id,identity,return_to,response_nonce,assoc_handle',

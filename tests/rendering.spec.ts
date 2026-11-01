@@ -1,3 +1,5 @@
+// Warm renderer resources for three seconds before frame measurement.
+const RENDERER_WARMUP_MS = 3000;
 import { sampleFrameTiming } from './frame-timing';
 import { test, expect } from './fixtures';
 test.use({ graphicsPreset: 'High' });
@@ -26,7 +28,7 @@ test('High graphics uses viewport-sized WebGL with bounded cached resources', as
       };
     }),
   ).toEqual({ width: 2160, height: 1500, canvas2d: false });
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(RENDERER_WARMUP_MS);
   const timing = await page.evaluate(sampleFrameTiming, undefined);
   const stats = JSON.parse((await canvas.getAttribute('data-render-stats'))!);
   console.log('High village renderer measurement', JSON.stringify({ timing, stats }));

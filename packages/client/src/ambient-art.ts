@@ -1,12 +1,29 @@
 import type { DrawingContext } from './rendering/drawing-context';
 import { loadArt, drawArt } from './art';
 
-export const portalArt = loadArt('portal-stone', 1, 1, 128, true);
+// The reusable 32-pixel radial texture is the existing balance between soft puffs and small upload size.
+const PUFF_TEXTURE_SIZE = 32;
+// Existing portal/smoke choreography: three orbiting motes, five staggered chimney puffs and slow fixed periods.
+const AMBIENT = {
+  portalCell: 128,
+  portalMotes: 3,
+  portalOrbitMs: 2300,
+  portalAlpha: 0.38,
+  smokePuffs: 5,
+  smokeStaggerMs: 1700,
+  smokeLifetimeMs: 8500,
+  smokeSize: 8,
+  smokeGrowth: 17,
+  smokeAlpha: 0.19,
+  smokeSwayFrequency: 5,
+} as const;
+
+export const portalArt = loadArt('portal-stone', 1, 1, AMBIENT.portalCell, true);
 
 // Small reusable textures, not per-frame canvas uploads or blur filters.
 function puff(color: string) {
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 32;
+  canvas.width = canvas.height = PUFF_TEXTURE_SIZE;
   const ctx = canvas.getContext('2d')!;
   const gradient = ctx.createRadialGradient(16, 16, 1, 16, 16, 16);
   gradient.addColorStop(0, color);
@@ -29,7 +46,7 @@ export function drawStonePortal(
   height: number,
   now: number,
 ) {
-  drawArt(ctx, portalArt, 0, 0, x, y, width, height, 128);
+  drawArt(ctx, portalArt, 0, 0, x, y, width, height, AMBIENT.portalCell);
 
   if (!portalArt.naturalWidth) {
     return;
@@ -41,9 +58,9 @@ export function drawStonePortal(
   ctx.clip();
   const alpha = ctx.globalAlpha;
 
-  for (let i = 0; i < 3; i++) {
-    const phase = now / 2300 + (i * Math.PI * 2) / 3;
-    ctx.globalAlpha = alpha * 0.38;
+  for (let i = 0; i < AMBIENT.portalMotes; i++) {
+    const phase = now / AMBIENT.portalOrbitMs + (i * Math.PI * 2) / AMBIENT.portalMotes;
+    ctx.globalAlpha = alpha * AMBIENT.portalAlpha;
     ctx.drawImage(
       energy,
       x + width * (0.29 + Math.cos(phase) * 0.09),
@@ -61,14 +78,15 @@ export function drawChimneySmoke(ctx: DrawingContext, x: number, y: number, now:
   ctx.save();
   const opacity = ctx.globalAlpha;
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < AMBIENT.smokePuffs; i++) {
     // Phase must not depend on projected coordinates, which wrap at world seams.
-    const age = ((now + i * 1700) % 8500) / 8500;
-    const size = 8 + age * 17;
-    ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * 0.19;
+    const age =
+      ((now + i * AMBIENT.smokeStaggerMs) % AMBIENT.smokeLifetimeMs) / AMBIENT.smokeLifetimeMs;
+    const size = AMBIENT.smokeSize + age * AMBIENT.smokeGrowth;
+    ctx.globalAlpha = opacity * Math.sin(age * Math.PI) * AMBIENT.smokeAlpha;
     ctx.drawImage(
       smoke,
-      x + age * 12 + Math.sin(age * 5 + i) * age * 3 - size / 2,
+      x + age * 12 + Math.sin(age * AMBIENT.smokeSwayFrequency + i) * age * 3 - size / 2,
       y - age * 40,
       size,
       size,

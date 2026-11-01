@@ -1,5 +1,6 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
 /** Game pixels, independent of backing resolution and graphics preset. */
-export const PLAYER_CUTOUT_MARGIN = 10;
+export const PLAYER_CUTOUT_MARGIN = TUNING.playerCutoutMargin;
 type Run = [x: number, y: number, width: number];
 const silhouettes = new WeakMap<HTMLCanvasElement, Map<string, Run[]>>();
 
@@ -35,7 +36,9 @@ export function playerCutoutRuns(mask: HTMLCanvasElement, width: number, height:
   // Circular dilation, preserving the shape rather than its bounding rectangle.
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (pixels[(y * w + x) * 4 + 3] < 32) {
+      if (
+        pixels[(y * w + x) * TUNING.rgbaStride + TUNING.alphaChannel] < TUNING.minimumCutoutAlpha
+      ) {
         continue;
       }
 

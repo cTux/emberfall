@@ -2,6 +2,7 @@ import type { Player, EquipmentSlot } from '@emberfall/common';
 import type { createEquipmentRules } from './equipment-rules.ts';
 import type { createItemRules, BackpackItem } from './item-rules.ts';
 import type { createStorageRules } from './storage-rules.ts';
+import { RESOURCE_STACK_LIMIT } from './inventory-limits.ts';
 
 export function createInventoryRules(
   equipment: ReturnType<typeof createEquipmentRules>,
@@ -42,7 +43,7 @@ export function createInventoryRules(
 
     const limit =
       definition.kind === 'resource'
-        ? 200
+        ? RESOURCE_STACK_LIMIT
         : definition.kind === 'consumable'
           ? Number.MAX_SAFE_INTEGER
           : 1;

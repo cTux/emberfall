@@ -1,3 +1,5 @@
+import * as LIMITS from './limits.ts';
+import { loadAdmissionCharacter } from './admission-character.ts';
 import type * as RuntimeModels from './models.ts';
 import { randomUUID, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createWorldPasswords } from './passwords.ts';
@@ -57,12 +59,15 @@ export function createAdmission({
       return;
     }
 
-    if (now - session.actionAt > 10_000) {
+    if (now - session.actionAt > LIMITS.ADMISSION_WINDOW_MS) {
       session.actionAt = now;
       session.actions = 0;
     }
 
-    if (++session.actions > 5 || passwords.pending >= 8) {
+    if (
+      ++session.actions > LIMITS.MAX_ADMISSION_ATTEMPTS ||
+      passwords.pending >= LIMITS.MAX_PENDING_PASSWORDS
+    ) {
       error('Too many attempts. Try again in a moment.');
 
       return;
@@ -71,11 +76,7 @@ export function createAdmission({
     session.busy = true;
     let createdWorld: RuntimeModels.World | undefined;
     try {
-      const existingCharacter = authenticated
-        ? characters.loadById(authenticated.characterId)
-        : message.characterToken
-          ? characters.load(message.characterToken)
-          : undefined;
+      const existingCharacter = loadAdmissionCharacter(characters, authenticated, message);
       const active = () => {
         return (
           existingCharacter &&
@@ -140,24 +141,20 @@ export function createAdmission({
       let world: RuntimeModels.World;
 
       if (message.type === 'create') {
-        if (worlds.size >= 64) {
+        if (worlds.size >= LIMITS.MAX_WORLDS) {
           error('The server is full. Try again later.');
 
           return;
         }
 
-        const salt = randomBytes(16).toString('hex');
-        let hash: Buffer | undefined;
-
-        if (message.password) {
-          hash = await passwords.hash(message.password, salt);
-        }
+        const salt = randomBytes(LIMITS.PASSWORD_SALT_BYTES).toString('hex');
+        const hash = message.password ? await passwords.hash(message.password, salt) : undefined;
 
         if (ws.readyState !== WebSocket.OPEN) {
           return;
         }
 
-        if (worlds.size >= 64) {
+        if (worlds.size >= LIMITS.MAX_WORLDS) {
           error('The server is full.');
 
           return;
@@ -205,7 +202,9 @@ export function createAdmission({
           return;
         }
 
-        if (world.players.size >= (world === permanentWorld ? 32 : MAX_PLAYERS)) {
+        if (
+          world.players.size >= (world === permanentWorld ? LIMITS.VILLAGE_CAPACITY : MAX_PLAYERS)
+        ) {
           error('This world is full.');
 
           return;
@@ -225,11 +224,7 @@ export function createAdmission({
         return;
       }
 
-      let character = authenticated
-        ? characters.loadById(authenticated.characterId)
-        : message.characterToken
-          ? characters.load(message.characterToken)
-          : undefined;
+      let character = loadAdmissionCharacter(characters, authenticated, message);
       let token = authenticated ? '' : message.characterToken;
 
       if (!character) {

@@ -1,6 +1,20 @@
 import type { DrawingContext } from './rendering/drawing-context';
 import type { SceneState } from '@emberfall/common';
 
+// Existing warning-art calibration aligns indicators with actor feet and emphasizes the final 35% of windup.
+const WARNING = {
+  footOffset: 15,
+  lateProgress: 0.65,
+  sparks: 8,
+  angleDivisor: 4,
+  bossRadius: 42,
+  normalRadius: 26,
+  trailSeconds: 0.06,
+  projectileStroke: 5,
+  zoneStroke: 2,
+  dash: [5, 5],
+} as const;
+
 /** Gameplay warnings deliberately remain visible at every graphics preset. */
 export function drawDanger(
   ctx: DrawingContext,
@@ -11,8 +25,8 @@ export function drawDanger(
 ) {
   ctx.save();
   const zone = (x: number, y: number, radius: number, progress: number, spawn = false) => {
-    const p = near(x, y + 15);
-    ctx.lineWidth = 2;
+    const p = near(x, y + WARNING.footOffset);
+    ctx.lineWidth = WARNING.zoneStroke;
     ctx.strokeStyle = '#ff344c';
     ctx.fillStyle = '#ff18352b';
     ctx.beginPath();
@@ -24,11 +38,11 @@ export function drawDanger(
     ctx.arc(p.x, p.y, radius * Math.sqrt(Math.max(0, Math.min(1, progress))), 0, Math.PI * 2);
     ctx.fill();
 
-    if (!spawn && progress > 0.65) {
+    if (!spawn && progress > WARNING.lateProgress) {
       ctx.fillStyle = '#ff8790';
 
-      for (let i = 0; i < 8; i++) {
-        const angle = (i * Math.PI) / 4 + progress * 2;
+      for (let i = 0; i < WARNING.sparks; i++) {
+        const angle = (i * Math.PI) / WARNING.angleDivisor + progress * 2;
         ctx.fillRect(
           p.x + Math.cos(angle) * radius * progress,
           p.y + Math.sin(angle) * radius * progress,
@@ -52,7 +66,7 @@ export function drawDanger(
     zone(
       spawn.x,
       spawn.y,
-      spawn.kind === 'boss' ? 42 : 26,
+      spawn.kind === 'boss' ? WARNING.bossRadius : WARNING.normalRadius,
       (now - spawn.warnedAt) / (spawn.spawnsAt - spawn.warnedAt),
       true,
     );
@@ -73,10 +87,10 @@ export function drawDanger(
     );
 
     if (attack.ranged) {
-      const from = near(enemy.x, enemy.y + 15),
-        to = near(attack.x, attack.y + 15);
+      const from = near(enemy.x, enemy.y + WARNING.footOffset),
+        to = near(attack.x, attack.y + WARNING.footOffset);
       ctx.strokeStyle = '#ff344c';
-      ctx.setLineDash([5, 5]);
+      ctx.setLineDash(WARNING.dash);
       ctx.beginPath();
       ctx.moveTo(from.x, from.y);
       ctx.lineTo(to.x, to.y);
@@ -86,11 +100,11 @@ export function drawDanger(
   }
 
   for (const shot of projectilesOnly ? (scene.projectiles ?? []) : []) {
-    const p = near(shot.x, shot.y + 15);
+    const p = near(shot.x, shot.y + WARNING.footOffset);
     ctx.strokeStyle = '#ff344c';
-    ctx.lineWidth = 5;
+    ctx.lineWidth = WARNING.projectileStroke;
     ctx.beginPath();
-    ctx.moveTo(p.x - shot.vx * 0.06, p.y - shot.vy * 0.06);
+    ctx.moveTo(p.x - shot.vx * WARNING.trailSeconds, p.y - shot.vy * WARNING.trailSeconds);
     ctx.lineTo(p.x, p.y);
     ctx.stroke();
     ctx.fillStyle = '#ff1835';

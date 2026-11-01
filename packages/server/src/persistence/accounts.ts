@@ -1,3 +1,5 @@
+// Retain 256-bit session credentials and their existing hexadecimal wire length.
+const ACCOUNT_TOKEN_BYTES = 32;
 import type { DatabaseSync } from 'node:sqlite';
 import { createHash, randomBytes } from 'node:crypto';
 
@@ -61,7 +63,7 @@ export function createAccountRepository(
   }
 
   function createSession(steamId: string, expiresAt: number) {
-    const token = randomBytes(32).toString('hex');
+    const token = randomBytes(ACCOUNT_TOKEN_BYTES).toString('hex');
     db.prepare('DELETE FROM account_sessions WHERE expires_at<=?').run(Date.now());
     db.prepare('INSERT INTO account_sessions VALUES (?, ?, ?)').run(
       createHash('sha256').update(token).digest('hex'),

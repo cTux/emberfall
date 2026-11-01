@@ -1,3 +1,7 @@
+// Allow the confirmed talent snapshot to reach the renderer.
+const TALENT_RENDER_SETTLE_MS = 300;
+// Allow scene artwork to finish loading before comparison capture.
+const SCENE_ART_WARMUP_MS = 1500;
 import { test, expect } from './fixtures';
 import {
   TRAINING_ZONES,
@@ -38,7 +42,7 @@ test('learning Pack Howl enlarges Bear without casting and shows the permanent b
     })
     .toBe(48);
   const baseHealth = player.bear!.maxHitpoints;
-  await page.waitForTimeout(1500); // Let scene artwork finish loading before the comparison capture.
+  await page.waitForTimeout(SCENE_ART_WARMUP_MS); // Let scene artwork finish loading before the comparison capture.
   await page.screenshot({ path: 'test-results/pack-howl-before.png' });
   learnTalent(player, talentNodeId('druid', 1, 3));
   await expect
@@ -52,7 +56,7 @@ test('learning Pack Howl enlarges Bear without casting and shows the permanent b
     })
     .toBe(baseHealth * 1.3);
   expect(player.bear!.range).toBe(97.5);
-  await page.waitForTimeout(300); // Allow the confirmed snapshot to reach the renderer.
+  await page.waitForTimeout(TALENT_RENDER_SETTLE_MS); // Allow the confirmed snapshot to reach the renderer.
   await page.screenshot({ path: 'test-results/pack-howl-learned.png' });
   await page.getByRole('button', { name: 'Talents', exact: true }).click();
   const card = page.locator(`[data-talent-node='${talentNodeId('druid', 1, 3)}']`);

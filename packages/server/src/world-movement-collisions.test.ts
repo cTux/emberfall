@@ -45,7 +45,10 @@ test('the server allows a connected player to walk into a tree', async () => {
       }
 
       await new Promise((resolve) => {
-        return setTimeout(resolve, 50);
+        // Refresh held movement once per 50 ms authoritative tick.
+        const MOVEMENT_HEARTBEAT_MS = 50;
+
+        return setTimeout(resolve, MOVEMENT_HEARTBEAT_MS);
       });
     }
 

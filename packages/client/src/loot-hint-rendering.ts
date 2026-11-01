@@ -4,6 +4,9 @@ import { itemArtName } from './class-art';
 import { drawArt, loadArt, plantArt } from './art';
 import { lootHintFrame, type LootHint } from './loot-hints';
 
+// Existing pickup rows sit above/right of the player; quantity labels are shown only for multi-item gains.
+const LOOT_LABEL = { topOffset: 30, sideOffset: 35, outlineWidth: 2, minimumQuantity: 2 } as const;
+
 export function drawLootHints(
   ctx: DrawingContext,
   hints: readonly LootHint[],
@@ -17,7 +20,7 @@ export function drawLootHints(
   });
   let y =
     player.y -
-    30 -
+    LOOT_LABEL.topOffset -
     visible.reduce((sum, row) => {
       return sum + row.frame.height;
     }, 0) /
@@ -25,12 +28,12 @@ export function drawLootHints(
 
   for (const { hint, frame } of visible) {
     ctx.save();
-    ctx.translate(player.x + 35, y + frame.offset);
+    ctx.translate(player.x + LOOT_LABEL.sideOffset, y + frame.offset);
     ctx.globalAlpha *= frame.alpha;
     ctx.font = 'bold 14px "Alegreya Sans", sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = LOOT_LABEL.outlineWidth;
     ctx.strokeStyle = '#18251c';
     ctx.fillStyle = '#b8ed93';
     ctx.strokeText('+', 0, 9);
@@ -51,7 +54,7 @@ export function drawLootHints(
     ctx.strokeText(name, 36, 9);
     ctx.fillText(name, 36, 9);
 
-    if (hint.quantity >= 2) {
+    if (hint.quantity >= LOOT_LABEL.minimumQuantity) {
       ctx.font = 'bold 10px "Alegreya Sans", sans-serif';
       ctx.textAlign = 'right';
       ctx.strokeText(String(hint.quantity), 32, 16);

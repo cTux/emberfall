@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { artUrl } from './art';
 import { drawAssetGalleryFrame } from './asset-gallery-frame';
+
+// Keep the portrait/weapon preview to the four shipped playable classes.
+const PLAYABLE_PREVIEW_CLASSES = 4;
+
 const names = ['warrior', 'ranger', 'mage', 'druid'];
 
 /** Inspect the very same packaged frames used by the game, without joining a world. */
@@ -125,10 +129,10 @@ export function AssetGallery() {
       <h2>Portraits and icons</h2>
       <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
         {[
-          ...names.slice(0, 4).map((name) => {
+          ...names.slice(0, PLAYABLE_PREVIEW_CLASSES).map((name) => {
             return `${name}-portrait`;
           }),
-          ...names.slice(0, 4).map((name) => {
+          ...names.slice(0, PLAYABLE_PREVIEW_CLASSES).map((name) => {
             return `${name}-weapon`;
           }),
           'bleed',

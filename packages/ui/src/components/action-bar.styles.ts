@@ -1,5 +1,8 @@
 import { Paper, ButtonBase, alpha, styled } from '@mui/material';
 
+// Preserve the existing 52px/44px slot sizes and translucent scene backing.
+const ACTION_STYLE = { slot: 6.5, compactSlot: 5.5, opacity: 0.76 };
+
 const autoCastStyle = {
   '& [data-auto-cast-border]': { color: 'inherit' },
   '& [data-auto-cast-border] rect': { animation: 'auto-cast-dashes 1s linear infinite' },
@@ -14,12 +17,12 @@ export const ActionSlotStyled = styled(Paper)(({ theme }) => {
     ...autoCastStyle,
     '& [data-auto-cast-border]': { color: theme.palette.primary.main },
     position: 'relative',
-    width: theme.spacing(6.5),
-    height: theme.spacing(6.5),
+    width: theme.spacing(ACTION_STYLE.slot),
+    height: theme.spacing(ACTION_STYLE.slot),
     flexShrink: 0,
     overflow: 'hidden',
     borderRadius: 0,
-    backgroundColor: alpha(theme.palette.common.black, 0.76),
+    backgroundColor: alpha(theme.palette.common.black, ACTION_STYLE.opacity),
     borderColor: theme.palette.divider,
     display: 'grid',
     placeItems: 'center',
@@ -30,8 +33,8 @@ export const ActionSlotStyled = styled(Paper)(({ theme }) => {
       imageRendering: 'pixelated',
     },
     [theme.breakpoints.down('sm')]: {
-      width: theme.spacing(5.5),
-      height: theme.spacing(5.5),
+      width: theme.spacing(ACTION_STYLE.compactSlot),
+      height: theme.spacing(ACTION_STYLE.compactSlot),
     },
   };
 });
@@ -74,12 +77,15 @@ export const AbilityButtonStyled = styled(ButtonBase)(({ theme }) => {
     ...autoCastStyle,
     '& [data-auto-cast-border]': { color: theme.palette.primary.main },
     position: 'relative',
-    width: theme.spacing(6.5),
-    height: theme.spacing(6.5),
+    width: theme.spacing(ACTION_STYLE.slot),
+    height: theme.spacing(ACTION_STYLE.slot),
     overflow: 'hidden',
     flexShrink: 0,
     border: `1px solid ${theme.palette.divider}`,
-    backgroundColor: alpha(theme.palette.common.black, 0.76),
-    [theme.breakpoints.down('sm')]: { width: theme.spacing(5.5), height: theme.spacing(5.5) },
+    backgroundColor: alpha(theme.palette.common.black, ACTION_STYLE.opacity),
+    [theme.breakpoints.down('sm')]: {
+      width: theme.spacing(ACTION_STYLE.compactSlot),
+      height: theme.spacing(ACTION_STYLE.compactSlot),
+    },
   };
 });

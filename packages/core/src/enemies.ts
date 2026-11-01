@@ -1,3 +1,5 @@
+import { COLLISION } from './definitions/collision.ts';
+
 import { game, type createGame } from './game.ts';
 import { AILMENT_DEFINITIONS } from './definitions/effects/ailments.ts';
 import { wrap, wrappedDelta } from '@emberfall/common';
@@ -7,6 +9,22 @@ import type { Enemy } from '@emberfall/common';
 import { ENEMY_STATS, ENEMY_RULES } from './definitions/entities/enemies.ts';
 import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
 import { enemyAttributes } from './utils/enemyAttributes.ts';
+
+// Existing forty-pixel spatial bins cover neighboring crowd bodies without scanning every enemy.
+// The 120-by-64 key grid preserves the established wrapping/hash behavior.
+const CROWD_GRID = { cellSize: 40, columns: 120, rows: 64 } as const;
+// Five-pixel movement substeps prevent enemies from tunneling through narrow obstacles.
+const ENEMY_STEP_PIXELS = 5;
+// Existing tree lookahead and clearance keep enemies turning before reaching a trunk.
+const TREE_DETOUR = { queryRadius: 140, lookahead: 120, clearance: 21, angleMargin: 0.1 } as const;
+// Try thirty-, sixty- and ninety-degree alternatives in deterministic left/right order.
+const DETOUR_ANGLES = {
+  shallow: Math.PI / 6,
+  diagonal: Math.PI / 3,
+  perpendicular: Math.PI / 2,
+} as const;
+// Reject a detour that loses more than ten percent of its intended stride to collision.
+const MINIMUM_STRIDE_FRACTION = 0.9;
 export { ENEMY_STATS };
 export function spawnArchetype(
   roll: number,
@@ -58,7 +76,10 @@ export function moveEnemies(
   const speedMultiplier = context.registries.difficulties.require(difficulty).speedMultiplier;
   const cells = new Map<number, Set<Enemy>>();
   const key = (x: number, y: number) => {
-    return wrap(Math.floor(x / 40), 120) + wrap(Math.floor(y / 40), 64) * 120;
+    return (
+      wrap(Math.floor(x / CROWD_GRID.cellSize), CROWD_GRID.columns) +
+      wrap(Math.floor(y / CROWD_GRID.cellSize), CROWD_GRID.rows) * CROWD_GRID.columns
+    );
   };
 
   for (const enemy of enemies) {
@@ -116,7 +137,7 @@ export function moveEnemies(
         (rooted ? 1 - (AILMENT_DEFINITIONS.roots.slowFraction ?? 0) : 1),
       targetDistance,
     );
-    const steps = Math.max(1, Math.ceil(distance / 5));
+    const steps = Math.max(1, Math.ceil(distance / ENEMY_STEP_PIXELS));
 
     for (let step = 0; step < steps && distance > 0; step++) {
       const dx = wrappedDelta(target.x, enemy.x, FOREST.width);
@@ -126,10 +147,10 @@ export function moveEnemies(
       // The forest has isolated circular trunks. Steer around the first trunk on the route.
       // Keep the side deterministic so successive ticks don't alternate left and right.
       const side = enemy.id % 2 ? 1 : -1;
-      const blocker = forestTrees(enemy.x, enemy.y + 15, 140)
+      const blocker = forestTrees(enemy.x, enemy.y + COLLISION.feetOffset, TREE_DETOUR.queryRadius)
         .map((tree) => {
           const x = tree.x - enemy.x,
-            y = tree.y - enemy.y - 15;
+            y = tree.y - enemy.y - COLLISION.feetOffset;
 
           return {
             x,
@@ -139,7 +160,11 @@ export function moveEnemies(
           };
         })
         .filter((t) => {
-          return t.ahead > 0 && t.ahead < Math.min(length, 120) && t.across < stats.radius + 21;
+          return (
+            t.ahead > 0 &&
+            t.ahead < Math.min(length, TREE_DETOUR.lookahead) &&
+            t.across < stats.radius + TREE_DETOUR.clearance
+          );
         })
         .sort((a, b) => {
           return a.ahead - b.ahead;
@@ -149,30 +174,36 @@ export function moveEnemies(
         angle =
           Math.atan2(blocker.y, blocker.x) +
           side *
-            (Math.asin(Math.min(1, (stats.radius + 21) / Math.hypot(blocker.x, blocker.y))) + 0.1);
+            (Math.asin(
+              Math.min(
+                1,
+                (stats.radius + TREE_DETOUR.clearance) / Math.hypot(blocker.x, blocker.y),
+              ),
+            ) +
+              TREE_DETOUR.angleMargin);
       }
 
       const stride = distance / steps;
 
       for (const offset of [
         0,
-        (side * Math.PI) / 6,
-        (-side * Math.PI) / 6,
-        (side * Math.PI) / 3,
-        (-side * Math.PI) / 3,
-        (side * Math.PI) / 2,
-        (-side * Math.PI) / 2,
+        side * DETOUR_ANGLES.shallow,
+        -side * DETOUR_ANGLES.shallow,
+        side * DETOUR_ANGLES.diagonal,
+        -side * DETOUR_ANGLES.diagonal,
+        side * DETOUR_ANGLES.perpendicular,
+        -side * DETOUR_ANGLES.perpendicular,
       ]) {
         const heading = angle + offset;
         const next = moveForestActor(
-          { x: enemy.x, y: enemy.y + 15 },
+          { x: enemy.x, y: enemy.y + COLLISION.feetOffset },
           Math.cos(heading) * stride,
           Math.sin(heading) * stride,
           stats.radius,
         );
-        const point = { x: next.x, y: wrap(next.y - 15, FOREST.height) };
+        const point = { x: next.x, y: wrap(next.y - COLLISION.feetOffset, FOREST.height) };
 
-        if (forestDistance(point, enemy) < stride * 0.9) {
+        if (forestDistance(point, enemy) < stride * MINIMUM_STRIDE_FRACTION) {
           continue;
         }
 
@@ -180,7 +211,9 @@ export function moveEnemies(
 
         for (let row = -1; row <= 1; row++) {
           for (let col = -1; col <= 1; col++) {
-            for (const other of cells.get(key(point.x + col * 40, point.y + row * 40)) ?? []) {
+            for (const other of cells.get(
+              key(point.x + col * CROWD_GRID.cellSize, point.y + row * CROWD_GRID.cellSize),
+            ) ?? []) {
               if (
                 forestDistance(point, other) <
                 stats.radius + ENEMY_STATS[other.archetype ?? 'skeleton'].radius

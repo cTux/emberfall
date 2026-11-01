@@ -1,3 +1,5 @@
+// Sample walking poses roughly one animation frame apart.
+const WALK_POSE_INTERVAL_MS = 160;
 import { npcDialogueState } from './npcs.fixture';
 import { registerWorkstationCases } from './npc-workstations.cases';
 import { test, expect } from './fixtures';
@@ -243,7 +245,7 @@ test('players can address Marta, see her answer, and watch her walk after leavin
 
   for (let frame = 0; frame < 4; frame++) {
     await page.screenshot({ path: `test-results/npc-walking-${frame}.png` });
-    await page.waitForTimeout(160);
+    await page.waitForTimeout(WALK_POSE_INTERVAL_MS);
   }
 
   expect(errors).toEqual([]);

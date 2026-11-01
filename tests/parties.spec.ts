@@ -1,3 +1,5 @@
+// Preserve the extended budget for multi-step desktop flows on slower CI workers.
+const MULTIPLAYER_FLOW_TIMEOUT_MS = 120000;
 import { test, expect } from './fixtures';
 import type { Page } from '@playwright/test';
 import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
@@ -7,7 +9,7 @@ test('players opt into parties with nearby E and chat, vote together, join late 
   browser,
   game,
 }, info) => {
-  test.setTimeout(120000);
+  test.setTimeout(MULTIPLAYER_FLOW_TIMEOUT_MS);
   const context = await browser.newContext({ ignoreHTTPSErrors: true });
   const other = await context.newPage();
   const errors: string[] = [];

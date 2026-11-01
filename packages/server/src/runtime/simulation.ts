@@ -1,3 +1,5 @@
+import { MAX_SIMULATION_BACKLOG_MS, SIMULATION_POLL_MS } from './limits.ts';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
 import { restoreResources, syncEquipmentVitals, tickGathering, TICK_MS } from '@emberfall/core';
 import { stepMovement } from '../systems/movement.ts';
 import { tickScene } from '../scenes.ts';
@@ -26,8 +28,8 @@ export function startSimulation({
   const tick = setInterval(() => {
     const wallTime = Date.now();
 
-    if (wallTime - simulationAt > 250) {
-      simulationAt = wallTime - 250;
+    if (wallTime - simulationAt > MAX_SIMULATION_BACKLOG_MS) {
+      simulationAt = wallTime - MAX_SIMULATION_BACKLOG_MS;
     }
 
     while (wallTime - simulationAt >= TICK_MS) {
@@ -64,8 +66,8 @@ export function startSimulation({
           syncEquipmentVitals(player);
         }
 
-        tickScene(world, now, TICK_MS / 1000);
-        parties(world).tick(now, TICK_MS / 1000);
+        tickScene(world, now, TICK_MS / MILLISECONDS_PER_SECOND);
+        parties(world).tick(now, TICK_MS / MILLISECONDS_PER_SECOND);
 
         for (const player of world.players.values()) {
           try {
@@ -88,13 +90,13 @@ export function startSimulation({
         }
 
         if (world.players.size) {
-          villageLife(world, now).tick(now, TICK_MS / 1000);
+          villageLife(world, now).tick(now, TICK_MS / MILLISECONDS_PER_SECOND);
         }
 
         broadcastState(world, now);
       }
     }
-  }, 10);
+  }, SIMULATION_POLL_MS);
 
   return () => {
     return clearInterval(tick);

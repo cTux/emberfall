@@ -1,3 +1,4 @@
+import { PROJECTILE_STYLE as STYLE } from './projectile-style.ts';
 import type { DrawingContext } from '../rendering/drawing-context';
 import type { SceneState } from '@emberfall/common';
 import type { Preferences } from '../preferences';
@@ -19,8 +20,12 @@ function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'ro
     return false;
   }
 
-  const column = Math.floor(now / 100) % (arrow ? 4 : 3);
-  const size = arrow ? 44 : kind === 'roots' ? 24 : 48;
+  const column = Math.floor(now / STYLE.frameMs) % (arrow ? STYLE.arrowFrames : STYLE.effectFrames);
+  const size = arrow
+    ? STYLE.arrowPixels
+    : kind === 'roots'
+      ? STYLE.rootsPixels
+      : STYLE.fireballPixels;
   const key = `${kind}:${column}`;
   let outlined = projectileOutlines.get(key);
 
@@ -33,12 +38,12 @@ function drawProjectileArt(ctx: DrawingContext, kind: 'arrow' | 'fireball' | 'ro
       spriteContext,
       image,
       column,
-      arrow ? 0 : kind === 'roots' ? 3 : 2,
+      arrow ? 0 : kind === 'roots' ? STYLE.rootsRow : STYLE.fireballRow,
       0,
       0,
       size,
       size,
-      arrow ? 64 : 128,
+      arrow ? STYLE.pickupCell : STYLE.effectCell,
     );
     outlined = hitOutline(sprite, '#baffaa', 1);
     const outlineContext = outlined.getContext('2d')!;
@@ -84,21 +89,22 @@ export function drawClassProjectiles(
       continue;
     }
 
+    // Legacy fallback projectile geometry is authored in game pixels.
     if (shot.kind === 'roots') {
       ctx.scale(0.5, 0.5);
     }
 
     ctx.strokeStyle = '#baffaa';
-    ctx.lineWidth = shot.kind === 'roots' ? 2 : 1;
+    ctx.lineWidth = shot.kind === 'roots' ? STYLE.rootsStroke : 1;
 
     if (shot.kind === 'arrow') {
-      ctx.lineWidth = 4;
+      ctx.lineWidth = STYLE.arrowOutlineStroke;
       ctx.beginPath();
       ctx.moveTo(-22, 0);
       ctx.lineTo(9, 0);
       ctx.stroke();
       ctx.strokeStyle = '#92d89c';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = STYLE.arrowShaftStroke;
       ctx.stroke();
       ctx.strokeStyle = '#baffaa';
       ctx.lineWidth = 1;
@@ -136,7 +142,10 @@ export function drawClassProjectiles(
       continue;
     }
 
-    const age = Math.max(0, (now - explosion.at) / (explosion.durationMs ?? 350));
+    const age = Math.max(
+      0,
+      (now - explosion.at) / (explosion.durationMs ?? STYLE.explosionDurationMs),
+    );
 
     if (age >= 1) {
       continue;
@@ -146,22 +155,22 @@ export function drawClassProjectiles(
 
     if (explosion.talentClass) {
       const classIndex = ['warrior', 'ranger', 'mage', 'druid'].indexOf(explosion.talentClass);
-      const row = Math.max(0, classIndex) * 3 + (explosion.talentColumn ?? 0);
+      const row = Math.max(0, classIndex) * STYLE.talentColumns + (explosion.talentColumn ?? 0);
 
       if (talentCastArt.complete && talentCastArt.naturalWidth > 0) {
-        const width = talentCastArt.naturalWidth / 4,
-          height = talentCastArt.naturalHeight / 12;
+        const width = talentCastArt.naturalWidth / STYLE.talentFrames,
+          height = talentCastArt.naturalHeight / STYLE.talentRows;
         ctx.globalAlpha = opacity * (1 - age * 0.5);
         ctx.drawImage(
           talentCastArt,
-          Math.min(3, Math.floor(age * 4)) * width,
+          Math.min(STYLE.talentLastFrame, Math.floor(age * STYLE.talentFrames)) * width,
           row * height,
           width,
           height,
-          p.x - 100,
-          p.y - 100,
-          200,
-          200,
+          p.x - STYLE.talentPixels / 2,
+          p.y - STYLE.talentPixels / 2,
+          STYLE.talentPixels,
+          STYLE.talentPixels,
         );
       }
 
@@ -182,14 +191,14 @@ export function drawClassProjectiles(
       ctx.fillStyle = colors[row];
       ctx.globalAlpha = opacity * (1 - age);
 
-      for (let index = 0; particles && index < 10; index++) {
-        const angle = (index * Math.PI * 2) / 10 + explosion.id;
-        const radius = 20 + age * 110;
+      for (let index = 0; particles && index < STYLE.talentParticles; index++) {
+        const angle = (index * Math.PI * 2) / STYLE.talentParticles + explosion.id;
+        const radius = STYLE.talentStartRadius + age * STYLE.talentRadiusGrowth;
         ctx.beginPath();
         ctx.arc(
           p.x + Math.cos(angle) * radius,
           p.y + Math.sin(angle) * radius,
-          3 * (1 - age) + 1,
+          STYLE.talentParticleRadius * (1 - age) + 1,
           0,
           Math.PI * 2,
         );
@@ -202,9 +211,16 @@ export function drawClassProjectiles(
     ctx.globalAlpha = opacity * (1 - age);
     ctx.fillStyle = '#ffb53d44';
     ctx.strokeStyle = '#ffcb6b';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = STYLE.explosionStroke;
     ctx.beginPath();
-    ctx.arc(p.x, p.y, (explosion.radius ?? 100) * (0.3 + age * 0.7), 0, Math.PI * 2);
+    ctx.arc(
+      p.x,
+      p.y,
+      (explosion.radius ?? STYLE.explosionRadius) *
+        (STYLE.explosionStartScale + age * STYLE.explosionGrowth),
+      0,
+      Math.PI * 2,
+    );
     ctx.fill();
     ctx.stroke();
   }

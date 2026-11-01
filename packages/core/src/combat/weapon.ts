@@ -1,3 +1,4 @@
+import { PERCENT } from '@emberfall/common';
 import { game, type createGame } from '../game.ts';
 type Game = ReturnType<typeof createGame>;
 import type { SceneState, Enemy, Player, DebuffKind } from '@emberfall/common';
@@ -33,7 +34,7 @@ export function hitWithWeapon(
       : 1;
 
   for (let attack = 0; attack < attacks && enemy.hitpoints > 0; attack++) {
-    const critical = isChanced(stats.criticalChance * 100, context.random);
+    const critical = isChanced(stats.criticalChance * PERCENT, context.random);
     hitEnemy(
       scene,
       enemy,

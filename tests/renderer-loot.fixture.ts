@@ -12,7 +12,10 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     })
   ) {
     await new Promise((resolve) => {
-      return setTimeout(resolve, 20);
+      // Poll roughly once per frame while yielding for asynchronous image preparation.
+      const ART_POLL_INTERVAL_MS = 20;
+
+      return setTimeout(resolve, ART_POLL_INTERVAL_MS);
     });
   }
 
@@ -114,7 +117,10 @@ export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
     })
   ) {
     await new Promise((resolve) => {
-      return setTimeout(resolve, 20);
+      // Poll roughly once per frame while yielding for asynchronous image preparation.
+      const ART_POLL_INTERVAL_MS = 20;
+
+      return setTimeout(resolve, ART_POLL_INTERVAL_MS);
     });
   }
 

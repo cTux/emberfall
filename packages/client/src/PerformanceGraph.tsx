@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import { PerformanceMonitor, useDraggable } from '@emberfall/ui';
 
+// Half-second samples retain the existing 30-second, 60-point diagnostic window.
+const PERFORMANCE_SAMPLING = { intervalMs: 500, retentionMs: 30_000, previousSamples: 59 };
+
 type Timing = { inputDelay: number | null; snapshotAge: number | null };
 type Sample = Timing & { at: number; fps: number | null; latency: number | null };
 export function PerformanceGraph({
@@ -44,13 +47,13 @@ export function PerformanceGraph({
             ? []
             : previous
                 .filter((sample) => {
-                  return at - sample.at < 30000;
+                  return at - sample.at < PERFORMANCE_SAMPLING.retentionMs;
                 })
-                .slice(-59)),
+                .slice(-PERFORMANCE_SAMPLING.previousSamples)),
           { at, fps: frameRate.current, latency: roundTrip.current, ...networkTiming.current },
         ];
       });
-    }, 500);
+    }, PERFORMANCE_SAMPLING.intervalMs);
 
     return () => {
       return clearInterval(timer);

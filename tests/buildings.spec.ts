@@ -1,3 +1,7 @@
+// Leave half a second between captures to reveal unintended animation.
+const NEXT_CROP_OBSERVATION_MS = 500;
+// Observe a full second of the source crop before comparing its next capture.
+const FIRST_CROP_OBSERVATION_MS = 1000;
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -54,7 +58,10 @@ test('buildings retain native crops, source proportions and matching grounded sh
       })
     ) {
       await new Promise((done) => {
-        return setTimeout(done, 20);
+        // Poll roughly once per frame while yielding for asynchronous image preparation.
+        const ART_POLL_INTERVAL_MS = 20;
+
+        return setTimeout(done, ART_POLL_INTERVAL_MS);
       });
     }
 
@@ -201,11 +208,11 @@ for (const graphicsPreset of ['High', 'Low'] as const) {
       const player = [...world.players.values()][0];
       player.x = 485;
       player.y = 300;
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(FIRST_CROP_OBSERVATION_MS);
       await page.screenshot({ path: `test-results/buildings-village-${graphicsPreset}.png` });
       player.x = ARENA.width - 10;
       player.y = 180;
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(NEXT_CROP_OBSERVATION_MS);
       await page.screenshot({ path: `test-results/buildings-seam-${graphicsPreset}.png` });
       expect(errors).toEqual([]);
     });

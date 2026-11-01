@@ -1,3 +1,33 @@
+// Retain the encoder capacity used for the full benchmark snapshot.
+const ENCODER_KIB = 128;
+// One kibibyte contains exactly 1024 bytes.
+const BYTES_PER_KIB = 1024;
+// Retain the sixteen-column enemy arrangement for comparable workloads.
+const ENEMY_COLUMNS = 16;
+// Retain the deterministic random seed for reproducible combat sequences.
+const INITIAL_SEED = 12345;
+// Retain the existing 32-bit linear-congruential generator multiplier.
+const LCG_MULTIPLIER = 1664525;
+// Retain the existing 32-bit linear-congruential generator increment.
+const LCG_INCREMENT = 1013904223;
+// Unsigned shifts retain thirty-two bits of random state.
+const RANDOM_BITS = 32;
+// Run five hundred ticks including warmup for comparable samples.
+const TOTAL_TICKS = 500;
+// Retain the synthetic start time with combat timers already active.
+const START_TIME_MS = 10000;
+// Retain the twenty-Hz simulation cadence.
+const STEP_MS = 50;
+// The combat API consumes seconds, equivalent to the fifty-millisecond tick.
+const STEP_SECONDS = 0.05;
+// Exercise the existing eight-player private-world scenario.
+const PLAYER_COUNT = 8;
+// Exclude the first hundred ticks to remove startup/JIT warmup.
+const WARMUP_TICKS = 100;
+// Select the ninety-fifth percentile for p95 reporting.
+const P95_QUANTILE = 0.95;
+// Two-space indentation keeps benchmark JSON readable.
+const JSON_INDENT = 2;
 import { performance } from 'node:perf_hooks';
 import { Encoder } from '@colyseus/schema';
 import type { Player, SceneState } from '@emberfall/common';
@@ -7,7 +37,7 @@ import { prepareState, applyState, SessionState } from '@emberfall/common/protoc
 import { SimulationWorld } from '../src/ecs/simulation.ts';
 import { freshProgress } from '../src/characters.ts';
 
-Encoder.BUFFER_SIZE = 128 * 1024;
+Encoder.BUFFER_SIZE = ENCODER_KIB * BYTES_PER_KIB;
 const ecs = new SimulationWorld();
 const players: Player[] = Array.from({ length: 8 }, (_, i) => {
   return {
@@ -47,7 +77,7 @@ const scene: SceneState = {
     return {
       id: i + 1,
       x: 2150 + (i % 16) * 35,
-      y: 1050 + Math.floor(i / 16) * 35,
+      y: 1050 + Math.floor(i / ENEMY_COLUMNS) * 35,
       hitpoints: 1e8,
       maxHitpoints: 1e8,
       angle: 0,
@@ -65,15 +95,15 @@ const states = players.map(() => {
 const simulation: number[] = [],
   replication: number[] = [];
 let bytes = 0;
-let seed = 12345;
+let seed = INITIAL_SEED;
 const context = createGame(GAME_MODS, () => {
-  return (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+  return (seed = (Math.imul(seed, LCG_MULTIPLIER) + LCG_INCREMENT) >>> 0) / 2 ** RANDOM_BITS;
 });
 
-for (let tick = 0; tick < 500; tick++) {
-  const now = 10000 + tick * 50;
+for (let tick = 0; tick < TOTAL_TICKS; tick++) {
+  const now = START_TIME_MS + tick * STEP_MS;
   const start = performance.now();
-  stepCombat(scene, players, now, 0.05, context);
+  stepCombat(scene, players, now, STEP_SECONDS, context);
   const simulated = performance.now();
   const projection = prepareState({
     id: 'world',
@@ -84,18 +114,18 @@ for (let tick = 0; tick < 500; tick++) {
     serverNow: now,
   });
 
-  for (let client = 0; client < 8; client++) {
+  for (let client = 0; client < PLAYER_COUNT; client++) {
     applyState(states[client], projection);
     const patch = encoders[client].encode();
 
-    if (tick >= 100) {
+    if (tick >= WARMUP_TICKS) {
       bytes += patch.byteLength;
     }
 
     encoders[client].discardChanges();
   }
 
-  if (tick >= 100) {
+  if (tick >= WARMUP_TICKS) {
     simulation.push(simulated - start);
     replication.push(performance.now() - simulated);
   }
@@ -111,7 +141,7 @@ const summary = (values: number[]) => {
       values.reduce((sum, value) => {
         return sum + value;
       }, 0) / values.length,
-    p95Ms: sorted[Math.floor(sorted.length * 0.95)],
+    p95Ms: sorted[Math.floor(sorted.length * P95_QUANTILE)],
     maxMs: sorted.at(-1),
   };
 };
@@ -122,10 +152,10 @@ console.log(
       scenario: '8 stationary players, 160 mixed enemies, 20 Hz; 100 warmup and 400 measured ticks',
       simulation: summary(simulation),
       replicationForEightClients: summary(replication),
-      totalPatchBytesPerSecond: bytes / (400 * 0.05),
+      totalPatchBytesPerSecond: bytes / ((TOTAL_TICKS - WARMUP_TICKS) * STEP_SECONDS),
       ecsEntities: ecs.ecs.size,
     },
     null,
-    2,
+    JSON_INDENT,
   ),
 );

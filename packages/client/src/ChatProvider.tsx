@@ -11,6 +11,9 @@ import type { ChatMessage, ClientMessage } from '@emberfall/common';
 import { ThemeProvider, type Theme } from '@mui/material';
 import { Chat } from './Chat';
 
+// Retain 20 entries for world transfers while showing the latest ten, matching the existing compact chat layout.
+const CHAT_HISTORY = { retained: 20, visible: 10 } as const;
+
 // Isolate modal siblings so the persistent chat log remains available to assistive technology.
 const chatTheme = (theme: Theme) => {
   return {
@@ -88,7 +91,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               return message.id === entry.afterId;
             });
           }),
-        ].slice(-20);
+        ].slice(-CHAT_HISTORY.retained);
       }
 
       const retained = log.filter((entry) => {
@@ -114,7 +117,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         });
 
       // Retain room for the visible world buffer and private errors before applying the display limit.
-      return (sameWorld ? [...retained, ...received] : [...received, ...retained]).slice(-20);
+      return (sameWorld ? [...retained, ...received] : [...received, ...retained]).slice(
+        -CHAT_HISTORY.retained,
+      );
     });
   }, []);
   const reportError = useCallback((text: string) => {
@@ -132,7 +137,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             tone: 'danger' as const,
           },
         },
-      ].slice(-20);
+      ].slice(-CHAT_HISTORY.retained);
     });
   }, []);
   const context = useMemo(() => {
@@ -152,7 +157,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             .map((entry) => {
               return entry.message;
             })
-            .slice(-10)}
+            .slice(-CHAT_HISTORY.visible)}
           send={session.send}
           disabled={session.disabled}
         />

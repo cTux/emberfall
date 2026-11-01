@@ -1,3 +1,7 @@
+// Allow resumed snapshots to reach the rendered player.
+const RECONNECT_RENDER_SETTLE_MS = 300;
+// Allow disconnect presentation and replicated state to settle.
+const DISCONNECT_SETTLE_MS = 500;
 import { test, expect } from './fixtures';
 
 test('an outage shows the server list and automatically restores the same player', async ({
@@ -159,7 +163,7 @@ test('peers see a red reconnecting character in village and forest until recover
         })
         .toBe(true);
       expect(world.players.size).toBe(2);
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(DISCONNECT_SETTLE_MS);
       await page.screenshot({ path: info.outputPath(`reconnecting-${area}.png`) });
       unavailable = false;
       await expect(guest.getByRole('button', { name: 'Leave world' })).toBeVisible();
@@ -169,7 +173,7 @@ test('peers see a red reconnecting character in village and forest until recover
         })
         .toBeUndefined();
       expect(world.players.get(remote.id)).toBe(remote);
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(RECONNECT_RENDER_SETTLE_MS);
       await page.screenshot({ path: info.outputPath(`restored-${area}.png`) });
     }
   } finally {

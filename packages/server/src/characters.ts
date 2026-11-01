@@ -1,3 +1,7 @@
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+// Retain 256-bit random bearer credentials and their existing hexadecimal wire length.
+const CHARACTER_TOKEN_BYTES = 32;
+
 import { createTransaction } from './persistence/transaction.ts';
 import { createProgressCodec } from './persistence/progress.ts';
 import { createWorldRepository } from './persistence/worlds.ts';
@@ -125,7 +129,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
     }
 
     create(name: string) {
-      const token = randomBytes(32).toString('hex'),
+      const token = randomBytes(CHARACTER_TOKEN_BYTES).toString('hex'),
         id = randomUUID();
       this.importCharacter(
         id,
@@ -147,7 +151,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
       }
 
       this.transaction(() => {
-        const now = Math.floor(Date.now() / 1000);
+        const now = Math.floor(Date.now() / MILLISECONDS_PER_SECOND);
         this.db
           .prepare(
             `INSERT INTO ${this.usersTable} (id, anonymous, created_at, updated_at) VALUES (?, 1, ?, ?)`,
@@ -224,7 +228,7 @@ export function createCharacterPersistence(context: ReturnType<typeof createGame
           )
           .run(
             JSON.stringify({ formatVersion: 2, classId, classes, storehouse }),
-            Math.floor(Date.now() / 1000),
+            Math.floor(Date.now() / MILLISECONDS_PER_SECOND),
             id,
             version,
           );

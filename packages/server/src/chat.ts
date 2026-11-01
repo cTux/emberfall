@@ -1,3 +1,6 @@
+// Retain thirty messages for recent context while bounding world memory.
+const CHAT_HISTORY_MESSAGES = 30;
+
 import { randomUUID } from 'node:crypto';
 import type { ChatMessage, Player } from '@emberfall/common';
 
@@ -16,5 +19,5 @@ export function addChat(
       text,
       excludedPlayerId,
     },
-  ].slice(-30);
+  ].slice(-CHAT_HISTORY_MESSAGES);
 }

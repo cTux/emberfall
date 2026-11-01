@@ -1,5 +1,8 @@
 import { Box, Paper, styled } from '@mui/material';
 
+// Preserve the 36px title/close-button track within the existing panel header.
+const TITLE_TRACK_SPACING = 4.5;
+
 export const WindowFrameStyled = styled(Paper)(({ theme }) => {
   return {
     '&&': {
@@ -25,7 +28,7 @@ export const WindowFrameStyled = styled(Paper)(({ theme }) => {
 export const WindowTabsStyled = styled(Box)(({ theme }) => {
   return {
     width: 'var(--window-tabs-width)',
-    paddingTop: theme.spacing(4.5),
+    paddingTop: theme.spacing(TITLE_TRACK_SPACING),
     minHeight: 0,
     display: 'flex',
     '&:empty': { display: 'none' },

@@ -28,7 +28,10 @@ test('shutdown attempts every save and closes resources even when one save fails
     ) {
       assert(Date.now() < deadline, 'create timed out');
       await new Promise((resolve) => {
-        return setTimeout(resolve, 10);
+        // Poll frequently enough to observe asynchronous messages without busy-waiting.
+        const MESSAGE_POLL_MS = 10;
+
+        return setTimeout(resolve, MESSAGE_POLL_MS);
       });
     }
   }

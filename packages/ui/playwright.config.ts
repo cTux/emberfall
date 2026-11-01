@@ -1,5 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
+// A minute allows Storybook cold compilation before the first desktop test.
+const STORYBOOK_STARTUP_TIMEOUT_MS = 60_000;
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -12,6 +15,6 @@ export default defineConfig({
     command: 'pnpm exec storybook dev -p 6007 --host 127.0.0.1 --no-open --ci',
     url: 'http://127.0.0.1:6007',
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: STORYBOOK_STARTUP_TIMEOUT_MS,
   },
 });

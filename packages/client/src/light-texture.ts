@@ -1,6 +1,9 @@
 import { castShadow } from './lighting';
 import type { Caster, Light } from './lighting';
 
+// Preserve the existing 64-light LRU budget to bound retained canvases as light owners enter/leave view.
+const MAX_LIGHT_TEXTURES = 64;
+
 const lightCanvases = new Map<
   string,
   {
@@ -59,7 +62,7 @@ export function lightTexture(
   };
   lightCanvases.set(key, entry);
 
-  if (lightCanvases.size > 64) {
+  if (lightCanvases.size > MAX_LIGHT_TEXTURES) {
     lightCanvases.delete(lightCanvases.keys().next().value!);
   }
 

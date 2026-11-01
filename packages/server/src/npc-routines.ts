@@ -1,10 +1,30 @@
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+// Retain the calibrated walking speed so villagers match their existing walking animation.
+const SPEED = 38;
+// Retain five-second minimum stops so villagers visibly pause between walks.
+const PAUSE_MIN_MS = 5000;
+// Spread pauses across four additional seconds so residents do not move in lockstep.
+const PAUSE_JITTER_MS = 4000;
+// Retain the minimum twenty-five-second village walk before returning to work.
+const RETURN_MIN_MS = 25_000;
+// Spread work returns over twenty additional seconds to stagger routines.
+const RETURN_JITTER_MS = 20_000;
+// Retain one-minute minimum work sessions so station activity remains visible.
+const WORK_MIN_MS = 60_000;
+// Spread work sessions over thirty additional seconds to stagger station changes.
+const WORK_JITTER_MS = 30_000;
+// Retain the workstation artwork aim point eighteen units above its ground anchor.
+const STATION_AIM_OFFSET_Y = 18;
+// Retain the villager upper-body aim point twenty-four units above its ground anchor.
+const NPC_AIM_OFFSET_Y = 24;
+// Retain the six-unit facing correction between workstation and villager anchors.
+const WORK_FACING_OFFSET_Y = 6;
 import { traderInRange, wrap, wrappedDelta } from '@emberfall/core';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import type { Player } from '@emberfall/common';
 import { simulationFor } from './ecs/simulation.ts';
 import { villagePlayers, type NpcWorld } from './npc-world.ts';
 
-const SPEED = 38;
 interface Routine {
   stop: number;
   pauseUntil: number;
@@ -26,8 +46,8 @@ export class NpcRoutines {
     world.npcs = VILLAGE_DEFINITION.villagers.map((definition) => {
       this.walks.set(definition.id, {
         stop: this.chooseStop(),
-        pauseUntil: now + 5000 + this.random() * 4000,
-        returnAt: now + 25_000 + this.random() * 20_000,
+        pauseUntil: now + PAUSE_MIN_MS + this.random() * PAUSE_JITTER_MS,
+        returnAt: now + RETURN_MIN_MS + this.random() * RETURN_JITTER_MS,
         station: 0,
       });
 
@@ -139,20 +159,24 @@ export class NpcRoutines {
       if (walk.work && station) {
         npc.moving = false;
         npc.angle = Math.atan2(
-          wrappedDelta(station.y - 18, npc.y - 24, VILLAGE_DEFINITION.geometry.height),
+          wrappedDelta(
+            station.y - STATION_AIM_OFFSET_Y,
+            npc.y - NPC_AIM_OFFSET_Y,
+            VILLAGE_DEFINITION.geometry.height,
+          ),
           wrappedDelta(station.x, npc.x, VILLAGE_DEFINITION.geometry.width),
         );
         npc.workstationId = station.id;
         npc.workStartedAt = now - walk.work.elapsed;
-        const active = Math.max(0, dt * 1000);
+        const active = Math.max(0, dt * MILLISECONDS_PER_SECOND);
         walk.work.remaining -= active;
         walk.work.elapsed += active;
 
         if (walk.work.remaining <= 0) {
           walk.work = undefined;
           walk.station++;
-          walk.returnAt = now + 25_000 + this.random() * 20_000;
-          walk.pauseUntil = now + 5000 + this.random() * 4000;
+          walk.returnAt = now + RETURN_MIN_MS + this.random() * RETURN_JITTER_MS;
+          walk.pauseUntil = now + PAUSE_MIN_MS + this.random() * PAUSE_JITTER_MS;
           walk.stop = this.chooseStop(walk.stop);
           npc.workstationId = npc.workStartedAt = undefined;
         }
@@ -179,13 +203,13 @@ export class NpcRoutines {
         npc.y = target.y;
 
         if (returning && station) {
-          walk.work = { remaining: 60_000 + this.random() * 30_000, elapsed: 0 };
+          walk.work = { remaining: WORK_MIN_MS + this.random() * WORK_JITTER_MS, elapsed: 0 };
           npc.workstationId = station.id;
           npc.workStartedAt = now;
-          npc.angle = Math.atan2(station.y - npc.y + 6, station.x - npc.x);
+          npc.angle = Math.atan2(station.y - npc.y + WORK_FACING_OFFSET_Y, station.x - npc.x);
         } else {
           walk.stop = this.chooseStop(walk.stop);
-          walk.pauseUntil = now + 5000 + this.random() * 4000;
+          walk.pauseUntil = now + PAUSE_MIN_MS + this.random() * PAUSE_JITTER_MS;
         }
 
         npc.moving = false;

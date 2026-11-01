@@ -1,3 +1,4 @@
+import { CHAT_COOLDOWN_MS } from './limits.ts';
 import type { ClientMessage } from '@emberfall/common';
 import type { CommandContext, BroadcastState, Session, Snapshot } from './models.ts';
 import type { WorldMembership } from './world-membership.ts';
@@ -90,7 +91,7 @@ export function createWorldCommands({
         return;
       }
 
-      if (now - (session.chatAt ?? 0) < 500) {
+      if (now - (session.chatAt ?? 0) < CHAT_COOLDOWN_MS) {
         error('Please wait a moment before sending another chat message.');
 
         return;
@@ -124,7 +125,7 @@ export function createWorldCommands({
         return;
       }
 
-      if (now - (session.chatAt ?? 0) < 500) {
+      if (now - (session.chatAt ?? 0) < CHAT_COOLDOWN_MS) {
         error('Please wait a moment.');
 
         return;

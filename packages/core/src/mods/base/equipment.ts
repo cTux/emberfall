@@ -1,3 +1,4 @@
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
 import { ATTACK_DEFINITIONS } from './abilities/attacks.ts';
 import type { ClassId } from '@emberfall/common';
 
@@ -51,8 +52,10 @@ export interface GearDefinition {
   price?: number;
 }
 
+// Existing starter balance gives every weapon a 5% critical chance and 1.5-times critical damage.
 const BASE_CRITICAL_STATS = { criticalChance: 0.05, criticalMultiplier: 1.5 };
-const BASE_ATTACK_SPEED = 1000 / ATTACK_DEFINITIONS.slash.intervalMs;
+const BASE_ATTACK_SPEED = MILLISECONDS_PER_SECOND / ATTACK_DEFINITIONS.slash.intervalMs;
+// These starter power/range values retain each class's existing attack balance; they are not measured optima.
 export const GEAR_DEFINITIONS: Record<string, GearDefinition> = {
   'warrior-sword': {
     id: 'warrior-sword',
@@ -155,6 +158,7 @@ export const STARTER_WEAPONS = {
   druid: 'druid-staff',
 } as const satisfies Record<ClassId, string>;
 export type Equipment = Partial<Record<EquipmentSlot, string | null>>;
+// One hundred base HP is the existing fresh-character health budget; equipment supplies combat stats.
 export const INNATE_STATS: GearStats = {
   power: 0,
   attacksPerSecond: 0,

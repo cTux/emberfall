@@ -73,6 +73,52 @@ The examples illustrate source layout; they are not gameplay captures.
 
 ### Other strict checks
 
+#### Numeric values
+
+Give tuning values, timeouts, limits, tolerances and unit conversions domain names
+at their owning definition. Use `const` for scalar policies, or an existing named
+content/style property for declarative data. Keep units in names where ambiguous
+(`heartbeatMs`, `radiusPx`, `chance`). Share a value only when its meaning is shared;
+two unrelated settings that happen to equal 1000 must remain independently tunable.
+
+Add a nearby comment explaining **why this exact value** is needed: a format or
+protocol constraint, mathematical conversion, asset measurement, gameplay balance
+or a measured tradeoff. A coherent table can have one rationale for the group.
+When the original tuning decision is undocumented, say so and describe the behavior
+being preserved; do not invent benchmarks or claim that an arbitrary value is required.
+Changing a value needs its own behavior review and updated rationale.
+
+Keep self-explanatory structure inline: zero/one initialization and increments,
+minus-one sentinels, array/tuple indexes, numeric types, explicit fixture inputs
+and expected results, and mathematical halves/doubles/squares. Named content and
+style properties and declarative artwork coordinates can retain literal data;
+document their calibration at the definition/table. Test expectations should remain
+independent of production constants so they can detect incorrect production tuning.
+
+`emberfall-values/named-values` in the shared Oxlint configuration rejects bare
+nonstructural numeric literals in executable expressions and requires nearby
+comments for scalar numeric constant definitions. It also requires immutable
+numeric policy bindings. Nonzero literal timer delays are rejected even in tests,
+including computed delays such as `15 * 1000`. A zero-delay yield is structural.
+Known JSX timer properties such as `leaveDelay` and `timeout` require named
+nonzero values too; ordinary numeric style properties remain declarative data.
+The rule applies in editors, `pnpm lint` and CI; no existing-code baseline is used.
+
+The automated exceptions include named object properties, named arrays/maps/sets,
+named class defaults, JSX properties, numeric types/enums, indexes, documented
+drawing API coordinates and talent-grid coordinates. Test/story/fixture data is
+exempt from the general numeric check, while direct timer delays remain checked.
+Rationale quality, strings such as CSS/shader formulas, dynamically aliased timers
+and whether a property actually describes its value remain review responsibilities.
+Lint checks comment placement, not the truth of an explanation. Avoid blanket
+suppressions or vague names such as `VALUE_15000` to bypass these checks.
+
+![Concept preview: a heartbeat interval has a domain name and rationale at its definition.](../images/named-values.svg)
+
+This is a source-code convention, not a gameplay capture. Regression cases cover
+rejected inline delays, missing comments, mutable policies and accepted structural
+and declarative data in [magic-values-lint.test.ts](../../tests/magic-values-lint.test.ts).
+
 #### Dispatch lint
 
 `emberfall/prefer-dispatch` uses the local

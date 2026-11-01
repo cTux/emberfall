@@ -1,3 +1,4 @@
+import { VIEWPORT_MIDPOINT } from './arena-contract.ts';
 import { inputBlocked } from './arena-keyboard';
 import { wrap, type ClientMessage, type Player, type WorldState } from '@emberfall/common';
 import { ARENA, FOREST, TICK_MS } from '@emberfall/core';
@@ -38,10 +39,6 @@ export function createArenaInput({
       : undefined;
   };
 
-  const confirmedPlayer = () => {
-    return player();
-  };
-
   let combat: Extract<ClientMessage, { type: 'combatInput' }> | undefined;
   let inputCamera: { x: number; y: number; width: number; height: number } = {
     x: 0,
@@ -51,8 +48,14 @@ export function createArenaInput({
   };
   const currentAim = () => {
     return {
-      aimX: wrap(inputCamera.x + (pointer?.x ?? 0.5) * inputCamera.width, FOREST.width),
-      aimY: wrap(inputCamera.y + (pointer?.y ?? 0.5) * inputCamera.height, FOREST.height),
+      aimX: wrap(
+        inputCamera.x + (pointer?.x ?? VIEWPORT_MIDPOINT) * inputCamera.width,
+        FOREST.width,
+      ),
+      aimY: wrap(
+        inputCamera.y + (pointer?.y ?? VIEWPORT_MIDPOINT) * inputCamera.height,
+        FOREST.height,
+      ),
     };
   };
 
@@ -81,7 +84,7 @@ export function createArenaInput({
     if (target) {
       held = false;
 
-      if (interactionInRange(target, confirmedPlayer())) {
+      if (interactionInRange(target, player())) {
         activate(target.source);
       }
 

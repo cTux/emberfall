@@ -1,8 +1,12 @@
+import { VILLAGE_CAPACITY } from './limits.ts';
 import type { Player, WorldState } from '@emberfall/common';
 import { MAX_PLAYERS } from '@emberfall/core';
 import { sceneState } from '../scenes.ts';
 import type { World } from './models.ts';
 import type { WorldMembership } from './world-membership.ts';
+
+// Keep the latest ten messages in each snapshot to bound replicated chat payloads.
+const VISIBLE_CHAT_MESSAGES = 10;
 
 export function createWorldProjection(
   parties: WorldMembership['parties'],
@@ -35,7 +39,7 @@ export function createWorldProjection(
         .filter((m) => {
           return !m.dimension || m.dimension === (viewer?.scene ?? 'village');
         })
-        .slice(-10),
+        .slice(-VISIBLE_CHAT_MESSAGES),
       npcs: world.npcs,
       resources: resourceOwner(world, viewer).resources,
       scene: sceneState(viewer ? parties(world).run(viewer).scene : undefined),
@@ -54,7 +58,7 @@ export function createWorldProjection(
           name: w.name,
           locked: !!w.hash,
           players: w.players.size,
-          capacity: w === permanentWorld ? 32 : MAX_PLAYERS,
+          capacity: w === permanentWorld ? VILLAGE_CAPACITY : MAX_PLAYERS,
         };
       }),
     };

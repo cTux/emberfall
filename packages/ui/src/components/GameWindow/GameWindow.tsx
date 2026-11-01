@@ -6,6 +6,9 @@ import { useDraggable } from '../../useDraggable';
 import { WindowFrameStyled, WindowTabsStyled, WindowTitleStyled } from './styles';
 import { WindowTabsContext } from './WindowTabsContext';
 
+// Four hundred pixels is the existing default panel width; wider screens such as wardrobe override it.
+const DEFAULT_WINDOW_WIDTH_PX = 400;
+
 export interface GameWindowProps {
   title: string;
   children: ReactNode;
@@ -25,7 +28,7 @@ export function GameWindow({
   open = true,
   modal = true,
   height,
-  width = 400,
+  width = DEFAULT_WINDOW_WIDTH_PX,
   positionKey = `window.${title}`,
 }: GameWindowProps) {
   const id = useId();

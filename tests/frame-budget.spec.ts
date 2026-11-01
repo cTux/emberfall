@@ -1,3 +1,5 @@
+// Warm the scene for three seconds before measuring its frame budget.
+const SCENE_WARMUP_MS = 3000;
 import { test, expect } from './fixtures';
 import { writeFileSync } from 'node:fs';
 import { TRAINING_ZONES, LOBBY_PORTAL, starterEquipment } from '../packages/core/src/index.ts';
@@ -79,7 +81,7 @@ test('profile village, training and forest frame budgets', async ({
       });
     }
 
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(SCENE_WARMUP_MS);
 
     if (profileCpu) {
       await session.send('Profiler.start');

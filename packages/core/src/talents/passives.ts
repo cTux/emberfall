@@ -1,3 +1,5 @@
+import { TALENT_MAX_RANK, TALENT_DEFENSIVE_COLUMN } from '../talent-catalog.ts';
+import { PASSIVES } from './passive-tuning.ts';
 import { game, type createGame } from '../game.ts';
 import type { Enemy, Player, SceneState } from '@emberfall/common';
 import type { CharacterStats } from '../content/rules.ts';
@@ -19,7 +21,7 @@ export function talentIncomingDamage(
   let prevented = 0;
 
   if (value.guardUntil > now) {
-    const reduction = rank(player, 2, 0) === 2 ? 0.6 : 0.4;
+    const reduction = PASSIVES.guardReduction[rank(player, 2, 0) === TALENT_MAX_RANK ? 1 : 0];
     prevented += amount * reduction;
     amount *= 1 - reduction;
     value.guardUntil = 0;
@@ -27,7 +29,7 @@ export function talentIncomingDamage(
 
   if (value.wallUntil > now) {
     value.wallPrevented = true;
-    const reduction = value.wallRank === 2 ? 0.75 : 0.6;
+    const reduction = PASSIVES.wallReduction[value.wallRank === TALENT_MAX_RANK ? 1 : 0];
     prevented += amount * reduction;
     amount *= 1 - reduction;
   }
@@ -42,21 +44,21 @@ export function talentIncomingDamage(
   const retaliation = rank(player, 2, 6);
 
   if (prevented > 0 && retaliation && now >= value.reprisalAt) {
-    value.reprisalAt = now + 2000;
+    value.reprisalAt = now + PASSIVES.reprisalCooldownMs;
 
-    for (const enemy of area(scene, player, 130, player)) {
+    for (const enemy of area(scene, player, PASSIVES.reprisalRadius, player)) {
       strike(
         scene,
         player,
         enemy,
-        retaliation === 2 ? 1 : 0.6,
+        PASSIVES.reprisalPower[retaliation === TALENT_MAX_RANK ? 1 : 0],
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][2][6],
         context,
       );
     }
 
-    talentVisual(scene, player, 2, player, now);
+    talentVisual(scene, player, TALENT_DEFENSIVE_COLUMN, player, now);
   }
 
   const rebirth = rank(player, 2, 9);
@@ -71,9 +73,13 @@ export function talentIncomingDamage(
     amount >= player.hitpoints &&
     now >= (value.rebirthAt ?? 0)
   ) {
-    value.rebirthAt = now + 60000;
-    amount = Math.max(0, player.hitpoints - player.maxHitpoints * (rebirth === 2 ? 0.25 : 0.15));
-    talentVisual(scene, player, 2, player, now);
+    value.rebirthAt = now + PASSIVES.rebirthCooldownMs;
+    amount = Math.max(
+      0,
+      player.hitpoints -
+        player.maxHitpoints * PASSIVES.rebirthHealthFraction[rebirth === TALENT_MAX_RANK ? 1 : 0],
+    );
+    talentVisual(scene, player, TALENT_DEFENSIVE_COLUMN, player, now);
   }
 
   return amount;
@@ -104,29 +110,33 @@ export function talentWeaponHit(
       scene,
       player,
       enemy,
-      rank(player, 2, 5) === 2 ? 1.2 : 0.5,
+      PASSIVES.challengePower[rank(player, 2, 5) === TALENT_MAX_RANK ? 1 : 0],
       now,
       TALENT_NAMES[player.classId ?? 'warrior'][2][5],
       context,
     );
   }
 
-  if (guard && now >= value.guardReadyAt && context.random() < (guard === 2 ? 0.25 : 0.15)) {
-    value.guardUntil = now + 3000;
-    value.guardReadyAt = now + 4000;
+  if (
+    guard &&
+    now >= value.guardReadyAt &&
+    context.random() < PASSIVES.guardChance[guard === TALENT_MAX_RANK ? 1 : 0]
+  ) {
+    value.guardUntil = now + PASSIVES.guardLifetimeMs;
+    value.guardReadyAt = now + PASSIVES.guardCooldownMs;
   }
 
   value.hits++;
   const follow = rank(player, 0, 0);
 
-  if (!companion && follow && value.hits % 3 === 0) {
-    for (const other of area(scene, enemy, 100, player)) {
+  if (!companion && follow && value.hits % PASSIVES.followEveryHits === 0) {
+    for (const other of area(scene, enemy, PASSIVES.followRadius, player)) {
       if (other !== enemy) {
         strike(
           scene,
           player,
           other,
-          follow === 2 ? 0.7 : 0.4,
+          PASSIVES.followPower[follow === TALENT_MAX_RANK ? 1 : 0],
           now,
           TALENT_NAMES[player.classId ?? 'warrior'][0][0],
           context,
@@ -138,12 +148,12 @@ export function talentWeaponHit(
   if ((player.classId ?? 'warrior') === 'druid' && companion) {
     const bond = rank(player, 1, 0);
 
-    if (bond && value.hits % 3 === 0) {
+    if (bond && value.hits % PASSIVES.bondEveryHits === 0) {
       strike(
         scene,
         player,
         enemy,
-        bond === 2 ? 0.7 : 0.4,
+        PASSIVES.bondPower[bond === TALENT_MAX_RANK ? 1 : 0],
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][1][0],
         context,
@@ -152,14 +162,14 @@ export function talentWeaponHit(
 
     const rake = rank(player, 1, 2);
 
-    if (rake && context.random() < (rake === 2 ? 0.45 : 0.25)) {
+    if (rake && context.random() < PASSIVES.rakeChance[rake === TALENT_MAX_RANK ? 1 : 0]) {
       applyTalentAilment(enemy, player, 'bleed', 1, now, undefined, value.stats);
     }
 
     const life = rank(player, 1, 8);
 
-    if (life && value.hits % 5 === 0) {
-      heal(player, life === 2 ? 0.04 : 0.02);
+    if (life && value.hits % PASSIVES.lifeEveryHits === 0) {
+      heal(player, PASSIVES.lifeHealthFraction[life === TALENT_MAX_RANK ? 1 : 0]);
     }
 
     const shared = rank(player, 1, 6);
@@ -174,7 +184,7 @@ export function talentWeaponHit(
         scene,
         player,
         enemy,
-        shared === 2 ? 0.6 : 0.3,
+        PASSIVES.sharedPower[shared === TALENT_MAX_RANK ? 1 : 0],
         now,
         TALENT_NAMES[player.classId ?? 'warrior'][1][6],
         context,
@@ -183,14 +193,14 @@ export function talentWeaponHit(
 
     const instinct = rank(player, 1, 9);
 
-    if (instinct && value.hits % 5 === 0) {
-      for (const other of area(scene, enemy, 160, player)) {
+    if (instinct && value.hits % PASSIVES.instinctEveryHits === 0) {
+      for (const other of area(scene, enemy, PASSIVES.instinctRadius, player)) {
         if (other !== enemy) {
           strike(
             scene,
             player,
             other,
-            instinct === 2 ? 1 : 0.6,
+            PASSIVES.instinctPower[instinct === TALENT_MAX_RANK ? 1 : 0],
             now,
             TALENT_NAMES[player.classId ?? 'warrior'][1][9],
             context,
@@ -205,7 +215,7 @@ export function talentWeaponHit(
     player.classId !== 'druid' &&
     rank(player, 1, 0) &&
     !companion &&
-    context.random() < (rank(player, 1, 0) === 2 ? 0.35 : 0.2)
+    context.random() < PASSIVES.weaponAilmentChance[rank(player, 1, 0) === TALENT_MAX_RANK ? 1 : 0]
   ) {
     applyTalentAilment(
       enemy,
@@ -218,7 +228,11 @@ export function talentWeaponHit(
     );
   }
 
-  if (player.classId === 'druid' && rank(player, 2, 0) && value.hits % 5 === 0) {
-    heal(player, rank(player, 2, 0) === 2 ? 0.04 : 0.02);
+  if (
+    player.classId === 'druid' &&
+    rank(player, 2, 0) &&
+    value.hits % PASSIVES.druidGuardEveryHits === 0
+  ) {
+    heal(player, PASSIVES.druidGuardHealthFraction[rank(player, 2, 0) === TALENT_MAX_RANK ? 1 : 0]);
   }
 }

@@ -1,3 +1,4 @@
+import { NPC_TIMING } from './npc-timing.ts';
 import {
   conversationParticipants,
   faceConversation,
@@ -11,9 +12,6 @@ export type { NpcWorld } from './npc-world.ts';
 import type { NpcDialogue } from './npc-models.ts';
 import { NpcSpeech, type Conversation } from './npc-speech.ts';
 
-const PLAYER_RANGE = 120;
-const NPC_RANGE = 160;
-const REPLY_DELAY = 2000;
 /** One scheduler per world; LLM work never blocks the fixed simulation tick. */
 export class VillageLife {
   private stopped = false;
@@ -37,7 +35,7 @@ export class VillageLife {
     this.dialogue = dialogue;
     this.speech = new NpcSpeech(world, random);
     this.routines = new NpcRoutines(world, now, random);
-    this.nextTalk = now + 10_000;
+    this.nextTalk = now + NPC_TIMING.initialTalkDelayMs;
     this.lastTick = now;
   }
 
@@ -74,7 +72,8 @@ export class VillageLife {
     for (const name of text.toLowerCase().match(/[\p{L}\p{M}\p{N}_]+/gu) ?? []) {
       const npc = this.world.npcs?.find((n) => {
         return (
-          n.name.split(' ')[0].toLowerCase() === name && forestDistance(n, player) <= PLAYER_RANGE
+          n.name.split(' ')[0].toLowerCase() === name &&
+          forestDistance(n, player) <= NPC_TIMING.playerRange
         );
       });
 
@@ -84,12 +83,12 @@ export class VillageLife {
 
       npc.workstationId = npc.workStartedAt = undefined;
       npc.moving = false;
-      this.nextReply = now + 5000;
+      this.nextReply = now + NPC_TIMING.exchangeCooldownMs;
       this.reply = {
-        at: now + REPLY_DELAY,
+        at: now + NPC_TIMING.replyDelayMs,
         conversation: { speaker: npc.id, playerId: player.id, text },
       };
-      this.replyAt.set(player.id, now + 10_000);
+      this.replyAt.set(player.id, now + NPC_TIMING.playerReplyCooldownMs);
 
       return;
     }
@@ -164,7 +163,7 @@ export class VillageLife {
 
       const player = players.find((p) => {
         return (
-          forestDistance(npc, p) <= PLAYER_RANGE &&
+          forestDistance(npc, p) <= NPC_TIMING.playerRange &&
           (npc.silenced || now >= (this.playerAt.get(p.id) ?? 0))
         );
       });
@@ -178,7 +177,7 @@ export class VillageLife {
       const other = npcs.find((n) => {
         return (
           n.id !== npc.id &&
-          forestDistance(npc, n) <= NPC_RANGE &&
+          forestDistance(npc, n) <= NPC_TIMING.npcRange &&
           (npc.silenced || now >= (this.npcAt.get(n.id) ?? 0))
         );
       });
@@ -206,16 +205,16 @@ export class VillageLife {
     this.activeConversation = conversation;
 
     if (!conversation.text) {
-      this.nextTalk = now + 90_000;
-      this.npcAt.set(actors.npc.id, now + 180_000);
+      this.nextTalk = now + NPC_TIMING.ambientCooldownMs;
+      this.npcAt.set(actors.npc.id, now + NPC_TIMING.npcAmbientCooldownMs);
 
       if (conversation.otherNpc) {
-        this.npcAt.set(conversation.otherNpc, now + 180_000);
+        this.npcAt.set(conversation.otherNpc, now + NPC_TIMING.npcAmbientCooldownMs);
       }
     }
 
     if (conversation.playerId && !conversation.text) {
-      this.playerAt.set(conversation.playerId, now + 240_000);
+      this.playerAt.set(conversation.playerId, now + NPC_TIMING.playerAmbientCooldownMs);
     }
 
     const context = this.speech.context(conversation, actors.npc, actors.target);
@@ -231,20 +230,20 @@ export class VillageLife {
 
         if (result.status === 'busy') {
           if (conversation.text) {
-            this.continuation = { at: at + 500, conversation };
+            this.continuation = { at: at + NPC_TIMING.continuationDelayMs, conversation };
 
             return;
           }
 
-          this.nextTalk = at + 5000;
-          this.npcAt.set(actors.npc.id, at + 5000);
+          this.nextTalk = at + NPC_TIMING.exchangeCooldownMs;
+          this.npcAt.set(actors.npc.id, at + NPC_TIMING.exchangeCooldownMs);
 
           if (conversation.otherNpc) {
-            this.npcAt.set(conversation.otherNpc, at + 5000);
+            this.npcAt.set(conversation.otherNpc, at + NPC_TIMING.exchangeCooldownMs);
           }
 
           if (conversation.playerId && !conversation.text) {
-            this.playerAt.set(conversation.playerId, at + 5000);
+            this.playerAt.set(conversation.playerId, at + NPC_TIMING.exchangeCooldownMs);
           }
 
           return;
@@ -252,7 +251,7 @@ export class VillageLife {
 
         if (result.status === 'unavailable') {
           this.speech.silence(true);
-          this.retryAt = at + 60_000;
+          this.retryAt = at + NPC_TIMING.failureRetryMs;
           this.nextTalk = this.retryAt;
           this.continuation = undefined;
 
@@ -270,9 +269,9 @@ export class VillageLife {
         const lines = (conversation.lines ?? 0) + 1;
         const responder = mentioned?.id ?? (!conversation.text ? conversation.otherNpc : undefined);
 
-        if (responder && lines < 5) {
+        if (responder && lines < NPC_TIMING.maxExchangeLines) {
           this.continuation = {
-            at: at + REPLY_DELAY,
+            at: at + NPC_TIMING.replyDelayMs,
             conversation: {
               speaker: responder,
               otherNpc: current.npc.id,
@@ -286,7 +285,7 @@ export class VillageLife {
       .catch(() => {
         if (!this.stopped && villagePlayers(this.world).length) {
           this.speech.silence(true);
-          this.retryAt = this.lastTick + 60_000;
+          this.retryAt = this.lastTick + NPC_TIMING.failureRetryMs;
           this.nextTalk = this.retryAt;
         }
       })

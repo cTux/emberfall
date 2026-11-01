@@ -1,5 +1,11 @@
 import { Box, ButtonBase, Stack, Tooltip, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
+
+// Locked nodes retain half-opacity so their tree position remains discoverable.
+const LOCKED_NODE_OPACITY = 0.5;
+
+// The presented talent contract has two ranks per node; the host owns learning rules.
+const MAX_DISPLAYED_TALENT_RANK = 2;
 export interface TalentNodeView {
   id: string;
   name: string;
@@ -69,7 +75,7 @@ export function TalentTree({ nodes, points, columns = [], onLearn }: TalentTreeP
                     <Typography variant='body2'>
                       {node.available
                         ? 'Learn the next rank for 1 point.'
-                        : node.rank >= 2
+                        : node.rank >= MAX_DISPLAYED_TALENT_RANK
                           ? 'Fully learned.'
                           : 'Requires the indicated level and an available point.'}
                     </Typography>
@@ -95,7 +101,7 @@ export function TalentTree({ nodes, points, columns = [], onLearn }: TalentTreeP
                     border: 1,
                     borderColor: node.learned ? 'primary.main' : 'transparent',
                     bgcolor: 'background.paper',
-                    opacity: node.learned || node.available ? 1 : 0.5,
+                    opacity: node.learned || node.available ? 1 : LOCKED_NODE_OPACITY,
                     '&:focus-visible': { outline: '2px solid', outlineColor: 'info.main' },
                   }}
                 >

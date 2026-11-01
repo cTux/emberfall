@@ -1,8 +1,19 @@
 import { attackTarget } from '../tactics.ts';
-import { DEFAULT_TACTICS, type Tactics, wrappedDelta, wrap } from '@emberfall/common';
+import {
+  DEFAULT_TACTICS,
+  type Tactics,
+  wrappedDelta,
+  wrap,
+  MILLISECONDS_PER_SECOND,
+} from '@emberfall/common';
 import { BEAR_DEFINITION } from '../definitions/entities/companions.ts';
 import { FOREST, forestDistance } from '../scene.ts';
 import type { Player, Bear, SceneState, Enemy } from '@emberfall/common';
+
+// Existing hazard margins start avoidance before contact and move the bear beyond the telegraph edge.
+const HAZARD_CLEARANCE = { warning: 12, destination: 16 } as const;
+// Existing 350 ms lookahead and thirty-pixel corridor balance useful prediction against distant dodges.
+const PROJECTILE_DODGE = { lookaheadSeconds: 0.35, corridorRadius: 30, sideStep: 40 } as const;
 
 export const companionDecisions = new WeakMap<
   Bear,
@@ -83,7 +94,7 @@ export function decideCompanion(
               e.hitpoints > 0 &&
               e.attack &&
               e.attack.endsAt >= now &&
-              forestDistance(bear, e.attack) < e.attack.radius + 12
+              forestDistance(bear, e.attack) < e.attack.radius + HAZARD_CLEARANCE.warning
             );
           })?.attack
         : undefined;
@@ -97,8 +108,14 @@ export function decideCompanion(
               wrappedDelta(bear.x, danger.x, FOREST.width),
             );
       destination = {
-        x: wrap(danger.x + Math.cos(away) * (danger.radius + 16), FOREST.width),
-        y: wrap(danger.y + Math.sin(away) * (danger.radius + 16), FOREST.height),
+        x: wrap(
+          danger.x + Math.cos(away) * (danger.radius + HAZARD_CLEARANCE.destination),
+          FOREST.width,
+        ),
+        y: wrap(
+          danger.y + Math.sin(away) * (danger.radius + HAZARD_CLEARANCE.destination),
+          FOREST.height,
+        ),
         hitpoints: 1,
       };
     }
@@ -117,8 +134,12 @@ export function decideCompanion(
 
         return (
           time >= 0 &&
-          time <= Math.min(0.35, (s.expiresAt - now) / 1000) &&
-          Math.hypot(dx - s.vx * time, dy - s.vy * time) < 30
+          time <=
+            Math.min(
+              PROJECTILE_DODGE.lookaheadSeconds,
+              (s.expiresAt - now) / MILLISECONDS_PER_SECOND,
+            ) &&
+          Math.hypot(dx - s.vx * time, dy - s.vy * time) < PROJECTILE_DODGE.corridorRadius
         );
       });
 
@@ -131,8 +152,8 @@ export function decideCompanion(
             ? 1
             : -1;
         destination = {
-          x: wrap(bear.x - (shot.vy / speed) * 40 * side, FOREST.width),
-          y: wrap(bear.y + (shot.vx / speed) * 40 * side, FOREST.height),
+          x: wrap(bear.x - (shot.vy / speed) * PROJECTILE_DODGE.sideStep * side, FOREST.width),
+          y: wrap(bear.y + (shot.vx / speed) * PROJECTILE_DODGE.sideStep * side, FOREST.height),
           hitpoints: 1,
         };
       }

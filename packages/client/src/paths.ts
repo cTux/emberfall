@@ -2,6 +2,9 @@ import type { DrawingContext } from './rendering/drawing-context';
 import { ARENA, PATHS } from '@emberfall/core';
 import { terrainTile } from './art';
 
+// Retain the 48-unit path footprint and 64-pixel dirt tile used by the village art composition.
+const VILLAGE_PATH_ART = { width: 48, tileSize: 64 };
+
 /** Plain dirt at the buildings' 2x pixel scale, with continuous rounded joins. */
 export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
   if (!floor.naturalWidth) {
@@ -14,7 +17,7 @@ export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
   const mask = paths.getContext('2d')!;
   mask.filter = 'blur(2px)';
   mask.scale(0.5, 0.5);
-  mask.lineWidth = 48;
+  mask.lineWidth = VILLAGE_PATH_ART.width;
   mask.lineCap = mask.lineJoin = 'round';
   mask.beginPath();
   mask.ellipse(480, 355, 110, 75, 0, 0, Math.PI * 2);
@@ -32,7 +35,7 @@ export function drawVillagePaths(ctx: DrawingContext, floor: HTMLImageElement) {
   }
 
   // Only the center tile is dirt throughout; edge tiles contain bright grass.
-  const tile = terrainTile(1, 64);
+  const tile = terrainTile(1, VILLAGE_PATH_ART.tileSize);
   mask.resetTransform();
   mask.filter = 'none';
   mask.globalCompositeOperation = 'source-in';

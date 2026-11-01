@@ -1,3 +1,5 @@
+import { RENDER_TUNING as TUNING } from './tuning.ts';
+import { ambientTint, WHITE_TINT } from './color.ts';
 import { ShadowPrimitives } from './shadow-primitives';
 import { updateText } from './drawing-text';
 import { PlayerOcclusion } from './player-occlusion';
@@ -21,7 +23,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
     return this.visuals.ecs;
   }
 
-  ambientTint = 0xffffff;
+  ambientTint: number = WHITE_TINT;
   directionalShadow?: DirectionalShadow;
   readonly canvas: HTMLCanvasElement;
   private cutout = new PlayerOcclusion((graphics) => {
@@ -70,11 +72,11 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
     this.visuals.finish();
     this.driver.render(this.visuals.stage);
 
-    if (this.frame === 1 || this.frame % 60 === 0) {
+    if (this.frame === 1 || this.frame % TUNING.statsIntervalFrames === 0) {
       this.canvas.dataset.renderStats = JSON.stringify(this.stats());
     }
 
-    if (this.frame % 120 === 0) {
+    if (this.frame % TUNING.trimIntervalFrames === 0) {
       this.paints.trim(this.frame);
       this.sources.trim(this.frame);
       this.visuals.trim();
@@ -87,7 +89,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
       visuals: this.ecs.size,
       textures: this.sources.size,
       gradients: this.paints.size,
-      text: { fontFamily: this.fontFamily, scaleMode: 'linear', resolution: 4 },
+      text: { fontFamily: this.fontFamily, scaleMode: 'linear', resolution: TUNING.textResolution },
       active: this.visuals.active,
     };
   }
@@ -121,7 +123,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
 
     this.save();
     this.shadowPass = true;
-    this.shadowStrength = this.state.shadowBlur / 2;
+    this.shadowStrength = this.state.shadowBlur / TUNING.canvasBlurDivisor;
     // Canvas shadow offsets and blur are measured in output pixels.
     this.state.matrix.ty += this.state.shadowOffsetY;
     this.state.fillStyle = this.state.strokeStyle = this.state.shadowColor;
@@ -139,7 +141,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
     }
 
     const blur = this.state.shadowBlur,
-      padding = Math.ceil(blur * 3 + 2);
+      padding = Math.ceil(blur * TUNING.shadowBlurPadding + TUNING.shadowEdgePadding);
     const opacity =
       typeof this.state.fillStyle === 'string' ? this.paints.color(this.state.fillStyle).alpha : 1;
     const canvas = this.shadowRects.rectangle(width, height, blur, opacity, this.state.shadowColor);
@@ -186,12 +188,9 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
     const base = tint.toNumber();
     const ambient =
       this.shadowPass || this.state.globalCompositeOperation !== 'source-over'
-        ? 0xffffff
+        ? WHITE_TINT
         : this.ambientTint;
-    sprite.tint =
-      (Math.round((((base >> 16) & 255) * ((ambient >> 16) & 255)) / 255) << 16) |
-      (Math.round((((base >> 8) & 255) * ((ambient >> 8) & 255)) / 255) << 8) |
-      Math.round(((base & 255) * (ambient & 255)) / 255);
+    sprite.tint = ambientTint(base, ambient);
     sprite.alpha *= tint.alpha;
     this.applyTransform(sprite, dx, dy, dw / sw, dh / sh);
 
@@ -251,7 +250,7 @@ export class PixiContext extends PathCommands implements WorldDrawingContext {
   }
 
   clip() {
-    const mask = this.geometry().fill(0xffffff);
+    const mask = this.geometry().fill(WHITE_TINT);
     this.state.mask = mask;
   }
 

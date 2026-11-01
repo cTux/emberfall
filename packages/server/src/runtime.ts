@@ -1,3 +1,10 @@
+import {
+  MAX_BUFFERED_BYTES,
+  MESSAGE_WINDOW_MS,
+  MAX_MESSAGES_PER_WINDOW,
+  LEGACY_TOKEN_HEX_LENGTH,
+} from './runtime/limits.ts';
+import { POLICY_VIOLATION } from './network/codes.ts';
 import { EventEmitter } from 'node:events';
 import { clientMessage } from '@emberfall/core';
 import { validateDefinitions } from '@emberfall/core/definitions/index';
@@ -34,7 +41,7 @@ export async function createRuntime(
       return;
     }
 
-    if (ws.bufferedAmount > 128_000) {
+    if (ws.bufferedAmount > MAX_BUFFERED_BYTES) {
       ws.terminate();
 
       return;
@@ -113,7 +120,7 @@ export async function createRuntime(
       const authenticated = account?.();
 
       if (account && !authenticated?.nickname) {
-        ws.close(1008, 'Please sign in again');
+        ws.close(POLICY_VIOLATION, 'Please sign in again');
 
         return;
       }
@@ -129,19 +136,19 @@ export async function createRuntime(
         command = {
           ...command,
           playerName: authenticated.nickname,
-          characterToken: '0'.repeat(64),
+          characterToken: '0'.repeat(LEGACY_TOKEN_HEX_LENGTH),
         };
       }
 
       const now = Date.now();
 
-      if (now - session.windowAt > 1000) {
+      if (now - session.windowAt > MESSAGE_WINDOW_MS) {
         session.windowAt = now;
         session.messages = 0;
       }
 
-      if (++session.messages > 80) {
-        ws.close(1008, 'Too many messages');
+      if (++session.messages > MAX_MESSAGES_PER_WINDOW) {
+        ws.close(POLICY_VIOLATION, 'Too many messages');
 
         return;
       }

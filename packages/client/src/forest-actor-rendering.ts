@@ -10,6 +10,8 @@ import { partyAction } from './interaction-targets';
 import { drawDebuffs } from './combat-effects';
 import { drawWorldBar } from './world-bar';
 
+import { FOREST_ACTOR } from './forest-calibration.ts';
+
 export type ActorFrame = {
   world: WorldState | null;
   players: Player[];
@@ -32,14 +34,14 @@ export function drawForestActor(
   }
 
   if (a.enemy?.hitpoints === 0 && hit?.killed) {
-    const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / 700));
+    const progress = Math.max(0, Math.min(1, (serverTime - hit.at) / FOREST_ACTOR.deathFadeMs));
     ctx.save();
-    ctx.translate(a.x, a.y + 15);
+    ctx.translate(a.x, a.y + FOREST_ACTOR.footOffset);
     ctx.globalAlpha = 1 - progress;
     ctx.drawImage(
       a.image,
       a.facing * ACTOR_CELL,
-      7 * ACTOR_CELL,
+      FOREST_ACTOR.fallenRow * ACTOR_CELL,
       ACTOR_CELL,
       ACTOR_CELL,
       -a.size / 2,
@@ -49,7 +51,7 @@ export function drawForestActor(
     );
     drawTargetHit(
       ctx,
-      forestActorMask(a.image, a.facing, 7),
+      forestActorMask(a.image, a.facing, FOREST_ACTOR.fallenRow),
       -a.size / 2,
       -a.size * 0.94,
       a.size,
@@ -62,20 +64,21 @@ export function drawForestActor(
   }
 
   const left = a.x - a.size / 2,
-    top = a.y + 15 - (a.size * 45) / 48;
-  const bodyOpacity = a.player?.hitpoints === 0 ? 0.35 : 1;
+    top =
+      a.y + FOREST_ACTOR.footOffset - (a.size * FOREST_ACTOR.bodyHeight) / FOREST_ACTOR.playerSize;
+  const bodyOpacity = a.player?.hitpoints === 0 ? FOREST_ACTOR.deadOpacity : 1;
   ctx.globalAlpha = bodyOpacity;
 
   if (quality.motionBlur && a.moving) {
-    ctx.globalAlpha = 0.13 * bodyOpacity;
+    ctx.globalAlpha = FOREST_ACTOR.motionOpacity * bodyOpacity;
     ctx.drawImage(
       a.image,
       a.facing * ACTOR_CELL,
       a.row * ACTOR_CELL,
       ACTOR_CELL,
       ACTOR_CELL,
-      left - a.dx * 0.7,
-      top - a.dy * 0.7,
+      left - a.dx * FOREST_ACTOR.trailScale,
+      top - a.dy * FOREST_ACTOR.trailScale,
       a.size,
       a.size,
     );
@@ -145,24 +148,30 @@ export function drawForestActor(
       const width = drawPlayerHealth(
         ctx,
         a.x,
-        top - 10,
+        top - FOREST_ACTOR.bossHealthGap,
         a.enemy.hitpoints,
         enemyMaxHealth(a.enemy, world?.scene?.difficulty),
         a.enemy.name ?? 'The Hollow Warden',
         '#ffffff',
         true,
       );
-      drawDebuffs(ctx, a.enemy, a.x - width / 2, top - 12, serverTime);
+      drawDebuffs(ctx, a.enemy, a.x - width / 2, top - FOREST_ACTOR.bossDebuffGap, serverTime);
     } else {
       drawWorldBar(
         ctx,
-        a.x - 17,
+        a.x - FOREST_ACTOR.enemyDebuffHalfWidth,
         top - 3,
         34,
         a.enemy.hitpoints / enemyMaxHealth(a.enemy, world?.scene?.difficulty),
         a.enemy.kind === 'elite' ? '#f4d447' : '#df7765',
       );
-      drawDebuffs(ctx, a.enemy, a.x - 17, top - 14, serverTime);
+      drawDebuffs(
+        ctx,
+        a.enemy,
+        a.x - FOREST_ACTOR.enemyDebuffHalfWidth,
+        top - FOREST_ACTOR.enemyDebuffGap,
+        serverTime,
+      );
     }
   }
 

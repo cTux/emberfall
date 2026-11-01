@@ -1,3 +1,7 @@
+// Space idle captures far enough apart to sample different animation poses.
+const IDLE_POSE_INTERVAL_MS = 400;
+// Allow authoritative relocation and interaction outlines to reach presentation.
+const RELOCATION_SETTLE_MS = 500;
 import { test, expect } from './fixtures';
 import { BUILDINGS, INNKEEPER } from '../packages/core/src/index.ts';
 
@@ -24,10 +28,10 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   })!;
   player.x = marta.x - 70;
   player.y = marta.y - 18;
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(RELOCATION_SETTLE_MS);
   await page.screenshot({ path: 'test-results/innkeeper-name-inactive.png' });
   player.x = marta.x - 45;
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(RELOCATION_SETTLE_MS);
   await page.screenshot({ path: 'test-results/innkeeper-name-active.png' });
   Object.assign(marta, { x: 1000, y: 1000 });
   const dialog = page.getByRole('dialog', { name: INNKEEPER.name });
@@ -49,7 +53,7 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   await page.screenshot({ path: 'test-results/innkeeper-idle.png' });
 
   for (let frame = 0; frame < 4; frame++) {
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(IDLE_POSE_INTERVAL_MS);
     await page.screenshot({
       path: `test-results/innkeeper-idle-${frame}.png`,
       clip: { x: 685, y: 365, width: 70, height: 70 },
@@ -61,7 +65,7 @@ test('Marta opens shared trading while the Inn has no interaction', async ({ pag
   player.x = inn.doorX;
   player.y = inn.y + 9;
   // Allow the confirmed relocation to reach presentation before testing E.
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(RELOCATION_SETTLE_MS);
   await page.keyboard.press('e');
   await expect(page.getByRole('dialog')).toBeHidden();
   const hall = BUILDINGS.find((building) => {

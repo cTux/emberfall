@@ -15,7 +15,7 @@ import {
   INITIAL_PROGRESS,
   PLAYER_BODY_RADIUS,
 } from './base/entities/players.ts';
-import { ATTACK_DEFINITIONS } from './base/abilities/attacks.ts';
+import { ATTACK_DEFINITIONS, BASE_ATTACK_TIMING } from './base/abilities/attacks.ts';
 import { ENEMY_STATS, ENEMY_RULES, BOSS_DEFINITIONS } from './base/entities/enemies.ts';
 import { BEAR_DEFINITION } from './base/entities/companions.ts';
 import { AILMENT_DEFINITIONS } from './base/effects/ailments.ts';
@@ -57,6 +57,7 @@ const slotLabels = [
   'Off-hand',
   'Ring',
 ];
+// One-based grid coordinates preserve the established three-column equipment layout.
 const slotPositions = [
   [1, 2],
   [1, 3],
@@ -68,11 +69,12 @@ const slotPositions = [
   [3, 2],
   [3, 3],
 ];
-const attributes: Record<string, number[]> = {
-  skeleton: [10, 3],
-  runner: [10, 3],
-  brute: [30, 9],
-  caster: [7, 3],
+// Existing health/damage balance makes brutes sturdier and harder-hitting, with casters more fragile.
+const attributes: Record<string, { hitPoints: number; damage: number }> = {
+  skeleton: { hitPoints: 10, damage: 3 },
+  runner: { hitPoints: 10, damage: 3 },
+  brute: { hitPoints: 30, damage: 9 },
+  caster: { hitPoints: 7, damage: 3 },
 };
 export const baseMod: GameMod = {
   id: 'base',
@@ -108,6 +110,7 @@ export const baseMod: GameMod = {
       r.items.register({ ...item, kind: 'gear', loot: LOOT_ITEM_IDS.includes(item.id) });
     }
 
+    // Existing potion balance restores one quarter of the initial 100 HP for one gold.
     r.items.register({
       id: 'health-potion',
       name: 'Health potion',
@@ -145,9 +148,7 @@ export const baseMod: GameMod = {
 
     for (const [id, ability] of Object.entries(ATTACK_DEFINITIONS)) {
       r.abilities.register({
-        intervalMs: 1000,
-        durationMs: 260,
-        aimSmoothingSeconds: 0.08,
+        ...BASE_ATTACK_TIMING,
         manualRange: ability.range,
         speed: 0,
         count: 0,
@@ -172,8 +173,8 @@ export const baseMod: GameMod = {
         id,
         art: id,
         behavior: id === 'caster' ? 'ranged' : 'melee',
-        hitPoints: attributes[id][0],
-        damage: attributes[id][1],
+        hitPoints: attributes[id].hitPoints,
+        damage: attributes[id].damage,
       } as Parameters<typeof r.enemies.register>[0]);
     }
 
@@ -190,6 +191,7 @@ export const baseMod: GameMod = {
     for (const [id, ailment] of Object.entries(AILMENT_DEFINITIONS)) {
       r.ailments.register({
         chance: 0,
+        // Preserve the one-second ailment scheduler cadence even for non-damaging statuses.
         tickMs: 1000,
         damagePerStack: 0,
         ...ailment,
@@ -229,6 +231,7 @@ export const baseMod: GameMod = {
       r.settings.register({ id, value });
     }
 
+    // Existing rarity payouts and multipliers are balance calibration, not probability-derived constants.
     r.enemyTypes.register({
       id: 'normal',
       multiplier: 1,
@@ -250,6 +253,7 @@ export const baseMod: GameMod = {
       dropCount: { min: 100, max: 500 },
     });
 
+    // Preserve current difficulty steps: enemy attributes grow faster than movement speed.
     for (const [id, balance] of Object.entries({
       Easy: { multiplier: 1, speedMultiplier: 1 },
       Medium: { multiplier: 2, speedMultiplier: 1.05 },

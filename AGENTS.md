@@ -4,6 +4,8 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 
 ## Project constraints
 
+- Name tuning values, limits and timeouts at their owning definition and comment why the exact value is needed. Keep structural literals and named content/style data readable; follow [numeric values](docs/development/quality.md#numeric-values) and keep its lint rule enabled.
+
 - Always use curly braces for `if`/`else` and loop bodies, including single statements; use block bodies with explicit returns for arrow functions and braces around nonempty `switch` cases. Keep `else if` chains and grouped empty case labels. See [lint policy](docs/development.md#lint-policy).
 - Use single quotes for code string literals and JSX attribute values. Follow Oxfmt's escape-minimizing exceptions; JSON retains double quotes.
 - When adding or refactoring code, follow [code structure and strict checks](docs/development/code-structure.md#code-structure): keep modules below 250 nonblank lines, split by responsibility, and use typed declarative definitions for repeated domain rules. Prefer [typed dispatch tables with named parameters](docs/development/code-structure.md#dispatch-tables) for choices keyed by one value. Separate functions and logical steps with [blank lines](docs/development/quality.md#blank-lines), including before `for`, `switch` and `if` statements.

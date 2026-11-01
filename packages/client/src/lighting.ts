@@ -1,4 +1,16 @@
 import type { DrawingContext } from './rendering/drawing-context';
+
+// Existing local-light projection caps stretch before near-equal light/caster heights create enormous silhouettes.
+const SHADOW = {
+  maximumRadiusRatio: 0.8,
+  minimumHeightGap: 20,
+  maximumOpacity: 0.65,
+  contactAlpha: 32,
+  rgbaChannels: 4,
+  alphaChannel: 3,
+  defaultFrameSize: 16,
+} as const;
+
 export interface Light {
   x: number;
   y: number;
@@ -45,14 +57,14 @@ export function shadowProjection(
   }
 
   const length = Math.min(
-    light.radius * 0.8,
-    (distance * caster.height) / Math.max(20, light.height - caster.height),
+    light.radius * SHADOW.maximumRadiusRatio,
+    (distance * caster.height) / Math.max(SHADOW.minimumHeightGap, light.height - caster.height),
   );
 
   return {
     x: (dx / distance) * length,
     y: (dy / distance) * length,
-    opacity: 0.65 * (1 - distance / light.radius),
+    opacity: SHADOW.maximumOpacity * (1 - distance / light.radius),
   };
 }
 
@@ -100,7 +112,10 @@ export function makeMask(sprite: HTMLCanvasElement) {
     let occupied = false;
 
     for (let x = 0; x < mask.width; x++) {
-      if (pixels[((bottom - 1) * mask.width + x) * 4 + 3] >= 32) {
+      if (
+        pixels[((bottom - 1) * mask.width + x) * SHADOW.rgbaChannels + SHADOW.alphaChannel] >=
+        SHADOW.contactAlpha
+      ) {
         occupied = true;
         break;
       }
@@ -124,9 +139,9 @@ export function spriteMask(
   column: number,
   row: number,
   flip = false,
-  frameWidth = 16,
+  frameWidth: number = SHADOW.defaultFrameSize,
   trimBottom = false,
-  frameHeight = 16,
+  frameHeight: number = SHADOW.defaultFrameSize,
 ) {
   if (!image.naturalWidth) {
     return null;
@@ -170,9 +185,14 @@ export function spriteMask(
       let bottom = tile.height;
       while (
         bottom > 1 &&
-        !pixels.slice((bottom - 1) * tile.width * 4, bottom * tile.width * 4).some((a, i) => {
-          return i % 4 === 3 && a > 0;
-        })
+        !pixels
+          .slice(
+            (bottom - 1) * tile.width * SHADOW.rgbaChannels,
+            bottom * tile.width * SHADOW.rgbaChannels,
+          )
+          .some((a, i) => {
+            return i % SHADOW.rgbaChannels === SHADOW.alphaChannel && a > 0;
+          })
       ) {
         bottom--;
       }

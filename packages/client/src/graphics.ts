@@ -1,3 +1,8 @@
+// Offer the existing common monitor refresh rates plus zero for uncapped rendering.
+const FRAME_LIMIT_OPTIONS = [0, 30, 60, 120, 144];
+// Existing quality choices trade 75% resolution for speed and 150% for sharper art.
+const RESOLUTION_OPTIONS = [0.75, 1, 1.5];
+
 export interface GraphicsSettings {
   smoothTextures: boolean;
   ambientOcclusion: boolean;
@@ -101,11 +106,11 @@ export function loadGraphics(): GraphicsSettings {
       }
     }
 
-    if ([0, 30, 60, 120, 144].includes(value.frameLimit)) {
+    if (FRAME_LIMIT_OPTIONS.includes(value.frameLimit)) {
       settings.frameLimit = value.frameLimit;
     }
 
-    if ([0.75, 1, 1.5].includes(value.resolution)) {
+    if (RESOLUTION_OPTIONS.includes(value.resolution)) {
       settings.resolution = value.resolution;
     }
   } catch {

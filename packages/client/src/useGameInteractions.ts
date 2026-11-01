@@ -4,6 +4,10 @@ import { BULLSEYE } from '@emberfall/core';
 import type { Interaction } from './effects';
 import type { GameMenu } from './game-panels';
 
+// Strip the actual routing prefix so changes to its spelling cannot invalidate numeric offsets.
+const PARTY_TARGET_PREFIX = 'party:';
+const GATHER_TARGET_PREFIX = 'gather:';
+
 export function useGameInteractions({
   me,
   world,
@@ -43,7 +47,11 @@ export function useGameInteractions({
   };
 
   const interact = (source = interaction.current) => {
-    if (me?.gathering && interaction.current?.activate && source?.id.startsWith('gather:')) {
+    if (
+      me?.gathering &&
+      interaction.current?.activate &&
+      source?.id.startsWith(GATHER_TARGET_PREFIX)
+    ) {
       interaction.current.activate();
 
       return;
@@ -59,17 +67,17 @@ export function useGameInteractions({
       return;
     }
 
-    if (source.id.startsWith('party:')) {
-      send({ type: 'partyInteract', targetId: source.id.slice(6) });
+    if (source.id.startsWith(PARTY_TARGET_PREFIX)) {
+      send({ type: 'partyInteract', targetId: source.id.slice(PARTY_TARGET_PREFIX.length) });
 
       return;
     }
 
-    if (source.id.startsWith('gather:')) {
+    if (source.id.startsWith(GATHER_TARGET_PREFIX)) {
       if (me) {
         send({
           type: 'gather',
-          nodeId: source.id.slice(7),
+          nodeId: source.id.slice(GATHER_TARGET_PREFIX.length),
           epoch: me.scene === 'forest' ? (world?.scene?.id ?? '') : 'lobby',
         });
       }

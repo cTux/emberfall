@@ -1,4 +1,5 @@
 import {
+  MILLISECONDS_PER_SECOND,
   wrap,
   wrappedDelta,
   type Player,
@@ -9,12 +10,26 @@ import { FOREST, moveActor, moveForestActor, movePlayer } from '@emberfall/core'
 import { LocalAttacks } from './local-attacks.ts';
 import { PREDICTION_LIMIT_MS } from './prediction-frame.ts';
 
+// Existing reconciliation calibration tolerates two-pixel noise, snaps beyond 20 pixels,
+// and otherwise decays correction over 120 ms; these are presentation choices, not server movement rules.
+const RECONCILIATION = {
+  maxStepMs: 100,
+  commandMs: 50,
+  timeEpsilonMs: 0.0001,
+  decayMs: 120,
+  footOffset: 15,
+  collisionRadius: 12,
+  probeFps: 60,
+} as const;
+
 type Move = Extract<ClientMessage, { type: 'move' }> & {
   seq: number;
   durationMs: number;
   sentAt: number;
 };
+// Two pixels hide subpixel jitter without accumulating a visibly displaced actor.
 const TOLERANCE = 2,
+  // Twenty pixels retains the existing teleport-like correction cutoff.
   SNAP_DISTANCE = 20;
 
 /** Replay only movement the server has not consumed; offsets affect drawing, never gameplay. */
@@ -54,17 +69,17 @@ export class LocalMovement {
       }, 0);
       this.unsent += Math.min(
         Math.max(0, elapsed),
-        100,
+        RECONCILIATION.maxStepMs,
         Math.max(0, PREDICTION_LIMIT_MS - queued - this.unsent),
       );
-      while (this.unsent >= 50) {
-        this.flush(50);
+      while (this.unsent >= RECONCILIATION.commandMs) {
+        this.flush(RECONCILIATION.commandMs);
       }
     }
   }
 
   private flush(duration = this.unsent) {
-    if (duration <= 0.0001 || !this.base) {
+    if (duration <= RECONCILIATION.timeEpsilonMs || !this.base) {
       return;
     }
 
@@ -96,10 +111,15 @@ export class LocalMovement {
     for (const command of this.pending) {
       const elapsed =
         command.seq === player.inputSeq ? (player.inputElapsed ?? command.durationMs) : 0;
-      movePlayer(player, command.x, command.y, Math.max(0, command.durationMs - elapsed) / 1000);
+      movePlayer(
+        player,
+        command.x,
+        command.y,
+        Math.max(0, command.durationMs - elapsed) / MILLISECONDS_PER_SECOND,
+      );
     }
 
-    movePlayer(player, this.x, this.y, this.unsent / 1000);
+    movePlayer(player, this.x, this.y, this.unsent / MILLISECONDS_PER_SECOND);
 
     return player;
   }
@@ -154,7 +174,7 @@ export class LocalMovement {
         return (
           p.seq > (authoritative.inputSeq ?? 0) ||
           (p.seq === authoritative.inputSeq &&
-            (authoritative.inputElapsed ?? Infinity) < p.durationMs - 0.0001)
+            (authoritative.inputElapsed ?? Infinity) < p.durationMs - RECONCILIATION.timeEpsilonMs)
         );
       });
       const after = this.predict();
@@ -168,33 +188,33 @@ export class LocalMovement {
     }
 
     const predicted = this.predict();
-    const dt = Math.min(100, Math.max(0, now - this.drawnAt));
+    const dt = Math.min(RECONCILIATION.maxStepMs, Math.max(0, now - this.drawnAt));
     this.drawnAt = now;
     const distance = Math.hypot(this.offset.x, this.offset.y);
 
     // Leave tiny errors visually alone; larger accumulated error converges smoothly.
     if (distance > TOLERANCE) {
-      const decay = Math.exp(-dt / 120);
+      const decay = Math.exp(-dt / RECONCILIATION.decayMs);
       this.offset.x *= decay;
       this.offset.y *= decay;
     }
 
     const point = (predicted.scene === 'forest' ? moveForestActor : moveActor)(
-      { x: predicted.x, y: predicted.y + 15 },
+      { x: predicted.x, y: predicted.y + RECONCILIATION.footOffset },
       this.offset.x,
       this.offset.y,
-      12,
+      RECONCILIATION.collisionRadius,
       false,
     );
     const displayed = {
       x: point.x,
-      y: wrap(point.y - 15, FOREST.height),
+      y: wrap(point.y - RECONCILIATION.footOffset, FOREST.height),
     };
     this.offset = this.difference(displayed, predicted);
     const probe = { ...predicted };
 
     if (now - this.sourceAt <= PREDICTION_LIMIT_MS) {
-      movePlayer(probe, this.x, this.y, 1 / 60);
+      movePlayer(probe, this.x, this.y, 1 / RECONCILIATION.probeFps);
     }
 
     const motion = this.difference(probe, predicted);

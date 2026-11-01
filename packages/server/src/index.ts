@@ -1,3 +1,6 @@
+// Keep the documented deployment port when neither supported environment override is supplied.
+const DEFAULT_GAME_PORT = 4003;
+
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { createGameServer } from './worlds.ts';
@@ -21,7 +24,7 @@ const tls =
         ),
       };
 const app = await createGameServer(root, savePath, tls, steam);
-const port = Number(process.env.BASE_PORT ?? process.env.PORT_NEW ?? 4003);
+const port = Number(process.env.BASE_PORT ?? process.env.PORT_NEW ?? DEFAULT_GAME_PORT);
 await app.listen(port, process.env.HOST ?? '0.0.0.0');
 serverLog.info('Server listening', {
   url: `${tls ? 'https' : 'http'}://localhost:${port}`,

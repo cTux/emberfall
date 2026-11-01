@@ -1,3 +1,4 @@
+import { PERCENT } from '@emberfall/common';
 export { ItemStat, Rarity } from './enums/items.ts';
 import { type ItemStat, Rarity } from './enums/items.ts';
 export { rarityDropChance } from './configs/rarityDropChance.ts';
@@ -27,7 +28,7 @@ export function statValue(stat: ItemStat, rarity: Rarity) {
 }
 
 export function rollRarity(random = Math.random): Rarity {
-  let roll = random() * 100;
+  let roll = random() * PERCENT;
 
   for (const [rarity, chance] of Object.entries(rarityDropChance)) {
     if (roll < chance) {

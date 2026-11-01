@@ -1,3 +1,5 @@
+import { PERCENT } from '@emberfall/common';
+import { COMBAT_TUNING } from './tuning.ts';
 import { game, type createGame } from '../game.ts';
 type Game = ReturnType<typeof createGame>;
 import { attackTarget } from '../tactics.ts';
@@ -14,13 +16,15 @@ export function effectiveAbility(
 
   return {
     ...ability,
-    range: ability.range * (1 + bonuses.range / 100),
-    manualRange: ability.manualRange * (1 + bonuses.range / 100),
+    range: ability.range * (1 + bonuses.range / PERCENT),
+    manualRange: ability.manualRange * (1 + bonuses.range / PERCENT),
     count: ability.count + (ability.kind === 'fireball' ? bonuses.moreProjectiles : 0),
     bounces: ability.bounces + (ability.kind === 'roots' ? bonuses.projectilesBounce : 0),
-    pierce: (ability.pierce ?? 3) + (ability.kind === 'arrow' ? bonuses.projectilePierce : 0),
-    splashRadius: ability.splashRadius * (1 + bonuses.areaOfEffect / 100),
-    bounceRadius: ability.bounceRadius * (1 + bonuses.range / 100),
+    pierce:
+      (ability.pierce ?? COMBAT_TUNING.defaultArrowPierce) +
+      (ability.kind === 'arrow' ? bonuses.projectilePierce : 0),
+    splashRadius: ability.splashRadius * (1 + bonuses.areaOfEffect / PERCENT),
+    bounceRadius: ability.bounceRadius * (1 + bonuses.range / PERCENT),
   };
 }
 
@@ -39,7 +43,7 @@ export function defaultSpellRange(
     context.registries.classes.require(player.classId ?? 'warrior').attack,
   );
 
-  return range * (attack.kind === 'slash' ? 1 + stats.bonuses.areaOfEffect / 100 : 1);
+  return range * (attack.kind === 'slash' ? 1 + stats.bonuses.areaOfEffect / PERCENT : 1);
 }
 
 export function projectileAngle(

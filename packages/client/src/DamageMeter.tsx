@@ -3,7 +3,7 @@ import { useDraggable } from '@emberfall/ui';
 import { ButtonBase, IconButton } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
-import type { Player } from '@emberfall/common';
+import { PERCENT, type Player } from '@emberfall/common';
 import { TALENT_TREE } from '@emberfall/core';
 import { classSprite, spellSrc, statusSrc } from './class-art';
 import { TalentIcon } from './talent-icons';
@@ -89,7 +89,7 @@ export function DamageMeter({ players, playerId }: { players: Player[]; playerId
       </header>
       <div className='damage-meter-rows'>
         {rows.map((row, index) => {
-          const percent = denominator > 0 ? (row.damage / denominator) * 100 : 0;
+          const percent = denominator > 0 ? (row.damage / denominator) * PERCENT : 0;
           const classId = row.classId ?? 'warrior';
           const talent = selected
             ? TALENT_TREE.find((node) => {

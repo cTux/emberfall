@@ -48,7 +48,10 @@ export async function sample() {
 export async function shadows() {
   while (wardrobeArt.dataset.artReady !== 'true') {
     await new Promise((done) => {
-      return setTimeout(done, 20);
+      // Poll roughly once per frame while yielding for asynchronous image preparation.
+      const ART_POLL_INTERVAL_MS = 20;
+
+      return setTimeout(done, ART_POLL_INTERVAL_MS);
     });
   }
 

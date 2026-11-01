@@ -1,9 +1,25 @@
+import { TALENT_MAX_RANK } from '../talent-catalog.ts';
+import { PERCENT } from '@emberfall/common';
 import type { TalentCast } from './targeting.ts';
 import { healingTarget } from '../tactics.ts';
 import { rank } from '../talent-ailments.ts';
 import { hitEnemy } from '../combat/damage.ts';
 import { schedule } from './state.ts';
 import { heal } from './effects.ts';
+
+// Existing rank-one/rank-two wound-burst balance; original calibration is undocumented.
+// Preserve the described burst, splash and healing opportunity rather than retuning combat.
+const WOUND_BURST = {
+  fallbackTickMs: 1000,
+  power: [1.5, 2],
+  splashRadius: 150,
+  splashFraction: 0.5,
+  offeringStacks: 3,
+  offeringDurationMs: 6000,
+  offeringIntervalMs: 500,
+  offeringRadius: 60,
+  offeringHeal: [0.03, 0.05],
+} as const;
 
 export function woundBurst(cast: TalentCast) {
   const {
@@ -33,9 +49,14 @@ export function woundBurst(cast: TalentCast) {
       return (
         sum +
         entry.stacks *
-          Math.max(0, Math.floor((entry.expiresAt - now) / (entry.tickIntervalMs ?? 1000)))
+          Math.max(
+            0,
+            Math.floor(
+              (entry.expiresAt - now) / (entry.tickIntervalMs ?? WOUND_BURST.fallbackTickMs),
+            ),
+          )
       );
-    }, 0) * (learned === 2 ? 2 : 1.5);
+    }, 0) * WOUND_BURST.power[learned === TALENT_MAX_RANK ? 1 : 0];
   const consumedStacks = wounds.reduce((sum, entry) => {
     return sum + entry.stacks;
   }, 0);
@@ -56,13 +77,13 @@ export function woundBurst(cast: TalentCast) {
     context,
   );
 
-  if (learned === 2) {
-    for (const enemy of effectArea(scene, primary, 150)) {
+  if (learned === TALENT_MAX_RANK) {
+    for (const enemy of effectArea(scene, primary, WOUND_BURST.splashRadius)) {
       if (enemy !== primary) {
         hitEnemy(
           scene,
           enemy,
-          burst * 0.5,
+          burst * WOUND_BURST.splashFraction,
           player,
           now,
           undefined,
@@ -79,23 +100,31 @@ export function woundBurst(cast: TalentCast) {
   const offering = rank(player, 1, 8);
   let orbConsumed = false;
 
-  if (offering && consumedStacks >= 3) {
-    schedule(scene, player, nodeId, now, 6000, 500, (_at, players) => {
-      if (orbConsumed) {
-        return;
-      }
+  if (offering && consumedStacks >= WOUND_BURST.offeringStacks) {
+    schedule(
+      scene,
+      player,
+      nodeId,
+      now,
+      WOUND_BURST.offeringDurationMs,
+      WOUND_BURST.offeringIntervalMs,
+      (_at, players) => {
+        if (orbConsumed) {
+          return;
+        }
 
-      const ally = healingTarget(
-        players,
-        player,
-        primary,
-        60 * (1 + stats.bonuses.areaOfEffect / 100),
-      );
+        const ally = healingTarget(
+          players,
+          player,
+          primary,
+          WOUND_BURST.offeringRadius * (1 + stats.bonuses.areaOfEffect / PERCENT),
+        );
 
-      if (ally) {
-        heal(ally, offering === 2 ? 0.05 : 0.03);
-        orbConsumed = true;
-      }
-    });
+        if (ally) {
+          heal(ally, WOUND_BURST.offeringHeal[offering === TALENT_MAX_RANK ? 1 : 0]);
+          orbConsumed = true;
+        }
+      },
+    );
   }
 }

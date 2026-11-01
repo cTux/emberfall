@@ -24,6 +24,9 @@ import { drawNavigation } from './navigation';
 import { drawHitboxes } from './hitboxes';
 import { drawDamageNumbers } from './damage-text';
 
+// Actor positions are feet anchors; the existing 15-unit offset keeps foreground occlusion below the torso.
+const PLAYER_OCCLUSION_OFFSET = 15;
+
 type Options = {
   preferences: Preferences;
   cycle: ReturnType<typeof dayNight>;
@@ -211,7 +214,7 @@ export class VillageScene {
     };
 
     for (const layer of layers) {
-      ctx.occlusion = !!local && layer.y > local.y + 15;
+      ctx.occlusion = !!local && layer.y > local.y + PLAYER_OCCLUSION_OFFSET;
 
       if (!layer.player) {
         drawVillageLayer(ctx, layer, layerFrame);

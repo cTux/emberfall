@@ -1,3 +1,6 @@
+// Keep the existing thirty-unit spacing between players entering a scene.
+const SCENE_ENTRY_SPACING = 30;
+
 import { enterScene, returnToLobby } from './scene-travel.ts';
 export { returnToLobby } from './scene-travel.ts';
 import { FOREST_DEFINITION } from '@emberfall/core/definitions/worlds/forest';
@@ -226,7 +229,7 @@ export function tickScene(world: SceneWorld, now: number, dt: number) {
     let index = 0;
 
     for (const player of world.voters ?? world.players.values()) {
-      enterScene(world, player, (index++ - world.players.size / 2) * 30);
+      enterScene(world, player, (index++ - world.players.size / 2) * SCENE_ENTRY_SPACING);
     }
   }
 

@@ -1,3 +1,7 @@
+// Allow a paused direction change one presentation tick before capturing.
+const PAUSED_DIRECTION_RENDER_MS = 50;
+// Allow direction changes to reach a rendered frame before comparing captures.
+const DIRECTION_RENDER_MS = 100;
 import { test, expect } from './fixtures';
 import { writeFile } from 'node:fs/promises';
 
@@ -32,7 +36,10 @@ test('animated asset gallery loads transparent frames and changes action and fac
     const portalBefore = ctx.getImageData(430, 600, 176, 176).data;
     const smokeBefore = ctx.getImageData(10, 800, 396, 48).data;
     await new Promise((resolve) => {
-      return setTimeout(resolve, 1000);
+      // Observe a full second so slow ambient animation changes are visible.
+      const ANIMATION_OBSERVATION_MS = 1000;
+
+      return setTimeout(resolve, ANIMATION_OBSERVATION_MS);
     });
     const portalAfter = ctx.getImageData(430, 600, 176, 176).data;
     const smokeAfter = ctx.getImageData(10, 800, 396, 48).data;
@@ -78,7 +85,7 @@ test('animated asset gallery loads transparent frames and changes action and fac
   await page.screenshot({ path: 'test-results/wardrobe-art-gallery.png', fullPage: true });
   const down = await canvas.screenshot();
   await page.getByLabel('Direction', { exact: true }).selectOption('1');
-  await page.waitForTimeout(100);
+  await page.waitForTimeout(DIRECTION_RENDER_MS);
   expect((await canvas.screenshot()).equals(down)).toBe(false);
   await page.getByLabel('Animation', { exact: true }).selectOption('walk');
   await expect(canvas).toHaveAttribute('data-frame', /[1-4]/);
@@ -98,7 +105,7 @@ test('animated asset gallery loads transparent frames and changes action and fac
 
   for (const direction of ['0', '1', '2', '3']) {
     await page.getByLabel('Direction', { exact: true }).selectOption(direction);
-    await page.waitForTimeout(50);
+    await page.waitForTimeout(PAUSED_DIRECTION_RENDER_MS);
     const png = await canvas.evaluate((element: HTMLCanvasElement) => {
       return element.toDataURL().split(',')[1];
     });

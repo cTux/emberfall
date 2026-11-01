@@ -1,3 +1,7 @@
+// Quarter-second sampling retains the existing RSS peak observation frequency.
+const MEMORY_SAMPLE_MS = 250;
+// Report the ninety-fifth percentile of event-loop delay.
+const P95_PERCENTILE = 95;
 import assert from 'node:assert/strict';
 import { existsSync, realpathSync } from 'node:fs';
 import { basename, dirname, resolve, sep } from 'node:path';
@@ -69,7 +73,7 @@ let cpu = process.cpuUsage();
 let peakRss = 0;
 const memory = setInterval(() => {
   peakRss = Math.max(peakRss, process.memoryUsage().rss);
-}, 250);
+}, MEMORY_SAMPLE_MS);
 let closing = false;
 
 async function close() {
@@ -141,7 +145,7 @@ async function command(type: unknown) {
           cpuOneCorePercent: ((usage.user + usage.system) / 1000 / measuredMs) * 100,
           rssMiB: process.memoryUsage().rss / 2 ** 20,
           peakRssMiB: peakRss / 2 ** 20,
-          loopDelayP95Ms: delay.percentile(95) / 1e6,
+          loopDelayP95Ms: delay.percentile(P95_PERCENTILE) / 1e6,
           loopDelayMaxMs: delay.max / 1e6,
           socketBytes,
           socketBytesPerSecond: socketBytes / (measuredMs / 1000),

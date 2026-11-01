@@ -35,7 +35,10 @@ test('failed first merchant save rejects admission safely and a later join retri
     assert.equal(world.merchant, undefined);
     assert.equal(messages.at(-1)?.type, 'error');
     await new Promise((resolve) => {
-      return setTimeout(resolve, 75);
+      // Observe more than one 50 ms tick to catch unintended background write retries.
+      const ADMISSION_RETRY_OBSERVATION_MS = 75;
+
+      return setTimeout(resolve, ADMISSION_RETRY_OBSERVATION_MS);
     });
     assert.equal(failure.mock.callCount(), 1, 'broadcast ticks do not retry admission writes');
     failure.mock.restore();

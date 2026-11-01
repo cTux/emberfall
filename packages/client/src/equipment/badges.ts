@@ -1,3 +1,4 @@
+import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
 import { characterStats, ItemStat, itemStatWeight } from '@emberfall/core';
 import type { Player, ClassId, BackpackItem } from '@emberfall/common';
 import type { EquipmentBadgeView } from '@emberfall/ui';
@@ -34,8 +35,8 @@ export function weaponBadges(
     {
       label: 'Cooldown',
       icon: 'cooldown',
-      value: `${number(stats.attackIntervalMs / 1000)} sec`,
-      explanation: `Wait ${number(stats.attackIntervalMs / 1000)} seconds between attacks.`,
+      value: `${number(stats.attackIntervalMs / MILLISECONDS_PER_SECOND)} sec`,
+      explanation: `Wait ${number(stats.attackIntervalMs / MILLISECONDS_PER_SECOND)} seconds between attacks.`,
     },
     {
       label: 'Damage type',
@@ -63,8 +64,8 @@ export function weaponBadges(
     badges.push({
       label: 'Active swing',
       icon: 'duration',
-      value: `${number(ATTACK_DEFINITIONS.slash.durationMs / 1000)} sec`,
-      explanation: `The swing remains active for ${number(ATTACK_DEFINITIONS.slash.durationMs / 1000)} seconds. Each enemy can be hit once per swing.`,
+      value: `${number(ATTACK_DEFINITIONS.slash.durationMs / MILLISECONDS_PER_SECOND)} sec`,
+      explanation: `The swing remains active for ${number(ATTACK_DEFINITIONS.slash.durationMs / MILLISECONDS_PER_SECOND)} seconds. Each enemy can be hit once per swing.`,
     });
   } else {
     const definition = ATTACK_DEFINITIONS[attack];
@@ -93,7 +94,7 @@ export function weaponBadges(
   }
 
   if (ailment === 'roots') {
-    const duration = AILMENT_DEFINITIONS.roots.durationMs / 1000;
+    const duration = AILMENT_DEFINITIONS.roots.durationMs / MILLISECONDS_PER_SECOND;
     badges.push({
       label: 'Roots',
       icon: 'roots',
@@ -104,7 +105,7 @@ export function weaponBadges(
     badges.push({
       label: capitalize(ailment),
       icon: ailment,
-      explanation: `Hits have a ${percent(definition.chance)} chance to apply ${capitalize(ailment)}. Each stack deals ${definition.damagePerStack} damage every ${definition.tickMs / 1000} second for ${definition.durationMs / 1000} seconds; new stacks refresh the duration.`,
+      explanation: `Hits have a ${percent(definition.chance)} chance to apply ${capitalize(ailment)}. Each stack deals ${definition.damagePerStack} damage every ${definition.tickMs / MILLISECONDS_PER_SECOND} second for ${definition.durationMs / MILLISECONDS_PER_SECOND} seconds; new stacks refresh the duration.`,
     });
   }
 

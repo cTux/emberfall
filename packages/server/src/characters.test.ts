@@ -46,7 +46,10 @@ test('server saves survive restart, authenticate independently of nickname, and 
           }
 
           await new Promise((r) => {
-            return setTimeout(r, 10);
+            // Poll frequently enough to observe asynchronous messages without busy-waiting.
+            const MESSAGE_POLL_MS = 10;
+
+            return setTimeout(r, MESSAGE_POLL_MS);
           });
         }
 

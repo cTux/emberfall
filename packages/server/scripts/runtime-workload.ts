@@ -1,3 +1,10 @@
+// Keep workload actors alive throughout sampling without changing combat rules.
+const BENCHMARK_HEALTH = 100_000_000;
+// Advance simulated admission beyond the one-second message window per client.
+const ADMISSION_TIME_STEP_MS = 1001;
+// Retain eight-column enemy geometry for comparable workloads.
+const ENEMY_COLUMNS = 8;
+
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { starterEquipment, syncEquipmentVitals } from '@emberfall/core';
@@ -35,7 +42,7 @@ export function arrangeWorkload(
     const group = parties(world);
 
     for (const [index, player] of players.slice(1).entries()) {
-      const now = Date.now() + index * 1001;
+      const now = Date.now() + index * ADMISSION_TIME_STEP_MS;
       group.request(players[0], player, now);
       group.accept(player, players[0].id, now);
     }
@@ -78,9 +85,9 @@ export function arrangeWorkload(
         return {
           id: index + 1,
           x: 2200 + (index % 8) * 35,
-          y: 1160 + Math.floor(index / 8) * 35,
-          hitpoints: 1e8,
-          maxHitpoints: 1e8,
+          y: 1160 + Math.floor(index / ENEMY_COLUMNS) * 35,
+          hitpoints: BENCHMARK_HEALTH,
+          maxHitpoints: BENCHMARK_HEALTH,
           angle: 0,
           archetype: (['skeleton', 'runner', 'brute', 'caster'] as const)[index % 4],
         };
@@ -111,7 +118,7 @@ export function arrangeWorkload(
         assert.equal(scene.enemies.length, BENCHMARK.enemiesPerWorld);
         assert(
           scene.enemies.some((enemy) => {
-            return enemy.hitpoints < 1e8;
+            return enemy.hitpoints < BENCHMARK_HEALTH;
           }),
           'Combat must actually run',
         );

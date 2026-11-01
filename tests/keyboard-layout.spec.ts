@@ -1,3 +1,5 @@
+// Observe held-key release for multiple server ticks before asserting movement stopped.
+const RELEASE_OBSERVATION_MS = 150;
 import { test, expect } from './fixtures';
 import { LOBBY_PORTAL } from '../packages/core/src/index.ts';
 
@@ -205,7 +207,7 @@ test('movement follows physical keys across layouts and layout changes', async (
   await expect(page.getByRole('dialog', { name: 'Settings' })).toBeVisible();
   await expect.poll(movement).toEqual({ x: 0, y: 0 });
   await sendKey('keydown', 'ArrowRight', 'ArrowRight');
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(RELEASE_OBSERVATION_MS);
   expect(movement()).toEqual({ x: 0, y: 0 });
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toBeHidden();

@@ -1,5 +1,14 @@
 import { Paper, Stack, Typography, useTheme } from '@mui/material';
 
+// Sixty half-second host samples cover the existing thirty-second history window.
+const HISTORY_SAMPLE_LIMIT = 60;
+// Keep timestamp-based positioning aligned with the monitor's thirty-second accessible label.
+const HISTORY_WINDOW_MS = 30_000;
+// Stable baseline axes stop ordinary latency/FPS changes from constantly rescaling the chart.
+const BASELINE = { networkMs: 100, fps: 60 };
+// Preserve the original 260x56 SVG plot inset: ten horizontal units and six above the plot.
+const PLOT = { left: 10, width: 240, bottom: 50, height: 44 };
+
 export interface PerformanceSample {
   fps: number | null;
   latency: number | null;
@@ -24,13 +33,13 @@ export function PerformanceMonitor({
     return null;
   }
 
-  const recent = samples.slice(-60);
+  const recent = samples.slice(-HISTORY_SAMPLE_LIMIT);
   const current = recent.at(-1);
   const diagnostics = recent.some((sample) => {
     return sample.inputDelay !== undefined || sample.snapshotAge !== undefined;
   });
   const networkMax = Math.max(
-    100,
+    BASELINE.networkMs,
     ...recent.flatMap((sample) => {
       return [sample.latency, sample.inputDelay, sample.snapshotAge].map((value) => {
         return Number.isFinite(value) ? value! : 0;
@@ -39,7 +48,7 @@ export function PerformanceMonitor({
   );
   const series = (key: 'fps' | 'latency' | 'inputDelay' | 'snapshotAge') => {
     const max = Math.max(
-      key === 'fps' ? 60 : networkMax,
+      key === 'fps' ? BASELINE.fps : networkMax,
       ...recent.map((sample) => {
         return Number.isFinite(sample[key]) ? sample[key]! : 0;
       }),
@@ -58,9 +67,10 @@ export function PerformanceMonitor({
 
         const x =
           sample.at !== undefined && current?.at !== undefined
-            ? 10 + ((sample.at - current.at + 30000) * 240) / 30000
-            : 10 + (index * 240) / Math.max(1, recent.length - 1);
-        const point = `${connected ? 'L' : 'M'}${x},${50 - (Math.max(0, value) / max) * 44}`;
+            ? PLOT.left +
+              ((sample.at - current.at + HISTORY_WINDOW_MS) * PLOT.width) / HISTORY_WINDOW_MS
+            : PLOT.left + (index * PLOT.width) / Math.max(1, recent.length - 1);
+        const point = `${connected ? 'L' : 'M'}${x},${PLOT.bottom - (Math.max(0, value) / max) * PLOT.height}`;
         connected = true;
 
         return point;
