@@ -49,6 +49,9 @@ Configure the server as described in [operations](../../../docs/operations/steam
   keyboard subscriptions, browser preference persistence and world chat binding.
   `GamePanels.tsx` composes controlled lazy panel content; `Game.tsx` retains
   session-driven window state and interaction commands.
+  `world-chat.ts` retains unchanged detached chat histories within a world;
+  chat binding reacts to messages, visibility and connection changes rather
+  than movement snapshots. Transfers never reuse another world's history.
 - `village.ts` assembles scenery and torch descriptors; `light-texture.ts`
   owns the bounded silhouette/light cache shared with forest rendering, and
   `torch-rendering.ts` owns the packaged hanging-lamp animation.

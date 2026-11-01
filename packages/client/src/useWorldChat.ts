@@ -19,6 +19,10 @@ export function useWorldChat({
   send: (message: ClientMessage) => void;
 }) {
   const { configureChat } = useChat();
+  const worldId = world?.id;
+  const serverMessages = world?.chat;
+  const scene = me?.scene ?? 'village';
+  const disabled = !world || status !== 'Connected';
   const [catMessages, setCatMessages] = useState<
     { worldId: string; afterId?: string; message: ChatMessage }[]
   >([]);
@@ -51,7 +55,7 @@ export function useWorldChat({
     const localChatAfter = (id?: string) => {
       return catMessages
         .filter((entry) => {
-          return entry.worldId === world?.id && entry.afterId === id;
+          return entry.worldId === worldId && entry.afterId === id;
         })
         .map((entry) => {
           return entry.message;
@@ -60,26 +64,26 @@ export function useWorldChat({
 
     return [
       ...localChatAfter(),
-      ...(world?.chat ?? []).flatMap((message) => {
+      ...(serverMessages ?? []).flatMap((message) => {
         return [message, ...localChatAfter(message.id)];
       }),
     ];
-  }, [world, catMessages]);
+  }, [worldId, serverMessages, catMessages]);
   useEffect(() => {
     configureChat({
-      worldId: world?.id,
-      scene: me?.scene ?? 'village',
+      worldId,
+      scene,
       messages: chatMessages,
       isVisible: (message) => {
         return (
           message.excludedPlayerId !== playerId &&
-          (!message.dimension || message.dimension === (me?.scene ?? 'village'))
+          (!message.dimension || message.dimension === scene)
         );
       },
       send,
-      disabled: !world || status !== 'Connected',
+      disabled,
     });
-  }, [world, chatMessages, me?.scene, playerId, status, send, configureChat]);
+  }, [worldId, chatMessages, scene, playerId, disabled, send, configureChat]);
   useEffect(() => {
     return () => {
       return configureChat(null);

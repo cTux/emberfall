@@ -1,4 +1,5 @@
 import { connectionLatency } from './connection-latency';
+import { retainWorldChat } from './world-chat';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
 import { GameConnection } from './connection';
@@ -84,7 +85,6 @@ export function useGameSession({
     const latencyProbe = connectionLatency(ws, setLatency);
     const ping = latencyProbe.ping;
     const pingTimer = setInterval(ping, LATENCY_PROBE_INTERVAL_MS);
-    // The version request catches failures and closes the connection for retry.
     // oxlint-disable-next-line typescript/no-misused-promises
     ws.onopen = async () => {
       try {
@@ -174,7 +174,7 @@ export function useGameSession({
           );
         }
 
-        setWorld(message.world);
+        setWorld(retainWorldChat(message.world));
         setPlayerId(message.playerId);
         setPending(false);
       }
@@ -194,7 +194,7 @@ export function useGameSession({
         }
 
         previousScene = nextScene;
-        setWorld(message.world);
+        setWorld(retainWorldChat(message.world));
       }
 
       if (message.type === 'left') {
