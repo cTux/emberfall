@@ -51,13 +51,12 @@ Source: [difficulty rarity factors](../../packages/core/src/configs/difficultyRa
 | 2                      | 1.75×           | 1.2                                      |
 | 3                      | 3.0625×         | 1.44                                     |
 | 4                      | 5.3594×         | 1.728                                    |
-| 8                      | 50.2651×        | 3.5832                                   |
 
-Values are rounded to four decimal places. Count scene members, including dead members and members retained during reconnection. Village players and Bear do not count. Membership changes resize existing and pending enemies while preserving their health percentage.
+The current party limit is four players. Values are rounded to four decimal places. Count scene members, including dead members and members retained during reconnection. Village players and Bear do not count. Membership changes resize existing and pending enemies while preserving their health percentage.
 
 A shard’s XP amount is fixed at death. Collection grants that amount to each eligible living scene player; it is not divided between players. The credited killer also receives the separate base 1 XP kill reward. Equipment XP bonuses can create extra shards.
 
-Sources: [membership scaling](../../packages/core/src/simulation/forest-lifecycle.ts), [XP generation](../../packages/core/src/combat/damage.ts), [collection](../../packages/core/src/simulation/pickups.ts).
+Sources: [party limit](../../packages/server/src/parties.ts), [membership scaling](../../packages/core/src/simulation/forest-lifecycle.ts), [XP generation](../../packages/core/src/combat/damage.ts), [collection](../../packages/core/src/simulation/pickups.ts).
 
 ## How the calculation works
 
