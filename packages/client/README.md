@@ -1,8 +1,8 @@
 # PixiJS client
 
 `pnpm dev` serves this client at **https://localhost:5174** and starts the new
-server on port 3003. `pnpm build` creates both production bundles;
-`pnpm start` builds both bundles and serves them at https://localhost:3003,
+server on port 4003. `pnpm build` creates both production bundles;
+`pnpm start` builds both bundles and serves them at https://localhost:4003,
 so no separate build is needed after installing dependencies.
 
 Read only the topic needed for the current task. Each linked page owns its detailed guidance.

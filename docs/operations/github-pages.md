@@ -16,7 +16,7 @@ must be deployed/restarted separately with a compatible protocol version.
 1. In the GitHub repository, open **Settings → Pages → Build and deployment**
    and choose **GitHub Actions** as the source.
 2. In **Settings → Secrets and variables → Actions → Variables**, optionally
-   add repository variables `BASE_API=176.36.232.74` and `BASE_PORT=3003`.
+   add repository variables `BASE_API=176.36.232.74` and `BASE_PORT=4003`.
    These are already the workflow defaults. `BASE_API` is a host/IP without a
    scheme, port or path. The client uses HTTPS and WSS. For a tunnel on standard
    HTTPS, use its hostname and `BASE_PORT=443`.
@@ -28,8 +28,8 @@ must be deployed/restarted separately with a compatible protocol version.
    `packages/server/.env`, then restart:
 
    ```dotenv
-   BASE_PORT=3003
-   STEAM_ORIGIN=https://176.36.232.74:3003
+   BASE_PORT=4003
+   STEAM_ORIGIN=https://176.36.232.74:4003
    CLIENT_URL=https://ctux.github.io/emberfall/
    STEAM_WEB_API_KEY=your-steam-web-api-key
    TLS_CERT=/absolute/path/to/trusted-fullchain.pem
@@ -48,7 +48,7 @@ public build settings become visible to visitors. Variable changes require a new
 workflow run. Server variable changes require a server restart.
 
 The IP example works only with a publicly trusted certificate valid for that IP,
-plus reachable inbound TCP 3003 through the router/firewall. The generated local
+plus reachable inbound TCP 4003 through the router/firewall. The generated local
 certificate does not meet that requirement. Prefer a hostname with trusted TLS,
 or an HTTPS tunnel supporting WebSockets; change `BASE_API`, `BASE_PORT` and
 `STEAM_ORIGIN` to match. For TLS termination at a reverse proxy, use `HTTP_ONLY=1`
@@ -93,7 +93,7 @@ private key, then restart the backend. Keep `BASE_API`, `BASE_PORT` and
 `STEAM_ORIGIN` aligned with the certified endpoint. This is a hosting change;
 merging the client PR cannot install or renew certificates on the server PC.
 
-Verify `https://176.36.232.74:3003/health` from another device without a browser
+Verify `https://176.36.232.74:4003/health` from another device without a browser
 certificate warning before testing Pages login again. Do not disable certificate
 verification or expose an HTTP backend to work around this error: the client
 requires HTTPS/WSS and secure login cookies.

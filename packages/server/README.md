@@ -9,7 +9,7 @@ pnpm start
 pnpm test
 ```
 
-Development and production use port **3003** (`BASE_PORT`, then `PORT_NEW`, override it).
+Development and production use port **4003** (`BASE_PORT`, then `PORT_NEW`, override it).
 From the repository root, `pnpm start` sets up local HTTPS, builds the runtime
 packages, and starts the server only if the build succeeds. It works without
 existing `dist` folders after installing dependencies and refreshes the bundles
@@ -17,7 +17,7 @@ on each start. To run an already-built deployment without rebuilding, use
 `pnpm --filter @emberfall/server start` with certificates already configured.
 Production serves `client/dist`. The default database is
 `packages/server/data/characters.sqlite`; `SAVE_PATH_NEW=:memory:` is useful
-for disposable tests. TLS uses the existing local certificate setup. Ports and override names are retained for compatibility. After the package rename,
+for disposable tests. TLS uses the existing local certificate setup. Override names are retained for compatibility. After the package rename,
 keep `SAVE_PATH_NEW` pointing to the existing database or move a stopped backup
 from `packages/server-new/data` to `packages/server/data` before startup.
 

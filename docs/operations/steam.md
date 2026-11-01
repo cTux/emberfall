@@ -24,7 +24,7 @@ STEAM_WEB_API_KEY=your-steam-web-api-key
 
 For production, replace the example origin with the public HTTPS origin.
 
-New production serves both HTTP routes and Colyseus traffic on 3003. Proxy `/auth`,
+New production serves both HTTP routes and Colyseus traffic on 4003. Proxy `/auth`,
 `/api`, matchmaking and WebSocket traffic to that server, keep the browser on the
 configured origin, and use publicly trusted HTTPS for public login. `HTTP_ONLY=1`
 is supported only behind the HTTPS proxy. Vite proxies auth/account routes during

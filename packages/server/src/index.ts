@@ -1,5 +1,5 @@
-// Keep the documented deployment port when neither supported environment override is supplied.
-const DEFAULT_GAME_PORT = 3003;
+// Port 4003 avoids the development host's reserved TCP range and matches client/deployment defaults.
+const DEFAULT_GAME_PORT = 4003;
 
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
