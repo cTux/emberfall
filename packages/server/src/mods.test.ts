@@ -67,7 +67,9 @@ test('an added class/item/slot survives SQLite restart and reaches client views 
     assert.equal(restored.progress.equipment!['fixture:charm'], 'fixture:charm');
     assert.equal(restored.classes.warrior.experience, 0);
     const current = { ...hero(), ...restored.progress };
-    assert.deepEqual(additionalStatViews(current, context), [{ label: 'Luck', value: '9' }]);
+    assert.deepEqual(additionalStatViews(context.rules.characterStats(current), context), [
+      { label: 'Luck', value: '9' },
+    ]);
     const slot = registeredSlotViews(context).find((slot) => {
       return slot.id === 'fixture:charm';
     })!;

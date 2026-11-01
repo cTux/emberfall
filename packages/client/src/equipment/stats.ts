@@ -22,6 +22,6 @@ export function equipmentStatRows(player: Player): EquipmentStatView[] {
     { label: 'Maximum health', value: number(stats.maxHitpoints) },
     { label: 'Armor', value: number(stats.armor) },
     { label: 'Damage reduction', value: percent(stats.damageReduction) },
-    ...additionalStatViews(player),
+    ...additionalStatViews(stats),
   ];
 }
