@@ -72,6 +72,13 @@ WorldList falls back to system cursors when they are absent. `useDraggable`
 marks title and panel handles with `data-drag-handle` for host hover/active styling.
 Cursor assets remain in the host.
 
+`WorldList` reserves compact, centered columns for latency and player counts,
+keeping each value on one line. Names use the remaining width; Playtest Default
+fits in the compact desktop browser, while longer names retain ellipsis and a
+full-name title. The table fits without horizontal scrolling.
+
+![Verified compact desktop Storybook world browser](../../docs/images/world-list-layout.png)
+
 Use MUI directly for Button, IconButton, TextField, Select/MenuItem, Checkbox, Slider, Tabs, Alert, Chip, Tooltip, Paper and layout. Their shared style comes from the theme; do not create a renamed wrapper for every primitive. Use Font Awesome individual imports for UI icons; give icon-only buttons an accessible name and hide decorative icons from assistive technology.
 
 ## Game components
