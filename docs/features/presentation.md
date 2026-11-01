@@ -2,6 +2,14 @@
 
 [Feature map](../features.md). Links identify implementation and coverage; they do not claim a test was run.
 
+## Game version and server status
+
+[WORLD-02](../specs/worlds/membership.md#world-02--client-updates),
+[version calculation](../../scripts/game-version.ts),
+[indicator](../../packages/client/src/GameControls.tsx),
+[version tests](../../tests/game-version.test.ts) and
+[desktop connection checks](../../tests/server-version.spec.ts).
+
 ## Damage number visibility
 
 Damage number visibility: [UI-04](../specs/interface/settings.md#ui-04--settings-and-music),

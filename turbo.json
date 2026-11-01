@@ -14,6 +14,7 @@
       ]
     },
     "build": {
+      "cache": false,
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
       "env": ["BASE_API", "BASE_PORT", "PAGES_BASE_PATH", "VITE_SERVER_URL"]

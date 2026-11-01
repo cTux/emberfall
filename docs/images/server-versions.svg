@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="160" viewBox="0 0 680 160">
+  <rect width="680" height="160" rx="12" fill="#141e19"/>
+  <g font-family="sans-serif" fill="#eee5d3">
+    <text x="24" y="30" font-size="17">Concept preview · game version and server status</text>
+    <circle cx="36" cy="68" r="5" fill="#83cba3"/><text x="54" y="74">Game 1.0.375 · Server 1.0.375 — versions match</text>
+    <circle cx="36" cy="102" r="5" fill="#e6be80"/><text x="54" y="108">Game 1.0.375 · Server 1.0.374 — versions differ</text>
+    <circle cx="36" cy="136" r="5" fill="#ef9b85"/><text x="54" y="142">Game 1.0.375 · Server unavailable</text>
+  </g>
+</svg>

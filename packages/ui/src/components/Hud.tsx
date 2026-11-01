@@ -9,14 +9,17 @@ const SCENE_CLOCK = { secondsPerMinute: 60, secondsDigits: 2 };
 
 export function ConnectionStatus({
   status,
+  description,
 }: {
-  status: 'connected' | 'connecting' | 'disconnected';
+  status: 'connected' | 'connecting' | 'disconnected' | 'mismatch';
+  description?: string;
 }) {
   return (
     <Box
       component='span'
       role='status'
       aria-label={status === 'connected' ? 'World server online' : `World server ${status}`}
+      title={description}
       sx={{
         display: 'block',
         width: 10,
@@ -25,7 +28,7 @@ export function ConnectionStatus({
         bgcolor:
           status === 'connected'
             ? 'success.main'
-            : status === 'connecting'
+            : status === 'connecting' || status === 'mismatch'
               ? 'warning.main'
               : 'error.main',
       }}

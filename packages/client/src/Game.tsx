@@ -47,45 +47,46 @@ export function Game({
 }) {
   const steam = account.mode === 'steam';
   const { reportError } = useChat();
-  const { status, latency, worlds, world, playerId, pending, retry, send, act } = useGameSession({
-    steam,
-    refresh,
-    reportError,
-    onEvent: (event) => {
-      if (event === 'voting') {
-        setMenu((current) => {
-          return current ?? 'portal';
-        });
+  const { status, version, latency, worlds, world, playerId, pending, retry, send, act } =
+    useGameSession({
+      steam,
+      refresh,
+      reportError,
+      onEvent: (event) => {
+        if (event === 'voting') {
+          setMenu((current) => {
+            return current ?? 'portal';
+          });
 
-        return;
-      }
+          return;
+        }
 
-      setMenu(null);
+        setMenu(null);
 
-      if (event === 'joined') {
-        clearCatMessages();
-        setJoinPassword('');
-        setSelected(null);
-      }
+        if (event === 'joined') {
+          clearCatMessages();
+          setJoinPassword('');
+          setSelected(null);
+        }
 
-      if (event === 'sceneChanged') {
-        setDeathWindow(true);
-      }
+        if (event === 'sceneChanged') {
+          setDeathWindow(true);
+        }
 
-      if (event === 'left' || event === 'resumeFailed' || event === 'disconnected') {
-        setBrowserOpen(true);
-      }
+        if (event === 'left' || event === 'resumeFailed' || event === 'disconnected') {
+          setBrowserOpen(true);
+        }
 
-      if (event === 'left' || event === 'disconnected') {
-        setTab('browse');
-      }
+        if (event === 'left' || event === 'disconnected') {
+          setTab('browse');
+        }
 
-      if (event === 'disconnected') {
-        setSelected(null);
-        setJoinPassword('');
-      }
-    },
-  });
+        if (event === 'disconnected') {
+          setSelected(null);
+          setJoinPassword('');
+        }
+      },
+    });
   const [displayedHp, setDisplayedHp] = useState<Record<string, number>>({});
   const { name, setName, graphics, setGraphics } = useGamePreferences(
     preferences,
@@ -173,6 +174,7 @@ export function Game({
           unavailable={unavailable}
           browserOpen={browserOpen}
           status={status}
+          version={version}
           onMenu={setMenu}
           onOpenBrowser={openBrowser}
         />

@@ -75,7 +75,7 @@ export const Connection: Story = {
   render: () => {
     return (
       <Stack direction='row' spacing={1} sx={{ flexWrap: 'wrap' }}>
-        {(['connected', 'connecting', 'disconnected'] as const).map((status) => {
+        {(['connected', 'connecting', 'mismatch', 'disconnected'] as const).map((status) => {
           return <ConnectionStatus key={status} status={status} />;
         })}
       </Stack>

@@ -53,7 +53,7 @@ export interface VillageNpc {
   workStartedAt?: number;
 }
 export type ServerMessage =
-  | { type: 'pong'; id: number }
+  | { type: 'pong'; id: number; version?: string }
   | { type: 'worlds'; worlds: WorldSummary[] }
   | { type: 'joined'; playerId: string; world: WorldState; characterToken: string }
   | { type: 'saved'; savedAt: number }
