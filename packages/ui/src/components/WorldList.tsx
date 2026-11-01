@@ -10,6 +10,9 @@ import {
 } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLock } from '@fortawesome/free-solid-svg-icons/faLock';
+
+// Fit the column headings and four-digit latency while leaving the rest for world names.
+const SERVER_COLUMN_WIDTH = '5em';
 export interface WorldEntry {
   id: string;
   name: string;
@@ -27,12 +30,20 @@ export interface WorldListProps {
 export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: WorldListProps) {
   return (
     <TableContainer>
-      <Table aria-label='Available servers' size='small' sx={{ tableLayout: 'fixed' }}>
+      <Table
+        aria-label='Available servers'
+        size='small'
+        sx={{ tableLayout: 'fixed', '& .MuiTableCell-root': { px: 1, whiteSpace: 'nowrap' } }}
+      >
         <TableHead>
           <TableRow>
-            <TableCell sx={{ width: '50%' }}>Name</TableCell>
-            <TableCell align='right'>Latency</TableCell>
-            <TableCell align='right'>Players</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell align='center' sx={{ width: SERVER_COLUMN_WIDTH }}>
+              Latency
+            </TableCell>
+            <TableCell align='center' sx={{ width: SERVER_COLUMN_WIDTH }}>
+              Players
+            </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -82,10 +93,10 @@ export function WorldList({ worlds, selectedId, disabled, latency, onJoin }: Wor
                     </Typography>
                   </Button>
                 </TableCell>
-                <TableCell align='right'>
+                <TableCell align='center'>
                   {latency == null ? '—' : `${Math.round(latency)} ms`}
                 </TableCell>
-                <TableCell align='right'>
+                <TableCell align='center'>
                   {world.players}/{world.capacity}
                 </TableCell>
               </TableRow>

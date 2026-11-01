@@ -1,6 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
-import { WorldList } from '../index';
+import { Box } from '@mui/material';
+import { ChapterTabs, GameWindow, WorldList } from '../index';
+
+// Reproduce the compact desktop browser with its external tab rail.
+const COMPACT_LOBBY_WIDTH_PX = 440;
+
 const meta = {
   title: 'Components/WorldList',
   component: WorldList,
@@ -14,6 +19,40 @@ const meta = {
 } satisfies Meta<typeof WorldList>;
 export default meta;
 export const Playground: StoryObj<typeof meta> = {};
+
+export const CompactLobby: StoryObj<typeof meta> = {
+  render: (args) => {
+    return (
+      <Box sx={{ width: COMPACT_LOBBY_WIDTH_PX, maxWidth: '100%' }}>
+        <GameWindow title='Emberfall' modal={false} onClose={() => {}}>
+          <ChapterTabs
+            label='World actions'
+            value='join'
+            showHeading={false}
+            onChange={() => {}}
+            chapters={[
+              { id: 'join', title: 'Join a world', content: <WorldList {...args} /> },
+              { id: 'create', title: 'Create a world', disabled: true, content: null },
+            ]}
+          />
+        </GameWindow>
+      </Box>
+    );
+  },
+  args: {
+    worlds: [
+      { id: 'open', name: 'Playtest Default', players: 0, capacity: 32 },
+      {
+        id: 'locked',
+        name: 'A very long password-protected world name',
+        players: 12,
+        capacity: 32,
+        locked: true,
+      },
+    ],
+    latency: 1234,
+  },
+};
 
 export const RowInteraction: StoryObj<typeof meta> = {
   render: function RowInteraction(args) {

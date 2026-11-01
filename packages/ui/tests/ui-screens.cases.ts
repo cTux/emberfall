@@ -148,6 +148,47 @@ test('world names stay on one line inside compact lobby columns', async ({ page 
   }
 });
 
+test('compact world list fits names and single-line centered server columns', async ({ page }) => {
+  await page.goto(story('components-worldlist--compact-lobby'));
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  const name = page.locator('span[title="Playtest Default"]');
+  await expect(name).toBeVisible();
+  expect(
+    await name.evaluate((element) => {
+      return element.scrollWidth <= element.clientWidth;
+    }),
+  ).toBe(true);
+  const table = page.getByRole('table');
+  expect(
+    await table.locator('..').evaluate((element) => {
+      return element.scrollWidth <= element.clientWidth;
+    }),
+  ).toBe(true);
+
+  for (const row of await table.getByRole('row').all()) {
+    const cells = row.locator('th, td');
+
+    for (const column of [1, 2]) {
+      const cell = cells.nth(column);
+      await expect(cell).toHaveCSS('white-space', 'nowrap');
+      await expect(cell).toHaveCSS('text-align', 'center');
+      expect(
+        await cell.evaluate((element) => {
+          return element.scrollWidth <= element.clientWidth;
+        }),
+      ).toBe(true);
+    }
+  }
+
+  await expect(table).toContainText('1234 ms');
+  await expect(table.getByRole('button', { name: /password protected/ })).toBeEnabled();
+  await page.getByRole('region', { name: 'Emberfall' }).screenshot({
+    path: 'test-results/compact-world-list.png',
+  });
+});
+
 test('server rows join once from every cell and keyboard, respecting disabled states', async ({
   page,
 }) => {
