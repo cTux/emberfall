@@ -32,8 +32,8 @@ export const RENDER_TUNING = {
   shadowEdgePadding: 2,
   // Bound baked rectangle variants without changing their existing eviction policy.
   shadowCacheEntries: 128,
-  // Ten game pixels preserve the current visible clearance around the local silhouette.
-  playerCutoutMargin: 10,
+  // One game pixel keeps the cutout tight while separating foreground art from the player.
+  playerCutoutMargin: 1,
   // Ignore very faint antialiasing fringe when constructing the occlusion silhouette.
   minimumCutoutAlpha: 32,
   // Canvas ImageData stores RGBA bytes; alpha is the fourth channel.

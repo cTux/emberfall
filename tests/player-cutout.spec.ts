@@ -63,7 +63,7 @@ test('village player masks sample the same high-resolution cells as the visible 
   ).toEqual([]);
 });
 
-test('foreground sprites reveal a silhouette hole with a 10-pixel margin', async ({ page }) => {
+test('foreground sprites reveal a silhouette hole with a 1-pixel margin', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => {
     return errors.push(error.message);
@@ -108,7 +108,7 @@ test('foreground sprites reveal a silhouette hole with a 10-pixel margin', async
   const ground = [51, 119, 68, 255],
     wall = [153, 51, 34, 255],
     player = [255, 136, 0, 255];
-  // Exact mask boundary: 10 pixels reveals ground; the next pixel stays opaque.
+  // Exact mask boundary: one pixel reveals ground; the next pixel stays opaque.
   expect(samples.silhouette).toEqual([ground, wall, ground, wall, wall, player, ground]);
   expect(samples['camera-and-clip']).toEqual(samples.silhouette);
   expect(samples.moved).toEqual(

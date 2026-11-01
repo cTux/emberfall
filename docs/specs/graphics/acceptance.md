@@ -15,7 +15,7 @@ still affects the final canvas output.
 
 - Preset/individual changes apply immediately and persist without changing collision or simulation. Red warnings and the Warrior attack zone remain visible at every preset.
 - Cross world seams: fog, scenery, shadows, attachments and portals remain anchored to the world.
-- Occluding scenery uses the animated player silhouette plus a 10-pixel margin as a transparent cutout; pixels outside it, health bars and shadows retain their normal appearance.
+- Occluding scenery uses the animated player silhouette plus a 1-pixel margin as a transparent cutout; pixels outside it, health bars and shadows retain their normal appearance.
 - Disable vegetation sway live and reload: roots stay fixed and the preference persists.
 - Damage flashes restart on each hit, including ailments and killing blows; remote players do not receive the local sprite flash.
 - Check weapon visibility, debuff spacing/expiry, torch animation, animal shadows, portal bloom-off visibility and reduced-motion countdown.
