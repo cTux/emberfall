@@ -20,13 +20,13 @@ export async function cutoutPixels() {
   wall.getContext('2d')!.fillRect(0, 0, 180, 180);
   const samples: Record<string, number[][]> = {};
   const points = [
-    [104, 53],
-    [104, 51],
-    [88, 64],
-    [87, 64],
+    [104, 61],
+    [104, 60],
+    [97, 64],
+    [96, 64],
     [79, 52],
     [104, 68],
-    [84, 90],
+    [93, 90],
   ];
   const capture = (name: string, scale = 1, tx = 0, ty = 0) => {
     pixi.present();
