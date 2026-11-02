@@ -1,4 +1,3 @@
-import { game } from '../game.ts';
 export type {
   Equipment,
   EquipmentSlot,
@@ -7,63 +6,11 @@ export type {
   GearStats,
   GearDefinition,
 } from '@emberfall/common';
-export const EQUIPMENT_SLOTS = Object.freeze(
-  game.registries.slots.values().map((slot) => {
-    return slot.id;
-  }),
-);
-export const SLOT_GEAR_TYPES = Object.freeze(
-  Object.fromEntries(
-    game.registries.slots.values().map((slot) => {
-      return [slot.id, slot.gearTypes];
-    }),
-  ),
-);
-export const CLASS_GEAR_TYPES = Object.freeze(
-  Object.fromEntries(
-    game.registries.classes.values().map((player) => {
-      return [player.id, player.gearTypes];
-    }),
-  ),
-);
-export const GEAR_DEFINITIONS = Object.freeze(
-  Object.fromEntries(
-    game.registries.items
-      .values()
-      .filter((item) => {
-        return item.kind === 'gear';
-      })
-      .map((item) => {
-        return [item.id, item];
-      }),
-  ),
-);
-export const STARTER_WEAPONS = Object.freeze(
-  Object.fromEntries(
-    game.registries.classes.values().map((player) => {
-      return [player.id, player.starterWeapon];
-    }),
-  ),
-);
-export const INNATE_STATS = Object.freeze(
-  Object.fromEntries(
-    game.registries.stats.values().map((stat) => {
-      return [stat.id, stat.default];
-    }),
-  ),
-);
-export const LOOT_ITEM_IDS = Object.freeze(
-  game.registries.items
-    .values()
-    .filter((item) => {
-      return item.kind === 'gear' && item.loot;
-    })
-    .map((item) => {
-      return item.id;
-    }),
-);
-export const LOOT_GEAR_TYPES = Object.freeze(
-  LOOT_ITEM_IDS.map((id) => {
-    return GEAR_DEFINITIONS[id].gearType;
-  }),
-);
+export { EQUIPMENT_SLOTS } from './equipment-slots.ts';
+export { SLOT_GEAR_TYPES } from './slot-gear-types.ts';
+export { CLASS_GEAR_TYPES } from './class-gear-types.ts';
+export { GEAR_DEFINITIONS } from './gear-definitions.ts';
+export { STARTER_WEAPONS } from './starter-weapons.ts';
+export { INNATE_STATS } from './innate-stats.ts';
+export { LOOT_ITEM_IDS } from './loot-item-ids.ts';
+export { LOOT_GEAR_TYPES } from './loot-gear-types.ts';

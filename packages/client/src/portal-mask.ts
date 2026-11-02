@@ -1,0 +1,11 @@
+import { PORTAL_ART } from './portal-art-layout.ts';
+import { makeMask } from './lighting';
+const portalSilhouette = document.createElement('canvas');
+portalSilhouette.width = PORTAL_ART.fallbackWidth;
+portalSilhouette.height = PORTAL_ART.fallbackHeight;
+const portalContext = portalSilhouette.getContext('2d')!;
+portalContext.fillStyle = '#347fe0';
+portalContext.beginPath();
+portalContext.ellipse(25, 38, 25, 38, 0, 0, Math.PI * 2);
+portalContext.fill();
+export const portalMask = makeMask(portalSilhouette);

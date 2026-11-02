@@ -1,25 +1,11 @@
-import { PERCENT } from '@emberfall/common';
-import { game } from './game.ts';
-import type { CharacterStats, EquipmentOwner } from './content/rules.ts';
-import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
-
-export function dotTickIntervalMs(
-  player: EquipmentOwner,
-  baseMs: number,
-  stats: CharacterStats = game.rules.characterStats(player),
-) {
-  return recoveryCooldownMs(baseMs, stats.bonuses.dotSpeed / PERCENT);
-}
-
 export * from './definitions/equipment.ts';
 export type { CharacterStats, EquipmentOwner } from './content/rules.ts';
-export const {
-  canEquip,
-  equipmentSchema,
-  starterEquipment,
-  validateClassEquipment,
-  equippedItems,
-  characterStats,
-  syncEquipmentVitals,
-  companionStats,
-} = game.rules;
+export { dotTickIntervalMs } from './dot-tick-interval-ms.ts';
+export { canEquip } from './can-equip.ts';
+export { equipmentSchema } from './equipment-schema.ts';
+export { starterEquipment } from './starter-equipment.ts';
+export { validateClassEquipment } from './validate-class-equipment.ts';
+export { equippedItems } from './equipped-items.ts';
+export { characterStats } from './character-stats.ts';
+export { syncEquipmentVitals } from './sync-equipment-vitals.ts';
+export { companionStats } from './companion-stats.ts';

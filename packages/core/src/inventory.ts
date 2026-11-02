@@ -1,26 +1,23 @@
-import { game } from './game.ts';
-export const {
-  improveItem,
-  improvableItems,
-  itemDefinition,
-  itemPrice,
-  rollItem,
-  CONSUMABLES,
-  backpackSchema,
-  INVENTORY_SLOTS,
-  STORAGE_SLOTS,
-  storageNameSchema,
-  storagesSchema,
-  freshStorages,
-  storehouseSchema,
-  BUYBACK_SLOTS,
-  merchantSchema,
-  freshMerchant,
-  addItem,
-  transferStoredItem,
-  moveStorageItem,
-  useBackpackItem,
-  unequipItem,
-  tradeItem,
-  sellAll,
-} = game.rules;
+export { improveItem } from './improve-item.ts';
+export { improvableItems } from './improvable-items.ts';
+export { itemDefinition } from './item-definition.ts';
+export { itemPrice } from './item-price.ts';
+export { rollItem } from './roll-item.ts';
+export { CONSUMABLES } from './consumables.ts';
+export { backpackSchema } from './backpack-schema.ts';
+export { INVENTORY_SLOTS } from './inventory-slots.ts';
+export { STORAGE_SLOTS } from './storage-slots.ts';
+export { storageNameSchema } from './storage-name-schema.ts';
+export { storagesSchema } from './storages-schema.ts';
+export { freshStorages } from './fresh-storages.ts';
+export { storehouseSchema } from './storehouse-schema.ts';
+export { BUYBACK_SLOTS } from './buyback-slots.ts';
+export { merchantSchema } from './merchant-schema.ts';
+export { freshMerchant } from './fresh-merchant.ts';
+export { addItem } from './add-item.ts';
+export { transferStoredItem } from './transfer-stored-item.ts';
+export { moveStorageItem } from './move-storage-item.ts';
+export { useBackpackItem } from './use-backpack-item.ts';
+export { unequipItem } from './unequip-item.ts';
+export { tradeItem } from './trade-item.ts';
+export { sellAll } from './sell-all.ts';

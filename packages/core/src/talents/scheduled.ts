@@ -1,0 +1,12 @@
+import type { Player } from '@emberfall/common';
+
+export interface Scheduled {
+  generation: number;
+  at: number;
+  until: number;
+  interval: number;
+  owner: Player;
+  classId: string;
+  nodeId: string;
+  run: (at: number, players: Player[]) => void;
+}

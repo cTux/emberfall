@@ -1,0 +1,14 @@
+import type { Player } from '@emberfall/common';
+import { freshProgress } from './characters.ts';
+
+export const hero = (): Player => {
+  return {
+    ...freshProgress(),
+    id: 'p',
+    name: 'Hero',
+    x: 2400,
+    y: 1280,
+    color: 0,
+    scene: 'forest',
+  };
+};
