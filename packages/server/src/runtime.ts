@@ -3,6 +3,7 @@ import {
   MESSAGE_WINDOW_MS,
   MAX_MESSAGES_PER_WINDOW,
   LEGACY_TOKEN_HEX_LENGTH,
+  MAX_SESSIONS,
 } from './runtime/limits.ts';
 import { POLICY_VIOLATION } from './network/codes.ts';
 import { EventEmitter } from 'node:events';
@@ -275,6 +276,9 @@ export async function createRuntime(
   }
 
   return {
+    hasCapacity: (reservations = 0) => {
+      return !shuttingDown && sessions.size + reservations < MAX_SESSIONS;
+    },
     connect: (peer: WebSocket, account?: AccountIdentity) => {
       return wss.emit('connection', peer, account);
     },
