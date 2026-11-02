@@ -13,6 +13,9 @@ catalogs:
       specifier: ^4.6.5
       version: 4.6.5
 
+patchedDependencies:
+  '@colyseus/core@0.18.18': 4d059ea69aab817a7f703b519a456cf58bedce0d42389f4bd9003b63445cf927
+
 importers:
 
   .:
@@ -149,7 +152,7 @@ importers:
     dependencies:
       '@colyseus/core':
         specifier: 0.18.18
-        version: 0.18.18(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
+        version: 0.18.18(patch_hash=4d059ea69aab817a7f703b519a456cf58bedce0d42389f4bd9003b63445cf927)(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
       '@colyseus/database':
         specifier: 0.18.4
         version: 0.18.4(@colyseus/auth@0.18.4)(@colyseus/core@0.18.18)(zod@4.6.5)
@@ -4212,7 +4215,7 @@ snapshots:
 
   '@colyseus/auth@0.18.4(@colyseus/core@0.18.18)(express@5.2.1)(zod@4.6.5)':
     dependencies:
-      '@colyseus/core': 0.18.18(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
+      '@colyseus/core': 0.18.18(patch_hash=4d059ea69aab817a7f703b519a456cf58bedce0d42389f4bd9003b63445cf927)(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
       '@types/jsonwebtoken': 9.0.10
       connect-redis: 7.1.1(express-session@1.19.0)
       cookie: 0.7.2
@@ -4237,7 +4240,7 @@ snapshots:
 
   '@colyseus/clock@2.0.3': {}
 
-  '@colyseus/core@0.18.18(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)':
+  '@colyseus/core@0.18.18(patch_hash=4d059ea69aab817a7f703b519a456cf58bedce0d42389f4bd9003b63445cf927)(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)':
     dependencies:
       '@colyseus/better-call': 1.3.3(zod@4.6.5)
       '@colyseus/greeting-banner': 4.0.3
@@ -4259,7 +4262,7 @@ snapshots:
   '@colyseus/database@0.18.4(@colyseus/auth@0.18.4)(@colyseus/core@0.18.18)(zod@4.6.5)':
     dependencies:
       '@colyseus/auth': 0.18.4(@colyseus/core@0.18.18)(express@5.2.1)(zod@4.6.5)
-      '@colyseus/core': 0.18.18(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
+      '@colyseus/core': 0.18.18(patch_hash=4d059ea69aab817a7f703b519a456cf58bedce0d42389f4bd9003b63445cf927)(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
       '@standard-schema/spec': 1.1.0
       drizzle-orm: 1.0.0-rc.2(zod@4.6.5)
     transitivePeerDependencies:
@@ -4314,7 +4317,7 @@ snapshots:
       tslib: 2.8.1
       ws: 8.22.0
     optionalDependencies:
-      '@colyseus/core': 0.18.18(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
+      '@colyseus/core': 0.18.18(patch_hash=4d059ea69aab817a7f703b519a456cf58bedce0d42389f4bd9003b63445cf927)(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
     transitivePeerDependencies:
       - bufferutil
       - typescript
@@ -4331,7 +4334,7 @@ snapshots:
 
   '@colyseus/ws-transport@0.18.4(@colyseus/core@0.18.18)(express@5.2.1)':
     dependencies:
-      '@colyseus/core': 0.18.18(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
+      '@colyseus/core': 0.18.18(patch_hash=4d059ea69aab817a7f703b519a456cf58bedce0d42389f4bd9003b63445cf927)(@colyseus/auth@0.18.4)(@colyseus/better-call@1.3.3(zod@4.6.5))(@colyseus/schema@5.0.35(typescript@7.0.2))(@colyseus/ws-transport@0.18.4)(express@5.2.1)(zod@4.6.5)
       '@types/ws': 8.18.2
       express: 5.2.1
       ws: 8.22.0

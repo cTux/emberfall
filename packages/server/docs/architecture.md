@@ -32,6 +32,11 @@ production entrypoint.
   connection has a private Colyseus session room, preserving browsing and world
   transfers on one connection. A shared in-process party runtime owns combat;
   a Colyseus session room is not an independent copy of that combat world.
+  The committed pnpm patch for `@colyseus/core@0.18.18` returns HTTP 400 when
+  malformed request metadata prevents Web Request construction, before the
+  router's own error handler can run. It patches source and both runtime module
+  formats. Retain this boundary when updating Colyseus; verify it with
+  `node --test packages/server/src/http-request-errors.test.ts` from the repo root.
 - `npc-routines.ts` owns per-world walking, workstation timers and trade
   interruptions. `npcs.ts` coordinates nonblocking dialogue and passes only
   occupied NPC IDs to routines; both use the same canonical world entities.
