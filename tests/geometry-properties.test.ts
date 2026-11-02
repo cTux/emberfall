@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import fc from 'fast-check';
-import { wrap, wrappedDelta } from '../packages/common/src/index.ts';
+import { wrap, wrappedDelta } from '../packages/core/src/geometry/index.ts';
 
 // Bounded integers keep arithmetic exact while covering many world seams.
 const coordinate = fc.integer({ min: -1_000_000, max: 1_000_000 });

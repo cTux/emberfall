@@ -1,5 +1,5 @@
 import { modelHitbox } from './model-hitbox.ts';
-import type { Enemy } from '@emberfall/common';
+import type { Enemy } from '@emberfall/core/contracts';
 
 // Existing fallback matches the forty-eight-pixel actor art when a caller omits its size.
 import { type createGame, game } from './game.ts';

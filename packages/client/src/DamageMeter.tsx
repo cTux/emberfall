@@ -4,7 +4,7 @@ import { ButtonBase, IconButton, Menu, MenuItem } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons/faArrowLeft';
 import { faBars } from '@fortawesome/free-solid-svg-icons/faBars';
-import { PERCENT, type Player } from '@emberfall/common';
+import { PERCENT, type Player } from '@emberfall/core/contracts';
 import { TALENT_TREE } from '@emberfall/core';
 import { classSprite, spellSrc, statusSrc } from './class-art';
 import { TalentIcon } from './talent-icons';

@@ -2,7 +2,7 @@ import type { forestLayers } from './forest-layer-settings.ts';
 import { type ActorFrame, drawForestActor } from './forest-actor-rendering';
 import type { ForestProjection } from './forest-actors';
 import { type InteractionTarget, drawInteractionOutline } from './interaction-targets';
-import type { DamageEvent } from '@emberfall/common';
+import type { DamageEvent } from '@emberfall/core/contracts';
 import type { WorldDrawingContext } from './rendering/drawing-context';
 import { drawPortal } from './portal';
 import { drawCritter } from './critters';

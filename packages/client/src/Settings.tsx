@@ -6,7 +6,7 @@ import { ChapterTabs, SettingToggle, VolumeControl } from '@emberfall/ui';
 import { Button, Link, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import type { Preferences } from './preferences';
 import type { GraphicsSettings } from './graphics';
-import type { AccountView } from '@emberfall/common';
+import type { AccountView } from '@emberfall/core/contracts';
 
 function SettingsView({
   tab,

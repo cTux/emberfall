@@ -1,5 +1,5 @@
 import type { Caster } from './lighting';
-import type { VillageNpc } from '@emberfall/common';
+import type { VillageNpc } from '@emberfall/core/contracts';
 
 export interface Scenery extends Caster {
   kind?: 'tree' | 'plant' | 'rock' | 'stone';

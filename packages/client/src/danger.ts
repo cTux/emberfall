@@ -1,5 +1,5 @@
 import type { DrawingContext } from './rendering/drawing-context';
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 
 // Existing warning-art calibration aligns indicators with actor feet and emphasizes the final 35% of windup.
 const WARNING = {

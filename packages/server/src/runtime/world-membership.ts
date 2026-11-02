@@ -6,7 +6,7 @@ import { addChat } from '../chat.ts';
 import { serverLog } from '../log.ts';
 import type { CharacterStore } from '../characters.ts';
 import type { NpcDialogue } from '../npc-models.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { World, Session } from './models.ts';
 
 export function createWorldMembership(

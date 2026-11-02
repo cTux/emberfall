@@ -52,7 +52,7 @@ visible messages are selected from a bounded world history. Existing player and
 system chat remains world-wide. NPC art joins the existing scenery depth sort,
 mask/shadow path and wrapped camera. Silence icons reuse `drawDebuffs` and the shared ailment asset map, drawing the
 same 12-unit framed icon without a stack count in the overhead status row at every
-quality setting. The common `DebuffIndicator` contract supports timed and
+quality setting. The shared `DebuffIndicator` contract supports timed and
 indefinite presentation; the registered non-damaging `silence` kind is reusable
 for future player statuses. The finite atlas-cell cache does not retain world instances.
 See [SCENE-06](../../specs/scenes/village.md#scene-06--village-life) and

@@ -13,7 +13,7 @@ export const rules: [RegExp, (Group | 'ui')[]][] = [
   ],
   [/^packages\/core\/src\/(?:mods\/base\/worlds\/|definitions\/worlds\/)/, ['combat', 'rendering']],
   [/^packages\/core\/src\/(content\/|configs\/|definitions\/|mods\/)/, ['combat', 'inventory']],
-  [/^packages\/common\//, ['session', 'combat']],
+  [/^packages\/core\/src\/(contracts|geometry|protocol)\//, ['session', 'combat']],
   [/^packages\/client\/src\/(style\.scss|styles\/|cursors)/, ['rendering', 'ui']],
   [/^packages\/client\/src\/(equipment|Storehouse|item-comparison)/, ['inventory', 'ui']],
   [/^packages\/client\/src\/(Settings|Tactics|settings-|tactics-)/, ['controls', 'ui']],

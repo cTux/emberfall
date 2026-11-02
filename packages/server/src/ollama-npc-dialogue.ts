@@ -2,7 +2,7 @@ import type { NpcDialogue } from './npc-dialogue.ts';
 import { DEFAULT_NPC_MODEL } from './default-npc-model.ts';
 import type { DialogueResult } from './dialogue-result.ts';
 import * as MODEL_LIMITS from './npc-model-limits.ts';
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import {
   boundedJson,
   InvalidDialogueResponse,

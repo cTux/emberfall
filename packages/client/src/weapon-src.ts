@@ -1,4 +1,4 @@
-import type { ClassId } from '@emberfall/common';
+import type { ClassId } from '@emberfall/core/contracts';
 import { clientAsset } from './urls.ts';
 
 // URL helpers must not initialize the renderer's image atlases.

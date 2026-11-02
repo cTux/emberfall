@@ -1,7 +1,8 @@
 import type { Bounds } from './bounds.ts';
 import { sampleCritters } from './sample-critters.ts';
 import { CHICKEN_MOTION } from './chicken-motion.ts';
-import { MILLISECONDS_PER_SECOND, wrappedDelta, wrap } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
+import { wrappedDelta, wrap } from '@emberfall/core/geometry';
 import { ARENA } from '@emberfall/core';
 
 // Existing decorative chicken reactions use hysteresis (70px start/100px stop) so a nearby player does not toggle panic every frame.

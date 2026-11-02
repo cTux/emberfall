@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createGameServer } from './worlds.ts';
 import { Peer } from './network/peer.ts';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 
 test('shutdown attempts every save and closes resources even when one save fails', async () => {
   const game = await createGameServer();

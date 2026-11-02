@@ -1,4 +1,4 @@
-import type { ClientMessage, WorldState } from '@emberfall/common';
+import type { ClientMessage, WorldState } from '@emberfall/core/contracts';
 import type { Preferences } from './preferences';
 import type { createArenaInput } from './arena-input';
 import { SnapshotBuffer } from './snapshots';

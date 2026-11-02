@@ -1,4 +1,4 @@
-import type { BackpackItem, Player, EquipmentSlot } from '@emberfall/common';
+import type { BackpackItem, Player, EquipmentSlot } from '@emberfall/core/contracts';
 import { ITEM_IMPROVEMENT_PRICES } from '../item-improvement.ts';
 import type { createEquipmentRules } from './equipment-rules.ts';
 

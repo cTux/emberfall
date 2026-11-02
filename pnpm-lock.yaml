@@ -68,9 +68,6 @@ importers:
       '@colyseus/sdk':
         specifier: 0.18.4
         version: 0.18.4(@colyseus/core@0.18.18)(typescript@7.0.2)(zod@4.6.5)
-      '@emberfall/common':
-        specifier: workspace:*
-        version: link:../common
       '@emberfall/core':
         specifier: workspace:*
         version: link:../core
@@ -127,20 +124,11 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3(sharp@0.35.5(@types/node@26.6.3))(vite@8.3.1(@types/node@26.6.3)(esbuild@0.28.2)(sass@1.105.1))
 
-  packages/common:
+  packages/core:
     dependencies:
       '@colyseus/schema':
         specifier: 5.0.35
         version: 5.0.35(typescript@7.0.2)
-      zod:
-        specifier: 'catalog:'
-        version: 4.6.5
-
-  packages/core:
-    dependencies:
-      '@emberfall/common':
-        specifier: workspace:*
-        version: link:../common
       random-js:
         specifier: 2.1.0
         version: 2.1.0
@@ -162,9 +150,6 @@ importers:
       '@colyseus/ws-transport':
         specifier: 0.18.4
         version: 0.18.4(@colyseus/core@0.18.18)(express@5.2.1)
-      '@emberfall/common':
-        specifier: workspace:*
-        version: link:../common
       '@emberfall/core':
         specifier: workspace:*
         version: link:../core

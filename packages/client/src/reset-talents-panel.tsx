@@ -1,5 +1,5 @@
 import type { Actions } from './CharacterPanels-actions.tsx';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { Typography, Box, Stack, Button } from '@mui/material';
 import { GoldBalance } from '@emberfall/ui';
 import { TALENT_RESET_COST, availableTalentPoints, TALENT_POINT_CAP } from '@emberfall/core';

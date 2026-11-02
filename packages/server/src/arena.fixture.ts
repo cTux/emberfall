@@ -1,4 +1,4 @@
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 import { createTrainingScene } from '@emberfall/core';
 
 export const arena = (training = true): SceneState => {

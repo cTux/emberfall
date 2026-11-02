@@ -1,10 +1,10 @@
-import type { Player, ClassId, BackpackItem } from '@emberfall/common';
+import type { Player, ClassId, BackpackItem } from '@emberfall/core/contracts';
 import type { EquipmentBadgeView } from '@emberfall/ui';
 import { characterStats } from '@emberfall/core';
 import { PLAYER_DEFINITIONS } from '@emberfall/core/definitions/entities/players';
 import { ATTACK_DEFINITIONS } from '@emberfall/core/definitions/abilities/attacks';
 import { number, capitalize, percent } from './metadata';
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import { AILMENT_DEFINITIONS } from '@emberfall/core/definitions/effects/ailments';
 
 export function weaponBadges(

@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { Box, Button, Stack, TextField } from '@mui/material';
 import { Backpack, ChapterTabs, GameWindow, GoldBalance } from '@emberfall/ui';
-import type { Player, ClientMessage } from '@emberfall/common';
+import type { Player, ClientMessage } from '@emberfall/core/contracts';
 import { STORAGE_SLOTS, storageNameSchema } from '@emberfall/core';
 import { backpackViews } from './equipment/backpack';
 import { sameInventoryPlayer } from './equipment/same-inventory-player';

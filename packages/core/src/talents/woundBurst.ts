@@ -1,5 +1,5 @@
 import { TALENT_MAX_RANK } from '../talent-catalog.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import type { TalentCast } from './targeting.ts';
 import { healingTarget } from '../tactics.ts';
 import { rank } from '../talent-ailments.ts';

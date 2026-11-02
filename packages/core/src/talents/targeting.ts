@@ -6,9 +6,10 @@ import {
   TALENT_ABILITY_ROWS,
   TALENT_ABILITIES_PER_COLUMN,
 } from '../talent-catalog.ts';
-import { PERCENT, wrap, wrappedDelta } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
+import { wrap, wrappedDelta } from '@emberfall/core/geometry';
 import { game, type createGame } from '../game.ts';
-import type { DebuffKind, Player, SceneState } from '@emberfall/common';
+import type { DebuffKind, Player, SceneState } from '@emberfall/core/contracts';
 import { forestDistance, FOREST } from '../scene.ts';
 import { healingTarget } from '../tactics.ts';
 import { TALENT_NAMES } from '../talent-tree.ts';

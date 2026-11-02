@@ -1,7 +1,7 @@
 import { randomSource } from '../packages/core/src/random.ts';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { Difficulty, EnemyKind, EnemyType } from '../packages/common/src/enums/index.ts';
+import { Difficulty, EnemyKind, EnemyType } from '../packages/core/src/contracts/enums/index.ts';
 import {
   difficultyAttributesMultiplier,
   difficultySpeedMultiplier,

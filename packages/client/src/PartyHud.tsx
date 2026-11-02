@@ -1,4 +1,4 @@
-import type { Player, WorldState, WorldSummary } from '@emberfall/common';
+import type { Player, WorldState, WorldSummary } from '@emberfall/core/contracts';
 import { experienceRequired } from '@emberfall/core';
 import { PartyCard } from '@emberfall/ui';
 import { Box, Stack } from '@mui/material';

@@ -1,4 +1,4 @@
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 
 // Forest is the baseline; future combat zones set their own rarity factor here.
 export const zoneRarityMultiplier: Readonly<Record<SceneState['type'], number>> = Object.freeze({

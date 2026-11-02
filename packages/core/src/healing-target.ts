@@ -1,4 +1,4 @@
-import { type Player, DEFAULT_TACTICS, type Tactics } from '@emberfall/common';
+import { type Player, DEFAULT_TACTICS, type Tactics } from '@emberfall/core/contracts';
 import { forestDistance } from './scene.ts';
 
 // Lower scores prioritize bosses, then elites, then ordinary enemies as the tactics setting promises.

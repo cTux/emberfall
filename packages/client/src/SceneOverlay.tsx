@@ -1,4 +1,4 @@
-import type { SceneState, Enemy, Player } from '@emberfall/common';
+import type { SceneState, Enemy, Player } from '@emberfall/core/contracts';
 import { dimensionDefinition, enemyMaxHealth } from '@emberfall/core';
 import { GameWindow, BossHealth, SceneStatus } from '@emberfall/ui';
 import { Box, Stack, Typography, Button } from '@mui/material';

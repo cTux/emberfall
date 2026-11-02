@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import { clientAsset } from '../urls.ts';
 import { enemyAttributes } from '@emberfall/core';
-import { EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { EnemyKind, EnemyType } from '@emberfall/core/enums';
 
 export const wardenChapter = {
   title: 'The Warden',

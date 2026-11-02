@@ -1,5 +1,5 @@
 import type { Actions } from './CharacterPanels-actions.tsx';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 import { Box } from '@mui/material';
 import { CLASS_IDS, CLASS_LABELS, characterStats } from '@emberfall/core';
 import { classDetails } from './class-details';

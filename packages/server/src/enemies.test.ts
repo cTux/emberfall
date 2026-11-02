@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { forestTrees, forestDistance, FOREST, stepCombat, moveEnemies } from '@emberfall/core';
-import type { Enemy, SceneState } from '@emberfall/common';
+import type { Enemy, SceneState } from '@emberfall/core/contracts';
 
-import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { Difficulty, EnemyKind, EnemyType } from '@emberfall/core/enums';
 import { player, enemy } from './enemies.fixture.ts';
 
 test('authoritative movement scales base speed by difficulty, then roots, for every enemy type', () => {

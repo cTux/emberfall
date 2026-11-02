@@ -1,7 +1,7 @@
 import type { CommandType } from './command-type.ts';
 import type { Messages } from './messages.ts';
 import { handlers } from './handlers-definition.ts';
-import type { Player, Merchant } from '@emberfall/common';
+import type { Player, Merchant } from '@emberfall/core/contracts';
 import type { CharacterStore } from '../characters.ts';
 import { recordCombatTotal, clearTalentEffects } from '@emberfall/core';
 

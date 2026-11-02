@@ -1,5 +1,5 @@
 import { nodesById } from './nodes-by-id.ts';
-import type { CharacterProgress } from '@emberfall/common';
+import type { CharacterProgress } from '@emberfall/core/contracts';
 import { TALENT_MAX_RANK } from './talent-catalog.ts';
 
 export function talentRank(progress: Pick<CharacterProgress, 'talents'>, id: string) {

@@ -1,4 +1,4 @@
-import type { DimensionId } from '@emberfall/common';
+import type { DimensionId } from '@emberfall/core/contracts';
 import type { DrawingContext } from './rendering/drawing-context';
 import type { GraphicsSettings } from './graphics';
 

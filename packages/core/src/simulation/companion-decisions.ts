@@ -1,4 +1,4 @@
-import type { Bear, SceneState, Enemy, Tactics } from '@emberfall/common';
+import type { Bear, SceneState, Enemy, Tactics } from '@emberfall/core/contracts';
 
 // Existing hazard margins start avoidance before contact and move the bear beyond the telegraph edge.
 

@@ -1,6 +1,6 @@
 import type { FighterState } from './fighter-state.ts';
 import { fighters } from './fighters.ts';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 
 export function state(player: Player, scene: SceneState): FighterState {
   let value = fighters.get(player);

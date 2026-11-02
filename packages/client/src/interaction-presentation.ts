@@ -11,7 +11,7 @@ import {
   interactionInRange,
   type InteractionTarget,
 } from './interaction-targets';
-import type { ClientMessage, WorldState, Player } from '@emberfall/common';
+import type { ClientMessage, WorldState, Player } from '@emberfall/core/contracts';
 import type { DrawingContext } from './rendering/drawing-context';
 import { drawTimedActivity } from './timed-activity';
 import { drawInteractionPrompt, type Interaction } from './effects';

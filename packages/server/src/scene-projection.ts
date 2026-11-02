@@ -1,4 +1,4 @@
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 import type { Scene } from './scenes.ts';
 
 export function sceneState(scene?: Scene): SceneState | undefined {

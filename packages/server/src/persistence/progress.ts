@@ -4,7 +4,7 @@ const LEGACY_LEVEL_CAP = 20;
 const STOREHOUSE_FORMAT_VERSION = 2;
 
 import { normalizeTalents, type createGame } from '@emberfall/core';
-import type { CharacterProgress, ClassId, Player } from '@emberfall/common';
+import type { CharacterProgress, ClassId, Player } from '@emberfall/core/contracts';
 
 export function createProgressCodec(context: ReturnType<typeof createGame>) {
   const {

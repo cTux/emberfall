@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { Difficulty, EnemyType, type Enemy, type Player, type SceneState } from '@emberfall/common';
+import {
+  Difficulty,
+  EnemyType,
+  type Enemy,
+  type Player,
+  type SceneState,
+} from '@emberfall/core/contracts';
 
 import { randomSource, createTrainingScene, hitEnemy, stepCombat } from '@emberfall/core';
 import { freshProgress } from './characters.ts';

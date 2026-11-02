@@ -2,7 +2,7 @@ import { rank } from './rank.ts';
 import { talentArea } from './talent-area.ts';
 import { TALENT_AILMENTS } from './talent-ailment-tuning.ts';
 import { applyTalentAilment } from './apply-talent-ailment.ts';
-import type { SceneState, Player, Enemy } from '@emberfall/common';
+import type { SceneState, Player, Enemy } from '@emberfall/core/contracts';
 import type { CharacterStats } from './content/rules.ts';
 import { TALENT_MAX_RANK } from './talent-catalog.ts';
 

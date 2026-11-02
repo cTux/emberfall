@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { ResourceState, WorldState } from '@emberfall/common';
-import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import type { ResourceState, WorldState } from '@emberfall/core/contracts';
+import { SessionState, projectState, materializeState } from '@emberfall/core/protocol';
 import {
   VILLAGE_RESOURCES,
   gatherResource,

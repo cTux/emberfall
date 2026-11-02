@@ -1,4 +1,4 @@
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 // Retain 256-bit random bearer credentials and their existing hexadecimal wire length.
 const CHARACTER_TOKEN_BYTES = 32;
 
@@ -13,7 +13,7 @@ import { drizzle } from 'drizzle-orm/node-sqlite';
 import { getTableName } from 'drizzle-orm';
 import { GameDatabase, VersionConflictError } from '@colyseus/database';
 import { game, type createGame } from '@emberfall/core';
-import type { CharacterProgress, ClassId, Player, Merchant } from '@emberfall/common';
+import type { CharacterProgress, ClassId, Player, Merchant } from '@emberfall/core/contracts';
 
 export function createCharacterPersistence(context: ReturnType<typeof createGame> = game) {
   const { merchantSchema, freshMerchant, progressSchema, classSchema, storehouseSchema } =

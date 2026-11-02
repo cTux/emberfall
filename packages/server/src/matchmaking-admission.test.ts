@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { setTimeout } from 'node:timers/promises';
 import { matchMaker } from '@colyseus/core';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import { createGameServer } from './worlds.ts';
 import { MAX_SESSIONS } from './runtime/limits.ts';
 import { Peer } from './network/peer.ts';

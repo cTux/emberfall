@@ -1,7 +1,7 @@
 import type { SessionState } from './session-state.ts';
 import { collections } from './collections.ts';
 import { HOT_SCALARS } from './hot-scalars.ts';
-import type { WorldState } from '../index.ts';
+import type { WorldState } from '../contracts/index.ts';
 
 export function materializeState(state: SessionState): WorldState | undefined {
   if (!state.header) {

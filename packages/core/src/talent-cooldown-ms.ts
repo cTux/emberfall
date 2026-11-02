@@ -1,6 +1,6 @@
 import type { Game } from './talent-combat-game.ts';
 import { talentAbility } from './talent-ability.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { game } from './game.ts';
 import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
 

@@ -2,7 +2,7 @@ import type { Game } from './talent-combat-game.ts';
 import { equippedTalent } from './equipped-talent.ts';
 import { talentAbility } from './talent-ability.ts';
 import { talentCooldownMs } from './talent-cooldown-ms.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 import { game } from './game.ts';
 import { effectiveAbility, setRewardPlayers, nearestSpellTarget } from './class-combat.ts';
 import {
@@ -14,7 +14,7 @@ import {
 import { FOREST } from './scene.ts';
 import { isTalentLearned, talentRank } from './talent-tree.ts';
 import { inTrainingZone } from './world.ts';
-import { PERCENT, DEFAULT_TACTICS } from '@emberfall/common';
+import { PERCENT, DEFAULT_TACTICS } from '@emberfall/core/contracts';
 import { healingTarget } from './tactics.ts';
 import { executeTalent } from './talent-effects.ts';
 

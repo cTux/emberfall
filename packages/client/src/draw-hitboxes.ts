@@ -1,6 +1,7 @@
 import { worldHitboxes } from './world-hitboxes.ts';
 import type { DrawingContext } from './rendering/drawing-context';
-import { type WorldState, wrappedDelta } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST, ARENA } from '@emberfall/core';
 import { HITBOX_PRESENTATION } from './hitbox-calibration.ts';
 

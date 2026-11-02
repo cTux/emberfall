@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { ResourceState } from '@emberfall/common';
+import type { ResourceState } from '@emberfall/core/contracts';
 import { dimensionDefinition, resourceNodes, gatherResource, FOREST, game } from '@emberfall/core';
 import { hero } from './gathering.fixture.ts';
 import { decodeProgress } from './characters.ts';

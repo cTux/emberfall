@@ -1,9 +1,9 @@
 import { type createGame, game } from '../game.ts';
-import type { SceneState, Player, Enemy } from '@emberfall/common';
+import type { SceneState, Player, Enemy } from '@emberfall/core/contracts';
 import { state } from './state.ts';
 import { characterStats } from '../equipment.ts';
 import { isChanced } from '../utils/isChanced.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import { hitEnemy } from '../combat/damage.ts';
 
 type Game = ReturnType<typeof createGame>;

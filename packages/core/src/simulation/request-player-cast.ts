@@ -1,7 +1,7 @@
 import type { CastRequest } from './cast-request.ts';
 import type { Game } from './game.ts';
 import { castInputs } from './cast-inputs.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 import { game } from '../game.ts';
 import { inTrainingZone } from '../world.ts';
 import { TICK_MS } from './constants.ts';

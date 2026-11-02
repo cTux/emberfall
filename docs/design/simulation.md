@@ -34,7 +34,7 @@ same owner, generation and class checks, including reset cancellation.
 
 [worlds.ts](../../packages/server/src/worlds.ts) consumes validated player input on the 50 ms tick. [scenes.ts](../../packages/server/src/scenes.ts) ticks shared village training, reconciles readiness and advances forest state. [simulation.ts](../../packages/core/src/simulation.ts) owns combat, pause/resume, scaling and companions. [class-combat.ts](../../packages/core/src/class-combat.ts) owns ranged shots, ailments, the shared hit/reward path and DPS history. [enemies.ts](../../packages/core/src/enemies.ts) owns archetype stats and deterministic steering.
 
-These functions are in `core`, which depends on `common` for enums, state and pure geometry. Common never imports core. Config utilities select enemy types, roll equipment drops and counts, and calculate HP/damage using type and difficulty multipliers. Server and client use the same attribute and prediction helpers. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
+These functions are in `core`, alongside separate contracts and pure geometry entrypoints. Those portable layers never import content or gameplay rules. Config utilities select enemy types, roll equipment drops and counts, and calculate HP/damage using type and difficulty multipliers. Server and client use the same attribute and prediction helpers. Only the server executes authoritative enemy AI, damage and reward decisions. Client visuals must not run a second combat simulation.
 
 ## Registered content
 
@@ -72,7 +72,7 @@ Electorate changes invalidate the countdown and readiness is reconciled against 
 
 ## Geometry and attacks
 
-Tactics are optional structural class progress in common, validated with the
+Tactics are optional structural class progress in core contracts, validated with the
 `setTactics` command and saved transactionally before publication. Commands contain
 validated partial edits merged against the current server settings, so rapid edits
 to different controls cannot overwrite each other. Priority arrows send directional

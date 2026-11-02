@@ -1,7 +1,7 @@
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import { game, type createGame } from '../game.ts';
 type Game = ReturnType<typeof createGame>;
-import type { SceneState, Enemy, Player, DebuffKind } from '@emberfall/common';
+import type { SceneState, Enemy, Player, DebuffKind } from '@emberfall/core/contracts';
 import { characterStats } from '../equipment.ts';
 import type { CharacterStats } from '../content/rules.ts';
 import { isChanced } from '../utils/isChanced.ts';

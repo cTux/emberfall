@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { ChatMessage, Player } from '@emberfall/common';
+import type { ChatMessage, Player } from '@emberfall/core/contracts';
 import { MAX_PLAYERS } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 import { Parties } from './parties.ts';

@@ -1,6 +1,6 @@
 import { randomSource } from './random.ts';
 import { Rarity } from './enums/items.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import { rarityDropChance } from './configs/rarityDropChance.ts';
 
 export function rollRarity(random = randomSource.next, multiplier = 1): Rarity {

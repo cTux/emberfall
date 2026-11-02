@@ -1,5 +1,5 @@
 import type { CharacterStore } from './characters.ts';
-import { type AccountView, nicknameSchema } from '@emberfall/common';
+import { type AccountView, nicknameSchema } from '@emberfall/core/contracts';
 
 export function accountView(account: ReturnType<CharacterStore['session']>): AccountView {
   return {

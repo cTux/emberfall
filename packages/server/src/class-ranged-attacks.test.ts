@@ -10,7 +10,7 @@ import {
   tickPlayerShots,
   projectileAngle,
 } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { hero, enemy, scene } from './classes.fixture.ts';
 
 // Base-damage scenarios exclude random criticals; equipment-damage.test.ts covers their boundaries.

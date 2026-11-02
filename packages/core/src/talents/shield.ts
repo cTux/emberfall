@@ -1,4 +1,4 @@
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 import { state } from './state.ts';
 
 export function shield(player: Player, scene: SceneState, amount: number, until: number) {

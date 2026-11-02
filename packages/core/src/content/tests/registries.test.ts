@@ -5,7 +5,7 @@ import { baseMod } from '../../mods/base.mod.ts';
 import { extensionMod } from './fixture.ts';
 import type { Registration } from '../contracts.ts';
 
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 import { compose } from './registries.fixture.ts';
 

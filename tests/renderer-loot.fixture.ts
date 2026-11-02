@@ -3,7 +3,7 @@ import type { PixiContext } from '../packages/client/src/rendering/pixi-context'
 import { drawClassProjectiles, drawLootAndBlood } from '../packages/client/src/combat-effects';
 import { pickupArt, effectsArt, artImages } from '../packages/client/src/art';
 import { LOOT_ITEM_IDS, Rarity } from '../packages/core/src/index';
-import type { SceneState } from '../packages/common/src/index';
+import type { SceneState } from '../packages/core/src/contracts/index';
 
 export async function compareLoot(pixi: PixiContext, gpu: HTMLCanvasElement) {
   while (

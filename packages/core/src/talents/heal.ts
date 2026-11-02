@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { applyHealing } from '../combat/meters.ts';
 
 type HealingTarget = Pick<Player, 'x' | 'y' | 'hitpoints' | 'maxHitpoints'>;

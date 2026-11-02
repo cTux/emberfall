@@ -1,7 +1,7 @@
-import { wrap, wrappedDelta } from '@emberfall/common';
+import { wrap, wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST } from '@emberfall/core';
 import { PICKUP_RULES } from '@emberfall/core/definitions/entities/pickups';
-import type { Player, WorldState } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
 
 /** Adjust detached render drops only. Selection, removal and rewards stay authoritative. */
 export function alignLocalPickups(view: WorldState, local: Player) {

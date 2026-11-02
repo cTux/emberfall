@@ -1,5 +1,5 @@
 import type { Actions } from './actions.tsx';
-import type { Player, ClientMessage } from '@emberfall/common';
+import type { Player, ClientMessage } from '@emberfall/core/contracts';
 import { Typography, Stack, Button } from '@mui/material';
 
 export function LeavePanel({

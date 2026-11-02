@@ -6,8 +6,7 @@ Status: implemented. Emberfall is online-only. One Node process owns worlds and 
 
 | Package           | Responsibility                                                                               | Main entry points                                                                                    |
 | ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `packages/common` | Shared contracts, structural schemas, protocol state and pure geometry                       | [index.ts](../../packages/common/src/index.ts)                                                       |
-| `packages/core`   | Registries, bundled mods, content-aware rules and shared combat/prediction                   | [index.ts](../../packages/core/src/index.ts), [simulation.ts](../../packages/core/src/simulation.ts) |
+| `packages/core`   | Shared contracts, geometry, protocol adapters, registries and game rules                     | [index.ts](../../packages/core/src/index.ts), [simulation.ts](../../packages/core/src/simulation.ts) |
 | `packages/server` | HTTP(S), Colyseus sessions, world directory, authoritative ticks and SQLite saves            | [index.ts](../../packages/server/src/index.ts), [worlds.ts](../../packages/server/src/worlds.ts)     |
 | `packages/client` | Connection/recovery, preferences, input, prediction, PixiJS rendering and screen composition | [main.tsx](../../packages/client/src/main.tsx), [Arena.tsx](../../packages/client/src/Arena.tsx)     |
 | `packages/ui`     | Controlled React/MUI presentation, theme, accessibility and Storybook                        | [public exports](../../packages/ui/src/index.ts), [component guide](../../packages/ui/README.md)     |
@@ -22,7 +21,8 @@ See [development](../development.md) for pixel-preservation checks and [operatio
 [Bundled mods](mods.md) implement [MOD-01–04](../specs/mods.md). Core creates
 registries, registers the explicit bundled list, validates/seals content and
 exposes ready rules before host startup. `mods/base.mod.ts` owns current content;
-additional mods use the same API. Common stays independent of core. The
+additional mods use the same API. Portable core entrypoints stay independent of content and game initialization. See the
+[portable layer guide](../../packages/core/docs/contracts.md). The
 [mod plan](../plans/mods.md) records delivery and verification.
 
 ## Data flow

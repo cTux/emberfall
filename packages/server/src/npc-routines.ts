@@ -1,4 +1,4 @@
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 // Retain the calibrated walking speed so villagers match their existing walking animation.
 const SPEED = 38;
 // Retain five-second minimum stops so villagers visibly pause between walks.
@@ -21,7 +21,7 @@ const NPC_AIM_OFFSET_Y = 24;
 const WORK_FACING_OFFSET_Y = 6;
 import { traderInRange, wrap, wrappedDelta } from '@emberfall/core';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { simulationFor } from './ecs/simulation.ts';
 import { villagePlayers, type NpcWorld } from './npc-world.ts';
 

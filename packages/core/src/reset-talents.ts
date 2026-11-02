@@ -1,7 +1,7 @@
 import { TALENT_TREE } from './talent-tree-nodes.ts';
 import { isTalentLearned } from './is-talent-learned.ts';
 import { TALENT_RESET_COST } from './talent-reset-cost.ts';
-import type { CharacterProgress } from '@emberfall/common';
+import type { CharacterProgress } from '@emberfall/core/contracts';
 
 export function resetTalents(
   progress: Pick<CharacterProgress, 'talents' | 'coins' | 'talentSlots'>,

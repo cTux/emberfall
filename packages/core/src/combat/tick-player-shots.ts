@@ -1,5 +1,5 @@
 import type { Game } from './game.ts';
-import type { Enemy, SceneState, Player } from '@emberfall/common';
+import type { Enemy, SceneState, Player } from '@emberfall/core/contracts';
 import { AILMENT_DEFINITIONS } from '../definitions/effects/ailments.ts';
 import { COMBAT_TUNING } from './tuning.ts';
 import { game } from '../game.ts';
@@ -10,7 +10,7 @@ import { overlapsBody, enemyHitbox } from '../hitboxes.ts';
 import { COLLISION } from '../definitions/collision.ts';
 import { hitWithWeapon } from './weapon.ts';
 import { forestDistance } from '../scene.ts';
-import { appendSceneEntities } from '@emberfall/common';
+import { appendSceneEntities } from '@emberfall/core/contracts';
 
 function applyRoots(target: Enemy, ownerId: string, now: number) {
   if (target.kind === 'boss') {

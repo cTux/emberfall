@@ -1,7 +1,7 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 export function partyAction(
-  world: import('@emberfall/common').WorldState | null | undefined,
+  world: import('@emberfall/core/contracts').WorldState | null | undefined,
   player: Player | undefined,
   target: Player,
 ) {

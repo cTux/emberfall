@@ -1,5 +1,5 @@
 import type { WorldDrawingContext } from './rendering/drawing-context';
-import type { Player, WorldState, DamageEvent } from '@emberfall/common';
+import type { Player, WorldState, DamageEvent } from '@emberfall/core/contracts';
 import { enemyMaxHealth } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { ACTOR_CELL, idleBreath } from './animation';

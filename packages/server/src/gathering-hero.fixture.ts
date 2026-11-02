@@ -1,5 +1,5 @@
 import { VILLAGE_RESOURCES } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { freshProgress } from './characters.ts';
 
 export const hero = (node = VILLAGE_RESOURCES[0]): Player => {

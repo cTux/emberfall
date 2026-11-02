@@ -1,5 +1,5 @@
 import { ITEM_STAR_BONUS } from './item-star-bonus.ts';
-import type { BackpackItem } from '@emberfall/common';
+import type { BackpackItem } from '@emberfall/core/contracts';
 
 // Anvil balance: each tier adds ten percent of the original stats, up to +50%.
 

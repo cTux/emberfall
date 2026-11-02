@@ -1,4 +1,4 @@
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 
 export interface Scene extends SceneState {
   nextSpawn: number;

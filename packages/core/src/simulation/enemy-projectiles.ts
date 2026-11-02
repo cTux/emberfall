@@ -1,9 +1,9 @@
-import { wrap } from '@emberfall/common';
-import type { SceneState, Player, Bear } from '@emberfall/common';
+import { wrap } from '@emberfall/core/geometry';
+import type { SceneState, Player, Bear } from '@emberfall/core/contracts';
 import { COLLISION } from '../definitions/collision.ts';
 import { FOREST, forestTrees } from '../scene.ts';
 import { overlapsBody, modelHitbox } from '../hitboxes.ts';
-import { EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { EnemyKind, EnemyType } from '@emberfall/core/enums';
 import { enemyAttributes } from '../utils/enemyAttributes.ts';
 // Six-pixel substeps preserve projectile collision at high dimension speeds.
 const PROJECTILE_STEP_PIXELS = 6;

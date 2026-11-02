@@ -3,7 +3,7 @@ import type { DrawingContext } from '../rendering/drawing-context';
 import { pickupArt, effectsArt, drawArt } from '../art';
 import { PROJECTILE_STYLE as STYLE } from './projectile-style.ts';
 import { hitOutline } from './hits.ts';
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 import type { Preferences } from '../preferences';
 import { abilityEffectOpacity } from '../ability-effects';
 

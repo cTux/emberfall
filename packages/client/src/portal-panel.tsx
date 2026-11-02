@@ -6,7 +6,7 @@ import {
   Difficulty,
   type DimensionId,
   DIMENSION_IDS,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 import { useState } from 'react';
 import { dimensionDefinition, difficultyMultiplier } from '@emberfall/core';
 import { Typography, Button, Stack, TextField, MenuItem } from '@mui/material';

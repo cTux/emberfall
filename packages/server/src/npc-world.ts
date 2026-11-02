@@ -1,4 +1,4 @@
-import type { ChatMessage, Player, VillageNpc } from '@emberfall/common';
+import type { ChatMessage, Player, VillageNpc } from '@emberfall/core/contracts';
 
 export interface NpcWorld {
   players: Map<string, Player>;

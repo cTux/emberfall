@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { createRuntime } from './runtime.ts';
 import { Peer } from './network/peer.ts';

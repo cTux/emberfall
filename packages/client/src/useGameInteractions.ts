@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import type { ClientMessage, Player, WorldState } from '@emberfall/common';
+import type { ClientMessage, Player, WorldState } from '@emberfall/core/contracts';
 import { BULLSEYE } from '@emberfall/core';
 import type { Interaction } from './effects';
 import type { GameMenu } from './game-panels';

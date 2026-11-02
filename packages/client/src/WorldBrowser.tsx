@@ -1,4 +1,4 @@
-import type { ClientMessage, WorldSummary } from '@emberfall/common';
+import type { ClientMessage, WorldSummary } from '@emberfall/core/contracts';
 import { GameWindow, WorldList, ChapterTabs } from '@emberfall/ui';
 import { Box, Stack, TextField, Button } from '@mui/material';
 

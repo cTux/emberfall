@@ -5,7 +5,7 @@ import { VillageLife, type NpcWorld } from './npcs.ts';
 import type { NpcDialogue, DialogueResult } from './npc-models.ts';
 
 import { createPlayers } from './ecs/simulation.ts';
-import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import { SessionState, projectState, materializeState } from '@emberfall/core/protocol';
 
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { flush, player } from './npcs.fixture.ts';

@@ -1,4 +1,4 @@
-import type { Player, WorldState } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
 
 // Limit unconfirmed presentation to one second so a stalled connection cannot simulate indefinitely.
 

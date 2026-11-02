@@ -1,6 +1,6 @@
 import { MAX_QUEUED_INPUTS } from './limits.ts';
 import { GAME_VERSION } from '../game-version.ts';
-import type { ClientMessage } from '@emberfall/common';
+import type { ClientMessage } from '@emberfall/core/contracts';
 import type { CommandContext, BroadcastState } from './models.ts';
 import type { WorldMembership } from './world-membership.ts';
 import {

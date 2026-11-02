@@ -1,8 +1,8 @@
-import type { Enemy } from '@emberfall/common';
+import type { Enemy } from '@emberfall/core/contracts';
 import { type createGame, game } from './game.ts';
-import { Difficulty } from '@emberfall/common/enums';
+import { Difficulty } from '@emberfall/core/enums';
 import { dimensionDefinition } from './dimensions.ts';
-import { wrap, wrappedDelta } from '@emberfall/common';
+import { wrap, wrappedDelta } from '@emberfall/core/geometry';
 import { forestDistance, FOREST, forestTrees, moveForestActor } from './scene.ts';
 import { ENEMY_RULES } from './definitions/entities/enemies.ts';
 import { AILMENT_DEFINITIONS } from './definitions/effects/ailments.ts';
@@ -36,7 +36,7 @@ export function moveEnemies(
   now = 0,
   context: ReturnType<typeof createGame> = game,
   difficulty: Difficulty = Difficulty.Easy,
-  dimension?: import('@emberfall/common').DimensionId,
+  dimension?: import('@emberfall/core/contracts').DimensionId,
 ) {
   const ENEMY_STATS = Object.fromEntries(context.registries.enemies.entries());
   const dimensionScale = dimensionDefinition(dimension, context).enemyMultiplier;

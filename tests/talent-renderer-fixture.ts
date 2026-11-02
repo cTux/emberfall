@@ -1,6 +1,6 @@
 import { PixiContext } from '../packages/client/src/rendering/pixi-context';
 import { drawClassProjectiles, talentCastArt } from '../packages/client/src/combat-effects';
-import type { SceneState } from '../packages/common/src/index';
+import type { SceneState } from '../packages/core/src/contracts/index';
 export async function render() {
   await talentCastArt.decode();
   const gpu = document.createElement('canvas');

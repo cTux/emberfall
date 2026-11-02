@@ -1,7 +1,7 @@
 import { resourceNodes } from './resource-nodes.ts';
 import { GATHER_RANGE } from './gather-range.ts';
 import { resourceState } from './resource-state.ts';
-import type { Player, ResourceState } from '@emberfall/common';
+import type { Player, ResourceState } from '@emberfall/core/contracts';
 import { COLLISION } from './definitions/collision.ts';
 
 export function gatheringNode(

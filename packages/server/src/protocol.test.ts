@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Encoder, Decoder } from '@colyseus/schema';
-import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
-import type { WorldState } from '@emberfall/common';
+import { SessionState, projectState, materializeState } from '@emberfall/core/protocol';
+import type { WorldState } from '@emberfall/core/contracts';
 
 import { createTrainingScene } from '@emberfall/core';
 import { freshProgress } from './characters.ts';

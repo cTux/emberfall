@@ -1,4 +1,4 @@
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import { clientAsset } from './urls.ts';
 import type { Preferences } from './preferences';
 

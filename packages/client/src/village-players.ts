@@ -1,5 +1,5 @@
-import type { Player, WorldState } from '@emberfall/common';
-import { wrappedDelta } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { ARENA } from '@emberfall/core';
 import type { WorldDrawingContext } from './rendering/drawing-context';
 import type { GraphicsSettings } from './graphics';

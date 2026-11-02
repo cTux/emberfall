@@ -1,4 +1,4 @@
-import { Difficulty, EnemyType } from '@emberfall/common/enums';
+import { Difficulty, EnemyType } from '@emberfall/core/enums';
 import { game, type createGame } from '../game.ts';
 
 export function enemyAttributes(

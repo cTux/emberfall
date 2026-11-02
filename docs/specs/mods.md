@@ -70,7 +70,7 @@ content in a save must fail with context rather than being silently discarded or
 rewritten as a new character. Removing or renaming mod content needs a separately
 designed migration.
 
-Common remains independent of core. Structural message validation and
+Core contracts, geometry and protocol adapters remain independent of content and game initialization. Structural message validation and
 registry-backed semantic validation together preserve the server trust boundary.
 Clients cannot introduce content, bypass class/slot compatibility or supply
 trusted combat results. Only the server applies health changes, damage, rewards
@@ -93,7 +93,7 @@ automatic progression and uninterrupted gameplay remain intact.
    base IDs or losing content. Reject unknown saved content and unknown command
    IDs before mutation; save failures leave live state unchanged.
 6. Initialize independent catalogs in tests without registration leaking between
-   them. Verify importing common cannot initialize core or the base mod.
+   them. Verify importing portable core entrypoints cannot initialize the default game or the base mod.
 
 Existing regression suites and planned extension checks are mapped in the
 [implementation plan](../plans/mods.md#verification). Test links describe coverage

@@ -4,7 +4,7 @@ import { ACTIVITY_ZONE_WIDTH } from './activity-zone-width.ts';
 import { ACTIVITY_BONUS_MS } from './activity-bonus-ms.ts';
 import { ACTIVITY_CYCLE } from './activity-cycle.ts';
 import { ACTIVITY_ZONES } from './activity-zones.ts';
-import type { TimedActivity } from '@emberfall/common';
+import type { TimedActivity } from '@emberfall/core/contracts';
 
 // Existing fourteen-percent target width is the gathering timing difficulty calibration.
 import { randomSource } from './random.ts';

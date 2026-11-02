@@ -1,6 +1,6 @@
 import { NORMAL_CLOSE, ABNORMAL_CLOSE } from './codes.ts';
 import { EventEmitter } from 'node:events';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 
 /** Transport-neutral connection consumed by the authoritative application. */
 export class Peer extends EventEmitter {

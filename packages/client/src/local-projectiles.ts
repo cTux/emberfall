@@ -1,11 +1,10 @@
 import {
   MILLISECONDS_PER_SECOND,
-  wrap,
-  wrappedDelta,
   type Player,
   type PlayerShot,
   type WorldState,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
+import { wrap, wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST, game, advancePlayerShot, fireClassAttack } from '@emberfall/core';
 import { PREDICTION_LIMIT_MS, type ConfirmedFrame, type AttackState } from './prediction-frame.ts';
 

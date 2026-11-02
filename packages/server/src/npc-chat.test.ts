@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { ServerMessage, WorldState } from '@emberfall/common';
+import type { ServerMessage, WorldState } from '@emberfall/core/contracts';
 import { createRuntime } from './runtime.ts';
 import { Peer } from './network/peer.ts';
 const flush = () => {

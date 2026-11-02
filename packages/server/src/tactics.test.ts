@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { tacticsSchema, type Enemy } from '@emberfall/common';
+import { tacticsSchema, type Enemy } from '@emberfall/core/contracts';
 import {
   attackTarget,
   castTalentAbility,

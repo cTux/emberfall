@@ -24,10 +24,10 @@ import { drawHitboxes } from './hitboxes';
 
 import type { InteractionTarget } from './interaction-targets';
 import { bloodPuddleRenderer, drawLootAndBlood, drawClassProjectiles } from './combat-effects';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 
 import { drawDanger } from './danger';
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 import type { GraphicsSettings } from './graphics';
 import type { Preferences } from './preferences';
 import type { Caster } from './lighting';

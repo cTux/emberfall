@@ -1,12 +1,12 @@
 import { type createGame, game } from './game.ts';
-import type { Enemy } from '@emberfall/common';
+import type { Enemy } from '@emberfall/core/contracts';
 import { dimensionDefinition } from './dimensions.ts';
 
 export function spawnArchetype(
   roll: number,
   count: number,
   context: ReturnType<typeof createGame> = game,
-  dimension: import('@emberfall/common').DimensionId = 'forest',
+  dimension: import('@emberfall/core/contracts').DimensionId = 'forest',
 ): NonNullable<Enemy['archetype']> {
   let threshold = 0;
 

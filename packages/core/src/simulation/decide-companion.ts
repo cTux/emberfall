@@ -1,8 +1,9 @@
 import { companionDecisions } from './companion-decisions.ts';
-import type { Bear, Player, SceneState } from '@emberfall/common';
+import type { Bear, Player, SceneState } from '@emberfall/core/contracts';
 
 // Existing hazard margins start avoidance before contact and move the bear beyond the telegraph edge.
-import { DEFAULT_TACTICS, wrappedDelta, wrap, MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { DEFAULT_TACTICS, MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
+import { wrappedDelta, wrap } from '@emberfall/core/geometry';
 import { BEAR_DEFINITION } from '../definitions/entities/companions.ts';
 import { forestDistance, FOREST } from '../scene.ts';
 import { attackTarget } from '../tactics.ts';

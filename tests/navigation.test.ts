@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FOREST, LOBBY_PORTAL } from '../packages/core/src/index.ts';
 import { drawNavigation } from '../packages/client/src/navigation.ts';
-import type { WorldState } from '../packages/common/src/index.ts';
+import type { WorldState } from '../packages/core/src/contracts/index.ts';
 
 test('portal navigation shares off-screen suppression, wrapped direction and forest targets', (t) => {
   const originalPoint = Object.getOwnPropertyDescriptor(globalThis, 'DOMPoint');

@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import type { ClientMessage, WorldState } from '@emberfall/common';
+import type { ClientMessage, WorldState } from '@emberfall/core/contracts';
 import type { Interaction } from './effects';
 import type { GraphicsSettings } from './graphics';
 import type { Preferences } from './preferences';

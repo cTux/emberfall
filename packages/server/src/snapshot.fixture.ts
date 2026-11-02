@@ -1,5 +1,5 @@
 import { hero } from './snapshots-hero.fixture.ts';
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 
 export const snapshot = (time: number, x: number): WorldState => {
   return {

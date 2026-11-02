@@ -1,4 +1,4 @@
-import type { DimensionId } from '@emberfall/common';
+import type { DimensionId } from '@emberfall/core/contracts';
 import { game, type createGame } from './game.ts';
 import type { DimensionDefinition } from './mods/dimensions/definitions.ts';
 

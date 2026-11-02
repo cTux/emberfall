@@ -1,7 +1,7 @@
 import type { EquipmentOwner, CharacterStats } from './content/rules.ts';
 import { game } from './game.ts';
 import { recoveryCooldownMs } from './utils/recoveryCooldownMs.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 
 export function dotTickIntervalMs(
   player: EquipmentOwner,

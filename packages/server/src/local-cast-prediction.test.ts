@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { LocalMovement } from '../../client/src/local-movement.ts';
 
 import { fireClassAttack, requestPlayerCast, PLAYER_ATTACK_INTERVAL } from '@emberfall/core';
-import type { ClientMessage } from '@emberfall/common';
+import type { ClientMessage } from '@emberfall/core/contracts';
 import { fixture, frame } from '../../../tests/local-projectiles.fixture.ts';
 
 test('manual confirmations with latency preserve flight and swing, correct aim and never replay completed casts', async () => {

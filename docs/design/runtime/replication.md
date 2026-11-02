@@ -27,7 +27,7 @@ owns gameplay, so browsing, password joins and world transfers preserve one SDK
 connection and existing recovery behavior. This is intentionally a single-process
 design, not a horizontally sharded room-per-world deployment.
 
-`common/protocol` projects plain state into native Colyseus schema records.
+`core/protocol` projects plain state into native Colyseus schema records.
 Positions, angles and input acknowledgements use scalar deltas; the remaining
 entity details use a per-entity payload. Collection membership and order are
 explicit. A party broadcast is serialized once and applied to each session's

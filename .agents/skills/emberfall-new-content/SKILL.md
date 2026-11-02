@@ -13,7 +13,8 @@ the [mod design](../../../docs/design/mods.md), and the affected
 Register plain content through `core/src/mods/base.mod.ts` or an additional
 bundled module listed in `core/src/mods/index.ts`. Definition views are derived
 from the ready catalog. Do not import the default game or its views inside a mod.
-Keep common independent: it owns contracts, structural schemas and pure geometry;
+Keep core contracts and geometry independent of gameplay: they own portable types,
+structural schemas and pure geometry;
 core owns semantic validation, content and shared rules.
 
 Preserve definition IDs, base values and saved/wire compatibility. Keep mutable

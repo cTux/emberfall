@@ -2,7 +2,7 @@
 const LAYERING_SETTLE_MS = 700;
 import { test, expect } from './fixtures';
 import { BUILDINGS, LOBBY_PORTAL, CLASS_IDS } from '../packages/core/src/index.ts';
-import type { SceneState } from '../packages/common/src/index.ts';
+import type { SceneState } from '../packages/core/src/contracts/index.ts';
 
 test('dummies, remote players and forest enemies layer around the local player', async ({
   page,

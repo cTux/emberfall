@@ -1,4 +1,4 @@
-import type { WorldState, Player } from '@emberfall/common';
+import type { WorldState, Player } from '@emberfall/core/contracts';
 import type { resourceNodes } from '@emberfall/core';
 import type { ForestActor, ForestProjection } from './forest-actors';
 import type { crittersAt } from './critters';

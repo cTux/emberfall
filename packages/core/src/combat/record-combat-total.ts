@@ -1,7 +1,7 @@
 import type { MeterKey } from './meter-key.ts';
 import { refreshCombatTotals } from './refresh-combat-totals.ts';
 import { history } from './history.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { COMBAT_TUNING } from './tuning.ts';
 
 export function recordCombatTotal(player: Player, key: MeterKey, amount: number, now: number) {

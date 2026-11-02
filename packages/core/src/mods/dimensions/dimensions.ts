@@ -1,5 +1,5 @@
 import type { DimensionDefinition } from './dimension-definition.ts';
-import type { DimensionId } from '@emberfall/common';
+import type { DimensionId } from '@emberfall/core/contracts';
 
 // Requested dimension balance is independent of difficulty and cooperative membership scaling.
 export const DIMENSIONS = {

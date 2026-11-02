@@ -1,4 +1,4 @@
-import type { Player, ClientMessage } from '@emberfall/common';
+import type { Player, ClientMessage } from '@emberfall/core/contracts';
 import { useEffect, useRef, useState } from 'react';
 import { Menu, MenuItem, Tooltip } from '@mui/material';
 import { TalentIcon } from './talent-icons';

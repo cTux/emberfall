@@ -1,4 +1,4 @@
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST } from './definitions/worlds/forest.ts';
 
 export const forestDistance = (a: { x: number; y: number }, b: { x: number; y: number }) => {

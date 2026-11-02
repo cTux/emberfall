@@ -1,4 +1,4 @@
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 
 import { clientAsset } from './urls';
 import { Box } from '@mui/material';

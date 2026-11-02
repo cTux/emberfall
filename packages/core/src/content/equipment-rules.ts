@@ -2,7 +2,7 @@ import { recoveryCooldownMs } from '../utils/recoveryCooldownMs.ts';
 import { talentNodeId, talentRank } from '../talent-tree.ts';
 import { z } from 'zod';
 import { ItemStat } from '../item-stats.ts';
-import { MILLISECONDS_PER_SECOND, PERCENT } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND, PERCENT } from '@emberfall/core/contracts';
 import type {
   Player,
   ClassId,
@@ -11,7 +11,7 @@ import type {
   GearDefinition,
   GearStats,
   DamageType,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 import type { Registries } from './contracts.ts';
 import { itemStatMultiplier } from '../item-improvement.ts';
 

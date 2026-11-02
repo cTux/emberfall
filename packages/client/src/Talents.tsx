@@ -1,6 +1,6 @@
 import { TalentIcon } from './talent-icons';
 import { memo } from 'react';
-import type { ClientMessage } from '@emberfall/common';
+import type { ClientMessage } from '@emberfall/core/contracts';
 import { TALENT_COLUMNS, talentLearningState, talentDescription } from '@emberfall/core';
 import { TalentTree } from '@emberfall/ui';
 import { sameTalentProgress, type TalentProgress } from './talent-progress';

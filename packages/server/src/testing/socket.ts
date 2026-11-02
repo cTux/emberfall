@@ -4,7 +4,7 @@ const CLOSED_STATE = 3;
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { EventEmitter } from 'node:events';
 import { Client, type Room } from '@colyseus/sdk';
-import { SessionState, materializeState } from '@emberfall/common/protocol';
+import { SessionState, materializeState } from '@emberfall/core/protocol';
 
 /** Ports the existing behavioral assertions to a real Colyseus connection. */
 export class WebSocket extends EventEmitter {

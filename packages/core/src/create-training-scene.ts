@@ -1,4 +1,4 @@
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 
 // Seven dummy IDs occupy the initial training layout; subsequent transient IDs start after them.
 import { TRAINING_DEFINITION } from './definitions/encounters/training.ts';

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { Player } from '../packages/common/src/index.ts';
+import type { Player } from '../packages/core/src/contracts/index.ts';
 import { sameInventoryPlayer } from '../packages/client/src/equipment/same-inventory-player.ts';
 
 const player: Player = {

@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { talentRank, talentNodeId } from './talent-tree.ts';
 
 // Preserve the existing talent-ailment balance and tooltip contract; the original

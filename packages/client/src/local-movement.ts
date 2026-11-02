@@ -1,11 +1,10 @@
 import {
   MILLISECONDS_PER_SECOND,
-  wrap,
-  wrappedDelta,
   type Player,
   type WorldState,
   type ClientMessage,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
+import { wrap, wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST, moveActor, moveForestActor, movePlayer } from '@emberfall/core';
 import { LocalAttacks } from './local-attacks.ts';
 import { PREDICTION_LIMIT_MS } from './prediction-frame.ts';

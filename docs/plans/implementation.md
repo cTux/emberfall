@@ -8,7 +8,7 @@ All rows below are implemented. Each row names the implementation seams and acce
 
 | Order/dependency        | Capability                                                               | Implementation seams                                                           | Acceptance source                         |
 | ----------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------- |
-| 1 — foundation          | Shared messages, wrapped geometry, HTTP(S)/WebSocket, world browser      | `common/index.ts`, `core/world.ts`, `server/worlds.ts`, `client/main.tsx`      | WORLD-01; network design                  |
+| 1 — foundation          | Shared messages, wrapped geometry, HTTP(S)/WebSocket, world browser      | `core/contracts`, `core/world.ts`, `server/worlds.ts`, `client/main.tsx`       | WORLD-01; network design                  |
 | 2 — world identity      | Character/class saves, authorized world recovery, build reload checks    | `server/characters.ts`, `server/worlds.ts`, client connection/build code       | CHAR-01–03, WORLD-02                      |
 | 3 — shared world        | Chat, village, doors, wardrobe, paths and interactions                   | `server/chat.ts`, `core/scene.ts`, client village and chat                     | CHAT-01–03, SCENE-01/02                   |
 | 4 — scene lifecycle     | Votes, countdown, late join, pause/regenerate, boss and return           | `server/scenes.ts`, `core/simulation.ts`                                       | SCENE-03–05                               |
@@ -45,7 +45,7 @@ When a specific progression feature is requested:
 
 1. Specify its automatic trigger, effect and lifetime. Resolve XP sources/thresholds, fractional values, class behavior, party balance, death/return/reset and reconnect semantics.
 2. Design server-owned grants and any persistence/migration. Define idempotence and snapshot feedback; use existing hit/save paths rather than a second reward system.
-3. Implement the smallest complete vertical slice across common/server/client. Keep all movement and combat available when a grant occurs.
+3. Implement the smallest complete vertical slice across core/server/client. Keep all movement and combat available when a grant occurs.
 4. Verify threshold boundaries, multiple grants, save/reconnect behavior, two-client independence and unobtrusive feedback using PROG-01 acceptance scenarios.
 
 Do not implement thresholds, new currency, a rune inventory, automatic upgrades or pre-run loadouts from this outline alone. They remain open product choices, not missing pieces of the current baseline.

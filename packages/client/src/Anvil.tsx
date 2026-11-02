@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { Box, Button, Menu, MenuItem, Rating, Stack, Tooltip, Typography } from '@mui/material';
 import { GoldBalance } from '@emberfall/ui';
-import { MAX_ITEM_STARS, PERCENT, type ClientMessage, type Player } from '@emberfall/common';
+import {
+  MAX_ITEM_STARS,
+  PERCENT,
+  type ClientMessage,
+  type Player,
+} from '@emberfall/core/contracts';
 import {
   anvilInRange,
   game,

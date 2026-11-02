@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { drawDamageNumbers } from '../packages/client/src/damage-text.ts';
-import type { DamageEvent } from '../packages/common/src/scene.ts';
+import type { DamageEvent } from '../packages/core/src/contracts/scene.ts';
 
 test('damage numbers can show only local outgoing and incoming damage without changing events', () => {
   const hits: DamageEvent[] = [

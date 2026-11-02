@@ -8,7 +8,7 @@ import { constants as HTTP } from 'node:http2';
 import { ACCOUNT_LIMITS as AUTH } from './account-limits.ts';
 import * as credentials from './account-credentials.ts';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { nicknameSchema, type AccountView } from '@emberfall/common';
+import { nicknameSchema, type AccountView } from '@emberfall/core/contracts';
 
 import type { CharacterStore } from './characters.ts';
 import { Peer } from './network/peer.ts';

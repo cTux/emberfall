@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { companionCaster } from './companion';
 import type { Caster } from './lighting';
 

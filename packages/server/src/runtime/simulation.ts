@@ -1,5 +1,5 @@
 import { MAX_SIMULATION_BACKLOG_MS, SIMULATION_POLL_MS } from './limits.ts';
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import { restoreResources, syncEquipmentVitals, tickGathering, TICK_MS } from '@emberfall/core';
 import { stepMovement } from '../systems/movement.ts';
 import { tickScene } from '../scenes.ts';

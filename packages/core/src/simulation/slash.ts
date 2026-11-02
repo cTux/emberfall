@@ -1,6 +1,6 @@
 import { swordHits } from './sword-hits.ts';
 import { type createGame, game } from '../game.ts';
-import type { SceneState, Player, Bear } from '@emberfall/common';
+import type { SceneState, Player, Bear } from '@emberfall/core/contracts';
 import { defaultSpellRange, hitWithWeapon } from '../class-combat.ts';
 import { swordOverlapsEnemy } from './aim.ts';
 

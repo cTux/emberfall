@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { stepMovement, type MovementInput } from './systems/movement.ts';
 import { freshProgress } from './characters.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 test('untimed heartbeat movement includes age 250ms and stops immediately after it', () => {
   for (const phase of [0, 49]) {

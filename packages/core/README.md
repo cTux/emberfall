@@ -1,7 +1,9 @@
 # Core library
 
 `@emberfall/core` is the home for shared game configuration and reusable game
-logic utilities, combat, enemies and training. The server uses its authoritative
+logic utilities, combat, enemies and training. It also exposes portable contracts,
+geometry and protocol adapters through separate entrypoints; see
+[portable layers](docs/contracts.md). The server uses its authoritative
 combat kernels; client prediction and health displays reuse the same helpers.
 
 Read only the topic needed for the current task. Each linked page owns its detailed guidance.

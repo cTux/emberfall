@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { ResourceState } from '@emberfall/common';
+import type { ResourceState } from '@emberfall/core/contracts';
 
 import {
   VILLAGE_RESOURCES,

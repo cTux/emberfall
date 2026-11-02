@@ -1,5 +1,5 @@
 import type { Game } from './game.ts';
-import type { SceneState, Player, Enemy } from '@emberfall/common';
+import type { SceneState, Player, Enemy } from '@emberfall/core/contracts';
 import type { CharacterStats } from '../content/rules.ts';
 import { game } from '../game.ts';
 import { state } from './state.ts';

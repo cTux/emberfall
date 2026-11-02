@@ -6,7 +6,7 @@ Status: implemented. Implements [worlds/chat](../specs/worlds-and-chat.md) and [
 
 [worlds.ts](../../packages/server/src/worlds.ts) composes HTTP, Colyseus session rooms and the authoritative runtime. [runtime.ts](../../packages/server/src/runtime.ts) owns membership, command validation and tick ordering. The server derives identity and world from the authenticated session. Shared Zod schemas validate commands; client claims never grant damage, items or progress.
 
-Each connection has a private session room; one in-process party simulation owns shared combat. [Protocol state](../../packages/common/src/protocol/state.ts) projects canonical state into Colyseus schemas. The client reconstructs detached snapshots. See [runtime design](new-runtime.md) for replication, budgets and ownership.
+Each connection has a private session room; one in-process party simulation owns shared combat. [Protocol state](../../packages/core/src/protocol/state.ts) projects canonical state into Colyseus schemas. The client reconstructs detached snapshots. See [runtime design](new-runtime.md) for replication, budgets and ownership.
 
 ## Catalog validation
 

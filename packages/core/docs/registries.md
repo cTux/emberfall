@@ -17,8 +17,8 @@ registries and derived helpers; callers continue to use the frozen `rules`
 surface returned by `createGame`. Item mutations remain separate from host
 transactions, transport and presentation.
 
-Core is the composition root for portable game rules and content. Common supplies
-contracts, structural schemas and pure geometry; common never imports core.
+Core is the composition root for portable game rules and content. Its separate
+contracts, geometry and protocol entrypoints never import the game or bundled mods.
 `createGame(mods)` creates registries, invokes synchronous registration, validates
 references/values, seals content and returns a ready context with `registries`,
 `rules`, `modIds` and `status`. Failed startup exposes no partially ready context.

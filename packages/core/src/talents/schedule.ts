@@ -1,7 +1,7 @@
 import type { Scheduled } from './scheduled.ts';
 import { scheduled } from './scheduled-definition.ts';
 import { generations } from './generations.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 
 export function schedule(
   scene: SceneState,

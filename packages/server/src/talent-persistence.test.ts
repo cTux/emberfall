@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { talentNodeId, talentRank, availableTalentPoints, BULLSEYE } from '@emberfall/core';
 
 import { CharacterStore } from './characters.ts';

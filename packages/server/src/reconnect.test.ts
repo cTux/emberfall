@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { WebSocket } from './testing/socket.ts';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import { createGameServer } from './worlds.ts';
 
 test('resume authenticates retained sessions, rejects live takeover, expires and cleans up', async (t) => {

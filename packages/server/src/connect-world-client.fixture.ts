@@ -1,5 +1,5 @@
 import { WebSocket } from './testing/socket.ts';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import { once } from 'node:events';
 
 export async function connectWorldClient(port: number, clients: WebSocket[]) {

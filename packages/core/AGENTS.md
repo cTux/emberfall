@@ -2,7 +2,9 @@
 
 Read [the package guide](README.md), [mod design](../../docs/design/mods.md) and
 the relevant gameplay spec. Core owns registries, bundled mods, content-aware
-validation and shared rules; it depends on common, never the reverse.
+validation and shared rules, plus portable contracts, geometry and protocol adapters.
+Read [portable layers](docs/contracts.md) before editing them; these layers must
+never import content, rules, bundled mods or the default game.
 
 Register shipped content through `src/mods/base.mod.ts` and additional modules
 through the explicit `src/mods/index.ts` list. Definition views are derived from

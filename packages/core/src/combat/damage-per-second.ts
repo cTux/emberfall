@@ -1,5 +1,5 @@
 import { damageHistory } from './damage-history.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { COMBAT_TUNING } from './tuning.ts';
 
 export function damagePerSecond(player: Player, now: number) {

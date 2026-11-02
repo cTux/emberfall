@@ -1,4 +1,4 @@
-import type { ClassId } from '@emberfall/common';
+import type { ClassId } from '@emberfall/core/contracts';
 const ailment = (name: string) => {
   return `Hits have a 10% chance to apply ${name}. Each stack deals 1 damage per second for 5 seconds; new stacks refresh the duration.`;
 };

@@ -1,5 +1,5 @@
 import type { DrawingContext } from './rendering/drawing-context';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { drawPlayerHealth } from './effects';
 
 // Preserve the world-scale status anchors above the 48-unit actor, with an outlined reconnect label.

@@ -1,5 +1,5 @@
 import { randomSource } from '../random.ts';
-import { EnemyType } from '@emberfall/common/enums';
+import { EnemyType } from '@emberfall/core/enums';
 import { enemyTypeSpawnChance } from '../configs/enemyTypeSpawnChance.ts';
 import { isChanced } from './isChanced.ts';
 

@@ -1,7 +1,7 @@
 import { nodesById } from './nodes-by-id.ts';
 import { TALENT_TREE } from './talent-tree-nodes.ts';
 import { talentRank } from './talent-rank.ts';
-import type { CharacterProgress } from '@emberfall/common';
+import type { CharacterProgress } from '@emberfall/core/contracts';
 import {
   TALENT_VERSION,
   TALENT_MAX_RANK,

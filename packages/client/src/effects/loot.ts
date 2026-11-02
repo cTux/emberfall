@@ -1,7 +1,7 @@
 import { LOOT_STYLE as STYLE, HIT_BURST } from './loot-style.ts';
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import type { DrawingContext } from '../rendering/drawing-context';
-import type { SceneState, LootDrop } from '@emberfall/common';
+import type { SceneState, LootDrop } from '@emberfall/core/contracts';
 import {
   EQUIPMENT_SLOTS,
   GEAR_DEFINITIONS,

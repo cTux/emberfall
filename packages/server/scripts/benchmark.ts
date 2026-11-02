@@ -30,10 +30,10 @@ const P95_QUANTILE = 0.95;
 const JSON_INDENT = 2;
 import { performance } from 'node:perf_hooks';
 import { Encoder } from '@colyseus/schema';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 
 import { stepCombat, createGame, GAME_MODS } from '@emberfall/core';
-import { prepareState, applyState, SessionState } from '@emberfall/common/protocol';
+import { prepareState, applyState, SessionState } from '@emberfall/core/protocol';
 import { SimulationWorld } from '../src/ecs/simulation.ts';
 import { freshProgress } from '../src/characters.ts';
 

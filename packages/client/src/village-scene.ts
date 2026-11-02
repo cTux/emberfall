@@ -1,4 +1,4 @@
-import type { Player, WorldState } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
 import { inTrainingZone } from '@emberfall/core';
 import type { WorldDrawingContext } from './rendering/drawing-context';
 import type { Preferences } from './preferences';

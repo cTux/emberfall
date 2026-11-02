@@ -2,9 +2,9 @@ import { movementFacing } from '../../client/src/facing.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LocalMovement } from '../../client/src/local-movement.ts';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { ARENA, FOREST, movePlayer } from '@emberfall/core';
-import type { WorldState, Player, ClientMessage } from '@emberfall/common';
+import type { WorldState, Player, ClientMessage } from '@emberfall/core/contracts';
 const hero: Player = {
   id: 'p',
   name: 'P',

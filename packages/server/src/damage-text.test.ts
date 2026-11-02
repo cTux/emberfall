@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { DamageEvent } from '@emberfall/common';
+import type { DamageEvent } from '@emberfall/core/contracts';
 import {
   combineDamageNumbers,
   damageTextFrame,

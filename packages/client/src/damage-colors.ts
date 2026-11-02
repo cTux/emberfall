@@ -1,4 +1,4 @@
-import type { DamageType } from '@emberfall/common';
+import type { DamageType } from '@emberfall/core/contracts';
 
 // Existing combat-label calibration gives each number a fixed 750 ms flight and short initial pop.
 

@@ -1,9 +1,10 @@
 import { TALENT_MAX_RANK, TALENT_THIRD_TIER, TALENT_FINISHER_TIER } from '../talent-catalog.ts';
-import { PERCENT, wrap, wrappedDelta } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
+import { wrap, wrappedDelta } from '@emberfall/core/geometry';
 import { offensiveFollowups } from './offensive-followups.ts';
 import { OFFENSE } from './offensive-tuning.ts';
 import type { TalentCast } from './targeting.ts';
-import type { Enemy, Player } from '@emberfall/common';
+import type { Enemy, Player } from '@emberfall/core/contracts';
 import { forestDistance, FOREST } from '../scene.ts';
 import { rank, applyTalentAilment } from '../talent-ailments.ts';
 import { TALENT_NAMES } from '../talent-tree.ts';

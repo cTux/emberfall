@@ -1,4 +1,4 @@
-import type { Enemy } from '@emberfall/common';
+import type { Enemy } from '@emberfall/core/contracts';
 
 export const enemy = (id: number, x: number, y: number): Enemy => {
   return {

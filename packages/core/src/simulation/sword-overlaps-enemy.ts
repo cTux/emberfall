@@ -1,10 +1,10 @@
 import { type createGame, game } from '../game.ts';
-import type { Player, Enemy } from '@emberfall/common';
+import type { Player, Enemy } from '@emberfall/core/contracts';
 import { PLAYER_ATTACK_RANGE } from './constants.ts';
 
 // A micro-pixel tolerance keeps mathematically tangent sword/body circles from missing due to roundoff.
 import { enemyHitbox } from '../hitboxes.ts';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST } from '../scene.ts';
 
 // A micro-pixel tolerance keeps mathematically tangent sword/body circles from missing due to roundoff.

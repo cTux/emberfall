@@ -1,5 +1,5 @@
 import { type CharacterStats, type createGame, game } from '@emberfall/core';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 
 export function additionalStatViews(
   stats: CharacterStats,

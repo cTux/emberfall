@@ -1,6 +1,6 @@
 import { createTrainingScene } from './create-training-scene.ts';
 import { type createGame, game } from './game.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 
 // Seven dummy IDs occupy the initial training layout; subsequent transient IDs start after them.
 import { TRAINING_DEFINITION } from './definitions/encounters/training.ts';

@@ -1,12 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DIMENSION_IDS } from '@emberfall/common';
-import {
-  prepareState,
-  applyState,
-  materializeState,
-  SessionState,
-} from '@emberfall/common/protocol';
+import { DIMENSION_IDS } from '@emberfall/core/contracts';
+import { prepareState, applyState, materializeState, SessionState } from '@emberfall/core/protocol';
 import {
   dimensionDefinition,
   clientMessage,

@@ -10,7 +10,7 @@ import {
   rollItemStats,
   sellAll,
 } from '@emberfall/core';
-import type { Player, ServerMessage } from '@emberfall/common';
+import type { Player, ServerMessage } from '@emberfall/core/contracts';
 import { freshProgress } from './characters.ts';
 
 import { createRuntime } from './runtime.ts';

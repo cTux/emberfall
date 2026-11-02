@@ -1,5 +1,11 @@
 import { lazy, useCallback, type Dispatch, type SetStateAction } from 'react';
-import type { AccountView, ClientMessage, Player, WorldState, Difficulty } from '@emberfall/common';
+import type {
+  AccountView,
+  ClientMessage,
+  Player,
+  WorldState,
+  Difficulty,
+} from '@emberfall/core/contracts';
 import { GameWindow } from '@emberfall/ui';
 import { Box, Stack, Typography } from '@mui/material';
 import { DeferredContent } from './DeferredContent';

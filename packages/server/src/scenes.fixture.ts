@@ -1,5 +1,5 @@
 import { LOBBY_PORTAL } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 export const hero = (id: string): Player => {
   return {

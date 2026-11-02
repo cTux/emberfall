@@ -4,7 +4,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { experienceRequired, hitEnemy } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 import { tickScene, type SceneWorld } from './scenes.ts';
 

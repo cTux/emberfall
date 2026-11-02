@@ -10,7 +10,7 @@ const MIN_PARTY_MEMBERS = 2;
 import type { Party, PartyRequest, PartyWorld } from './party-models.ts';
 import { interactParty, partyCommand } from './party-interactions.ts';
 import { randomUUID } from 'node:crypto';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { restoreResources } from '@emberfall/core';
 import { createPlayers, simulationFor } from './ecs/simulation.ts';
 import { returnToLobby, tickScene, type SceneWorld } from './scenes.ts';

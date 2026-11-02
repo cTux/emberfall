@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { freshProgress } from './characters.ts';
 
 export const hero = (classId = 'warrior', id = 'hero'): Player => {

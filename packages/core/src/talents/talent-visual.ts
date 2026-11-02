@@ -1,5 +1,5 @@
-import type { SceneState, Player } from '@emberfall/common';
-import { appendSceneEntities } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
+import { appendSceneEntities } from '@emberfall/core/contracts';
 
 // Retain the one-second talent flash so visual effects outlast a single simulation tick.
 const TALENT_VISUAL_MS = 1000;

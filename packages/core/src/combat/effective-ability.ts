@@ -1,8 +1,8 @@
 import type { Game } from './ability-game.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { AbilityDefinition } from '../content/contracts.ts';
 import { game } from '../game.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import { COMBAT_TUNING } from './tuning.ts';
 
 export function effectiveAbility(

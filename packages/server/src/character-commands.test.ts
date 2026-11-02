@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { freshMerchant } from '@emberfall/core';
-import type { Player, ServerMessage } from '@emberfall/common';
+import type { Player, ServerMessage } from '@emberfall/core/contracts';
 import { createRuntime } from './runtime.ts';
 import { Peer } from './network/peer.ts';
 import { freshProgress } from './characters.ts';

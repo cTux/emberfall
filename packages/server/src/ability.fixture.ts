@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { talentNodeId, learnTalent, equipTalent } from '@emberfall/core';
 
 export function ability(player: Player, column: number, row: number, rank = 1) {

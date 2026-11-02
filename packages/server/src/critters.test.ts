@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { ARENA } from '@emberfall/core';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { createCritterMotion, crittersAt } from '../../client/src/critter-motion.ts';
 
 test('ambient critters wander, stay bounded, cull and repeat across forest seams', async () => {

@@ -1,10 +1,10 @@
 import { partyAction } from './party-action.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { Interaction } from './effects';
 import { forestDistance, INTERACTION_RADIUS } from '@emberfall/core';
 
 export function partyInteraction(
-  world: import('@emberfall/common').WorldState | null | undefined,
+  world: import('@emberfall/core/contracts').WorldState | null | undefined,
   player: Player | undefined,
 ): Interaction | null {
   if (!world || !player || player.hitpoints <= 0 || player.reconnecting) {

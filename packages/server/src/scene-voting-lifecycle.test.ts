@@ -6,7 +6,7 @@ import {
   nearbyInteraction,
   clientMessage as validatedMessage,
 } from '@emberfall/core';
-import { clientMessage } from '@emberfall/common';
+import { clientMessage } from '@emberfall/core/contracts';
 import { sceneAction, tickScene, reconcileVote } from './scenes.ts';
 import type { SceneWorld } from './scenes.ts';
 import { hero } from './scenes.fixture.ts';

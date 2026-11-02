@@ -1,5 +1,5 @@
 import { tactics } from './default-tactics.fixture.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { freshProgress } from './characters.ts';
 
 export const hero = (classId = 'druid'): Player => {

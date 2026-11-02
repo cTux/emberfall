@@ -5,11 +5,12 @@ import { game, type createGame } from '../game.ts';
 import { TRANSIENT_EFFECTS } from '../definitions/effects/transient.ts';
 import { ENEMY_RULES } from '../definitions/entities/enemies.ts';
 import { FOREST_ENCOUNTER } from '../definitions/encounters/forest.ts';
-import { appendSceneEntities, wrap } from '@emberfall/common';
+import { appendSceneEntities } from '@emberfall/core/contracts';
+import { wrap } from '@emberfall/core/geometry';
 import { FOREST, forestDistance, forestTrees } from '../scene.ts';
 import { spawnArchetype, enemyMaxHealth } from '../enemies.ts';
-import type { Player, SceneState } from '@emberfall/common';
-import { EnemyType } from '@emberfall/common/enums';
+import type { Player, SceneState } from '@emberfall/core/contracts';
+import { EnemyType } from '@emberfall/core/enums';
 import { spawnEnemyType } from '../utils/spawnEnemyType.ts';
 import type { EnemyDefinition } from '../content/contracts.ts';
 

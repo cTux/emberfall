@@ -1,5 +1,5 @@
 import { BEAR_ART } from './bear-art.ts';
-import type { Bear } from '@emberfall/common';
+import type { Bear } from '@emberfall/core/contracts';
 import { PLAYER_ATTACK_DURATION } from '@emberfall/core';
 
 export function companionFrame(bear: Bear, now: number) {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { ChatMessage, ClientMessage, Player, WorldState } from '@emberfall/common';
+import type { ChatMessage, ClientMessage, Player, WorldState } from '@emberfall/core/contracts';
 import { useChat } from './ChatProvider';
 
 // Bound local cat interjections to the same ten-message visible chat budget as server messages.

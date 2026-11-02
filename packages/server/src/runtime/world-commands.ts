@@ -1,5 +1,5 @@
 import { CHAT_COOLDOWN_MS } from './limits.ts';
-import type { ClientMessage } from '@emberfall/common';
+import type { ClientMessage } from '@emberfall/core/contracts';
 import type { CommandContext, BroadcastState, Session, Snapshot } from './models.ts';
 import type { WorldMembership } from './world-membership.ts';
 import { nearbyInteraction } from '@emberfall/core';

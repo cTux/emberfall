@@ -5,7 +5,7 @@ import { mkdtemp, writeFile, mkdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from './testing/socket.ts';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import { createGameServer } from './worlds.ts';
 
 async function start(root?: string, savePath?: string) {

@@ -1,5 +1,5 @@
-import type { Enemy } from '@emberfall/common';
-import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
+import type { Enemy } from '@emberfall/core/contracts';
+import { Difficulty, EnemyKind, EnemyType } from '@emberfall/core/enums';
 import { type createGame, game } from './game.ts';
 import { enemyAttributes } from './utils/enemyAttributes.ts';
 

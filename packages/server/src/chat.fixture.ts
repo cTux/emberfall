@@ -1,6 +1,6 @@
 import { once } from 'node:events';
 import { WebSocket } from './testing/socket.ts';
-import type { ServerMessage, WorldState } from '@emberfall/common';
+import type { ServerMessage, WorldState } from '@emberfall/core/contracts';
 
 export async function connectChatClient(port: number, sockets: WebSocket[]) {
   const ws = new WebSocket(`ws://127.0.0.1:${port}/ws`);

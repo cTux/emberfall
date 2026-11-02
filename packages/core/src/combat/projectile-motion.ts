@@ -1,8 +1,8 @@
 import { COMBAT_TUNING } from './tuning.ts';
 import { game, type createGame } from '../game.ts';
 type Game = ReturnType<typeof createGame>;
-import { wrappedDelta, wrap } from '@emberfall/common';
-import type { PlayerShot, Enemy } from '@emberfall/common';
+import { wrappedDelta, wrap } from '@emberfall/core/geometry';
+import type { PlayerShot, Enemy } from '@emberfall/core/contracts';
 import { FOREST, forestDistance } from '../scene.ts';
 import { enemyHitbox, overlapsBody } from '../hitboxes.ts';
 import { COLLISION } from '../definitions/collision.ts';

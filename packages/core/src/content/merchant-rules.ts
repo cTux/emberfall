@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { Registries } from './contracts.ts';
 import type { createItemRules } from './item-rules.ts';
 import type { createStorageRules } from './storage-rules.ts';

@@ -1,6 +1,6 @@
 import type { ResourceNode } from './resource-node.ts';
 import { VILLAGE_RESOURCES } from './village-resources.ts';
-import type { DimensionId } from '@emberfall/common';
+import type { DimensionId } from '@emberfall/core/contracts';
 import { FOREST, forestTrees, wrappedDelta } from './scene.ts';
 import { ARENA } from './world.ts';
 import { FOREST_RESOURCE_QUERY_PADDING, FOREST_RESOURCE_LAYOUT } from './gathering-rules.ts';

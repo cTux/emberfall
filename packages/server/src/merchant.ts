@@ -1,5 +1,5 @@
 import { freshMerchant } from '@emberfall/core';
-import type { Merchant, ChatMessage } from '@emberfall/common';
+import type { Merchant, ChatMessage } from '@emberfall/core/contracts';
 import type { CharacterStore } from './characters.ts';
 import { addChat } from './chat.ts';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';

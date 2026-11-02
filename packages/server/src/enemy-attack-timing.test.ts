@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { FOREST, stepCombat } from '@emberfall/core';
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 
 import { player, enemy } from './enemies.fixture.ts';
 

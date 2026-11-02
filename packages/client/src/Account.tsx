@@ -3,7 +3,7 @@ import { apiUrl } from './urls.ts';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { Alert, Button, Stack, TextField, Typography } from '@mui/material';
 import { GameWindow } from '@emberfall/ui';
-import { nicknameSchema, type AccountView } from '@emberfall/common';
+import { nicknameSchema, type AccountView } from '@emberfall/core/contracts';
 
 // Ten seconds bounds account requests so an unavailable service cannot leave the form pending indefinitely.
 const ACCOUNT_REQUEST_TIMEOUT_MS = 10_000;

@@ -1,7 +1,7 @@
 import { RESOURCE_ART } from './resource-art.ts';
 import type { DrawingContext } from './rendering/drawing-context';
 import type { ResourceNode } from '@emberfall/core';
-import type { ResourceState } from '@emberfall/common';
+import type { ResourceState } from '@emberfall/core/contracts';
 import { drawWorldBar } from './world-bar';
 
 export function drawResourceHealth(ctx: DrawingContext, node: ResourceNode, state?: ResourceState) {

@@ -1,5 +1,5 @@
 import { randomSource } from '../random.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import { isChanced } from './isChanced.ts';
 
 export function isMultiChanced(percent: number, random = randomSource.next): number {

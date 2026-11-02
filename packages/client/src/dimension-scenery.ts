@@ -1,5 +1,5 @@
 import type { ResourceNode } from '@emberfall/core';
-import type { ResourceState } from '@emberfall/common';
+import type { ResourceState } from '@emberfall/core/contracts';
 import { dimensionArt, DIMENSION_ATLAS } from './dimension-art';
 import { makeMask } from './lighting';
 import type { Scenery } from './village';

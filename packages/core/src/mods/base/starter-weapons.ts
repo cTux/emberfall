@@ -1,4 +1,4 @@
-import type { ClassId } from '@emberfall/common';
+import type { ClassId } from '@emberfall/core/contracts';
 
 export const STARTER_WEAPONS = {
   warrior: 'warrior-sword',

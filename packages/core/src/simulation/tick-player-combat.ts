@@ -1,7 +1,7 @@
 import type { Game } from './game.ts';
 import { playerAimAngle } from './player-aim-angle.ts';
 import { castInputs } from './cast-inputs.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 import { game } from '../game.ts';
 import { tickTalentEffects } from '../talent-effects.ts';
 import { nearestSpellTarget, fireClassAttack, tickPlayerShots } from '../class-combat.ts';
