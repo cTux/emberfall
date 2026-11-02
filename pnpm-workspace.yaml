@@ -14,4 +14,3 @@ minimumReleaseAgeExclude:
   - source-map-js@1.2.2
   - body-parser@2.4.0
   - fast-uri@3.1.9
-  - qs@6.16.1
