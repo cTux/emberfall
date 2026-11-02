@@ -27,7 +27,6 @@ export { recordCombatTotal } from './combat/meters.ts';
 export * from './enemies.ts';
 export * from './simulation.ts';
 export * from './training.ts';
-
 export * from './equipment.ts';
 export * from './inventory.ts';
 export * from './item-improvement.ts';
@@ -40,15 +39,11 @@ export * from './game.ts';
 export * from './content/contracts.ts';
 export { baseMod, GAME_MODS } from './mods/index.ts';
 export { RUNTIME } from './definitions/runtime.ts';
-import { RUNTIME } from './definitions/runtime.ts';
-export const MAX_PLAYERS = RUNTIME.maxPlayers;
-export const CHAT_LIMIT = RUNTIME.chatLimit;
-export const CHAT_MAX_LENGTH = RUNTIME.chatMaxLength;
-
 export * from './definitions/equipment.ts';
-
 export * from './gathering.ts';
 export * from './timed-activity.ts';
 export * from './item-stats.ts';
-
 export { randomSource } from './random.ts';
+export { MAX_PLAYERS } from './max-players.ts';
+export { CHAT_LIMIT } from './chat-limit.ts';
+export { CHAT_MAX_LENGTH } from './chat-max-length.ts';

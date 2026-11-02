@@ -1,43 +1,5 @@
-import { z } from 'zod';
-
-export const OFFENSIVE_PRIORITIES = ['nearest', 'lowestHealth', 'elite'] as const;
-export const DEFENSIVE_PRIORITIES = ['lowestHealth', 'players', 'self'] as const;
-// Preserve the four saved healing presets: any injury, early healing, quarter-health loss and half health.
-const HEAL_THRESHOLDS = { injured: 1, early: 0.9, quarterLost: 0.75, half: 0.5 } as const;
-const priorities = <T extends string>(values: readonly [T, ...T[]]) => {
-  return z
-    .array(z.enum(values))
-    .length(values.length)
-    .refine((list) => {
-      return new Set(list).size === values.length;
-    });
-};
-
-export const tacticsSchema = z.object({
-  offensive: priorities(OFFENSIVE_PRIORITIES),
-  defensive: priorities(DEFENSIVE_PRIORITIES),
-  keepTarget: z.boolean(),
-  healBelow: z.union([
-    z.literal(HEAL_THRESHOLDS.injured),
-    z.literal(HEAL_THRESHOLDS.early),
-    z.literal(HEAL_THRESHOLDS.quarterLost),
-    z.literal(HEAL_THRESHOLDS.half),
-  ]),
-  includeCompanions: z.boolean(),
-  stance: z.enum(['balanced', 'aggressive', 'protect', 'passive']),
-  distance: z.enum(['close', 'medium', 'far']),
-  companionTarget: z.enum(['priorities', 'assist', 'nearOwner']),
-  avoidHazards: z.boolean(),
-});
-export type Tactics = z.infer<typeof tacticsSchema>;
-export const DEFAULT_TACTICS: Tactics = {
-  offensive: ['nearest', 'lowestHealth', 'elite'],
-  defensive: ['lowestHealth', 'players', 'self'],
-  keepTarget: false,
-  healBelow: HEAL_THRESHOLDS.injured,
-  includeCompanions: true,
-  stance: 'balanced',
-  distance: 'medium',
-  companionTarget: 'priorities',
-  avoidHazards: true,
-};
+export { OFFENSIVE_PRIORITIES } from './offensive-priorities.ts';
+export { DEFENSIVE_PRIORITIES } from './defensive-priorities.ts';
+export { tacticsSchema } from './tactics-schema.ts';
+export type { Tactics } from './tactics-contract.ts';
+export { DEFAULT_TACTICS } from './default-tactics.ts';

@@ -1,22 +1,2 @@
-import type { Player } from '@emberfall/common';
-import { freshProgress } from './characters.ts';
-
-export const hero = (): Player => {
-  return {
-    ...freshProgress('warrior'),
-    classId: 'warrior',
-    id: 'p',
-    name: 'Hero',
-    x: 2400,
-    y: 1280,
-    color: 0,
-  };
-};
-
-export const item = (itemId: string, quantity = 1) => {
-  return {
-    id: crypto.randomUUID(),
-    itemId,
-    quantity,
-  };
-};
+export { hero } from './inventory-hero.fixture.ts';
+export { item } from './item.fixture.ts';

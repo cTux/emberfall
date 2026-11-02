@@ -1,28 +1,4 @@
-import { game } from '@emberfall/core';
-
-import { weaponSrc, statusSrc } from './class-art';
 export { weaponSrc, spellSrc, statusSrc } from './class-art';
-export const classAbility = Object.fromEntries(
-  game.registries.classes.values().map((player) => {
-    return [player.id, player.ailment];
-  }),
-);
-const load = (src: string) => {
-  const image = new Image();
-  image.src = src;
-
-  return image;
-};
-
-export const weaponImages = Object.fromEntries(
-  game.registries.classes.values().map((player) => {
-    return [player.id, load(weaponSrc(player.id))];
-  }),
-);
-export const statusImages = {
-  bleed: load(statusSrc('bleed')),
-  poison: load(statusSrc('poison')),
-  burn: load(statusSrc('burn')),
-  roots: load(statusSrc('roots')),
-  silence: load(statusSrc('silence')),
-};
+export { classAbility } from './class-ability.ts';
+export { weaponImages } from './weapon-images.ts';
+export { statusImages } from './status-images.ts';

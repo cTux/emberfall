@@ -136,6 +136,22 @@ review decisions. Tests exercise both rejected cascades and accepted tables,
 guards, ranges and calls in
 [`dispatch-lint.test.ts`](../../tests/dispatch-lint.test.ts).
 
+#### Public unit lint
+
+`emberfall-structure/one-public-unit` uses
+[`public-unit-lint.mjs`](../../scripts/public-unit-lint.mjs) in the shared Oxlint
+configuration. It allows at most one locally implemented runtime export per file,
+including functions, components, classes, schemas, constants and destructured
+bindings. Supporting type exports and re-exports are allowed. Storybook story
+registration files have a narrow configuration override for their required format.
+There is no existing-code baseline or package-wide exemption.
+
+The rule runs in editors, `pnpm lint` and CI. It has no automatic fix: ownership,
+initialization and shared-state boundaries need review. Regression cases in
+[`public-unit-lint.test.ts`](../../tests/public-unit-lint.test.ts) check multiple
+declarations, local export lists, default exports, destructuring, types and
+re-exports. See the [public-unit convention](code-structure.md#public-units).
+
 #### Type and runtime checks
 
 Selected rules additionally require immutable bindings when possible, block-scoped

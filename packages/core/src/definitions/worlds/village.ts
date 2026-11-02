@@ -1,14 +1,8 @@
-import { game } from '../../game.ts';
-import type { Widen } from '../../content/contracts.ts';
-export const VILLAGE_DEFINITION = game.registries.worlds.require('village').value as Widen<
-  typeof import('../../mods/base/worlds/village.ts').VILLAGE_DEFINITION
->;
-export const {
-  geometry: ARENA,
-  wardrobe: WARDROBE,
-  innkeeper: INNKEEPER,
-  buildings: BUILDINGS,
-  torches: TORCHES,
-  trainingZones: TRAINING_ZONES,
-  paths: PATH_CURVES,
-} = VILLAGE_DEFINITION;
+export { VILLAGE_DEFINITION } from './village-definition.ts';
+export { ARENA } from './arena.ts';
+export { WARDROBE } from './wardrobe.ts';
+export { INNKEEPER } from './innkeeper.ts';
+export { BUILDINGS } from './buildings.ts';
+export { TORCHES } from './torches.ts';
+export { TRAINING_ZONES } from './training-zones.ts';
+export { PATH_CURVES } from './path-curves.ts';

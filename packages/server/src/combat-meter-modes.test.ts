@@ -23,8 +23,10 @@ test('healing credits the caster for actual player/companion HP restored and exp
   assert.equal(caster.healingMeter!.total, 3);
   assert.equal(ally.healingMeter, undefined);
   tickCompanion(caster, undefined, 0, 0);
-  caster.bear!.hitpoints -= 2;
-  heal(caster.bear!, 1, caster, 11000);
+  const bear = caster.bear;
+  assert.ok(bear);
+  bear.hitpoints -= 2;
+  heal(bear, 1, caster, 11000);
   assert.equal(caster.healingMeter!.total, 5);
   assert.equal(caster.healingMeter!.perSecond, 1);
   refreshCombatTotals(caster, 14999);

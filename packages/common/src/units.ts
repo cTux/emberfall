@@ -1,4 +1,2 @@
-// SI defines one second as exactly one thousand milliseconds.
-export const MILLISECONDS_PER_SECOND = 1000;
-// A percentage is a ratio per hundred, independent of gameplay tuning.
-export const PERCENT = 100;
+export { MILLISECONDS_PER_SECOND } from './milliseconds-per-second.ts';
+export { PERCENT } from './percent.ts';

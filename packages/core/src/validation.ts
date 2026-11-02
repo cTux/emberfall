@@ -1,2 +1,3 @@
-import { game } from './game.ts';
-export const { classSchema, progressSchema, clientMessage } = game.rules;
+export { classSchema } from './class-schema.ts';
+export { progressSchema } from './progress-schema.ts';
+export { clientMessage } from './client-message.ts';

@@ -1,86 +1,14 @@
-import { z } from 'zod';
-import { CONTRACT_LIMITS } from './limits.ts';
-// The item-instance contract supports the five improvement tiers requested for the anvil.
-export const MAX_ITEM_STARS = 5;
-export const itemRollSchema = z.object({
-  stars: z.number().int().min(0).max(MAX_ITEM_STARS).optional(),
-  rarity: z.string().min(1).max(CONTRACT_LIMITS.rarityIdCharacters).optional(),
-  stats: z
-    .record(
-      z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
-      z.number().finite().nonnegative(),
-    )
-    .optional(),
-});
-export const inventoryItemSchema = itemRollSchema.extend({
-  id: z.string().min(1).max(CONTRACT_LIMITS.instanceIdCharacters),
-  itemId: z.string().min(1).max(CONTRACT_LIMITS.contentIdCharacters),
-  quantity: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
-});
-export const backpackSchema = z.array(inventoryItemSchema).refine((items) => {
-  return (
-    new Set(
-      items.map((item) => {
-        return item.id;
-      }),
-    ).size === items.length
-  );
-}, 'Duplicate item identity');
-export type BackpackItem = z.infer<typeof backpackSchema>[number];
-// The existing backpack grid has twenty cells; keep inventory and buyback capacity aligned.
-export const INVENTORY_SLOTS = 20;
-// A storage tab holds twice the backpack capacity in the existing save and UI layout.
-export const STORAGE_SLOTS = 40;
-export const storageNameSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .regex(/^[^\p{Cc}\p{Cf}]*$/u);
-export const storagesSchema = z
-  .array(
-    z.object({
-      name: storageNameSchema,
-      items: backpackSchema.refine((items) => {
-        return items.length <= STORAGE_SLOTS;
-      }),
-    }),
-  )
-  .length(CONTRACT_LIMITS.storageTabs)
-  .refine((storages) => {
-    const ids = storages.flatMap((storage) => {
-      return storage.items.map((item) => {
-        return item.id;
-      });
-    });
-
-    return new Set(ids).size === ids.length;
-  }, 'Duplicate stored item identity');
-export function freshStorages(): z.infer<typeof storagesSchema> {
-  return Array.from({ length: CONTRACT_LIMITS.storageTabs }, (_, index) => {
-    return { name: `Storage ${index + 1}`, items: [] };
-  });
-}
-
-export const storehouseSchema = z.object({
-  coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-  storages: storagesSchema,
-});
-export const BUYBACK_SLOTS = INVENTORY_SLOTS;
-const traderSchema = z.object({
-  refreshAt: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
-  coins: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
-  backpack: backpackSchema,
-  buyback: backpackSchema
-    .refine((items) => {
-      return items.length <= BUYBACK_SLOTS;
-    })
-    .optional(),
-});
-export const merchantSchema = traderSchema.extend({ craftsman: traderSchema.optional() });
-export interface Merchant {
-  craftsman?: Merchant;
-  refreshAt?: number;
-  coins: number;
-  backpack: BackpackItem[];
-  buyback: BackpackItem[];
-}
+export { MAX_ITEM_STARS } from './max-item-stars.ts';
+export { itemRollSchema } from './item-roll-schema.ts';
+export { inventoryItemSchema } from './inventory-item-schema.ts';
+export { backpackSchema } from './backpack-schema.ts';
+export type { BackpackItem } from './backpack-item.ts';
+export { INVENTORY_SLOTS } from './inventory-slots.ts';
+export { STORAGE_SLOTS } from './storage-slots.ts';
+export { storageNameSchema } from './storage-name-schema.ts';
+export { storagesSchema } from './storages-schema.ts';
+export { freshStorages } from './fresh-storages.ts';
+export { storehouseSchema } from './storehouse-schema.ts';
+export { BUYBACK_SLOTS } from './buyback-slots.ts';
+export { merchantSchema } from './merchant-schema.ts';
+export type { Merchant } from './merchant.ts';

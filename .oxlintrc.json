@@ -4,7 +4,8 @@
   "jsPlugins": [
     "@stylistic/eslint-plugin",
     "./scripts/dispatch-lint.mjs",
-    "./scripts/magic-values-lint.mjs"
+    "./scripts/magic-values-lint.mjs",
+    "./scripts/public-unit-lint.mjs"
   ],
   "categories": {
     "correctness": "error"
@@ -24,14 +25,26 @@
         "prev": "*",
         "next": ["function", "return", "throw", "for", "switch", "if"]
       },
-      { "blankLine": "always", "prev": ["function", "block-like"], "next": "*" }
+      {
+        "blankLine": "always",
+        "prev": ["function", "block-like"],
+        "next": "*"
+      }
     ],
     "@stylistic/lines-between-class-members": [
       "error",
       {
         "enforce": [
-          { "blankLine": "always", "prev": "method", "next": "*" },
-          { "blankLine": "always", "prev": "*", "next": "method" }
+          {
+            "blankLine": "always",
+            "prev": "method",
+            "next": "*"
+          },
+          {
+            "blankLine": "always",
+            "prev": "*",
+            "next": "method"
+          }
         ]
       }
     ],
@@ -43,7 +56,10 @@
     "typescript/no-misused-promises": "error",
     "typescript/consistent-type-imports": [
       "error",
-      { "fixStyle": "inline-type-imports", "disallowTypeAnnotations": false }
+      {
+        "fixStyle": "inline-type-imports",
+        "disallowTypeAnnotations": false
+      }
     ],
     "typescript/no-unnecessary-type-assertion": "error",
     "typescript/no-import-type-side-effects": "error",
@@ -56,9 +72,26 @@
     "typescript/switch-exhaustiveness-check": "error",
     "eslint/prefer-const": "error",
     "eslint/no-var": "error",
-    "eslint/eqeqeq": ["error", "always", { "null": "ignore" }],
-    "eslint/no-duplicate-imports": ["error", { "allowSeparateTypeImports": true }],
-    "eslint/max-lines": ["error", { "max": 249, "skipBlankLines": true }],
+    "eslint/eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "ignore"
+      }
+    ],
+    "eslint/no-duplicate-imports": [
+      "error",
+      {
+        "allowSeparateTypeImports": true
+      }
+    ],
+    "eslint/max-lines": [
+      "error",
+      {
+        "max": 249,
+        "skipBlankLines": true
+      }
+    ],
     "react/react-in-jsx-scope": "off",
     "eslint/no-debugger": "error",
     "jsx-a11y/prefer-tag-over-role": "off",
@@ -72,14 +105,21 @@
     "eslint/no-implied-eval": "error",
     "eslint/curly": ["error", "all"],
     "eslint/arrow-body-style": ["error", "always"],
-    "unicorn/switch-case-braces": ["error", "always"]
+    "unicorn/switch-case-braces": ["error", "always"],
+    "emberfall-structure/one-public-unit": "error"
   },
   "ignorePatterns": ["**/dist/**", "**/build/**", "**/coverage/**"],
   "overrides": [
     {
       "files": ["packages/client/src/rendering/pixi-context.ts"],
       "rules": {
-        "eslint/max-lines": ["error", { "max": 260, "skipBlankLines": true }]
+        "eslint/max-lines": [
+          "error",
+          {
+            "max": 260,
+            "skipBlankLines": true
+          }
+        ]
       }
     },
     {
@@ -97,6 +137,12 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "files": ["**/*.stories.ts", "**/*.stories.tsx"],
+      "rules": {
+        "emberfall-structure/one-public-unit": "off"
       }
     }
   ]

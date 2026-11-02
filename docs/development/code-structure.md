@@ -36,6 +36,34 @@ own owners; a configuration table does not replace validation, save ordering or
 error handling. Reuse the documented package dependency directions, enforced by
 [`package-boundaries.test.ts`](../../tests/package-boundaries.test.ts).
 
+### Public units
+
+Each implementation file exposes one cohesive runtime unit: a utility function,
+component, class, schema or declarative definition. Supporting types may be
+exported beside that unit. Keep helpers and internal types private when they
+serve only that implementation. Split independently useful functions, components
+and values into separate files; name each file for the unit it owns.
+
+Re-export declarations do not count as implementations. Existing package entrypoints
+and compatibility modules may re-export several units; new implementation files
+should import their local dependencies from their owners, avoiding cycles through
+those entrypoints. Preserve public names, saved IDs, initialization order and
+shared state when extracting existing code. A type-only contract file can hold
+related contracts without manufacturing a runtime export.
+
+Storybook `*.stories.ts` and `*.stories.tsx` files follow its required default
+metadata plus named-story format. This exception applies to story registration,
+not reusable components or helpers beside stories.
+
+[`emberfall-structure/one-public-unit`](quality.md#public-unit-lint) enforces the
+runtime export count. Review still checks whether supporting types belong to the
+unit, filenames describe their owners and a large exported object is a coherent
+definition rather than a collection of unrelated utilities.
+
+![Concept preview: one implementation per file with supporting types and private helpers.](../images/public-units.svg)
+
+This illustrates the source convention, not verified gameplay.
+
 ### Dispatch tables
 
 When one value selects independent operations, use a typed handler table and

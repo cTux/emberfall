@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="260" viewBox="0 0 880 260">
+  <rect width="880" height="260" rx="16" fill="#101817"/>
+  <g font-family="monospace" font-size="18" fill="#eeeddf">
+    <text x="32" y="42" fill="#e6be80">One public runtime unit per implementation file</text>
+    <rect x="32" y="68" width="390" height="150" rx="10" fill="#192820" stroke="#875039"/>
+    <text x="52" y="102" fill="#9bbca1">calculateDamage.ts</text>
+    <text x="52" y="138">export calculateDamage</text>
+    <text x="52" y="168">export type DamageInput</text>
+    <text x="52" y="198" fill="#b8c9b7">private helpers stay here</text>
+    <rect x="454" y="68" width="390" height="150" rx="10" fill="#192820" stroke="#875039"/>
+    <text x="474" y="102" fill="#9bbca1">HealthBar.tsx</text>
+    <text x="474" y="138">export HealthBar</text>
+    <text x="474" y="168">export type HealthBarProps</text>
+    <text x="474" y="198" fill="#b8c9b7">private styles stay here</text>
+  </g>
+</svg>

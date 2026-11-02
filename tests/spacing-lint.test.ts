@@ -25,22 +25,22 @@ test('spacing lint rejects dense code, fixes it and preserves braced guards', ()
   try {
     writeFileSync(
       file,
-      `export function finish(active: boolean) {
+      `function finish(active: boolean) {
   if (!active) { return; }
   const value = 1;
   return value;
 }
-export function fail() {
+function fail() {
   console.log('failure');
   throw new Error('failure');
 }
-export class Example {
+class Example {
   x = 1;
   y = 2;
   finish() { return this.x; }
   trim() { return this.y; }
 }
-export async function controls(values: number[], record: Record<string, number>, stream: AsyncIterable<number>) {
+async function controls(values: number[], record: Record<string, number>, stream: AsyncIterable<number>) {
   console.log('for');
   for (let index = 0; index < values.length; index++) { console.log(index); }
   console.log('for in');
@@ -54,6 +54,7 @@ export async function controls(values: number[], record: Record<string, number>,
   console.log('if');
   if (values.length) { console.log('some'); } else if (!values.length) { console.log('none'); }
 }
+export const spacingExamples = { finish, fail, Example, controls };
 `,
     );
     const before = lint();
@@ -66,7 +67,7 @@ export async function controls(values: number[], record: Record<string, number>,
     const source = readFileSync(file, 'utf8');
     assert.match(source, /if \(!active\) \{ return; \}\n\n  const value/);
     assert.match(source, /const value = 1;\n\n  return value;/);
-    assert.match(source, /}\n\nexport function fail/);
+    assert.match(source, /}\n\nfunction fail/);
     assert.match(source, /console\.log\('failure'\);\n\n  throw/);
     assert.match(source, /x = 1;\n  y = 2;\n\n  finish/);
     assert.match(source, /finish\(\) { return this.x; }\n\n  trim/);

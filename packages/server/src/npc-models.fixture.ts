@@ -1,11 +1,3 @@
-import { DEFAULT_NPC_MODEL } from './npc-models.ts';
-
-export const signal = () => {
-  return new AbortController().signal;
-};
-
-export const answer = (content = 'Welcome, traveller!') => {
-  return Response.json({ message: { content }, done: true });
-};
-
-export const defaults = { baseUrl: 'http://127.0.0.1:11434', model: DEFAULT_NPC_MODEL };
+export { signal } from './signal.fixture.ts';
+export { answer } from './answer.fixture.ts';
+export { defaults } from './defaults.fixture.ts';

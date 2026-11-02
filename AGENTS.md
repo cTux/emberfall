@@ -4,6 +4,8 @@ Read [communication rules](docs/agents/communication.md) for every task. Before 
 
 ## Project constraints
 
+- Expose one public runtime unit per implementation file, with its supporting types. Keep private helpers with their owner; follow [public units](docs/development/code-structure.md#public-units) and keep its lint rule enabled.
+
 - Name tuning values, limits and timeouts at their owning definition and comment why the exact value is needed. Keep structural literals and named content/style data readable; follow [numeric values](docs/development/quality.md#numeric-values) and keep its lint rule enabled.
 
 - Always use curly braces for `if`/`else` and loop bodies, including single statements; use block bodies with explicit returns for arrow functions and braces around nonempty `switch` cases. Keep `else if` chains and grouped empty case labels. See [lint policy](docs/development.md#lint-policy).
