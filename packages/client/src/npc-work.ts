@@ -1,5 +1,5 @@
 import type { DrawingContext } from './rendering/drawing-context';
-import type { VillageNpc } from '@emberfall/common';
+import type { VillageNpc } from '@emberfall/core/contracts';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 
 import {

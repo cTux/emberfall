@@ -1,16 +1,14 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
 const packages = path.resolve(import.meta.dirname, '../packages');
-const common = path.join(packages, 'common');
 const core = path.join(packages, 'core');
 
 const forbiddenPackages: Record<string, readonly string[]> = {
-  common: ['core', 'client', 'server', 'ui'],
   core: ['client', 'server', 'ui'],
-  ui: ['common', 'core', 'client', 'server'],
+  ui: ['core', 'client', 'server'],
   client: ['server'],
   server: ['client', 'ui'],
 };
@@ -67,20 +65,58 @@ test('workspace packages preserve their documented dependency direction', () => 
   }
 });
 
-test('common cannot depend on core, and TypeScript enums belong in common', () => {
-  const manifest = JSON.parse(readFileSync(path.join(common, 'package.json'), 'utf8'));
+const portableAreas: Record<string, readonly string[]> = {
+  contracts: ['contracts'],
+  geometry: ['geometry'],
+  protocol: ['contracts', 'geometry', 'protocol'],
+};
 
-  for (const section of [
-    'dependencies',
-    'devDependencies',
-    'peerDependencies',
-    'optionalDependencies',
-  ]) {
-    assert.equal(manifest[section]?.['@emberfall/core'], undefined);
+test('portable core entrypoints cannot initialize content, rules or bundled mods', () => {
+  const manifest = JSON.parse(readFileSync(path.join(core, 'package.json'), 'utf8'));
+
+  for (const [area, allowed] of Object.entries(portableAreas)) {
+    const root = path.join(core, 'src', area);
+
+    for (const file of readdirSync(root, { recursive: true, encoding: 'utf8' })) {
+      if (!file.endsWith('.ts')) {
+        continue;
+      }
+
+      const filename = path.join(root, file);
+      const source = readFileSync(filename, 'utf8');
+
+      for (const [, specifier] of source.matchAll(
+        /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]([^'"]+)['"]/g,
+      )) {
+        if (specifier === 'zod' || (area === 'protocol' && specifier === '@colyseus/schema')) {
+          continue;
+        }
+
+        const exported = specifier.startsWith('@emberfall/core/')
+          ? manifest.exports[specifier.replace('@emberfall/core/', './')]
+          : undefined;
+        const target = exported
+          ? path.resolve(core, exported)
+          : path.resolve(path.dirname(filename), specifier);
+        assert.ok(
+          (specifier.startsWith('.') || exported) &&
+            allowed.some((directory) => {
+              return target.startsWith(`${path.join(core, 'src', directory)}${path.sep}`);
+            }),
+          `${filename}: ${specifier} would escape the portable ${area} layer`,
+        );
+      }
+    }
   }
+});
 
+test('TypeScript enums belong in core contracts', () => {
   for (const pkg of readdirSync(packages)) {
     const sourceRoot = path.join(packages, pkg, 'src');
+
+    if (!existsSync(path.join(packages, pkg, 'package.json'))) {
+      continue;
+    }
 
     for (const file of readdirSync(sourceRoot, { recursive: true, encoding: 'utf8' })) {
       if (!/\.tsx?$/.test(file)) {
@@ -91,22 +127,11 @@ test('common cannot depend on core, and TypeScript enums belong in common', () =
       const source = readFileSync(filename, 'utf8');
 
       if (/\benum\s+\w+\s*\{/.test(source)) {
-        assert.equal(pkg, 'common', filename);
-      }
-
-      if (pkg !== 'common') {
-        continue;
-      }
-
-      for (const [, specifier] of source.matchAll(
-        /(?:\bfrom\s*|\bimport\s*(?:\(\s*)?|\brequire\s*\(\s*)['"]([^'"]+)['"]/g,
-      )) {
-        assert.ok(!/^@emberfall\/core(?:\/|$)/.test(specifier), filename);
-
-        if (specifier.startsWith('.')) {
-          const target = path.resolve(path.dirname(filename), specifier);
-          assert.ok(target !== core && !target.startsWith(`${core}${path.sep}`), filename);
-        }
+        assert.equal(pkg, 'core', filename);
+        assert.ok(
+          filename.startsWith(`${path.join(core, 'src', 'contracts')}${path.sep}`),
+          filename,
+        );
       }
     }
   }

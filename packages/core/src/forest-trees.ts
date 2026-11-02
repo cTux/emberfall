@@ -1,6 +1,6 @@
 import { forestDistance } from './forest-distance.ts';
 import { FOREST_DEFINITION, FOREST, FOREST_PORTAL } from './definitions/worlds/forest.ts';
-import { wrap } from '@emberfall/common';
+import { wrap } from '@emberfall/core/geometry';
 import { SCENERY_RANDOM } from './scenery-seed.ts';
 
 // Existing integer hash decorrelates adjacent cells while preserving deterministic tree identities.

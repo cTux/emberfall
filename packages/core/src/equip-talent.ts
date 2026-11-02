@@ -1,7 +1,7 @@
 import type { Progress } from './progress.ts';
 import { nodesById } from './nodes-by-id.ts';
 import { isTalentLearned } from './is-talent-learned.ts';
-import type { CharacterProgress } from '@emberfall/common';
+import type { CharacterProgress } from '@emberfall/core/contracts';
 import { TALENT_ACTION_SLOTS } from './talent-catalog.ts';
 
 export function equipTalent(

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="330" viewBox="0 0 800 330" role="img" aria-labelledby="title desc">
+  <title id="title">Core package dependency direction</title>
+  <desc id="desc">Client and server import separate core entrypoints. Gameplay may import contracts and geometry. Protocol may import contracts and geometry. Portable layers never import gameplay.</desc>
+  <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#6fbbff"/></marker></defs>
+  <rect width="800" height="330" rx="16" fill="#111c2b"/>
+  <g font-family="sans-serif" text-anchor="middle" fill="#e5efff">
+    <text x="400" y="32" font-size="20">One core package, separate entrypoints</text>
+    <g fill="#233d59" stroke="#6fbbff">
+      <rect x="265" y="54" width="270" height="46" rx="8"/>
+      <rect x="65" y="144" width="230" height="48" rx="8"/>
+      <rect x="505" y="144" width="230" height="48" rx="8"/>
+      <rect x="65" y="250" width="280" height="48" rx="8"/>
+      <rect x="455" y="250" width="280" height="48" rx="8"/>
+    </g>
+    <g font-size="17">
+      <text x="400" y="83">Client / server</text>
+      <text x="180" y="174">Gameplay / default game</text>
+      <text x="620" y="174">Protocol adapter</text>
+      <text x="205" y="280">Contracts / enums / units</text>
+      <text x="595" y="280">Pure geometry</text>
+    </g>
+    <text x="400" y="322" font-size="13">Arrows: may import. Portable layers never import gameplay.</text>
+  </g>
+  <g stroke="#6fbbff" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <path d="M330 100L200 144"/><path d="M470 100L600 144"/>
+    <path d="M180 192L205 250"/><path d="M235 192L550 250"/>
+    <path d="M565 192L250 250"/><path d="M620 192L595 250"/>
+    <path d="M265 77H30V274H65"/><path d="M535 77H770V274H735"/>
+  </g>
+</svg>

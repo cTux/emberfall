@@ -5,7 +5,7 @@ export type {
   DamageType,
   GearStats,
   GearDefinition,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 export { EQUIPMENT_SLOTS } from './equipment-slots.ts';
 export { SLOT_GEAR_TYPES } from './slot-gear-types.ts';
 export { CLASS_GEAR_TYPES } from './class-gear-types.ts';

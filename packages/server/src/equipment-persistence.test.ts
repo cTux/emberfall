@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Encoder, Decoder } from '@colyseus/schema';
-import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import { SessionState, projectState, materializeState } from '@emberfall/core/protocol';
 import { CLASS_IDS, starterEquipment } from '@emberfall/core';
 
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 import { CharacterStore, decodeProgress, freshProgress } from './characters.ts';
 
 import { hero, scene } from './equipment.fixture.ts';

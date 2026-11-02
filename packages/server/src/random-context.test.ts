@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 import {
   randomSource,
   createGame,

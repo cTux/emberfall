@@ -3,7 +3,7 @@ import { stoneGatheredArt } from './stone-gathered-art.ts';
 import { stoneArt } from './stone-art.ts';
 import { gatheredPlants } from './gathered-plants.ts';
 import type { ResourceNode } from '@emberfall/core';
-import type { ResourceState } from '@emberfall/common';
+import type { ResourceState } from '@emberfall/core/contracts';
 import type { Scenery } from './village';
 import { dimensionScenery } from './dimension-scenery';
 import { gatheredArt, plantArt, environmentArt } from './art';

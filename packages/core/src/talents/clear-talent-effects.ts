@@ -1,6 +1,6 @@
 import { fighters } from './fighters.ts';
 import { generations } from './generations.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 export function clearTalentEffects(player: Player) {
   fighters.delete(player);

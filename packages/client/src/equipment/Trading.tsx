@@ -3,7 +3,7 @@ import { Box, IconButton, Tooltip } from '@mui/material';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSackDollar } from '@fortawesome/free-solid-svg-icons/faSackDollar';
 import { Backpack, ChapterTabs } from '@emberfall/ui';
-import type { ClientMessage, Player } from '@emberfall/common';
+import type { ClientMessage, Player } from '@emberfall/core/contracts';
 import { backpackViews } from './backpack';
 import { sameInventoryPlayer } from './same-inventory-player';
 
@@ -17,7 +17,7 @@ function TradingView({
   send,
 }: {
   player: Player;
-  merchant: import('@emberfall/common').Merchant;
+  merchant: import('@emberfall/core/contracts').Merchant;
   craftsman?: boolean;
   send: (message: ClientMessage) => void;
 }) {

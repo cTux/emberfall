@@ -1,8 +1,8 @@
 import { PICKUP_DEFINITIONS, PICKUP_RULES } from '../definitions/entities/pickups.ts';
-import { wrappedDelta, wrap } from '@emberfall/common';
+import { wrappedDelta, wrap } from '@emberfall/core/geometry';
 import { FOREST, forestDistance } from '../scene.ts';
 import { addItem, INVENTORY_SLOTS } from '../inventory.ts';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 
 export function tickPickups(scene: SceneState, players: Player[], now: number, dt: number) {
   const collectors = players.filter((p) => {

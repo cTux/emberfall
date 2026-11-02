@@ -1,4 +1,4 @@
-import type { GearDefinition, DebuffKind, DamageType } from '@emberfall/common';
+import type { GearDefinition, DebuffKind, DamageType } from '@emberfall/core/contracts';
 
 export type Widen<T> = T extends number
   ? number
@@ -137,7 +137,7 @@ export interface ContentTypes {
     id: string;
     enemy: string;
     chance: number;
-    dimension?: import('@emberfall/common').DimensionId;
+    dimension?: import('@emberfall/core/contracts').DimensionId;
   };
   companions: CompanionDefinition;
   ailments: AilmentDefinition;

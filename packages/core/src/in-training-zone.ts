@@ -1,5 +1,5 @@
 import { TRAINING_ZONES, ARENA } from './definitions/worlds/village.ts';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { COLLISION } from './definitions/collision.ts';
 import { TRAINING_FOOTPRINT } from './village-layout.ts';
 

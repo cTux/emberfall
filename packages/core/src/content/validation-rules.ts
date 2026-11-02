@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { progressSchema as progressShape, clientMessage as messageShape } from '@emberfall/common';
+import {
+  progressSchema as progressShape,
+  clientMessage as messageShape,
+} from '@emberfall/core/contracts';
 import type { Registries } from './contracts.ts';
 import type { createEquipmentRules } from './equipment-rules.ts';
 import type { createItemRules } from './item-rules.ts';

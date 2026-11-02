@@ -1,4 +1,4 @@
-import type { Enemy, SceneState } from '@emberfall/common';
+import type { Enemy, SceneState } from '@emberfall/core/contracts';
 
 export const arena = (enemies: Enemy[] = []): SceneState => {
   return {

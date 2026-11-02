@@ -5,7 +5,7 @@ import { nearbyInteraction, ARENA } from '@emberfall/core';
 import { VillageLife, type NpcWorld } from './npcs.ts';
 
 import { createPlayers, simulationFor } from './ecs/simulation.ts';
-import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import { SessionState, projectState, materializeState } from '@emberfall/core/protocol';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
 import { player, setup } from './npcs.fixture.ts';

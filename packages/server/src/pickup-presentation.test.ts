@@ -1,10 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { wrappedDelta, type WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST, createTrainingScene } from '@emberfall/core';
 import { freshProgress } from './characters.ts';
 import { alignLocalPickups } from '../../client/src/pickup-presentation.ts';
-import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import { SessionState, projectState, materializeState } from '@emberfall/core/protocol';
 import { Encoder, Decoder } from '@colyseus/schema';
 
 test('only server-selected pickups converge on the reconciled player across a seam without rewards', () => {

@@ -1,5 +1,5 @@
 import type { Game } from './talent-combat-game.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { game } from './game.ts';
 
 export function talentAbility(player: Pick<Player, 'classId'>, slot: number, context: Game = game) {

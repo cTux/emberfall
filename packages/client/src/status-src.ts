@@ -1,4 +1,4 @@
-import type { DebuffKind } from '@emberfall/common';
+import type { DebuffKind } from '@emberfall/core/contracts';
 import { clientAsset } from './urls.ts';
 
 // URL helpers must not initialize the renderer's image atlases.

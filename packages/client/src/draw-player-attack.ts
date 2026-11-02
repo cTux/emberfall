@@ -1,5 +1,5 @@
 import type { DrawingContext } from './rendering/drawing-context';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { characterStats, defaultSpellRange, PLAYER_ATTACK_DURATION } from '@emberfall/core';
 
 // Retain the approved warrior slash arc and ten fading motes; values control presentation, never hit detection.

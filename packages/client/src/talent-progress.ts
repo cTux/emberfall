@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 export type TalentProgress = Pick<Player, 'classId' | 'level' | 'talents'>;
 

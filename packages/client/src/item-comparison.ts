@@ -1,4 +1,4 @@
-import { PERCENT, type BackpackItem, type Player } from '@emberfall/common';
+import { PERCENT, type BackpackItem, type Player } from '@emberfall/core/contracts';
 import {
   game,
   GEAR_DEFINITIONS,

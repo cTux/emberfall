@@ -23,8 +23,8 @@ import { enemyHitbox } from '@emberfall/core/hitboxes';
 import { extensionMod } from '../../core/src/content/tests/fixture.ts';
 import { createCharacterPersistence, decodeProgress as decodeBase } from './characters.ts';
 import { registeredSlotViews, additionalStatViews } from '../../client/src/content-views.ts';
-import type { Player, Enemy } from '@emberfall/common';
-import { SessionState, projectState, materializeState } from '@emberfall/common/protocol';
+import type { Player, Enemy } from '@emberfall/core/contracts';
+import { SessionState, projectState, materializeState } from '@emberfall/core/protocol';
 
 const context = createGame([baseMod, extensionMod]);
 const persistence = createCharacterPersistence(context);

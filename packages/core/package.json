@@ -5,14 +5,18 @@
   "exports": {
     ".": "./src/index.ts",
     "./definitions/*": "./src/definitions/*.ts",
-    "./hitboxes": "./src/hitboxes.ts"
+    "./hitboxes": "./src/hitboxes.ts",
+    "./contracts": "./src/contracts/index.ts",
+    "./enums": "./src/contracts/enums/index.ts",
+    "./geometry": "./src/geometry/index.ts",
+    "./protocol": "./src/protocol/state.ts"
   },
   "scripts": {
     "test": "node --test src/utils/tests/*.test.ts src/content/tests/*.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@emberfall/common": "workspace:*",
+    "@colyseus/schema": "5.0.35",
     "random-js": "2.1.0",
     "zod": "catalog:"
   }

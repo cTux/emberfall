@@ -7,7 +7,7 @@ import {
   CONNECTION_LOST,
   INCOMPATIBLE_PROTOCOL,
 } from './network/codes.ts';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import { Encoder } from '@colyseus/schema';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
@@ -20,7 +20,7 @@ import {
   prepareState,
   applyState,
   type PreparedState,
-} from '@emberfall/common/protocol';
+} from '@emberfall/core/protocol';
 import { createRuntime } from './runtime.ts';
 import { Peer } from './network/peer.ts';
 import { staticHandler } from './http/static.ts';

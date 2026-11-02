@@ -1,4 +1,4 @@
-import type { BackpackItem } from '@emberfall/common';
+import type { BackpackItem } from '@emberfall/core/contracts';
 import type { EquipmentBadgeView } from '@emberfall/ui';
 import { itemStatMultiplier, ItemStat, itemStatWeight } from '@emberfall/core';
 import { capitalize, number } from './metadata';

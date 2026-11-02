@@ -2,7 +2,7 @@ import type { Session } from './session.tsx';
 import { ChatContext } from './chat-context.tsx';
 import { type Theme, ThemeProvider } from '@mui/material';
 import { type ReactNode, useState, useRef, useCallback, useMemo } from 'react';
-import type { ChatMessage } from '@emberfall/common';
+import type { ChatMessage } from '@emberfall/core/contracts';
 import { Chat } from './Chat';
 
 // Retain 20 entries for world transfers while showing the latest ten, matching the existing compact chat layout.

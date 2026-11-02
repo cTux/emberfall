@@ -1,6 +1,6 @@
 import { HIT_STYLE } from './hit-style.ts';
 import type { DrawingContext } from '../rendering/drawing-context';
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 
 // Existing flash timings keep damage visible briefly without obscuring the next attack.
 

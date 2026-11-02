@@ -9,7 +9,7 @@ import { POLICY_VIOLATION } from './network/codes.ts';
 import { EventEmitter } from 'node:events';
 import { clientMessage } from '@emberfall/core';
 import { validateDefinitions } from '@emberfall/core/definitions/index';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import { isCharacterCommand, executeCharacterCommand } from './commands/character.ts';
 import { Peer as WebSocket } from './network/peer.ts';
 import { CharacterStore } from './characters.ts';

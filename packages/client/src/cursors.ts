@@ -1,5 +1,5 @@
-import type { Player, WorldState } from '@emberfall/common';
-import { wrappedDelta } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { ARENA, FOREST, characterStats, inTrainingZone } from '@emberfall/core';
 import { enemyHitbox } from '@emberfall/core/hitboxes';
 

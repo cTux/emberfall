@@ -1,5 +1,5 @@
 import { TALENT_MAX_RANK } from '../talent-catalog.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import { DEFENSE } from './defensive-tuning.ts';
 import type { TalentCast } from './targeting.ts';
 import { forestDistance } from '../scene.ts';

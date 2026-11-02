@@ -3,7 +3,7 @@ import { CRITICAL_TEXT_STYLE } from './critical-text-style.ts';
 import { DAMAGE_COLORS } from './damage-colors.ts';
 import { DAMAGE_TEXT } from './damage-text-tuning.ts';
 import type { DrawingContext } from './rendering/drawing-context';
-import type { DamageEvent } from '@emberfall/common';
+import type { DamageEvent } from '@emberfall/core/contracts';
 
 // Existing combat-label calibration gives each number a fixed 750 ms flight and short initial pop.
 

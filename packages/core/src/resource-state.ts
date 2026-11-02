@@ -1,5 +1,5 @@
 import type { ResourceNode } from './resource-node.ts';
-import type { ResourceState } from '@emberfall/common';
+import type { ResourceState } from '@emberfall/core/contracts';
 
 export function resourceState(
   states: Record<string, ResourceState> | undefined,

@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { INTERACTION_RADIUS } from '@emberfall/core';
 import type { DrawingContext } from './rendering/drawing-context';
 import type { InteractionTarget } from './interaction-targets';

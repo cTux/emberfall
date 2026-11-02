@@ -1,7 +1,7 @@
 import type { Game } from './ability-game.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { game } from '../game.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 
 export function defaultSpellRange(
   player: Pick<Player, 'classId' | 'autoTarget' | 'equipment' | 'equipmentItems'>,

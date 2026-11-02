@@ -1,8 +1,8 @@
 import { apiUrl } from './urls.ts';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { Client, type Room } from '@colyseus/sdk';
-import { SessionState, materializeState } from '@emberfall/common/protocol';
-import type { ServerMessage, ClientMessage } from '@emberfall/common';
+import { SessionState, materializeState } from '@emberfall/core/protocol';
+import type { ServerMessage, ClientMessage } from '@emberfall/core/contracts';
 
 // Standard WebSocket normal closure distinguishes an intentional leave from a transport error.
 const NORMAL_CLOSE = 1000;

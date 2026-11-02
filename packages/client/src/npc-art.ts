@@ -1,4 +1,4 @@
-import type { VillageNpc } from '@emberfall/common';
+import type { VillageNpc } from '@emberfall/core/contracts';
 import { innkeeperArt, loadArt } from './art';
 import { characterImages } from './characters';
 import { makeMask } from './lighting';

@@ -1,6 +1,7 @@
 import { VIEWPORT_MIDPOINT } from './arena-contract.ts';
 import { inputBlocked } from './arena-keyboard';
-import { wrap, type ClientMessage, type Player, type WorldState } from '@emberfall/common';
+import type { ClientMessage, Player, WorldState } from '@emberfall/core/contracts';
+import { wrap } from '@emberfall/core/geometry';
 import { ARENA, FOREST, TICK_MS } from '@emberfall/core';
 import { pickInteraction, interactionInRange, type InteractionTarget } from './interaction-targets';
 import type { Interaction } from './effects';

@@ -17,7 +17,7 @@ import {
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import type { GearDefinition } from '@emberfall/common';
+import type { GearDefinition } from '@emberfall/core/contracts';
 
 import { hero, scene } from './equipment.fixture.ts';
 

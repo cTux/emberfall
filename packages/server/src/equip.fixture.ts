@@ -1,5 +1,5 @@
 import { instance } from './instance.fixture.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { ItemStat } from '@emberfall/core';
 
 export function equip(player: Player, slot: string, itemId: string, stat: ItemStat) {

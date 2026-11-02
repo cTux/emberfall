@@ -1,4 +1,4 @@
-import type { Enemy } from '@emberfall/common';
+import type { Enemy } from '@emberfall/core/contracts';
 
 export function control(enemy: Enemy, now: number, duration: number) {
   if (enemy.kind === 'boss') {

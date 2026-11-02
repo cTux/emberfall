@@ -1,5 +1,5 @@
 import { TALENT_AILMENTS } from './talent-ailment-tuning.ts';
-import type { Enemy, Player, DebuffKind } from '@emberfall/common';
+import type { Enemy, Player, DebuffKind } from '@emberfall/core/contracts';
 import type { CharacterStats } from './content/rules.ts';
 import { dotTickIntervalMs } from './equipment.ts';
 

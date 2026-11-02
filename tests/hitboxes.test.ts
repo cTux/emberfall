@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { worldHitboxes, drawHitboxes, HITBOX_COLORS } from '../packages/client/src/hitboxes.ts';
-import type { WorldState } from '../packages/common/src/index.ts';
+import type { WorldState } from '../packages/core/src/contracts/index.ts';
 import { ENEMY_STATS, FOREST, createTrainingScene } from '../packages/core/src/index.ts';
 import { loadPreferences } from '../packages/client/src/preferences.ts';
 import { INITIAL_PROGRESS } from '../packages/core/src/definitions/entities/players.ts';

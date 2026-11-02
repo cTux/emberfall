@@ -1,4 +1,4 @@
-import type { Player, Enemy } from '@emberfall/common';
+import type { Player, Enemy } from '@emberfall/core/contracts';
 import { attackTarget } from '../tactics.ts';
 
 /** Shared wrapped target selection for cast scheduling, launch and prediction. */

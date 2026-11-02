@@ -1,5 +1,5 @@
 import type { CharacterStats } from '../content/rules.ts';
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 
 export interface FighterState {
   stats?: CharacterStats;

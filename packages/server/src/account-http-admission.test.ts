@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { Client } from '@colyseus/sdk';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
-import { SessionState } from '@emberfall/common/protocol';
+import { SessionState } from '@emberfall/core/protocol';
 
 import { createGameServer } from './worlds.ts';
 

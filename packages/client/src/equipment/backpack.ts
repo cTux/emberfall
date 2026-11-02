@@ -9,7 +9,7 @@ import {
   itemPrice,
   itemStatMultiplier,
 } from '@emberfall/core';
-import type { BackpackItem, Player } from '@emberfall/common';
+import type { BackpackItem, Player } from '@emberfall/core/contracts';
 import { itemComparison } from '../item-comparison';
 import { number, capitalize, GEAR_LABELS, ITEM_CLASSES } from './metadata';
 import { weaponBadges, rolledBadges } from './badges';

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { LOBBY_PORTAL, clientMessage as validatedMessage } from '@emberfall/core';
-import { clientMessage, Difficulty } from '@emberfall/common';
+import { clientMessage, Difficulty } from '@emberfall/core/contracts';
 import { sceneAction, tickScene, sceneState } from './scenes.ts';
 import type { SceneWorld } from './scenes.ts';
 import { hero } from './scenes.fixture.ts';

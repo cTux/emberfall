@@ -1,4 +1,4 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { TALENT_TREE } from './talent-tree.ts';
 
 export function equippedTalent(player: Player, slot: number) {

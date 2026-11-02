@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Paper, TextField } from '@mui/material';
 import { CHAT_MAX_LENGTH } from '@emberfall/core';
-import type { ChatMessage, ClientMessage } from '@emberfall/common';
+import type { ChatMessage, ClientMessage } from '@emberfall/core/contracts';
 
 export function Chat({
   messages,

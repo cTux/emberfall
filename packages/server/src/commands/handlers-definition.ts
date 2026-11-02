@@ -1,6 +1,6 @@
 import type { CommandType } from './command-type.ts';
 import type { Messages } from './messages.ts';
-import type { Player, Merchant } from '@emberfall/common';
+import type { Player, Merchant } from '@emberfall/core/contracts';
 import {
   improveItem,
   learnTalent,
@@ -13,7 +13,7 @@ import {
   unequipItem,
   useBackpackItem,
 } from '@emberfall/core';
-import { DEFAULT_TACTICS } from '@emberfall/common';
+import { DEFAULT_TACTICS } from '@emberfall/core/contracts';
 type Handlers = {
   [K in CommandType]: (message: Messages[K], player: Player, trader: Merchant) => void;
 };

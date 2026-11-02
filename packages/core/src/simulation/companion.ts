@@ -1,13 +1,14 @@
 import { COLLISION } from '../definitions/collision.ts';
 
 import { game, type createGame } from '../game.ts';
-import { DEFAULT_TACTICS, wrappedDelta, wrap, PERCENT } from '@emberfall/common';
+import { DEFAULT_TACTICS, PERCENT } from '@emberfall/core/contracts';
+import { wrappedDelta, wrap } from '@emberfall/core/geometry';
 import { talentNodeId, talentRank } from '../talent-tree.ts';
 import { BEAR_DEFINITION } from '../definitions/entities/companions.ts';
 import { FOREST, forestDistance } from '../scene.ts';
 import { ARENA, moveActor } from '../world.ts';
 import { ENEMY_STATS, moveEnemies } from '../enemies.ts';
-import type { Player, SceneState, Enemy } from '@emberfall/common';
+import type { Player, SceneState, Enemy } from '@emberfall/core/contracts';
 import { companionDecisions, decideCompanion } from './companion-decision.ts';
 import { PLAYER_ATTACK_DURATION } from './constants.ts';
 import { nearestEnemyAngle } from './aim.ts';

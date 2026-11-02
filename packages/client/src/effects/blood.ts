@@ -1,6 +1,6 @@
 import { BLOOD_STYLE as STYLE, STAIN_RANDOM } from './blood-style.ts';
 import type { DrawingContext } from '../rendering/drawing-context';
-import type { SceneState, DamageEvent } from '@emberfall/common';
+import type { SceneState, DamageEvent } from '@emberfall/core/contracts';
 import { TRANSIENT_EFFECTS } from '@emberfall/core/definitions/effects/transient';
 
 export function bloodPuddleRenderer() {

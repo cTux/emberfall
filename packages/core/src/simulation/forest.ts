@@ -1,7 +1,7 @@
 import { COLLISION } from '../definitions/collision.ts';
 import { game, type createGame } from '../game.ts';
 import { tickDebuffs, setRewardPlayers } from '../class-combat.ts';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 import { prepareForestTick } from './forest-lifecycle.ts';
 import { tickPickups } from './pickups.ts';
 import { tickCompanion } from './companion.ts';

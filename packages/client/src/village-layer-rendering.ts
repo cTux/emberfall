@@ -1,7 +1,7 @@
 import { TRAINING_TARGET_ART, WARDROBE_ANIMATION } from './village-art-layout.ts';
 
 import type { VillageLayer } from './village-layers';
-import type { DamageEvent } from '@emberfall/common';
+import type { DamageEvent } from '@emberfall/core/contracts';
 import type { InteractionTarget } from './interaction-targets';
 import type { WorldDrawingContext } from './rendering/drawing-context';
 import type { VillageActorFrame } from './village-players';

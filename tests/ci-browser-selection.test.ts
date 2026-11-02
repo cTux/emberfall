@@ -19,6 +19,14 @@ test('durable command changes select session and inventory checks, preserving ma
   assert.ok(gameCommands(selection)[0].includes('--grep'));
 });
 
+test('portable core layers select session and combat checks', () => {
+  for (const area of ['contracts', 'geometry', 'protocol']) {
+    const selection = selectBrowserTests([`packages/core/src/${area}/index.ts`]);
+    assert.deepEqual(selection.groups, ['combat', 'session']);
+    assert.equal(selection.full, false);
+  }
+});
+
 test('unmapped runtime, dependencies, workflow and selector changes require full desktop coverage', () => {
   for (const path of [
     'packages/client/src/new-feature.ts',

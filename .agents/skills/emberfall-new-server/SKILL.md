@@ -10,7 +10,7 @@ and the [runtime design](../../../docs/design/new-runtime.md).
 
 Keep Miniplex authoritative, Colyseus a projection, and persistence behind the
 repository. Initialize the bundled core catalog before save decode/session
-admission and use its semantic schemas alongside common structural contracts.
+admission and use its semantic schemas alongside core structural contracts.
 Derive identity from the authenticated session. Preserve command
 validation, Origin checks, rate limits, bounded input duration and area epochs.
 Keep world/scene membership changes ordered and remove retired ECS components.

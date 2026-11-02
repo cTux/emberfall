@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { VillageNpc } from '../packages/common/src/index.ts';
+import type { VillageNpc } from '../packages/core/src/contracts/index.ts';
 import { VILLAGE_DEFINITION } from '../packages/core/src/definitions/worlds/village.ts';
 import { drawNpcWork } from '../packages/client/src/npc-work.ts';
 

@@ -1,5 +1,5 @@
 import type { Hitbox } from './hitbox.ts';
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 import {
   PLAYER_ATTACK_DURATION,
   game,

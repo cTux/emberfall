@@ -1,5 +1,5 @@
 import type { Parties } from './parties.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 export function partyCommand(
   parties: Parties,

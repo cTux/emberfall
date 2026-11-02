@@ -1,4 +1,4 @@
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 
 /** Detached snapshots replace arrays even when their bounded chat history is unchanged. */
 export function retainWorldChat(next: WorldState) {

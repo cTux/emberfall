@@ -15,7 +15,7 @@ import {
   canEquip,
   itemStatMultiplier,
 } from '@emberfall/core';
-import type { ClientMessage, Player } from '@emberfall/common';
+import type { ClientMessage, Player } from '@emberfall/core/contracts';
 import {
   slotViews,
   SLOT_POSITIONS,

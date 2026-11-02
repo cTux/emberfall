@@ -5,7 +5,8 @@ import { ARENA, FOREST, forestTrees } from '@emberfall/core';
 
 // Existing decorative chicken reactions use hysteresis (70px start/100px stop) so a nearby player does not toggle panic every frame.
 import { type CritterKind, VILLAGE_CRITTERS } from '@emberfall/core/definitions/entities/critters';
-import { wrappedDelta, wrap, MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
+import { wrappedDelta, wrap } from '@emberfall/core/geometry';
 // Fixed forest cells and seeded phase strides keep decorative homes stable across wrapped camera views.
 // Existing 12-second wander choreography travels 40px out/back with pauses and one idle action near the turn.
 const CRITTER_WANDER = {

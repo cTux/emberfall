@@ -7,7 +7,7 @@ const MEMORY_LINES_PER_NPC = 6;
 
 import { randomUUID } from 'node:crypto';
 import { VILLAGE_DEFINITION } from '@emberfall/core/definitions/worlds/village';
-import type { VillageNpc } from '@emberfall/common';
+import type { VillageNpc } from '@emberfall/core/contracts';
 import { spokenLine } from './npc-models.ts';
 import type { NpcWorld } from './npc-world.ts';
 

@@ -1,5 +1,5 @@
 import type { DrawingContext } from '../rendering/drawing-context';
-import type { DebuffIndicator } from '@emberfall/common';
+import type { DebuffIndicator } from '@emberfall/core/contracts';
 import { statusImages } from '../combat-assets';
 
 // Twelve-pixel icons plus a two-pixel gap keep the compact status row legible at game scale.

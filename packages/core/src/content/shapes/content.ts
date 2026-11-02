@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import type { RegistryName } from '../contracts.ts';
 import { id, positive, nonnegative, data } from './primitives.ts';
 

@@ -1,5 +1,5 @@
 import type { Parties } from './parties.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { forestDistance, INTERACTION_RADIUS } from '@emberfall/core';
 
 export function interactParty(

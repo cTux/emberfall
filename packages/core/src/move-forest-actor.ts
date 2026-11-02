@@ -1,5 +1,5 @@
 import { forestTrees } from './forest-trees.ts';
-import { wrap } from '@emberfall/common';
+import { wrap } from '@emberfall/core/geometry';
 import { FOREST } from './definitions/worlds/forest.ts';
 
 // Forty pixels covers nearby trunks during actor movement's radius-sized substeps.

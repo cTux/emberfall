@@ -1,4 +1,4 @@
-import type { Player, EquipmentSlot } from '@emberfall/common';
+import type { Player, EquipmentSlot } from '@emberfall/core/contracts';
 import type { createEquipmentRules } from './equipment-rules.ts';
 import type { createItemRules, BackpackItem } from './item-rules.ts';
 import type { createStorageRules } from './storage-rules.ts';

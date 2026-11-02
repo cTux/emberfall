@@ -1,10 +1,10 @@
 import type { ForestProjection } from './forest-projection.ts';
 import { forestActorMask } from './forest-actor-mask.ts';
 import { actorArt } from './art';
-import type { WorldState, Player } from '@emberfall/common';
+import type { WorldState, Player } from '@emberfall/core/contracts';
 import type { Caster } from './lighting';
 import { FOREST_ACTOR } from './forest-calibration.ts';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST, ENEMY_STATS, dimensionDefinition, game } from '@emberfall/core';
 import { movementFacing } from './facing';
 import { playerFrame, enemyFrame, enemyReleasedAt } from './animation';

@@ -1,5 +1,5 @@
 import type { Scene } from './scene.ts';
-import type { Player, ChatMessage, SceneState } from '@emberfall/common';
+import type { Player, ChatMessage, SceneState } from '@emberfall/core/contracts';
 
 export interface SceneWorld {
   rewardPlayers?: Player[];
@@ -10,5 +10,5 @@ export interface SceneWorld {
   skipTraining?: boolean;
   runKey?: string;
   voters?: Player[];
-  resources?: Record<string, import('@emberfall/common').ResourceState>;
+  resources?: Record<string, import('@emberfall/core/contracts').ResourceState>;
 }

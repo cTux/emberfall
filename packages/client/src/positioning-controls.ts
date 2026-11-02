@@ -1,4 +1,4 @@
-import type { Tactics } from '@emberfall/common';
+import type { Tactics } from '@emberfall/core/contracts';
 
 type SelectKey = 'stance' | 'distance' | 'companionTarget';
 

@@ -1,4 +1,4 @@
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 import type { Scenery } from './village';
 import type { createCritterMotion } from './critter-motion';
 

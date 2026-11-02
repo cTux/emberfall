@@ -1,4 +1,4 @@
-import type { DimensionId } from '@emberfall/common';
+import type { DimensionId } from '@emberfall/core/contracts';
 
 export interface ResourceNode {
   id: string;

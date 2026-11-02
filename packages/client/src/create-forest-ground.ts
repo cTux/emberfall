@@ -1,4 +1,4 @@
-import type { DimensionId } from '@emberfall/common';
+import type { DimensionId } from '@emberfall/core/contracts';
 import { FOREST_VIEW } from './forest-calibration.ts';
 // Preserve the legacy seeded fallback scatter until terrain PNGs finish loading.
 import { terrainArt, environmentArt, terrainTile } from './art';

@@ -1,8 +1,8 @@
 import type { Game } from './game.ts';
-import type { Player, Enemy } from '@emberfall/common';
+import type { Player, Enemy } from '@emberfall/core/contracts';
 import { game } from '../game.ts';
 import { nearestSpellTarget } from '../class-combat.ts';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST } from '../scene.ts';
 import { nearestEnemyAngle } from './aim.ts';
 

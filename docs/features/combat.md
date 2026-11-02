@@ -6,7 +6,7 @@
 
 Tactics: [UI-01](../specs/interface/hud.md#tactics),
 [controlled window](../../packages/client/src/Tactics.tsx),
-[structural contract](../../packages/common/src/tactics.ts),
+[structural contract](../../packages/core/src/contracts/tactics.ts),
 [shared selectors](../../packages/core/src/tactics.ts),
 [authoritative checks](../../packages/server/src/tactics.test.ts),
 [healing checks](../../packages/server/src/tactics-healing.test.ts),

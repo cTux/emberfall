@@ -3,8 +3,8 @@ import * as LIMITS from './runtime-client-limits.ts';
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
 import { Client } from '@colyseus/sdk';
-import type { ClientMessage, ServerMessage } from '@emberfall/common';
-import { SessionState, materializeState } from '@emberfall/common/protocol';
+import type { ClientMessage, ServerMessage } from '@emberfall/core/contracts';
+import { SessionState, materializeState } from '@emberfall/core/protocol';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';
 import { BENCHMARK } from './runtime-workload.ts';
 

@@ -9,7 +9,7 @@ Read the [client guide](../../../packages/client/README.md), its AGENTS,
 and the affected graphics/interface requirement in the [documentation map](../../../docs/README.md).
 
 Keep received schemas, detached snapshots, predicted poses and Pixi resources
-separate. Use core content, bound geometry and prediction rules; common supplies contracts. Camera, weapon, light and sound
+separate. Use core content, bound geometry and prediction rules; the core contracts subpath supplies portable contracts. Camera, weapon, light and sound
 must follow the same reconciled local action; replay must not duplicate effects.
 Health, damage, loot and saved progression require server confirmation.
 

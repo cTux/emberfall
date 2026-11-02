@@ -1,4 +1,4 @@
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 
 // Keep the existing five-second moving average so brief bursts do not dominate DPS.
 const DAMAGE_WINDOW_SECONDS = 5;

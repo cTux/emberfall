@@ -1,7 +1,7 @@
 import { TRAINING_ZONES } from '@emberfall/core';
 
 import { freshProgress } from './characters.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 export const hero = (): Player => {
   return {

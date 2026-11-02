@@ -1,10 +1,10 @@
 import type { SceneWorld } from './scene-world.ts';
 import { cleanupScene } from './cleanup-scene.ts';
 import { reconcileVote } from './reconcile-vote.ts';
-import type { ClientMessage, Player } from '@emberfall/common';
+import type { ClientMessage, Player } from '@emberfall/core/contracts';
 import { nearbyInteraction, dimensionDefinition } from '@emberfall/core';
 import { returnToLobby, enterScene } from './scene-travel.ts';
-import { hasLivingScenePlayers } from '@emberfall/common';
+import { hasLivingScenePlayers } from '@emberfall/core/contracts';
 import { randomUUID } from 'node:crypto';
 
 type SceneHandlers = {

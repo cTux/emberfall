@@ -1,6 +1,6 @@
 import { Illustration } from './Illustration';
 import { enemyAttributes, enemyTypeMultiplier } from '@emberfall/core';
-import { EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { EnemyKind, EnemyType } from '@emberfall/core/enums';
 import { statusSrc } from '../class-art';
 
 export const combatChapter = {

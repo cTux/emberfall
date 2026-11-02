@@ -1,6 +1,6 @@
-import type { Enemy } from '@emberfall/common';
+import type { Enemy } from '@emberfall/core/contracts';
 import { forestDistance, FOREST } from '../scene.ts';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 
 export function nearestEnemyAngle(
   player: { x: number; y: number },

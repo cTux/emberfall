@@ -40,8 +40,8 @@ browser cases. Do not claim performance gains from file movement. Replication
 sharing requires measured benefit and viewer privacy tests; multi-process
 deployment requires world, admission, reconnect and persistence ownership design.
 
-The first batch makes world geometry depend directly on common, while scene
-composition continues to consume world data. The package-boundary test rejects
+World geometry depends directly on the portable core geometry layer, while
+scene composition continues to consume world data. The package-boundary test rejects
 forbidden workspace dependencies in manifests and source imports.
 
 ## Current verification record

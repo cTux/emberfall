@@ -1,5 +1,5 @@
 import { recordCombatTotal } from './record-combat-total.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 export function applyHealing(
   target: Pick<Player, 'hitpoints' | 'maxHitpoints'>,

@@ -1,5 +1,5 @@
 import type { SceneWorld } from './scenes.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { addChat } from './chat.ts';
 import { FOREST_PORTAL } from '@emberfall/core';
 

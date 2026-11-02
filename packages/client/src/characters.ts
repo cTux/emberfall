@@ -1,6 +1,6 @@
 import { game, CLASS_IDS } from '@emberfall/core';
 import { actorArt } from './art';
-import type { ClassId } from '@emberfall/common';
+import type { ClassId } from '@emberfall/core/contracts';
 export { classSprite } from './class-art';
 export const characterImages = Object.fromEntries(
   CLASS_IDS.map((id) => {

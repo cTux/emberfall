@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import fc from 'fast-check';
-import type { Player } from '../packages/common/src/index.ts';
+import type { Player } from '../packages/core/src/contracts/index.ts';
 import { INITIAL_PROGRESS, freshStorages, transferStoredItem } from '../packages/core/src/index.ts';
 
 const resourceQuantity = fc.integer({ min: 1, max: 200 });

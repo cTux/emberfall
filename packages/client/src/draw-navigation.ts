@@ -1,11 +1,11 @@
 import { edgeArrow } from './edge-arrow.ts';
 import { NAVIGATION_LAYOUT } from './navigation-layout.ts';
 import type { DrawingContext } from './rendering/drawing-context';
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 
 // Preserve the existing edge-arrow clearance and compact one-line label layout in CSS pixels.
 import { LOBBY_PORTAL, FOREST } from '@emberfall/core';
-import { wrappedDelta } from '@emberfall/common';
+import { wrappedDelta } from '@emberfall/core/geometry';
 
 export function drawNavigation(ctx: DrawingContext, world: WorldState, id: string) {
   const me = world.players.find((p) => {

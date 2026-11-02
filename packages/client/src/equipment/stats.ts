@@ -1,6 +1,6 @@
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import { characterStats } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { EquipmentStatView } from '@emberfall/ui';
 import { additionalStatViews } from '../content-views';
 import { number, percent, capitalize } from './metadata';

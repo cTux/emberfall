@@ -70,7 +70,7 @@ Export public APIs from `src/index.ts`. Consumers should declare
 `"@emberfall/core": "workspace:*"` in their dependencies and import from
 `@emberfall/core`.
 
-Like the existing common libraries, this private workspace package exports
+This private workspace package exports
 TypeScript source directly for Node 24 and Vite; it needs no separate build.
 
 `isChanced(percent)` returns whether a random roll triggers the given percentage.

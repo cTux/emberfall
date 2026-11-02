@@ -1,5 +1,5 @@
 import type { DrawingContext } from './rendering/drawing-context';
-import type { TimedActivity } from '@emberfall/common';
+import type { TimedActivity } from '@emberfall/core/contracts';
 import { activityIndicator, ACTIVITY_ZONE_WIDTH } from '@emberfall/core';
 import { drawWorldBar } from './world-bar.ts';
 

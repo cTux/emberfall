@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { isChanced, isMultiChanced, itemDropCount, spawnEnemyType } from '../../index.ts';
-import { EnemyType } from '@emberfall/common/enums';
+import { EnemyType } from '@emberfall/core/enums';
 
 test('injected probability sources retain guaranteed outcomes and range draw order', () => {
   const values = [0.5, 0.004, 0.049, 0.05];

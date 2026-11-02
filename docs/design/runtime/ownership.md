@@ -7,8 +7,8 @@
 Core initializes registries and the explicit bundled mod list before gameplay.
 [Mod requirements](../../specs/mods.md), [registry design](../mods.md) and the
 [verification plan](../../plans/mods.md) define supported extension and compatibility.
-Common retains structural contracts and pure geometry; content-aware rules and
-views belong to core. Existing saved IDs and host responsibilities remain intact.
+Core exposes structural contracts and pure geometry separately from content-aware
+rules and views. Portable entrypoints never initialize the default game. Existing saved IDs and host responsibilities remain intact.
 
 ## Ownership
 
@@ -31,10 +31,10 @@ or a validated storage-to-storage command. The server derives the owner from the
 session and saves detached results before publication; drag data never supplies
 items, quantities, currency or a different owner.
 
-- `common`: shared contracts, structural schemas, protocol state and pure geometry.
-  No DOM, database or network connections and no dependency on core.
-- `core`: registries, bundled mods, semantic validation and shared combat/prediction;
-  depends on common. Only the server rolls spawns and rewards or applies damage.
+- `core`: portable contracts, structural schemas, pure geometry and protocol state
+  through separate entrypoints; registries, bundled mods, semantic validation and
+  shared combat/prediction through the gameplay entrypoint. Portable layers cannot
+  import gameplay. Only the server rolls spawns and rewards or applies damage.
 - `server`: authoritative Miniplex entities, ordered fixed-timestep systems,
   Colyseus transport/state projection and Colyseus database persistence.
 - `client`: Colyseus SDK, presentation/prediction Miniplex world, PixiJS world

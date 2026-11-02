@@ -1,6 +1,6 @@
 import type { LootHint } from './loot-hint-definition.ts';
 import { lootHintFrame } from './loot-hint-frame.ts';
-import type { BackpackItem } from '@emberfall/common';
+import type { BackpackItem } from '@emberfall/core/contracts';
 
 // Existing pickup feedback enters quickly, holds for readability, then collapses/fades within a fixed 2.1 seconds.
 

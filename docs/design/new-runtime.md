@@ -1,7 +1,7 @@
 # Game runtime
 
 Status: implemented sole runtime. The former `*-new` packages now occupy
-`packages/common`, `packages/server` and `packages/client`; the original runtime
+`packages/server` and `packages/client`, with shared code in `packages/core`; the original runtime
 and its comparison suite are retired. Gameplay specifications remain the
 behavior contract. See the
 [verification record](../plans/new-runtime.md) for measured coverage and limits.

@@ -1,4 +1,4 @@
-import type { Player, WorldState, SceneState } from '../packages/common/src/index.ts';
+import type { Player, WorldState, SceneState } from '../packages/core/src/contracts/index.ts';
 import { PLAYER_ATTACK_INTERVAL } from '../packages/core/src/index.ts';
 
 export function fixture(classId: Player['classId'] = 'mage', training = false): WorldState {

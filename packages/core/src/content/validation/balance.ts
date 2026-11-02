@@ -1,5 +1,5 @@
 import type { ValidationContext } from './context.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 
 export function validateBalance(context: ValidationContext) {
   const { r, check, positive, nonnegative } = context;

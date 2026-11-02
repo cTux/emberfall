@@ -8,7 +8,7 @@ import {
   type ClientMessage,
   type Player,
   type Tactics as TacticsValue,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 import { game } from '@emberfall/core';
 
 // Preserve the server-supported automatic-heal thresholds and their player-facing labels.

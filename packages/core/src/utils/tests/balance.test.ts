@@ -1,7 +1,7 @@
 import { randomSource } from '../../random.ts';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { Difficulty, EnemyKind, EnemyType } from '@emberfall/common/enums';
+import { Difficulty, EnemyKind, EnemyType } from '@emberfall/core/enums';
 import {
   enemyAttributes,
   enemyMaxHealth,

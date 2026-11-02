@@ -1,6 +1,6 @@
 import { rank } from './rank.ts';
 import { TALENT_AILMENTS } from './talent-ailment-tuning.ts';
-import type { Player, DebuffKind } from '@emberfall/common';
+import type { Player, DebuffKind } from '@emberfall/core/contracts';
 import { TALENT_MAX_RANK } from './talent-catalog.ts';
 
 /** Extra bleed chance is additive with the weapon's existing roll. */

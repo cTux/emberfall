@@ -1,4 +1,4 @@
-import type { ChatMessage, ClientMessage } from '@emberfall/common';
+import type { ChatMessage, ClientMessage } from '@emberfall/core/contracts';
 
 export type Session = {
   worldId?: string;

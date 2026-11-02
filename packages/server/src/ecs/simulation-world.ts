@@ -1,8 +1,8 @@
 import type { Entity } from './entity.ts';
 import { PlayerIndex } from './player-index.ts';
 import { World } from 'miniplex';
-import type { VillageNpc, SceneState } from '@emberfall/common';
-import { SCENE_COLLECTIONS } from '@emberfall/common';
+import type { VillageNpc, SceneState } from '@emberfall/core/contracts';
+import { SCENE_COLLECTIONS } from '@emberfall/core/contracts';
 
 /** One authoritative ECS per party. Components hold the actual simulation state,
  * never copies. Colyseus receives a projection and cannot mutate these components.

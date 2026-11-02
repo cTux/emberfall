@@ -1,4 +1,4 @@
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 import { castTalentAbility, game } from '@emberfall/core';
 
 export function cast(player: Player, scene: SceneState, now = 1000, players = [player]) {

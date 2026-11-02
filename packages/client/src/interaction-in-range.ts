@@ -1,6 +1,6 @@
 import type { InteractionTarget } from './interaction-target.ts';
 import { INTERACTION_GEOMETRY } from './interaction-geometry.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { forestDistance } from '@emberfall/core';
 
 export function interactionInRange(target: InteractionTarget, player: Player | undefined) {

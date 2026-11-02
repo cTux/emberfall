@@ -7,7 +7,7 @@ import {
   itemStatWeight,
   statValue,
 } from '@emberfall/core';
-import type { BackpackItem } from '@emberfall/common';
+import type { BackpackItem } from '@emberfall/core/contracts';
 
 export function instance(
   itemId: string,

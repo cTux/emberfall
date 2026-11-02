@@ -5,7 +5,7 @@ import {
   conversationBlocks,
 } from './npc-participants.ts';
 import { randomSource, forestDistance } from '@emberfall/core';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { NpcRoutines } from './npc-routines.ts';
 import { villagePlayers, type NpcWorld } from './npc-world.ts';
 export type { NpcWorld } from './npc-world.ts';

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Player, WorldState } from '../packages/common/src/index.ts';
+import type { Player, WorldState } from '../packages/core/src/contracts/index.ts';
 import {
   CLASS_IDS,
   FOREST,

@@ -1,6 +1,6 @@
 import { HOT_SCALARS } from './hot-scalars.ts';
 import { collections } from './collections.ts';
-import type { WorldState, SceneState } from '../index.ts';
+import type { WorldState, SceneState } from '../contracts/index.ts';
 
 type ProjectedEntity = Record<(typeof HOT_SCALARS)[number], number> & {
   key: string;

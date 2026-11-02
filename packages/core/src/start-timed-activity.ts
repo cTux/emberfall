@@ -1,6 +1,6 @@
 import { ACTIVITY_ZONES } from './activity-zones.ts';
 import { randomSource } from './random.ts';
-import type { TimedActivity } from '@emberfall/common';
+import type { TimedActivity } from '@emberfall/core/contracts';
 
 // Existing fourteen-percent target width is the gathering timing difficulty calibration.
 

@@ -39,7 +39,7 @@ Core owns content-dependent equipment/inventory helpers and semantic schemas.
 [World helpers](../../../packages/core/src/world.ts) derive paths and seeded trees;
 [scene helpers](../../../packages/core/src/scene.ts) bind world geometry/interactions;
 [hitboxes](../../../packages/core/src/hitboxes.ts) resolve enemy sizes. Pure wrapping
-algorithms remain in [common geometry](../../../packages/common/src/geometry.ts).
+algorithms remain in [core geometry](../../../packages/core/src/geometry/index.ts).
 Content-derived views initialize after `game` is ready.
 
 Client consumers read the initialized content: [class images](../../../packages/client/src/characters.ts),

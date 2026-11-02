@@ -1,6 +1,6 @@
 import type { Room } from '@colyseus/sdk';
-import type { WorldState } from '@emberfall/common';
-import type { SessionState } from '@emberfall/common/protocol';
+import type { WorldState } from '@emberfall/core/contracts';
+import type { SessionState } from '@emberfall/core/protocol';
 export interface WorkloadPeer {
   room: Room<SessionState>;
   playerId: string;

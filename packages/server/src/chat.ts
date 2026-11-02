@@ -2,7 +2,7 @@
 const CHAT_HISTORY_MESSAGES = 30;
 
 import { randomUUID } from 'node:crypto';
-import type { ChatMessage, Player } from '@emberfall/common';
+import type { ChatMessage, Player } from '@emberfall/core/contracts';
 
 export function addChat(
   world: { chat?: ChatMessage[] },

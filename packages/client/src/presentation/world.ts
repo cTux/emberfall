@@ -5,7 +5,7 @@ import {
   type WorldState,
   type SceneCollection,
   type SceneEntity,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 
 type Entity = {
   id: string;

@@ -1,6 +1,6 @@
 import { scheduled } from './scheduled-definition.ts';
 import { fighters } from './fighters.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 
 export function shiftTalentEffects(scene: SceneState, players: Player[], delay: number) {
   for (const entry of scheduled.get(scene) ?? []) {

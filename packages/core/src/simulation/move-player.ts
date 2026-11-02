@@ -1,7 +1,8 @@
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import { ARENA, moveActor } from '../world.ts';
 import { game } from '../game.ts';
-import { PERCENT, wrap } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
+import { wrap } from '@emberfall/core/geometry';
 import { moveForestActor, FOREST } from '../scene.ts';
 import { COLLISION } from '../definitions/collision.ts';
 import { PLAYER_BODY_RADIUS } from '../definitions/entities/players.ts';

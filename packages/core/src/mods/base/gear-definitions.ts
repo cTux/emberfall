@@ -1,6 +1,6 @@
 import type { GearDefinition } from './gear-definition.ts';
 import { LOOT_GEAR_TYPES } from './loot-gear-types.ts';
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import { ATTACK_DEFINITIONS } from './abilities/attacks.ts';
 
 // Existing starter balance gives every weapon a 5% critical chance and 1.5-times critical damage.

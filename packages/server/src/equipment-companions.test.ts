@@ -13,7 +13,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { enemyHitbox } from '../../core/src/hitboxes.ts';
-import type { GearDefinition } from '@emberfall/common';
+import type { GearDefinition } from '@emberfall/core/contracts';
 
 import { hero, target, scene } from './equipment.fixture.ts';
 

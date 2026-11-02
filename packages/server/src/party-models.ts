@@ -1,4 +1,4 @@
-import type { Player, ChatMessage } from '@emberfall/common';
+import type { Player, ChatMessage } from '@emberfall/core/contracts';
 export interface Party {
   id: string;
   members: string[];

@@ -3,7 +3,7 @@ import { drawClassProjectiles, talentCastArt } from '../packages/client/src/comb
 import { drawPlayerAttack } from '../packages/client/src/forest';
 import { abilityEffectOpacity } from '../packages/client/src/ability-effects';
 import { starterEquipment } from '../packages/core/src/index';
-import type { Player, SceneState } from '../packages/common/src/index';
+import type { Player, SceneState } from '../packages/core/src/contracts/index';
 
 export async function compare() {
   await talentCastArt.decode();

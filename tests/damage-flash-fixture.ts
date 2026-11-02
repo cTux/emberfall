@@ -1,6 +1,6 @@
 import { PixiContext } from '../packages/client/src/rendering/pixi-context';
 import { drawDamageFlash } from '../packages/client/src/effects';
-import type { WorldState } from '../packages/common/src/index';
+import type { WorldState } from '../packages/core/src/contracts/index';
 
 export async function compare() {
   const gpu = document.createElement('canvas');

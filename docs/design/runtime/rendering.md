@@ -30,7 +30,7 @@ when sprite textures use nearest sampling. The existing preference storage owns
 the font choice; shared UI owns no storage.
 
 The optional hitbox overlay runs after world effects in both village and forest.
-`client/hitboxes.ts` reads detached displayed poses and common collision,
+`client/hitboxes.ts` reads detached displayed poses and core collision,
 enemy, world, attack and pickup definitions. Body, feet, projectile and scenery
 shapes have distinct colors; orange labeled rings indicate action ranges rather
 than solid bodies. The preference defaults to false, lives in `emberfall-new.preferences`,

@@ -1,6 +1,6 @@
 import { GameConnection } from './connection';
 import { VERSION_RETRY_CLOSE_CODE } from './session-timing.ts';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 
 // Five seconds tolerates brief stalls before a missing reply starts connection recovery.
 const LATENCY_PROBE_TIMEOUT_MS = 5000;

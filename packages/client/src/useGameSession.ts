@@ -1,7 +1,7 @@
 import { connectionLatency } from './connection-latency';
 import { retainWorldChat } from './world-chat';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ClientMessage, WorldState, WorldSummary } from '@emberfall/common';
+import type { ClientMessage, WorldState, WorldSummary } from '@emberfall/core/contracts';
 import { GameConnection } from './connection';
 import { websocketUrl } from './urls';
 import { clientBuild } from './client-build.ts';

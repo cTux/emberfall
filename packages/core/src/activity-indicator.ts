@@ -1,6 +1,6 @@
 import { ACTIVITY_SWEEP_MS } from './activity-sweep-ms.ts';
 import { ACTIVITY_CYCLE } from './activity-cycle.ts';
-import type { TimedActivity } from '@emberfall/common';
+import type { TimedActivity } from '@emberfall/core/contracts';
 
 // Existing fourteen-percent target width is the gathering timing difficulty calibration.
 

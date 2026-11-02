@@ -1,7 +1,7 @@
 import { BEAR_ART } from './bear-art.ts';
 import { companionFrame } from './companion-frame.ts';
 import type { DrawingContext } from './rendering/drawing-context';
-import { type Bear, MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { type Bear, MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 import { bearArt as image } from './art';
 import { drawTargetHit, drawPlayerHealth } from './effects';
 import { spriteMask } from './lighting';

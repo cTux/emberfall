@@ -1,9 +1,9 @@
 import { game, type createGame } from '../game.ts';
 import { shiftTalentEffects } from '../talent-effects.ts';
 import { ENEMY_RULES } from '../definitions/entities/enemies.ts';
-import { hasLivingScenePlayers } from '@emberfall/common';
+import { hasLivingScenePlayers } from '@emberfall/core/contracts';
 import { enemyMaxHealth } from '../enemies.ts';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 
 type Game = ReturnType<typeof createGame>;
 export function prepareForestTick(

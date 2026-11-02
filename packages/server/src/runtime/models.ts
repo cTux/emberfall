@@ -8,7 +8,7 @@ import type {
   SceneState,
   ServerMessage,
   WorldState,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 import type { Peer } from '../network/peer.ts';
 
 export type AccountIdentity = () => { characterId: string; nickname: string | null } | undefined;

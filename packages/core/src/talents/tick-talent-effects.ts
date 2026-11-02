@@ -1,6 +1,6 @@
 import { scheduled } from './scheduled-definition.ts';
 import { generations } from './generations.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 import { talentRank } from '../talent-tree.ts';
 
 export function tickTalentEffects(scene: SceneState, players: Player[], now: number) {

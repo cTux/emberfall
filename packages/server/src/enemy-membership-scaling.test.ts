@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import { randomSource, stepCombat, enemyMaxHealth, hitEnemy } from '@emberfall/core';
-import type { Player, SceneState } from '@emberfall/common';
+import type { Player, SceneState } from '@emberfall/core/contracts';
 import { CharacterStore } from './characters.ts';
 
 import { player, enemy } from './enemies.fixture.ts';

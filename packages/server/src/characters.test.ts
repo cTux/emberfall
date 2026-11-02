@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { once } from 'node:events';
 import { WebSocket } from './testing/socket.ts';
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import { CLASS_IDS } from '@emberfall/core';
 import { CharacterStore, freshProgress } from './characters.ts';
 import { createGameServer } from './worlds.ts';

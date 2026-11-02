@@ -1,6 +1,6 @@
 import { gatheringNode } from './gathering-node.ts';
 import { gatherResource } from './gather-resource.ts';
-import type { Player, ResourceState } from '@emberfall/common';
+import type { Player, ResourceState } from '@emberfall/core/contracts';
 
 export function tickGathering(
   player: Player,

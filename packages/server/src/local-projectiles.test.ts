@@ -4,7 +4,7 @@ import { LocalMovement } from '../../client/src/local-movement.ts';
 import { SnapshotBuffer } from '../../client/src/snapshots.ts';
 
 import { fireClassAttack, PLAYER_ATTACK_INTERVAL } from '@emberfall/core';
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 import { fixture, frame } from '../../../tests/local-projectiles.fixture.ts';
 
 test('automatic combat entry waits for its first authoritative swing in forest and training', () => {

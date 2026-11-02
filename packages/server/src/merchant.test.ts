@@ -7,7 +7,7 @@ import {
   itemDefinition,
   LOOT_ITEM_IDS,
 } from '@emberfall/core';
-import type { ChatMessage, Merchant, Player, ServerMessage } from '@emberfall/common';
+import type { ChatMessage, Merchant, Player, ServerMessage } from '@emberfall/core/contracts';
 import { CharacterStore, freshProgress } from './characters.ts';
 import { refreshMerchant } from './merchant.ts';
 import { RUNTIME } from '@emberfall/core/definitions/runtime';

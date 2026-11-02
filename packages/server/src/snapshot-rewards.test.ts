@@ -2,7 +2,7 @@ import { randomSource, stepCombat, FOREST } from '@emberfall/core';
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 
-import type { SceneState } from '@emberfall/common';
+import type { SceneState } from '@emberfall/core/contracts';
 import { hero } from './snapshots.fixture.ts';
 
 // These geometry assertions cover ordinary hits; critical outcomes have dedicated tests.

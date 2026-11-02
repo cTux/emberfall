@@ -1,8 +1,9 @@
 import type { Game } from './game.ts';
-import type { SceneState, Player, Enemy, PlayerShot } from '@emberfall/common';
+import type { SceneState, Player, Enemy, PlayerShot } from '@emberfall/core/contracts';
 import { game } from '../game.ts';
 import { effectiveAbility, nearestSpellTarget, projectileAngle } from './ability.ts';
-import { wrappedDelta, appendSceneEntities } from '@emberfall/common';
+import { appendSceneEntities } from '@emberfall/core/contracts';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST } from '../scene.ts';
 
 export function fireClassAttack(

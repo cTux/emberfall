@@ -1,5 +1,5 @@
 import type { Entity } from './entity.ts';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { World } from 'miniplex';
 
 export class PlayerIndex extends Map<string, Player> {

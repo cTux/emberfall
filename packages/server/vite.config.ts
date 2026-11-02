@@ -8,5 +8,5 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: { output: { entryFileNames: 'index.js' } },
   },
-  ssr: { noExternal: ['@emberfall/common'] },
+  ssr: { noExternal: ['@emberfall/core'] },
 });

@@ -1,5 +1,5 @@
 import { TREES } from './trees-definition.ts';
-import { wrap, wrappedDelta } from '@emberfall/common';
+import { wrap, wrappedDelta } from '@emberfall/core/geometry';
 import { ARENA, WARDROBE, TORCHES, BUILDINGS } from './definitions/worlds/village.ts';
 import { VILLAGE_TREE, VILLAGE_OBSTACLES } from './village-layout.ts';
 

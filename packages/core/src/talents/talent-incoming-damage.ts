@@ -1,5 +1,5 @@
 import type { Game } from './game.ts';
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 import { game } from '../game.ts';
 import { state } from './state.ts';
 import { PASSIVES } from './passive-tuning.ts';

@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@colyseus/sdk": "0.18.4",
-    "@emberfall/common": "workspace:*",
     "@emberfall/core": "workspace:*",
     "@emberfall/ui": "workspace:*",
     "@emotion/react": "^11.14.0",

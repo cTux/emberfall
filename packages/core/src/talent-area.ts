@@ -1,6 +1,6 @@
-import type { SceneState, Player } from '@emberfall/common';
+import type { SceneState, Player } from '@emberfall/core/contracts';
 import { characterStats } from './equipment.ts';
-import { PERCENT } from '@emberfall/common';
+import { PERCENT } from '@emberfall/core/contracts';
 import { forestDistance } from './scene.ts';
 
 export function talentArea(

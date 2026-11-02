@@ -3,7 +3,7 @@ import {
   hasLivingScenePlayers,
   type Player,
   type WorldState,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 
 export function gameSceneStatus(world: WorldState | null, me: Player | undefined) {
   const scene = world?.scene;

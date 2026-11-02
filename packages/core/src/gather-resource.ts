@@ -1,7 +1,7 @@
 import { gatheringNode } from './gathering-node.ts';
 import { resourceState } from './resource-state.ts';
 import { RESOURCE_RESTORE_MS } from './resource-restore-ms.ts';
-import type { Player, ResourceState } from '@emberfall/common';
+import type { Player, ResourceState } from '@emberfall/core/contracts';
 import { randomSource } from './random.ts';
 import { TREE_GATHER_COUNT, TREE_DROPS } from './gathering-rules.ts';
 import { dimensionDefinition } from './dimensions.ts';

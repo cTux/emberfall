@@ -1,6 +1,6 @@
 import { randomSource } from '../random.ts';
 import { z } from 'zod';
-import { inventoryItemSchema } from '@emberfall/common';
+import { inventoryItemSchema } from '@emberfall/core/contracts';
 import {
   type ItemStat,
   Rarity,

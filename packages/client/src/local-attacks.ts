@@ -3,7 +3,7 @@ import {
   type Player,
   type WorldState,
   type ClientMessage,
-} from '@emberfall/common';
+} from '@emberfall/core/contracts';
 import {
   game,
   characterStats,

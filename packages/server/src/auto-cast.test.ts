@@ -9,7 +9,7 @@ import {
   createTrainingScene,
 } from '@emberfall/core';
 import { LocalMovement } from '../../client/src/local-movement.ts';
-import type { Player, WorldState } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
 
 test('ranged auto-casts wait for a living target in range, then launch and damage it', (t) => {
   t.mock.method(randomSource, 'next', () => {

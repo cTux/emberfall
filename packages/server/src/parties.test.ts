@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import type { Player, ChatMessage } from '@emberfall/common';
-import { nicknameSchema } from '@emberfall/common';
+import type { Player, ChatMessage } from '@emberfall/core/contracts';
+import { nicknameSchema } from '@emberfall/core/contracts';
 import { LOBBY_PORTAL, resourceNodes, gatherResource } from '@emberfall/core';
 import { Parties } from './parties.ts';
 import { sceneAction } from './scenes.ts';

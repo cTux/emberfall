@@ -1,4 +1,4 @@
-import type { ServerMessage } from '@emberfall/common';
+import type { ServerMessage } from '@emberfall/core/contracts';
 import assert from 'node:assert/strict';
 
 export async function waitForWorldMessage(messages: ServerMessage[], type: ServerMessage['type']) {

@@ -1,6 +1,6 @@
 import { companionFrame } from './companion-frame.ts';
 import { BEAR_ART } from './bear-art.ts';
-import type { Bear } from '@emberfall/common';
+import type { Bear } from '@emberfall/core/contracts';
 import { spriteMask } from './lighting';
 
 // Bear sheet rows/columns and display bounds preserve the packaged cub's existing foot anchor and scale.

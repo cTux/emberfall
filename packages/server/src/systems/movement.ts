@@ -1,4 +1,4 @@
-import { MILLISECONDS_PER_SECOND } from '@emberfall/common';
+import { MILLISECONDS_PER_SECOND } from '@emberfall/core/contracts';
 // Keep player speech visible for the existing ten-second chat bubble duration.
 const CHAT_DISPLAY_MS = 10_000;
 // Ignore sub-microsecond floating-point residue when consuming millisecond input budgets.
@@ -8,7 +8,7 @@ const TIMED_INPUT_FRESHNESS_MS = 1000;
 // Stop held directions after a quarter-second without fresh input.
 const HELD_INPUT_FRESHNESS_MS = 250;
 
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 
 import { movePlayer, TICK_MS } from '@emberfall/core';
 export interface MovementInput {

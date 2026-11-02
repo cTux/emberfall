@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SimulationWorld } from './ecs/simulation.ts';
-import { appendSceneEntities, type Player, type SceneState } from '@emberfall/common';
+import { appendSceneEntities, type Player, type SceneState } from '@emberfall/core/contracts';
 
 import { randomSource, createTrainingScene, stepCombat } from '@emberfall/core';
 import { freshProgress } from './characters.ts';

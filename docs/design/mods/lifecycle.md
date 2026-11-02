@@ -7,7 +7,7 @@
 ### Rolled gear instances
 
 [ITEM-01–03](../../specs/item-rolls.md) adds core-owned rarity/stat configuration
-and weighted sampling. Common carries only structural optional `rarity`/`stats`
+and weighted sampling. Core contracts carry only structural optional `rarity`/`stats`
 fields on inventory/drop instances. Existing equipped definition IDs remain;
 optional `equipmentItems[slot]` retains the equipped instance and its rolls.
 Core validates that each instance matches its slot's definition ID, allowed
@@ -17,7 +17,7 @@ roll pool also remain unrolled Common until a pool is added. Equip, storage and 
 instance; they never regenerate it. Server commands still save before publishing.
 Combat reads summed equipped bonuses, and the server binds the complete party
 roster to reward generation independently of hit credit. Client/UI receive
-rarity colors and stat descriptions from the host; common never imports core.
+rarity colors and stat descriptions from the host; portable contracts never import gameplay.
 Combat passes the product of core's `zoneRarityMultiplier` and
 `difficultyRarityMultiplier` maps to the context-bound `rollItem` rarity roll.
 This adds no wire/save fields and keeps merchant rolls at the base odds.
@@ -29,12 +29,13 @@ HTTP server or renderer dependencies. Server owns authoritative scheduling,
 Miniplex membership, transport, authentication and persistence. Client owns input,
 prediction, PixiJS and presentation; UI remains controlled and game-independent.
 
-The dependency direction is `server/client -> core -> common`, with server/client
-also importing common contracts directly. Common contains serializable state,
-content contract types, structural schemas, protocol projection, collection
-membership and content-independent geometry. It must never import core, even
-through a compatibility re-export. A common contract accepting a read-only data
-argument is permitted; obtaining the global catalog from common is not.
+The dependency direction is `server/client -> core`, with separate public
+contracts, geometry and protocol entrypoints. Contracts contain serializable
+state, content contract types, structural schemas and collection membership.
+Geometry is content-independent; protocol adapters consume portable contracts.
+These layers must never import gameplay rules, content, bundled mods or the
+default game, even through a re-export. A contract may accept read-only data;
+it must not obtain the global catalog.
 
 Items discriminate gear from consumables: gear carries category/stats, while
 consumables carry healing without unused gear fields. A definition describes a type. Mutable actors, inventory entries, cooldowns,

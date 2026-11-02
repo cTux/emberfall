@@ -1,7 +1,7 @@
 import type { DrawingContext } from './rendering/drawing-context';
 import type { VillageFrame } from './village-frame';
 import type { VillagePlayers } from './village-players';
-import type { Player } from '@emberfall/common';
+import type { Player } from '@emberfall/core/contracts';
 import type { Caster, Light } from './lighting';
 import type { dayNight } from './day-night';
 import { TORCH_LIGHTS, lightTexture } from './village';

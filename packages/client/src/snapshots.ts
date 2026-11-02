@@ -1,6 +1,6 @@
-import { wrappedDelta, wrap } from '@emberfall/common';
+import { wrappedDelta, wrap } from '@emberfall/core/geometry';
 import { FOREST, moveActor, moveForestActor, ENEMY_STATS } from '@emberfall/core';
-import type { WorldState } from '@emberfall/common';
+import type { WorldState } from '@emberfall/core/contracts';
 
 // Keep two ticks (100 ms) buffered; 50/150 ms thresholds and ±10% clock rates gently recover that depth.
 const INTERPOLATION = {

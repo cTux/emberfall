@@ -1,4 +1,5 @@
-import { wrappedDelta, type Player, type WorldState } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { FOREST, resourceNodes, resourceState } from '@emberfall/core';
 import { sceneryInteraction, type InteractionTarget } from './interaction-targets';
 import { resourceScenery } from './gathering';

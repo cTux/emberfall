@@ -1,4 +1,5 @@
-import { wrappedDelta, type WorldState, type Player } from '@emberfall/common';
+import type { WorldState, Player } from '@emberfall/core/contracts';
+import { wrappedDelta } from '@emberfall/core/geometry';
 import { ARENA, LOBBY_PORTAL, resourceNodes, resourceState } from '@emberfall/core';
 import type { GraphicsSettings } from './graphics';
 import { villageBackground } from './village-background';

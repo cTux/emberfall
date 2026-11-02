@@ -1,7 +1,7 @@
 import { PixiContext } from '../packages/client/src/rendering/pixi-context';
 import { drawNpcWork } from '../packages/client/src/npc-work';
 import { VILLAGE_DEFINITION } from '../packages/core/src/definitions/worlds/village';
-import type { VillageNpc } from '../packages/common/src/index';
+import type { VillageNpc } from '../packages/core/src/contracts/index';
 
 export async function preview() {
   const canvas = document.createElement('canvas');

@@ -1,5 +1,5 @@
 import { VILLAGE_CAPACITY } from './limits.ts';
-import type { Player, WorldState } from '@emberfall/common';
+import type { Player, WorldState } from '@emberfall/core/contracts';
 import { MAX_PLAYERS } from '@emberfall/core';
 import { sceneState } from '../scenes.ts';
 import type { World } from './models.ts';
