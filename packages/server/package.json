@@ -8,9 +8,9 @@
     "start": "node --env-file-if-exists=../../.env --env-file-if-exists=.env dist/index.js"
   },
   "dependencies": {
-    "@colyseus/core": "0.18.18",
-    "@colyseus/database": "0.18.4",
-    "@colyseus/schema": "5.0.35",
+    "@colyseus/core": "0.18.24",
+    "@colyseus/database": "0.18.5",
+    "@colyseus/schema": "5.0.43",
     "@colyseus/ws-transport": "0.18.4",
     "@emberfall/core": "workspace:*",
     "drizzle-orm": "1.0.0-rc.2",
@@ -18,7 +18,7 @@
     "negotiator": "^1.1.0"
   },
   "devDependencies": {
-    "@colyseus/sdk": "0.18.4",
+    "@colyseus/sdk": "0.18.9",
     "@types/negotiator": "^0.6.5",
     "vite": "catalog:"
   }

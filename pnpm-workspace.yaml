@@ -1,11 +1,17 @@
 packages:
   - packages/*
 catalog:
-  vite: ^8.2.0
-  zod: ^4.6.5
+  vite: ^8.3.5
+  zod: ^4.6.7
 allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   'msgpackr-extract': false
 patchedDependencies:
-  '@colyseus/core@0.18.18': patches/@colyseus__core@0.18.18.patch
+  '@colyseus/core@0.18.24': patches/@colyseus__core@0.18.24.patch
+# Allow only the patched transitive releases selected by pnpm audit --fix=update.
+minimumReleaseAgeExclude:
+  - source-map-js@1.2.2
+  - body-parser@2.4.0
+  - fast-uri@3.1.9
+  - qs@6.16.1

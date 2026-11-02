@@ -15,22 +15,22 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@fortawesome/fontawesome-svg-core": "^7.0.0",
-    "@fortawesome/free-solid-svg-icons": "^7.0.0",
-    "@fortawesome/react-fontawesome": "^3.0.0",
-    "@mui/material": "^9.4.0"
+    "@fortawesome/fontawesome-svg-core": "^7.3.1",
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
+    "@fortawesome/react-fontawesome": "^3.5.0",
+    "@mui/material": "^9.5.0"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "10.6.1",
-    "@storybook/addon-docs": "10.6.1",
-    "@storybook/react-vite": "10.6.1",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "storybook": "10.6.1",
+    "@storybook/addon-a11y": "10.6.5",
+    "@storybook/addon-docs": "10.6.5",
+    "@storybook/react-vite": "10.6.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "storybook": "10.6.5",
     "vite": "catalog:"
   },
   "peerDependencies": {
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }
