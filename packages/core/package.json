@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@colyseus/schema": "5.0.35",
+    "@colyseus/schema": "5.0.43",
     "random-js": "2.1.0",
     "zod": "catalog:"
   }
