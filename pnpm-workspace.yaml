@@ -7,3 +7,5 @@ allowBuilds:
   '@parcel/watcher': true
   esbuild: true
   'msgpackr-extract': false
+patchedDependencies:
+  '@colyseus/core@0.18.18': patches/@colyseus__core@0.18.18.patch

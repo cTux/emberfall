@@ -1,0 +1,63 @@
+diff --git a/build/router/index.cjs b/build/router/index.cjs
+index 18f335a5fdeba3a602a97e2816d06c50d1b22187..736ff7297d07133e01ab2c4f3f57b59578fa8a65 100644
+--- a/build/router/index.cjs
++++ b/build/router/index.cjs
+@@ -77,7 +77,15 @@ function bindRouterToTransport(transport, router, useExpress) {
+       if (router.findRoute(req.method, req.url.split("?")[0]) !== void 0) {
+         const protocol = req.headers["x-forwarded-proto"] || (req.socket.encrypted ? "https" : "http");
+         const base = `${protocol}://${req.headers[":authority"] || req.headers.host}`;
+-        const response = await router.handler((0, import_node.getRequest)({ base, request: req }));
++        let request;
++        try {
++          request = (0, import_node.getRequest)({ base, request: req });
++        } catch {
++          res.writeHead(400);
++          res.end();
++          return;
++        }
++        const response = await router.handler(request);
+         return (0, import_node.setResponse)(res, response);
+       } else {
+         return expressApp["handle"](req, res);
+diff --git a/build/router/index.mjs b/build/router/index.mjs
+index 35e293fadefcfe8e94fc26e93662a81eacd77c33..5ae599ebe00d982ccc58573870273a95c2e1c156 100644
+--- a/build/router/index.mjs
++++ b/build/router/index.mjs
+@@ -39,7 +39,15 @@ function bindRouterToTransport(transport, router, useExpress) {
+       if (router.findRoute(req.method, req.url.split("?")[0]) !== void 0) {
+         const protocol = req.headers["x-forwarded-proto"] || (req.socket.encrypted ? "https" : "http");
+         const base = `${protocol}://${req.headers[":authority"] || req.headers.host}`;
+-        const response = await router.handler(getRequest({ base, request: req }));
++        let request;
++        try {
++          request = getRequest({ base, request: req });
++        } catch {
++          res.writeHead(400);
++          res.end();
++          return;
++        }
++        const response = await router.handler(request);
+         return setResponse(res, response);
+       } else {
+         return expressApp["handle"](req, res);
+diff --git a/src/router/index.ts b/src/router/index.ts
+index f37251f4799d926a6484d431c955aa2087945ac1..2001b2a436557534bf30979c3e9fa038a59ddff3 100644
+--- a/src/router/index.ts
++++ b/src/router/index.ts
+@@ -82,7 +82,15 @@ export function bindRouterToTransport(transport: Transport, router: Router, useE
+       if (router.findRoute(req.method, req.url.split('?')[0]) !== undefined) {
+         const protocol = req.headers["x-forwarded-proto"] || ((req.socket as any).encrypted ? "https" : "http");
+         const base = `${protocol}://${req.headers[":authority"] || req.headers.host}`;
+-        const response = await router.handler(getRequest({ base, request: req }));
++        let request: Request;
++        try {
++          request = getRequest({ base, request: req });
++        } catch {
++          res.writeHead(400);
++          res.end();
++          return;
++        }
++        const response = await router.handler(request);
+         return setResponse(res, response);
+ 
+       } else {
