@@ -56,10 +56,23 @@ allow 30 per account per minute. Maps are bounded and callbacks allow eight
 concurrent upstream verifications. Reverse proxies still need ingress limits.
 
 [worlds.ts](../../packages/server/src/worlds.ts) validates the browser Origin
-and consumes a ticket on Colyseus admission. Tickets stay in client memory, not
+and consumes a ticket in Colyseus's static authentication hook, before HTTP
+matchmaking creates a room or reserves a seat. Pending rooms and runtime sessions
+(including reconnect grace) share the 256-session budget. Room creation rechecks
+capacity synchronously to bound concurrent admissions; join transfers the slot to
+the runtime, and disposal releases abandoned or failed reservations. The existing
+framework seat timeout expires abandoned reservations. Rejected origins do not
+consume tickets. Tickets stay in client memory, not
 localStorage. A session is rechecked on join, on every command, after asynchronous
 password work, and once per second for idle connections. Logout follows the
 existing disconnect/save lifecycle. Expired or revoked credentials cannot resume.
+
+[Matchmaking admission tests](../../packages/server/src/matchmaking-admission.test.ts)
+cover HTTP-only rejection before allocation, ticket replay/revocation, concurrent
+capacity checks and reservation disposal. Existing SDK account tests cover joins,
+logout and the separately hosted client Origin.
+The [desktop admission scenario](../../tests/matchmaking-admission.spec.ts) covers
+Steam login, SDK join, reload recovery and logout with a valid nickname.
 
 [runtime.ts](../../packages/server/src/runtime.ts) derives character identity
 and name from the authenticated session. Legacy wire name/token fields cannot

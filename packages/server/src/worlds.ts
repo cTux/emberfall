@@ -47,6 +47,13 @@ export async function createGameServer(
     ? new Accounts(runtime.characters, steam, runtime.renameCharacter)
     : undefined;
   const projections = new WeakMap<object, PreparedState>();
+  const reservations = new Set<SessionRoom>();
+
+  function checkCapacity() {
+    if (!runtime.hasCapacity(reservations.size)) {
+      throw new ServerError(POLICY_VIOLATION, 'Server is full');
+    }
+  }
 
   function replicate(
     state: SessionState,
@@ -67,7 +74,13 @@ export async function createGameServer(
     override maxClients = 1;
     private peer?: Peer;
 
-    override onAuth(_client: Client, options: { ticket?: string }, context: { headers: Headers }) {
+    static override async onAuth(
+      _token: string,
+      options: { ticket?: string },
+      context: { headers: Headers },
+    ) {
+      checkCapacity();
+
       if (!accounts) {
         return true;
       }
@@ -93,6 +106,9 @@ export async function createGameServer(
         );
       }
 
+      // Recheck synchronously: parallel static authentication calls may all have passed.
+      checkCapacity();
+      reservations.add(this);
       await this.setPrivate(true);
       this.setPatchRate(TRANSPORT.patchMs);
       this.onMessage('command', (_client, command) => {
@@ -129,10 +145,15 @@ export async function createGameServer(
           return (client as WebSocketClient).ref.bufferedAmount;
         },
       );
+      reservations.delete(this);
       runtime.connect(
         this.peer,
         accounts ? accounts.attach(this.peer, client.auth as string) : undefined,
       );
+    }
+
+    override onDispose() {
+      reservations.delete(this);
     }
 
     override onLeave(_client: Client, code: number) {
